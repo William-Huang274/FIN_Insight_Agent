@@ -1,10 +1,19 @@
 """Bounded specialist delegation contracts over native graphs and artifacts."""
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_serializer
+from .professional_roles import ProfessionalAssignment
 
 
 class ResearchSubtask(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    professional: ProfessionalAssignment | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy(self, handler):
+        body = handler(self)
+        if 'professional' not in self.model_fields_set:
+            body.pop('professional', None)
+        return body
     subtask_id: str = Field(pattern=r"^[a-zA-Z0-9_-]{1,60}$")
     objective: str = Field(min_length=20, max_length=4000)
     success_criteria: list[str] = Field(min_length=1, max_length=12)
@@ -37,6 +46,8 @@ class ReadDelegatedWorkAction(BaseModel):
 
 
 DELEGATION_GUIDANCE = (
+    "For a bounded survey task choose professional.profile=survey_analysis and provide purpose/source_hints; "
+    "runtime gives it survey methods and clean authoring context, not this parent's financial method. "
     "You own this domain's research judgment and integration. Delegate only bounded subquestions whose independent "
     "context reduces duplicated work; specify what you stop doing and retain. Helpers self-check and return artifacts, "
     "not private conversations. Use ReadDelegatedWorkAction to read needed papers and original source observations "

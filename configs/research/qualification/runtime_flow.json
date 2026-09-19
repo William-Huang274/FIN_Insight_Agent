@@ -1,0 +1,15 @@
+{
+  "version": "runtime_flow_qualification.v1",
+  "question": "AI 的采用与资本投入，在哪些环节已转化为可验证的需求、芯片与服务器交付、云服务收入和可用电力？哪些解释最有依据，哪些仍是待验证假设？",
+  "policy": "One continuing question, staged execution; no whole-report run before prerequisite gates. Historical and synthetic passes are not research acceptance.",
+  "stages": [
+    {"id":"A0", "package":"A", "node":"data_foundation", "depends_on":[], "cases":["INFRA-GRAPH-01","INFRA-SCOPE-01"], "required":["engineering"]},
+    {"id":"A1", "package":"A", "node":"professional_routing", "depends_on":["A0"], "cases":["D5-B02-PRODUCTION","D5-B02-TRANSFER"], "required":["engineering","research"]},
+    {"id":"B1", "package":"B", "node":"lead_orientation", "depends_on":["A1"], "cases":["D1-B01","D2-B01","D4-B01"], "required":["engineering","research","transfer"]},
+    {"id":"B2", "package":"B", "node":"topic_assignment", "depends_on":["B1"], "cases":["D3-B01","D4-B02"], "required":["engineering","research","transfer"]},
+    {"id":"C1", "package":"C", "node":"professional_execution", "depends_on":["B2"], "cases":["D1-B02","D2-B02","D3-B02","D3-B03","D5-B01","D6-B01","D6-B02"], "required":["engineering","research","transfer"]},
+    {"id":"C2", "package":"C", "node":"handoff_and_revision", "depends_on":["C1"], "cases":["S-D3-D4","S-D1-D2","S-D5-D1","S-D4-D6"], "required":["engineering","research"]},
+    {"id":"D1", "package":"D", "node":"topic_synthesis", "depends_on":["C2"], "cases":["C-DEMAND-DELIVERY","C-POWER-FINANCE"], "required":["engineering","research"]},
+    {"id":"D2", "package":"D", "node":"lead_report_review", "depends_on":["D1"], "cases":["H-AI-REALIZATION"], "required":["engineering","research","product"]}
+  ]
+}

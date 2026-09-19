@@ -73,7 +73,7 @@ def _inventory(root):
 
 
 def backup_service(project_root, task_root, target, *, working_memory, submission_receipts,
-                   audit_root, databases, maintenance_confirmed=False, public_library=None, financial_mart=None):
+                   audit_root, databases, maintenance_confirmed=False, public_library=None, financial_mart=None, research_library=None):
     if not maintenance_confirmed:
         raise ValueError('stop_ingress_workers_importers_before_backup')
     if set(databases) != {'native', 'budget'}:
@@ -93,7 +93,7 @@ def backup_service(project_root, task_root, target, *, working_memory, submissio
         # Long-lived read connections detect SQLite changes across ALL snapshots.
         handles = [stack.enter_context(closing(_connect(p))) for p in sources]
         versions = [db.execute('PRAGMA data_version').fetchone()[0] for db in handles]
-        backup_asset_set(project_root, task_root, target/'assets', public_library=public_library, financial_mart=financial_mart)
+        backup_asset_set(project_root, task_root, target/'assets', public_library=public_library, financial_mart=financial_mart,research_library=research_library)
         for db, relative in zip(handles[2:], ('working-memory/notes.sqlite', 'submission-receipts/records-v1.sqlite')):
             dest = target/relative; dest.parent.mkdir(parents=True)
             with closing(sqlite3.connect(dest)) as output:

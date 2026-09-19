@@ -440,7 +440,17 @@ def _bind_research_task(
     """
     from .workpaper_review_graph import validate_workpaper_state
 
-    task = _model_json(ResearchTaskSpec, assignment, code="delegated_research_task_invalid")
+    # Professional routing is a versioned envelope, not a mutation of the
+    # archived ResearchTaskSpec contract or its digests.
+    from .professional_roles import ProfessionalAssignment
+    professional = assignment.get('professional')
+    if professional is not None:
+        professional = ProfessionalAssignment.model_validate(professional).model_dump(mode='json')
+        space = professional.get('source_space')
+        disclosed = {s for c in graph_input.l0_context.capability_summaries for s in c.get('source_spaces', [])}
+        if space and space not in disclosed:
+            raise SpecialistAgenticCompositionError('professional_source_space_not_disclosed')
+    task = _model_json(ResearchTaskSpec, {k: v for k, v in assignment.items() if k != 'professional'}, code="delegated_research_task_invalid")
     if task.coverage_obligation_ids != (graph_input.task.branch_id,) or task.status not in {"planned", "ready"}:
         raise SpecialistAgenticCompositionError("delegated_task_branch_or_status_mismatch")
     if set(task.dependency_ids) != set(dependency_workpapers):
@@ -448,6 +458,9 @@ def _bind_research_task(
     available = {row.get("capability_ref") for row in graph_input.l0_context.capability_summaries}
     if not set(task.requested_capability_refs).issubset(available) or task.required_authority_refs:
         raise SpecialistAgenticCompositionError("delegated_task_cannot_request_new_authority_or_unavailable_capability")
+    if professional and not set(task.requested_capability_refs).issubset({
+            'capability:dell:source-document-read','capability:research:calculator','capability:research:methods'}):
+        raise SpecialistAgenticCompositionError('survey_task_requests_unrelated_professional_capability')
     if not set(task.expected_output_kinds).issubset({"branch_notebook", "claim_ledger", "narrative_artifact"}):
         raise SpecialistAgenticCompositionError("delegated_task_output_not_supported")
     handoffs = []
@@ -478,6 +491,20 @@ def _bind_research_task(
             "Use the source IDs and claim rationale to guide your own tools; reread the underlying sources before "
             "citing them. Do not inherit another agent's execution counts, permission claims or hidden reasoning.",
     }
+    if professional is not None:
+        # Keep dependency identity available without injecting another profession's
+        # complete draft or methods into this worker's context.
+        body['task_context'] = {
+            'research_question': task.objective, 'assignment': task.model_dump(mode='json'),
+            'professional': professional,
+            'source_navigation': [{'source_space':professional['source_space'],'operation':'read','document_id':hint}
+                                  for hint in professional['source_hints']] if professional.get('source_space') else [],
+            'dependency_references': [{k: row[k] for k in ('task_id', 'revision', 'submission_digest')} for row in handoffs],
+            'usage_rule': 'Resolve original evidence via source hints/tools. Parent purpose is task context, never evidence.'}
+        body['l0_context']['skill_summaries'] = [s for s in body['l0_context']['skill_summaries']
+            if (s.get('role_method') or {}).get('method_id') == professional['profile']]
+        body['l0_context']['capability_summaries'] = [c for c in body['l0_context']['capability_summaries']
+            if c.get('capability_ref') in {'capability:dell:source-document-read', 'capability:research:calculator', 'capability:research:methods'}]
     return _model_json(SpecialistAgenticInput, body, code="delegated_specialist_input_invalid")
 
 
@@ -1076,6 +1103,16 @@ def _open_specialist_composition(
             if role_method is not None:
                 from .studio_configuration import bind_specialist_method
                 graph_input = bind_specialist_method(graph_input, role_method)
+            if source_read_enabled and environment and environment.get('FINSIGHT_RESEARCH_LIBRARY_PATH'):
+                from sec_agent.research_foundation.research_library import ResearchLibrary
+                library = ResearchLibrary(environment['FINSIGHT_RESEARCH_LIBRARY_PATH'])
+                body = graph_input.model_dump(mode='json')
+                for capability in body['l0_context']['capability_summaries']:
+                    if capability.get('capability_ref') == 'capability:dell:source-document-read':
+                        capability['source_spaces'].append('library')
+                        capability['library_snapshot_sha256'] = library.manifest['sha256']
+                        capability['library_usage'] = 'Public immutable library: catalog(optional query) lists documents/entities; related(entity_id,graph_depth=1|2) finds source-bound company relationships; search(query, optional entity_id) combines FTS and graph candidates; observations(entity_id) returns source/period/unit-bound stored data, not S2 authority. read(document_id,node_id) returns originals. Candidates are not financial facts; unavailable/unsearched is not undisclosed.'
+                graph_input = _model_json(SpecialistAgenticInput, body, code='specialist_library_capability_invalid')
             if environment and environment.get("FINSIGHT_TASK_ATTACHMENTS_ROOT"):
                 body = graph_input.model_dump(mode="json")
                 for capability in body["l0_context"]["capability_summaries"]:

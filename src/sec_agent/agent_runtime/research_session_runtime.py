@@ -246,11 +246,10 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     "recorded_at": datetime.now(timezone.utc).isoformat()}
                 emit({**task_event, "event": "started", "status": "running"})
                 def run_subtask(spec, parent_state, nested_config):
-                    nested_task = {**task, "task_id": task["task_id"] + "/sub/" + spec["subtask_id"],
-                        "objective": spec["objective"], "success_criteria": spec["success_criteria"], "dependency_ids": []}
+                    from .professional_roles import child_assignment
+                    nested_task = child_assignment(task, spec)
                     # Separate native specialist context; no entire parent question,
                     # notebook or sibling message history is copied into the helper.
-                    nested_task["objective"] += "\n来源导航/待查方向：" + json.dumps(spec["source_hints"], ensure_ascii=False)
                     return worker(nested_task, {}, nested_config, helper=True)
                 def help_blocked_expert(state, help_config):
                     from .research_assistance import build_lead_assistance_graph
@@ -289,20 +288,23 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"),
                     dispatch_guards=research_guards(configured), source_access_check=source_access_check)
                 try:
+                    from .professional_roles import resolve_professional
+                    from sec_agent.research_foundation.research_methods import get_research_method
+                    professional = resolve_professional(task['professional'], reader=studio.method if studio else get_research_method) if task.get('professional') else None
                     with open_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
                             plan_invocation_id=plan_invocation_id,
                             branch_id=task["coverage_obligation_ids"][0], turn_source="provider_model", model_turn=visible_turn(adapter.specialist_model_turn, task["owner_role"], task["task_id"]),
                             role_method_reader=studio.method if studio else None,
-                            role_method=studio.specialist_method(task['coverage_obligation_ids']) if studio else None,
+                            role_method=professional['method'] if professional else studio.specialist_method(task['coverage_obligation_ids']) if studio else None,
                             environment=environment, source_read_enabled=True, live_web_read_enabled=True,
                             max_model_turns=specialist_limits["model_calls"], max_tool_actions=specialist_limits["tool_calls"],
                             recovery_state=recoveries.get(task["task_id"]),
                             research_task=task, dependency_workpapers=dependencies,
-                            subtask_runner=None if helper else run_subtask,
+                            subtask_runner=None if helper or professional else run_subtask,
                             working_state_enabled=True, lead_assistance=help_blocked_expert,
-                            authoring_enabled=profile.get('authoring', {}).get('enabled', False) and not helper,
-                            authoring_domain=studio.bindings['specialist'] if studio else 'finance',
-                            research_question=(task["objective"] + "\n你负责这个独立子问题；提交前自检数字、引用及正文的一致性，报告限制，不再委派。") if helper else request["question"]) as child:
+                            authoring_enabled=True if professional else profile.get('authoring', {}).get('enabled', False) and not helper,
+                            authoring_domain=professional['domain'] if professional else studio.bindings['specialist'] if studio else 'finance',
+                            research_question=(task["objective"] + "\n你负责这个独立子问题；提交前自检数字、引用及正文的一致性，报告限制，不再委派。") if helper or professional else request["question"]) as child:
                         output = child.graph.invoke(child.graph_input.model_dump(mode="json"), {**child_config, "recursion_limit": 200})
                 except Exception as exc:
                     from .task_outcome import task_outcome

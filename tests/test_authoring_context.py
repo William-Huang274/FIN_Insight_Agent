@@ -33,6 +33,15 @@ def test_stage_disclosure_replaces_research_method_but_preserves_semantics():
     assert survey['methods'][0]['selection']==['先确定交付对象：报告或专题底稿']
 
 
+def test_native_mcp_method_envelope_preserves_receipt_and_stage_content():
+    from sec_agent.research_foundation.research_methods import get_research_method
+    def native(method_id):
+        return {'method':get_research_method(method_id),'mcp_receipt':{'id':'actual-envelope-fixture'}}
+    methods=stage_methods('prepare_workpaper',domain='survey_analysis',reader=native)['methods']
+    assert all(m['content'] and m['mcp_receipt']['id']=='actual-envelope-fixture' for m in methods)
+    assert all(m['runtime_compatibility_parse']=='receipted_method_envelope.v1' for m in methods)
+
+
 def test_real_convergence_lead_prepares_before_writing_and_reprepares_on_revision():
     result, sequence, models=asyncio.run(exercise_case(hierarchical=True,authoring_stages=True,terminal_owner='writer'))
     roles=[r[0] for r in sequence]

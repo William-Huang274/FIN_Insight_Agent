@@ -13,7 +13,7 @@ from langchain_core.tools import StructuredTool
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode, ToolRuntime
 from langgraph.types import Send
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, create_model
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, create_model, model_serializer, model_validator
 
 from .research_contracts import ResearchTaskSpec
 from .research_graph_contracts import RuntimeReceipt, canonical_sha256
@@ -24,6 +24,7 @@ from .workpaper_review_graph import validate_workpaper_state
 from sec_agent.research_foundation.research_methods import get_research_method
 from .research_execution_plan import ResearchExecutionPlan
 from .task_outcome import task_outcome
+from .professional_roles import ProfessionalAssignment
 
 
 class LeadResearchError(ValueError):
@@ -42,6 +43,21 @@ class DelegatedResearchTask(ResearchTaskSpec):
     expected_output_kinds: tuple[Literal["branch_notebook", "narrative_artifact", "claim_ledger"], ...] = Field(min_length=1, max_length=3)
     status: Literal["planned", "ready"] = "planned"
     required_authority_refs: tuple[str, ...] = Field(default=(), max_length=0)
+    professional: ProfessionalAssignment | None = None
+
+    @model_validator(mode='after')
+    def professional_capability_scope(self):
+        if self.professional and not set(self.requested_capability_refs).issubset({
+                'capability:dell:source-document-read','capability:research:calculator','capability:research:methods'}):
+            raise ValueError('survey_profile_requires_source_read_calculator_or_method_capabilities_not_finance')
+        return self
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy(self, handler):
+        body = handler(self)
+        if 'professional' not in self.model_fields_set:
+            body.pop('professional', None)
+        return body
 
 
 class DelegateResearchTasksAction(_LeadAction):
@@ -102,6 +118,9 @@ def lead_tool_models(*, require_execution_plan=False, source_read_enabled=False,
 
 
 LEAD_RESEARCH_SYSTEM_PROMPT = (
+    "For survey/questionnaire work explicitly set professional.profile=survey_analysis with purpose/source_hints, "
+    "source_space when known, and requested_capability_refs=['capability:dell:source-document-read']. "
+    "This selects a clean professional context; source dimensions and branch permissions remain unchanged. "
     "You are the Research Lead. Autonomously plan and reflect on the user's research question. "
     "Separate three planning levels: the complete delivery route, the current evidence-producing wave, "
     "and observation-triggered followups. A small first wave does not mean a focused single-paper delivery. "

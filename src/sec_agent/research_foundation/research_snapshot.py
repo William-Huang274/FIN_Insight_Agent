@@ -68,6 +68,7 @@ def build_snapshot(path: Path, sources, passages, *, entities=(), edges=(), obse
 
 
 class ResearchSnapshot:
+    required_state = 'diagnostic_not_production'
     def __init__(self, path, *, time_mode='strict_as_of', knowledge_as_of=None):
         self.path = Path(path).resolve()
         if time_mode not in {'strict_as_of', 'retrospective'} or (time_mode=='retrospective' and knowledge_as_of is None):
@@ -76,7 +77,7 @@ class ResearchSnapshot:
             date.fromisoformat(knowledge_as_of)
         self.time_mode, self.knowledge_as_of = time_mode, knowledge_as_of
         rows=self._query("SELECT value FROM snapshot_metadata WHERE key='state'")
-        if rows != [{'value':'diagnostic_not_production'}]:
+        if rows != [{'value': self.required_state}]:
             raise ValueError('snapshot_not_complete')
 
     def _cutoff(self, as_of):

@@ -40,6 +40,11 @@ CORE_SEMANTICS = (
 def method_sections(method_id, headings, reader=get_research_method):
     """Select exact H2 sections; saved/custom methods without them stay intact."""
     method = deepcopy(reader(method_id))
+    if 'method' in method and 'mcp_receipt' in method:
+        # Native MCP returns a receipted envelope; packaged/custom readers return
+        # the resource directly. Preserve provenance and label deterministic parsing.
+        method = {**method['method'], 'mcp_receipt': method['mcp_receipt'],
+                  'runtime_compatibility_parse': 'receipted_method_envelope.v1'}
     original = method['content']
     parts = re.split(r'(?m)(?=^## )', original)
     available = {p.splitlines()[0][3:]: p for p in parts if p.startswith('## ')}

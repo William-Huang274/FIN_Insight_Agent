@@ -1156,6 +1156,8 @@ def _model_request(
         body["collaboration_context"] = collaboration
     if state.get("task_context") is not None:
         body["task_context"] = state["task_context"]
+        if state['task_context'].get('professional'):
+            allowed_actions[:] = [a for a in allowed_actions if a not in {'request_finance','request_evidence'}]
     if state.get("required_source_checks"):
         body["task_context"] = {**(body.get("task_context") or {}),
             "source_check_guidance": SOURCE_CHECK_GUIDANCE,

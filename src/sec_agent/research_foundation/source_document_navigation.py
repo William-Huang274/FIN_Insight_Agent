@@ -20,8 +20,10 @@ from retrieval.text import tokenize
 
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    source_space: Literal["local", "web", "uploads"] = "local"
-    operation: Literal["catalog", "outline", "search", "read", "inspect_image"]
+    source_space: Literal["local", "web", "uploads", "library"] = "local"
+    operation: Literal["catalog", "outline", "search", "read", "inspect_image", "related", "observations"]
+    entity_id: str | None = Field(default=None, max_length=200)
+    graph_depth: int = Field(default=1, ge=1, le=2)
     document_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
         description="Exact server document_id from catalog/search. Uploaded documents keep the UPLOAD:: prefix; a node's embedded hash is not a document ID.")
     node_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
@@ -49,13 +51,19 @@ class SourceDocumentRequest(BaseModel):
         # serialization so archived action/notebook digests still validate.
         if "source_space" not in self.model_fields_set:
             body.pop("source_space", None)
-        for key in ('include_domains','start_published_date','end_published_date'):
+        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth'):
             if key not in self.model_fields_set:
                 body.pop(key,None)
         return body
 
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
+        if (self.operation in {'related','observations'} or self.entity_id or self.graph_depth != 1) and self.source_space != 'library':
+            raise ValueError('graph_navigation_requires_library')
+        if self.operation in {'related','observations'} and not self.entity_id:
+            raise ValueError('relation_or_observation_requires_entity_id_from_catalog')
+        if self.source_space == 'library' and self.operation not in {'catalog', 'search', 'read', 'related','observations'}:
+            raise ValueError('library_supports_catalog_search_read_related_observations')
         if (self.include_domains or self.start_published_date or self.end_published_date) and (
                 self.source_space != 'web' or self.operation != 'search' or self.document_id):
             raise ValueError('publication_and_domain_filters_require_web_discovery')

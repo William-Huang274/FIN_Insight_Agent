@@ -106,14 +106,14 @@ def _validate_links(project_path, task_path):
         return _financial_files(tasks)
 
 
-def backup_asset_set(project_root, task_root, target, *, public_library=None, financial_mart=None):
+def backup_asset_set(project_root, task_root, target, *, public_library=None, financial_mart=None, research_library=None):
     project_root,task_root,target=map(lambda p:Path(p).resolve(),(project_root,task_root,target))
     if project_root==task_root or any(target==p or target.is_relative_to(p) or p.is_relative_to(target) for p in (project_root,task_root)):
         raise ValueError('backup_roots_must_be_separate')
     paths=[p/'attachments.sqlite' for p in (project_root,task_root)]
     if not all(p.is_file() for p in paths):
         raise ValueError('asset_set_database_missing')
-    for source in (public_library,financial_mart):
+    for source in (public_library,financial_mart,research_library):
         if source and (not Path(source).is_file() or Path(source).resolve().is_relative_to(target)):
             raise ValueError('global_asset_source_invalid')
     target.mkdir(parents=True,exist_ok=False)
@@ -140,7 +140,7 @@ def backup_asset_set(project_root, task_root, target, *, public_library=None, fi
             if digest and _hash(dest)!=digest:
                 raise ValueError('task_financial_snapshot_copy_failure')
     global_sources={}
-    if public_library or financial_mart:
+    if public_library or financial_mart or research_library:
         (target/'library').mkdir()
     if public_library:
         source=Path(public_library).resolve();digest=_hash(source)
@@ -154,13 +154,22 @@ def backup_asset_set(project_root, task_root, target, *, public_library=None, fi
             if dst.execute('PRAGMA integrity_check').fetchone()[0]!='ok':
                 raise ValueError('financial_library_backup_invalid')
         global_sources['financial_mart']='library/financial-facts.sqlite'
+    if research_library:
+        from .research_library import ResearchLibrary
+        source=Path(research_library).resolve();published=ResearchLibrary(source)
+        dest=target/'library'/'research-library.sqlite'
+        shutil.copyfile(source,dest)
+        shutil.copyfile(source.with_suffix(source.suffix+'.manifest.json'),dest.with_suffix(dest.suffix+'.manifest.json'))
+        if ResearchLibrary(dest).manifest['sha256']!=published.manifest['sha256']:
+            raise ValueError('research_library_changed_during_backup')
+        global_sources['research_library']='library/research-library.sqlite'
     files={p.relative_to(target).as_posix():_hash(p) for p in target.rglob('*') if p.is_file()}
     manifest={'schema_version':SCHEMA,'created_at':datetime.now(timezone.utc).isoformat(),
               'files':files,'source_project_database':str(paths[0]),
               'scope':'project_assets_and_task_source_copies','native_threads_included':False,
               'global_sources':global_sources,
               'excluded':['native_threads_runs_checkpoints','submission_receipts','provider_usage_and_dispatch']+
-                         [name for name in ('public_library','financial_mart') if name not in global_sources],
+                         [name for name in ('public_library','financial_mart','research_library') if name not in global_sources],
               'automatic_resume':False}
     (target/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
     return manifest
@@ -178,13 +187,18 @@ def restore_asset_set(backup, target):
         if _hash(_safe(backup,relative))!=digest:
             raise ValueError('asset_set_integrity_failure')
     for name,relative in manifest.get('global_sources',{}).items():
-        expected={'public_library':'attachments/public-library/retrieval_nodes.jsonl','financial_mart':'library/financial-facts.sqlite'}
+        expected={'public_library':'attachments/public-library/retrieval_nodes.jsonl','financial_mart':'library/financial-facts.sqlite','research_library':'library/research-library.sqlite'}
         if expected.get(name)!=relative or relative not in manifest['files']:
             raise ValueError('asset_set_global_source_invalid')
         if name=='financial_mart':
             with closing(_connect(backup/relative)) as db:
                 if db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':
                     raise ValueError('financial_library_backup_invalid')
+        if name=='research_library':
+            from .research_library import ResearchLibrary
+            if relative+'.manifest.json' not in manifest['files']:
+                raise ValueError('research_library_manifest_missing_from_backup')
+            ResearchLibrary(backup/relative)
     # The nested manifest also defines every required project SEC original.
     project_manifest=json.loads((backup/'project-library'/'manifest.json').read_text(encoding='utf-8'))
     for relative,digest in project_manifest['files'].items():
@@ -225,7 +239,8 @@ if __name__=='__main__':
     save=commands.add_parser('backup');save.add_argument('project_root');save.add_argument('task_root');save.add_argument('target')
     save.add_argument('--public-library',help='Configured retrieval_nodes.jsonl')
     save.add_argument('--financial-mart',help='Configured read-only financial SQLite')
+    save.add_argument('--research-library',help='Published public research graph/FTS SQLite release')
     restore=commands.add_parser('restore');restore.add_argument('backup');restore.add_argument('target')
     args=parser.parse_args()
-    result=backup_asset_set(args.project_root,args.task_root,args.target,public_library=args.public_library,financial_mart=args.financial_mart) if args.action=='backup' else restore_asset_set(args.backup,args.target)
+    result=backup_asset_set(args.project_root,args.task_root,args.target,public_library=args.public_library,financial_mart=args.financial_mart,research_library=args.research_library) if args.action=='backup' else restore_asset_set(args.backup,args.target)
     print(json.dumps({'status':'complete','scope':result.get('scope'),'native_threads_included':False,'automatic_resume':False}))

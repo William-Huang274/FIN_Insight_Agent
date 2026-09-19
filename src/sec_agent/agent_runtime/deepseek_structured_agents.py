@@ -952,9 +952,14 @@ def _project_agentic_specialist_request(
         # handoffs. Preserve the question-only contract instead of inventing one.
         if "assignment" in task_context:
             projected["task_context"]["assignment"]["task_id"] = task_context["assignment"]["task_id"]
-            for original, view in zip(task_context["dependency_workpapers"],
-                                      projected["task_context"]["dependency_workpapers"], strict=True):
+            for original, view in zip(task_context.get("dependency_workpapers", []),
+                                      projected["task_context"].get("dependency_workpapers", []), strict=True):
                 view["task_id"] = original["task_id"]
+        if task_context.get('professional'):
+            # The native route binding stays intact on the host. Legacy branch
+            # finance requests are not part of the survey assignment.
+            projected['branch']['evidence_requests'] = []
+            projected['branch']['fact_requests'] = []
     if collaboration:
         projected["collaboration_context"] = {
             "mode": collaboration["mode"],
@@ -1429,6 +1434,11 @@ class DeepSeekStructuredAgentAdapter:
                     HumanMessage(content=semantic_json)]
         if persistent_history:
             prompt = _NATIVE_REVIEW_SYSTEM_PROMPT if is_reviewer else _NATIVE_SPECIALIST_SYSTEM_PROMPT
+            professional = (request_value.get('task_context') or {}).get('professional')
+            if professional and not is_reviewer and not is_lead:
+                from .professional_roles import ProfessionalAssignment, professional_system_prompt
+                ProfessionalAssignment.model_validate(professional)
+                prompt = professional_system_prompt(_NATIVE_SPECIALIST_SYSTEM_PROMPT[len(_SPECIALIST_COMMON_SYSTEM_PROMPT):])
             if is_lead:
                 prompt = LEAD_RESEARCH_SYSTEM_PROMPT
                 if request_value.get("lead_assistance"):

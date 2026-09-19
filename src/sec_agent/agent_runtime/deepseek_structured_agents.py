@@ -987,7 +987,7 @@ def _project_request(
         )}
         projected.update({key: request[key] for key in ('scope_policy', 'execution_policy',
             'continuation_policy', 'allowed_planning_tools', 'role_method', 'require_execution_plan',
-            'source_read_enabled', 'planning_source_policy') if key in request})
+            'source_read_enabled', 'planning_source_policy', 'orientation_only', 'orientation_context') if key in request})
         return projected
     if role == "planner":
         catalog = request.get("branch_catalog")
@@ -1422,7 +1422,8 @@ class DeepSeekStructuredAgentAdapter:
             from .lead_research_graph import lead_tool_models, LEAD_RESEARCH_SYSTEM_PROMPT
             native_tools = lead_tool_models(require_execution_plan=request_value.get("require_execution_plan", False),
                                            source_read_enabled=request_value.get("source_read_enabled", False),
-                                           assistance=request_value.get("lead_assistance", False))
+                                           assistance=request_value.get("lead_assistance", False),
+                                           orientation_only=request_value.get("orientation_only", False))
             if semantic_input.get("allowed_planning_tools") is not None:
                 native_tools = {name: model for name, model in native_tools.items()
                                 if name in semantic_input["allowed_planning_tools"]}
@@ -1441,6 +1442,9 @@ class DeepSeekStructuredAgentAdapter:
                 prompt = professional_system_prompt(_NATIVE_SPECIALIST_SYSTEM_PROMPT[len(_SPECIALIST_COMMON_SYSTEM_PROMPT):])
             if is_lead:
                 prompt = LEAD_RESEARCH_SYSTEM_PROMPT
+                if request_value.get('orientation_only'):
+                    from .research_orientation import ORIENTATION_SYSTEM_PROMPT
+                    prompt = ORIENTATION_SYSTEM_PROMPT
                 if request_value.get("lead_assistance"):
                     prompt = ("You are the Research Lead helping an existing expert that has stopped making observable progress. "
                         "Read the original assignment, current working state and actual source navigation; use scoped source tools when needed. "

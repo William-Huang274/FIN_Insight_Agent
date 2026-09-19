@@ -7,6 +7,7 @@ from importlib.resources import files
 
 
 METHODS = {
+    "research_orientation": ("总题初步研究与首批专题", "按实际资料形成初步判断和证据触发的派工依据，在专题执行前停止。"),
     "research_loop": ("研究问题与动态回环", "从总题生成研究义务，依据新观察展开或收口。"),
     "semiconductor_systems": ("半导体与算力系统竞争", "同任务规格、软件生态、采购采用与财务兑现。"),
     "model_compute_demand": ("模型效率与算力需求", "同质量任务、训练推理边界、效率与使用量情景。"),

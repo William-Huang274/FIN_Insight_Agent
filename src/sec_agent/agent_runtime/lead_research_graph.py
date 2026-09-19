@@ -107,7 +107,11 @@ _PLANNED_LEAD_TOOLS = {
 }
 
 
-def lead_tool_models(*, require_execution_plan=False, source_read_enabled=False, assistance=False):
+def lead_tool_models(*, require_execution_plan=False, source_read_enabled=False, assistance=False, orientation_only=False):
+    if orientation_only:
+        from .research_orientation import SubmitResearchOrientationAction, OrientationLibraryReadAction
+        return {"SubmitResearchOrientationAction": SubmitResearchOrientationAction,
+                **({"RequestSourceAction": OrientationLibraryReadAction} if source_read_enabled else {})}
     from .research_assistance import ProvideResearchGuidanceAction
     models = dict(_PLANNED_LEAD_TOOLS if require_execution_plan else LEAD_RESEARCH_TOOLS)
     if assistance:
@@ -208,6 +212,7 @@ class LeadResearchState(TypedDict, total=False):
     stop_reason: str | None
     active_task_ids: list[str]
     planning_observations: list[dict[str, Any]]
+    research_orientation: dict[str, Any] | None
     # Only worker Send inputs carry these, never external authority.
     assignment: dict[str, Any]
     dependency_workpapers: dict[str, Any]
@@ -219,11 +224,16 @@ def build_lead_research_graph(
     model_turn: Callable, run_child: Callable, max_lead_turns: int = 8,
     max_tasks: int = 4, max_parallel_tasks: int = 2, turn_source: str = "scripted_qualification", unfinished_only: bool = False,
     role_method=None, require_all_branches=True, public_progress=None, require_execution_plan=False,
-    recovery_tasks=(), source_reader=None, hierarchical=False,
+    recovery_tasks=(), source_reader=None, hierarchical=False, orientation_only=False, orientation_context=None,
 ) -> StateGraph:
     allowed = set(allowed_branch_ids)
     planning_tools = lead_tool_models(require_execution_plan=require_execution_plan,
-                                     source_read_enabled=source_reader is not None)
+                                     source_read_enabled=source_reader is not None, orientation_only=orientation_only)
+    if orientation_only and (source_reader is None or seed_workpapers or recovery_tasks or unfinished_only):
+        raise LeadResearchError("orientation_requires_fresh_read_only_research_scope")
+    if orientation_only and expected_input is not None and not any(
+            'library' in row.get('source_spaces', []) for row in expected_input.l0_context.capability_summaries):
+        raise LeadResearchError('orientation_requires_authorized_library_source_space')
     if expected_input is not None and (not allowed or len(allowed) != len(allowed_branch_ids)
             or not allowed.issubset({row["branch_id"] for row in branch_catalog})
             or not 1 <= max_parallel_tasks <= max_tasks <= 24 or not 2 <= max_lead_turns <= 24
@@ -277,7 +287,7 @@ def build_lead_research_graph(
     def initialize(state):
         if expected_input is None:
             raise LeadResearchError("schema_introspection_graph_not_executable")
-        if any(state.get(key) for key in ("tasks", "task_results", "lead_turns", "lead_handoff", "assignment", "dependency_workpapers")):
+        if any(state.get(key) for key in ("tasks", "task_results", "lead_turns", "lead_handoff", "assignment", "dependency_workpapers", "research_orientation", "planning_observations")):
             raise LeadResearchError("lead_managed_state_not_public_input")
         body = {k: v for k, v in state.items() if k in SpecialistAgenticInput.model_fields}
         parsed = SpecialistAgenticInput.model_validate_json(json.dumps(body))
@@ -286,7 +296,7 @@ def build_lead_research_graph(
         return {"tasks": resumed, "task_results": [], "lead_turns": [],
                 "tool_results": [ToolMessage(content="{}", tool_call_id="restored-parent-tasks").model_dump(mode="json")] if resumed else [],
                 "phase": "schedule_ready_tasks" if resumed else "lead_observing", "lead_handoff": None, "stop_reason": None,
-                "pending_batch": None, "active_task_ids": [], "planning_observations": []}
+                "pending_batch": None, "active_task_ids": [], "planning_observations": [], "research_orientation": None}
 
     def decide(state):
         if len(state["lead_turns"]) >= max_lead_turns:
@@ -328,6 +338,16 @@ def build_lead_research_graph(
                 "and final text verification. Domain experts can delegate bounded subquestions with separate "
                 "contexts, not whole-task clones. Do not promise skipped Lead judgment for integrated. Limit "
                 "scope and verbosity to the actual question; delegate meaningful work, not roles for their own sake.")
+        if orientation_only:
+            request.update(orientation_only=True, orientation_context=orientation_context or {},
+                role_method=role_method or get_research_method('research_orientation'),
+                branch_catalog=[], required_branch_ids=[], workpapers=[], tasks=[], require_execution_plan=False,
+                scope_policy="Keep the complete question; inspect material links and explicitly record unexamined scope. Source dimensions are not mandatory specialist roles.",
+                execution_policy="Orientation only. Save findings and proposed topics; no child dispatch or final-report handoff.",
+                continuation_policy="Stop after submitting orientation. Proposed tasks are not executed.")
+            request['capabilities'] = [{**row, 'source_spaces': ['library'],
+                'actions': ['catalog', 'search', 'read', 'related', 'observations']}
+                for row in request['capabilities'] if 'library' in row.get('source_spaces', [])]
         request["context_digest"] = canonical_sha256(request)
         response = model_turn(request)
         batch = SpecialistNativeToolBatch.model_validate_json(json.dumps(response["action"]))
@@ -380,10 +400,22 @@ def build_lead_research_graph(
                         raise ValueError("lead_planning_source_scope_not_authorized_use_disclosed_text_sources")
                     result = dict(source_reader(action.selection))
                     observation = {"selection": action.selection.model_dump(mode="json"), "result": result}
+                    if orientation_only:
+                        observation['read_ref'] = 'O' + str(len(working.get('planning_observations', state.get('planning_observations', []))) + 1)
                     working["planning_observations"] = [*working.get("planning_observations", state.get("planning_observations", [])), observation]
                     value = {**observation, "research_as_of": expected_input.task.research_as_of,
                              "planning_observation_not_verified_financial_conclusion": True}
                     return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
+                if orientation_only:
+                    from .research_orientation import bind_orientation
+                    orientation = bind_orientation(action, state.get('planning_observations', []))
+                    working.update(research_orientation=orientation, phase='research_orientation_submitted', stop_reason=None)
+                    if public_progress:
+                        public_progress({'kind': 'stage', 'actor': 'lead', 'event': 'progress',
+                                         'objective': action.overview, 'disposition': action.disposition})
+                    return ToolMessage(content=json.dumps({'orientation_saved': True,
+                        'disposition': action.disposition, 'delegation_executed': False}, ensure_ascii=False),
+                        tool_call_id=call.id, name=call.name)
                 if require_execution_plan and isinstance(action, (DelegateResearchTasksAction, SubmitResearchHandoffAction)) and action.execution_plan is None:
                     raise ValueError("execution_plan_required_with_scope_omission_and_escalation_reasons")
                 if isinstance(action, DelegateResearchTasksAction):
@@ -492,7 +524,7 @@ def build_lead_research_graph(
 
     def dispatch(state):
         if state["phase"] != "schedule_ready_tasks":
-            return END if state["phase"] in {"research_ready_for_review", "research_needs_attention"} else "lead"
+            return END if state["phase"] in {"research_ready_for_review", "research_needs_attention", "research_orientation_submitted"} else "lead"
         done = completed(state)
         return [Send("specialist", {"assignment": task,
                 "dependency_workpapers": {key: done[key] for key in task["dependency_ids"]}}) for task in ready(state)]

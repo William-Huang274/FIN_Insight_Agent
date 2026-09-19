@@ -1039,6 +1039,8 @@ def _open_specialist_composition(
     role_method=None,
     subtask_runner=None,
     working_state_enabled=False,
+    authoring_enabled=False,
+    authoring_domain='finance',
     lead_assistance=None,
     required_source_checks=(),
 ) -> Iterator[_OpenedSpecialistComposition]:
@@ -1117,6 +1119,7 @@ def _open_specialist_composition(
             dependencies = SpecialistAgenticDependencies(
                 subtask_runner=subtask_runner,
                 working_state_enabled=working_state_enabled,
+                authoring_enabled=authoring_enabled, authoring_domain=authoring_domain,
                 lead_assistance=lead_assistance,
                 model_turn=model_turn,
                 allow_workpaper_field_edits=True,
@@ -1228,6 +1231,8 @@ def open_specialist_receipted_composition(
     role_method=None,
     subtask_runner=None,
     working_state_enabled=False,
+    authoring_enabled=False,
+    authoring_domain='finance',
     lead_assistance=None,
     required_source_checks=(),
 ) -> Iterator[SpecialistReceiptedComposition]:
@@ -1261,6 +1266,7 @@ def open_specialist_receipted_composition(
         role_method=role_method,
         subtask_runner=subtask_runner,
         working_state_enabled=working_state_enabled,
+        authoring_enabled=authoring_enabled, authoring_domain=authoring_domain,
         lead_assistance=lead_assistance,
         required_source_checks=required_source_checks,
     ) as opened:

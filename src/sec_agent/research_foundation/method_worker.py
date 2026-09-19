@@ -12,6 +12,7 @@ from .method_execution import Contract, MethodWorkResult
 from .source_bound_calculator import SourceBoundCalculation, calculate_from_sources
 from .method_submission import invoke_submission, SubmissionRejected
 from sec_agent.agent_runtime.evidence_resolution import parsing_record
+from sec_agent.agent_runtime.authoring_context import AuthoringBrief, bind_authoring, stage_methods, validate_authoring
 
 
 class WorkerAction(Contract):
@@ -47,6 +48,8 @@ class WorkerState(TypedDict, total=False):
     observations: Annotated[list[dict], operator.add]
     submission_failure: dict
     runtime_parsing: Annotated[list[dict], operator.add]
+    authoring_context: dict
+    authoring_blocked: dict
 
 
 NUMERIC_GUIDANCE = (' 新增数值运算（包括解释段中的加减、比例和代入数值的界限）应执行计算并绑定回执；'
@@ -79,7 +82,10 @@ def normalize_worker_receipts(action, observations):
 
 
 def compile_method_worker(*, call, actor, payload, record, max_tool_rounds=2,
-                          completion_tool_rounds=0, runtime_submissions=False):
+                          completion_tool_rounds=0, runtime_submissions=False, authoring_stages=False,
+                          entry_phase='research'):
+    if entry_phase not in {'research','prepare_workpaper'} or (entry_phase!='research' and not authoring_stages):
+        raise ValueError('invalid_worker_entry_phase')
     if max_tool_rounds<0 or completion_tool_rounds not in (0,1):
         raise ValueError('invalid_worker_calculation_limits')
     total_rounds=max_tool_rounds+completion_tool_rounds
@@ -103,6 +109,9 @@ def compile_method_worker(*, call, actor, payload, record, max_tool_rounds=2,
             '工具轮次耗尽后finish并如实保留未决，不得编造计算结果；运算通过不证明金融解释正确。')+NUMERIC_GUIDANCE
         if completion_tool_rounds:
             task['instructions']+=' 预留补算轮用于成稿自查新发现的必要计算；它已计入总上限，不重置预算，不用于反复试答案。'
+        if authoring_stages:
+            task['authoring_phase']='research'
+            task['instructions']+=' 此阶段提交经过专业自查的研究底稿；随后由你整理公开判断，再进入底稿成文阶段。不得把问题留给上游替你解决。'
         if runtime_submissions:
             try:
                 action=await invoke_submission(call,actor,task,WorkerAction,record)
@@ -135,10 +144,54 @@ def compile_method_worker(*, call, actor, payload, record, max_tool_rounds=2,
             record('worker_calculation',observation);observations.append(observation)
         return {'observations':observations,'tool_rounds':state.get('tool_rounds',0)+1}
 
+    def writing_basis(state):
+        return {'research_result':deepcopy(state['action']['result']),
+                'originals':deepcopy(payload['read_results']),
+                'calculations':deepcopy(state.get('observations',[])),
+                'assignment':deepcopy(payload.get('obligation')),
+                'return_issues':deepcopy(payload.get('return_issues',[]))}
+
+    async def prepare(state):
+        if state.get('action',{}).get('action')!='finish':
+            raise ValueError('authoring_resume_requires_saved_research_result')
+        basis=writing_basis(state)
+        task={'role':'survey_specialist_lead','authoring_phase':'prepare_workpaper',
+              'instructions':'你仍是本专题负责人。整理当前专业研究状态、判断取舍、证据条件和未决项，不重做研究，不承担商业综合。ready判断的是能否交付本次有界专业底稿，不是所有信息是否齐全。正常覆盖限制、范围外未测量结果、精度不足可随有限判断交付；只有尚未解决的问题使核心受托结论无法负责任地表达时才ready=false，并说明影响哪个核心结论。不能把普通边界自动升级成全稿阻塞，也不能隐藏真正阻塞。',
+              'stage_methods':stage_methods('prepare_workpaper',domain='survey_analysis'),
+              'basis':basis}
+        try:
+            brief=await invoke_submission(call,actor,task,AuthoringBrief,record)
+        except SubmissionRejected as exc:
+            return {'submission_failure':exc.receipt}
+        packet=bind_authoring(brief.model_dump(mode='json'),owner=actor,stage='workpaper',basis=basis)
+        record('authoring_prepared',packet)
+        if not brief.ready:
+            return {'authoring_context':packet,'authoring_blocked':{'reason':'author_retains_material_research','brief':brief.model_dump(mode='json')}}
+        return {'authoring_context':packet}
+
+    async def write(state):
+        validate_authoring(state['authoring_context'],owner=actor,basis=writing_basis(state))
+        # Fresh payload: no Lead instructions, conversation transcript or research dispatch template.
+        task={'role':'survey_specialist_lead','authoring_phase':'workpaper',
+              'instructions':'依据你已整理的authoring_context完成可读且可交接的专题底稿，保留来源、计算身份、适用条件和关联步骤。保持原研究含义；新实质问题须如实保留未决，不得编造新计算或假装已解决。提交完整MethodWorkResult。',
+              'stage_methods':stage_methods('workpaper',domain='survey_analysis'),
+              'authoring_context':deepcopy(state['authoring_context'])}
+        try:
+            paper=await invoke_submission(call,actor,task,MethodWorkResult,record)
+        except SubmissionRejected as exc:
+            return {'submission_failure':exc.receipt}
+        action,records=normalize_worker_receipts(WorkerAction(action='finish',result=paper),state.get('observations',[]))
+        for row in records:record('worker_runtime_compatibility_parse',row)
+        record('authoring_completed',{'owner':actor,'basis_digest':state['authoring_context']['basis_digest'],'result':action.result.model_dump(mode='json')})
+        return {'action':action.model_dump(mode='json'),'runtime_parsing':records}
+
     graph=StateGraph(WorkerState)
     graph.add_node('analyst',analyst);graph.add_node('calculate',calculate)
-    graph.add_edge(START,'analyst')
+    graph.add_node('prepare_workpaper',prepare);graph.add_node('write_workpaper',write)
+    graph.add_edge(START,'prepare_workpaper' if entry_phase=='prepare_workpaper' else 'analyst')
     graph.add_conditional_edges('analyst',lambda s:END if s.get('submission_failure') else
-        'calculate' if s['action']['action']=='calculate' else END,['calculate',END])
+        'calculate' if s['action']['action']=='calculate' else 'prepare_workpaper' if authoring_stages else END,['calculate','prepare_workpaper',END])
     graph.add_edge('calculate','analyst')
+    graph.add_conditional_edges('prepare_workpaper',lambda s:END if s.get('submission_failure') or s.get('authoring_blocked') else 'write_workpaper',['write_workpaper',END])
+    graph.add_edge('write_workpaper',END)
     return graph.compile()

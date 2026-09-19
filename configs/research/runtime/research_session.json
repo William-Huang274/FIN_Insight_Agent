@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "authoring": {"version": 1, "enabled": true, "context_version": "authoring_context.v1"},
   "model_config": "configs/research/model_routing.json",
   "max_tasks": 12,
   "max_parallel_tasks": 2,

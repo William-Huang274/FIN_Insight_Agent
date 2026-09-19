@@ -14,15 +14,17 @@ import operator
 from typing import Annotated, Any
 from typing_extensions import TypedDict
 
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage, RemoveMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.config import get_stream_writer
 from langgraph.graph import END, START, StateGraph
+from langgraph.graph.message import REMOVE_ALL_MESSAGES
 from langgraph.types import Command, Send
 
 from .report_synthesis_agent import ReportReview, report_model_view, review_responsibility_errors, paper_revision_input
 from .research_execution_plan import ResearchExecutionPlan
 from .research_graph_contracts import canonical_sha256
+from .authoring_context import bind_authoring, validate_authoring
 
 
 def research_decision_context(artifacts, current, state, *, question, research_review_context):
@@ -76,6 +78,7 @@ def research_decision_context(artifacts, current, state, *, question, research_r
 
 
 class ResearchConvergenceState(TypedDict, total=False):
+    authoring_context: dict[str, Any]
     workpaper_confirmation: dict[str, Any]
     confirmation_history: Annotated[list[dict[str, Any]], operator.add]
     unchanged_corrections: Annotated[list[str], operator.add]
@@ -127,7 +130,7 @@ def route_material_findings(review, artifacts, *, stage, round_index):
 def build_research_convergence_graph(*, artifacts, question, feedback, research_review_context,
                                      make_agent, max_parallel_authors=2, existing_state=None, human_feedback=None,
                                      execution_plan=None, hierarchical=False, max_correction_rounds=1,
-                                     run_author=None, review_revisions=None):
+                                     run_author=None, review_revisions=None, authoring_stages=False):
     """A current-task graph: authors -> Lead -> research review -> report review.
 
     make_agent reuses native create_agent and current read-only MCP tools. It is
@@ -146,6 +149,19 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     if depth == "focused" and len(artifacts.catalog()["papers"]) != 1:
         raise ValueError("focused_plan_requires_one_self_contained_workpaper")
 
+    writing_entry = 'prepare_writing' if authoring_stages else 'writer'
+
+    def writing_basis(state, current):
+        return {'question': question, 'research_as_of': current.research_as_of,
+            'papers': {p['paper_id']: canonical_sha256(current.read_paper(p['paper_id'])) for p in current.catalog()['papers']},
+            'synthesis': deepcopy(state.get('synthesis', {})),
+            'synthesis_review': deepcopy(state.get('synthesis_review', {})),
+            'report_review': deepcopy(state.get('report_review', {})),
+            'lead_decision': deepcopy(state.get('lead_decision', {})),
+            'pending_feedback': deepcopy(state.get('pending_feedback', {})),
+            'independent_research_review': deepcopy(research_review_context),
+            'confirmation': deepcopy(state.get('workpaper_confirmation', {}))}
+
     def event(actor, event, **details):
         get_stream_writer()({"kind": "stage", "actor": actor, "event": event,
             "recorded_at": datetime.now(timezone.utc).isoformat(), **details})
@@ -162,7 +178,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         if not existing_state:
             return "prepare_authors" if feedback or depth != "focused" else "prepare_focused_report"
         review = state["report_review"]
-        return "route_review" if review.get("unresolved_data_requests") or any(f["severity"] == "material" for f in review["findings"]) else "writer"
+        return "route_review" if review.get("unresolved_data_requests") or any(f["severity"] == "material" for f in review["findings"]) else writing_entry
 
     def ready_authors(state):
         return [pid for pid in sorted(state["pending_feedback"])
@@ -180,7 +196,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             return "finish"
         ids = ready_authors(state)
         return [Send("responsible_author", {**state, "paper_id": pid}) for pid in ids] if ids else (
-            "confirm_workpapers" if review_revisions else "lead_synthesis" if hierarchical or depth == "extended" else "prepare_focused_report" if depth == "focused" else "writer")
+            "confirm_workpapers" if review_revisions else "lead_synthesis" if hierarchical or depth == "extended" else "prepare_focused_report" if depth == "focused" else writing_entry)
 
     def prepare_focused_report(state):
         from .report_synthesis_agent import report_citations
@@ -241,9 +257,16 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                     body["previous_synthesis"] = report_model_view(state["synthesis"])
                 if round_index:
                     body["revision_request"] = deepcopy(state[state["active_review"]])
+            elif role == 'prepare':
+                body['writing_basis'] = writing_basis(state, current)
+                body['instruction'] = 'Prepare the effective research state for your own final writing; retain reviewed conditions and unresolved issues.'
             elif role == "writer":
-                body["research_synthesis"] = report_model_view(state["synthesis"]) if state.get("synthesis") else None
-                body["research_review"] = deepcopy(state.get("synthesis_review", research_review_context))
+                if authoring_stages:
+                    validate_authoring(state['authoring_context'], owner='research_lead', basis=writing_basis(state, current))
+                    body['authoring_context'] = deepcopy(state['authoring_context'])
+                if not authoring_stages:
+                    body["research_synthesis"] = report_model_view(state["synthesis"]) if state.get("synthesis") else None
+                    body["research_review"] = deepcopy(state.get("synthesis_review", research_review_context))
                 if plan:
                     body["execution_plan"] = plan.model_dump(mode="json")
                     body["instruction"] = "Answer only the user's scope. Read relevant workpapers on demand and integrate them directly. Do not repeat unchanged source queries; re-query only for a concrete missing/contradictory field. Retain evidence, limitations and necessary checks. Charts are optional when they do not help this question."
@@ -275,7 +298,22 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         # without its required submission. Reopen only that completed child via
         # the documented Command API; retain its own messages and accepted peers.
         saved = await agent.aget_state(config)
-        if saved.values.get("messages") and not saved.next and not saved.values.get("output"):
+        same_authoring_basis = not authoring_stages or role not in {'prepare', 'writer'}
+        if authoring_stages and role in {'prepare', 'writer'}:
+            # Re-enter with this version's public state, not old research/writing turns.
+            # Previous checkpoint snapshots and provider audits remain available.
+            value['messages'] = [RemoveMessage(id=REMOVE_ALL_MESSAGES), *value['messages']]
+            basis_key = 'authoring_context' if role == 'writer' else 'writing_basis'
+            for message in reversed(saved.values.get('messages', [])):
+                if isinstance(message, HumanMessage) and isinstance(message.content, str):
+                    try:
+                        previous_input = json.loads(message.content)
+                    except (ValueError, TypeError):
+                        continue
+                    if isinstance(previous_input, dict) and basis_key in previous_input:
+                        same_authoring_basis = previous_input[basis_key] == body[basis_key]
+                        break
+        if same_authoring_basis and saved.values.get("messages") and not saved.next and not saved.values.get("output"):
             value = Command(goto="model", update={"messages": [HumanMessage(content=
                 "The previous attempt ended without an accepted structured submission. It did NOT complete this role. "
                 "Continue from your retained source reads, correct the rejected submission and call your submission tool. "
@@ -310,6 +348,10 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                 fields = ("thesis", "mechanism", "claims", "narrative_markdown", "counterevidence", "what_would_change", "open_gaps")
                 if all(before.get(k) == after.get(k) for k in fields):
                     updates["unchanged_corrections"] = [paper_id]
+        elif role == 'prepare':
+            updates['authoring_context'] = bind_authoring(output, owner='research_lead', stage='report', basis=writing_basis(state, current))
+            if not output['ready']:
+                updates['stop_reason'] = 'lead_preparation_retains_material_research'
         else:
             target = {"lead_decision": "lead_decision", "synthesis": "synthesis", "research_verifier": "synthesis_review", "writer": "report", "report_verifier": "report_review"}[role]
             updates[target] = output
@@ -404,13 +446,13 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             return {"route": "finish", "stop_reason": "unresolved_data_or_author_response",
                     "pending_feedback": routed["feedback"]}
         if not needs_change:
-            return {"route": "writer" if stage == "synthesis_review" else "finish", "stop_reason": None}
+            return {"route": writing_entry if stage == "synthesis_review" else "finish", "stop_reason": None}
         if state["correction_round"] >= max_correction_rounds:
             return {"route": "finish", "stop_reason": "material_findings_remain_after_targeted_correction",
                     "pending_feedback": routed["feedback"]}
         # Expression in a Lead brief belongs to the Lead; expression in a report
         # belongs to Writer. Research corrections always revisit the Lead.
-        route = ("lead_decision" if hierarchical and routed["feedback"] else "prepare_authors") if routed["feedback"] else "lead_synthesis" if stage == "synthesis_review" else "writer"
+        route = ("lead_decision" if hierarchical and routed["feedback"] else "prepare_authors") if routed["feedback"] else "lead_synthesis" if stage == "synthesis_review" else writing_entry
         event("responsibility_router", "handoff", status=route, correction_round=state["correction_round"] + 1,
               responsible_paper_ids=sorted(routed["feedback"]))
         return {"route": route, "pending_feedback": routed["feedback"], "correction_round": state["correction_round"] + 1}
@@ -434,6 +476,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     graph.add_edge("decision_stop", "finish")
     graph.add_edge("apply_lead_repairs", "prepare_authors")
     graph.add_node("prepare_authors", prepare_authors)
+    graph.add_node('prepare_writing', actor_node('prepare'))
+    graph.add_conditional_edges('prepare_writing', lambda s: 'finish' if s.get('stop_reason') else 'writer', ['finish', 'writer'])
     graph.add_node("prepare_focused_report", prepare_focused_report)
     graph.add_node("responsible_author", author)
     for name, role in (("lead_synthesis", "synthesis"), ("research_verifier", "research_verifier"),
@@ -442,8 +486,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     graph.add_node("route_review", route_review)
     graph.add_node("finish", finish)
     graph.add_edge(START, "initialize")
-    graph.add_conditional_edges("initialize", initial_route, ["lead_decision", "prepare_authors", "prepare_focused_report", "route_review", "writer"])
-    graph.add_conditional_edges("prepare_authors", author_routes, ["responsible_author", "confirm_workpapers", "lead_synthesis", "writer", "prepare_focused_report", "finish"])
+    graph.add_conditional_edges("initialize", initial_route, ["lead_decision", "prepare_authors", "prepare_focused_report", "route_review", "writer", 'prepare_writing'])
+    graph.add_conditional_edges("prepare_authors", author_routes, ["responsible_author", "confirm_workpapers", "lead_synthesis", "writer", "prepare_writing", "prepare_focused_report", "finish"])
     graph.add_edge("prepare_focused_report", "report_verifier")
     graph.add_edge("responsible_author", "prepare_authors")
     graph.add_edge("lead_synthesis", "research_verifier")
@@ -451,6 +495,6 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     graph.add_edge("writer", "report_verifier")
     graph.add_edge("report_verifier", "route_review")
     graph.add_conditional_edges("route_review", lambda state: state["route"],
-        ["lead_decision", "writer", "prepare_authors", "lead_synthesis", "finish"])
+        ["lead_decision", "writer", "prepare_writing", "prepare_authors", "lead_synthesis", "finish"])
     graph.add_edge("finish", END)
     return graph

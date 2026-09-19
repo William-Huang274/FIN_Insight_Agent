@@ -75,6 +75,9 @@ from sec_agent.research_foundation.report_charts import (
 )
 
 
+from .authoring_context import AuthoringBrief
+
+
 class CaseReport(BaseModel):
     model_config = ConfigDict(extra="forbid")
     title: str = Field(min_length=5, max_length=250)
@@ -560,6 +563,14 @@ financial_semantics_verified=false means not verified, not a failed review; abse
 
 
 def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True, method_instructions="", review_scope="full_report", incomplete_reviewers=None):
+    lead_author = role == 'lead_writer'
+    if lead_author:
+        role = 'writer'  # Preserve existing submission/edits and wire formats.
+
+    @tool
+    def submit_authoring_brief(brief: AuthoringBrief, runtime: ToolRuntime) -> Command:
+        """Return the Lead's public writing preparation; runtime binds actual versions."""
+        return output_message(runtime, brief.model_dump(mode='json'))
     if review_scope not in {"full_report", "selected_claims"} or (review_scope == "selected_claims" and role != "verifier"):
         raise ValueError("selected_claim_review_requires_verifier")
     feedback = feedback or []
@@ -783,6 +794,15 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         specific = "Revise only your responsible workpaper in Chinese. Use claim_updates for changed/new claims, preserve unaffected claim IDs and their correct values/source bindings. Reconcile affected thesis/mechanism/narrative, counterevidence, what_would_change and open_gaps so old errors do not survive in another field; respond to each finding, including explicitly marked human feedback. Check that each component of a combined claim has supporting citations, adding the actual source or splitting the claim when needed. Preserve useful competing hypotheses with explicit conditions and observable tests; do not turn an unproved explanation into established causality or replace substantive analysis with generic caveats. Do not mechanically accept reviewer causal conclusions."
         submit = submit_paper_revision
         selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
+    elif role == "prepare":
+        specific = ("You remain the research Lead. Organize the current effective research state AFTER the supplied "
+            "review for your own final writing task. Preserve the substantive answer, argument sequence, public "
+            "adoption/rejection reasons, decisive conditions and unresolved issues. Read exact current papers and "
+            "sources where needed. This is not private reasoning or another research team's report. Do not invent "
+            "missing evidence or silently settle an unresolved review. Submit ready=false when material research "
+            "must resume; otherwise submit_authoring_brief. Runtime preserves source objects and issues separately.")
+        submit = submit_authoring_brief
+        selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     elif role == "synthesis":
         specific = "You are the research Lead returning AFTER independent review and responsible-author responses. Load the lead research method. Form the current source-bound judgment on the user's full question: weigh conflicting evidence, causal mechanisms, growth/profit/cash realization, strongest countercase and conditions that change the view. Use actual current workpapers and sources on demand. Explain how material review/author corrections change or preserve your judgment; do not just count findings, summarize all papers mechanically or become a report stylist. Reviewer opinions and previous synthesis are fallible. Reconcile the opening thesis, headings, body and monitoring conditions with corrected claims; describing a correction does not remove a contradictory old conclusion elsewhere. Distinguish a half-year average from quarter-specific guidance throughout. This is a concise research brief for independent verification and the Writer, not publication. Do not rerun unaffected research. Submit with submit_research_synthesis; inline actual current source/claim references. No predetermined bullish/bearish answer."
         submit = submit_research_synthesis
@@ -817,6 +837,14 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             specific += " Material findings must identify the earliest responsible owner. Use writer for expression/inference introduced by this answer; research requires existing responsible paper IDs, never invented papers."
     if require_responsibility and role == "verifier" and review_scope == "full_report":
         specific += "\nThe input review_target distinguishes lead_synthesis from final_report. For a synthesis, review the Lead's research judgment and actual revised papers before writing; for a report, check final expression against that research. Every material finding must declare the earliest responsibility and exact paper_ids for research repairs. Do not call an upstream research error writer-only. Conversely, when a current workpaper already contains the correct analysis but the synthesis omits or distorts it, assign writer: this routes a synthesis review back to the Lead, not to an unaffected specialist. Check the opening thesis, headings and monitoring conditions against the body, not only the paragraph describing the correction. data_tool requires an observed data/tool defect after relevant permitted reads/attempts, not an empty search or unsupported public gap. For a source problem the researcher can remedy by permitted supplementary reads, use research. Missing owner/invalid paper IDs are rejected for you to correct. State concise source-backed rationales; no private reasoning in output."
+    if lead_author:
+        specific = ("You are the SAME responsible research Lead now authoring the final report, using your explicitly "
+            "restored authoring_context, reviewed judgment and current evidence. Own the opening thesis, cross-topic "
+            "integration and conclusion. No earlier conversation is implicit memory. Answer the actual assigned "
+            "question, preserve the preparation decisions and material conditions, and use the current paper/source "
+            "tools when necessary. Do not add unsupported causal links or silently close unresolved research. "
+            "Submit the full report using submit_case_report, or exact local edits when revising. "
+            "Source identities, quantitative qualifiers and human/structured representations must remain consistent.")
     if role == "writer":
         specific += "\nUse the report charts field for 1-3 useful source-bound comparisons when data supports them (cash conversion, achieved vs implied execution, comparable margin/revenue). Points use actual source IDs, exact prose quote/literal where needed, or observed calculator IDs; the host supplies values and renders charts. Do not force incomparable data onto one axis. No arbitrary plotting code. Charts need source/period review just like text."
         specific += "\nWhen research_synthesis is supplied, it is the Lead's independently reviewed judgment and source-bound rationale. Organize it faithfully with the current papers; do not silently substitute a new unsupported research conclusion. Corrections may recheck original sources. Distinguish remaining findings from stylistic advice."

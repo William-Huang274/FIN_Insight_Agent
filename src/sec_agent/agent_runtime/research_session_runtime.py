@@ -73,6 +73,11 @@ def load_research_runtime_profile(root):
     required = {"lead", "specialist", "counter", "verifier", "repair", "synthesis", "research_verifier", "writer", "report_verifier", "quick_writer"}
     if set(profile["nodes"]) != required:
         raise ValueError("research_session_node_configuration_incomplete")
+    authoring = profile.get('authoring')
+    if authoring is not None and (set(authoring) != {'version', 'enabled', 'context_version'}
+            or type(authoring['enabled']) is not bool or authoring['version'] != 1
+            or authoring['context_version'] != 'authoring_context.v1'):
+        raise ValueError('research_session_authoring_configuration_invalid')
     editing = profile.get("context_editing")
     if editing is not None and (not {"trigger_tokens", "keep"}.issubset(editing)
             or set(editing) - {"trigger_tokens", "keep", "policy", "checkpoint_trigger_tokens", "checkpoint_reserve_tokens"}
@@ -295,6 +300,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                             research_task=task, dependency_workpapers=dependencies,
                             subtask_runner=None if helper else run_subtask,
                             working_state_enabled=True, lead_assistance=help_blocked_expert,
+                            authoring_enabled=profile.get('authoring', {}).get('enabled', False) and not helper,
+                            authoring_domain=studio.bindings['specialist'] if studio else 'finance',
                             research_question=(task["objective"] + "\n你负责这个独立子问题；提交前自检数字、引用及正文的一致性，报告限制，不再委派。") if helper else request["question"]) as child:
                         output = child.graph.invoke(child.graph_input.model_dump(mode="json"), {**child_config, "recursion_limit": 200})
                 except Exception as exc:
@@ -352,8 +359,16 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             branch = next((p["branch_id"] for p in artifacts.catalog()["papers"] if p["paper_id"] == paper_id), None)
             if branch not in execution.branch_ids:
                 raise ValueError("所需修订超出所选研究方向；请扩大范围后发起新运行")
-        profile_role = "synthesis" if role == "lead_decision" else role
+        profile_role = "synthesis" if role in {"lead_decision", "prepare"} else role
         method_instructions = studio.instructions(profile_role) if studio else ""
+        if profile.get('authoring', {}).get('enabled') and role in {'prepare', 'writer'} and not interactive:
+            from .authoring_context import stage_methods
+            from sec_agent.research_foundation.research_methods import get_research_method
+            def authoring_method_reader(method_id):
+                selected = studio.bindings.get(method_id, method_id) if studio else method_id
+                return studio.method(selected) if studio else get_research_method(selected)
+            method_instructions = json.dumps(stage_methods('prepare_report' if role == 'prepare' else 'report',
+                reader=authoring_method_reader), ensure_ascii=False)
         async def report_progress(message: str):
             emit({"kind": "stage", "actor": actor_override or ("author_" + paper_id if paper_id else role),
                 "event": "progress", "objective": message})
@@ -363,6 +378,15 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         tools = [*tools, progress_tool]
         method_instructions += "\nUse report_research_progress to briefly tell the researcher your approach before substantial work, and significant findings or a changed plan. Keep it concise and public; do not narrate hidden reasoning or call it after every tool."
         model_profile, basis, limits = model_values(profile_role)
+        if role == 'prepare':
+            basis = basis.model_copy(update={
+                'node_purpose': 'Research Lead prepares version-bound public judgment, argument plan, decisions, conditions and remaining issues before personally drafting.',
+                'required_outputs': ('AuthoringBrief for current reviewed workpapers; ready=false if material research remains.',),
+                'input_scale': 'Current public decision state, reviews and versioned workpapers read on demand; no child conversation histories.'})
+        elif role == 'writer' and profile.get('authoring', {}).get('enabled') and not interactive:
+            basis = basis.model_copy(update={
+                'node_purpose': 'The responsible Research Lead authors the report from its explicit preparation and current evidence, preserving cross-topic judgment.',
+                'input_scale': 'Version-bound authoring_context, current evidence navigation and scoped writing skill; no private research transcripts.'})
         if role == "lead_decision":
             basis = basis.model_copy(update={
                 "node_purpose": "Research Lead inspects current paper versions and independent findings before final judgment; assign targeted repairs, substantiate disagreements, discover missed issues or stop unresolved work.",
@@ -397,7 +421,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             return build_case_reviewer(role=role, model=model, tools=tools, artifacts=artifacts,
                 max_model_calls=limits["model_calls"], max_tool_calls=limits["tool_calls"], audit=audit,
                 method_instructions=method_instructions, confirmation=confirmation, require_inspection=confirmation is None)
-        output_role = ("verifier" if role in {"report_verifier", "research_verifier"} else "writer" if role in {"writer", "quick_writer"}
+        output_role = ("prepare" if role == 'prepare' else "lead_writer" if role == 'writer' and profile.get('authoring', {}).get('enabled') and not interactive else "verifier" if role in {"report_verifier", "research_verifier"} else "writer" if role in {"writer", "quick_writer"}
                        else "synthesis" if role == "synthesis" else "decision" if role == "lead_decision" else "repair")
         return build_case_output_agent(role=output_role, model=model, tools=tools, artifacts=artifacts,
             feedback=feedback, paper_id=paper_id, limits=limits, audit=audit, report_revision=interactive or revising,
@@ -472,7 +496,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                             research_question=state["question"], recovery_state=saved,
                             revision_feedback=findings, required_source_checks=saved.get("required_source_checks", []),
                             max_model_turns=limits["model_calls"], max_tool_actions=limits["tool_calls"],
-                            working_state_enabled=True, role_method_reader=studio.method if studio else None) as opened:
+                            working_state_enabled=True, role_method_reader=studio.method if studio else None,
+                            authoring_enabled=profile.get('authoring', {}).get('enabled', False),
+                            authoring_domain=studio.bindings['specialist'] if studio else 'finance') as opened:
                         return await opened.graph.ainvoke(opened.graph_input.model_dump(mode="json"), {**child_config, "recursion_limit": 200})
                 output = await resume()
                 emit({"kind": "task", "event": "outcome", "actor": saved["agent_id"], "task_id": assignment["task_id"],
@@ -498,7 +524,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 return native_agent(role, tools, current, feedback=feedback, paper_id=paper_id,
                     revising=role == "writer" and revising_report)
             graph = build_research_convergence_graph(artifacts=artifacts, question=state["question"], feedback=state["feedback"],
-                hierarchical=True, max_correction_rounds=2,
+                hierarchical=True, max_correction_rounds=2, authoring_stages=profile.get('authoring', {}).get('enabled', False),
                 run_author=run_author, review_revisions=review_revisions,
                 make_agent=make_agent, max_parallel_authors=profile["max_parallel_tasks"],
                 research_review_context={**{r: state.get("case_review", {})[r]["review"] for r in ("counter", "verifier") if r in state.get("case_review", {})},

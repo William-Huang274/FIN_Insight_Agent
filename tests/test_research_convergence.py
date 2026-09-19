@@ -78,7 +78,7 @@ def test_legacy_synthesis_without_version_basis_requires_reassessment():
     assert view['previous_synthesis_status'] == 'requires_reassessment_against_current_papers'
 
 
-async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None, local_writer_edits=False, depth=None, hierarchical=False, unchanged_repair=False, discovered_issue=False):
+async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None, local_writer_edits=False, depth=None, hierarchical=False, unchanged_repair=False, discovered_issue=False, authoring_stages=False, author_ready=True):
     artifacts = artifact_fixture()
     if depth == "focused":
         artifacts = CaseArtifacts([_worker_result(_task("first"), _new_worker_fixture())])
@@ -90,7 +90,12 @@ async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=Fals
             ref = "P01:" + current.read_paper("P01")["claims"][0]["claim_id"]
             prose = "Deterministic cited research plumbing fixture. This is a synthetic test of native data handoff, not a Dell financial conclusion. " * 3 + f"[{ref}]"
             output_role = "decision" if role == "lead_decision" else "verifier" if role.endswith("verifier") else role
-            if role == "lead_decision":
+            if role == 'prepare':
+                replies = [[call('submit_authoring_brief', {'brief': {
+                    'answer':'Scoped research answer', 'argument_plan':['Evidence then conclusion'],
+                    'decisions':['Retain scoped finding'], 'material_conditions':['Same period only'],
+                    'unresolved':[] if author_ready else ['Material evidence unavailable'], 'ready':author_ready}}, 'prepare')]]
+            elif role == "lead_decision":
                 dispositions = [{"paper_id": pid, "finding_id": f["finding_id"], "disposition": "repair",
                     "rationale": "Synthetic targeted correction based on the supplied original finding, not financial approval.",
                     "requested_change": "Recheck only the affected fixture paper and associated prose.",
@@ -127,12 +132,14 @@ async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=Fals
                            [call(submission, {arg: {"title": "Native research fixture", "narrative_markdown": prose}}, "submit")]]
             model = NativeFixtureModel(marker=f"{role}-private", replies=replies)
             contexts[(role, paper_id, correction_round)] = model
+            if role == 'writer' and authoring_stages:
+                output_role = 'lead_writer'
             return build_case_output_agent(role=output_role, model=model, tools=tools, artifacts=current,
                 feedback=feedback, paper_id=paper_id, limits={"model_calls": 6, "tool_calls": 12},
                 report_revision=role == "writer" and revising_report, require_responsibility=role.endswith("verifier"))
         saver = InMemorySaver()
         graph = build_research_convergence_graph(artifacts=artifacts, question="Synthetic question on growth quality and realization",
-            hierarchical=hierarchical,
+            hierarchical=hierarchical, authoring_stages=authoring_stages,
             feedback=initial_feedback or {}, research_review_context={"counter": independent_review(), "verifier": independent_review()},
             make_agent=make_agent, existing_state=existing_state, human_feedback="Explicit fixture revision request" if existing_state else None,
             execution_plan={"depth": depth, "rationale": "Synthetic scope-specific route qualification, not a model's financial judgment.",

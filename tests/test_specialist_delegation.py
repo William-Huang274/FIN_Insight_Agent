@@ -6,6 +6,18 @@ import pytest
 from sec_agent.research_foundation.specialist_delegation import (
     compile_specialist_delegation, factor_judgments, expand_judgments)
 from sec_agent.research_foundation.method_handoffs import judgment_directory
+from sec_agent.agent_runtime.authoring_context import AuthoringBrief
+
+
+def authored_reply(payload, schema):
+    if schema is AuthoringBrief:
+        return {'answer':'Survey observation', 'argument_plan':['Describe population and result'],
+            'decisions':['Keep descriptive meaning'], 'material_conditions':['Adults in January'],
+            'unresolved':[], 'ready':True}
+    if payload.get('authoring_phase') == 'workpaper':
+        assert 'instructions' not in payload['authoring_context']['basis']
+        assert [m['method_id'] for m in payload['stage_methods']['methods']] == ['writer','survey_analysis']
+        return payload['authoring_context']['basis']['research_result']
 
 
 READS=[{'status':'readable','source':{'url':'https://example.test/survey'},'items':[
@@ -34,6 +46,8 @@ def test_real_nodes_keep_roles_separate_through_inspection_and_return():
     async def call(actor,payload,schema):
         nonlocal review_calls,worker_calls
         seen.append((actor,deepcopy(payload)))
+        prepared=authored_reply(payload,schema)
+        if prepared is not None:return prepared
         if actor=='lead-plan':
             assert 'read_results' not in payload
             return {'question':'Check adoption evidence','purpose':'Inform research',
@@ -79,6 +93,8 @@ def test_real_nodes_keep_roles_separate_through_inspection_and_return():
     ('unknown_evidence','unknown_or_duplicate_evidence_request'),('return_limit','repair_limit')])
 def test_invalid_review_never_becomes_acceptance(fault,terminal):
     async def call(actor,payload,schema):
+        prepared=authored_reply(payload,schema)
+        if prepared is not None:return prepared
         if actor=='lead-plan':
             return {'question':'Check survey','purpose':'Research','success_criteria':['Evidence']}
         if actor=='survey-specialist':return {'action':'finish','result':paper()}

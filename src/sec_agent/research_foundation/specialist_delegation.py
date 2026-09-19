@@ -133,7 +133,7 @@ class DelegationState(TypedDict, total=False):
 
 def compile_specialist_delegation(*, question, as_of, reads, call, record,
                                   checkpointer=None, max_inspections=1, max_repairs=1,
-                                  initial_worker_result=None, initial_assignment=None):
+                                  initial_worker_result=None, initial_assignment=None, authoring_stages=True):
     """One specialist task with bounded evidence inspection/return branches."""
     if max_inspections<0 or max_repairs<0:
         raise ValueError('negative_delegation_limit')
@@ -160,6 +160,8 @@ def compile_specialist_delegation(*, question, as_of, reads, call, record,
         return {'assignment':assignment.model_dump(mode='json')}
 
     def package(assignment,payload,result):
+        if result.get('authoring_blocked'):
+            return {'terminal':'specialist_authoring_not_ready','worker_result':result}
         if result.get('submission_failure'):
             return {'terminal':'specialist_format_failure','worker_result':result}
         paper=MethodWorkResult.model_validate(result['action']['result'])
@@ -183,7 +185,8 @@ def compile_specialist_delegation(*, question, as_of, reads, call, record,
         task_id=state['worker_result']['action']['result']['obligation_id'] if repair else 'survey-delegated'
         payload=specialist_context(assignment,task_id=task_id,as_of=as_of,reads=reads,repair=repair)
         result=await compile_method_worker(call=call,actor='survey-specialist',payload=payload,
-            record=record,runtime_submissions=True,max_tool_rounds=2,completion_tool_rounds=1).ainvoke({'observations':observations,'tool_rounds':0})
+            record=record,runtime_submissions=True,max_tool_rounds=2,completion_tool_rounds=1,
+            authoring_stages=authoring_stages).ainvoke({'observations':observations,'tool_rounds':0})
         return package(assignment,payload,result)
 
     async def review(state):

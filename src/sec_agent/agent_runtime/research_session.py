@@ -50,6 +50,7 @@ class ResearchSessionState(SessionState, total=False):
     research_stop_reason: str | None
     synthesis: dict[str, Any]
     synthesis_review: dict[str, Any]
+    authoring_context: dict[str, Any]
     convergence_history: list[dict[str, Any]]
 
 
@@ -116,7 +117,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
             raise ValueError("research_revision_terminal_unrecognized")
         if not result.get("report") or not result.get("report_review"):
             raise ValueError("research_revision_missing_report")
-        return {**{key: deepcopy(result[key]) for key in ("report", "report_review", "revisions", "synthesis", "synthesis_review") if key in result},
+        return {**{key: deepcopy(result[key]) for key in ("report", "report_review", "revisions", "synthesis", "synthesis_review", "authoring_context") if key in result},
             "convergence_history": [*state.get("convergence_history", []), *deepcopy(result.get("artifact_history", []))],
             "research_stop_reason": result.get("stop_reason"),
             "phase": "needs_revision" if result["phase"] == "case_report_needs_revision" else "ready_for_human_review",
@@ -263,7 +264,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
             "human_edits": state.get("human_edits", []),
             "feedback": state.get("author_feedback", {}), "case_review": state.get("case_review", {}),
             "research_handoff": state["research_handoff"]}, config)
-        retained = {key: deepcopy(result.get(key, {})) for key in ("synthesis", "synthesis_review")}
+        retained = {key: deepcopy(result.get(key, {})) for key in ("synthesis", "synthesis_review", "authoring_context")}
         retained.update(convergence_history=deepcopy(result.get("artifact_history", [])),
                         revisions=deepcopy(result.get("revisions", {})))
         if result.get("phase") == "research_convergence_needs_attention":

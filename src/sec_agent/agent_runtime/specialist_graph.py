@@ -29,6 +29,7 @@ from pydantic import (
 from .research_contracts import ProviderEvidenceIntent
 from .task_outcome import AuthorTaskNote, TaskCoverage
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
+from .authoring_context import PrepareWorkpaperAction, bind_authoring, validate_authoring, specialist_basis, stage_methods
 from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools
 from .source_check_scope import RequiredSourceCheck, SOURCE_CHECK_GUIDANCE, source_check_progress, source_check_errors
 from .workpaper_revision_state import revision_state, revision_progress, revision_submission_issues
@@ -514,6 +515,7 @@ SpecialistAction = Annotated[
     | RequestCalculationAction
     | RequestHumanReviewAction
     | DelegateSubtasksAction
+    | PrepareWorkpaperAction
     | UpdateResearchStateAction
     | ReadDelegatedWorkAction
     | SubmitWorkpaperAction
@@ -963,6 +965,7 @@ class SpecialistHumanReviewHandoff(_StrictModel):
 
 
 class SpecialistAgenticState(TypedDict, total=False):
+    authoring_context: dict[str, Any]
     research_working_state: dict[str, Any]
     runtime_progress: dict[str, Any]
     lead_assistance_history: list[dict[str, Any]]
@@ -1015,6 +1018,8 @@ class SpecialistAgenticDependencies:
     allow_workpaper_field_edits: bool = False
     subtask_runner: Callable | None = None
     working_state_enabled: bool = False
+    authoring_enabled: bool = False
+    authoring_domain: str = 'finance'
     lead_assistance: Callable | None = None
 
 
@@ -1092,6 +1097,9 @@ def _model_request(
     continuation_guidance: str | None = None,
     allow_delegation: bool = False,
     working_state_enabled: bool = False,
+    authoring_enabled: bool = False,
+    authoring_domain: str = 'finance',
+    method_reader=None,
 ) -> dict[str, Any]:
     l0 = _validate_model_json(
         SpecialistL0Context,
@@ -1171,6 +1179,33 @@ def _model_request(
             "runtime_progress": state.get("runtime_progress", {}),
             "lead_assistance": state.get("lead_assistance_history", []),
             "overall_assignment": state["task"]["objective"]}
+    if authoring_enabled and not collaboration:
+        from sec_agent.research_foundation.research_methods import get_research_method
+        drafting = bool(state.get('authoring_context'))
+        selected_methods = [row['role_method'] for row in body['l0_context']['skill_summaries']
+                            if isinstance(row.get('role_method'), dict) and row['role_method'].get('method_id')]
+        def authoring_method_reader(method_id):
+            # Preserve the run-bound direction instructions appended by Studio.
+            selected = next((row for row in reversed(selected_methods) if row['method_id'] == method_id), None)
+            return selected if selected is not None else (method_reader or get_research_method)(method_id)
+        body['l0_context'] = {**body['l0_context'], 'skill_summaries': [
+            {k: v for k, v in row.items() if k != 'role_method'} for row in body['l0_context']['skill_summaries']]}
+        allowed_actions.append('prepare_workpaper')
+        if not drafting:
+            allowed_actions.remove('submit_workpaper')
+        else:
+            allowed_actions[:] = [a for a in allowed_actions if a not in {'delegate_subtasks', 'read_delegated_work'}]
+        context = dict(body.get('task_context') or {})
+        # Replace irrelevant role instructions, retaining actual task/evidence state.
+        for key in ('role_method', 'research_method', 'delegation_guidance'):
+            context.pop(key, None)
+        context['authoring_context'] = state.get('authoring_context')
+        context['stage_methods'] = stage_methods('workpaper' if drafting else 'prepare_workpaper',
+            domain=authoring_domain, reader=authoring_method_reader)
+        context['authoring_instruction'] = ('Draft your own scoped workpaper from the restored public state. '
+            'New research/changed evidence requires preparing again before final submission.' if drafting else
+            'Complete the assigned research, then call PrepareWorkpaperAction with your public effective state before final submission. No final submission until prepared.')
+        body['task_context'] = context
     last = state.get("last_submission_attempt") or {}
     candidate = last.get("arguments")
     if "submit_workpaper" in allowed_actions and isinstance(candidate, dict) and candidate.get("action") == "submit_workpaper" and not last.get("accepted"):
@@ -1717,6 +1752,7 @@ def build_specialist_agentic_state_graph(
             return {"pending_action": None, "phase": "human_review_required", "review_trigger": "model_request",
                 "review_reason": "repeated_no_progress_after_lead_assistance"}
         request = _model_request(state=state, notebook=notebook,
+            authoring_enabled=dependencies.authoring_enabled, authoring_domain=dependencies.authoring_domain, method_reader=dependencies.method_reader,
             working_state_enabled=dependencies.working_state_enabled,
             allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
             allow_delegation=dependencies.subtask_runner is not None,
@@ -2183,11 +2219,13 @@ def build_specialist_agentic_state_graph(
             models.update({m.__name__: m for m in (DelegateSubtasksAction, ReadDelegatedWorkAction)})
         if dependencies.working_state_enabled:
             models["UpdateResearchStateAction"] = UpdateResearchStateAction
+        if dependencies.authoring_enabled:
+            models['PrepareWorkpaperAction'] = PrepareWorkpaperAction
         from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, execute_memory_tool
         if memory_enabled():
             models.update(WORKING_MEMORY_MODELS)
         terminal_mixed = len(batch.tool_calls) > 1 and any(
-            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction", "UpdateResearchStateAction"}
+            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction", "UpdateResearchStateAction", 'PrepareWorkpaperAction'}
             for call in batch.tool_calls)
         l0 = _validate_model_json(SpecialistL0Context, state["l0_context"], code="specialist_l0_context_invalid")
         assigned_routes = {row.get("minimum_route_obligation_id")
@@ -2295,6 +2333,7 @@ def build_specialist_agentic_state_graph(
                 return reject("specialist_model_turn_context_binding_invalid",
                     "Copy the current context_digest exactly; this call was not dispatched.")
             if action.action not in _model_request(state=working, notebook=before,
+                    authoring_enabled=dependencies.authoring_enabled, authoring_domain=dependencies.authoring_domain, method_reader=dependencies.method_reader,
                     allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
                     allow_delegation=dependencies.subtask_runner is not None,
                     working_state_enabled=dependencies.working_state_enabled)["allowed_actions"]:
@@ -2339,6 +2378,19 @@ def build_specialist_agentic_state_graph(
                 except (ValueError, KeyError) as exc:
                     return reject("specialist_workpaper_edit_invalid", str(exc), agent_error=True)
             working["pending_action"] = action.model_dump(mode="json")
+            if isinstance(action, PrepareWorkpaperAction):
+                if before.tool_action_count >= state['max_tool_actions']:
+                    return reject('authoring_preparation_tool_limit', 'No preparation accepted; preserve incomplete work.')
+                if not action.brief.ready:
+                    return reject('authoring_research_not_ready', 'Continue the scoped research or request explicit attention; do not claim finished.')
+                working['authoring_context'] = bind_authoring(action.brief, owner=state['agent_id'],
+                    stage='workpaper', basis=specialist_basis(working))
+                digest = _semantic_action_digest(action)
+                if digest not in before.dispatched_action_digests:
+                    working['notebook'] = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,
+                        dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode='json')
+                return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({
+                    'status': 'prepared', 'notice': 'Next request restores your public preparation in a writing context; budget and source scope unchanged.'}))
             if isinstance(action, UpdateResearchStateAction):
                 note = action.working_state.model_dump(mode="json")
                 refs = set(note["retain_source_ids"]) | {r for f in note["findings"] for r in f["source_ids"]}
@@ -2515,6 +2567,11 @@ def build_specialist_agentic_state_graph(
             errors = _submission_errors(action, notebook,
                 enforce_case_route_requirements=dependencies.enforce_case_route_requirements)
             errors += tuple(source_check_errors(state.get("required_source_checks", []), notebook.model_dump(mode="json"), action))
+            if dependencies.authoring_enabled and not state.get('collaboration_context'):
+                try:
+                    validate_authoring(state.get('authoring_context', {}), owner=state['agent_id'], basis=specialist_basis(state))
+                except ValueError:
+                    errors += ('authoring_owner_or_basis_changed_prepare_again',)
             findings = (state.get("task_context") or {}).get("revision_feedback", [])
             if findings:
                 expected = {f["finding_id"] for f in findings}
@@ -2698,6 +2755,15 @@ def build_specialist_agentic_state_graph(
     graph.add_node("execute_finance", execute_finance)
     graph.add_node("execute_method", lambda state: execute_method(state)[0])
     graph.add_node("execute_native_tools", execute_native_tools)
+    def execute_preparation(state, config):
+        # Structured-action callers use the same validation and state mutation as native tools.
+        batch = SpecialistNativeToolBatch(context_digest=state['pending_action']['context_digest'],
+            tool_calls=(SpecialistNativeToolCall(id='prepare-' + state['pending_action']['context_digest'][:16],
+                name='PrepareWorkpaperAction', args=state['pending_action']),))
+        return execute_native_tools({**state, 'pending_action':batch.model_dump(mode='json')}, config)
+    graph.add_node('execute_preparation', execute_preparation)
+    graph.add_conditional_edges('execute_preparation', route_after_tool,
+        {'decide':'model_decide','human_review':'human_review','end':END})
     graph.add_node("validate_submission", validate_submission)
     graph.add_node("human_review", human_review)
     graph.add_edge(START, "initialize")
@@ -2707,6 +2773,7 @@ def build_specialist_agentic_state_graph(
         route_model_action,
         {
             "native_tool_batch": "execute_native_tools",
+            "prepare_workpaper": "execute_preparation",
             "lead_assistance": "lead_assistance",
             "request_evidence": "execute_evidence",
             "request_source": "execute_evidence",

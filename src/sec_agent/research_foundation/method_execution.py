@@ -72,7 +72,8 @@ class StepResult(Contract):
     source_ids: list[str]
     calculation_refs: list[str] = Field(default_factory=list,
         description='Exact successful CALC IDs supporting this step, separate from original source_ids.')
-    execution_receipt_refs: list[str] = Field(default_factory=list)
+    execution_receipt_refs: list[str] = Field(default_factory=list,
+        description='Only supplied source-access/execution receipt IDs; CALC IDs belong in this step calculation_refs.')
 
 
 class ResearchFinding(Contract):
@@ -99,7 +100,8 @@ class TaskNote(Contract):
     changes: list[str]
     blockers: list[str]
     next_action: str = Field(min_length=1)
-    execution_receipt_refs: list[str] = Field(default_factory=list)
+    execution_receipt_refs: list[str] = Field(default_factory=list,
+        description='Only supplied source-access/execution receipt IDs. Not an inventory of tools: bind CALC IDs to relevant steps/findings.calculation_refs, not here.')
 
 
 class MethodWorkResult(Contract):

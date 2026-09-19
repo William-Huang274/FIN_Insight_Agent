@@ -14,10 +14,11 @@ from .method_execution import (Contract, ResearchObligation, MethodWorkResult,
     EvidencePointer, assess_result_contract, method_payload)
 from .method_handoffs import judgment_directory
 from .method_submission import invoke_submission, SubmissionRejected
-from .method_worker import compile_method_worker
+from .method_worker import compile_method_worker, NUMERIC_GUIDANCE
 
 
 LEAD_GUIDANCE = '''你是上游研究负责人。按总问题委派专业任务，审阅交付能否回答派工问题、是否违反常识、是否存在证据越界或可疑推断；不替下游重写专业底稿。
+返修应指出具体疑点并保留正确事实，但不得以“只改格式、不需改结论”免除下游的全稿专业自查；下游发现关联错误应自行修复。数字留痕问题与算术错误分别判断。
 问卷角色只负责问卷设计、统计口径、变化与关系判断，自行完成计算和一致性检查。把商业综合留在上游，不要求它证明调查没有测量的收入、留存或投资价值。
 交接中的判断、限定、支撑步骤和版本须一起阅读。机械合同通过、下游自报完成不是正确性保证。证据不足时收窄可用结论，不抹掉已成立的观察。
 contract_errors是当前候选的机械问题，不是金融判错；可以连同内容疑点一起返修，但不能在仍有合同问题时接受交付。来源计算回执和来源获取回执分别使用其已有字段，不创造工具结果。
@@ -182,11 +183,11 @@ def compile_specialist_delegation(*, question, as_of, reads, call, record,
         task_id=state['worker_result']['action']['result']['obligation_id'] if repair else 'survey-delegated'
         payload=specialist_context(assignment,task_id=task_id,as_of=as_of,reads=reads,repair=repair)
         result=await compile_method_worker(call=call,actor='survey-specialist',payload=payload,
-            record=record,runtime_submissions=True,max_tool_rounds=2).ainvoke({'observations':observations,'tool_rounds':0})
+            record=record,runtime_submissions=True,max_tool_rounds=2,completion_tool_rounds=1).ainvoke({'observations':observations,'tool_rounds':0})
         return package(assignment,payload,result)
 
     async def review(state):
-        payload={'role':'upstream_reviewer','instructions':LEAD_GUIDANCE,'question':question,
+        payload={'role':'upstream_reviewer','instructions':LEAD_GUIDANCE+NUMERIC_GUIDANCE,'question':question,
             'delivery':deepcopy(state['delivery']),'requested_evidence':deepcopy(state.get('inspected',[])),
             'evidence_access':{'original_passage_ids_in_this_request':[p['id'] for p in state.get('inspected',[])],
                 'author_basis_is_original_evidence':False,'source_catalog_is_original_evidence':False,

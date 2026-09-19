@@ -47,7 +47,7 @@ def test_real_nodes_keep_roles_separate_through_inspection_and_return():
             else:
                 assert payload['current_workpaper']['summary']=='Original'
                 assert payload['return_issues']==['Verify linked statements']
-                assert payload['remaining_calculation_rounds']==2
+                assert payload['remaining_calculation_rounds']==3
             return {'action':'finish','result':paper('Revised' if worker_calls==2 else 'Original')}
         review_calls+=1
         assert 'methods' not in payload and 'read_results' not in payload

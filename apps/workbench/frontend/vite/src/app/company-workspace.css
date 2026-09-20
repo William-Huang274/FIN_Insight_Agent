@@ -10,3 +10,12 @@
 .cw-data-navigation{position:sticky;top:0;max-height:calc(100vh - 115px);overflow:auto;align-self:start;background:var(--surface);border-radius:8px}.cw-data-navigation .cw-directory{position:static;max-height:none;overflow:visible}.cw-data-navigation .cw-account-directory{position:static}.cw-data-navigation nav{background:var(--surface)}@media(max-width:700px){.cw-data-navigation{position:static;max-height:360px}}
 
 .cw-issuer-tags{display:grid;gap:5px;margin-top:8px;font-size:10px;max-width:280px;color:var(--muted)}.cw-issuer-tags button{justify-self:start}.cw-disclosures article{border:1px solid var(--line);padding:18px;border-radius:8px;margin-bottom:16px}.cw-disclosures h3{font-size:14px;line-height:1.6}.cw-disclosures pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.9;font-family:inherit;max-height:420px;overflow:auto}.cw-disclosures button,.cw-derived li button{border:1px solid var(--line);background:var(--surface);color:var(--accent);padding:7px 10px;border-radius:5px;cursor:pointer}
+.cw-counterparty-report .cw-table {max-height:none;overflow:auto}
+.cw-counterparty-report th:first-child {min-width:170px}
+.cw-counterparty-report td {vertical-align:top;white-space:normal;min-width:110px;max-width:370px}
+.cw-counterparty-report td p {margin:0 0 8px}
+.cw-counterparty-report details {margin-top:8px;max-width:400px}
+.cw-counterparty-report summary {cursor:pointer;color:var(--cw-accent,#535cf0)}
+.cw-counterparty-report blockquote {margin:10px 0;padding:8px 12px;border-left:2px solid #c7ccec;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
+.cw-counterparty-report .cw-report-source {margin-top:16px}
+.cw-extraction-pending {padding:16px;background:rgba(100,110,140,.06);border-radius:6px}

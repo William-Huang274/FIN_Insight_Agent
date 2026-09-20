@@ -22,7 +22,7 @@ class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     source_space: Literal["local", "web", "uploads", "library"] = "local"
     operation: Literal["catalog", "outline", "search", "read", "inspect_image", "related", "observations", "company", "data"]
-    data_kind: Literal['financial', 'prices', 'positions', 'holders', 'filings', 'derived', 'disclosures'] = 'financial'
+    data_kind: Literal['financial', 'prices', 'positions', 'holders', 'filings', 'derived', 'disclosures'] = Field(default='financial',description='disclosures returns pre-extracted individual customer/supplier/beneficial-owner facts with period, denominator, qualifiers and evidence readback; query customers/suppliers/shareholders. Unprocessed sources return extraction_pending, not non-disclosure. Pagination is by fact, not report.')
     data_group: Literal['','operating','offering','compensation','macro','other'] = ''
     account_path: str = Field(default='',max_length=100,description='Copy a path from company.account_tree to filter a statement/account subtree; data_kind=financial only.')
     fiscal_year: int | None = Field(default=None,ge=1900,le=2200,description='Observation fiscal year from company.reporting_periods; not filing year.')

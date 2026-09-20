@@ -4,7 +4,7 @@ A concept may be disclosed in several statements/notes. This menu describes its
 economic subject; it does not recreate the issuer's presentation linkbase or sum
 its children. Unknown extensions remain visible and cannot enter calculations.
 """
-VERSION = 'financial_accounts.v1'
+VERSION = 'financial_accounts.v2'
 LABELS = {
     'balance':'资产负债表', 'balance/assets':'资产',
     'balance/assets/current':'流动资产', 'balance/assets/noncurrent':'非流动资产',
@@ -65,13 +65,24 @@ SUPPORTED = {'us-gaap','ifrs-full','DART-IFRS','issuer-reported'}
 
 
 def account_path(taxonomy, concept):
+    if taxonomy=='DART-IFRS':
+        raw,_,statement=concept.partition(':')
+        # DART preserves its statement code in the wire identity. Only the
+        # standard IFRS namespace may reuse an exact IFRS subject mapping.
+        if raw.startswith('ifrs-full_') and raw[10:] in CONCEPTS:
+            return CONCEPTS[raw[10:]]
+        return {'BS':'balance','IS':'income','CIS':'income','CF':'cashflow'}.get(statement,'unclassified')
+    if taxonomy.startswith('FinMind:'):
+        if concept in CONCEPTS:return CONCEPTS[concept]
+        return {'FinMind:TaiwanStockBalanceSheet':'balance','FinMind:TaiwanStockCashFlowsStatement':'cashflow','FinMind:TaiwanStockFinancialStatements':'income'}.get(taxonomy,'unclassified')
     if taxonomy=='dei' and concept=='EntityCommonStockSharesOutstanding':return 'balance/equity/capital'
     if concept=='LongTermDebtAndCapitalLeaseObligations':return 'unclassified'
     return CONCEPTS.get(concept,'unclassified') if taxonomy in SUPPORTED else 'unclassified'
 
 
 def annotate(row):
-    path=account_path(row['taxonomy'],row['concept'])
+    path=row.get('payload',{}).get('account_path') or account_path(row['taxonomy'],row['concept'])
+    if path not in LABELS:path='unclassified'
     row['account_path']=path
     row['account_labels']=[LABELS['/'.join(path.split('/')[:i])] for i in range(1,len(path.split('/'))+1)]
     row['account_mapping_version']=VERSION
@@ -80,8 +91,8 @@ def annotate(row):
 
 def tree(db, entity_id):
     totals={}
-    for taxonomy,concept,count in db.execute('SELECT taxonomy,concept,count(*) FROM financial_points WHERE entity_id=? GROUP BY taxonomy,concept',(entity_id,)):
-        path=account_path(taxonomy,concept)
+    for taxonomy,concept,override,count in db.execute("SELECT taxonomy,concept,json_extract(payload,'$.account_path'),count(*) FROM financial_points WHERE entity_id=? GROUP BY taxonomy,concept,3",(entity_id,)):
+        path=override if override in LABELS else account_path(taxonomy,concept)
         for i in range(1,len(path.split('/'))+1):
             parent='/'.join(path.split('/')[:i]);totals[parent]=totals.get(parent,0)+count
     return [{'path':path,'label':label,'count':totals[path]} for path,label in LABELS.items() if totals.get(path)]

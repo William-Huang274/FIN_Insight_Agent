@@ -22,9 +22,11 @@ class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     source_space: Literal["local", "web", "uploads", "library"] = "local"
     operation: Literal["catalog", "outline", "search", "read", "inspect_image", "related", "observations", "company", "data"]
-    data_kind: Literal['financial', 'prices', 'positions', 'holders', 'filings', 'derived'] = 'financial'
+    data_kind: Literal['financial', 'prices', 'positions', 'holders', 'filings', 'derived', 'disclosures'] = 'financial'
     data_group: Literal['','operating','offering','compensation','macro','other'] = ''
     account_path: str = Field(default='',max_length=100,description='Copy a path from company.account_tree to filter a statement/account subtree; data_kind=financial only.')
+    fiscal_year: int | None = Field(default=None,ge=1900,le=2200,description='Observation fiscal year from company.reporting_periods; not filing year.')
+    fiscal_period: str = Field(default='',pattern='^(|FY|Q1|Q2|Q3|Q4|H1|M9|instant|other|unknown)$')
     entity_id: str | None = Field(default=None, max_length=200)
     graph_depth: int = Field(default=1, ge=1, le=2)
     document_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
@@ -55,13 +57,15 @@ class SourceDocumentRequest(BaseModel):
         # serialization so archived action/notebook digests still validate.
         if "source_space" not in self.model_fields_set:
             body.pop("source_space", None)
-        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'data_kind','data_group','account_path'):
+        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'data_kind','data_group','account_path','fiscal_year','fiscal_period'):
             if key not in self.model_fields_set:
                 body.pop(key,None)
         return body
 
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
+        if (self.fiscal_year is not None or self.fiscal_period) and (self.operation!='data' or self.source_space!='library' or self.data_kind!='financial'):
+            raise ValueError('period_requires_library_financial_data')
         if self.account_path and (self.operation!='data' or self.source_space!='library' or self.data_kind!='financial'):
             raise ValueError('account_path_requires_library_financial_data')
         if self.data_group and (self.operation!='data' or self.source_space!='library' or self.data_kind!='financial'):

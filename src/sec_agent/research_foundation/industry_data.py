@@ -10,7 +10,7 @@ from pathlib import Path
 import sqlite3
 from .industry_taxonomy import profile, listing_profile, source_navigation, financial_group_sql, financial_identity, FINANCIAL_GROUPS, METRIC_NAMES
 from .material_presentation import material_preview
-from . import financial_accounts, derived_financials
+from . import financial_accounts, derived_financials, reporting_periods, disclosure_register
 
 
 SCHEMA = """
@@ -117,6 +117,8 @@ def company_detail(path, entity_id, *, as_of='9999-12-31'):
         result['sources']=list(unique.values())
         result['data_counts']['holders']=db.execute('SELECT count(*) FROM position_issuers WHERE entity_id=?',(entity_id,)).fetchone()[0]
         result['data_counts']['derived']=len(derived_financials.page(db,entity_id,limit=100,as_of=as_of)['items'])
+        result['data_counts']['disclosures']=disclosure_register.page(db,entity_id,limit=100,as_of=as_of)['total']
+        result['reporting_periods']=reporting_periods.menu(db,entity_id)
         result['account_tree']=financial_accounts.tree(db,entity_id) if result['profile']['type'] not in {'agency','macro_collection'} else []
         result['financial_groups']=[{'id':r[0],'label':FINANCIAL_GROUPS[r[0]],'count':r[1]} for r in db.execute(
             'SELECT '+financial_group_sql()+',count(*) FROM financial_points WHERE '+
@@ -148,6 +150,7 @@ def data_channels(detail):
         if counts['market_prices']:channels.append({'kind':'prices','group':'','label':'市场日行情','count':counts['market_prices']})
         if counts.get('derived'):channels.append({'kind':'derived','group':'','label':'衍生指标与估值','count':counts['derived']})
         if detail['positions_count'] and not manager:channels.append(positions)
+        if counts.get('disclosures'):channels.append({'kind':'disclosures','group':'','label':'主要股东、客户与供应商','count':counts['disclosures']})
         if counts.get('holders'):channels.append({'kind':'holders','group':'','label':'持有该证券的申报机构','count':counts['holders']})
         if counts['filing_catalog']:channels.append({'kind':'filings','group':'','label':'监管申报目录','count':counts['filing_catalog']})
     return channels
@@ -173,11 +176,15 @@ def position_relations(path, entity_id, as_of):
             'readback':{'source_space':'library','operation':'data','entity_id':r['manager_id'],'data_kind':'positions'}} for r in rows]
 
 
-def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30, as_of='9999-12-31', group='', account=''):
+def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30, as_of='9999-12-31', group='', account='', fiscal_year=None, fiscal_period=''):
     if offset < 0 or not 1 <= limit <= 100: raise ValueError('invalid_data_window')
     if group and (kind!='financial' or group not in FINANCIAL_GROUPS):
         raise ValueError('invalid_financial_group')
     if account and (kind!='financial' or account not in financial_accounts.LABELS):raise ValueError('invalid_account_path')
+    if (fiscal_year is not None or fiscal_period) and kind!='financial':raise ValueError('period_requires_financial')
+    if fiscal_period and fiscal_period not in reporting_periods.LABELS:raise ValueError('invalid_fiscal_period')
+    if kind=='disclosures':
+        with closing(connect(path)) as db:return disclosure_register.page(db,entity_id,query,offset,limit,as_of)
     if kind=='derived':
         with closing(connect(path)) as db:return derived_financials.page(db,entity_id,query,offset,limit,as_of)
     if kind=='holders':
@@ -212,9 +219,14 @@ def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30
         where += ' AND ('+financial_group_sql()+')=?'
         args += (group,)
     if account:
-        where+=' AND (financial_account_path(taxonomy,concept)=? OR financial_account_path(taxonomy,concept) LIKE ?)'
+        where+=" AND (coalesce(json_extract(payload,'$.account_path'),financial_account_path(taxonomy,concept))=? OR coalesce(json_extract(payload,'$.account_path'),financial_account_path(taxonomy,concept)) LIKE ?)"
         args+=(account,account+'/%')
     with closing(connect(path)) as db:
+        if kind=='financial' and (fiscal_year is not None or fiscal_period):
+            if reporting_periods.installed(db):
+                where+=" AND id IN (SELECT fact_id FROM financial_periods WHERE (? IS NULL OR fiscal_year=?) AND (?='' OR period=?))"
+                args+=(fiscal_year,fiscal_year,fiscal_period,fiscal_period)
+            else:where+=' AND 0'
         groups=[{'id':r[0],'label':FINANCIAL_GROUPS[r[0]],'count':r[1]} for r in db.execute(
             'SELECT '+financial_group_sql()+' AS g,count(*) FROM financial_points WHERE '+base_where+' GROUP BY g',base_args)] if kind=='financial' else []
         total=db.execute('SELECT count(*) FROM '+table+' WHERE '+where,args).fetchone()[0]
@@ -228,9 +240,13 @@ def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30
         elif kind == 'positions': ordering += ', issuer_name, id'
         elif kind == 'filings': ordering += ', accession'
         rows=[dict(r) for r in db.execute('SELECT * FROM '+table+' WHERE '+where+f' ORDER BY {ordering} LIMIT ? OFFSET ?',(*args,limit,offset))]
+        if kind=='positions':disclosure_register.annotate_positions(db,rows)
         if kind=='financial':
             metadata={sid:json.loads(db.execute('SELECT metadata FROM sources WHERE id=?',(sid,)).fetchone()[0]) for sid in {r['source_id'] for r in rows}}
             for row in rows:
+                if reporting_periods.installed(db):
+                    period=db.execute('SELECT * FROM financial_periods WHERE fact_id=?',(row['id'],)).fetchone()
+                    row['reporting_period']=dict(period) if period else None
                 row['frequency']=metadata[row['source_id']].get('frequency')
                 row['revision_basis']='current_revised' if metadata[row['source_id']].get('current_revised') else 'source_disclosure'
     for row in rows:

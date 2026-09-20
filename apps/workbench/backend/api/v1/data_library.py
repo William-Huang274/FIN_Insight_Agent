@@ -37,10 +37,10 @@ def build_data_library_router(attachments_root, fact_mart=None, research_library
         except KeyError:raise HTTPException(404,'未找到这家公司') from None
 
     @router.get('/companies/{entity_id}/data')
-    def company_data(request:Request,entity_id:str,kind:str=Query('financial',pattern='^(financial|prices|positions|holders|filings|derived)$'),query:str=Query('',max_length=200),offset:int=Query(0,ge=0),limit:int=Query(30,ge=1,le=100),group:str=Query('',pattern='^(|operating|offering|compensation|macro|other)$'),account:str=Query('',max_length=100)):
+    def company_data(request:Request,entity_id:str,kind:str=Query('financial',pattern='^(financial|prices|positions|holders|filings|derived|disclosures)$'),query:str=Query('',max_length=200),offset:int=Query(0,ge=0),limit:int=Query(30,ge=1,le=100),group:str=Query('',pattern='^(|operating|offering|compensation|macro|other)$'),account:str=Query('',max_length=100),fiscal_year:int|None=Query(None,ge=1900,le=2200),fiscal_period:str=Query('',pattern='^(|FY|Q1|Q2|Q3|Q4|H1|M9|instant|other|unknown)$')):
         current_owner(request)
         from sec_agent.research_foundation.industry_data import data_page
-        try:return data_page(foundation(),entity_id,kind=kind,query=query,offset=offset,limit=limit,group=group,account=account)
+        try:return data_page(foundation(),entity_id,kind=kind,query=query,offset=offset,limit=limit,group=group,account=account,fiscal_year=fiscal_year,fiscal_period=fiscal_period)
         except ValueError as exc:raise HTTPException(422,str(exc)) from None
 
     @router.get('/companies/{entity_id}/network')

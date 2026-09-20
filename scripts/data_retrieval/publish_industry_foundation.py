@@ -22,8 +22,9 @@ def publish(build,target,*,as_of,acceptance='coverage_review_pending'):
         dst.execute("INSERT OR REPLACE INTO snapshot_metadata VALUES('foundation_acceptance',?)",(acceptance,))
         dst.commit()
         counts={t:dst.execute('SELECT count(*) FROM '+t).fetchone()[0] for t in ['sources','passages','entities','edges','observations','company_cards','financial_points','market_prices','filing_catalog','institution_positions']}
-        if dst.execute("SELECT 1 FROM sqlite_master WHERE name='derived_financials'").fetchone():
-            counts['derived_financials']=dst.execute('SELECT count(*) FROM derived_financials').fetchone()[0]
+        for table in ('derived_financials','financial_periods','issuer_profiles','company_disclosures'):
+            if dst.execute("SELECT 1 FROM sqlite_master WHERE name=?",(table,)).fetchone():
+                counts[table]=dst.execute('SELECT count(*) FROM '+table).fetchone()[0]
     manifest={'version':'research_library.v1','access_scope':'public','sha256':digest_file(target),'counts':counts,
         'research_as_of':as_of,'foundation_acceptance':acceptance,'retrieval':'fts5_bm25_source_bound_graph_optional_document_dense_rerank',
         'semantic_model_acceptance':False,'build_backup':'SQLite online backup; immutable release; no overwrite'}

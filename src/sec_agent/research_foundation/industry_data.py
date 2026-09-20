@@ -8,6 +8,7 @@ from contextlib import closing
 import json
 from pathlib import Path
 import sqlite3
+from .industry_taxonomy import profile, source_navigation, financial_group_sql, financial_identity, FINANCIAL_GROUPS
 
 
 SCHEMA = """
@@ -73,6 +74,7 @@ def companies(path, *, query='', sector='', offset=0, limit=100):
         items=[]
         for row in rows:
             item=dict(row); item['card']=json.loads(item.pop('payload'))
+            item['profile']=profile(item,item['card'])
             item['source_count']=db.execute("SELECT count(DISTINCT es.source_id) FROM entity_sources es JOIN sources s ON s.id=es.source_id WHERE es.entity_id=? AND s.access_state='readable'",(item['entity_id'],)).fetchone()[0]
             item['open_gaps']=db.execute("SELECT count(*) FROM data_gaps WHERE entity_id=? AND status NOT IN ('available','not_applicable')",(item['entity_id'],)).fetchone()[0]
             items.append(item)
@@ -85,6 +87,7 @@ def company_detail(path, entity_id, *, as_of='9999-12-31'):
         r=db.execute('SELECT c.*,e.name,e.kind FROM company_cards c JOIN entities e ON e.id=c.entity_id WHERE entity_id=?',(entity_id,)).fetchone()
         if not r: raise KeyError(entity_id)
         result=dict(r); result['card']=json.loads(result.pop('payload'))
+        result['profile']=profile(result,result['card'])
         result['sources']=[{**dict(s),'metadata':json.loads(s['metadata'])} for s in db.execute(
             'SELECT s.id,s.title,s.url,s.published_at,s.vintage,s.access_state,s.metadata,es.category FROM sources s JOIN entity_sources es ON es.source_id=s.id '
             'WHERE es.entity_id=? AND s.access_state=\'readable\' AND (s.published_at<=? OR s.published_at IS NULL) '
@@ -93,13 +96,27 @@ def company_detail(path, entity_id, *, as_of='9999-12-31'):
         result['gaps']=[dict(g) for g in db.execute('SELECT * FROM data_gaps WHERE entity_id=? ORDER BY category',(entity_id,))]
         result['data_counts']={table:db.execute('SELECT count(*) FROM '+table+' WHERE entity_id=?',(entity_id,)).fetchone()[0]
                                for table in ('filing_catalog','financial_points','market_prices')}
+        if entity_id.startswith('AGENCY::'):
+            result['data_counts']['financial_points']=db.execute('SELECT count(*) FROM financial_points WHERE source_id IN (SELECT source_id FROM entity_sources WHERE entity_id=?)',(entity_id,)).fetchone()[0]
         result['positions_count']=db.execute('SELECT count(*) FROM institution_positions WHERE manager_id=?',(entity_id,)).fetchone()[0]
         result['card']['authority']='navigation_metadata_not_investment_judgment'
+        unique={}
+        for source in result['sources']:
+            if source['id'] in unique:
+                unique[source['id']]['categories'].append(source['category'])
+                continue
+            source['categories']=[source['category']]
+            source['category']=source['metadata'].get('category',source['category'])
+            source['link_role']='primary_catalogue' if source['metadata'].get('entity_id')==entity_id else 'related_material'
+            unique[source['id']]=source_navigation(source)
+        result['sources']=list(unique.values())
     return result
 
 
-def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30, as_of='9999-12-31'):
+def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30, as_of='9999-12-31', group=''):
     if offset < 0 or not 1 <= limit <= 100: raise ValueError('invalid_data_window')
+    if group and (kind!='financial' or group not in FINANCIAL_GROUPS):
+        raise ValueError('invalid_financial_group')
     if kind=='holders':
         with closing(connect(path)) as db:
             if not db.execute("SELECT 1 FROM sqlite_master WHERE name='position_issuers'").fetchone():
@@ -118,7 +135,15 @@ def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30
     table,entity,date,search=contracts[kind]
     where=f"{entity}=? AND {date}<=? AND (?='' OR instr(lower({search}),lower(?))>0)"
     args=(entity_id,as_of,query,query)
+    if kind=='financial' and entity_id.startswith('AGENCY::'):
+        where=f"source_id IN (SELECT source_id FROM entity_sources WHERE entity_id=?) AND {date}<=? AND (?='' OR instr(lower({search}),lower(?))>0)"
+    base_where,base_args=where,args
+    if group:
+        where += ' AND ('+financial_group_sql()+')=?'
+        args += (group,)
     with closing(connect(path)) as db:
+        groups=[{'id':r[0],'label':FINANCIAL_GROUPS[r[0]],'count':r[1]} for r in db.execute(
+            'SELECT '+financial_group_sql()+' AS g,count(*) FROM financial_points WHERE '+base_where+' GROUP BY g',base_args)] if kind=='financial' else []
         total=db.execute('SELECT count(*) FROM '+table+' WHERE '+where,args).fetchone()[0]
         # Capture/filing dates often tie (e.g. one FRED response contains three
         # months). Show latest observation periods first, without discarding
@@ -132,5 +157,7 @@ def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30
         rows=[dict(r) for r in db.execute('SELECT * FROM '+table+' WHERE '+where+f' ORDER BY {ordering} LIMIT ? OFFSET ?',(*args,limit,offset))]
     for row in rows:
         if 'payload' in row: row['payload']=json.loads(row['payload'])
+        if kind=='financial':financial_identity(row)
     return {'items':rows,'total':total,'next_offset':offset+len(rows) if offset+len(rows)<total else None,
+            'groups':groups,'selected_group':group,
             'notice':'原始数据及披露版本；不自动合并期间、单位或修订。持仓日期与披露日不同，行情不是盈利事实。'}

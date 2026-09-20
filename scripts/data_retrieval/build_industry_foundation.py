@@ -109,6 +109,9 @@ class Collector:
             inline_facts=soup.find_all(['ix:nonfraction','ix:nonnumeric','ix:fraction'])
             inline_count=len(inline_facts)
             page_title=soup.title.get_text(' ',strip=True) if soup.title else ''
+            visible=soup.get_text(' ',strip=True)
+            if 'Your request has been flagged as potentially automated' in visible or 'Due to aggressive automated scraping of FederalRegister.gov' in visible:
+                raise ValueError('http_200_access_challenge_not_document')
             if re.search(r'bot manager|access denied|just a moment|request rejected|security verification',page_title,re.I):
                 raise ValueError('http_200_access_challenge_not_document')
             title=title or (soup.title.get_text(' ',strip=True) if soup.title else url)
@@ -216,7 +219,7 @@ class Collector:
                 for unit,values in fact.get('units',{}).items():
                     for v in values:
                         if not (self.plan['filings_since']<=v.get('end','')<=self.as_of and v.get('filed','')<=self.as_of):continue
-                        rows.append((identity(e,tax,concept,unit,v),e,tax,concept,fact.get('label',concept),str(v['val']),unit,
+                        rows.append((identity(e,tax,concept,unit,v),e,tax,concept,(fact.get('label') or '').strip() or f'{tax}:{concept}',str(v['val']),unit,
                           v.get('start'),v['end'],v['filed'],v.get('fy'),v.get('fp'),v.get('form',''),v.get('accn',''),sid,dumps(v)))
         self.sql('INSERT OR IGNORE INTO financial_points VALUES('+','.join('?'*16)+')',rows,many=True)
         self.gap(e,'financial_data','available',{'points':len(rows),'source_id':sid,'cutoff':self.as_of,'preserve_all_vintages':True})

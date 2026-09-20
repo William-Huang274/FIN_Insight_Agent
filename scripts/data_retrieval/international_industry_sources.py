@@ -1,5 +1,6 @@
 """Official DART data and report-directory fallback for non-SEC companies."""
 import argparse
+import calendar
 import json
 from pathlib import Path
 import re
@@ -7,6 +8,13 @@ from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 from scripts.data_retrieval.build_industry_foundation import Collector,dumps,identity
+
+
+def finmind_period(record,dataset):
+    if dataset=='TaiwanStockMonthRevenue':
+        year,month=int(record['revenue_year']),int(record['revenue_month'])
+        return f'{year:04d}-{month:02d}-01',f'{year:04d}-{month:02d}-{calendar.monthrange(year,month)[1]:02d}'
+    return None,record.get('date','')
 
 
 def dart_point_rows(entity_id,source_id,account,year,report,as_of):
@@ -100,7 +108,8 @@ def finmind(worker,company,stock_id):
                 value=r.get('value',r.get('revenue'))
                 if value is None:continue
                 concept=r.get('type','monthly_revenue');label=r.get('origin_name',concept)
-                rows.append((identity(company['entity_id'],sid,r),company['entity_id'],'FinMind:'+dataset,concept,label,str(value),'provider_unit_unconfirmed',None,day,worker.as_of,int(day[:4]),None,dataset,'',sid,dumps({**r,'known_at':worker.as_of,'disclosure_date_unknown':True,'unit_scale_unverified':True})))
+                start,end=finmind_period(r,dataset)
+                rows.append((identity(company['entity_id'],sid,r),company['entity_id'],'FinMind:'+dataset,concept,label,str(value),'provider_unit_unconfirmed',start,end,worker.as_of,int(end[:4]),None,dataset,'',sid,dumps({**r,'known_at':worker.as_of,'disclosure_date_unknown':True,'unit_scale_unverified':True,'period_basis':'revenue_year/revenue_month; provider date is not observation period' if start else 'provider date; flow period not verified'})))
             worker.sql('INSERT OR IGNORE INTO financial_points VALUES('+','.join('?'*16)+')',rows,many=True)
             worker.gap(company['entity_id'],dataset,'partial',{'records':len(rows),'source_id':sid,'remaining':'unit/scale and flow-period verification against primary reports; no financial calculations until resolved'})
             print(dumps({'company':company['slug'],'dataset':dataset,'rows':len(rows)}),flush=True)

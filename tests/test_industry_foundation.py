@@ -42,6 +42,55 @@ def test_import_preserves_identity_and_old_original(foundation):
     assert company_detail(path,'NVIDIA')['gaps'][0]['status']=='tool_failure'
 
 
+def test_blank_labels_and_metric_groups_are_shared_with_runtime(foundation):
+    path,worker,sid=foundation
+    worker.sql('INSERT INTO financial_points VALUES('+','.join('?'*16)+')',
+        ('fee','NVIDIA','ffd','NetFeeAmt','','12','USD',None,'2026-08-01','2026-09-01',2026,'Q2','424B2','fee-acc',sid,'{}'))
+    fee=data_page(path,'NVIDIA',group='offering')['items'][0]
+    assert fee['label']=='ffd:NetFeeAmt' and fee['raw_label']==''
+    assert fee['label_status'].startswith('runtime_compatibility_parse')
+    assert [r['id'] for r in data_page(path,'NVIDIA',group='operating')['items']]==['point1']
+    library=publish(path,worker)
+    request=SourceDocumentRequest(source_space='library',operation='data',entity_id='NVIDIA',data_group='offering')
+    assert library.navigate(request,'2026-09-20').items[0]['label']=='ffd:NetFeeAmt'
+    assert 'data_group' not in SourceDocumentRequest(operation='catalog').model_dump()
+    with pytest.raises(ValueError,match='data_group_requires'):
+        SourceDocumentRequest(operation='catalog',data_group='operating')
+
+
+def test_institution_classification_is_idempotent_and_preserves_legal_identity(foundation):
+    from scripts.data_retrieval.organize_industry_foundation import organize
+    path,worker,sid=foundation
+    worker.sql("UPDATE company_cards SET sector='投资与金融' WHERE entity_id='NVIDIA'")
+    organize(path);organize(path)
+    detail=company_detail(path,'NVIDIA')
+    assert detail['profile']['type']=='investment_institution'
+    assert detail['profile']['roles']==['investment_institution','company']
+    assert detail['entity_id']=='NVIDIA' and detail['kind']=='company'
+
+
+def test_policy_challenge_is_execution_failure_even_with_benign_title(foundation,monkeypatch):
+    _,worker,_=foundation
+    monkeypatch.setattr(worker,'get',lambda url:(b'<html><title>Federal Register</title><body>Due to aggressive automated scraping of FederalRegister.gov please complete a CAPTCHA.</body></html>','text/html'))
+    with pytest.raises(ValueError,match='access_challenge'):
+        worker.document('NVIDIA','https://example.org/policy','policy_regulation')
+    assert not worker.sql("SELECT id FROM sources WHERE url='https://example.org/policy'")
+
+
+def test_reviewed_relation_requires_exact_evidence_and_keeps_categories(foundation):
+    from scripts.data_retrieval.organize_industry_foundation import apply_reviews
+    path,worker,sid=foundation
+    worker.sql('INSERT INTO entities VALUES(?,?,?)',('CUSTOMER','company','Customer'))
+    review={'reviewed_at':'2026-09-20','relations':[{'subject':'NVIDIA','object':'CUSTOMER','predicate':'partnership','source_id':sid,
+        'evidence_quote':'Invented evidence','review_reason':'test','status':'announced'}]}
+    with pytest.raises(ValueError,match='quote_not_found'):apply_reviews(path,review)
+    assert not worker.sql("SELECT id FROM edges WHERE object='CUSTOMER'")
+    # Duplicate catalogue classifications must not duplicate the underlying file.
+    worker.sql('INSERT INTO entity_sources VALUES(?,?,?)',('NVIDIA',sid,'relationship_announcement'))
+    detail=company_detail(path,'NVIDIA')
+    assert sum(s['id']==sid for s in detail['sources'])==1
+
+
 def test_runtime_uses_card_and_financial_data_with_asof(foundation):
     path,worker,sid=foundation;library=publish(path,worker)
     request=SourceDocumentRequest(source_space='library',operation='data',entity_id='NVIDIA',data_kind='financial')
@@ -63,6 +112,46 @@ def test_current_capture_is_not_visible_before_known_date(foundation):
     current=worker.source('NVIDIA','https://example.org/live','Current profile','company_profile','Current live page')
     assert current not in {s['id'] for s in company_detail(path,'NVIDIA',as_of='2026-09-19')['sources']}
     assert current in {s['id'] for s in company_detail(path,'NVIDIA',as_of='2026-09-20')['sources']}
+
+
+def test_policy_recovery_preserves_failed_source_and_publisher(foundation,monkeypatch):
+    from scripts.data_retrieval.repair_policy_sources import repair,CHALLENGE
+    from scripts.data_retrieval.organize_industry_foundation import organize
+    path,worker,_=foundation
+    worker.sql('INSERT INTO entities VALUES(?,?,?)',('INSTITUTION::macro','institution','Macro'))
+    old=worker.source('INSTITUTION::macro','https://www.federalregister.gov/documents/2026/09/01/2026-12345/test','Policy','policy_regulation',CHALLENGE,metadata={'document_number':'2026-12345'})
+    document={'pdf_url':'https://www.govinfo.gov/content/pkg/FR-2026-09-01/pdf/2026-12345.pdf','publication_date':'2026-09-01','type':'Proposed Rule','agencies':[{'id':1,'name':'Test Agency'}]}
+    def get(url):
+        if url.endswith('.json'):return json.dumps(document).encode(),'application/json'
+        return ('<html><body><p>'+('A proposed rule on industrial equipment. '*20)+'</p></body></html>').encode(),'text/html'
+    monkeypatch.setattr(worker,'get',get)
+    result=repair(worker)
+    assert result[0]['status']=='recovered'
+    assert worker.sql('SELECT access_state FROM sources WHERE id=?',(old,))[0]['access_state']=='blocked'
+    assert worker.sql('SELECT body FROM passages WHERE source_id=?',(old,))[0]['body']==CHALLENGE
+    organize(path);organize(path)
+    card=company_detail(path,'AGENCY::US-FR-1')
+    assert card['profile']['type']=='agency' and card['profile']['country']=='US'
+    assert len(card['sources'])==1 and card['sources'][0]['metadata']['regulatory_type']=='Proposed Rule'
+    assert card['sources'][0]['material_group']=='policy_review'
+    assert repair(worker)==[]
+
+
+def test_delegated_manager_notice_is_not_fund_ownership():
+    from scripts.data_retrieval.expand_reporting_managers import notice_managers
+    raw=b'<edgarSubmission xmlns="urn:sec"><submissionType>13F-NT</submissionType><periodOfReport>06-30-2026</periodOfReport><credentials><cik>001</cik></credentials><otherManager><cik>002</cik><name>Manager Two</name></otherManager><otherManager><cik>003</cik><name>Manager Three</name></otherManager></edgarSubmission>'
+    period,managers=notice_managers(raw)
+    assert period=='2026-06-30' and [r['cik'] for r in managers]==['002','003']
+    with pytest.raises(ValueError,match='not_a_13f_notice'):notice_managers(raw.replace(b'13F-NT',b'13F-HR'))
+    with pytest.raises(ValueError,match='notice_manager_identity_missing'):notice_managers(raw.replace(b'<cik>002</cik>',b'<cik></cik>'))
+
+
+def test_month_revenue_uses_revenue_month_not_provider_date():
+    from scripts.data_retrieval.international_industry_sources import finmind_period
+    row={'date':'2026-09-01','revenue_year':2026,'revenue_month':8}
+    assert finmind_period(row,'TaiwanStockMonthRevenue')==('2026-08-01','2026-08-31')
+    assert finmind_period({**row,'revenue_year':2024,'revenue_month':2},'TaiwanStockMonthRevenue')==('2024-02-01','2024-02-29')
+    assert finmind_period(row,'TaiwanStockCashFlowsStatement')==(None,'2026-09-01')
 
 
 def test_sec_exhibit_fallback_preserves_rows_and_marks_compatibility(foundation,monkeypatch):

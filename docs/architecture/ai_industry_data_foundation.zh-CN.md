@@ -36,6 +36,20 @@
 
 ## 采集与发布
 
+### 分类、资料归属与修复（2026-09-20）
+
+资料菜单提供 `profile.type/roles/institution_type/country/jurisdiction/identity_basis`。经营公司、投资机构、基金、政策发布机构与跨机构宏观集合按不同资料卡展示；类型模型支持基金，但不把管理人的13F行自动当成旗下单只基金。旧实体ID和旧实体kind不原位迁移，新的导航身份由资料卡投影提供。
+
+材料目录使用分组→类别→年份；同一原文可关联多主体，但在同一主体下只显示一次，保留全部分类及主归档/关联材料角色。发布机构由原始官方元数据识别，政策是否与研究主题相关另行审查；`needs_review/out_of_scope` 是特定研究范围下的适用性状态，不代表来源不权威或永久无价值。关系只有在具体原文及位置支持时才写入，通知、计划、附条件投资、担保和已发生事实保留不同谓词和状态。
+
+财务数据导航将 `us-gaap/ifrs-full/DART-IFRS`、发行费用 `ffd`、薪酬 `ecd`、宏观 `FRED` 与其余原始数据分组。无显示名称时保留 `raw_label`，展示 `taxonomy:concept` 并标记 `runtime_compatibility_parse:original_concept_fallback`；不猜测中文指标含义。正式工具 `read_source_document(source_space="library", operation="data", entity_id=..., data_kind="financial", data_group="offering")` 可选相同分组。`data_group` 不填写时保持历史请求序列化；空查询反馈也保留原分组，不能为了返回结果偷偷扩大范围。
+
+`organize_industry_foundation` 负责上述分类与经原文定位的关系评审导入；`repair_policy_sources` 将HTTP200反爬页标为失败历史，经Federal Register API定位到GovInfo官方原件。旧内容、摘要和URL不改写，新原文与旧失败记录相互关联。抓取成功不等于政策适用性已经通过。
+
+`expand_reporting_managers` 从13F-NT原始XML的`otherManager`取得管理人CIK，逐一读取SEC目录和持仓表；建立`reports_via`关系，不推断股权母子关系，不跨管理人合并持仓。复用已有唯一CUSIP映射供反向机构查询，期权、证券类别和日期原样保留。没有可用表或失败时写逐管理人缺口。依据：[SEC Form 13F说明](https://www.sec.gov/pdf/form13f.pdf)。
+
+台湾FinMind月营收的观察期间取`revenue_year/revenue_month`，不使用其记录`date`或`create_time`冒充营收期间和公司披露日。单位必须逐数据集/记录与原始披露核对；月营收的单位确认不能传播为季度损益、现金流或EPS全部已确认。
+
 依赖使用项目的 `public-source-library`、`agent-runtime` 和 `external-search` extras。源计划、材料、API 凭证、运行记录与索引放在 Git 外。计划字段包括 `as_of/recent_since/filings_since/companies`；公司含稳定 entity_id、slug、名称、官网、行业、产品、扩展深度以及经核实的 CIK/交易代码和官方仓库入口。缺少身份时不猜代码。
 
 1. `scripts.data_retrieval.build_industry_foundation` 在线备份既有库后采集公司/SEC 目录、财务、行情、申报原文与附件、13F。SEC/API 优先，官方 PDF 和带来源标记的镜像作补充。
@@ -47,7 +61,7 @@
 
 宿主 `host-settings.json` 的 `research_library` 指向发布 SQLite，`research_library_hybrid=true`、`research_library_rag_cache` 指向已准备缓存；`research_date_timezone` 可设为 `Asia/Shanghai`。标准研究阶段创建时自动注入正式数据 composition。容器部署使用 `compose.research-library.yaml` 的只读资料库与 manifest 挂载，容器设置分别使用 `/run/fin-insight/research-library/library.sqlite` 和 `/run/fin-insight/library-rag`。Qwen key 通过现有环境机制提供。运行工作台不自动启动付费研究。
 
-## 2026-09-20 本地交付验收与边界
+## 2026-09-20 r3 历史验收（r5 更新见下文）
 
 最终发布 r3：74 个公司/法人条目及 1 个宏观政策入口，1,530 份可读材料、45,957 个当前可读段落、173,380 条带披露版本的财务观察、3,733 条日行情、64,714 条机构持仓、2,805 条申报目录。近三个月行情覆盖 59 个公司条目；40 个条目已按年度身份核实三年年报全文，其他公司的报告、上市历史或非 SEC 覆盖仍需逐公司看缺口，不能宣布所有公司的三年资料齐全。
 
@@ -58,3 +72,11 @@
 旧库 156 个来源的身份、URL 和内容摘要全部保留；全文段落哈希、SQL 完整性、外键、6 路并发读取和恢复副本检查通过。正式 MCP 通路的 DS Flash 干净短测取得公司卡、官方合作原文、最新宏观观察和反向机构持仓，4 次响应、47,005 tokens；这一结果仅通过工具适配测点，未认证完整研究规划或金融报告质量。前两轮运行及其格式/目录/上下文遗留错误原样留存。r3 另经正式 MCP 五项无模型回读，包括修正后财报数字，未重复完整付费案例。最终快照的全部文档卡索引已就绪；58 个新增 embedding 批次用于变化的卡片，其他向量复用缓存。
 
 仍有明确覆盖限制：部分非 SEC 年报获取失败或三年尚不齐；台湾 API 部分数值单位/累计口径待原件核对；未上市企业财务与融资条款不齐；Vanguard 母级 13F-NT 已记录委托申报管理人但尚未逐管理人展开；新闻正文和 X 帖子覆盖不足；产品参数跨公司统一数值表尚未建全。近期动态来源按日期筛选，旧关系公告仅作为历史依据保留。公司光谱入口已运行，本轮没有启动完整 Agent Server 研究报告任务。
+
+## r5 当前整理与覆盖状态
+
+r5 在原库上接续：117张资料卡分为66家公司、18个投资机构/申报管理人、32个发布机构和1个宏观集合，旧实体身份不变。1564份可读材料、47529当前可读段落、88223持仓行。145条带来源关系（含10条委托申报关系），587条未核共现保持候选性质。原r3全部2922来源的ID、URL和摘要保留；45份误识别的访问挑战页保留为blocked历史，并有新的官方正文替代来源。
+
+Vanguard通知列明的10个管理人已经展开，不再属于“未逐管理人获取”的缺口；具体基金级归属仍未解决。三年年报已核实条目增至43，新增华为、西门子能源、联想各三份官方年度报告。仅完成主体/财年/可读正文核对，不冒充每个表格含义均已审计；未确认的发布日期不由财年猜测。12个月营收观察期间修复，Quanta其中3条单位与官方月度表核对，其余季度口径和单位继续待核。
+
+层级目录、政策/机构资料卡和分组财务表通过真实本地页面检查；SQL完整性、外键、段落摘要、并发读取及新路径恢复通过。正式MCP八项无模型回读通过，新增向量索引复用旧缓存；没有重新运行研究报告或将短测提升为研究质量验收。其余年报、新闻/社交、完整产品规格表和更密的经核实公司关系仍待补齐。

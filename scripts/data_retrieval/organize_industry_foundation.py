@@ -86,12 +86,17 @@ def apply_reviews(path, reviews):
             for key in ('subject','object'):
                 if not db.execute('SELECT 1 FROM entities WHERE id=?',(edge[key],)).fetchone():raise ValueError('review_entity_not_found')
             p=matches[0]
+            source_meta=json.loads(source['metadata'])
+            known_at=source['published_at'] or source_meta.get('known_at') or source_meta.get('captured_at')
+            if not known_at:raise ValueError('review_source_date_basis_missing')
             qualifiers={**edge.get('qualifiers',{}),'operator_reviewed_predicate':True,'source_passage_id':p['id'],
                         'evidence_quote':quote,'review_reason':edge['review_reason'],'reviewed_at':reviews['reviewed_at'],
+                        'date_basis':'source_publication' if source['published_at'] else 'known_at_capture_not_publication',
+                        'source_published_at':source['published_at'],
                         'runtime_locator_binding':'exact_passage','announcement_is_not_fulfillment':True}
             db.execute('INSERT OR REPLACE INTO edges VALUES(?,?,?,?,?,?,?,?,?,?,?)',
                 ('EDGE::'+identity(edge['subject'],edge['object'],edge['predicate'],source['id'])[:32],edge['subject'],edge['predicate'],edge['object'],source['id'],p['locator'],
-                 source['published_at'],edge.get('valid_from'),edge.get('valid_to'),edge['status'],dumps(qualifiers)))
+                 known_at[:10],edge.get('valid_from'),edge.get('valid_to'),edge['status'],dumps(qualifiers)))
             for eid in (edge['subject'],edge['object']):
                 db.execute('INSERT OR IGNORE INTO entity_sources VALUES(?,?,?)',(eid,source['id'],edge.get('category','relationship_announcement')))
 

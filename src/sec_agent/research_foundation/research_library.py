@@ -194,9 +194,9 @@ class ResearchLibrary(ResearchSnapshot):
                 return self._result(request,[detail],'ok',total=total,
                     next_offset=request.offset+request.limit if request.offset+request.limit<total else None)
             page=data_page(self.path,request.entity_id,kind=request.data_kind,query=request.query,group=request.data_group,
-                           offset=request.offset,limit=request.limit,as_of=as_of)
+                           account=request.account_path,offset=request.offset,limit=request.limit,as_of=as_of)
             if not page['items'] and request.query:
-                return self._result(request,[{'result_state':'typed_gap','query_contract':'literal substring, not natural language; dates and metric descriptions are not parsed','original_query':request.query,'retry_arguments':{'source_space':'library','operation':'data','entity_id':request.entity_id,'data_kind':request.data_kind,**({'data_group':request.data_group} if request.data_group else {}),'query':'','limit':3},'public_information_gap_proved':False}],'filter_no_match',total=0,next_offset=None)
+                return self._result(request,[{'result_state':'typed_gap','query_contract':'literal substring, not natural language; dates and metric descriptions are not parsed','original_query':request.query,'retry_arguments':{'source_space':'library','operation':'data','entity_id':request.entity_id,'data_kind':request.data_kind,**({'data_group':request.data_group} if request.data_group else {}),**({'account_path':request.account_path} if request.account_path else {}),'query':'','limit':3},'public_information_gap_proved':False}],'filter_no_match',total=0,next_offset=None)
             return self._result(request,[{'result_state':'retrieval_candidate','numeric_fact_authority':False,**r} for r in page['items']],'ok',total=page['total'],next_offset=page['next_offset'])
         status = 'ok'
         if request.operation == 'catalog':

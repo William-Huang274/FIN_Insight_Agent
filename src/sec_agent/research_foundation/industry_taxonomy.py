@@ -46,6 +46,18 @@ def profile(row, card):
             'classification_status':card.get('classification_status','legacy_navigation_only')}
 
 
+def listing_profile(card):
+    """Listing market is separate from incorporation or operating geography."""
+    review=card.get('listing_review')
+    if review:return {**review,'registration_country':card.get('registration_country')}
+    markets=sorted({{'Nasdaq':'US','NYSE':'US','NYSE American':'US'}.get(x,'') for x in card.get('exchanges',[]) }-{''})
+    listed=card.get('listing_status')=='exchange_listed_per_SEC' and bool(markets)
+    return {'status':'listed' if listed else 'unknown','markets':markets if listed else [],
+        'basis':'SEC registrant exchange metadata' if listed else 'listing_identity_requires_review',
+        'source_id':card.get('profile_source_id'),'source_url':card.get('sec_identity_url'),
+        'registration_country':card.get('registration_country')}
+
+
 def financial_group_sql():
     # SEC taxonomy namespaces separate filing fees and executive compensation
     # from operating financial statements; no metric meaning is inferred here.

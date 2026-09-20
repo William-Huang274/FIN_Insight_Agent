@@ -8,8 +8,9 @@ from contextlib import closing
 import json
 from pathlib import Path
 import sqlite3
-from .industry_taxonomy import profile, source_navigation, financial_group_sql, financial_identity, FINANCIAL_GROUPS, METRIC_NAMES
+from .industry_taxonomy import profile, listing_profile, source_navigation, financial_group_sql, financial_identity, FINANCIAL_GROUPS, METRIC_NAMES
 from .material_presentation import material_preview
+from . import financial_accounts, derived_financials
 
 
 SCHEMA = """
@@ -55,6 +56,7 @@ CREATE INDEX IF NOT EXISTS position_issuers_entity ON position_issuers(entity_id
 def connect(path):
     db = sqlite3.connect(Path(path).resolve().as_uri() + '?mode=ro', uri=True)
     db.row_factory = sqlite3.Row
+    db.create_function('financial_account_path',2,financial_accounts.account_path,deterministic=True)
     return db
 
 
@@ -76,6 +78,7 @@ def companies(path, *, query='', sector='', offset=0, limit=100):
         for row in rows:
             item=dict(row); item['card']=json.loads(item.pop('payload'))
             item['profile']=profile(item,item['card'])
+            item['listing']=listing_profile(item['card'])
             item['source_count']=db.execute("SELECT count(DISTINCT es.source_id) FROM entity_sources es JOIN sources s ON s.id=es.source_id WHERE es.entity_id=? AND s.access_state='readable'",(item['entity_id'],)).fetchone()[0]
             item['open_gaps']=db.execute("SELECT count(*) FROM data_gaps WHERE entity_id=? AND status NOT IN ('available','not_applicable')",(item['entity_id'],)).fetchone()[0]
             items.append(item)
@@ -89,6 +92,7 @@ def company_detail(path, entity_id, *, as_of='9999-12-31'):
         if not r: raise KeyError(entity_id)
         result=dict(r); result['card']=json.loads(result.pop('payload'))
         result['profile']=profile(result,result['card'])
+        result['listing']=listing_profile(result['card'])
         result['sources']=[{**dict(s),'metadata':json.loads(s['metadata'])} for s in db.execute(
             'SELECT s.id,s.title,s.url,s.published_at,s.vintage,s.access_state,s.metadata,es.category FROM sources s JOIN entity_sources es ON es.source_id=s.id '
             'WHERE es.entity_id=? AND s.access_state=\'readable\' AND (s.published_at<=? OR s.published_at IS NULL) '
@@ -112,6 +116,8 @@ def company_detail(path, entity_id, *, as_of='9999-12-31'):
             unique[source['id']]=material_preview(db, source_navigation(source))
         result['sources']=list(unique.values())
         result['data_counts']['holders']=db.execute('SELECT count(*) FROM position_issuers WHERE entity_id=?',(entity_id,)).fetchone()[0]
+        result['data_counts']['derived']=len(derived_financials.page(db,entity_id,limit=100,as_of=as_of)['items'])
+        result['account_tree']=financial_accounts.tree(db,entity_id) if result['profile']['type'] not in {'agency','macro_collection'} else []
         result['financial_groups']=[{'id':r[0],'label':FINANCIAL_GROUPS[r[0]],'count':r[1]} for r in db.execute(
             'SELECT '+financial_group_sql()+',count(*) FROM financial_points WHERE '+
             ('source_id IN (SELECT source_id FROM entity_sources WHERE entity_id=?)' if entity_id.startswith('AGENCY::') else 'entity_id=?')+
@@ -135,9 +141,13 @@ def data_channels(detail):
         n=sum(s['category'].startswith('policy') for s in detail['sources'])
         if n:channels.append({'kind':'policies','group':'','label':'政策与规则登记','count':n})
     else:
-        if detail['positions_count']:channels.append({'kind':'positions','group':'','label':'该管理人申报的证券持仓','count':detail['positions_count']})
+        manager=detail['profile']['type'] in {'investment_institution','fund'}
+        positions={'kind':'positions','group':'','label':'该管理人申报的证券持仓' if manager else '该主体申报的证券持仓','count':detail['positions_count']}
+        if detail['positions_count'] and manager:channels.append(positions)
         if counts['financial_points']:channels.append({'kind':'financial','group':'','label':'财务指标','count':counts['financial_points']})
         if counts['market_prices']:channels.append({'kind':'prices','group':'','label':'市场日行情','count':counts['market_prices']})
+        if counts.get('derived'):channels.append({'kind':'derived','group':'','label':'衍生指标与估值','count':counts['derived']})
+        if detail['positions_count'] and not manager:channels.append(positions)
         if counts.get('holders'):channels.append({'kind':'holders','group':'','label':'持有该证券的申报机构','count':counts['holders']})
         if counts['filing_catalog']:channels.append({'kind':'filings','group':'','label':'监管申报目录','count':counts['filing_catalog']})
     return channels
@@ -163,10 +173,13 @@ def position_relations(path, entity_id, as_of):
             'readback':{'source_space':'library','operation':'data','entity_id':r['manager_id'],'data_kind':'positions'}} for r in rows]
 
 
-def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30, as_of='9999-12-31', group=''):
+def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30, as_of='9999-12-31', group='', account=''):
     if offset < 0 or not 1 <= limit <= 100: raise ValueError('invalid_data_window')
     if group and (kind!='financial' or group not in FINANCIAL_GROUPS):
         raise ValueError('invalid_financial_group')
+    if account and (kind!='financial' or account not in financial_accounts.LABELS):raise ValueError('invalid_account_path')
+    if kind=='derived':
+        with closing(connect(path)) as db:return derived_financials.page(db,entity_id,query,offset,limit,as_of)
     if kind=='holders':
         with closing(connect(path)) as db:
             if not db.execute("SELECT 1 FROM sqlite_master WHERE name='position_issuers'").fetchone():
@@ -198,6 +211,9 @@ def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30
     if group:
         where += ' AND ('+financial_group_sql()+')=?'
         args += (group,)
+    if account:
+        where+=' AND (financial_account_path(taxonomy,concept)=? OR financial_account_path(taxonomy,concept) LIKE ?)'
+        args+=(account,account+'/%')
     with closing(connect(path)) as db:
         groups=[{'id':r[0],'label':FINANCIAL_GROUPS[r[0]],'count':r[1]} for r in db.execute(
             'SELECT '+financial_group_sql()+' AS g,count(*) FROM financial_points WHERE '+base_where+' GROUP BY g',base_args)] if kind=='financial' else []
@@ -219,7 +235,7 @@ def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30
                 row['revision_basis']='current_revised' if metadata[row['source_id']].get('current_revised') else 'source_disclosure'
     for row in rows:
         if 'payload' in row: row['payload']=json.loads(row['payload'])
-        if kind=='financial':financial_identity(row)
+        if kind=='financial':financial_accounts.annotate(financial_identity(row))
     return {'items':rows,'total':total,'next_offset':offset+len(rows) if offset+len(rows)<total else None,
             'groups':groups,'selected_group':group,
             'notice':'原始数据及披露版本；不自动合并期间、单位或修订。持仓日期与披露日不同，行情不是盈利事实。'}

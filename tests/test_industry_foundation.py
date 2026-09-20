@@ -283,6 +283,20 @@ def test_api_reads_same_library_not_preview_fixture(foundation,tmp_path):
     assert client.get('/data-library/research-sources/'+sid).json()['total']==1
 
 
+def test_source_evidence_anchor_opens_exact_passage_and_rejects_other_document(foundation,tmp_path):
+    from apps.workbench.backend.api.v1.data_library import build_data_library_router
+    path,worker,sid=foundation
+    worker.sql('INSERT INTO passages VALUES(?,?,?,?,?)',('PASSAGE::evidence',sid,'text-part:1','Transaction evidence.','e'*64))
+    publish(path,worker)
+    app=FastAPI();app.include_router(build_data_library_router(tmp_path,research_library=path))
+    client=TestClient(app)
+    response=client.get('/data-library/research-sources/'+sid,params={'passage_id':'PASSAGE::evidence','limit':1})
+    assert response.status_code==200
+    assert response.json()['offset']==1
+    assert response.json()['items'][0]['body']=='Transaction evidence.'
+    assert client.get('/data-library/research-sources/'+sid,params={'passage_id':'PASSAGE::old'}).status_code==404
+
+
 def test_presentation_api_decodes_archived_metadata_and_paginates_records(foundation,tmp_path):
     from apps.workbench.backend.api.v1.data_library import build_data_library_router
     path,worker,_=foundation

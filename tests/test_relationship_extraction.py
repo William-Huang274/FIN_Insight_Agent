@@ -51,6 +51,23 @@ def test_modified_candidate_cannot_reuse_approval(foundation):
         import_job(db,job,receipt)
 
 
+def test_readback_exposes_resolved_identity_without_rewriting_job_receipt(foundation):
+    path,w,job=candidate(foundation)
+    w.sql("DELETE FROM entities WHERE id='BUYER'")
+    relation=job['relations'][0]
+    relation['object_id']='LOCAL::buyer'
+    job['new_entities']=[dict(provisional_id='LOCAL::buyer',name='Buyer',kind='company',
+        identity_evidence=[dict(source_id=relation['source_id'],**relation['evidence'][0])])]
+    with connect(path) as db:
+        import_job(db,job,review(job))
+        row=assertion_page(db,'NVIDIA')['items'][0]
+        assert row['object_id']==row['object']
+        assert row['object_id'].startswith('DISCOVERED::')
+        assert db.execute('SELECT name FROM entities WHERE id=?',(row['object_id'],)).fetchone()[0]=='Buyer'
+        stored=json.loads(db.execute('SELECT payload FROM relationship_assertions').fetchone()[0])
+        assert stored['object_id']=='LOCAL::buyer'
+
+
 def test_undated_original_uses_capture_boundary_without_inventing_publication(foundation):
     path,_,job=candidate(foundation)
     with connect(path) as db:

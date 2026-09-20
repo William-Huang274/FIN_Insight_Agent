@@ -390,6 +390,10 @@ def assertion_page(db, entity_id, *, offset=0, limit=30, query='', as_of='9999-1
     items=[]
     for row in rows:
         p=json.loads(row['payload'])
+        # Extraction-local identifiers remain in the immutable job receipt, but
+        # consumers must receive the same resolvable identities as the graph.
+        p['subject_id']=p['subject']
+        p['object_id']=p['object']
         # Full exact quotes stay in storage; context reads use bounded locators.
         p['evidence']=[{'passage_id':e['passage_id'],'locator':e['locator'],
                        'readback':{'source_space':'library','operation':'read','document_id':p['source_id'],

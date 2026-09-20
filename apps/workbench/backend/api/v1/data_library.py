@@ -56,11 +56,16 @@ def build_data_library_router(attachments_root, fact_mart=None, research_library
         return result
 
     @router.get('/research-sources/{document_id}')
-    def research_source(request:Request,document_id:str,offset:int=Query(0,ge=0),limit:int=Query(5,ge=1,le=20)):
+    def research_source(request:Request,document_id:str,offset:int=Query(0,ge=0),limit:int=Query(5,ge=1,le=20),passage_id:str|None=Query(None,max_length=200)):
         current_owner(request)
         from sec_agent.research_foundation.research_library import open_library
         library=open_library(foundation())
+        if passage_id:
+            anchor=library._query('SELECT rowid FROM passages WHERE id=? AND source_id=?',(passage_id,document_id))
+            if not anchor:raise HTTPException(404,'这条依据不属于所选原文')
+            offset=library._query('SELECT count(*) AS n FROM passages WHERE source_id=? AND rowid<?',(document_id,anchor[0]['rowid']))[0]['n']
         result=library.read(document_id,'9999-12-31',start=offset,limit=limit)
+        result['offset']=offset
         if result.get('source') and isinstance(result['source'].get('metadata'),str):
             result['source']['metadata']=json.loads(result['source']['metadata'])
         result['total']=library._query('SELECT count(*) AS n FROM passages WHERE source_id=?',(document_id,))[0]['n']

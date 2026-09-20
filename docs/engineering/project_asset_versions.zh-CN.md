@@ -35,6 +35,14 @@ SEC 页面中的“数据版本差异与关联成果”按项目与 CIK 分组�
 
 ## 验证入口
 
+### 历史任务原件下载
+
+引用中的旧本地附件地址（例如旧工作台端口）在前端打开时解析为当前工作台的附件路由；外部网站链接保持原地址。历史报告、来源标识和摘要不改写。
+
+迁移工作台目录后，可在宿主 `host-settings.json` 的 `attachment_archive_roots` 数组中配置原附件目录（目录内须有 `attachments.sqlite`）。后端只在当前任务缺少该原件时按配置顺序只读查找，核验任务归属、撤销状态、项目来源权限和文件摘要；不可读或完整性异常返回明确错误，不创建空库或跳过失败库。此入口仅恢复原任务直接附件的下载，不合并旧目录为新研究输入，也不更换当前项目资料库。更换目录前仍须保留原附件库及其项目来源依赖。
+
+对应回归：`tests/test_attachment_archive.py`；前端链接检查：在 `apps/workbench/frontend` 下执行 `node --test sourceUrl.test.mjs`。
+
 ```bash
 uv run --no-sync python -m pytest -q tests/test_project_asset_versions.py tests/test_project_library.py tests/test_project_report_assets.py tests/test_project_research_materials.py tests/test_project_sec_sources.py tests/test_project_asset_revocation.py tests/test_project_financial_facts.py tests/test_task_attachments.py tests/test_research_session_bff.py
 ```

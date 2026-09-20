@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { remarkBoundCitations } from "./remarkBoundCitations";
 import { remarkReportHeadings } from "./remarkReportHeadings";
 import { sourceCalculation } from "./sourceCalculation";
+import { sourceUrl as validLink } from "./sourceUrl";
 import { ReportVersions } from "./ReportVersions";
 import { ResearchGraph } from "./ResearchGraph";
 import { useSearchParams } from "react-router";
@@ -102,15 +103,6 @@ const phaseName: Record<string, string> = {
   research_needs_attention: "研究尚未完成 · 需要处理",
   research_incomplete_acknowledged: "已查看未完成研究",
 };
-function validLink(url?: string) {
-  if (!url) return undefined;
-  try {
-    const u = new URL(url);
-    return ["http:", "https:"].includes(u.protocol) ? u.href : undefined;
-  } catch {
-    return undefined;
-  }
-}
 
 function chartSourceLinks(value: unknown): string[] {
   if (Array.isArray(value)) return [...new Set(value.flatMap(chartSourceLinks))];

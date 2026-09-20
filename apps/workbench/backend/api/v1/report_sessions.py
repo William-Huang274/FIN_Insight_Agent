@@ -323,7 +323,7 @@ def graph_for_thread(thread):
 
 
 class ReportSessionService:
-    def __init__(self, api_url, artifacts, *, sdk=None, audit_root=None, research_profile=None, attachment_store=None):
+    def __init__(self, api_url, artifacts, *, sdk=None, audit_root=None, research_profile=None, attachment_store=None, attachment_archive_roots=()):
         parsed = urlsplit(api_url)
         if parsed.scheme != "http" or parsed.hostname not in {"127.0.0.1", "localhost", "langgraph-api"} or parsed.username or parsed.query or parsed.fragment:
             raise ValueError("report_session_server_must_be_local")
@@ -334,6 +334,8 @@ class ReportSessionService:
         self.audit_root = audit_root
         self.research_profile = deepcopy(research_profile)
         self.attachment_store = attachment_store
+        from ...attachment_archive import AttachmentArchive
+        self.attachment_archives = tuple(AttachmentArchive(root) for root in attachment_archive_roots)
 
     async def owned_thread(self, thread_id):
         thread = await self.sdk.threads.get(str(thread_id))
@@ -793,9 +795,13 @@ def build_report_sessions_router(service):
     @router.get("/research-sessions/{thread_id}/attachments/{document_id}")
     async def download_attachment(thread_id: UUID, document_id: str):
         await service.owned_thread(thread_id)
+        from ...attachment_archive import read_attachment
+        from sec_agent.research_foundation.asset_workspace import AssetConflict
         try:
-            row = TaskAssetView(attachments().root, thread_id, validate=False).get(thread_id, document_id)
-        except ProjectAssetUnavailable as exc:
+            row = await run_in_threadpool(read_attachment,
+                TaskAssetView(attachments().root, thread_id, validate=False),
+                service.attachment_archives, thread_id, document_id)
+        except (ProjectAssetUnavailable, AssetConflict) as exc:
             raise HTTPException(409, str(exc)) from None
         except ValueError:
             raise HTTPException(404, "本任务没有这份资料") from None

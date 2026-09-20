@@ -83,11 +83,16 @@ def test_undated_original_uses_capture_boundary_without_inventing_publication(fo
         assert edge[0]=='2026-09-20' and json.loads(edge[1])['published_at'] is None
 
 
-def test_issuer_can_retrieve_subsidiary_statement_without_becoming_contract_party(foundation):
+@pytest.mark.parametrize('category', ['filing', 'annual_report'])
+def test_issuer_can_retrieve_subsidiary_statement_without_becoming_contract_party(foundation, category):
     path,_,job=candidate(foundation)
     rel=job['relations'][0]
     rel.update(subject_name='Buyer',subject_id='BUYER',object_name='processors',object_id=None)
     with connect(path) as db:
+        sid=rel['source_id']
+        metadata=json.loads(db.execute('SELECT metadata FROM sources WHERE id=?',(sid,)).fetchone()[0])
+        metadata['category']=category
+        db.execute('UPDATE sources SET metadata=? WHERE id=?',(json.dumps(metadata),sid))
         import_job(db,job,review(job))
         row=assertion_page(db,'NVIDIA')['items'][0]
         assert row['reporting_entity_id']=='NVIDIA'

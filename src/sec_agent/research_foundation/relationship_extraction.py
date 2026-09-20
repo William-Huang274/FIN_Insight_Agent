@@ -28,6 +28,10 @@ PREDICATES = {
     'distributes': 'cooperation', 'competes_with': 'competition',
 }
 
+# Report categories identify the reporting issuer independently of the named
+# parties in a transaction. A linked counterparty article is not issuer-owned.
+ISSUER_REPORT_CATEGORIES = {'filing', 'filing_exhibit', 'official_report', 'annual_report'}
+
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS relationship_extraction_jobs(
  job_id TEXT PRIMARY KEY, job_digest TEXT NOT NULL, reviewer TEXT NOT NULL,
@@ -219,7 +223,7 @@ def prepare_job(db, job):
                 # the issuer's name in every table row. Related-material links
                 # alone do not establish reporting identity.
                 reporter = (identifier is not None and metadata.get('entity_id') == identifier
-                            and metadata.get('category') in {'filing', 'filing_exhibit', 'official_report'})
+                            and metadata.get('category') in ISSUER_REPORT_CATEGORIES)
                 if not reporter and _normalize_name(name) not in _normalize_name(text):
                     raise ValueError('counterparty_name_not_in_evidence:' + name)
             for term in relation.terms:
@@ -243,7 +247,7 @@ def prepare_job(db, job):
             revision = source['vintage'] in {'known_as_of', 'current_revision'}
             payload['known_as_of'] = (captured or source['published_at']) if revision else (source['published_at'] or captured)
             payload['date_basis'] = 'published' if payload['known_as_of'] == source['published_at'] else 'captured'
-            payload['reporting_entity_id'] = metadata.get('entity_id') if metadata.get('category') in {'filing', 'filing_exhibit', 'official_report'} else None
+            payload['reporting_entity_id'] = metadata.get('entity_id') if metadata.get('category') in ISSUER_REPORT_CATEGORIES else None
             relations.append({'index': index, 'payload': payload})
         except (KeyError, ValueError) as exc:
             errors.append({'kind': 'relation', 'index': index, 'error': str(exc)})
@@ -376,7 +380,7 @@ def assertion_page(db, entity_id, *, offset=0, limit=30, query='', as_of='9999-1
         return {'items': [], 'total': 0, 'next_offset': None, 'status': 'not_processed'}
     where = """(a.subject=? OR a.object=? OR
       (json_extract(s.metadata,'$.entity_id')=? AND
-       json_extract(s.metadata,'$.category') IN ('filing','filing_exhibit','official_report')))
+       json_extract(s.metadata,'$.category') IN ('filing','filing_exhibit','official_report','annual_report')))
       AND s.access_state='readable'
       AND CASE WHEN s.vintage IN ('known_as_of','current_revision')
         THEN COALESCE(substr(json_extract(s.metadata,'$.known_at'),1,10),

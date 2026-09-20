@@ -37,7 +37,7 @@ def build_data_library_router(attachments_root, fact_mart=None, research_library
         except KeyError:raise HTTPException(404,'未找到这家公司') from None
 
     @router.get('/companies/{entity_id}/data')
-    def company_data(request:Request,entity_id:str,kind:str=Query('financial',pattern='^(financial|prices|positions|holders|filings|derived|disclosures)$'),query:str=Query('',max_length=200),offset:int=Query(0,ge=0),limit:int=Query(30,ge=1,le=100),group:str=Query('',pattern='^(|operating|offering|compensation|macro|other)$'),account:str=Query('',max_length=100),fiscal_year:int|None=Query(None,ge=1900,le=2200),fiscal_period:str=Query('',pattern='^(|FY|Q1|Q2|Q3|Q4|H1|M9|instant|other|unknown)$')):
+    def company_data(request:Request,entity_id:str,kind:str=Query('financial',pattern='^(financial|prices|positions|holders|filings|derived|disclosures|relationships)$'),query:str=Query('',max_length=200),offset:int=Query(0,ge=0),limit:int=Query(30,ge=1,le=100),group:str=Query('',pattern='^(|operating|offering|compensation|macro|other)$'),account:str=Query('',max_length=100),fiscal_year:int|None=Query(None,ge=1900,le=2200),fiscal_period:str=Query('',pattern='^(|FY|Q1|Q2|Q3|Q4|H1|M9|instant|other|unknown)$')):
         current_owner(request)
         from sec_agent.research_foundation.industry_data import data_page
         try:return data_page(foundation(),entity_id,kind=kind,query=query,offset=offset,limit=limit,group=group,account=account,fiscal_year=fiscal_year,fiscal_period=fiscal_period)
@@ -48,7 +48,9 @@ def build_data_library_router(attachments_root, fact_mart=None, research_library
         current_owner(request)
         from sec_agent.research_foundation.research_library import open_library
         library=open_library(foundation())
-        result=library.graph_search(entity_id,'9999-12-31',depth=depth)
+        # UI category filtering happens after readback. Give it a larger bounded
+        # window than model context so holder rows cannot hide business links.
+        result=library.graph_search(entity_id,'9999-12-31',depth=depth,max_edges=1000)
         ids={entity_id}|{e[k] for e in result['edges'] for k in ('subject','object')}
         result['nodes']=[e for e in library.entities() if e['id'] in ids]
         return result

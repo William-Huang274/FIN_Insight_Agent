@@ -119,6 +119,9 @@ def company_detail(path, entity_id, *, as_of='9999-12-31'):
         result['data_counts']['derived']=len(derived_financials.page(db,entity_id,limit=100,as_of=as_of)['items'])
         result['data_counts']['disclosures']=disclosure_register.page(db,entity_id,limit=100,as_of=as_of)['total']
         result['reporting_periods']=reporting_periods.menu(db,entity_id)
+        from .relationship_extraction import coverage_page, assertion_page
+        result['relationship_processing']=coverage_page(db,entity_id)
+        result['data_counts']['relationships']=assertion_page(db,entity_id,limit=1,as_of=as_of)['total']
         result['account_tree']=financial_accounts.tree(db,entity_id) if result['profile']['type'] not in {'agency','macro_collection'} else []
         result['financial_groups']=[{'id':r[0],'label':FINANCIAL_GROUPS[r[0]],'count':r[1]} for r in db.execute(
             'SELECT '+financial_group_sql()+',count(*) FROM financial_points WHERE '+
@@ -151,6 +154,7 @@ def data_channels(detail):
         if counts.get('derived'):channels.append({'kind':'derived','group':'','label':'衍生指标与估值','count':counts['derived']})
         if detail['positions_count'] and not manager:channels.append(positions)
         if counts.get('disclosures'):channels.append({'kind':'disclosures','group':'','label':'主要股东、客户与供应商','count':counts['disclosures']})
+        if counts.get('relationships'):channels.append({'kind':'relationships','group':'','label':'已提取的业务与资金关系','count':counts['relationships']})
         if counts.get('holders'):channels.append({'kind':'holders','group':'','label':'持有该证券的申报机构','count':counts['holders']})
         if counts['filing_catalog']:channels.append({'kind':'filings','group':'','label':'监管申报目录','count':counts['filing_catalog']})
     return channels
@@ -185,6 +189,9 @@ def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30
     if fiscal_period and fiscal_period not in reporting_periods.LABELS:raise ValueError('invalid_fiscal_period')
     if kind=='disclosures':
         with closing(connect(path)) as db:return disclosure_register.page(db,entity_id,query,offset,limit,as_of)
+    if kind=='relationships':
+        from .relationship_extraction import assertion_page
+        with closing(connect(path)) as db:return assertion_page(db,entity_id,query=query,offset=offset,limit=limit,as_of=as_of)
     if kind=='derived':
         with closing(connect(path)) as db:return derived_financials.page(db,entity_id,query,offset,limit,as_of)
     if kind=='holders':

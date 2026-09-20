@@ -145,7 +145,7 @@ class ResearchLibrary(ResearchSnapshot):
                     key=lambda r:2 if r['status']=='needs_semantic_review' else 1 if r['predicate']=='reported_security_position' else 0)
                 identities=set()
                 for row in related:
-                    identity=tuple(row[k] for k in ('subject','object','predicate','source_id'))
+                    identity=(row['id'],) if row['id'].startswith('RELATION::') else tuple(row[k] for k in ('subject','object','predicate','source_id'))
                     if identity in identities:continue
                     identities.add(identity)
                     if row['id'] not in found and len(found) >= max_edges:

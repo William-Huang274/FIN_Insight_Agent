@@ -1,10 +1,10 @@
 import {useState} from 'react';
 
 export type EntityProfile={type:string;roles:string[];institution_type?:string;country?:string;registration_country?:string;jurisdiction?:string;identity_basis?:string};
-export function entityArea(profile?:EntityProfile){return ['agency','macro_collection'].includes(profile?.type||'')?'policy':['investment_institution','fund'].includes(profile?.type||'')?'institutions':'companies';}
-export const areaNames:Record<string,string>={companies:'公司',institutions:'投资机构与基金',policy:'宏观与监管'};
-const types:Record<string,string>={agency:'政策发布机构',macro_collection:'宏观与政策资料',investment_institution:'投资机构',fund:'基金产品',company:'公司'};
-const roles:Record<string,string>={company:'经营企业',investment_institution:'投资机构',reporting_manager:'持仓申报管理人',agency:'发布与监管机构',macro_collection:'跨机构资料集合',fund:'基金产品'};
+export function entityArea(profile?:EntityProfile){return ['person','project','product','government'].includes(profile?.type||'')?'related_entities':['agency','macro_collection'].includes(profile?.type||'')?'policy':['investment_institution','fund'].includes(profile?.type||'')?'institutions':'companies';}
+export const areaNames:Record<string,string>={companies:'公司',institutions:'投资机构与基金',policy:'宏观与监管',related_entities:'其他关联主体'};
+const types:Record<string,string>={agency:'政策发布机构',macro_collection:'宏观与政策资料',investment_institution:'投资机构',fund:'基金产品',company:'公司',person:'自然人',government:'政府持股主体',project:'项目',product:'产品'};
+const roles:Record<string,string>={...types,company:'经营企业',investment_institution:'投资机构',reporting_manager:'持仓申报管理人',agency:'发布与监管机构',macro_collection:'跨机构资料集合',fund:'基金产品'};
 
 export function InstitutionProfile({profile,card,name,country}:{profile:EntityProfile;card:{legal_name?:string;sec_cik?:string;selection_reason:string};name:string;country?:string}){
   const known=(v?:string)=>!v||v==='to_verify'?'待核实':({US:'美国',CN:'中国',CA:'加拿大',JP:'日本',AE:'阿联酋',multi_jurisdiction:'多个国家与地区'}[v]||v);

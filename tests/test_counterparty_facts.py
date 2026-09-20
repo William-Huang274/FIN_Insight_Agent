@@ -79,12 +79,60 @@ def test_named_supplier_reaches_reverse_graph_and_missing_locator_category(found
         assert edge['evidence'] and edge['qualifiers']['roles']==['memory']
 
 
+@pytest.mark.parametrize('relationship,predicate', [('supplier','supplies'),('indirect_customer','indirect_customer_of'),('direct_customer','direct_customer_of'),('beneficial_owner','disclosed_shareholder_of')])
+def test_undated_named_fact_projects_without_changing_role(foundation,relationship,predicate):
+    path,w,sid,pack=setup(foundation)
+    w.sql('INSERT INTO entities VALUES(?,?,?)',('SUPPLIER','company','Supplier Co'))
+    w.sql('UPDATE sources SET published_at=NULL,vintage=?,metadata=? WHERE id=?',
+          ('known_as_of',json.dumps({'known_at':'2026-09-21T03:00:00Z'}),sid))
+    f=pack['facts'][0]
+    f.update(category='suppliers' if relationship=='supplier' else 'shareholders' if relationship=='beneficial_owner' else 'customers',
+             identity_kind='named',counterparty_name='Supplier Co',counterparty_entity_id='SUPPLIER',relationship=relationship,
+             measurement_basis='qualitative',count=None,measures=[])
+    imported(path,pack); imported(path,pack)
+    lib=publish(path,w)
+    graph=lib.graph_search('NVIDIA','2026-09-21')
+    matching=[e for e in graph['edges'] if e['predicate']==predicate]
+    assert len(matching)==1
+    edge=matching[0]
+    assert (edge['subject'],edge['object'])==('SUPPLIER','NVIDIA')
+    assert edge['qualifiers']['relationship']==relationship
+    assert edge['qualifiers']['published_at'] is None
+    assert edge['qualifiers']['known_as_of']=='2026-09-21'
+    assert not [e for e in lib.graph_search('NVIDIA','2026-09-20')['edges'] if e['predicate']==predicate]
+
+
+def test_approximate_disclosure_retains_operator(foundation):
+    path,w,sid,pack=setup(foundation)
+    pack['facts'][0]['measures'][0]['operator']='approximately'
+    imported(path,pack)
+    rows=data_page(path,'NVIDIA',kind='disclosures',query='customers')['items']
+    assert rows[0]['structured_facts'][0]['measures'][0]['operator']=='approximately'
+
+
 def test_import_is_atomic_when_late_row_fails(foundation):
     path,_,_,pack=setup(foundation)
     bad=copy.deepcopy(pack['facts'][0]);bad['measures'][0]['value']='33';pack['facts'].append(bad)
     with pytest.raises(ValueError):imported(path,pack)
     with sqlite3.connect(path) as db:
         assert not db.execute("SELECT 1 FROM sqlite_master WHERE name='counterparty_facts'").fetchone()
+
+
+def test_undated_reviewed_fact_available_only_after_capture(foundation):
+    path,w,sid,pack=setup(foundation)
+    w.sql('DELETE FROM company_disclosures')
+    w.sql('UPDATE sources SET published_at=NULL,vintage=?,metadata=? WHERE id=?',
+          ('known_as_of',json.dumps({'known_at':'2026-09-21T03:00:00Z'}),sid))
+    imported(path,pack)
+    assert data_page(path,'NVIDIA',kind='disclosures',as_of='2026-09-20')['total']==0
+    item=data_page(path,'NVIDIA',kind='disclosures',as_of='2026-09-21')['items'][0]
+    assert item['published_at'] is None and item['known_as_of']=='2026-09-21'
+    lib=publish(path,w)
+    result=lib.navigate(SourceDocumentRequest(source_space='library',operation='data',data_kind='disclosures',entity_id='NVIDIA'),'2026-09-21')
+    fact=result.items[0]
+    assert fact['measures'][0]['value']=='11' and fact['date_basis']=='known_as_of'
+    assert fact['published_at'] is None
+    assert lib.navigate(SourceDocumentRequest(**fact['evidence'][0]['readback']),'2026-09-21').items
 
 
 def test_table_cells_stay_separate_and_model_paginates_facts(foundation):
@@ -103,3 +151,78 @@ def test_table_cells_stay_separate_and_model_paginates_facts(foundation):
     assert b.next_offset is None and a.items[0]['id']!=b.items[0]['id']
     readback=b.items[0]['evidence'][0]['readback']
     assert lib.navigate(SourceDocumentRequest(**readback),'2026-09-20').items
+
+
+@pytest.mark.parametrize('text,value,valid',[
+    ('Anonymous customer | 10.0%','10',True),
+    ('Anonymous customer | 110.0%','10',False),
+    ('Anonymous customer | 11 | 12%','1112',False),
+    ('Anonymous customer | 11,12%','1112',False),
+    ('Anonymous customer | 10.5%','10',False),
+])
+def test_numeric_presence_uses_decimal_tokens(foundation,text,value,valid):
+    path,w,_,pack=setup(foundation)
+    sid=w.source('NVIDIA','https://example.org/decimal','Decimal table','filing',text,published='2026-08-26')
+    pid=w.sql('SELECT id FROM passages WHERE source_id=?',(sid,))[0]['id']
+    fact=pack['facts'][0]
+    fact.update(source_id=sid,evidence=[dict(passage_id=pid,start=0,end=len(text),quote=text)])
+    fact['measures'][0]['value']=value
+    if valid:imported(path,pack)
+    else:
+        with pytest.raises(ValueError):imported(path,pack)
+
+
+def test_customer_revenue_amount_keeps_thousands_and_is_not_arr(foundation):
+    path,w,_,pack=setup(foundation)
+    text='Year ended 2025 | USD thousand\nCustomer A | 9,868'
+    sid=w.source('NVIDIA','https://example.org/customer-amount','Customer revenue','filing',text,published='2026-08-26')
+    pid=w.sql('SELECT id FROM passages WHERE source_id=?',(sid,))[0]['id']
+    fact=pack['facts'][0]
+    fact.update(source_id=sid,evidence=[dict(passage_id=pid,start=0,end=len(text),quote=text)])
+    fact['measures']=[dict(metric='revenue_amount',value='9868',unit='USD',scale='1000',operator='=',denominator='FY2025 revenue from Customer A')]
+    imported(path,pack)
+    with sqlite3.connect(path) as db:
+        payload=json.loads(db.execute('SELECT payload FROM counterparty_facts').fetchone()[0])
+    assert payload['measures'][0]['metric']=='revenue_amount'
+    assert payload['measures'][0]['value']=='9868' and payload['measures'][0]['scale']=='1000'
+    bad=copy.deepcopy(pack)
+    bad['facts'][0]['measures'][0]['unit']='percent'
+    with pytest.raises(ValueError):imported(path,bad)
+
+
+@pytest.mark.parametrize('category,relationship,metric,unit,value,scale',[
+    ('suppliers','supplier','procurement_amount','USD','295','1000000'),
+    ('shareholders','beneficial_owner','voting_power_share','percent','85.1','1'),
+])
+def test_procurement_and_voting_keep_distinct_semantics(foundation,category,relationship,metric,unit,value,scale):
+    path,w,_,pack=setup(foundation)
+    text='FY2026: purchased USD 295 million. Voting power: 85.1%.'
+    sid=w.source('NVIDIA','https://example.org/distinct-measures','Transaction terms','filing',text,published='2026-08-26')
+    pid=w.sql('SELECT id FROM passages WHERE source_id=?',(sid,))[0]['id']
+    fact=pack['facts'][0]
+    fact.update(source_id=sid,category=category,relationship=relationship,evidence=[dict(passage_id=pid,start=0,end=len(text),quote=text)])
+    fact['measures']=[dict(metric=metric,value=value,unit=unit,scale=scale,operator='=',denominator='Original disclosed basis')]
+    imported(path,pack)
+    with sqlite3.connect(path) as db:
+        saved=json.loads(db.execute('SELECT payload FROM counterparty_facts').fetchone()[0])
+    assert saved['measures'][0]['metric']==metric and saved['measures'][0].get('scale','1')==scale
+    bad=copy.deepcopy(pack);bad['facts'][0].update(category='customers',relationship='customer')
+    with pytest.raises(ValueError,match='metric_category_mismatch'):imported(path,bad)
+
+
+@pytest.mark.parametrize('category,relationship,metric',[
+    ('customers','customer','receivables_share'),
+    ('suppliers','supplier','cost_of_sales_share'),
+])
+def test_balance_and_cost_concentrations_are_not_labeled_sales(foundation,category,relationship,metric):
+    path,_,_,pack=setup(foundation)
+    fact=pack['facts'][0]
+    fact.update(category=category,relationship=relationship)
+    fact['measures'][0]['metric']=metric
+    imported(path,pack)
+    with sqlite3.connect(path) as db:
+        saved=json.loads(db.execute('SELECT payload FROM counterparty_facts').fetchone()[0])
+    assert saved['measures'][0]['metric']==metric
+    bad=copy.deepcopy(pack)
+    bad['facts'][0].update(category='shareholders',relationship='beneficial_owner')
+    with pytest.raises(ValueError,match='metric_category_mismatch'):imported(path,bad)

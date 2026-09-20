@@ -106,8 +106,11 @@ class ResearchSnapshot:
         known=metadata.get('known_at')
         row['known_at']=known
         available=known if row['vintage'] in {'known_as_of','current_revised'} and known else row['published_at']
+        # The snapshot contract is day-granular. Preserve the original timestamp
+        # in metadata but compare its source-calendar day, as the SQL readers do.
+        available_day = str(available)[:10] if available is not None else None
         row['eligible']=(row['access_state']=='readable' and available is not None
-            and available <= self._cutoff(as_of) and row['vintage'] in self._vintages())
+            and available_day <= self._cutoff(as_of) and row['vintage'] in self._vintages())
         return row
 
     def _query(self, sql, parameters=()):

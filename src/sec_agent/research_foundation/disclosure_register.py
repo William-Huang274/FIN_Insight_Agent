@@ -20,14 +20,21 @@ def page(db,entity_id,query='',offset=0,limit=30,as_of='9999-12-31'):
     rows=[dict(r) for r in db.execute('SELECT *'+sql+' ORDER BY category,published_at DESC',args)] if installed(db) else []
     grouped={}
     if installed(db,'counterparty_facts'):
-        for r in db.execute('''SELECT f.*,s.title,s.published_at FROM counterparty_facts f
-            JOIN sources s ON s.id=f.source_id WHERE f.entity_id=? AND s.published_at<=?
-            ORDER BY s.published_at DESC,f.id''',(entity_id,as_of)):
+        for r in db.execute('''SELECT f.*,s.title,s.published_at,
+            CASE WHEN s.vintage IN ('known_as_of','current_revised')
+              THEN coalesce(substr(json_extract(s.metadata,'$.known_at'),1,10),
+                            substr(json_extract(s.metadata,'$.captured_at'),1,10),s.published_at)
+              ELSE coalesce(s.published_at,substr(json_extract(s.metadata,'$.known_at'),1,10),
+                            substr(json_extract(s.metadata,'$.captured_at'),1,10)) END AS known_as_of
+            FROM counterparty_facts f JOIN sources s ON s.id=f.source_id
+            WHERE f.entity_id=? AND s.access_state='readable' AND known_as_of<=?
+            ORDER BY known_as_of DESC,f.id''',(entity_id,as_of)):
             f=json.loads(r['payload'])
+            f.update(known_as_of=r['known_as_of'],date_basis='publication_date' if r['published_at']==r['known_as_of'] else 'known_as_of')
             if query and query not in LABELS and query.casefold() not in json.dumps(f,ensure_ascii=False).casefold():continue
             if query in LABELS and query!=r['category']:continue
             key=(r['source_id'],r['category'])
-            grouped.setdefault(key,{'facts':[],'title':r['title'],'published_at':r['published_at']})['facts'].append(f)
+            grouped.setdefault(key,{'facts':[],'title':r['title'],'published_at':r['published_at'],'known_as_of':r['known_as_of']})['facts'].append(f)
     # Multiple locator windows for the same report must not duplicate facts.
     seen=set(); result=[]
     for row in rows:
@@ -36,6 +43,7 @@ def page(db,entity_id,query='',offset=0,limit=30,as_of='9999-12-31'):
         seen.add(key)
         row['original_section_chars']=len(row.pop('body'))
         row['structured_facts']=grouped.get(key,{}).get('facts',[])
+        row['known_as_of']=grouped.get(key,{}).get('known_as_of')
         row['extraction_status']='reviewed_facts_available' if row['structured_facts'] else 'extraction_pending'
         row['extraction_note']='已核对的逐项记录；不代表完整前十名单。' if row['structured_facts'] else '尚未完成逐项结构化提取，这是数据处理缺口，不等于公司未披露。'
         # Source availability checks remain distinguishable from extraction.
@@ -48,7 +56,7 @@ def page(db,entity_id,query='',offset=0,limit=30,as_of='9999-12-31'):
         if key in seen:continue
         sid,category=key
         result.append({'id':'STRUCTURED::'+sid+'::'+category,'entity_id':entity_id,'category':category,
-            'title':LABELS[category]+' · '+group['title'],'source_id':sid,'published_at':group['published_at'],
+            'title':LABELS[category]+' · '+group['title'],'source_id':sid,'published_at':group['published_at'],'known_as_of':group['known_as_of'],
             'status':'reviewed_facts_available','extraction_status':'reviewed_facts_available',
             'extraction_note':'已核对的逐项记录；不代表完整前十名单。',
             'structured_facts':group['facts'],'readback':{'source_space':'library','operation':'read','document_id':sid}})
@@ -57,7 +65,7 @@ def page(db,entity_id,query='',offset=0,limit=30,as_of='9999-12-31'):
     # Retire old source-less locator gaps only where reviewed facts now exist.
     known_categories={key[1] for key in grouped}
     result=[r for r in result if r['source_id'] or r['category'] not in known_categories]
-    result.sort(key=lambda r:r.get('published_at') or '',reverse=True)
+    result.sort(key=lambda r:r.get('known_as_of') or r.get('published_at') or '',reverse=True)
     total=len(result); rows=result[offset:offset+limit]
     return {'items':rows,'total':total,'next_offset':offset+len(rows) if offset+len(rows)<total else None}
 

@@ -134,20 +134,26 @@ class ResearchLibrary(ResearchSnapshot):
         if entity_id not in known:
             return {'status': 'unknown_entity', 'edges': [], 'truncated': False}
         frontier, visited, found = {entity_id}, set(), {}
+        from .industry_data import position_relations
         for _ in range(depth):
             next_frontier = set()
             for entity in sorted(frontier - visited):
                 visited.add(entity)
                 # Reviewed relations must not be crowded out by many literal
                 # co-mentions when a graph window reaches its size bound.
-                related=sorted(self.related(entity, as_of), key=lambda r: r['status']=='needs_semantic_review')
+                related=sorted(self.related(entity, as_of)+position_relations(self.path,entity,as_of),
+                    key=lambda r:2 if r['status']=='needs_semantic_review' else 1 if r['predicate']=='reported_security_position' else 0)
+                identities=set()
                 for row in related:
+                    identity=tuple(row[k] for k in ('subject','object','predicate','source_id'))
+                    if identity in identities:continue
+                    identities.add(identity)
                     if row['id'] not in found and len(found) >= max_edges:
                         return {'status': 'ok', 'edges': list(found.values()), 'truncated': True}
-                    row['qualifiers'] = json.loads(row['qualifiers'])
+                    if isinstance(row['qualifiers'],str):row['qualifiers'] = json.loads(row['qualifiers'])
                     row['candidate_only'] = True
                     row['evidence'] = self._query('SELECT id,source_id,locator,digest FROM passages WHERE source_id=? AND locator=?', (row['source_id'], row['locator']))
-                    row['readback'] = {'source_space':'library', 'operation':'read', 'document_id':row['source_id']}
+                    row.setdefault('readback', {'source_space':'library', 'operation':'read', 'document_id':row['source_id']})
                     found[row['id']] = row
                     next_frontier.update([row['subject'], row['object']])
             frontier = next_frontier - visited

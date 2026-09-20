@@ -1,4 +1,22 @@
 """Shared navigation semantics; categories never confer factual authority."""
+import re
+
+# Navigation translations, not cross-taxonomy accounting equivalences. Keep the
+# SEC concept and raw source label alongside them. ECD/FFD definitions and
+# regulatory references are published in xbrl.sec.gov/{ecd,ffd}/2026 schemas.
+METRIC_NAMES = {
+    'ecd:CoSelectedMeasureAmt':'公司选定的绩效指标值',
+    'ecd:NonPeoNeoAvgCompActuallyPaidAmt':'其他具名高管平均实际支付薪酬（SEC口径）',
+    'ecd:NonPeoNeoAvgTotalCompAmt':'其他具名高管平均薪酬总额',
+    'ecd:PeerGroupTotalShareholderRtnAmt':'同业组股东总回报值',
+    'ecd:PeoActuallyPaidCompAmt':'首席执行官实际支付薪酬（SEC口径）',
+    'ecd:PeoTotalCompAmt':'首席执行官薪酬总额',
+    'ecd:TotalShareholderRtnAmt':'股东总回报值',
+    'ffd:NetFeeAmt':'应缴注册费净额',
+    'ffd:NrrtvMaxAggtOfferingPric':'最大发行总价（披露口径）',
+    'ffd:TtlFeeAmt':'注册费总额','ffd:TtlOfferingAmt':'发行总金额',
+    'ffd:TtlOffsetAmt':'抵扣总额','ffd:TtlPrevslyPdAmt':'此前已支付总额',
+}
 
 MATERIAL_GROUPS = {
     'disclosures': ('公司披露', {'filing','annual_report','annual_report_mirror','official_report','filing_exhibit','earnings_release','legacy_10-K','legacy_10-Q','legacy_8-K','company_profile','sec_submissions','filing_directory'}),
@@ -31,7 +49,7 @@ def profile(row, card):
 def financial_group_sql():
     # SEC taxonomy namespaces separate filing fees and executive compensation
     # from operating financial statements; no metric meaning is inferred here.
-    return "CASE WHEN taxonomy='ffd' THEN 'offering' WHEN taxonomy='ecd' THEN 'compensation' WHEN lower(taxonomy) LIKE '%fred%' THEN 'macro' WHEN taxonomy IN ('us-gaap','ifrs-full','DART-IFRS') THEN 'operating' ELSE 'other' END"
+    return "CASE WHEN taxonomy='ffd' THEN 'offering' WHEN taxonomy='ecd' THEN 'compensation' WHEN lower(taxonomy) LIKE '%fred%' THEN 'macro' WHEN taxonomy IN ('us-gaap','ifrs-full','DART-IFRS','issuer-reported') THEN 'operating' ELSE 'other' END"
 
 
 def financial_identity(row):
@@ -39,6 +57,11 @@ def financial_identity(row):
     row['raw_label'] = raw
     row['label'] = str(raw).strip() if raw and str(raw).strip() else f"{row['taxonomy']}:{row['concept']}"
     row['label_status'] = 'source_label' if raw and str(raw).strip() else 'runtime_compatibility_parse:original_concept_fallback'
+    code=f"{row['taxonomy']}:{row['concept']}"
+    row['display_label']=METRIC_NAMES.get(code) or (row['label'] if row['label']!=code else re.sub(r'(?<=[a-z0-9])(?=[A-Z])',' ',row['concept']))
+    row['display_label_basis']='reviewed_navigation_translation' if code in METRIC_NAMES else row['label_status']
+    row['metric_identity']=code
+    row['comparison_status']='source_metric_not_cross_company_equivalence'
     return row
 
 

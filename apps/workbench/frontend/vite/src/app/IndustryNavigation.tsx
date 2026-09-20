@@ -24,18 +24,23 @@ export function MaterialDirectory({sources,label,onSelect}:{sources:Material[];l
   const groups=[...new Set(sources.map(s=>s.material_group||'other'))];
   const select=(category:string,year='',group='')=>{setChoice(group+category+year);onSelect(category,year,group);};
   return <nav className="cw-directory" aria-label="材料层级目录"><button aria-current={!choice?'page':undefined} onClick={()=>select('')}>全部材料 <small>{sources.length}</small></button>
-    {groups.map(group=>{const rows=sources.filter(s=>(s.material_group||'other')===group);return <details key={group} open><summary>{rows[0].material_group_label||'其他资料'} <small>{rows.length}</small></summary>
-      {[...new Set(rows.map(s=>s.category))].map(category=>{const selected=rows.filter(s=>s.category===category);return <details key={category}><summary><button aria-current={choice===group+category?'page':undefined} onClick={()=>select(category,'',group)}>{label(category)} <small>{selected.length}</small></button></summary>
+    {groups.map(group=>{const rows=sources.filter(s=>(s.material_group||'other')===group);return <section className="cw-directory-group" key={group}><button className="cw-group-title" aria-current={choice===group?'page':undefined} onClick={()=>select('','',group)}>{rows[0].material_group_label||'其他资料'} <small>{rows.length}</small></button>
+      {[...new Set(rows.map(s=>s.category))].map(category=>{const selected=rows.filter(s=>s.category===category);return <DirectoryBranch key={category} title={label(category)} count={selected.length} active={choice===group+category} onSelect={()=>select(category,'',group)}>
         {[...new Set(selected.map(s=>s.published_at?.slice(0,4)||'日期待核'))].sort().reverse().map(year=><button key={year} className="cw-year" aria-current={choice===group+category+year?'page':undefined} onClick={()=>select(category,year,group)}>{year} <small>{selected.filter(s=>(s.published_at?.slice(0,4)||'日期待核')===year).length}</small></button>)}
-      </details>;})}</details>;})}
+      </DirectoryBranch>;})}</section>;})}
   </nav>;
 }
 
-export function DataDirectory({kind,group,groups,onSelect}:{kind:string;group:string;groups:{id:string;label:string;count:number}[];onSelect:(kind:string,group:string)=>void}){
+function DirectoryBranch({title,count,active,onSelect,children}:{title:string;count:number;active:boolean;onSelect:()=>void;children:React.ReactNode}){
+  const [expanded,setExpanded]=useState(false);
+  return <div className="cw-directory-branch"><div className="cw-directory-row"><button className="cw-expand" aria-label={`${expanded?'收起':'展开'}${title}`} aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{expanded?'▾':'▸'}</button><button aria-current={active?'page':undefined} onClick={onSelect}>{title} <small>{count}</small></button></div>{expanded&&<div className="cw-directory-years">{children}</div>}</div>;
+}
+export type DataChannel={kind:string;group:string;label:string;count:number};
+export function DataDirectory({kind,group,groups,channels,onSelect}:{kind:string;group:string;groups:{id:string;label:string;count:number}[];channels:DataChannel[];onSelect:(kind:string,group:string)=>void}){
   return <nav className="cw-directory" aria-label="数据层级目录">
-    <details open><summary><button aria-current={kind==='financial'&&!group?'page':undefined} onClick={()=>onSelect('financial','')}>财务与宏观指标 · 全部</button></summary>
-      {(groups.length?groups:[{id:'operating',label:'经营财务',count:0},{id:'offering',label:'发行与注册费用',count:0},{id:'compensation',label:'薪酬与治理',count:0},{id:'macro',label:'宏观数据',count:0}]).map(g=><button className="cw-year" key={g.id} aria-current={kind==='financial'&&group===g.id?'page':undefined} onClick={()=>onSelect('financial',g.id)}>{g.label}{g.count>0&&<small>{g.count}</small>}</button>)}
-    </details>
-    {[['prices','市场日行情'],['positions','该主体申报的证券持仓'],['holders','持有该公司的机构'],['filings','监管申报目录']].map(([key,title])=><button key={key} aria-current={kind===key?'page':undefined} onClick={()=>onSelect(key,'')}>{title}</button>)}
+    {channels.map(channel=><section className="cw-directory-group" key={channel.kind}><button className="cw-group-title" aria-current={kind===channel.kind&&!group?'page':undefined} onClick={()=>onSelect(channel.kind,'')}>{channel.label} <small>{channel.count}</small></button>
+      {channel.kind==='financial'&&groups.map(g=><button className="cw-year" key={g.id} aria-current={kind==='financial'&&group===g.id?'page':undefined} onClick={()=>onSelect('financial',g.id)}>{g.label} <small>{g.count}</small></button>)}
+    </section>)}
+    {!channels.length&&<p className="cw-caption">尚无已接入的数据表；可先查看原始材料与接入缺口。</p>}
   </nav>;
 }

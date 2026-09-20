@@ -2,6 +2,7 @@
 from contextlib import closing
 from pathlib import Path
 import sqlite3
+import json
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from ...authentication import current_owner
@@ -58,8 +59,23 @@ def build_data_library_router(attachments_root, fact_mart=None, research_library
         from sec_agent.research_foundation.research_library import open_library
         library=open_library(foundation())
         result=library.read(document_id,'9999-12-31',start=offset,limit=limit)
+        if result.get('source') and isinstance(result['source'].get('metadata'),str):
+            result['source']['metadata']=json.loads(result['source']['metadata'])
         result['total']=library._query('SELECT count(*) AS n FROM passages WHERE source_id=?',(document_id,))[0]['n']
         return result
+
+    @router.get('/research-sources/{document_id}/presentation')
+    def research_source_presentation(request:Request,document_id:str,offset:int=Query(0,ge=0),limit:int=Query(20,ge=1,le=100)):
+        current_owner(request)
+        from sec_agent.research_foundation.industry_data import connect
+        from sec_agent.research_foundation.material_presentation import material_view
+        from sec_agent.research_foundation.research_library import open_library
+        path=foundation()
+        result=open_library(path).read(document_id,'9999-12-31',limit=1)
+        if result['status']!='readable':raise HTTPException(404,'当前来源没有可读材料')
+        with closing(connect(path)) as db:
+            try:return material_view(db,result['source'],offset=offset,limit=limit) or {'kind':'text'}
+            except ValueError as exc:raise HTTPException(422,str(exc)) from None
 
     @router.get('/market-prices')
     def market_prices(request: Request, ticker: str = Query('',max_length=30),

@@ -8,7 +8,8 @@ from contextlib import closing
 import json
 from pathlib import Path
 import sqlite3
-from .industry_taxonomy import profile, source_navigation, financial_group_sql, financial_identity, FINANCIAL_GROUPS
+from .industry_taxonomy import profile, source_navigation, financial_group_sql, financial_identity, FINANCIAL_GROUPS, METRIC_NAMES
+from .material_presentation import material_preview
 
 
 SCHEMA = """
@@ -108,9 +109,58 @@ def company_detail(path, entity_id, *, as_of='9999-12-31'):
             source['categories']=[source['category']]
             source['category']=source['metadata'].get('category',source['category'])
             source['link_role']='primary_catalogue' if source['metadata'].get('entity_id')==entity_id else 'related_material'
-            unique[source['id']]=source_navigation(source)
+            unique[source['id']]=material_preview(db, source_navigation(source))
         result['sources']=list(unique.values())
+        result['data_counts']['holders']=db.execute('SELECT count(*) FROM position_issuers WHERE entity_id=?',(entity_id,)).fetchone()[0]
+        result['financial_groups']=[{'id':r[0],'label':FINANCIAL_GROUPS[r[0]],'count':r[1]} for r in db.execute(
+            'SELECT '+financial_group_sql()+',count(*) FROM financial_points WHERE '+
+            ('source_id IN (SELECT source_id FROM entity_sources WHERE entity_id=?)' if entity_id.startswith('AGENCY::') else 'entity_id=?')+
+            ' GROUP BY 1',(entity_id,))]
+        result['data_channels']=data_channels(result)
+        result['macro_series']=[]
+        if result['profile']['type'] in {'agency','macro_collection'}:
+            scope='source_id IN (SELECT source_id FROM entity_sources WHERE entity_id=?)' if entity_id.startswith('AGENCY::') else 'entity_id=?'
+            for r in db.execute('SELECT concept,label,unit,count(*) AS observations,max(period_end) AS latest_observation '
+                'FROM financial_points WHERE '+scope+' GROUP BY concept,label,unit ORDER BY concept',(entity_id,)):
+                result['macro_series'].append(dict(r))
     return result
+
+
+def data_channels(detail):
+    """Available data, not a fictitious universal company menu."""
+    counts=detail['data_counts']; policy=detail['profile']['type'] in {'agency','macro_collection'}
+    channels=[]
+    if policy:
+        if counts['financial_points']:channels.append({'kind':'financial','group':'','label':'经济指标与时间序列','count':counts['financial_points']})
+        n=sum(s['category'].startswith('policy') for s in detail['sources'])
+        if n:channels.append({'kind':'policies','group':'','label':'政策与规则登记','count':n})
+    else:
+        if detail['positions_count']:channels.append({'kind':'positions','group':'','label':'该管理人申报的证券持仓','count':detail['positions_count']})
+        if counts['financial_points']:channels.append({'kind':'financial','group':'','label':'财务指标','count':counts['financial_points']})
+        if counts['market_prices']:channels.append({'kind':'prices','group':'','label':'市场日行情','count':counts['market_prices']})
+        if counts.get('holders'):channels.append({'kind':'holders','group':'','label':'持有该证券的申报机构','count':counts['holders']})
+        if counts['filing_catalog']:channels.append({'kind':'filings','group':'','label':'监管申报目录','count':counts['filing_catalog']})
+    return channels
+
+
+def position_relations(path, entity_id, as_of):
+    """Project only explicitly resolved issuer identities, without summing exposure."""
+    with closing(connect(path)) as db:
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE name='position_issuers'").fetchone():return []
+        rows=db.execute('SELECT p.manager_id,i.entity_id,p.source_id,p.period_end,p.filed_at,count(*) AS position_rows '
+            'FROM institution_positions p JOIN position_issuers i ON i.position_id=p.id '
+            'JOIN sources s ON s.id=p.source_id WHERE (p.manager_id=? OR i.entity_id=?) AND p.filed_at<=? '
+            "AND s.access_state='readable' AND (s.vintage NOT IN ('known_as_of','current_revised') OR substr(json_extract(s.metadata,'$.known_at'),1,10)<=?) "
+            'GROUP BY p.manager_id,i.entity_id,p.source_id,p.period_end,p.filed_at ORDER BY p.filed_at DESC',
+            (entity_id,entity_id,as_of,as_of)).fetchall()
+        from hashlib import sha256
+        return [{'id':'POSITION_EDGE::'+sha256('|'.join(str(r[k]) for k in ('manager_id','entity_id','source_id','period_end')).encode()).hexdigest()[:24],
+            'subject':r['manager_id'],'object':r['entity_id'],'predicate':'reported_security_position','status':'reported_as_of',
+            'source_id':r['source_id'],'published_at':r['filed_at'],'locator':'structured institution_positions',
+            'qualifiers':{'period_end':r['period_end'],'position_rows':r['position_rows'],
+                'identity_basis':'existing_reviewed_position_issuers_mapping','no_netting':True},
+            'candidate_only':False,'evidence':[],
+            'readback':{'source_space':'library','operation':'data','entity_id':r['manager_id'],'data_kind':'positions'}} for r in rows]
 
 
 def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30, as_of='9999-12-31', group=''):
@@ -137,6 +187,13 @@ def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30
     args=(entity_id,as_of,query,query)
     if kind=='financial' and entity_id.startswith('AGENCY::'):
         where=f"source_id IN (SELECT source_id FROM entity_sources WHERE entity_id=?) AND {date}<=? AND (?='' OR instr(lower({search}),lower(?))>0)"
+    if kind=='financial':
+        mapped=[key.split(':',1)[1] for key,value in METRIC_NAMES.items() if query and query.casefold() in value.casefold()]
+        terms="(?='' OR instr(lower(concept),lower(?))>0 OR instr(lower(label),lower(?))>0"
+        if mapped:terms+=' OR concept IN ('+','.join('?' for _ in mapped)+')'
+        terms+=')'
+        where=where[:where.index("(?=''")]+terms
+        args=(entity_id,as_of,query,query,query,*mapped)
     base_where,base_args=where,args
     if group:
         where += ' AND ('+financial_group_sql()+')=?'
@@ -155,6 +212,11 @@ def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30
         elif kind == 'positions': ordering += ', issuer_name, id'
         elif kind == 'filings': ordering += ', accession'
         rows=[dict(r) for r in db.execute('SELECT * FROM '+table+' WHERE '+where+f' ORDER BY {ordering} LIMIT ? OFFSET ?',(*args,limit,offset))]
+        if kind=='financial':
+            metadata={sid:json.loads(db.execute('SELECT metadata FROM sources WHERE id=?',(sid,)).fetchone()[0]) for sid in {r['source_id'] for r in rows}}
+            for row in rows:
+                row['frequency']=metadata[row['source_id']].get('frequency')
+                row['revision_basis']='current_revised' if metadata[row['source_id']].get('current_revised') else 'source_disclosure'
     for row in rows:
         if 'payload' in row: row['payload']=json.loads(row['payload'])
         if kind=='financial':financial_identity(row)

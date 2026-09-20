@@ -42,6 +42,69 @@ def test_import_preserves_identity_and_old_original(foundation):
     assert company_detail(path,'NVIDIA')['gaps'][0]['status']=='tool_failure'
 
 
+def test_directory_reassembly_preserves_titles_dates_and_missing_bodies(foundation):
+    from sec_agent.research_foundation.material_presentation import material_view
+    from sec_agent.research_foundation.industry_data import connect
+    path,worker,_=foundation
+    records=[{'title':f'News {i}','url':'https://example.org/news','published_at':'2026-09-01','article_body_available':False,'padding':'x'*500} for i in range(40)]
+    sid=worker.source('NVIDIA','https://example.org/news-index','News index','news_discovery',json.dumps(records))
+    detail=company_detail(path,'NVIDIA');source=next(s for s in detail['sources'] if s['id']==sid)
+    assert source['record_count']==40 and source['published_at'] is None
+    assert source['record_date_range']==['2026-09-01','2026-09-01']
+    with connect(path) as db:view=material_view(db,source,offset=20,limit=20)
+    assert view['items'][0]['title']=='News 20' and view['total']==40
+    assert not view['items'][0]['body_available']
+    worker.sql('UPDATE passages SET body=body||? WHERE source_id=?',('corrupt',sid))
+    assert next(s for s in company_detail(path,'NVIDIA')['sources'] if s['id']==sid)['preview_kind']=='parse_error'
+
+
+def test_data_channels_follow_available_tables_and_entity_role(foundation):
+    path,worker,sid=foundation
+    assert [c['kind'] for c in company_detail(path,'NVIDIA')['data_channels']]==['financial']
+    worker.sql('DELETE FROM financial_points')
+    worker.sql('INSERT INTO market_prices VALUES(?,?,?,?,?,?,?,?,?,?,?)',('NVIDIA','NVDA','2026-09-01',1,2,1,2,2,10,'USD',sid))
+    assert [c['kind'] for c in company_detail(path,'NVIDIA')['data_channels']]==['prices']
+    row=worker.sql('SELECT payload FROM company_cards')[0];card=json.loads(row['payload']);card['profile_type']='agency'
+    worker.sql('UPDATE company_cards SET payload=?',(json.dumps(card),))
+    worker.source('NVIDIA','https://example.org/rule','Rule title','policy_current_rule','Current rule body.')
+    assert [c['kind'] for c in company_detail(path,'NVIDIA')['data_channels']]==['policies']
+
+
+def test_reviewed_positions_reach_runtime_graph_without_netting(foundation):
+    path,worker,sid=foundation
+    worker.sql('INSERT INTO entities VALUES(?,?,?)',('MANAGER','institution','Manager'))
+    worker.sql('INSERT INTO institution_positions VALUES('+','.join('?'*14)+')',('pos','MANAGER','NVIDIA','67066G104','COM','100','USD','5','SH','PUT','2026-06-30','2026-08-01',sid,'{}'))
+    worker.sql('INSERT INTO position_issuers VALUES(?,?,?)',('pos','NVIDIA','operator verified CUSIP'))
+    graph=publish(path,worker).graph_search('MANAGER','2026-09-20')
+    edge=next(e for e in graph['edges'] if e['predicate']=='reported_security_position')
+    assert edge['object']=='NVIDIA' and edge['qualifiers']['no_netting']
+    assert edge['qualifiers']['period_end']=='2026-06-30'
+
+
+def test_navigation_metric_translation_retains_original_identity_and_search(foundation):
+    path,worker,sid=foundation
+    worker.sql('INSERT INTO financial_points VALUES('+','.join('?'*16)+')',('fee','NVIDIA','ffd','NetFeeAmt','','12','USD',None,'2026-08-01','2026-09-01',2026,'Q2','424B2','acc',sid,'{}'))
+    result=data_page(path,'NVIDIA',query='注册费净额')['items']
+    assert len(result)==1 and result[0]['display_label']=='应缴注册费净额'
+    assert result[0]['raw_label']=='' and result[0]['metric_identity']=='ffd:NetFeeAmt'
+
+
+def test_reviewed_pdf_cells_require_table_context_and_retain_scale_and_date_basis(foundation):
+    from scripts.data_retrieval.import_reviewed_financial_rows import import_rows
+    path,worker,_=foundation
+    sid=worker.source('NVIDIA','https://example.org/report.pdf','Report','official_report','[PDF page 4]\nSix months ended 30 June 2026\nUSD million\nRevenue 1,234 987')
+    row=dict(entity_id='NVIDIA',source_id=sid,pdf_page=4,evidence_row='Revenue 1,234 987',source_value='1,234',
+        concept='Revenue',label='Revenue',period_start='2026-01-01',period_end='2026-06-30',unit='USD',scale=1000000,
+        period_basis='H1',accounting_basis='IFRS',form='Interim report',context_quotes=['USD million','Six months ended 30 June 2026'])
+    manifest={'reviewed_at':'2026-09-20','rows':[row]}
+    assert import_rows(path,manifest)==1
+    result=next(r for r in data_page(path,'NVIDIA')['items'] if r['taxonomy']=='issuer-reported')
+    assert result['value']=='1234000000' and result['fiscal_period']=='H1'
+    assert result['payload']['date_basis']=='known_at_capture_not_publication'
+    row['context_quotes']=['Three months ended']
+    with pytest.raises(ValueError,match='table_context_not_found'):import_rows(path,manifest)
+
+
 def test_blank_labels_and_metric_groups_are_shared_with_runtime(foundation):
     path,worker,sid=foundation
     worker.sql('INSERT INTO financial_points VALUES('+','.join('?'*16)+')',
@@ -218,6 +281,18 @@ def test_api_reads_same_library_not_preview_fixture(foundation,tmp_path):
     assert client.get('/data-library/companies/missing').status_code==404
     assert client.get('/data-library/research-sources/'+sid).json()['items'][0]['body']=='Current source text.'
     assert client.get('/data-library/research-sources/'+sid).json()['total']==1
+
+
+def test_presentation_api_decodes_archived_metadata_and_paginates_records(foundation,tmp_path):
+    from apps.workbench.backend.api.v1.data_library import build_data_library_router
+    path,worker,_=foundation
+    sid=worker.source('NVIDIA','https://example.org/news','News','news_discovery',json.dumps([{'title':f'Item {n}','published_at':'2026-08-01'} for n in range(23)]))
+    publish(path,worker)
+    app=FastAPI();app.include_router(build_data_library_router(tmp_path,research_library=path));client=TestClient(app)
+    result=client.get(f'/data-library/research-sources/{sid}/presentation?offset=20&limit=20')
+    assert result.status_code==200
+    assert result.json()['total']==23 and result.json()['items'][0]['title']=='Item 20'
+    assert isinstance(client.get('/data-library/research-sources/'+sid).json()['source']['metadata'],dict)
 
 
 def test_latest_observation_first_when_capture_date_ties(foundation):

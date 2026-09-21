@@ -35,9 +35,9 @@ class Anchor(Strict):
 
 
 class Measure(Strict):
-    metric: Literal['revenue_share', 'receivables_share', 'procurement_share', 'cost_of_sales_share', 'beneficial_shares', 'ownership_share',
+    metric: Literal['revenue_share', 'receivables_share', 'procurement_share', 'cost_of_sales_share', 'cost_and_operating_expense_share', 'beneficial_shares', 'ownership_share',
                     'annualized_recurring_revenue', 'annualized_recurring_revenue_share', 'revenue_amount',
-                    'procurement_amount', 'voting_power_share']
+                    'procurement_amount', 'procurement_commitment_amount', 'financial_guarantee_maximum_payment', 'restricted_investment_amount', 'voting_power_share']
     value: Decimal = Field(ge=0)
     unit: Literal['percent', 'shares', 'USD', 'CNY', 'HKD', 'TWD', 'KRW',
                   'JPY', 'EUR', 'GBP', 'SGD', 'MYR', 'INR', 'AUD', 'CAD',
@@ -53,7 +53,7 @@ class Measure(Strict):
         if (self.metric == 'beneficial_shares') != (self.unit == 'shares'):
             raise ValueError('metric_unit_mismatch')
         monetary = self.unit not in {'percent', 'shares'}
-        if (self.metric in {'annualized_recurring_revenue', 'revenue_amount', 'procurement_amount'}) != monetary:
+        if (self.metric in {'annualized_recurring_revenue', 'revenue_amount', 'procurement_amount', 'procurement_commitment_amount', 'financial_guarantee_maximum_payment', 'restricted_investment_amount'}) != monetary:
             raise ValueError('amount_unit_mismatch')
         if not monetary and self.scale != 1:
             raise ValueError('non_monetary_scale')
@@ -74,6 +74,7 @@ class Fact(Strict):
     fiscal_year: int | None = None
     period_end: date | None = None
     observation_date: date | None = None
+    observation_basis: Literal['reported', 'conditional_post_transaction'] = 'reported'
     count: int | None = Field(default=None, ge=1)
     measurement_basis: Literal['single', 'each', 'aggregate', 'population_bound', 'qualitative']
     segment: str | None = None
@@ -91,13 +92,38 @@ class Fact(Strict):
         if self.relationship not in allowed[self.category]:
             raise ValueError('relationship_category_mismatch')
         metrics={'customers':{'revenue_share','receivables_share','annualized_recurring_revenue','annualized_recurring_revenue_share','revenue_amount'},'suppliers':{'procurement_share','cost_of_sales_share','procurement_amount'},
-                 'shareholders':{'beneficial_shares','ownership_share','voting_power_share'}}
+                    'shareholders':{'beneficial_shares','ownership_share','voting_power_share'}}
+        metrics['suppliers'].add('cost_and_operating_expense_share')
+        metrics['suppliers'].add('procurement_commitment_amount')
+        metrics['suppliers'].update({'financial_guarantee_maximum_payment','restricted_investment_amount'})
         if any(m.metric not in metrics[self.category] for m in self.measures):
             raise ValueError('metric_category_mismatch')
-        if self.measures and not (self.fiscal_year or self.period_end or self.observation_date):
+        conditional = self.observation_basis == 'conditional_post_transaction'
+        if conditional and (self.category != 'shareholders' or self.fiscal_year or self.period_end or self.observation_date
+                            or any(m.measurement_as_of or m.denominator_as_of for m in self.measures)):
+            raise ValueError('conditional_shareholding_cannot_assert_observed_date')
+        if self.measures and not conditional and not (self.fiscal_year or self.period_end or self.observation_date):
             raise ValueError('measured_fact_requires_period')
         if self.measurement_basis == 'each' and (self.count or 0) < 2:
             raise ValueError('each_requires_population_count')
+        # Compare only identical bases and dates. Different share classes or
+        # quarter/year denominators must remain separate observations.
+        groups = {}
+        for m in self.measures:
+            key = (m.metric, m.unit, m.scale, m.denominator,
+                   m.measurement_as_of, m.denominator_as_of)
+            groups.setdefault(key, []).append(m)
+        for group in groups.values():
+            for exact in (m for m in group if m.operator == '='):
+                for bound in group:
+                    valid = {'=': exact.value == bound.value,
+                             '<': exact.value < bound.value,
+                             '<=': exact.value <= bound.value,
+                             '>': exact.value > bound.value,
+                             '>=': exact.value >= bound.value,
+                             'approximately': True}[bound.operator]
+                    if not valid:
+                        raise ValueError('contradictory_measure_same_basis')
         return self
 
 
@@ -106,6 +132,19 @@ class ReviewedPack(Strict):
     reviewed_by: str = Field(min_length=1)
     review_note: str = Field(min_length=1)
     facts: list[Fact]
+
+
+def validate_evidence_values(fact):
+    """Check lexical presence, not whether table alignment/meaning is correct."""
+    text = ' '.join(a.quote for a in fact.evidence)
+    normalize=lambda s:re.sub(r'\s+', ' ', s).casefold().replace(',', '')
+    if fact.identity_kind=='named' and normalize(fact.counterparty_name) not in normalize(text):
+        raise ValueError('named_counterparty_not_in_evidence')
+    numeric_text = re.sub(r'(?<!\w)(?:RMB|CNY|USD|HKD|JPY|EUR|GBP|KRW|TWD)(?=-?\d)', ' ', text)
+    numbers = {Decimal(token.replace(',', '')) for token in re.findall(
+        r'(?<![\w.])-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?![\d.])', numeric_text)}
+    if any(m.value not in numbers for m in fact.measures):
+        raise ValueError('value_not_in_evidence')
 
 
 def import_reviewed(db, pack, *, manage_transaction=True):
@@ -124,20 +163,11 @@ def import_reviewed(db, pack, *, manage_transaction=True):
             p = db.execute('SELECT source_id,body FROM passages WHERE id=?', (anchor.passage_id,)).fetchone()
             if not p or p['source_id'] != fact.source_id or p['body'][anchor.start:anchor.end] != anchor.quote:
                 raise ValueError('evidence_anchor_mismatch')
-        # Values must appear in evidence; this does not prove table alignment.
-        # Keep cell/word separators: removing them fuses neighboring values.
-        text = ' '.join(a.quote for a in fact.evidence)
-        normalize=lambda s:re.sub(r'\s+', ' ', s).casefold().replace(',', '')
-        if fact.identity_kind=='named' and normalize(fact.counterparty_name) not in normalize(text):
-            raise ValueError('named_counterparty_not_in_evidence')
-        # Compare decimal tokens, so source 10.0 and extracted Decimal('10')
-        # agree without accepting a substring of 110.0 or joining table cells.
-        numbers = {Decimal(token.replace(',', '')) for token in re.findall(
-            r'(?<![\w.])-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?![\d.])', text)}
-        for m in fact.measures:
-            if m.value not in numbers:
-                raise ValueError('value_not_in_evidence')
+        # Keep cell separators, decimal-token boundaries and currency prefixes.
+        validate_evidence_values(fact)
         payload = fact.model_dump(mode='json')
+        # Default additions must not re-identify existing reported facts.
+        if payload['observation_basis'] == 'reported': payload.pop('observation_basis')
         # Adding a default unit multiplier must not change existing fact IDs.
         for measure in payload['measures']:
             if Decimal(measure.get('scale', '1')) == 1: measure.pop('scale', None)

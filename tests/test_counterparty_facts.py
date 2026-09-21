@@ -172,6 +172,25 @@ def test_numeric_presence_uses_decimal_tokens(foundation,text,value,valid):
         with pytest.raises(ValueError):imported(path,pack)
 
 
+@pytest.mark.parametrize('text,valid',[
+    ('Related parties generated RMB2,061 million in 2026.', True),
+    ('Related parties generated USD2,061 million in 2026.', True),
+    ('Identifier MODEL2061 is not an amount.', False),
+    ('Identifier modelRMB2061 is not an amount.', False),
+    ('Related parties generated RMB12,061 million in 2026.', False),
+])
+def test_currency_attached_amount_does_not_accept_identifier(foundation,text,valid):
+    path,w,_,pack=setup(foundation)
+    sid=w.source('NVIDIA','https://example.org/currency-prefix','Related parties','filing',text,published='2026-08-26')
+    pid=w.sql('SELECT id FROM passages WHERE source_id=?',(sid,))[0]['id']
+    f=pack['facts'][0]
+    f.update(source_id=sid,evidence=[dict(passage_id=pid,start=0,end=len(text),quote=text)])
+    f['measures']=[dict(metric='revenue_amount',value='2061',unit='CNY',scale='1000000',operator='=',denominator='Related-party revenue')]
+    if valid:imported(path,pack)
+    else:
+        with pytest.raises(ValueError,match='value_not_in_evidence'):imported(path,pack)
+
+
 @pytest.mark.parametrize('currency,scale',[('USD','1000'),('KRW','1000000'),('TWD','1000'),('EUR','1')])
 def test_customer_revenue_amount_keeps_thousands_and_is_not_arr(foundation,currency,scale):
     path,w,_,pack=setup(foundation)
@@ -194,11 +213,14 @@ def test_customer_revenue_amount_keeps_thousands_and_is_not_arr(foundation,curre
 
 @pytest.mark.parametrize('category,relationship,metric,unit,value,scale',[
     ('suppliers','supplier','procurement_amount','USD','295','1000000'),
+    ('suppliers','supplier','procurement_commitment_amount','USD','295','1000000'),
+    ('suppliers','supplier','financial_guarantee_maximum_payment','USD','295','1000000'),
+    ('suppliers','supplier','restricted_investment_amount','USD','295','1000000'),
     ('shareholders','beneficial_owner','voting_power_share','percent','85.1','1'),
 ])
 def test_procurement_and_voting_keep_distinct_semantics(foundation,category,relationship,metric,unit,value,scale):
     path,w,_,pack=setup(foundation)
-    text='FY2026: purchased USD 295 million. Voting power: 85.1%.'
+    text='FY2026: actual purchases USD 295 million; future procurement commitments USD 295 million; maximum potential guarantee payments USD 295 million; restricted investments USD 295 million. Voting power: 85.1%.'
     sid=w.source('NVIDIA','https://example.org/distinct-measures','Transaction terms','filing',text,published='2026-08-26')
     pid=w.sql('SELECT id FROM passages WHERE source_id=?',(sid,))[0]['id']
     fact=pack['facts'][0]
@@ -215,6 +237,7 @@ def test_procurement_and_voting_keep_distinct_semantics(foundation,category,rela
 @pytest.mark.parametrize('category,relationship,metric',[
     ('customers','customer','receivables_share'),
     ('suppliers','supplier','cost_of_sales_share'),
+    ('suppliers','supplier','cost_and_operating_expense_share'),
 ])
 def test_balance_and_cost_concentrations_are_not_labeled_sales(foundation,category,relationship,metric):
     path,_,_,pack=setup(foundation)
@@ -228,3 +251,37 @@ def test_balance_and_cost_concentrations_are_not_labeled_sales(foundation,catego
     bad=copy.deepcopy(pack)
     bad['facts'][0].update(category='shareholders',relationship='beneficial_owner')
     with pytest.raises(ValueError,match='metric_category_mismatch'):imported(path,bad)
+
+
+def test_same_basis_exact_value_cannot_also_be_below_lower_threshold(foundation):
+    from sec_agent.research_foundation.counterparty_facts import Fact
+    _, _, _, pack = setup(foundation)
+    raw = copy.deepcopy(pack['facts'][0])
+    raw['measures'] = [dict(metric='revenue_share', value='4.8', unit='percent',
+                            operator='=', denominator='annual revenue'),
+                       dict(metric='revenue_share', value='1', unit='percent',
+                            operator='<', denominator='annual revenue')]
+    with pytest.raises(ValueError, match='contradictory_measure_same_basis'):
+        Fact.model_validate(raw)
+    # A quarter and a year are separate denominators; neither invalidates the other.
+    raw['measures'][1]['denominator'] = 'quarterly revenue'
+    Fact.model_validate(raw)
+
+
+def test_conditional_shareholding_has_no_fabricated_observation_date(foundation):
+    from sec_agent.research_foundation.counterparty_facts import Fact
+    _,_,_,pack=setup(foundation)
+    f=pack['facts'][0]
+    f.update(category='shareholders',relationship='beneficial_owner',identity_kind='anonymous',
+             measurement_basis='single',count=1,fiscal_year=None,period_end=None,observation_date=None,
+             observation_basis='conditional_post_transaction')
+    f['measures']=[dict(metric='ownership_share',value='11',unit='percent',operator='approximately',
+                        denominator='Issued capital after the offering, no overallotment')]
+    assert Fact.model_validate(f).observation_date is None
+    for field in ['observation_date','period_end','fiscal_year']:
+        bad=copy.deepcopy(f);bad[field]=2025 if field=='fiscal_year' else '2025-12-21'
+        with pytest.raises(ValueError,match='conditional_shareholding_cannot_assert_observed_date'):Fact.model_validate(bad)
+    bad=copy.deepcopy(f);bad['measures'][0]['measurement_as_of']='2025-12-21'
+    with pytest.raises(ValueError,match='conditional_shareholding_cannot_assert_observed_date'):Fact.model_validate(bad)
+    bad=copy.deepcopy(f);bad['observation_basis']='reported'
+    with pytest.raises(ValueError,match='measured_fact_requires_period'):Fact.model_validate(bad)

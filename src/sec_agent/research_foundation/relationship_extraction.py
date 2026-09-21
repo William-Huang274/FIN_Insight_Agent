@@ -15,7 +15,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .counterparty_facts import Fact, import_reviewed
+from .counterparty_facts import Fact, import_reviewed, validate_evidence_values
 
 
 PREDICATES = {
@@ -23,9 +23,11 @@ PREDICATES = {
     'supplies_power_to': 'supply', 'hosts_model_for': 'cooperation',
     'commercial_partnership': 'cooperation', 'technology_licensing': 'cooperation',
     'invests_in': 'investment', 'owns_equity_in': 'investment',
-    'parent_of': 'control', 'acquired': 'control', 'operates': 'control',
-    'leases_to': 'supply', 'builds_for': 'supply', 'finances': 'investment',
+    'parent_of': 'control', 'controls': 'control', 'acquired': 'control', 'operates': 'control',
+    'leases_to': 'supply', 'builds_for': 'supply', 'finances': 'investment', 'guarantees': 'investment',
     'distributes': 'cooperation', 'competes_with': 'competition',
+    'acts_as_trustee': 'cooperation',
+    'provides_capital_markets_services': 'cooperation',
 }
 
 # Report categories identify the reporting issuer independently of the named
@@ -258,7 +260,9 @@ def prepare_job(db, job):
             _, evidence = bind_evidence(db, raw['source_id'], raw['evidence'])
             fact = dict(raw, evidence=[{k: v for k, v in a.items() if k != 'locator'} for a in evidence])
             fact['counterparty_entity_id'] = resolve(fact.get('counterparty_entity_id'))
-            fact = Fact.model_validate(fact).model_dump(mode='json')
+            typed_fact = Fact.model_validate(fact)
+            validate_evidence_values(typed_fact)
+            fact = typed_fact.model_dump(mode='json')
             if fact['entity_id'] not in known:
                 raise ValueError('unknown_disclosure_subject')
             disclosures.append({'index': index, 'payload': fact})

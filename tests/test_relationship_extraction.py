@@ -157,9 +157,12 @@ def test_disclosure_validation_rolls_back_entire_job(foundation):
     path,_,job=candidate(foundation);rel=job['relations'][0]
     job['disclosures']=[dict(entity_id='NVIDIA',category='customers',source_id=rel['source_id'],counterparty_name='two customers',identity_kind='aggregate',relationship='customer',role='Sales',fiscal_year=2026,count=2,measurement_basis='each',measures=[dict(metric='revenue_share',value='22',unit='percent',operator='=',denominator='FY2026 revenue')],scope_note='Unsupported value intentional',evidence=rel['evidence'])]
     with connect(path) as db:
+        assert any(e['error']=='value_not_in_evidence' for e in prepare_job(db,job)['errors'])
         with pytest.raises(ValueError,match='value_not_in_evidence'):import_job(db,job,review(job))
-        assert db.execute('SELECT count(*) FROM relationship_assertions').fetchone()[0]==0
-        assert db.execute('SELECT count(*) FROM relationship_extraction_jobs').fetchone()[0]==0
+        installed=db.execute("SELECT 1 FROM sqlite_master WHERE name='relationship_assertions'").fetchone()
+        assert not installed or db.execute('SELECT count(*) FROM relationship_assertions').fetchone()[0]==0
+        jobs_installed=db.execute("SELECT 1 FROM sqlite_master WHERE name='relationship_extraction_jobs'").fetchone()
+        assert not jobs_installed or db.execute('SELECT count(*) FROM relationship_extraction_jobs').fetchone()[0]==0
         assert db.execute("SELECT count(*) FROM edges WHERE id LIKE 'RELATION::%'").fetchone()[0]==0
 
 
@@ -188,3 +191,20 @@ def test_scope_cannot_be_accepted_with_pending_extraction(foundation):
     receipt['coverage_verdicts']={'NVIDIA':dict(status='complete',reason='Intentionally inconsistent fixture')}
     with connect(path) as db,pytest.raises(ValueError,match='complete_scope_has_unfinished'):
         import_job(db,job,receipt)
+
+
+@pytest.mark.parametrize('predicate,text',[
+    ('controls','NVIDIA is the ultimate controller of Buyer under the disclosed governance arrangement.'),
+    ('guarantees','NVIDIA guarantees the loan facility of Buyer; no disbursement or guarantee call is disclosed.'),
+])
+def test_explicit_control_or_guarantee_does_not_invent_ownership_or_funding(foundation,predicate,text):
+    path,w,job=candidate(foundation)
+    sid=w.source('NVIDIA','https://example.org/control','Governance disclosure','official_report',text,published='2026-09-01')
+    pid=w.sql('SELECT id FROM passages WHERE source_id=?',(sid,))[0]['id']
+    job['relations']=[dict(subject_name='NVIDIA',subject_id='NVIDIA',object_name='Buyer',object_id='BUYER',predicate=predicate,status='current_as_reported',role='Explicit governance or credit support',scope_note='No invented ownership or funded amount.',source_id=sid,evidence=[dict(passage_id=pid,quote=text)])]
+    job['coverage'][0]['sources_reviewed']=[dict(source_id=sid,passage_ids=[pid],sections_checked=['Governance'],method='Synthetic explicit control fixture')]
+    with connect(path) as db:
+        assert not prepare_job(db,job)['errors']
+        import_job(db,job,review(job))
+        row=assertion_page(db,'NVIDIA')['items'][0]
+        assert row['predicate']==predicate and row['terms']==[]

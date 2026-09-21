@@ -15,9 +15,12 @@ def installed(db,table='company_disclosures'):
     return bool(db.execute('SELECT 1 FROM sqlite_master WHERE name=?',(table,)).fetchone())
 
 def page(db,entity_id,query='',offset=0,limit=30,as_of='9999-12-31'):
+    from .disclosure_scope_reviews import for_entity
+    reviews=for_entity(db,entity_id,as_of)
     sql=" FROM company_disclosures WHERE entity_id=? AND coalesce(published_at,json_extract(scope,'$.reviewed_at'))<=? AND (?='' OR category=? OR instr(lower(body),lower(?))>0)"
     args=(entity_id,as_of,query,query,query)
     rows=[dict(r) for r in db.execute('SELECT *'+sql+' ORDER BY category,published_at DESC',args)] if installed(db) else []
+    if query in LABELS:rows=[r for r in rows if r['category']==query]
     grouped={}
     if installed(db,'counterparty_facts'):
         for r in db.execute('''SELECT f.*,s.title,s.published_at,
@@ -39,7 +42,7 @@ def page(db,entity_id,query='',offset=0,limit=30,as_of='9999-12-31'):
     seen=set(); result=[]
     for row in rows:
         key=(row['source_id'],row['category'])
-        if key in grouped and key in seen:continue
+        if (key in grouped or key in reviews) and key in seen:continue
         seen.add(key)
         row['original_section_chars']=len(row.pop('body'))
         row['structured_facts']=grouped.get(key,{}).get('facts',[])
@@ -60,6 +63,29 @@ def page(db,entity_id,query='',offset=0,limit=30,as_of='9999-12-31'):
             'status':'reviewed_facts_available','extraction_status':'reviewed_facts_available',
             'extraction_note':'已核对的逐项记录；不代表完整前十名单。',
             'structured_facts':group['facts'],'readback':{'source_space':'library','operation':'read','document_id':sid}})
+    present={(r['source_id'],r['category']) for r in result}
+    for key,entry in reviews.items():
+        if key in present:continue
+        sid,category=key
+        if query in LABELS and query!=category:continue
+        if query and query not in LABELS and query.casefold() not in json.dumps(entry['review'],ensure_ascii=False).casefold():continue
+        result.append({'id':'SCOPE::'+sid+'::'+category,'entity_id':entity_id,'category':category,
+            'title':LABELS[category]+' · '+entry['title'],'source_id':sid,'published_at':entry['published_at'],
+            'known_as_of':entry['known_as_of'],'status':'reviewed_scope','structured_facts':[],
+            'readback':{'source_space':'library','operation':'read','document_id':sid}})
+    for row in result:
+        entry=reviews.get((row['source_id'],row['category']))
+        if not entry:continue
+        r=entry['review']
+        row['scope_review']={k:v for k,v in r.items() if k!='evidence'}
+        row['known_as_of']=entry['known_as_of']
+        # New facts invalidate an earlier absence receipt. Do not hide them.
+        if row['structured_facts']:
+            row['extraction_status']='reviewed_facts_available'
+            row['extraction_note']='已核对的逐项记录；核查范围：'+r['scope_note']
+        else:
+            row['extraction_status']='checked_no_explicit_fact' if r['result']=='checked_no_explicit_fact' else 'extraction_pending'
+            row['extraction_note']=('已核查所列范围，未发现可逐项提取的明确披露；不代表公司在其他资料中未披露。核查范围：' if r['result']=='checked_no_explicit_fact' else '已复核的事实当前缺失，需要检查入库；核查范围：')+r['scope_note']
     for row in result:
         row['structured_facts'].sort(key=lambda f:(-(f.get('fiscal_year') or 0),f['counterparty_name'],f['role']))
     # Retire old source-less locator gaps only where reviewed facts now exist.
@@ -76,7 +102,9 @@ def fact_page(db,entity_id,query='',offset=0,limit=8,as_of='9999-12-31'):
     rows=[]
     for report in reports:
         if not report['structured_facts']:
-            rows.append({k:report[k] for k in ('id','entity_id','category','source_id','extraction_status','extraction_note','readback')})
+            row={k:report[k] for k in ('id','entity_id','category','source_id','extraction_status','extraction_note','readback')}
+            if report.get('scope_review'):row['scope_review']=report['scope_review']
+            rows.append(row)
             continue
         for fact in report['structured_facts']:
             row={k:v for k,v in fact.items() if k not in ('evidence','review_note')}

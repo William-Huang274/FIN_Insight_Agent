@@ -24,7 +24,13 @@ class SourceDocumentRequest(BaseModel):
     source_space: Literal["local", "web", "uploads", "library"] = "local"
     operation: Literal["catalog", "outline", "search", "read", "inspect_image", "related", "observations", "company", "data"] = Field(description=REPORT_PROCESSING_TOOL_GUIDANCE.strip())
     company_section: Literal['sources', 'accounts', 'periods', 'coverage', 'relationships', 'gaps', 'macro_series'] = Field(default='sources', description='company returns a compact identity/menu and one paginated section. sources lists original documents; accounts lists financial account paths; periods lists fiscal periods; coverage lists processing records; relationships lists stored relationship navigation; gaps lists known missing work. Copy section requests from company.section_navigation.')
-    data_kind: Literal['financial', 'prices', 'positions', 'holders', 'filings', 'derived', 'disclosures', 'relationships'] = Field(default='financial',description='relationships returns reviewed supply/customer/investment/cooperation assertions with direction, status, terms and evidence readback, including unresolved counterparties. disclosures returns pre-extracted individual customer/supplier/beneficial-owner facts with period, denominator, qualifiers and evidence readback; query customers/suppliers/shareholders. Unprocessed sources return extraction_pending, not non-disclosure. Pagination is by fact, not report.')
+    data_kind: Literal['financial', 'prices', 'positions', 'holders', 'filings', 'derived', 'disclosures', 'relationships','metrics'] = Field(default='financial',description='metrics: shared frontend/Agent catalog, observation series and data cards. Use metric_section=catalog to discover exact metric IDs; query=<metric ID> for series/compare; metric_record_id for one source-linked card. Valuation uses trade dates, not denominator fiscal year. relationships returns reviewed assertions; disclosures returns extracted counterparties and concentration facts. Unprocessed is not undisclosed.')
+    metric_section: Literal['overview','catalog','history','valuation','compare','card'] = 'overview'
+    metric_record_id: str = Field(default='',max_length=200)
+    compare_entity_ids: tuple[str,...] = Field(default_factory=tuple,max_length=11,description='Other exact company IDs from catalog; metrics compare only. Missing companies remain in coverage. No implicit currency conversion or interpolation.')
+    metric_period_kind: Literal['','instant','quarter','ytd','annual','ttm','unknown','event','daily'] = ''
+    metric_frequency: Literal['native','week_end','month_end'] = 'native'
+    metric_alignment: Literal['date','fiscal'] = 'date'
     data_group: Literal['','operating','offering','compensation','macro','other'] = ''
     account_path: str = Field(default='',max_length=100,description='Copy a path from company(company_section=accounts).account_tree to filter a statement/account subtree; data_kind=financial only.')
     fiscal_year: int | None = Field(default=None,ge=1900,le=2200,description='Observation fiscal year from company.reporting_periods; not filing year.')
@@ -62,7 +68,7 @@ class SourceDocumentRequest(BaseModel):
         # serialization so archived action/notebook digests still validate.
         if "source_space" not in self.model_fields_set:
             body.pop("source_space", None)
-        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'data_kind','data_group','account_path','fiscal_year','fiscal_period','company_section','derived_view','date_start','date_end'):
+        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'data_kind','data_group','account_path','fiscal_year','fiscal_period','company_section','derived_view','date_start','date_end','metric_section','metric_record_id','compare_entity_ids','metric_period_kind','metric_frequency','metric_alignment'):
             if key not in self.model_fields_set:
                 body.pop(key,None)
         return body
@@ -71,9 +77,16 @@ class SourceDocumentRequest(BaseModel):
     def validate_selection(self) -> "SourceDocumentRequest":
         if 'company_section' in self.model_fields_set and (self.operation != 'company' or self.source_space != 'library'):
             raise ValueError('company_section_requires_library_company')
-        if (self.fiscal_year is not None or self.fiscal_period) and (self.operation!='data' or self.source_space!='library' or self.data_kind not in {'financial','derived'}):
+        metric_fields={'metric_section','metric_record_id','compare_entity_ids','metric_period_kind','metric_frequency','metric_alignment'}
+        if metric_fields & self.model_fields_set and (self.operation!='data' or self.source_space!='library' or self.data_kind!='metrics'):
+            raise ValueError('metric_fields_require_library_metrics')
+        if self.data_kind=='metrics':
+            if self.fiscal_period or self.derived_view!='latest':raise ValueError('metrics_use_metric_period_kind_and_section')
+            if self.compare_entity_ids and self.metric_section!='compare':raise ValueError('compare_ids_require_compare_section')
+            if self.metric_section=='card' and not self.metric_record_id:raise ValueError('metric_card_requires_record_id')
+        if (self.fiscal_year is not None or self.fiscal_period) and (self.operation!='data' or self.source_space!='library' or self.data_kind not in {'financial','derived','metrics'}):
             raise ValueError('period_requires_library_financial_data')
-        if (self.derived_view!='latest' or self.date_start or self.date_end) and (self.operation!='data' or self.source_space!='library' or self.data_kind!='derived'):
+        if (self.derived_view!='latest' or self.date_start or self.date_end) and (self.operation!='data' or self.source_space!='library' or self.data_kind not in {'derived','metrics'}):
             raise ValueError('derived_filters_require_library_derived_data')
         if self.date_start and self.date_end and self.date_start>self.date_end:raise ValueError('invalid_derived_date_range')
         if self.account_path and (self.operation!='data' or self.source_space!='library' or self.data_kind!='financial'):

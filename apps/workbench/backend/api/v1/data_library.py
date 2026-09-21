@@ -9,10 +9,36 @@ from ...authentication import current_owner
 from sec_agent.research_foundation.public_library import library_nodes, document_catalog
 
 from sec_agent.research_foundation.financial_library import FinancialQuery, financial_page
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
+
+
+class MetricWorkspaceQuery(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    entity_ids: list[str] = Field(min_length=1,max_length=12)
+    section: Literal['overview','catalog','history','valuation','compare','card'] = 'overview'
+    metric: str = Field(default='',max_length=200)
+    record_id: str = Field(default='',max_length=200)
+    as_of: str = '9999-12-31'
+    fiscal_year: int | None = None
+    period_kind: str = ''
+    date_start: str = ''
+    date_end: str = ''
+    frequency: Literal['native','week_end','month_end'] = 'native'
+    alignment: Literal['date','fiscal'] = 'date'
+    offset: int = Field(default=0,ge=0)
+    limit: int = Field(default=100,ge=1,le=2000)
 
 
 def build_data_library_router(attachments_root, fact_mart=None, research_library=None):
     router = APIRouter(prefix='/data-library')
+
+    @router.post('/metrics/query')
+    def metric_workspace(request:Request,query:MetricWorkspaceQuery):
+        current_owner(request)
+        from sec_agent.research_foundation.metric_workspace import query_metrics
+        try:return query_metrics(foundation(),**query.model_dump())
+        except ValueError as exc:raise HTTPException(422,str(exc)) from None
 
     def foundation():
         path=research_library or Path(attachments_root)/'public-library'/'research-library.sqlite'

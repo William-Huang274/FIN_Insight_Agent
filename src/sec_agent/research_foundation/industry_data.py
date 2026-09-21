@@ -117,6 +117,8 @@ def company_detail(path, entity_id, *, as_of='9999-12-31'):
         result['sources']=list(unique.values())
         result['data_counts']['holders']=db.execute('SELECT count(*) FROM position_issuers WHERE entity_id=?',(entity_id,)).fetchone()[0]
         result['data_counts']['derived']=len(derived_financials.page(db,entity_id,limit=100,as_of=as_of)['items'])
+        if db.execute("SELECT 1 FROM sqlite_master WHERE name='industry_metric_observations'").fetchone():
+            result['data_counts']['derived']+=db.execute('SELECT count(*) FROM industry_metric_observations WHERE entity_id=? AND available_at<=?',(entity_id,as_of)).fetchone()[0]
         result['data_counts']['disclosures']=disclosure_register.page(db,entity_id,limit=100,as_of=as_of)['total']
         result['reporting_periods']=reporting_periods.menu(db,entity_id)
         from .relationship_extraction import coverage_page, assertion_page
@@ -151,7 +153,7 @@ def data_channels(detail):
         if detail['positions_count'] and manager:channels.append(positions)
         if counts['financial_points']:channels.append({'kind':'financial','group':'','label':'财务指标','count':counts['financial_points']})
         if counts['market_prices']:channels.append({'kind':'prices','group':'','label':'市场日行情','count':counts['market_prices']})
-        if counts.get('derived'):channels.append({'kind':'derived','group':'','label':'衍生指标与估值','count':counts['derived']})
+        if counts.get('derived'):channels.append({'kind':'derived','group':'','label':'指标分析','count':counts['derived']})
         if detail['positions_count'] and not manager:channels.append(positions)
         if counts.get('disclosures'):channels.append({'kind':'disclosures','group':'','label':'主要股东、客户与供应商','count':counts['disclosures']})
         if counts.get('relationships'):channels.append({'kind':'relationships','group':'','label':'已提取的业务与资金关系','count':counts['relationships']})

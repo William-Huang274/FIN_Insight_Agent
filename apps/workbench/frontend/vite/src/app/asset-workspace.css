@@ -71,3 +71,6 @@
 .aw-maintenance-dialog::backdrop{background:#17264d66}.aw-maintenance-dialog>header,.aw-project-papers>header{display:flex;justify-content:space-between;gap:12px;align-items:center}
 .aw-maintenance-dialog h2{font-size:18px}.aw-maintenance-dialog>nav{display:flex;gap:8px;margin:15px 0}.aw-maintenance-dialog button[aria-pressed=true]{color:var(--accent);background:var(--soft)}
 .aw-project-papers>article{padding:16px 0;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}.aw-project-papers>article strong{flex:1;min-width:150px}.aw-project-papers>article small{width:100%}
+
+@media(max-width:760px){.fa-workspace.rs-shell,.fa-workspace.fa-collapsed.rs-shell{grid-template-columns:60px minmax(0,1fr)!important}.fa-workspace .fa-nav{width:60px;max-width:60px;min-width:0;box-sizing:border-box;overflow:hidden}.fa-workspace .fa-area a{min-width:0}.fa-workspace .fa-main{min-width:0}}
+.fa-workspace .fa-main{overflow:clip}

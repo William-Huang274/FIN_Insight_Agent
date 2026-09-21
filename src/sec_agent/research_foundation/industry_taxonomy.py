@@ -20,7 +20,7 @@ METRIC_NAMES = {
 
 MATERIAL_GROUPS = {
     'disclosures': ('公司披露', {'filing','annual_report','annual_report_mirror','official_report','filing_exhibit','earnings_release','legacy_10-K','legacy_10-Q','legacy_8-K','company_profile','sec_submissions','filing_directory'}),
-    'products': ('业务与产品', {'model_product','product_platform','industry_ecosystem','model_card','model_catalogue','community_repository','repository_readme','product_specification'}),
+    'products': ('业务与产品', {'model_product','product_platform','industry_ecosystem','model_card','model_catalogue','community_repository','repository_readme','product_specification','industry_operating_metrics'}),
     'transactions': ('交易与合作', {'relationship_announcement','financing_announcement','power_contract','infrastructure_project'}),
     'capital': ('机构持仓与资本数据', {'institutional_positions','institutional_notice'}),
     'market': ('财务与行情数据', {'financial_api','market_api'}),

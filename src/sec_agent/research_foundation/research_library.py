@@ -184,6 +184,15 @@ class ResearchLibrary(ResearchSnapshot):
                 from .company_navigation import company_navigation
                 detail,total,next_offset=company_navigation(detail,request)
                 return self._result(request,[detail],'ok',total=total,next_offset=next_offset)
+            if request.data_kind=='metrics':
+                from .metric_workspace import query_metrics
+                page=query_metrics(self.path,[request.entity_id,*request.compare_entity_ids],section=request.metric_section,
+                    metric=request.query,record_id=request.metric_record_id,as_of=as_of,fiscal_year=request.fiscal_year,
+                    period_kind=request.metric_period_kind,frequency=request.metric_frequency,alignment=request.metric_alignment,
+                    date_start=request.date_start.isoformat() if request.date_start else '',date_end=request.date_end.isoformat() if request.date_end else '',
+                    offset=request.offset,limit=request.limit)
+                return self._result(request,[{'result_state':'retrieval_candidate','dataset_kind':'metric_dataset','numeric_fact_authority':False,**page}],
+                    'ok',total=page['total'],next_offset=page.get('next_offset'))
             if request.data_kind=='disclosures':
                 from .disclosure_register import fact_page
                 from .industry_data import connect

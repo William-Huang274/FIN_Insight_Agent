@@ -194,3 +194,5 @@ scope 使用 `{"entities":[{"entity_id":"NVIDIA"}]}`。命令重建期间投影�
 `source_document` 的 `data_kind="derived"` 可使用 `derived_view="history"`、`fiscal_year`、`fiscal_period`、`date_start`、`date_end`；`query="metric:gross_margin"` 为精确指标筛选。日期区间作用于价格日期或财务期末，`as_of` 仍是可获知截止日期。默认工具视图为 latest，前端默认 history。历史显示各观察期间在截止时点的最新可用修订，全部原始计算版本仍在 SQL。输入数组保留事实 ID、来源、单位、期间及嵌套计算；读取不调用模型现场算数。
 
 本阶段不扩展行业专属运营 KPI、不推算缺失季度、不新增 TTM 或预测估值。行业指标、完整报表覆盖与检索质量仍需单独验收，不能用计算记录条数替代这些结果。
+
+2026-09-21已另行完成[核心20家公司行业指标可得性核定](core20_industry_metric_scope.zh-CN.md)：逐公司区分定期披露、公告/产品快照、候选计算和待核项目。该清单仅确定后续提取范围，尚未新增行业数据、计算或发布版本；不升级为runtime能力。

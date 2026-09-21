@@ -37,6 +37,25 @@ def test_actual_mcp_progressive_method_read_and_rejection():
     asyncio.run(exercise())
 
 
+def test_report_processing_is_discoverable_from_actual_reader_tool():
+    async def exercise():
+        async with Client(_build_server(source_document_reader=lambda **_: None)) as client:
+            listed = await client.list_tools()
+            reader = next(t for t in listed.tools if t.name == "read_source_document")
+            assert "report_processing" in reader.description
+            assert "library catalog/company/data" in reader.description
+            # The common request schema also reaches non-MCP source adapters.
+            assert "report_processing" in str(reader.input_schema)
+            result = await client.call_tool("get_research_method", {"method_id": "report_processing"})
+            assert not result.is_error
+            content = result.structured_content["content"]
+            assert "block_exceeds_character_budget" in content
+            assert "≤10%" in content and "表头" in content
+            assert "不会执行解析脚本、入库或发布" in content
+            assert result.structured_content["grants_authority"] is False
+    asyncio.run(exercise())
+
+
 @pytest.mark.parametrize("method_id", ["finance", "writer", "verifier"])
 def test_actual_mcp_method_preserves_disclosure_vs_achievement_distinction(method_id):
     async def exercise():

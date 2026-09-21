@@ -434,8 +434,10 @@ def build_research_data_mcp_server(
 
     if dependencies.source_document_reader is not None:
 
+        from .research_methods import REPORT_PROCESSING_TOOL_GUIDANCE
+
         @server.tool(name=READ_SOURCE_DOCUMENT_TOOL, structured_output=True,
-                     description="Read sources from runtime-enabled spaces: local case catalog/outline/search/read; web search/read; uploads task-only catalog/outline/search/read and inspect_image for uploaded image or PDF page. Inspect_image delegates to a vision model and returns fallible source-linked interpretation, not authoritative facts. Unavailable spaces are rejected. Use returned server document IDs, never paths or shell. Web offsets are characters. Search previews cannot be cited; source passages are not Reviewed Evidence or NumericFacts.")
+                     description="Read sources from runtime-enabled spaces: library catalog/company/data/related/observations/search/read; local case catalog/outline/search/read; web search/read; uploads task-only catalog/outline/search/read and inspect_image for uploaded image or PDF page. Inspect_image delegates to a vision model and returns fallible source-linked interpretation, not authoritative facts. Unavailable spaces are rejected. Use returned server document IDs, never paths or shell. Web offsets are characters. Search previews cannot be cited; source passages are not Reviewed Evidence or NumericFacts." + REPORT_PROCESSING_TOOL_GUIDANCE)
         async def read_source_document(
             request: SourceDocumentToolRequest, branch_id: str, run_scope: ResearchRunScope,
         ) -> SourceDocumentResult:

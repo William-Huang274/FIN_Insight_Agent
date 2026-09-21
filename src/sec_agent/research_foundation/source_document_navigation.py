@@ -16,12 +16,13 @@ from urllib.parse import urlsplit
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer, model_validator
 from rank_bm25 import BM25Okapi
 from retrieval.text import tokenize
+from .research_methods import REPORT_PROCESSING_TOOL_GUIDANCE
 
 
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     source_space: Literal["local", "web", "uploads", "library"] = "local"
-    operation: Literal["catalog", "outline", "search", "read", "inspect_image", "related", "observations", "company", "data"]
+    operation: Literal["catalog", "outline", "search", "read", "inspect_image", "related", "observations", "company", "data"] = Field(description=REPORT_PROCESSING_TOOL_GUIDANCE.strip())
     company_section: Literal['sources', 'accounts', 'periods', 'coverage', 'relationships', 'gaps', 'macro_series'] = Field(default='sources', description='company returns a compact identity/menu and one paginated section. sources lists original documents; accounts lists financial account paths; periods lists fiscal periods; coverage lists processing records; relationships lists stored relationship navigation; gaps lists known missing work. Copy section requests from company.section_navigation.')
     data_kind: Literal['financial', 'prices', 'positions', 'holders', 'filings', 'derived', 'disclosures', 'relationships'] = Field(default='financial',description='relationships returns reviewed supply/customer/investment/cooperation assertions with direction, status, terms and evidence readback, including unresolved counterparties. disclosures returns pre-extracted individual customer/supplier/beneficial-owner facts with period, denominator, qualifiers and evidence readback; query customers/suppliers/shareholders. Unprocessed sources return extraction_pending, not non-disclosure. Pagination is by fact, not report.')
     data_group: Literal['','operating','offering','compensation','macro','other'] = ''

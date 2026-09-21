@@ -181,3 +181,15 @@ def test_native_assistant_save_apply_and_run_snapshot():
         runs.create.assert_not_awaited()
         row["config"]["configurable"]["finsight_studio"]["title"]="external mutation"
         assert client.get(f"/research-studio/configurations/{aid}").status_code==409
+def test_older_saved_configuration_reads_new_report_method_without_payload_migration():
+    from sec_agent.agent_runtime.studio_configuration import default_configuration, StudioConfiguration
+    original = default_configuration().model_dump()
+    original['methods'].pop('report_processing')
+    original['methods']['finance'] += '\nPRESERVE_SAVED_FINANCE_METHOD'
+    saved = StudioConfiguration.model_validate(original)
+    before = saved.digest
+    resource = saved.method('report_processing')
+    assert resource['origin'] == 'packaged_additive_method'
+    assert '表头' in resource['content']
+    assert saved.model_dump() == original and saved.digest == before
+    assert 'PRESERVE_SAVED_FINANCE_METHOD' in saved.method('finance')['content']

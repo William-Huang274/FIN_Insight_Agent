@@ -64,6 +64,11 @@ def test_ratios_never_join_different_period_currency_or_revision(foundation):
 
 def test_pe_requires_review_and_marks_losses_not_negative_pe(foundation):
     path,w,sid=foundation
+    # Collector captures the wall-clock date; this historical valuation fixture
+    # must be available at its fixed cutoff regardless of the test execution day.
+    source_meta=json.loads(w.sql('SELECT metadata FROM sources WHERE id=?',(sid,))[0]['metadata'])
+    source_meta['captured_at']='2026-09-18T16:00:00+00:00'
+    w.sql('UPDATE sources SET metadata=? WHERE id=?',(json.dumps(source_meta),sid))
     fact(w,sid,'eps','EarningsPerShareDiluted',-2,unit='USD/shares',start='2025-01-01',end='2025-12-31',filed='2026-02-01',form='10-K')
     w.sql('INSERT INTO market_prices VALUES(?,?,?,?,?,?,?,?,?,?,?)',('NVIDIA','NVDA','2026-09-18',10,10,10,10,8,100,'USD',sid))
     derived.materialize(path,'2026-09-20')

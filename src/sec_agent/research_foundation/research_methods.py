@@ -7,6 +7,7 @@ from importlib.resources import files
 
 
 METHODS = {
+    "report_processing": ("新报告定位、提取与更新", "先查已有结构化记录，按原页表头与附注调整提取方案，校验口径并交接更新；区分读取与入库权限。"),
     "research_orientation": ("总题初步研究与首批专题", "按实际资料形成初步判断和证据触发的派工依据，在专题执行前停止。"),
     "research_loop": ("研究问题与动态回环", "从总题生成研究义务，依据新观察展开或收口。"),
     "semiconductor_systems": ("半导体与算力系统竞争", "同任务规格、软件生态、采购采用与财务兑现。"),
@@ -28,6 +29,14 @@ METHODS = {
     "verifier": ("研究与报告复核", "来源上下文、关键核算、因果与重要分析遗漏。"),
 }
 
+REPORT_PROCESSING_TOOL_GUIDANCE = (
+    " For a new/revised report, missing extraction or changed table layout, first call "
+    "get_research_method(method_id='report_processing'). Locate relevant sections, "
+    "then read original context including headers, units and footnotes. Reuse verified "
+    "structured facts and exact source IDs; previews are not extraction input. "
+    "Read tools do not ingest, execute parsing scripts or publish database updates."
+)
+
 METHOD_TOOL_GUIDANCE = (
     "\nAnswer-free role methods are available through get_research_method. "
     "Call with no method_id for the compact catalog, then select relevant method IDs "
@@ -46,7 +55,7 @@ METHOD_TOOL_GUIDANCE = (
     "metrics to hand-entered formulas, and reuse their exact NumericFact IDs. "
     "Publish a concise evidence-to-conclusion explanation, alternatives and missing "
     "checks; this is an analysis rationale, not a request to reveal private reasoning."
-)
+) + REPORT_PROCESSING_TOOL_GUIDANCE
 
 
 def get_research_method(method_id: str = "") -> dict:

@@ -172,19 +172,21 @@ def test_numeric_presence_uses_decimal_tokens(foundation,text,value,valid):
         with pytest.raises(ValueError):imported(path,pack)
 
 
-def test_customer_revenue_amount_keeps_thousands_and_is_not_arr(foundation):
+@pytest.mark.parametrize('currency,scale',[('USD','1000'),('KRW','1000000'),('TWD','1000'),('EUR','1')])
+def test_customer_revenue_amount_keeps_thousands_and_is_not_arr(foundation,currency,scale):
     path,w,_,pack=setup(foundation)
-    text='Year ended 2025 | USD thousand\nCustomer A | 9,868'
+    text=f'Year ended 2025 | {currency} scale {scale}\nCustomer A | 9,868'
     sid=w.source('NVIDIA','https://example.org/customer-amount','Customer revenue','filing',text,published='2026-08-26')
     pid=w.sql('SELECT id FROM passages WHERE source_id=?',(sid,))[0]['id']
     fact=pack['facts'][0]
     fact.update(source_id=sid,evidence=[dict(passage_id=pid,start=0,end=len(text),quote=text)])
-    fact['measures']=[dict(metric='revenue_amount',value='9868',unit='USD',scale='1000',operator='=',denominator='FY2025 revenue from Customer A')]
+    fact['measures']=[dict(metric='revenue_amount',value='9868',unit=currency,scale=scale,operator='=',denominator='FY2025 revenue from Customer A')]
     imported(path,pack)
     with sqlite3.connect(path) as db:
         payload=json.loads(db.execute('SELECT payload FROM counterparty_facts').fetchone()[0])
     assert payload['measures'][0]['metric']=='revenue_amount'
-    assert payload['measures'][0]['value']=='9868' and payload['measures'][0]['scale']=='1000'
+    assert payload['measures'][0]['value']=='9868' and payload['measures'][0].get('scale','1')==scale
+    assert payload['measures'][0]['unit']==currency
     bad=copy.deepcopy(pack)
     bad['facts'][0]['measures'][0]['unit']='percent'
     with pytest.raises(ValueError):imported(path,bad)

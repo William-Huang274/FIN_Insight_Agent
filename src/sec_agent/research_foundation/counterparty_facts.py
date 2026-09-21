@@ -39,7 +39,9 @@ class Measure(Strict):
                     'annualized_recurring_revenue', 'annualized_recurring_revenue_share', 'revenue_amount',
                     'procurement_amount', 'voting_power_share']
     value: Decimal = Field(ge=0)
-    unit: Literal['percent', 'shares', 'USD']
+    unit: Literal['percent', 'shares', 'USD', 'CNY', 'HKD', 'TWD', 'KRW',
+                  'JPY', 'EUR', 'GBP', 'SGD', 'MYR', 'INR', 'AUD', 'CAD',
+                  'CHF', 'AED', 'SAR']
     scale: Decimal = Field(default=Decimal('1'), gt=0)
     operator: Literal['=', '<', '<=', '>=', '>', 'approximately']
     denominator: str = Field(min_length=1)
@@ -50,9 +52,10 @@ class Measure(Strict):
     def units(self):
         if (self.metric == 'beneficial_shares') != (self.unit == 'shares'):
             raise ValueError('metric_unit_mismatch')
-        if (self.metric in {'annualized_recurring_revenue', 'revenue_amount', 'procurement_amount'}) != (self.unit == 'USD'):
+        monetary = self.unit not in {'percent', 'shares'}
+        if (self.metric in {'annualized_recurring_revenue', 'revenue_amount', 'procurement_amount'}) != monetary:
             raise ValueError('amount_unit_mismatch')
-        if self.unit != 'USD' and self.scale != 1:
+        if not monetary and self.scale != 1:
             raise ValueError('non_monetary_scale')
         if self.unit == 'percent' and self.value > 100:
             raise ValueError('percent_out_of_range')

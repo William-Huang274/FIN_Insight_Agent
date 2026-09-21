@@ -29,6 +29,9 @@ class SourceDocumentRequest(BaseModel):
     account_path: str = Field(default='',max_length=100,description='Copy a path from company(company_section=accounts).account_tree to filter a statement/account subtree; data_kind=financial only.')
     fiscal_year: int | None = Field(default=None,ge=1900,le=2200,description='Observation fiscal year from company.reporting_periods; not filing year.')
     fiscal_period: str = Field(default='',pattern='^(|FY|Q1|Q2|Q3|Q4|H1|M9|instant|other|unknown)$')
+    derived_view: Literal['latest','history'] = Field(default='latest',description='For data_kind=derived: latest gives each metric snapshot; history gives comparable period/date observations with input citations. Filter metric via query, financial period via fiscal_year/fiscal_period, and observation dates via date_start/date_end.')
+    date_start: date | None = None
+    date_end: date | None = None
     entity_id: str | None = Field(default=None, max_length=200)
     graph_depth: int = Field(default=1, ge=1, le=2)
     document_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
@@ -59,7 +62,7 @@ class SourceDocumentRequest(BaseModel):
         # serialization so archived action/notebook digests still validate.
         if "source_space" not in self.model_fields_set:
             body.pop("source_space", None)
-        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'data_kind','data_group','account_path','fiscal_year','fiscal_period','company_section'):
+        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'data_kind','data_group','account_path','fiscal_year','fiscal_period','company_section','derived_view','date_start','date_end'):
             if key not in self.model_fields_set:
                 body.pop(key,None)
         return body
@@ -68,8 +71,11 @@ class SourceDocumentRequest(BaseModel):
     def validate_selection(self) -> "SourceDocumentRequest":
         if 'company_section' in self.model_fields_set and (self.operation != 'company' or self.source_space != 'library'):
             raise ValueError('company_section_requires_library_company')
-        if (self.fiscal_year is not None or self.fiscal_period) and (self.operation!='data' or self.source_space!='library' or self.data_kind!='financial'):
+        if (self.fiscal_year is not None or self.fiscal_period) and (self.operation!='data' or self.source_space!='library' or self.data_kind not in {'financial','derived'}):
             raise ValueError('period_requires_library_financial_data')
+        if (self.derived_view!='latest' or self.date_start or self.date_end) and (self.operation!='data' or self.source_space!='library' or self.data_kind!='derived'):
+            raise ValueError('derived_filters_require_library_derived_data')
+        if self.date_start and self.date_end and self.date_start>self.date_end:raise ValueError('invalid_derived_date_range')
         if self.account_path and (self.operation!='data' or self.source_space!='library' or self.data_kind!='financial'):
             raise ValueError('account_path_requires_library_financial_data')
         if self.data_group and (self.operation!='data' or self.source_space!='library' or self.data_kind!='financial'):

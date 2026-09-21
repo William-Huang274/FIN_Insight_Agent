@@ -180,12 +180,13 @@ def position_relations(path, entity_id, as_of):
             'readback':{'source_space':'library','operation':'data','entity_id':r['manager_id'],'data_kind':'positions'}} for r in rows]
 
 
-def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30, as_of='9999-12-31', group='', account='', fiscal_year=None, fiscal_period=''):
+def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30, as_of='9999-12-31', group='', account='', fiscal_year=None, fiscal_period='', derived_view='latest',date_start='',date_end=''):
     if offset < 0 or not 1 <= limit <= 100: raise ValueError('invalid_data_window')
     if group and (kind!='financial' or group not in FINANCIAL_GROUPS):
         raise ValueError('invalid_financial_group')
     if account and (kind!='financial' or account not in financial_accounts.LABELS):raise ValueError('invalid_account_path')
-    if (fiscal_year is not None or fiscal_period) and kind!='financial':raise ValueError('period_requires_financial')
+    if (fiscal_year is not None or fiscal_period) and kind not in {'financial','derived'}:raise ValueError('period_requires_financial')
+    if (derived_view!='latest' or date_start or date_end) and kind!='derived':raise ValueError('derived_filters_require_derived_data')
     if fiscal_period and fiscal_period not in reporting_periods.LABELS:raise ValueError('invalid_fiscal_period')
     if kind=='disclosures':
         with closing(connect(path)) as db:return disclosure_register.page(db,entity_id,query,offset,limit,as_of)
@@ -193,7 +194,7 @@ def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30
         from .relationship_extraction import assertion_page
         with closing(connect(path)) as db:return assertion_page(db,entity_id,query=query,offset=offset,limit=limit,as_of=as_of)
     if kind=='derived':
-        with closing(connect(path)) as db:return derived_financials.page(db,entity_id,query,offset,limit,as_of)
+        with closing(connect(path)) as db:return derived_financials.page(db,entity_id,query,offset,limit,as_of,view=derived_view,fiscal_year=fiscal_year,fiscal_period=fiscal_period,date_start=date_start,date_end=date_end)
     if kind=='holders':
         with closing(connect(path)) as db:
             if not db.execute("SELECT 1 FROM sqlite_master WHERE name='position_issuers'").fetchone():

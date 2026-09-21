@@ -39,7 +39,12 @@ def dart_point_rows(entity_id,source_id,account,year,report,as_of):
         payload={**account,'amount_field':field,'period_basis':'DART field contract; December fiscal year; current interim IS/CIS=3 months, add_amount=YTD','unit_source':'currency field','statement':account.get('sj_div'),
             'field_contract':'https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS003&apiId=2019020'}
         rid=identity(entity_id,source_id,account) if field=='thstrm_amount' else identity(entity_id,source_id,account,field)
-        rows.append((rid,entity_id,'DART-IFRS',account.get('account_id','')+':'+account.get('sj_div',''),account.get('account_nm',''),value,account.get('currency') or 'unit_unconfirmed',
+        unit=account.get('currency') or 'unit_unconfirmed'
+        if account.get('account_id') in {'ifrs-full_BasicEarningsLossPerShare','ifrs-full_DilutedEarningsLossPerShare'}:
+            payload['original_currency_field']=unit
+            payload['unit_source']='IFRS per-share concept and DART currency field'
+            unit+='/shares'
+        rows.append((rid,entity_id,'DART-IFRS',account.get('account_id','')+':'+account.get('sj_div',''),account.get('account_nm',''),value,unit,
             start,end,filed,year,fp,'DART-'+report,receipt,source_id,dumps(payload)))
     return rows
 

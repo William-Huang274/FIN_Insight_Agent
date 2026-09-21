@@ -181,18 +181,9 @@ class ResearchLibrary(ResearchSnapshot):
                 except KeyError:
                     suggestions=[{'result_state':'retrieval_candidate','entity_id':e['id'],**e,'identity_match':'suggestion_only_copy_exact_id_then_retry'} for e in self.entities() if request.entity_id.casefold().removeprefix('company::') in (e['name']+' '+e['id']).casefold()]
                     return self._result(request, suggestions[:request.limit], 'unknown_entity_use_suggested_exact_id', total=len(suggestions),next_offset=None)
-                # The menu stays compact and points at originals. Document lists
-                # paginate independently of the company identity/card.
-                sources=detail.pop('sources');total=len(sources)
-                detail['result_state']='retrieval_candidate'
-                detail['sources']=sources[request.offset:request.offset+request.limit]
-                for source in detail['sources']:
-                    # Cache routing representations are not new research
-                    # evidence; keep them in storage, not in agent context.
-                    source['metadata'].pop('routing_metadata_v1',None)
-                detail['sources_total']=total
-                return self._result(request,[detail],'ok',total=total,
-                    next_offset=request.offset+request.limit if request.offset+request.limit<total else None)
+                from .company_navigation import company_navigation
+                detail,total,next_offset=company_navigation(detail,request)
+                return self._result(request,[detail],'ok',total=total,next_offset=next_offset)
             if request.data_kind=='disclosures':
                 from .disclosure_register import fact_page
                 from .industry_data import connect

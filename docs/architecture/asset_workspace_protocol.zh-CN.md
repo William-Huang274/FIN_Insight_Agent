@@ -142,3 +142,8 @@ uv run --no-sync python -m sec_agent.research_foundation.asset_set_backup restor
 交易所或公司提供的 `annual_report` 与监管申报中的年报具有一致的报告主体检索规则：报告中披露的业务出售或子公司交易可以从该报告主体查到，同时保持真实交易双方身份。关系标签显示“收购”，完成与否由独立的状态字段表达，避免将签约记录显示为“已收购”。
 
 客户收入与供应商采购金额保留原披露币种和独立 `scale`，支持资料范围内的 USD、CNY、HKD、TWD、KRW、JPY、EUR、GBP、SGD、MYR、INR、AUD、CAD、CHF、AED、SAR。例如“10,902,817 百万韩元”记录为 `value=10902817, unit=KRW, scale=1000000`，不隐式换算成美元。百分比及股数仍不得附加金额倍率；金额和占比不能因扩充币种而混用。原有美元记录的字段与身份保持兼容。
+# 研究工具的公司菜单分页
+
+`source_space=library, operation=company` 默认返回主体身份、可用数据入口及一页来源。财务科目、期间、关系目录、处理记录和缺口按 `company_section` 分开读取；返回的 `section_navigation` 提供各部分总数和可直接使用的请求。`offset/limit/next_offset` 针对所选部分，未返回的部分不是空数据或没有披露。前端公司详情仍使用完整展示接口。
+
+这一划分避免查询公司身份时把整棵会计目录、全部关系和历史处理记录一并塞进模型上下文。匿名身份、证据、期间及关系条件保留在对应结构化数据与原文查询中。

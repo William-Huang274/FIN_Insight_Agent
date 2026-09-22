@@ -54,3 +54,15 @@ python -m scripts.data_retrieval.import_industry_metrics --build <unpublished.sq
 导入前检查实体、逐公司覆盖、来源引用、原文精确摘录、数值 token 与倍率、日期、实际/指引及业务范围。先验证再事务写入；同一包可重复执行且不重复增加记录。新材料正文和检索片段一起保存，但新增片段不自动意味着已完成新的向量索引或模型检索测评。
 
 验收分别记录工程结果、资料覆盖与财务语义。接口和前端回读相同记录不代表研究模型已理解正确；本轮不以工程测试替代独立检索效果评估。
+
+## 行业指标补查与使用规则
+
+`industry_metric_reviews` 追加保存逐字段核查版本，包括核查日、具体材料及章节、已补记录 ID、仍缺内容、下一来源和比较规则。旧观测不改写。结果分为已补齐本项、核查范围内未找到、来源仍受阻、口径边界、披露精度限制；不能把后四种统一改称“未披露”。混合字段只补一部分时，原缺口不标为全量解决。
+
+`query_metrics` 的目录、历史、比较及数据卡返回 `industry_reviews`，正式研究工具和前端使用同一结果。`affected_metrics` 采用实际指标 ID；规则支持明确日期/业务范围选择器，分别生成序列分组或 `points_only`，前端不会因名称相似合并。回顾披露若只给年份，单独保存 `reference_year`；不虚构年末测量日。价格变更公告保留 `effective_at` 的 UTC 时刻及公告日。
+
+```powershell
+python -m scripts.data_retrieval.import_metric_reviews --build <unpublished.sqlite> --reviews <reviewed-fields.json> --reviewed-at YYYY-MM-DD
+```
+
+工具导入先校验全部记录，再事务追加；已解决项必须关联同公司已存的观测，来源 ID 必须存在。核查版本只在其核查日之后返回，不把后来查明的限制隐含写进更早的查询。前端“行业指标核查”可展开查看具体限制和来源，数据卡同时展示适用规则。

@@ -76,6 +76,10 @@
 
 ## 更新验收
 
+指标查询中的 `industry_reviews` 是逐字段核查记录：先看核查日期、已读材料/章节、结果及下一动作。`bounded_not_found` 只指已核范围未找到；`source_access_blocked` 仍是获取问题。`definition_boundary` 与 `precision_limit` 不可通过猜值消除。`resolved` 只关闭所列字段，不代表公司全部经营数据齐全。
+
+遵守返回观测的 `comparison_rules`、`series_scope` 和 `chart_policy`。别名路由与价目页若冲突，保留冲突，不用页面旧报价自动计算预算。`effective_at` 是事件生效 UTC 时刻，`available_at` 是公开可知日；回顾年份 `reference_year` 不是已知精确时点。工程侧 `scripts.data_retrieval.import_metric_reviews` 将带原始来源与已补观测 ID 的审核结论追加到未发布库；读取工具不会自动写库。
+
 完成提取后交付候选事实、关系方向、适用条件、来源定位、校验结果和未决项。经过当前工程流程的复核后，才发布新数据库版本及必要的全文/向量索引；前端与研究工具读取同一版本，回读事实和原文核对。已发布版本保持不变。
 
 区分未获取、获取失败、解析失败、待提取、已核查范围内未发现披露。最后一种需要明确核查了哪些报告和章节。遇到无法判定的主体、单位、列或脚注，保留未决状态并请求补处理，不能用模型常识补事实。付费提取/视觉复核须沿用任务批准的 TokenBudgetBasis；失败或用量未知的请求不自动重试。

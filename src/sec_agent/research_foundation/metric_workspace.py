@@ -11,6 +11,7 @@ import sqlite3
 
 from . import derived_financials
 from .industry_data import connect
+from .metric_reviews import read_reviews, qualify_rows
 from .financial_metric_contracts import CONCEPTS
 
 CONCEPT_LABELS={'revenue':'营业收入','cost':'营业成本','gross':'毛利','operating':'营业利润','profit':'期间净利润','parent_profit':'归母净利润','assets':'总资产','liabilities':'总负债','equity':'归母权益','current_assets':'流动资产','current_liabilities':'流动负债','cash':'现金及现金等价物','cfo':'经营活动现金流量净额','capex':'现金购建固定资产','capex_extended':'固定资产等购买及预付款','eps':'稀释每股收益','shares':'普通股股数','inventory':'存货','receivables':'应收账款','total_equity':'权益合计'}
@@ -168,6 +169,8 @@ def query_metrics(path, entity_ids, *, section='overview', metric='', record_id=
     if section=='compare' and not metric:raise ValueError('comparison_requires_metric')
     with closing(connect(path)) as db:
         rows=[r for eid in entity_ids for r in _rows(db,eid,as_of)]
+        reviews=read_reviews(db,entity_ids,as_of,metric)
+        qualify_rows(rows,reviews)
         if section=='card':
             raw=db.execute('SELECT * FROM derived_financials WHERE id=? AND available_at<=?',(record_id,as_of)).fetchone() if derived_financials.installed(db) else None
             if raw and raw['entity_id'] in entity_ids:
@@ -180,14 +183,15 @@ def query_metrics(path, entity_ids, *, section='overview', metric='', record_id=
                 return {x.get('source_id') for x in inputs} | {s for x in inputs for s in input_sources(x.get('components',[]))}
             source_ids=input_sources(card.get('inputs',[]))|{card.get('source_id')}
             card['sources']=[dict(s) for sid in sorted(s for s in source_ids if s) for s in db.execute('SELECT id,title,url,published_at FROM sources WHERE id=?',(sid,))]
-            return {'items':[card],'total':1,'next_offset':None,'as_of':as_of,'section':'card'}
+            return {'items':[card],'total':1,'next_offset':None,'as_of':as_of,'section':'card',
+                    'industry_reviews':[r for r in reviews if r['id'] in card.get('review_ids',[])]}
     catalog={}
     for r in rows:
         item=catalog.setdefault(r['metric'],{'id':r['metric'],'label':r.get('definition',{}).get('label',r['label']),'group':r['group'],'units':set(),'companies':set(),'period_kinds':set(),'record_type':r['record_type']})
         item['units'].add(r['unit']);item['companies'].add(r['entity_id']);item['period_kinds'].add(r['period_kind'])
     catalog=[{k:sorted(v) if isinstance(v,set) else v for k,v in item.items()} for item in catalog.values()]
     years=sorted({r['financial_basis']['fiscal_year'] for r in rows if r.get('financial_basis',{}).get('fiscal_year') and r['observation_kind']!='valuation'},reverse=True)
-    if section=='catalog':return {'items':catalog,'total':len(catalog),'fiscal_years':years,'as_of':as_of}
+    if section=='catalog':return {'items':catalog,'total':len(catalog),'fiscal_years':years,'as_of':as_of,'industry_reviews':reviews}
     rows=[r for r in rows if (not metric or r['metric']==metric) and (not period_kind or r['period_kind']==period_kind)]
     if section=='history':rows=[r for r in rows if r['observation_kind']!='valuation']
     if section=='valuation':rows=[r for r in rows if r['observation_kind']=='valuation']
@@ -214,4 +218,7 @@ def query_metrics(path, entity_ids, *, section='overview', metric='', record_id=
         comparison['state']='separate_series_required';comparison['notes']=['单位、期间或实际/计划状态不同，分组展示，不混成同一序列。']
     if not include_inputs:
         rows=[{k:v for k,v in r.items() if k not in {'inputs','detail','formula'}} for r in rows]
-    return {'items':rows[offset:offset+limit],'total':len(rows),'next_offset':offset+limit if offset+limit<len(rows) else None,'metric_catalog':catalog,'fiscal_years':years,'coverage':coverage,'comparison':comparison,'as_of':as_of,'section':section,'frequency':frequency,'alignment':alignment,'history_policy':'latest_revision_at_cutoff; valuation_financial_inputs_public_by_trade_date','value_precision':'decimal_strings; no_interpolation_or_implicit_fx'}
+    if any(r.get('comparison_rules') for r in rows):
+        comparison['state']='separate_series_required'
+        comparison['notes'].extend(dict.fromkeys(rule['reason'] for r in rows for rule in r.get('comparison_rules',[])))
+    return {'items':rows[offset:offset+limit],'total':len(rows),'next_offset':offset+limit if offset+limit<len(rows) else None,'metric_catalog':catalog,'fiscal_years':years,'coverage':coverage,'comparison':comparison,'industry_reviews':reviews,'as_of':as_of,'section':section,'frequency':frequency,'alignment':alignment,'history_policy':'latest_revision_at_cutoff; valuation_financial_inputs_public_by_trade_date','value_precision':'decimal_strings; no_interpolation_or_implicit_fx'}

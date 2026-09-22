@@ -66,6 +66,9 @@ def test_runtime_child_search_read_and_graph_evidence(tmp_path):
     assert read.items[0]['passage']==found[0]['body']
     old=lib.navigate(req.model_copy(update={'node_id':'PASSAGE::p'}),'2025-02-01')
     assert old.items[0]['passage']==found[0]['body']
+    scoped=lib.navigate(SourceDocumentRequest(source_space='library',operation='search',
+        query='supply',entity_id='A',document_id='OTHER'), '2025-02-01')
+    assert scoped.items==()  # An explicit document scope must also constrain graph additions.
 
 
 def test_reviewed_supplement_requires_exact_parent_and_quote(tmp_path):

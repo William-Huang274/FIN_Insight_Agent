@@ -269,7 +269,9 @@ class ResearchLibrary(ResearchSnapshot):
                     'context':p['context'],'chunk_kind':p['kind']} if p.get('parent_id') else {})}
                 for p in candidates]
             if request.entity_id:
-                rows += [{'result_state': 'retrieval_candidate', **e} for e in self.graph_search(request.entity_id, as_of, depth=request.graph_depth)['edges']]
+                rows += [{'result_state': 'retrieval_candidate', **e}
+                         for e in self.graph_search(request.entity_id, as_of, depth=request.graph_depth)['edges']
+                         if not request.document_id or e['source_id'] == request.document_id]
         elif request.operation == 'observations':
             rows=[{'result_state':'retrieval_candidate', **o, 'numeric_fact_authority':False,
                 'readback':{'source_space':'library','operation':'read','document_id':o['source_id']}}

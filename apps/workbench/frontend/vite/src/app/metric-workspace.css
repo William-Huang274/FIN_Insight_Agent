@@ -2,3 +2,4 @@
 
 .mw-comparison-section{margin:20px 0}.mw-comparison-section h3{font-size:12px;color:var(--muted);font-weight:500}.mw-comparison-cell{display:flex!important;flex-direction:column;align-items:flex-start!important;white-space:normal!important;text-align:left;padding:6px 0}.mw-comparison-cell strong{font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink)}.mw-comparison-cell span,.mw-missing{font-size:10px;color:var(--muted)}.mw-data-card blockquote{margin:0;padding:14px;border-left:2px solid var(--accent);background:var(--canvas);font-size:12px;line-height:1.8;white-space:pre-wrap}
 .mw-chart svg line { pointer-events: none; }
+.mw-chart-readout button { flex: 0 0 auto; width: auto; min-width: max-content; white-space: nowrap; }

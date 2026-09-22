@@ -297,6 +297,26 @@ def test_source_evidence_anchor_opens_exact_passage_and_rejects_other_document(f
     assert client.get('/data-library/research-sources/'+sid,params={'passage_id':'PASSAGE::old'}).status_code==404
 
 
+def test_chunk_source_anchor_retains_original_parent_and_document_order(foundation,tmp_path):
+    from apps.workbench.backend.api.v1.data_library import build_data_library_router
+    from retrieval.library_chunks import build_chunks
+    path,worker,sid=foundation
+    body='Customer contract details. '*450
+    worker.sql('INSERT INTO passages VALUES(?,?,?,?,?)',('AAA-later-parent',sid,'text-part:1',body,'e'*64))
+    build_chunks(path);publish(path,worker)
+    children=worker.sql('SELECT * FROM retrieval_chunks WHERE parent_id=? ORDER BY ordinal',('AAA-later-parent',))
+    app=FastAPI();app.include_router(build_data_library_router(tmp_path,research_library=path));client=TestClient(app)
+    base='/data-library/research-sources/'+sid
+    response=client.get(base,params={'passage_id':children[1]['id'],'limit':1})
+    assert response.status_code==200
+    result=response.json()
+    assert result['offset']==2 and result['items'][0]['id']==children[1]['id']
+    assert result['total']==len(children)+1
+    old=client.get(base,params={'passage_id':'AAA-later-parent'}).json()
+    assert old['selected_parent'] and old['total']==1 and old['items'][0]['body']==body
+    assert client.get(base,params={'passage_id':'CHUNK::wrong'}).status_code==404
+
+
 def test_presentation_api_decodes_archived_metadata_and_paginates_records(foundation,tmp_path):
     from apps.workbench.backend.api.v1.data_library import build_data_library_router
     path,worker,_=foundation

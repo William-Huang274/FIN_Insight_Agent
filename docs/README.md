@@ -19,6 +19,7 @@ FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工�
 | [六维来源分层测试](engineering/six_source_qualification.zh-CN.md) | 先基础知识与数据处理，再简单/复杂组合与困难题；逐题分类、归因、修复复验及GraphRAG接入测点 |
 | [资产工作区与交接协议](architecture/asset_workspace_protocol.zh-CN.md) | 知识库/财务库/项目资料统一界面、研究侧栏、版本与记忆交接、项目库恢复及边界 |
 | [AI 行业数据基座](architecture/ai_industry_data_foundation.zh-CN.md) | 两轮公司扩展、SEC/API 采集、SQL 原文与数据、来源关系检索、Qwen 索引及公司光谱界面；逐公司覆盖缺口独立记录 |
+| [原文子块与向量检索](architecture/library_chunks_and_vectors.zh-CN.md) | 有界子块、父原文引用、图边证据关联、正文 embedding、持久索引及失败请求恢复边界 |
 | [指标工作区](architecture/metric_workspace.zh-CN.md) | 指标日期合同、独立数据卡、趋势与多公司比较、同源工具及行业数据导入 |
 | [指标工作区 r18 交付](architecture/metric_workspace_r18_delivery.zh-CN.md) | 核心20家公司首批行业指标、发布边界与逐公司缺口 |
 | [行业指标 r19 补查](architecture/metric_workspace_r19_delivery.zh-CN.md) | 22项原缺口逐字段复核、新观测、比较规则与同源查询 |

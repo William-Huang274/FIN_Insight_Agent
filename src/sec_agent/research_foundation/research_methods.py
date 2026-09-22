@@ -34,6 +34,9 @@ REPORT_PROCESSING_TOOL_GUIDANCE = (
     "get_research_method(method_id='report_processing'). Locate relevant sections, "
     "then read original context including headers, units and footnotes. Reuse verified "
     "structured facts and exact source IDs; previews are not extraction input. "
+    "Follow returned child node IDs and context_readbacks for bounded source text; "
+    "parent_locator_bound is a broader evidence location, not an exact quotation. "
+    "A missing vector index is an execution failure, not missing disclosure. "
     "Read tools do not ingest, execute parsing scripts or publish database updates."
 )
 

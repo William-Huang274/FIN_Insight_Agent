@@ -22,10 +22,10 @@ class RetrievalResponse:
 
 class QwenRetrieval:
     def __init__(self, api_key: str, *, embedding_model="text-embedding-v4",
-                 rerank_model="qwen3-rerank", http_client=None):
+                 rerank_model="qwen3-rerank", http_client=None, timeout=45):
         self.embedding_model = embedding_model
         self.rerank_model = rerank_model
-        options = dict(api_key=api_key, max_retries=0, timeout=45)
+        options = dict(api_key=api_key, max_retries=0, timeout=timeout)
         if http_client is not None:
             options["http_client"] = http_client
         self.embeddings = OpenAI(base_url="https://dashscope.aliyuncs.com/compatible-mode/v1", **options)

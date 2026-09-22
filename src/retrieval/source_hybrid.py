@@ -66,7 +66,7 @@ class CachedRetrieval(Embeddings):
         keys = [self.key('vector', t) for t in texts]
         missing = list(dict.fromkeys(t for t,k in zip(texts,keys) if self.cache.get(k) is None))
         if missing and not self.prepare:
-            raise RuntimeError(f'原文向量索引尚有 {len(missing)} 个片段未准备；本次仅使用 BM25')
+            raise RuntimeError(f'原文向量索引尚有 {len(missing)} 个片段未准备；混合检索未执行，请显式准备索引')
         for start in range(0,len(missing),10):
             batch=missing[start:start+10]
             result=self.call('embedding',batch)
@@ -118,7 +118,7 @@ def rank_sources(rows, query, snapshot, literal, *, path, api=None, diagnostics=
         with Cache(path) as cache:
             client=CachedRetrieval(cache,api,snapshot)
             vectorstore=InMemoryVectorStore(client)
-            # This reads prepared vectors only; missing vectors cause explicit fallback.
+            # Reads prepared vectors only; missing vectors are an execution error.
             vectorstore.add_texts([c['text'] for c in chunks],metadatas=[{'index':i} for i in range(len(chunks))])
             dense=vectorstore.similarity_search(query,k=min(24,len(chunks)))
             indices=[d.metadata['index'] for d in dense]

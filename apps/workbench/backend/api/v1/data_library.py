@@ -86,6 +86,22 @@ def build_data_library_router(attachments_root, fact_mart=None, research_library
         current_owner(request)
         from sec_agent.research_foundation.research_library import open_library
         library=open_library(foundation())
+        if library.has_retrieval_chunks:
+            result=library.read(document_id,'9999-12-31',start=offset,limit=limit)
+            if passage_id:
+                child=library._query('SELECT c.parent_id,c.ordinal,p.rowid AS parent_order FROM retrieval_chunks c JOIN passages p ON p.id=c.parent_id WHERE c.id=? AND c.source_id=?',(passage_id,document_id))
+                if child:
+                    offset=library._query('SELECT count(*) AS n FROM retrieval_chunks c JOIN passages p ON p.id=c.parent_id WHERE c.source_id=? AND (p.rowid<? OR (c.parent_id=? AND c.ordinal<?))',
+                        (document_id,child[0]['parent_order'],child[0]['parent_id'],child[0]['ordinal']))[0]['n']
+                    result=library.read(document_id,'9999-12-31',start=offset,limit=limit)
+                else:
+                    parent=library._query('SELECT * FROM passages WHERE id=? AND source_id=?',(passage_id,document_id))
+                    if not parent:raise HTTPException(404,'这条依据不属于所选原文')
+                    result.update(items=parent if result['status']=='readable' else [],next_start=None,total=len(parent),offset=0,selected_parent=True)
+            if 'total' not in result:
+                result.update(total=library._query('SELECT count(*) AS n FROM retrieval_chunks WHERE source_id=?',(document_id,))[0]['n'],offset=offset)
+            if result.get('source') and isinstance(result['source'].get('metadata'),str):result['source']['metadata']=json.loads(result['source']['metadata'])
+            return result
         if passage_id:
             anchor=library._query('SELECT rowid FROM passages WHERE id=? AND source_id=?',(passage_id,document_id))
             if not anchor:raise HTTPException(404,'这条依据不属于所选原文')

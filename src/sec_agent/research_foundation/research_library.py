@@ -126,6 +126,28 @@ class ResearchLibrary(ResearchSnapshot):
         super().__init__(path)
         stat = self.path.stat()
         self._release_stat = (stat.st_mtime_ns, stat.st_size)
+        from retrieval.library_chunks import has_chunks
+        self.has_retrieval_chunks = has_chunks(self)
+
+    def search(self, terms, as_of, *, source_ids=(), limit=12):
+        if not self.has_retrieval_chunks:
+            return super().search(terms,as_of,source_ids=source_ids,limit=limit)
+        if not terms or not 1<=limit<=40:raise ValueError('empty_terms_or_invalid_limit')
+        eligible=[s['id'] for s in self.catalog(as_of) if s['eligible'] and (not source_ids or s['id'] in source_ids)]
+        if not eligible:return []
+        expression=' OR '.join('"'+str(t).replace('"','""')+'"' for t in terms)
+        placeholders=','.join('?' for _ in eligible)
+        return self._query('SELECT c.* FROM chunk_search f JOIN retrieval_chunks c ON c.id=f.id '
+            f'WHERE chunk_search MATCH ? AND c.source_id IN ({placeholders}) ORDER BY bm25(chunk_search,0,0,0.3,1.0) LIMIT ?',
+            (expression,*eligible,limit))
+
+    def read(self, source_id, as_of, *, start=0, limit=8):
+        result=super().read(source_id,as_of,start=start,limit=limit)
+        if self.has_retrieval_chunks and result['status']=='readable':
+            rows=self._query('SELECT c.* FROM retrieval_chunks c JOIN passages p ON p.id=c.parent_id WHERE c.source_id=? ORDER BY p.rowid,c.ordinal LIMIT ? OFFSET ?',
+                            (source_id,limit+1,start))
+            result.update(items=rows[:limit],next_start=start+limit if len(rows)>limit else None)
+        return result
 
     def graph_search(self, entity_id, as_of, *, depth=1, max_edges=80):
         if depth not in {1, 2}:
@@ -153,6 +175,14 @@ class ResearchLibrary(ResearchSnapshot):
                     if isinstance(row['qualifiers'],str):row['qualifiers'] = json.loads(row['qualifiers'])
                     row['candidate_only'] = True
                     row['evidence'] = self._query('SELECT id,source_id,locator,digest FROM passages WHERE source_id=? AND locator=?', (row['source_id'], row['locator']))
+                    if self.has_retrieval_chunks:
+                        from retrieval.library_chunks import edge_evidence
+                        chunks,binding=edge_evidence(self,row['id'])
+                        row['parent_evidence']=row['evidence']
+                        row['evidence']=chunks or row['evidence']
+                        row['chunk_binding']=binding
+                        if chunks:
+                            row['readback']={'source_space':'library','operation':'read','document_id':row['source_id'],'node_id':chunks[0]['id']}
                     row.setdefault('readback', {'source_space':'library', 'operation':'read', 'document_id':row['source_id']})
                     found[row['id']] = row
                     next_frontier.update([row['subject'], row['object']])
@@ -234,7 +264,9 @@ class ResearchLibrary(ResearchSnapshot):
                 candidates,retrieval=rank(self,request.query,as_of,candidates,path=cache,
                     document_id=request.document_id,entity_id=request.entity_id)
             rows = [{'result_state': 'retrieval_candidate', 'document_id': p['source_id'],
-                'node_id': p['id'], 'preview': p['body'][:500], 'digest': p['digest'], 'retrieval':retrieval}
+                'node_id': p['id'], 'preview': p['body'][:500], 'digest': p['digest'], 'retrieval':retrieval,
+                **({'parent_node_id':p['parent_id'],'source_char_start':p['char_start'],'source_char_end':p['char_end'],
+                    'context':p['context'],'chunk_kind':p['kind']} if p.get('parent_id') else {})}
                 for p in candidates]
             if request.entity_id:
                 rows += [{'result_state': 'retrieval_candidate', **e} for e in self.graph_search(request.entity_id, as_of, depth=request.graph_depth)['edges']]
@@ -250,6 +282,8 @@ class ResearchLibrary(ResearchSnapshot):
             if request.node_id:
                 # Exact node lookup is independent of document pagination.
                 passages = self._query('SELECT * FROM passages WHERE id=? AND source_id=?', (request.node_id, request.document_id)) if status == 'readable' else []
+                if not passages and status=='readable' and self.has_retrieval_chunks:
+                    passages=self._query('SELECT * FROM retrieval_chunks WHERE id=? AND source_id=?',(request.node_id,request.document_id))
                 if not passages and status == 'readable':
                     status = 'unknown_node'
             rows = []
@@ -264,9 +298,29 @@ class ResearchLibrary(ResearchSnapshot):
                     'numeric_fact_authority': False, 'source_locator': {'document_id': p['source_id'],
                         'node_id': p['id'], 'locator': p['locator'], 'source_url': source['url'], 'content_sha256': p['digest']},
                     'publication_date': source['published_at'], 'authority_note': 'Source text; preserve population, period, unit and qualifiers. Graph edges do not confer authority.'})
+                if p.get('parent_id'):
+                    rows[-1].update(parent_node_id=p['parent_id'],source_char_start=p['char_start'],source_char_end=p['char_end'],
+                        context=p['context'],chunk_kind=p['kind'],chunk_flags=json.loads(p['flags']),
+                        parent_readback={'source_space':'library','operation':'read','document_id':p['source_id'],'node_id':p['parent_id']})
+                    neighbors=self._query('SELECT id,ordinal FROM retrieval_chunks WHERE parent_id=? AND ordinal IN (?,?) ORDER BY ordinal',
+                        (p['parent_id'],p['ordinal']-1,p['ordinal']+1))
+                    rows[-1]['context_readbacks']=[{'direction':'previous' if n['ordinal']<p['ordinal'] else 'next',
+                        'source_space':'library','operation':'read','document_id':p['source_id'],'node_id':n['id']} for n in neighbors]
             if passages and not rows:
+                if self.has_retrieval_chunks and request.node_id and not passages[0].get('parent_id'):
+                    children=self._query('SELECT id,source_id,parent_id,char_start,char_end,context,digest,body FROM retrieval_chunks WHERE parent_id=? ORDER BY ordinal LIMIT ? OFFSET ?',
+                        (request.node_id,request.limit,request.offset))
+                    if children:
+                        total=self._query('SELECT count(*) AS n FROM retrieval_chunks WHERE parent_id=?',(request.node_id,))[0]['n']
+                        return self._result(request,[{'result_state':'retrieval_candidate','node_id':c['id'],
+                            'document_id':c['source_id'],'parent_node_id':c['parent_id'],'source_char_start':c['char_start'],
+                            'source_char_end':c['char_end'],'context':c['context'],'preview':c['body'][:300],'digest':c['digest'],
+                            'readback':{'source_space':'library','operation':'read','document_id':c['source_id'],'node_id':c['id']}} for c in children],
+                            'parent_exceeds_character_budget_use_child_readbacks',total=total,
+                            next_offset=request.offset+len(children) if request.offset+len(children)<total else None)
                 status = 'block_exceeds_character_budget_increase_max_characters'
-            total = self._query('SELECT COUNT(*) AS n FROM passages WHERE source_id=?', (request.document_id,))[0]['n'] if status == 'readable' else 0
+            table='retrieval_chunks' if self.has_retrieval_chunks else 'passages'
+            total = self._query(f'SELECT COUNT(*) AS n FROM {table} WHERE source_id=?', (request.document_id,))[0]['n'] if status == 'readable' else 0
             return self._result(request, rows, status, total=1 if request.node_id and total else total,
                 next_offset=None if request.node_id or status != 'readable' or request.offset+len(rows)>=total else request.offset+len(rows))
         total = len(rows)

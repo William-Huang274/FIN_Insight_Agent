@@ -406,6 +406,12 @@ def assertion_page(db, entity_id, *, offset=0, limit=30, query='', as_of='9999-1
         p['evidence']=[{'passage_id':e['passage_id'],'locator':e['locator'],
                        'readback':{'source_space':'library','operation':'read','document_id':p['source_id'],
                                    'node_id':e['passage_id']}} for e in p['evidence']]
+        if db.execute("SELECT 1 FROM sqlite_master WHERE name='edge_chunk_links'").fetchone():
+            chunks=[dict(r) for r in db.execute('SELECT DISTINCT c.id,c.source_id,c.parent_id,c.locator,l.binding FROM edge_chunk_links l JOIN retrieval_chunks c ON c.id=l.chunk_id WHERE l.edge_id=? ORDER BY c.parent_id,c.char_start LIMIT 20',(p['id'],))]
+            p['parent_evidence']=p['evidence']
+            p['chunk_evidence']=[dict(c,readback={'source_space':'library','operation':'read','document_id':c['source_id'],'node_id':c['id']}) for c in chunks]
+            binding=db.execute('SELECT status,payload FROM edge_chunk_coverage WHERE edge_id=?',(p['id'],)).fetchone()
+            p['chunk_binding']={'status':binding['status'],**json.loads(binding['payload'])} if binding else {'status':'not_published_identity_unresolved'}
         p['terms']=[{k:v for k,v in t.items() if k!='evidence_quote'} for t in p.get('terms',[])]
         items.append(p)
     return {'items':items,'total':total,'next_offset':offset+len(items) if offset+len(items)<total else None,'status':'ok'}

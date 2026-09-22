@@ -1,8 +1,7 @@
-"""Hierarchical retrieval: dense document routing, FTS5 BM25, source reranking.
+"""Versioned library retrieval with lexical, dense and graph evidence candidates.
 
-All original passages stay in SQL/FTS. Dense vectors cover document navigation
-cards, explicitly not every paragraph. Graph neighbors constrain/expand sources
-without manufacturing an answer. Paid calls use the existing audited cache.
+Child-chunk releases use the prepared persistent full-text matrix. Older releases
+retain document-card routing. Paid query/rerank calls use the audited cache.
 """
 from contextlib import closing
 import json
@@ -37,6 +36,8 @@ def prepare(library,path,api):
 
 
 def rank(library,query,as_of,lexical,*,path,document_id=None,entity_id=None,api=None):
+    if getattr(library,'has_retrieval_chunks',False):
+        return rank_chunks(library,query,as_of,lexical,path=path,document_id=document_id,entity_id=entity_id,api=api)
     owned=api is None
     api=api or QwenRetrieval(os.environ['QWEN_API_KEY'])
     try:
@@ -65,5 +66,50 @@ def rank(library,query,as_of,lexical,*,path,document_id=None,entity_id=None,api=
             return [rows[r['index']] for r in ranked],{'mode':'document_dense_fts5_bm25_source_rerank','calls':client.calls,'cache_hits':client.hits,
                 'dense_document_count':len(dense),'candidate_passages':len(rows),'embedding_scope':'document_navigation_cards',
                 'dense_documents':source_ids[:10]}
+    finally:
+        if owned:api.close()
+
+
+def rank_chunks(library,query,as_of,lexical,*,path,document_id=None,entity_id=None,api=None):
+    """Independent lexical/dense/graph quotas; no first-6000 truncation."""
+    from retrieval.library_vectors import dense_search,ready_index
+    ready_index(path,library.manifest['sha256'])
+    owned=api is None;api=api or QwenRetrieval(os.environ['QWEN_API_KEY'])
+    try:
+        eligible={s['id'] for s in library.catalog(as_of) if s['eligible'] and (not document_id or s['id']==document_id)}
+        if not eligible:return [],{'mode':'chunk_hybrid','reason':'no_eligible_sources'}
+        with Cache(Path(path)/'query-cache') as cache:
+            client=CachedRetrieval(cache,api,'library-child-query.v1')
+            dense_ids=dense_search(path,library.manifest['sha256'],client.embed_query(query),eligible,k=24)
+            dense=[]
+            for cid in dense_ids:dense.extend(library._query('SELECT * FROM retrieval_chunks WHERE id=?',(cid,)))
+            graph=[];graph_truncated=False
+            if entity_id:
+                graph_result=library.graph_search(entity_id,as_of,depth=1,max_edges=1000)
+                graph_truncated=graph_result['truncated']
+                edges=[e for e in graph_result['edges']
+                       if e['source_id'] in eligible and e['status']!='needs_semantic_review']
+                eids=[e['id'] for e in edges]
+                if eids:
+                    marks=','.join('?' for _ in eids)
+                    terms=query.casefold().split()
+                    expression=' OR '.join('"'+t.replace('"','""')+'"' for t in terms)
+                    # Rank evidence-linked chunks before limiting: a document's
+                    # early pages must not crowd out a matching later quotation.
+                    if expression:
+                        graph=library._query(f'SELECT c.* FROM chunk_search f JOIN retrieval_chunks c ON c.id=f.id WHERE chunk_search MATCH ? AND c.id IN (SELECT chunk_id FROM edge_chunk_links WHERE edge_id IN ({marks})) ORDER BY bm25(chunk_search,0,0,0.3,1.0),c.id LIMIT 12',(expression,*eids))
+                    fallback=library._query(f'SELECT DISTINCT c.* FROM edge_chunk_links l JOIN retrieval_chunks c ON c.id=l.chunk_id JOIN edges e ON e.id=l.edge_id WHERE l.edge_id IN ({marks}) ORDER BY e.published_at DESC,c.id LIMIT 12',eids)
+                    graph=list({p['id']:p for p in [*graph,*fallback]}.values())[:12]
+            candidates={}
+            for group in (lexical[:12],dense[:24],graph[:12]):
+                for p in group:candidates.setdefault(p['id'],p)
+            rows=list(candidates.values())
+            if not rows:return [],{'mode':'chunk_hybrid','reason':'no_candidates'}
+            texts=[p['context']+'\n'+p['body'] for p in rows]
+            if any(len(t)>6000 for t in texts):raise ValueError('retrieval_chunk_exceeds_rerank_contract')
+            ranked=client.call('rerank',[query,texts])['values']
+            return [rows[r['index']] for r in ranked],{'mode':'chunk_dense_fts5_bm25_graph_rerank','embedding_scope':'readable_child_chunks',
+                'candidate_chunks':len(rows),'dense_chunks':len(dense),'graph_chunks':len(graph[:12]),
+                'graph_window_truncated':graph_truncated,'calls':client.calls,'cache_hits':client.hits}
     finally:
         if owned:api.close()

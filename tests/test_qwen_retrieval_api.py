@@ -45,3 +45,14 @@ def test_duplicate_rerank_indices_rejected():
     with pytest.raises(ValueError, match="index_mismatch"):
         api.rerank("query", ["a", "b"])
     api.close()
+
+
+def test_new_model_batch_limit_and_returned_model_identity():
+    def handler(request):
+        return httpx.Response(200,json={'object':'list','model':'text-embedding-v4','data':[],
+                                      'usage':{'total_tokens':1}})
+    api=QwenRetrieval('synthetic-test-credential',embedding_model='qwen3.7-text-embedding',
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)))
+    with pytest.raises(ValueError,match='model_mismatch'):api.embed(['text']*20)
+    with pytest.raises(ValueError,match='1_to_20'):api.embed(['text']*21)
+    api.close()

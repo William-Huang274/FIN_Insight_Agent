@@ -73,8 +73,10 @@ def rank(library,query,as_of,lexical,*,path,document_id=None,entity_id=None,api=
 def rank_chunks(library,query,as_of,lexical,*,path,document_id=None,entity_id=None,api=None):
     """Independent lexical/dense/graph quotas; no first-6000 truncation."""
     from retrieval.library_vectors import dense_search,ready_index
-    ready_index(path,library.manifest['sha256'])
-    owned=api is None;api=api or QwenRetrieval(os.environ['QWEN_API_KEY'])
+    manifest,_,_=ready_index(path,library.manifest['sha256'])
+    if api is not None and api.embedding_model!=manifest['embedding_model']:
+        raise ValueError('query_embedding_model_mismatch')
+    owned=api is None;api=api or QwenRetrieval(os.environ['QWEN_API_KEY'],embedding_model=manifest['embedding_model'])
     try:
         eligible={s['id'] for s in library.catalog(as_of) if s['eligible'] and (not document_id or s['id']==document_id)}
         if not eligible:return [],{'mode':'chunk_hybrid','reason':'no_eligible_sources'}

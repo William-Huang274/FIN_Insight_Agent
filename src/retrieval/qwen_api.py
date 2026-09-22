@@ -36,10 +36,13 @@ class QwenRetrieval:
         self.reranker.close()
 
     def embed(self, texts: list[str], *, dimensions=1024) -> RetrievalResponse:
-        if not 1 <= len(texts) <= 10 or any(not t.strip() for t in texts):
-            raise ValueError("embedding_requires_1_to_10_nonempty_texts")
+        batch_limit = 20 if self.embedding_model in {"qwen3.7-text-embedding", "qwen3.7-text-embedding-flash"} else 10
+        if not 1 <= len(texts) <= batch_limit or any(not t.strip() for t in texts):
+            raise ValueError(f"embedding_requires_1_to_{batch_limit}_nonempty_texts")
         result = self.embeddings.embeddings.create(
             model=self.embedding_model, input=texts, dimensions=dimensions, encoding_format="float")
+        if result.model != self.embedding_model:
+            raise ValueError("embedding_response_model_mismatch")
         rows = sorted(result.data, key=lambda row: row.index)
         if [r.index for r in rows] != list(range(len(texts))):
             raise ValueError("embedding_response_index_mismatch")

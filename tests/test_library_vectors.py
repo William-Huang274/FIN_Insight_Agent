@@ -58,6 +58,16 @@ def test_ready_check_rejects_unprepared_index_without_api(tmp_path):
     with pytest.raises(RuntimeError,match='not_prepared'):vectors.ready_index(tmp_path,'snapshot')
 
 
+def test_ready_cache_invalidates_mapping_replaced_without_manifest_change(tmp_path,monkeypatch):
+    monkeypatch.setattr(vectors,'QwenRetrieval',API)
+    root=tmp_path/'cache'
+    vectors.prepare(Library(),root,'unused',tmp_path/'audit',execute=True)
+    vectors.ready_index(root,'snapshot')
+    (root/'chunk-vector-map.json').write_text('[]')
+    with pytest.raises(ValueError,match='digest_mismatch'):
+        vectors.ready_index(root,'snapshot')
+
+
 def test_old_retry_approval_cannot_replay_a_new_failed_attempt(tmp_path,monkeypatch):
     class Fail(API):
         calls=0

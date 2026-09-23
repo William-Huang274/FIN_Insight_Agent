@@ -33,6 +33,7 @@ def main():
     parser.add_argument('--tls-certificate', type=Path)
     parser.add_argument('--tls-key', type=Path)
     parser.add_argument("--no-build", action="store_true", help="Use the already built image; no source change implied.")
+    parser.add_argument('--api-only',action='store_true',help='Recreate only the API, preserving running PostgreSQL/Redis. Requires healthy dependencies; never resumes a research run.')
     parser.add_argument("--enable-research", action="store_true", help="Enable the approved fresh research entry; does not start a model run.")
     parser.add_argument("--fresh-only", action="store_true", help="Run only new research without mounting an archived answer bundle or report.")
     parser.add_argument("--working-memory", action="store_true", help="Enable persistent task working papers in this deployment.")
@@ -105,7 +106,7 @@ def main():
         "-f", "deploy/agent_server/compose.yaml", "-f", "deploy/agent_server/compose.research-session.yaml" if args.fresh_only else "deploy/agent_server/compose.report-session.yaml"]
     if settings.get('research_library'):
         from sec_agent.research_foundation.research_library import open_library
-        library=Path(settings['research_library']).resolve(strict=True);open_library(library)
+        library=Path(settings['research_library']).resolve(strict=True);release=open_library(library)
         cache=Path(settings['research_library_rag_cache']).resolve(strict=True)
         container_settings=json.loads((settings_root/'container-settings.json').read_text(encoding='utf-8'))
         if container_settings.get('research_library')!='/run/fin-insight/research-library/library.sqlite' or container_settings.get('research_library_rag_cache')!='/run/fin-insight/library-rag':
@@ -114,7 +115,15 @@ def main():
         if settings.get('research_library_hybrid'):
             env['QWEN_API_KEY']=configured_key('QWEN_API_KEY') or ''
             if not env['QWEN_API_KEY']:raise ValueError('QWEN_API_KEY_required_for_library_retrieval')
-        command.extend(['-f','deploy/agent_server/compose.research-library.yaml'])
+        if volume := settings.get('research_library_volume'):
+            from scripts.deployment.native_library import volume_operation
+            env['FINSIGHT_RESEARCH_LIBRARY_VOLUME'] = volume
+            if args.action != 'build':
+                volume_operation(docker,volume,release.manifest['sha256'],
+                                 image=settings.get('research_library_verification_image','finsight-dell-report-workbench-langgraph-api'))
+            command.extend(['-f','deploy/agent_server/compose.research-library-native.yaml'])
+        else:
+            command.extend(['-f','deploy/agent_server/compose.research-library.yaml'])
     if settings.get("conversation_fact_mart"):
         mart = Path(settings["conversation_fact_mart"]).resolve(strict=True)
         if not mart.is_file():
@@ -134,7 +143,8 @@ def main():
     if args.action == "build":
         subprocess.run([*command, "build", "langgraph-api"], cwd=repo, env=env, check=True)
         return  # Build does not stop/recreate a running paid task.
-    subprocess.run([*command, "up", "-d", "--no-build" if args.no_build else "--build"], cwd=repo, env=env, check=True)
+    subprocess.run([*command, "up", "-d", "--no-build" if args.no_build else "--build",
+                    *(['--no-deps','langgraph-api'] if args.api_only else [])], cwd=repo, env=env, check=True)
 
 
 if __name__ == "__main__":

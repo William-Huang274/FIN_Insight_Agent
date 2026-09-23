@@ -1,0 +1,19 @@
+# Alternative to compose.research-library.yaml, not an overlay on its file binds.
+services:
+  langgraph-api:
+    environment:
+      QWEN_API_KEY: ${QWEN_API_KEY:-}
+    volumes:
+      - type: volume
+        source: research-library-release
+        target: /run/fin-insight/research-library
+        read_only: true
+        volume: {nocopy: true}
+      - type: bind
+        source: ${FINSIGHT_LIBRARY_RAG_CACHE_HOST_ROOT:?prepared retrieval cache directory}
+        target: /run/fin-insight/library-rag
+        bind: {create_host_path: false}
+volumes:
+  research-library-release:
+    external: true
+    name: ${FINSIGHT_RESEARCH_LIBRARY_VOLUME:?verified immutable release volume}

@@ -67,3 +67,40 @@ def test_batched_evidence_matches_original_including_dynamic_gap(tmp_path, monke
     assert graph['edges'][0]['evidence'] == expected['AB'][0]
     assert graph['edges'][0]['parent_evidence'][0]['id'] == 'PASSAGE::p'
     assert lib.graph_search('A','2026-01-01',max_edges=0)['truncated']
+
+
+def test_graph_filters_before_budget_direction_each_hop_and_no_future(tmp_path,monkeypatch):
+    _,path,manifest=publish(tmp_path)
+    with sqlite3.connect(path) as db:
+        # Many reviewed holdings cannot crowd out a requested supplier edge.
+        for i in range(90):
+            db.execute("INSERT INTO edges(id,subject,object,predicate,source_id,locator,published_at,valid_from,valid_to,status,qualifiers) SELECT ?,subject,object,'reported_security_position',source_id,locator,published_at,valid_from,valid_to,status,qualifiers FROM edges WHERE id='AB'",(f'holding-{i}',))
+        db.execute("INSERT INTO edges(id,subject,object,predicate,source_id,locator,published_at,valid_from,valid_to,status,qualifiers) SELECT 'BC','B','C','supply',source_id,locator,published_at,valid_from,valid_to,status,qualifiers FROM edges WHERE id='AB'")
+        db.execute("INSERT INTO edges(id,subject,object,predicate,source_id,locator,published_at,valid_from,valid_to,status,qualifiers) SELECT 'CA','C','A','supply',source_id,locator,'2028-01-01',valid_from,valid_to,status,qualifiers FROM edges WHERE id='AB'")
+        db.execute("INSERT INTO edges(id,subject,object,predicate,source_id,locator,published_at,valid_from,valid_to,status,qualifiers) SELECT 'mention','A','C','co_mentions',source_id,locator,published_at,valid_from,valid_to,'needs_semantic_review',qualifiers FROM edges WHERE id='AB'")
+    manifest['sha256']=module.digest_file(path)
+    path.with_suffix('.sqlite.manifest.json').write_text(json.dumps(manifest))
+    lib=module.ResearchLibrary(path)
+    calls=[];original=lib._query
+    def query(sql,args=()):
+        calls.append(sql);return original(sql,args)
+    monkeypatch.setattr(lib,'_query',query)
+    result=lib.graph_search('A','2026-01-01',depth=2,predicates=['supply'],direction='outgoing',review='reviewed')
+    assert [r['id'] for r in result['edges']]==['AB','BC'] and not result['truncated']
+    assert len([sql for sql in calls if 'SELECT e.* FROM edges' in sql])==2
+    assert lib.graph_search('A','2026-01-01',direction='incoming')['edges']==[]
+    assert 'mention' not in [r['id'] for r in lib.graph_search('A','2026-01-01',review='reviewed',max_edges=1000)['edges']]
+    assert lib.graph_search('A','2026-01-01',max_edges=2)['truncated']
+
+
+def test_graph_filter_wire_compatibility_and_text_independence(tmp_path):
+    from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
+    legacy=SourceDocumentRequest(operation='catalog').model_dump(mode='json')
+    assert not {'graph_predicates','graph_direction','graph_review'} & legacy.keys()
+    with pytest.raises(ValueError,match='graph_filters_require'):
+        SourceDocumentRequest(operation='search',query='supply',graph_review='reviewed')
+    lib=chunk_library(tmp_path)
+    req=SourceDocumentRequest(source_space='library',operation='search',entity_id='A',query='supply',graph_predicates=['missing_type'])
+    result=lib.navigate(req,'2026-01-01')
+    assert any(r.get('node_id','').startswith('CHUNK::') for r in result.items)
+    assert not any(r.get('predicate') for r in result.items)

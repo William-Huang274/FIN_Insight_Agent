@@ -192,21 +192,50 @@ class ResearchLibrary(ResearchSnapshot):
             result.update(items=rows[:limit],next_start=start+limit if len(rows)>limit else None)
         return result
 
-    def graph_search(self, entity_id, as_of, *, depth=1, max_edges=80):
+    def graph_search(self, entity_id, as_of, *, depth=1, max_edges=80, predicates=(), direction='both', review='all'):
         if depth not in {1, 2}:
             raise ValueError('graph_depth_out_of_scope')
+        if direction not in {'both','outgoing','incoming'} or review not in {'all','reviewed'}:
+            raise ValueError('invalid_graph_filter')
+        if not 0<=max_edges<=1000 or len(predicates)>16:
+            raise ValueError('invalid_graph_window')
         known = {e['id'] for e in self.entities()}
         if entity_id not in known:
             return {'status': 'unknown_entity', 'edges': [], 'truncated': False}
         frontier, visited, found = {entity_id}, set(), {}
-        from .industry_data import position_relations
+        from .industry_data import position_relations_batch
+        eligible={s['id'] for s in self.catalog(as_of) if s['eligible']}
         for _ in range(depth):
             next_frontier = set()
-            for entity in sorted(frontier - visited):
+            current=sorted(frontier-visited)
+            if not current:break
+            marks=','.join('?' for _ in current)
+            endpoint=(f'e.subject IN ({marks})' if direction=='outgoing' else
+                      f'e.object IN ({marks})' if direction=='incoming' else
+                      f'(e.subject IN ({marks}) OR e.object IN ({marks}))')
+            args=[*current,*(current if direction=='both' else []),self._cutoff(as_of),as_of,as_of]
+            clause=''
+            if predicates:
+                clause+=' AND e.predicate IN ('+','.join('?' for _ in predicates)+')';args.extend(predicates)
+            if review=='reviewed':clause+=" AND e.status!='needs_semantic_review'"
+            adjacent={eid:[] for eid in current}
+            for row in self._query('SELECT e.* FROM edges e WHERE '+endpoint+
+                    ' AND e.published_at<=? AND (e.valid_from IS NULL OR e.valid_from<=?) '
+                    'AND (e.valid_to IS NULL OR e.valid_to>=?)'+clause+' ORDER BY e.rowid',args):
+                if row['source_id'] not in eligible:continue
+                endpoints=([row['subject']] if direction=='outgoing' else [row['object']] if direction=='incoming' else [row['subject'],row['object']])
+                for eid in set(endpoints) & adjacent.keys():adjacent[eid].append(dict(row))
+            positions=position_relations_batch(self.path,current,as_of) if not predicates or 'reported_security_position' in predicates else {}
+            for entity in current:
                 visited.add(entity)
+                # Preserve the published endpoint-index order (subject then
+                # object, rowid within each) when batching the OR lookups.
+                adjacent[entity].sort(key=lambda r:r['subject']!=entity)
                 # Reviewed relations must not be crowded out by many literal
                 # co-mentions when a graph window reaches its size bound.
-                related=sorted(self.related(entity, as_of)+position_relations(self.path,entity,as_of),
+                holdings=[r for r in positions.get(entity,[]) if r['source_id'] in eligible and
+                          (direction=='both' or r['subject' if direction=='outgoing' else 'object']==entity)]
+                related=sorted(adjacent[entity]+holdings,
                     key=lambda r:2 if r['status']=='needs_semantic_review' else 1 if r['predicate']=='reported_security_position' else 0)
                 identities=set()
                 for row in related:
@@ -310,8 +339,9 @@ class ResearchLibrary(ResearchSnapshot):
                     aliases[alias['entity_id']].append(alias['alias'])
                 rows=[r for r in rows if (any if r.get('entity_id') else all)(t in json.dumps([r,aliases.get(r.get('entity_id'),[])],ensure_ascii=False).casefold() for t in terms)]
         elif request.operation == 'related':
-            graph = self.graph_search(request.entity_id, as_of, depth=request.graph_depth)
-            status = graph['status']
+            graph = self.graph_search(request.entity_id, as_of, depth=request.graph_depth,
+                                      predicates=request.graph_predicates,direction=request.graph_direction,review=request.graph_review)
+            status = 'graph_window_truncated' if graph['truncated'] else graph['status']
             rows = [{'result_state': 'retrieval_candidate', **e} for e in graph['edges']]
         elif request.operation == 'search':
             shared_graph = None
@@ -322,8 +352,9 @@ class ResearchLibrary(ResearchSnapshot):
                 cache=self.retrieval_environment.get('FINSIGHT_LIBRARY_RAG_CACHE_PATH')
                 if not cache:
                     raise ValueError('library_hybrid_cache_not_configured')
-                if self.has_retrieval_chunks and request.entity_id and request.graph_depth == 1:
-                    shared_graph = self.graph_search(request.entity_id, as_of, depth=1, max_edges=1000)
+                if self.has_retrieval_chunks and request.entity_id:
+                    shared_graph = self.graph_search(request.entity_id, as_of, depth=1, max_edges=1000,
+                        predicates=request.graph_predicates,direction=request.graph_direction,review=request.graph_review)
                 # Provider/cache failure is explicit. It must not be silently
                 # converted into an empty result or public information gap.
                 candidates,retrieval=rank(self,request.query,as_of,candidates,path=cache,
@@ -335,7 +366,10 @@ class ResearchLibrary(ResearchSnapshot):
                     'context':p['context'],'chunk_kind':p['kind']} if p.get('parent_id') else {})}
                 for p in candidates]
             if request.entity_id:
-                graph_edges = shared_graph['edges'][:80] if shared_graph is not None else self.graph_search(request.entity_id, as_of, depth=request.graph_depth)['edges']
+                output_graph = shared_graph if shared_graph is not None and request.graph_depth == 1 else self.graph_search(request.entity_id, as_of, depth=request.graph_depth,
+                    predicates=request.graph_predicates,direction=request.graph_direction,review=request.graph_review)
+                graph_edges = output_graph['edges'][:80]
+                if output_graph['truncated'] or len(output_graph['edges'])>80:status='graph_window_truncated'
                 rows += [{'result_state': 'retrieval_candidate', **e}
                          for e in graph_edges
                          if not request.document_id or e['source_id'] == request.document_id]

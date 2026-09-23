@@ -164,22 +164,36 @@ def data_channels(detail):
 
 def position_relations(path, entity_id, as_of):
     """Project only explicitly resolved issuer identities, without summing exposure."""
+    return position_relations_batch(path, [entity_id], as_of).get(entity_id, [])
+
+
+def position_relations_batch(path, entity_ids, as_of):
+    """One bounded SQL read per graph frontier, retaining manager/issuer roles."""
+    entity_ids=list(dict.fromkeys(entity_ids))
+    result={eid:[] for eid in entity_ids}
+    if not entity_ids:return result
+    if len(entity_ids)>1001:raise ValueError('position_frontier_too_large')
     with closing(connect(path)) as db:
-        if not db.execute("SELECT 1 FROM sqlite_master WHERE name='position_issuers'").fetchone():return []
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE name='position_issuers'").fetchone():return result
+        marks=','.join('?' for _ in entity_ids)
         rows=db.execute('SELECT p.manager_id,i.entity_id,p.source_id,p.period_end,p.filed_at,count(*) AS position_rows '
             'FROM institution_positions p JOIN position_issuers i ON i.position_id=p.id '
-            'JOIN sources s ON s.id=p.source_id WHERE (p.manager_id=? OR i.entity_id=?) AND p.filed_at<=? '
+            f'JOIN sources s ON s.id=p.source_id WHERE (p.manager_id IN ({marks}) OR i.entity_id IN ({marks})) AND p.filed_at<=? '
             "AND s.access_state='readable' AND (s.vintage NOT IN ('known_as_of','current_revised') OR substr(json_extract(s.metadata,'$.known_at'),1,10)<=?) "
             'GROUP BY p.manager_id,i.entity_id,p.source_id,p.period_end,p.filed_at ORDER BY p.filed_at DESC',
-            (entity_id,entity_id,as_of,as_of)).fetchall()
+            (*entity_ids,*entity_ids,as_of,as_of)).fetchall()
         from hashlib import sha256
-        return [{'id':'POSITION_EDGE::'+sha256('|'.join(str(r[k]) for k in ('manager_id','entity_id','source_id','period_end')).encode()).hexdigest()[:24],
+        edges=[{'id':'POSITION_EDGE::'+sha256('|'.join(str(r[k]) for k in ('manager_id','entity_id','source_id','period_end')).encode()).hexdigest()[:24],
             'subject':r['manager_id'],'object':r['entity_id'],'predicate':'reported_security_position','status':'reported_as_of',
             'source_id':r['source_id'],'published_at':r['filed_at'],'locator':'structured institution_positions',
             'qualifiers':{'period_end':r['period_end'],'position_rows':r['position_rows'],
                 'identity_basis':'existing_reviewed_position_issuers_mapping','no_netting':True},
             'candidate_only':False,'evidence':[],
             'readback':{'source_space':'library','operation':'data','entity_id':r['manager_id'],'data_kind':'positions'}} for r in rows]
+        for edge in edges:
+            for eid in {edge['subject'],edge['object']} & result.keys():
+                result[eid].append(dict(edge))
+        return result
 
 
 def data_page(path, entity_id, *, kind='financial', query='', offset=0, limit=30, as_of='9999-12-31', group='', account='', fiscal_year=None, fiscal_period='', derived_view='latest',date_start='',date_end=''):

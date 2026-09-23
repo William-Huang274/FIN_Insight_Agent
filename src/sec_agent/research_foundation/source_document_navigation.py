@@ -40,6 +40,9 @@ class SourceDocumentRequest(BaseModel):
     date_end: date | None = None
     entity_id: str | None = Field(default=None, max_length=200)
     graph_depth: int = Field(default=1, ge=1, le=2)
+    graph_predicates: tuple[str,...] = Field(default_factory=tuple,max_length=16,description='Exact predicate IDs from related records; filters graph edges before their budget. Text/dense retrieval remains independent. Empty keeps all relation types.')
+    graph_direction: Literal['both','outgoing','incoming'] = Field(default='both',description='Edge direction at each expansion hop relative to that frontier entity; never infer buyer/supplier from the arrow alone.')
+    graph_review: Literal['all','reviewed'] = Field(default='all',description='reviewed excludes needs_semantic_review/co-mention candidates; reported holdings remain distinct predicates. Not a completeness certification.')
     document_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
         description="Exact server document_id from catalog/search. Uploaded documents keep the UPLOAD:: prefix; a node's embedded hash is not a document ID.")
     node_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
@@ -68,13 +71,18 @@ class SourceDocumentRequest(BaseModel):
         # serialization so archived action/notebook digests still validate.
         if "source_space" not in self.model_fields_set:
             body.pop("source_space", None)
-        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'data_kind','data_group','account_path','fiscal_year','fiscal_period','company_section','derived_view','date_start','date_end','metric_section','metric_record_id','compare_entity_ids','metric_period_kind','metric_frequency','metric_alignment'):
+        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'graph_predicates','graph_direction','graph_review','data_kind','data_group','account_path','fiscal_year','fiscal_period','company_section','derived_view','date_start','date_end','metric_section','metric_record_id','compare_entity_ids','metric_period_kind','metric_frequency','metric_alignment'):
             if key not in self.model_fields_set:
                 body.pop(key,None)
         return body
 
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
+        if {'graph_predicates','graph_direction','graph_review'} & self.model_fields_set:
+            if self.source_space!='library' or self.operation not in {'related','search'} or not self.entity_id:
+                raise ValueError('graph_filters_require_library_entity_search_or_related')
+        if any(not p or len(p)>100 for p in self.graph_predicates) or len(set(self.graph_predicates))!=len(self.graph_predicates):
+            raise ValueError('invalid_graph_predicates')
         if 'company_section' in self.model_fields_set and (self.operation != 'company' or self.source_space != 'library'):
             raise ValueError('company_section_requires_library_company')
         metric_fields={'metric_section','metric_record_id','compare_entity_ids','metric_period_kind','metric_frequency','metric_alignment'}

@@ -8,12 +8,14 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from contextlib import closing
 from functools import lru_cache
+from heapq import nlargest
 from hashlib import sha256
 import json
 from math import ceil
 from pathlib import Path
 import sqlite3
 import time
+from threading import RLock
 
 import numpy as np
 
@@ -222,8 +224,17 @@ def prepare(library,root,api_key,audit,*,execute=False,skip_blocked=False,retry_
         return manifest
 
 
+def _index_identity(root):
+    return tuple((s.st_dev,s.st_ino,s.st_size,s.st_mtime_ns,s.st_ctime_ns)
+                 for s in ((Path(root)/name).stat() for name in
+                           ('chunk-vector-manifest.json','chunk-vectors.npy','chunk-vector-map.json')))
+
+
+_index_lock=RLock()
+
+
 @lru_cache(maxsize=2)
-def _load(root,manifest_stamp):
+def _load(root,identity):
     root=Path(root);manifest=json.loads((root/'chunk-vector-manifest.json').read_text(encoding='utf8'))
     if manifest.get('version')!=VERSION or manifest.get('embedding_model') not in SUPPORTED_MODELS or manifest.get('dimensions')!=DIM:
         raise ValueError('chunk_vector_model_contract_mismatch')
@@ -233,6 +244,8 @@ def _load(root,manifest_stamp):
     mapping=json.loads((root/'chunk-vector-map.json').read_text(encoding='utf8'))
     if matrix.shape!=(manifest['unique_vectors'],DIM) or len(mapping)!=manifest['chunks']:
         raise ValueError('chunk_vector_index_shape_mismatch')
+    if _index_identity(root)!=identity:
+        raise ValueError('chunk_vector_index_changed_during_load')
     return manifest,matrix,mapping
 
 
@@ -241,13 +254,15 @@ def dense_search(root,library_sha,query_vector,eligible,k=24):
     v=np.asarray(query_vector,dtype=np.float32)
     if v.shape!=(DIM,) or not np.isfinite(v).all() or np.linalg.norm(v)==0:raise ValueError('invalid_query_vector')
     scores=matrix @ (v/np.linalg.norm(v))
-    matches=[(float(scores[r['vector_index']]),r['id']) for r in mapping if r['source_id'] in eligible]
-    return [cid for _,cid in sorted(matches,reverse=True)[:k]]
+    matches=((float(scores[r['vector_index']]),r['id']) for r in mapping if r['source_id'] in eligible)
+    return [cid for _,cid in nlargest(k,matches)]
 
 
 def ready_index(root,library_sha):
     path=Path(root)/'chunk-vector-manifest.json'
     if not path.is_file():raise RuntimeError('chunk_vector_index_not_prepared')
-    manifest,matrix,mapping=_load(str(Path(root).resolve()),path.stat().st_mtime_ns)
+    resolved=str(Path(root).resolve())
+    with _index_lock:
+        manifest,matrix,mapping=_load(resolved,_index_identity(resolved))
     if manifest['library_sha256']!=library_sha:raise ValueError('chunk_vector_library_version_mismatch')
     return manifest,matrix,mapping

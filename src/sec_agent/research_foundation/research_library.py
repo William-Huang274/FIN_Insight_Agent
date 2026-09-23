@@ -10,6 +10,7 @@ from pathlib import Path
 import sqlite3
 import os
 from functools import lru_cache
+from threading import RLock
 
 from .research_snapshot import ResearchSnapshot, build_snapshot
 from .source_document_navigation import SourceDocumentResult, SourceExecutionReceipt
@@ -23,16 +24,30 @@ def digest_file(path):
     return h.hexdigest()
 
 
+def _file_identity(path):
+    stat = Path(path).stat()
+    return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+
+
+_validation_lock = RLock()
+
+
 @lru_cache(maxsize=4)
-def _cached_library(path, modified, size, manifest_modified):
+def _validate_release(path, identity, expected_digest):
+    if digest_file(path) != expected_digest or _file_identity(path) != identity:
+        raise ValueError('research_library_integrity_or_scope_failure')
+
+
+@lru_cache(maxsize=4)
+def _cached_library(path, identity, manifest_identity):
     return ResearchLibrary(path)
 
 
 def open_library(path):
     """Validate each immutable release once; replacement invalidates the cache."""
-    path=Path(path).resolve(); stat=path.stat()
-    return _cached_library(str(path),stat.st_mtime_ns,stat.st_size,
-                           path.with_suffix(path.suffix+'.manifest.json').stat().st_mtime_ns)
+    path=Path(path).resolve()
+    return _cached_library(str(path),_file_identity(path),
+                           _file_identity(path.with_suffix(path.suffix+'.manifest.json')))
 
 
 def publish_library(target, snapshot_paths, *, public_sources_confirmed=False, public_nodes=()):
@@ -118,14 +133,17 @@ class ResearchLibrary(ResearchSnapshot):
 
     def __init__(self, path, *, retrieval_environment=None):
         self.retrieval_environment=dict(os.environ if retrieval_environment is None else retrieval_environment)
-        path = Path(path)
+        path = Path(path).resolve()
         manifest = json.loads(path.with_suffix(path.suffix + '.manifest.json').read_text(encoding='utf-8'))
-        if manifest.get('access_scope') != 'public' or manifest.get('version') != 'research_library.v1' or digest_file(path) != manifest['sha256']:
+        if manifest.get('access_scope') != 'public' or manifest.get('version') != 'research_library.v1':
             raise ValueError('research_library_integrity_or_scope_failure')
+        # Share only immutable validation, never request configuration or access.
+        # Serialize cold validation: lru_cache alone permits duplicate in-flight scans.
+        with _validation_lock:
+            _validate_release(str(path), _file_identity(path), manifest['sha256'])
         self.manifest = manifest
         super().__init__(path)
-        stat = self.path.stat()
-        self._release_stat = (stat.st_mtime_ns, stat.st_size)
+        self._release_stat = _file_identity(self.path)
         from retrieval.library_chunks import has_chunks
         self.has_retrieval_chunks = has_chunks(self)
 
@@ -136,10 +154,35 @@ class ResearchLibrary(ResearchSnapshot):
         eligible=[s['id'] for s in self.catalog(as_of) if s['eligible'] and (not source_ids or s['id'] in source_ids)]
         if not eligible:return []
         expression=' OR '.join('"'+str(t).replace('"','""')+'"' for t in terms)
-        placeholders=','.join('?' for _ in eligible)
-        return self._query('SELECT c.* FROM chunk_search f JOIN retrieval_chunks c ON c.id=f.id '
-            f'WHERE chunk_search MATCH ? AND c.source_id IN ({placeholders}) ORDER BY bm25(chunk_search,0,0,0.3,1.0) LIMIT ?',
-            (expression,*eligible,limit))
+        return self.chunks_by_ids(self.search_chunk_ids(expression, eligible, limit=limit))
+
+    def search_chunk_ids(self, expression, source_ids, *, limit=12, edge_ids=None):
+        """FTS applies eligibility before top K; no body table join while scoring."""
+        if not expression or not source_ids or edge_ids == []:
+            return []
+        marks = ','.join('?' for _ in source_ids)
+        conditions = f' AND source_id IN ({marks})'
+        parameters = [expression, *source_ids]
+        if edge_ids is not None:
+            conditions += ' AND id IN (SELECT chunk_id FROM edge_chunk_links WHERE edge_id IN (' + ','.join('?' for _ in edge_ids) + '))'
+            parameters.extend(edge_ids)
+        # Hidden rank supports FTS5's ranked traversal and keeps existing weights.
+        # Graph ties retain the established ID order.
+        order = 'rank,id' if edge_ids is not None else 'rank'
+        rows = self._query('SELECT id FROM chunk_search WHERE chunk_search MATCH ?'
+            + conditions + " AND rank MATCH 'bm25(0,0,0.3,1.0)' ORDER BY " + order + ' LIMIT ?',
+            (*parameters, limit))
+        return [r['id'] for r in rows]
+
+    def chunks_by_ids(self, ids):
+        """Bounded batches; preserve caller ranking and remove duplicate IDs."""
+        ids = list(dict.fromkeys(ids))
+        found = {}
+        for start in range(0, len(ids), 400):
+            batch = ids[start:start+400]
+            found.update((r['id'], r) for r in self._query(
+                'SELECT * FROM retrieval_chunks WHERE id IN (' + ','.join('?' for _ in batch) + ')', batch))
+        return [found[cid] for cid in ids if cid in found]
 
     def read(self, source_id, as_of, *, start=0, limit=8):
         result=super().read(source_id,as_of,start=start,limit=limit)
@@ -171,27 +214,46 @@ class ResearchLibrary(ResearchSnapshot):
                     if identity in identities:continue
                     identities.add(identity)
                     if row['id'] not in found and len(found) >= max_edges:
-                        return {'status': 'ok', 'edges': list(found.values()), 'truncated': True}
+                        return self._graph_result(found, truncated=True)
                     if isinstance(row['qualifiers'],str):row['qualifiers'] = json.loads(row['qualifiers'])
                     row['candidate_only'] = True
-                    row['evidence'] = self._query('SELECT id,source_id,locator,digest FROM passages WHERE source_id=? AND locator=?', (row['source_id'], row['locator']))
-                    if self.has_retrieval_chunks:
-                        from retrieval.library_chunks import edge_evidence
-                        chunks,binding=edge_evidence(self,row['id'])
-                        row['parent_evidence']=row['evidence']
-                        row['evidence']=chunks or row['evidence']
-                        row['chunk_binding']=binding
-                        if chunks:
-                            row['readback']={'source_space':'library','operation':'read','document_id':row['source_id'],'node_id':chunks[0]['id']}
-                    row.setdefault('readback', {'source_space':'library', 'operation':'read', 'document_id':row['source_id']})
                     found[row['id']] = row
                     next_frontier.update([row['subject'], row['object']])
             frontier = next_frontier - visited
-        return {'status': 'ok', 'edges': list(found.values()), 'truncated': False}
+        return self._graph_result(found, truncated=False)
+
+    def _graph_result(self, found, *, truncated):
+        from collections import defaultdict
+        parents = defaultdict(list)
+        keys = list(dict.fromkeys((r['source_id'], r['locator']) for r in found.values()))
+        for start in range(0, len(keys), 200):
+            batch = keys[start:start+200]
+            # VALUES join permits indexed source lookup instead of scanning passages.
+            rows = self._query('WITH wanted(source_id,locator) AS (VALUES '
+                + ','.join('(?,?)' for _ in batch) + ') '
+                'SELECT p.id,p.source_id,p.locator,p.digest FROM wanted w JOIN passages p '
+                'ON p.source_id=w.source_id AND p.locator=w.locator ORDER BY p.rowid',
+                [value for pair in batch for value in pair])
+            for row in rows:
+                parents[(row['source_id'], row['locator'])].append(row)
+        bindings = {}
+        if self.has_retrieval_chunks:
+            from retrieval.library_chunks import edge_evidence_batch
+            bindings = edge_evidence_batch(self, list(found))
+        for row in found.values():
+            row['evidence'] = parents[(row['source_id'], row['locator'])]
+            if self.has_retrieval_chunks:
+                chunks, binding = bindings[row['id']]
+                row['parent_evidence'] = row['evidence']
+                row['evidence'] = chunks or row['evidence']
+                row['chunk_binding'] = binding
+                if chunks:
+                    row['readback'] = {'source_space':'library','operation':'read','document_id':row['source_id'],'node_id':chunks[0]['id']}
+            row.setdefault('readback', {'source_space':'library','operation':'read','document_id':row['source_id']})
+        return {'status':'ok','edges':list(found.values()),'truncated':truncated}
 
     def navigate(self, request, as_of):
-        stat = self.path.stat()
-        if (stat.st_mtime_ns, stat.st_size) != self._release_stat:
+        if _file_identity(self.path) != self._release_stat:
             raise ValueError('published_library_changed_during_run')
         if request.source_space != 'library':
             raise ValueError('wrong_library_source_space')
@@ -252,6 +314,7 @@ class ResearchLibrary(ResearchSnapshot):
             status = graph['status']
             rows = [{'result_state': 'retrieval_candidate', **e} for e in graph['edges']]
         elif request.operation == 'search':
+            shared_graph = None
             candidates=self.search(request.query.split(), as_of, source_ids=[request.document_id] if request.document_id else (), limit=40)
             retrieval={'mode':'fts5_bm25'}
             if self.retrieval_environment.get('FINSIGHT_LIBRARY_HYBRID')=='1':
@@ -259,18 +322,22 @@ class ResearchLibrary(ResearchSnapshot):
                 cache=self.retrieval_environment.get('FINSIGHT_LIBRARY_RAG_CACHE_PATH')
                 if not cache:
                     raise ValueError('library_hybrid_cache_not_configured')
+                if self.has_retrieval_chunks and request.entity_id and request.graph_depth == 1:
+                    shared_graph = self.graph_search(request.entity_id, as_of, depth=1, max_edges=1000)
                 # Provider/cache failure is explicit. It must not be silently
                 # converted into an empty result or public information gap.
                 candidates,retrieval=rank(self,request.query,as_of,candidates,path=cache,
-                    document_id=request.document_id,entity_id=request.entity_id)
+                    document_id=request.document_id,entity_id=request.entity_id,graph_result=shared_graph)
             rows = [{'result_state': 'retrieval_candidate', 'document_id': p['source_id'],
                 'node_id': p['id'], 'preview': p['body'][:500], 'digest': p['digest'], 'retrieval':retrieval,
+                **({'candidate_ranks':p['candidate_ranks'],'rerank_score':p.get('rerank_score')} if 'candidate_ranks' in p else {}),
                 **({'parent_node_id':p['parent_id'],'source_char_start':p['char_start'],'source_char_end':p['char_end'],
                     'context':p['context'],'chunk_kind':p['kind']} if p.get('parent_id') else {})}
                 for p in candidates]
             if request.entity_id:
+                graph_edges = shared_graph['edges'][:80] if shared_graph is not None else self.graph_search(request.entity_id, as_of, depth=request.graph_depth)['edges']
                 rows += [{'result_state': 'retrieval_candidate', **e}
-                         for e in self.graph_search(request.entity_id, as_of, depth=request.graph_depth)['edges']
+                         for e in graph_edges
                          if not request.document_id or e['source_id'] == request.document_id]
         elif request.operation == 'observations':
             rows=[{'result_state':'retrieval_candidate', **o, 'numeric_fact_authority':False,

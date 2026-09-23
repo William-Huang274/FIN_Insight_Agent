@@ -35,9 +35,9 @@ def prepare(library,path,api):
     return result
 
 
-def rank(library,query,as_of,lexical,*,path,document_id=None,entity_id=None,api=None):
+def rank(library,query,as_of,lexical,*,path,document_id=None,entity_id=None,api=None,graph_result=None):
     if getattr(library,'has_retrieval_chunks',False):
-        return rank_chunks(library,query,as_of,lexical,path=path,document_id=document_id,entity_id=entity_id,api=api)
+        return rank_chunks(library,query,as_of,lexical,path=path,document_id=document_id,entity_id=entity_id,api=api,graph_result=graph_result)
     owned=api is None
     api=api or QwenRetrieval(os.environ['QWEN_API_KEY'])
     try:
@@ -70,7 +70,7 @@ def rank(library,query,as_of,lexical,*,path,document_id=None,entity_id=None,api=
         if owned:api.close()
 
 
-def rank_chunks(library,query,as_of,lexical,*,path,document_id=None,entity_id=None,api=None):
+def rank_chunks(library,query,as_of,lexical,*,path,document_id=None,entity_id=None,api=None,graph_result=None):
     """Independent lexical/dense/graph quotas; no first-6000 truncation."""
     from retrieval.library_vectors import dense_search,ready_index
     manifest,_,_=ready_index(path,library.manifest['sha256'])
@@ -83,11 +83,10 @@ def rank_chunks(library,query,as_of,lexical,*,path,document_id=None,entity_id=No
         with Cache(Path(path)/'query-cache') as cache:
             client=CachedRetrieval(cache,api,'library-child-query.v1')
             dense_ids=dense_search(path,library.manifest['sha256'],client.embed_query(query),eligible,k=24)
-            dense=[]
-            for cid in dense_ids:dense.extend(library._query('SELECT * FROM retrieval_chunks WHERE id=?',(cid,)))
             graph=[];graph_truncated=False
             if entity_id:
-                graph_result=library.graph_search(entity_id,as_of,depth=1,max_edges=1000)
+                if graph_result is None:
+                    graph_result=library.graph_search(entity_id,as_of,depth=1,max_edges=1000)
                 graph_truncated=graph_result['truncated']
                 edges=[e for e in graph_result['edges']
                        if e['source_id'] in eligible and e['status']!='needs_semantic_review']
@@ -99,19 +98,25 @@ def rank_chunks(library,query,as_of,lexical,*,path,document_id=None,entity_id=No
                     # Rank evidence-linked chunks before limiting: a document's
                     # early pages must not crowd out a matching later quotation.
                     if expression:
-                        graph=library._query(f'SELECT c.* FROM chunk_search f JOIN retrieval_chunks c ON c.id=f.id WHERE chunk_search MATCH ? AND c.id IN (SELECT chunk_id FROM edge_chunk_links WHERE edge_id IN ({marks})) ORDER BY bm25(chunk_search,0,0,0.3,1.0),c.id LIMIT 12',(expression,*eids))
-                    fallback=library._query(f'SELECT DISTINCT c.* FROM edge_chunk_links l JOIN retrieval_chunks c ON c.id=l.chunk_id JOIN edges e ON e.id=l.edge_id WHERE l.edge_id IN ({marks}) ORDER BY e.published_at DESC,c.id LIMIT 12',eids)
-                    graph=list({p['id']:p for p in [*graph,*fallback]}.values())[:12]
-            candidates={}
-            for group in (lexical[:12],dense[:24],graph[:12]):
-                for p in group:candidates.setdefault(p['id'],p)
-            rows=list(candidates.values())
+                        graph=library.search_chunk_ids(expression,sorted(eligible),edge_ids=eids,limit=12)
+                    fallback=library._query(f'SELECT DISTINCT c.id FROM edge_chunk_links l JOIN retrieval_chunks c ON c.id=l.chunk_id JOIN edges e ON e.id=l.edge_id WHERE l.edge_id IN ({marks}) ORDER BY e.published_at DESC,c.id LIMIT 12',eids)
+                    graph=list(dict.fromkeys([*graph,*(p['id'] for p in fallback)]))[:12]
+            candidate_ids=list(dict.fromkeys([*(p['id'] for p in lexical[:12]),*dense_ids[:24],*graph[:12]]))
+            rows=library.chunks_by_ids(candidate_ids)
+            ranks = {}
+            for channel, ids in [('lexical',[p['id'] for p in lexical[:12]]),('dense',dense_ids[:24]),('graph',graph[:12])]:
+                for position, cid in enumerate(ids, 1):
+                    ranks.setdefault(cid, {})[channel] = position
+            for row in rows:
+                row['candidate_ranks'] = ranks[row['id']]
             if not rows:return [],{'mode':'chunk_hybrid','reason':'no_candidates'}
             texts=[p['context']+'\n'+p['body'] for p in rows]
             if any(len(t)>6000 for t in texts):raise ValueError('retrieval_chunk_exceeds_rerank_contract')
             ranked=client.call('rerank',[query,texts])['values']
+            for result in ranked:
+                rows[result['index']]['rerank_score'] = result.get('relevance_score')
             return [rows[r['index']] for r in ranked],{'mode':'chunk_dense_fts5_bm25_graph_rerank','embedding_scope':'readable_child_chunks',
-                'candidate_chunks':len(rows),'dense_chunks':len(dense),'graph_chunks':len(graph[:12]),
+                'candidate_chunks':len(rows),'dense_chunks':len(dense_ids),'graph_chunks':len(graph[:12]),
                 'graph_window_truncated':graph_truncated,'calls':client.calls,'cache_hits':client.hits}
     finally:
         if owned:api.close()

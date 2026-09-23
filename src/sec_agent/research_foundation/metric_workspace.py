@@ -44,7 +44,7 @@ def _anchors(db, entity_id):
     """Reuse reviewed observation periods, never calendar-month quarter guesses."""
     result=defaultdict(set)
     if not _table(db,'financial_periods'):return result
-    for r in db.execute('SELECT f.period_end,p.* FROM financial_points f JOIN financial_periods p ON p.fact_id=f.id WHERE f.entity_id=?',(entity_id,)):
+    for r in db.execute('SELECT DISTINCT f.period_end,p.fiscal_year,p.period,p.basis FROM financial_points f JOIN financial_periods p ON p.fact_id=f.id WHERE f.entity_id=?',(entity_id,)):
         quarter={'H1':'Q2','M9':'Q3','FY':'FY'}.get(r['period'],r['period'])
         if quarter in {'Q1','Q2','Q3','Q4','FY'} and r['fiscal_year'] is not None:
             result[r['period_end']].add((r['fiscal_year'],quarter,r['basis']))
@@ -127,12 +127,16 @@ def materialize_contract(path):
         return count
 
 
-def _rows(db, entity_id, as_of):
+def _company_name(db, entity_id):
     company=db.execute('SELECT payload FROM company_cards WHERE entity_id=?',(entity_id,)).fetchone()
     if not company:raise ValueError('metric_company_not_found')
     payload=json.loads(company['payload'])
     entity=db.execute('SELECT name FROM entities WHERE id=?',(entity_id,)).fetchone()
-    name=entity['name'] if entity else payload.get('name') or entity_id
+    return entity['name'] if entity else payload.get('name') or entity_id
+
+
+def _rows(db, entity_id, as_of):
+    name=_company_name(db, entity_id)
     anchors=_anchors(db,entity_id)
     rows=derived_financials.page(db,entity_id,limit=100000,view='history',as_of=as_of)['items'] if derived_financials.installed(db) else []
     output=[_project(r,anchors,name) for r in rows]
@@ -140,6 +144,23 @@ def _rows(db, entity_id, as_of):
         for r in db.execute('SELECT payload FROM industry_metric_observations WHERE entity_id=? AND available_at<=?',(entity_id,as_of)):
             item=json.loads(r['payload']);item['company_name']=name;output.append(item)
     return output
+
+
+def _read_card(db, entity_ids, record_id, as_of):
+    # Validate company scope before resolving the globally unique record ID.
+    names = {eid:_company_name(db,eid) for eid in entity_ids}
+    raw = db.execute('SELECT * FROM derived_financials WHERE id=? AND available_at<=?',
+                     (record_id,as_of)).fetchone() if derived_financials.installed(db) else None
+    if raw and raw['entity_id'] in names:
+        row = dict(raw)
+        row['detail'] = json.loads(row['detail']); row['inputs'] = json.loads(row['inputs'])
+        return _project(row,_anchors(db,row['entity_id']),names[row['entity_id']])
+    if _table(db,'industry_metric_observations'):
+        raw = db.execute('SELECT entity_id,payload FROM industry_metric_observations WHERE id=? AND available_at<=?',
+                         (record_id,as_of)).fetchone()
+        if raw and raw['entity_id'] in names:
+            return {**json.loads(raw['payload']),'company_name':names[raw['entity_id']]}
+    raise ValueError('metric_record_not_found_at_cutoff')
 
 
 def _sample(rows, frequency):
@@ -168,23 +189,18 @@ def query_metrics(path, entity_ids, *, section='overview', metric='', record_id=
     if offset<0 or not 1<=limit<=2000:raise ValueError('invalid_metric_page')
     if section=='compare' and not metric:raise ValueError('comparison_requires_metric')
     with closing(connect(path)) as db:
-        rows=[r for eid in entity_ids for r in _rows(db,eid,as_of)]
         reviews=read_reviews(db,entity_ids,as_of,metric)
-        qualify_rows(rows,reviews)
         if section=='card':
-            raw=db.execute('SELECT * FROM derived_financials WHERE id=? AND available_at<=?',(record_id,as_of)).fetchone() if derived_financials.installed(db) else None
-            if raw and raw['entity_id'] in entity_ids:
-                r=dict(raw);r['detail']=json.loads(r['detail']);r['inputs']=json.loads(r['inputs'])
-                rows=[_project(r,_anchors(db,r['entity_id']),next((x['company_name'] for x in rows if x['entity_id']==r['entity_id']),r['entity_id']))]
-            else:rows=[r for r in rows if r['id']==record_id]
-            if not rows:raise ValueError('metric_record_not_found_at_cutoff')
-            card=rows[0]
+            card=_read_card(db,entity_ids,record_id,as_of)
+            qualify_rows([card],reviews)
             def input_sources(inputs):
                 return {x.get('source_id') for x in inputs} | {s for x in inputs for s in input_sources(x.get('components',[]))}
             source_ids=input_sources(card.get('inputs',[]))|{card.get('source_id')}
             card['sources']=[dict(s) for sid in sorted(s for s in source_ids if s) for s in db.execute('SELECT id,title,url,published_at FROM sources WHERE id=?',(sid,))]
             return {'items':[card],'total':1,'next_offset':None,'as_of':as_of,'section':'card',
                     'industry_reviews':[r for r in reviews if r['id'] in card.get('review_ids',[])]}
+        rows=[r for eid in entity_ids for r in _rows(db,eid,as_of)]
+        qualify_rows(rows,reviews)
     catalog={}
     for r in rows:
         item=catalog.setdefault(r['metric'],{'id':r['metric'],'label':r.get('definition',{}).get('label',r['label']),'group':r['group'],'units':set(),'companies':set(),'period_kinds':set(),'record_type':r['record_type']})

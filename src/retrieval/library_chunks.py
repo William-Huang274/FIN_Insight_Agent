@@ -188,6 +188,26 @@ def edge_evidence(library, edge_id, limit=8):
     return rows,({'status':coverage[0]['status'],**json.loads(coverage[0]['payload'])} if coverage else {'status':'dynamic_relation_document_readback_required'})
 
 
+def edge_evidence_batch(library, edge_ids, limit=8):
+    """Same per-edge evidence window as edge_evidence, in bounded SQL batches."""
+    ids = list(dict.fromkeys(edge_ids))
+    result = {eid: ([], {'status':'dynamic_relation_document_readback_required'}) for eid in ids}
+    for start in range(0, len(ids), 400):
+        batch = ids[start:start+400]
+        marks = ','.join('?' for _ in batch)
+        rows = library._query('SELECT * FROM (SELECT l.edge_id,c.id,c.source_id,c.parent_id,c.locator,c.digest,'
+            'c.char_start,c.char_end,l.binding,l.evidence_index,l.span_start,l.span_end,'
+            'row_number() OVER (PARTITION BY l.edge_id ORDER BY l.evidence_index,c.parent_id,c.char_start) AS position '
+            'FROM edge_chunk_links l JOIN retrieval_chunks c ON c.id=l.chunk_id '
+            f'WHERE l.edge_id IN ({marks})) WHERE position<=? ORDER BY edge_id,position', (*batch, limit))
+        for row in rows:
+            eid = row.pop('edge_id'); row.pop('position')
+            result[eid][0].append(row)
+        for row in library._query(f'SELECT edge_id,status,payload FROM edge_chunk_coverage WHERE edge_id IN ({marks})', batch):
+            result[row['edge_id']] = (result[row['edge_id']][0], {'status':row['status'], **json.loads(row['payload'])})
+    return result
+
+
 def add_reviewed_bindings(db,records,reviewer):
     """Supplement legacy document-only locators on a new unpublished copy."""
     if not reviewer:raise ValueError('binding_reviewer_required')

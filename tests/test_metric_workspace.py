@@ -95,3 +95,20 @@ def test_formal_tool_uses_same_record_and_legacy_serialization(foundation):
     legacy=SourceDocumentRequest(operation='catalog')
     assert not {'metric_section','metric_record_id','compare_entity_ids'} & legacy.model_dump().keys()
     with pytest.raises(ValueError):SourceDocumentRequest(operation='catalog',metric_section='history')
+
+
+def test_card_does_not_scan_company_history_and_respects_scope(foundation,monkeypatch):
+    from sec_agent.research_foundation import metric_workspace
+    path,w,sid=foundation
+    fact(w,sid,'assets','Assets',200,start=None)
+    fact(w,sid,'liabilities','Liabilities',40,start=None)
+    derived_financials.materialize(path,'2026-09-21')
+    row=query_metrics(path,['NVIDIA'],section='history',metric='liabilities_to_assets')['items'][0]
+    def forbidden(*args,**kwargs):raise AssertionError('card must not load history')
+    monkeypatch.setattr(metric_workspace,'_rows',forbidden)
+    card=query_metrics(path,['NVIDIA'],section='card',record_id=row['id'])['items'][0]
+    assert card['value']==row['value'] and card['inputs']
+    with pytest.raises(ValueError,match='company_not_found'):
+        query_metrics(path,['unknown'],section='card',record_id=row['id'])
+    with pytest.raises(ValueError,match='cutoff'):
+        query_metrics(path,['NVIDIA'],section='card',record_id=row['id'],as_of='2000-01-01')

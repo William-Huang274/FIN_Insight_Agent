@@ -1,8 +1,8 @@
 # 知识库、结构化数据库与图检索优化方案
 
-状态：待用户审阅的实施方案；本文不代表功能已实现。更新日期：2026-09-22。
+状态：2026-09-23 用户已批准，按阶段实施中；未完成联合验收。
 
-延续 [原文子块与向量合同](library_chunks_and_vectors.zh-CN.md)、[指标工作区](metric_workspace.zh-CN.md)和[六维来源资格路线](../engineering/six_source_qualification.zh-CN.md)。本轮仅整理方案，不修改运行服务、不更换数据版本、不执行付费调用。原资料补充缺口继续保留。
+延续 [原文子块与向量合同](library_chunks_and_vectors.zh-CN.md)、[指标工作区](metric_workspace.zh-CN.md)和[六维来源资格路线](../engineering/six_source_qualification.zh-CN.md)。Java 职责边界已对齐，查询执行优化使用独立工作树；原资料补充缺口继续保留。实施状态见[查询执行优化记录](retrieval_query_execution.zh-CN.md)。
 
 ## 1. 目标与范围
 
@@ -195,4 +195,4 @@ Neo4j 是可供多语言使用的独立数据库，Microsoft GraphRAG 现成实�
 - [Neo4j 官方语言接口](https://neo4j.com/docs/getting-started/languages-guides/)
 - [Neo4j 知识图谱构建组件](https://neo4j.com/docs/neo4j-graphrag-python/current/user_guide_kg_builder.html)
 
-本文为待审阅方案。各实施阶段、关系覆盖审计、正式性能目标、完整检索质量及模型使用验收均未因此完成。
+本文为已批准实施方案。各实施阶段、关系覆盖审计、正式性能目标、完整检索质量及模型使用验收须分别记录证据，不能因方案获批而标为完成。

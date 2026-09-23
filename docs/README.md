@@ -13,6 +13,7 @@ FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工�
 | [v0.1.3 版本说明](product/version_0_1_3.zh-CN.md) | 已有功能与使用条件 |
 | [路线图](product/roadmap.zh-CN.md) | 后续研究能力的开发方向 |
 | [Java 项目研究接入](engineering/java_research_intake.zh-CN.md) · [产品范围](product/java_research_intake.zh-CN.md) | 项目工作区、资料库按项目筛选；第一阶段 A 持久业务任务、明确启动及未知提交核对，可选启用 |
+| [组织资料空间](engineering/resource_spaces.zh-CN.md) | 统一空间/类型入口、组织内个人区、团队成员、固定版本发布及授权阅读；实时团队数据库和共享研究待接入 |
 | [v0.1.4 PRD](product/fin_0_1_4_prd.zh-CN.md) · [技术方案](architecture/fin_0_1_4_technical_design.zh-CN.md) · [执行路线](engineering/fin_0_1_4_execution_roadmap.zh-CN.md) | 开发中；局部功能已实现，整版未验收或发布 |
 | [项目资料版本与更新](engineering/project_asset_versions.zh-CN.md) | 0.1.4 开发分支的版本差异、直接依赖提示、明确选版与适用范围 |
 | [研究问题体系](product/research_question_system.zh-CN.md) · [行业方法与执行合同](architecture/research_method_execution.zh-CN.md) | 六类免费来源如何组合成研究问题、行业步骤、动态委派与有界诊断；非完整研究质量认证 |

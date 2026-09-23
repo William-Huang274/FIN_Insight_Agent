@@ -60,7 +60,7 @@ Python 409 回执若标明 `submission_status=unknown`，Java 保持未知。资
 
 两方向 JWT 使用不同 issuer/audience，60 秒过期，绑定 owner、方法、完整路径和查询参数、正文 SHA-256、操作凭证。仅内部研究路由接受 Java audience，公开 Python 路由不接受此委托替代登录。BFF 验证浏览器身份、写入标识及 Origin；Java 校验业务 owner，再向 Python 查询当前项目权限；Python 在回放写入回执**之前**重查当前项目权限。
 
-本批沿用个人项目规则。没有第二份 Java ACL，也没有宣称机构角色、成员共享或多租户已验收。现有资料撤销在 Python 准备和运行前检查中生效。生产身份应使用现有 OIDC product 模式；`local` 是单人身份，不能支持多人登录。Java 默认仅监听 loopback；HTTP 客户端禁用自动重试和重定向；内部正文限制 64 KiB。
+研究受理沿用个人项目规则，没有第二份项目 ACL。后续新增的[组织资料空间](resource_spaces.zh-CN.md)由 Java 管理组织/空间成员及发布资源权限，尚未接入共享研究项目或团队 Agent。现有项目资料撤销在 Python 准备和运行前检查中生效。生产身份应使用现有 OIDC product 模式；`local` 是单人身份，不能支持多人登录。Java 默认仅监听 loopback；HTTP 客户端禁用自动重试和重定向；内部正文限制 64 KiB。
 
 ## 版本绑定的实际范围
 
@@ -74,7 +74,7 @@ Lead 返回 `research_orientation_submitted` 时，研究页和列表显示“�
 
 ## 部署与停用
 
-1. 准备 Java 21 与专用业务 PostgreSQL 数据库。账号仅访问此数据库，不能指向 Agent Server 生产库。Flyway 首次启动创建两个业务表及迁移历史。本批不自动创建或删除数据库。
+1. 准备 Java 21 与专用业务 PostgreSQL 数据库。账号仅访问此数据库，不能指向 Agent Server 生产库。Flyway V1 创建研究受理表，V2 增加组织资料空间表和审计；不自动创建或删除数据库。
 2. 在 Git 外提供 Java 的 `FINSIGHT_BUSINESS_JDBC_URL`、`FINSIGHT_BUSINESS_DB_USER`、`FINSIGHT_BUSINESS_DB_PASSWORD`。
 3. BFF 与 Java 配置相同且至少 32 字节的 `FINSIGHT_BUSINESS_SHARED_SECRET`。BFF 配置 `FINSIGHT_BUSINESS_API_URL=http://127.0.0.1:8095`；Java 配置 `FINSIGHT_PYTHON_INTAKE_URL=http://127.0.0.1:8765`。端口按实际 BFF 修改，不是原生 Agent Server 地址。Java 端口可用 `FINSIGHT_BUSINESS_PORT` 覆盖。
 4. BFF 沿用研究配置、`research_library` / `FINSIGHT_RESEARCH_LIBRARY_PATH`、项目资料和状态目录，并启用新研究。首版仅支持同机 loopback；远程 HTTPS/mTLS 后续设计。

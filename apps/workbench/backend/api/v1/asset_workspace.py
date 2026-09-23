@@ -30,8 +30,19 @@ class CaptureNoteEdit(BaseModel):
     note: str = Field(max_length=10000)
 
 
+class SpacePublication(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    id: UUID
+    space_id: UUID
+    ref: AssetRef
+
+
 def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None):
     workspace = AssetWorkspace(root)
+    from ...space_assets import SpaceAssets
+    from ...business_transport import space_business_request
+    from starlette.concurrency import run_in_threadpool
+    shared = SpaceAssets(root / 'organization-assets')
     router = APIRouter(prefix='/asset-workspace')
 
     def identity(request, response, write=False):
@@ -53,6 +64,25 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None)
     @router.get('/projects/{project_id}')
     def catalog(project_id: UUID, request: Request, response: Response):
         return call(workspace.catalog, identity(request, response), project_id)
+
+    @router.post('/spaces/publish')
+    async def publish(body: SpacePublication, request: Request, response: Response):
+        actor = identity(request, response, True)
+        scope = await space_business_request(actor, 'POST', f'spaces/{body.space_id}/access', {'action': 'publish'})
+        if str(scope.get('id')) != str(body.space_id):
+            raise HTTPException(502, '空间授权结果不匹配')
+        binding = await run_in_threadpool(call, shared.publish, workspace, actor, body.id, scope['organization_id'], body.space_id, body.ref)
+        return await space_business_request(actor, 'POST', 'resources', {'id': str(body.id), 'space_id': str(body.space_id),
+            'title': binding['title'], 'resource_type': binding['resource_type'], 'binding': binding})
+
+    @router.get('/spaces/resources/{resource_id}')
+    async def shared_read(resource_id: UUID, request: Request, response: Response):
+        actor = identity(request, response)
+        grant = await space_business_request(actor, 'POST', f'resources/{resource_id}/access')
+        if str(grant.get('id')) != str(resource_id):
+            raise HTTPException(502, '资料授权结果不匹配')
+        result = await run_in_threadpool(call, shared.read, grant['binding'])
+        return {**result, 'resource_id': str(resource_id), 'permission_revision': grant['revision']}
 
     @router.get('/catalog')
     def catalog_page(request: Request, response: Response, project_id: UUID | None = None,

@@ -139,6 +139,59 @@ class ResearchIntakeTest {
             assertThat(reopened.command(UUID.fromString(id),"start").status()).isEqualTo("received");
         }
     }
+
+    JsonNode workspace(String actor,String method,String path,Object body,int status) throws Exception {
+        var response=request(actor,method,"/v1/workspaces"+path,body==null?"":JSON.writeValueAsString(body),null);
+        assertThat(response.statusCode()).as(response.body()).isEqualTo(status);
+        return response.body().isBlank()?JSON.createObjectNode():JSON.readTree(response.body());
+    }
+    @Test void organization_spaces_enforce_live_membership_private_default_and_revocation() throws Exception {
+        String alice="space-alice",bob="space-bob",eve="space-eve";UUID org=UUID.randomUUID(),team=UUID.randomUUID(),invite=UUID.randomUUID();
+        var created=workspace(alice,"POST","/organizations",Map.of("id",org,"name","研究组织","display_name","Alice"),200);
+        String personal=created.path("spaces").get(0).path("id").asText();
+        workspace(bob,"POST","/spaces/"+personal+"/access",Map.of("action","read"),404);
+        workspace("local-pilot","GET","",null,403);
+        workspace(alice,"POST","/organizations/"+org+"/invites",Map.of("token",invite),200);
+        workspace(bob,"POST","/join",Map.of("token",invite,"display_name","Bob"),200);
+        workspace(eve,"POST","/join",Map.of("token",invite,"display_name","Eve"),409);
+        workspace(bob,"POST","/spaces/"+personal+"/access",Map.of("action","read"),404);
+        workspace(bob,"POST","/organizations/"+org+"/invites",Map.of("token",UUID.randomUUID()),403);
+        workspace(alice,"POST","/spaces",Map.of("id",team,"organization_id",org,"name","行业组"),200);
+        workspace(bob,"GET","/spaces/"+team+"/resources",null,404);
+        workspace(alice,"POST","/spaces/"+team+"/members",Map.of("subject",bob,"role","reader"),200);
+        workspace(bob,"POST","/spaces/"+team+"/access",Map.of("action","publish"),403);
+        UUID resource=UUID.randomUUID();var publication=Map.of("id",resource,"space_id",team,"title","固定披露版本","resource_type","files",
+            "binding",Map.of("organization_id",org,"space_id",team,"ref",Map.of("version_id","synthetic-pinned-version")));
+        workspace(alice,"POST","/resources",publication,200);workspace(alice,"POST","/resources",publication,200);
+        var catalogue=workspace(bob,"GET","/spaces/"+team+"/resources",null,200);
+        assertThat(catalogue.path("items").size()).isEqualTo(1);assertThat(catalogue.toString()).doesNotContain("binding","synthetic-pinned-version");
+        assertThat(workspace(bob,"POST","/resources/"+resource+"/access",null,200).path("binding").path("ref").path("version_id").asText()).isEqualTo("synthetic-pinned-version");
+        workspace(eve,"POST","/resources/"+resource+"/access",null,404);
+        workspace(bob,"POST","/resources/"+resource+"/revoke",Map.of("revision",1),403);
+        workspace(alice,"POST","/resources/"+resource+"/revoke",Map.of("revision",2),409);
+        workspace(alice,"POST","/resources/"+resource+"/revoke",Map.of("revision",1),200);
+        workspace(bob,"POST","/resources/"+resource+"/access",null,404);
+        workspace(alice,"POST","/resources",publication,409);
+        assertThat(workspace(bob,"GET","/spaces/"+team+"/resources",null,200).path("items").size()).isZero();
+        workspace(alice,"POST","/organizations/"+org+"/remove-member",Map.of("subject",bob),200);
+        workspace(bob,"GET","/spaces/"+team+"/resources",null,404);
+        workspace(bob,"POST","/join",Map.of("token",invite,"display_name","Bob"),404);
+        assertThat(db.queryForObject("SELECT count(*) FROM resource_space_audit WHERE organization_id=?",Integer.class,org)).isGreaterThan(5);
+    }
+    @Test void separate_organizations_and_removed_space_member_do_not_inherit_access() throws Exception {
+        String admin="org-admin",member="org-member";UUID org=UUID.randomUUID(),team=UUID.randomUUID(),invite=UUID.randomUUID();
+        workspace(admin,"POST","/organizations",Map.of("id",org,"name","独立组织","display_name","管理员"),200);
+        workspace(member,"POST","/organizations",Map.of("id",UUID.randomUUID(),"name","另一个组织","display_name","成员"),200);
+        workspace(member,"GET","/organizations/"+org+"/members",null,404);
+        workspace(admin,"POST","/organizations/"+org+"/invites",Map.of("token",invite),200);
+        workspace(member,"POST","/join",Map.of("token",invite,"display_name","成员"),200);
+        workspace(admin,"POST","/spaces",Map.of("id",team,"organization_id",org,"name","共享组"),200);
+        workspace(admin,"POST","/spaces/"+team+"/members",Map.of("subject",member,"role","manager"),200);
+        workspace(member,"POST","/spaces/"+team+"/access",Map.of("action","publish"),200);
+        workspace(admin,"POST","/spaces/"+team+"/members",Map.of("subject",member,"role","remove"),200);
+        workspace(member,"POST","/spaces/"+team+"/access",Map.of("action","read"),404);
+        workspace(admin,"POST","/organizations/"+org+"/remove-member",Map.of("subject",admin),409);
+    }
     @Test void lost_prepare_response_recovers_only_deterministic_thread() throws Exception {
         var task=create("drop-prepare");String path="/v1/tasks/"+task.path("id").asText();int before=prepares.get();
         assertThat(task.path("prepare").path("status").asText()).isEqualTo("unknown");

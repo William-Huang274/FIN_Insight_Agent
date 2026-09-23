@@ -4,9 +4,13 @@ Optional Spring Boot 3.5 / Java 21 business service. PostgreSQL owns project
 research requests and submission receipts; the existing Python BFF owns login,
 current project authorization and native research access. Agent Server remains
 the executor. This service has no model SDK, retrieval implementation or billing
-ledger. The first release supports personal projects on one BFF host.
+ledger. Research intake supports personal projects on one BFF host. Flyway V2 also
+adds organization resource spaces, membership, publication access and audit records;
+it does not turn existing personal research projects into shared projects.
 
 See [deployment, protocol and qualification](../../docs/engineering/java_research_intake.zh-CN.md).
+See [resource spaces and explicit publication](../../docs/engineering/resource_spaces.zh-CN.md)
+for organization-owned personal workspaces, team access and custody boundaries.
 
 ## Build and qualify
 
@@ -41,6 +45,13 @@ java -jar target/business-service-0.1.0.jar
 Open `/workspace/projects` through the BFF. Flyway applies the business schema;
 it does not alter Agent Server tables. Keep both service ports private. Login and
 browser sessions stay at the BFF. Do not use local identity mode for shared access.
+
+To enable resource spaces, the BFF additionally requires
+`FINSIGHT_AUTH_MODE=oidc_product` and `FINSIGHT_RESOURCE_SPACES_ENABLED=1`.
+Existing private project assets are not automatically shared. Publications are
+independent fixed copies in the Python `organization-assets` store; back up this
+store alongside business PostgreSQL. Live database ACLs, shared Agent inputs and
+personal-space takeover are not included in this slice.
 
 ## Failure semantics
 

@@ -5,6 +5,7 @@ import {assetRequest,type AssetVersion} from '../api/assetWorkspace';
 import ProjectAssetWorkspace from './ProjectAssetWorkspace';
 import {projectUrl} from './ProjectNavigation';
 import {useWorkspaceProjects,type WorkspaceProject} from './workspaceProjects';
+import {PublishAsset} from './PublishAsset';
 
 type Row={project_id:string;project_name:string;project_archived:boolean;kind:string;asset_id:string;current:AssetVersion;version_count:number};
 export function ProjectCatalog({project,role=''}:{project?:WorkspaceProject;role?:string}){
@@ -31,6 +32,7 @@ export function ProjectCatalog({project,role=''}:{project?:WorkspaceProject;role
     {(error||projects.error)&&<p role="alert">{error||projects.error} <button onClick={()=>{void projects.reload();refresh(n=>n+1);}}>重新读取</button></p>}
     {busy?<p role="status">正在读取资料目录…</p>:<div className="pw-panel">{rows.map(row=><a className="pw-row" key={`${row.project_id}:${row.kind}:${row.asset_id}`} href={(()=>{const p=new URLSearchParams(params);p.set('project',row.project_id);p.set('asset',row.current.ref.version_id);return `${location.pathname}?${p}`;})()}><FileText size={19}/><span><strong>{row.current.title}</strong><small>{row.project_name}{row.project_archived?' · 已归档':''} · v{row.current.sequence} · {new Date(row.current.created_at).toLocaleDateString('zh-CN')}{row.current.access_status!=='active'?' · 使用受限':''}</small></span><span>阅读 →</span></a>)}{!rows.length&&!error&&<p className="pw-empty">当前范围内没有匹配的资料。</p>}</div>}
     <div className="pw-toolbar"><button disabled={!offset||busy} onClick={()=>setParams(p=>{p.set('offset',String(Math.max(0,offset-30)));return p;})}>上一页</button><span className="pw-muted">第 {Math.floor(offset/30)+1} 页</span><button disabled={next===null||busy} onClick={()=>setParams(p=>{p.set('offset',String(next));return p;})}>下一页</button></div>
+    <div className="pw-toolbar"><PublishAsset assets={rows.map(row=>({title:row.current.title,ref:row.current.ref}))}/></div>
     {project?<div className="pw-toolbar"><a href={`/workspace/session?view=project&project=${project.id}`}><Plus size={15}/>上传与管理资料</a><a href={`/workspace/assets?view=files&scope=${project.id}&return_project=${project.id}`}><FolderOpen size={15}/>在全局资料库中查看</a></div>:<p className="pw-muted">按原项目归属展示资料，阅读与编辑沿用原文件版本。{params.get('return_project')&&<a href={projectUrl(params.get('return_project')!,'files')}> 返回原项目</a>}</p>}
   </section>;
 }

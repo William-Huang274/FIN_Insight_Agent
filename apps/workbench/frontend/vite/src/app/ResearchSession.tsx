@@ -102,6 +102,7 @@ const phaseName: Record<string, string> = {
   research_writing: "整合判断与撰写报告",
   research_needs_attention: "研究尚未完成 · 需要处理",
   research_incomplete_acknowledged: "已查看未完成研究",
+  research_orientation_submitted: "预研究完成",
 };
 
 function chartSourceLinks(value: unknown): string[] {

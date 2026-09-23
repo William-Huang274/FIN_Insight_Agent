@@ -492,12 +492,19 @@ def create_report_session_app(frontend_dist_root=None):
         yield
         await service.http.aclose()
     app = FastAPI(title="FinSight Research Session", version="0.1.3", lifespan=lifespan)
+    service.intake_enabled = bool(os.environ.get('FINSIGHT_BUSINESS_API_URL'))
+    service.intake_library_path = settings.get('research_library') or os.environ.get('FINSIGHT_RESEARCH_LIBRARY_PATH')
+    service.intake_receipts_root = (Path(settings_path).parent if settings_path else state_root) / 'submission-receipts'
     from .submission_receipts import SubmissionReceipts
     app.add_middleware(SubmissionReceipts, directory=(Path(settings_path).parent if settings_path else state_root) / 'submission-receipts')
     from .authentication import install_conversation_auth
     install_conversation_auth(app)
     from .oidc_login import install_identity_status
     install_identity_status(app)
+    from .business_transport import InternalResearchIdentity, build_business_gateway
+    if service.intake_enabled:
+        app.add_middleware(InternalResearchIdentity, service=service)
+    app.include_router(build_business_gateway(), prefix='/api/v1')
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
     app.include_router(build_report_sessions_router(service), prefix="/api/v1")
     from .api.v1.conversations import build_conversations_router
@@ -530,6 +537,7 @@ def create_report_session_app(frontend_dist_root=None):
     @app.get("/workspace/session", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/workspace/assistant", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/workspace/assets", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/workspace/projects", response_class=HTMLResponse, include_in_schema=False)
     def session_page():
         return _frontend_index(dist)
     return app

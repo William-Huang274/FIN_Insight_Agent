@@ -113,4 +113,6 @@ retrieval_policy_version 可以随研究固定；authorization_policy_version �
 - src/sec_agent/research_foundation/data_ports.py：NumericFactProjection 精确数字投影。
 - docs/engineering/service_recovery.zh-CN.md：原生运行与用量恢复边界。
 
-上述代码只证明已有局部能力，不证明新的 Java 内部合同已接入或多人跨服务行为已验收。
+上述代码只证明已有局部能力，不证明多人跨服务行为已验收。
+
+2026-09-23 实施进展：第一阶段 A 新增可选 Spring Boot 业务服务与 Python prepare/start/receipt 适配，详见[交付范围及资格结果](../engineering/java_research_intake.zh-CN.md)。仅覆盖业务受理与原生运行关联；上文七类数据能力、完整跨库版本、多租户及 SSE 代理合同仍须分别实施和验收。

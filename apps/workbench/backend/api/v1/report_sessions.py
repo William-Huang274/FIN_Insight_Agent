@@ -407,10 +407,16 @@ def build_report_sessions_router(service):
 
     async def protect_archive(request: Request):
         tid = request.path_params.get('thread_id')
-        if (tid and getattr(service, 'artifacts', object()) is None
-                and request.method not in {'GET', 'HEAD', 'OPTIONS'}):
-            if archived(await service.owned_thread(tid)):
+        if tid and request.method not in {'GET', 'HEAD', 'OPTIONS'}:
+            thread = await service.owned_thread(tid)
+            if archived(thread):
                 raise HTTPException(409, '这是旧版只读研究档案；请新建研究继续，原始报告和运行记录仍可查看。')
+            # Stopping a running request must remain possible after a data
+            # publication changes; cancellation cannot dispatch new research.
+            intake = thread.get('metadata', {}).get('business_intake')
+            if intake and not request.url.path.endswith('/cancel'):
+                from ...research_intake import require_binding
+                await require_binding(service, intake['binding'])
 
     router = APIRouter(dependencies=[Depends(protect_archive)])
 
@@ -611,12 +617,18 @@ def build_report_sessions_router(service):
         if body.defer_start and body.mode != "research":
             raise HTTPException(422, "只有新研究支持先上传资料")
         metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode, 'owner_id': service_owner()}
+        intake = request.scope.get('finsight_intake_context')
+        if intake:
+            metadata['business_intake'] = intake
+            metadata['business_prepared'] = False
         if asset_context:
             metadata['asset_context'] = asset_context
         if graph == RESEARCH_GRAPH:
             # Freeze new research at creation time; continuations retain it.
             # Existing tasks without this field keep their historical binding.
             metadata['research_as_of'] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+            if intake:
+                metadata['research_as_of'] = intake['binding']['research_as_of']
         if body.execution:
             if graph != RESEARCH_GRAPH:
                 raise HTTPException(422, "运行模式选择仅适用于研究任务")
@@ -635,7 +647,7 @@ def build_report_sessions_router(service):
             metadata["pending_question"] = payload["question"]
         if body.project_materials:
             metadata['project_materials_status'] = 'preparing'
-        thread = await service.sdk.threads.create(metadata=metadata)
+        thread = await service.sdk.threads.create(metadata=metadata, **({'thread_id': intake['task_id']} if intake else {}))
         if body.project_materials:
             try:
                 if project_rows:
@@ -665,6 +677,8 @@ def build_report_sessions_router(service):
         browser_write(request)
         thread = await service.owned_thread(thread_id)
         await require_project_access(thread_id)
+        if thread.get('metadata', {}).get('business_intake') and not request.scope.get('finsight_intake_start'):
+            raise HTTPException(409, '请从项目任务页启动此研究，以保留业务提交凭证')
         question = thread.get("metadata", {}).get("pending_question")
         if thread.get('metadata', {}).get('project_materials_status') not in (None, 'ready'):
             raise HTTPException(409, '项目资料准备未完成，不能启动研究；请检查原草稿')
@@ -676,7 +690,8 @@ def build_report_sessions_router(service):
         run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH,
             config=await run_configuration(service, thread),
             input=ResearchRequest(question=question).model_dump(mode="json"), stream_mode="custom", stream_subgraphs=True,
-            stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "research", "execution": thread.get("metadata", {}).get("execution"), "request_message": question})
+            stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "research", "execution": thread.get("metadata", {}).get("execution"), "request_message": question,
+                **({'business_operation_id': request.scope['finsight_intake_start']} if request.scope.get('finsight_intake_start') else {})})
         return {"thread_id": str(thread_id), "run_id": run["run_id"], "status": run["status"]}
 
     @router.post("/research-sessions/{thread_id}/guidance")
@@ -1108,4 +1123,7 @@ def build_report_sessions_router(service):
             return await service.owned_thread(thread_id)
 
         install_edit_routes(router,'/research-sessions',authorize_edit,service.sdk)
+    if getattr(service, 'intake_enabled', False):
+        from ...research_intake import install_intake_routes
+        install_intake_routes(router, service, create, start_draft)
     return router

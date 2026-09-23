@@ -26,6 +26,7 @@ export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse,
     {dataArea ? <><nav className="fs-global-nav" aria-label="资料与数据导航"><button aria-current={page==="library"?"page":undefined} onClick={()=>go("library")}><BookOpen size={17}/><span>公司资料库</span></button><button aria-current={page==="financial-data"?"page":undefined} onClick={()=>go("financial-data")}><Database size={17}/><span>财务数据</span></button></nav><div className="fs-library-guide">查阅公开资料与财务数据覆盖。研究问题、底稿和历史报告在研究工作台中。</div></> : <>
     <button className="fs-create" title="新建研究" onClick={() => go("new")}><Plus size={17} /><span>新建研究</span></button>
     <a className="fs-assistant-entry" href="/workspace/assistant"><MessageSquare size={17}/><span>通用对话</span></a>
+    <a className="fs-assistant-entry" href="/workspace/projects"><FolderOpen size={17}/><span>项目任务</span></a>
     <nav aria-label={mobile ? "移动工作区导航" : "工作区导航"} className="fs-global-nav">{[
       { id: "home", title: "开始研究", icon: House }, { id: "studio", title: "研究配置", icon: Workflow }, { id: "completed", title: "已完成研究", icon: BookOpen }, { id: "all", title: "全部研究", icon: FolderOpen }, { id: "inbox", title: "待审阅", icon: ShieldCheck },
     ].map(item => <button title={item.title} aria-current={page === item.id ? "page" : undefined} key={item.id} onClick={() => go(item.id)}><item.icon size={17} /><span>{item.title}</span></button>)}</nav>

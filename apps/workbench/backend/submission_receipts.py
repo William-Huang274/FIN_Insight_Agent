@@ -28,7 +28,17 @@ class SubmissionReceipts:
         with Cache(self.directory) as cache:
             cache[key] = {'fingerprint': fingerprint, 'status': 'received', 'http_status': status, 'body': body}
 
+    @staticmethod
+    def lookup(directory, owner, identifier):
+        key = sha256(json.dumps([owner, str(UUID(identifier))]).encode()).hexdigest()
+        with Cache(directory) as cache:
+            return cache.get(key)
+
     async def __call__(self, scope, receive, send):
+        # Java owns these business request receipts. Replaying a BFF response
+        # here would hide Java's newly reconciled state behind an old snapshot.
+        if scope['type'] == 'http' and scope['path'].startswith('/api/v1/business/'):
+            return await self.app(scope, receive, send)
         if scope['type'] != 'http' or scope['method'] not in {'POST', 'PUT', 'PATCH'} or not scope['path'].startswith('/api/v1/'):
             return await self.app(scope, receive, send)
         request = Request(scope, receive)
@@ -62,7 +72,8 @@ class SubmissionReceipts:
                 response = Response(prior['body'], status_code=prior['http_status'], media_type='application/json',
                     headers={'Idempotent-Replayed': 'true'})
             else:
-                response = JSONResponse({'detail': '此请求已提交或结果尚待核对；请刷新运行记录，不会再次执行。'}, status_code=409)
+                response = JSONResponse({'detail': '此请求已提交或结果尚待核对；请刷新运行记录，不会再次执行。',
+                    'submission_status': 'unknown'}, status_code=409)
             return await response(scope, receive, send)
         sent_body = False
         async def replay_body():

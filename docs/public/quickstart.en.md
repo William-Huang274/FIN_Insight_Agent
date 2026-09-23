@@ -4,6 +4,8 @@
 
 ## Choose a verification path
 
+The development branch includes an optional [Java research intake](../engineering/java_research_intake.zh-CN.md) service: Java 21, Spring Boot and a dedicated PostgreSQL database persist business requests. `/workspace/projects` selects real project IDs, prepares a draft before explicit execution, and reconciles unknown submissions. It is disabled by default; Python still executes research. This first batch is limited to personal projects and a single BFF host, with no organization approval or multi-tenant deployment claim.
+
 | Path | Requirements | What it checks |
 | --- | --- | --- |
 | Public source check | Python 3.11, uv | Attachments, exports, configuration consumption, targeted revision; synthetic reports in four formats |

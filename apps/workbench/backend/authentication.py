@@ -79,6 +79,10 @@ class OIDCBackend(AuthenticationBackend):
         return "oidc:" + sha256(identity.encode()).hexdigest()
 
     async def authenticate(self, conn):
+        if owner := conn.scope.get('_finsight_delegated_owner'):
+            # Set only by InternalResearchIdentity after signature, audience,
+            # expiry and exact request binding verification, never a header.
+            return AuthCredentials(['authenticated']), SimpleUser(owner)
         header = conn.headers.get("authorization")
         if header is None:
             session = conn.scope.get('session', {})
@@ -99,6 +103,8 @@ class OIDCBackend(AuthenticationBackend):
 
 
 def current_owner(request):
+    if owner := request.scope.get('_finsight_delegated_owner'):
+        return owner
     if not getattr(request.app.state, "oidc_conversation_pilot", False):
         return "local-pilot"
     user = request.scope.get("user")

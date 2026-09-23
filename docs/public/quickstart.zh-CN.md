@@ -90,6 +90,8 @@ Windows 可使用 `D:/private/finsight-session`。先完成上节前端构建，
 
 ## 更多工程检查
 
+开发分支提供可选的 [Java 项目研究接入](../engineering/java_research_intake.zh-CN.md)：Java 21 / Spring Boot 与专用 PostgreSQL 保存业务任务；`/workspace/projects` 支持真实项目 ID 切换、先准备再启动和未知提交核对。默认关闭，Python 继续执行 Agent。启用条件、测试命令与单主机限制见链接；组织协作、多租户和审批尚未上线。
+
 0.1.4开发分支可在资产区“底稿与连接”直接维护原任务笔记和SEC连接。用户修改保存新版本，下次模型调用收到回读提示，旧任务输入/原始披露不被覆盖。完整服务的维护快照（原生检查点、资产、底稿、回执、审计与费用账）及新数据库恢复见[服务恢复](../engineering/service_recovery.zh-CN.md)；须停止写入，不自动恢复执行，不等同生产高可用。
 
 开发分支的持久项目默认保留最多2000个文档版本/原文件2GiB，单次研究仍最多12份/80MiB；SEC默认200次更新。项目页可分页查找和展开存储用量。维护者可配置容量，超限不自动清理历史。首次升级会回填同库目录摘要和FTS5 trigram索引，请先备份并协调重启写入实例；SQLite需支持FTS5/trigram。项目、任务资料副本、知识库与财务库的可选联合备份及新目录恢复命令见[资产存储与恢复](../architecture/asset_workspace_protocol.zh-CN.md#项目与任务资料集协调恢复056)。该恢复包不包含原生运行checkpoint或费用派发账，不能据此直接恢复旧研究执行。

@@ -275,6 +275,22 @@ def test_browser_projection_omits_private_native_state():
     assert public_event({"kind": "messages", "content": "PRIVATE"}) is None
 
 
+def test_session_list_business_link_is_optional_and_owner_filtered():
+    task = str(uuid4())
+    async def search(**kwargs):
+        assert kwargs['limit'] == 50
+        return [dict(thread_id=str(uuid4()), status='idle', updated_at='2026-09-23T00:00:00Z', metadata=m)
+                for m in ({'business_intake': {'task_id': task, 'binding': 'PRIVATE'}}, {},
+                          {'owner_id': 'another-owner', 'business_intake': {'task_id': 'PRIVATE'}})]
+    app = FastAPI()
+    app.include_router(build_report_sessions_router(SimpleNamespace(sdk=SimpleNamespace(threads=SimpleNamespace(search=search)))), prefix='/api/v1')
+    with TestClient(app) as client:
+        response = client.get('/api/v1/research-sessions')
+        assert response.status_code == 200
+        assert [r['business_task_id'] for r in response.json()] == [task, None]
+        assert 'PRIVATE' not in response.text
+
+
 @pytest.mark.parametrize("body", [{"action": "shell", "message": "x"}, {"action": "ask", "path": "/secrets"},
     {"action": "revise", "message": "x"*16001}, {"action": "revise", "answer_mode": "quick"},
     {"action": "ask", "answer_mode": "custom"}, {"action": "ask", "model": "untrusted"}])

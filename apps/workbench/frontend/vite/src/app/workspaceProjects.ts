@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { browserOwner } from './IdentityBoundary';
 
-export type ProjectIndex = { projects: { id: string; name: string }[]; assignments: Record<string, string>; pinned: string[] };
+export type WorkspaceProject = {id:string;name:string;description?:string;archived?:boolean};
+export type ProjectIndex = { projects: WorkspaceProject[]; assignments: Record<string, string>; pinned: string[] };
 type SavedIndex = ProjectIndex & { revision: number };
 const storageKey = () => browserOwner === 'local-pilot' ? 'finsight.project-index.v1' : `finsight.project-index.v1:${browserOwner}`;
 const empty: ProjectIndex = { projects: [], assignments: {}, pinned: [] };

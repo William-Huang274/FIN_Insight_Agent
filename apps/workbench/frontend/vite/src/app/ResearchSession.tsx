@@ -10,7 +10,8 @@ import { sourceUrl as validLink } from "./sourceUrl";
 import { ReportVersions } from "./ReportVersions";
 import { ResearchGraph } from "./ResearchGraph";
 import { useSearchParams } from "react-router";
-import { WorkspaceNavigation, pageTitles } from "./WorkspaceNavigation";
+import { WorkspaceNavigation, pageTitles, taskViews } from "./WorkspaceNavigation";
+import {ProjectNavigation,projectUrl} from './ProjectNavigation';
 import { DataLibrary } from "./DataLibrary";
 import { GlobalWorkspacePage, SessionLibrary } from "./WorkspacePages";
 import { readMemory, writeMemory } from "./workspaceMemory";
@@ -515,13 +516,14 @@ export function ResearchSession() {
     finally { if (request === sourceRequest.current) setSourceLoading(false); }
   };
   const findings = session?.report_review?.findings || [];
+  const projectContext=projects.index.projects.find(p=>p.id===(projects.index.assignments[id]||params.get('project')));
   return (
-    <div data-theme={theme} data-motion={motion ? "reduced" : "full"} data-page={page} className={`rs-shell fs-workspace ${collapsed ? "fs-collapsed" : ""} ${inspectorOpen ? "rs-has-inspector" : ""} ${assetsOpen?'fa-has-assets':''}`}>
-      <WorkspaceNavigation sessions={sessions} id={id} page={page} collapsed={collapsed} onCollapse={() => setCollapsed(value => !value)} navigate={navigate} projects={projects.index} onProjects={projects.update} editingDisabled={!projects.ready || projects.saving} onOpenProject={project=>setParams(next=>{next.set('view','project');next.set('project',project);next.delete('thread');return next;})} />
+    <div data-theme={theme} data-motion={motion ? "reduced" : "full"} data-page={page} className={`rs-shell fs-workspace ${collapsed&&!projectContext ? "fs-collapsed" : ""} ${inspectorOpen ? "rs-has-inspector" : ""} ${assetsOpen?'fa-has-assets':''}`}>
+      {projectContext?<ProjectNavigation project={projectContext} projects={projects.index.projects} view={page==='project'?'files':'research'}/>:<WorkspaceNavigation sessions={sessions} id={id} page={page} collapsed={collapsed} onCollapse={() => setCollapsed(value => !value)} navigate={navigate} projects={projects.index} onProjects={projects.update} editingDisabled={!projects.ready || projects.saving} onOpenProject={project=>window.location.assign(projectUrl(project))} />}
       <main className="rs-main">
         <header className="rs-top">
           <div className="rs-breadcrumb">
-            <button onClick={() => navigate("home")}>工作台</button> / <b>{page === "library" ? "公司资料库" : page === "financial-data" ? "财务数据" : pageTitles[page] || "研究工作区"}</b>
+            {projectContext?<a href={projectUrl(projectContext.id)}>{projectContext.name}</a>:<button onClick={() => navigate("home")}>工作台</button>} / <b>{page === "library" ? "公司资料库" : page === "financial-data" ? "财务数据" : pageTitles[page] || "研究工作区"}</b>
           </div>
           <button className="fa-project-open" onClick={()=>{setAssetProject(projects.index.assignments[id]||params.get('project')||projects.index.projects[0]?.id||'');setAssetsOpen(!assetsOpen);setInspectorOpen(false);}}><FileText size={15}/>项目资料</button>
           <span className="rs-local">
@@ -532,6 +534,7 @@ export function ResearchSession() {
             <button onClick={() => navigate("activity")}>运行与费用</button>
           </div>
         </header>
+        {projectContext&&id&&!globalPage&&!creating&&<nav className="pw-subviews" aria-label="当前研究视图">{taskViews.map(v=><a key={v.id} aria-current={page===v.id?'page':undefined} href={`/workspace/session?${new URLSearchParams({thread:id,project:projectContext.id,view:v.id})}`}>{v.title}</a>)}</nav>}
         {projects.error && <p role="alert">{projects.error} <button onClick={()=>void projects.reload()}>重新载入项目</button></p>}
         {projects.legacy && projects.ready && <p>发现此浏览器的旧项目整理，原记录仍保留。<button disabled={projects.saving} onClick={()=>void projects.update(projects.legacy!)}>导入到当前工作台</button></p>}
         {page === 'project' && (projects.index.projects.some(p=>p.id===params.get('project')) ? <ProjectLibrary key={params.get('project')} project={projects.index.projects.find(p=>p.id===params.get('project'))!} sessions={sessions.filter(s=>projects.index.assignments[s.thread_id]===params.get('project'))} navigate={navigate} onResearch={(documents,sec_version)=>{const project=projects.index.projects.find(p=>p.id===params.get('project'))!;setProjectMaterials({project_id:project.id,project_name:project.name,documents,sec_version});navigate('new','');}}/> : <section className="fs-page"><h1>{projects.ready?'项目不存在或不属于当前工作区':'正在读取项目…'}</h1></section>)}

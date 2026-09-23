@@ -4,11 +4,15 @@ import {BookOpen,Database,FolderOpen,Layers,ArrowLeft,PanelLeftClose,PanelLeftOp
 import {DataLibrary} from './DataLibrary';
 import ProjectAssetWorkspace from './ProjectAssetWorkspace';
 import CompanyWorkspace from './CompanyWorkspace';
+import {ProjectNavigation} from './ProjectNavigation';
+import {ProjectCatalog} from './ProjectCatalog';
+import {useWorkspaceProjects} from './workspaceProjects';
 import './research-session.css';
 import './workspace-design.css';
 import './asset-workspace.css';
 
 export default function AssetWorkspace(){
+  const projects=useWorkspaceProjects();
   const [params,setParams]=useSearchParams();
   const view=params.get('view')||(params.has('project')?'project':'companies');
   const [collapsed,setCollapsed]=useState(false);
@@ -24,9 +28,10 @@ export default function AssetWorkspace(){
     {id:'library',title:'知识库',icon:BookOpen,description:'公司披露与研究资料'},
     {id:'financial-data',title:'数据库',icon:Database,description:'公司财务、行情与机构持仓'},
     {id:'project',title:'项目资料',icon:FolderOpen,description:'项目文件与研究成果'}];
+  if(view==='files')return <div className="fs-workspace pw-shell" data-theme={theme}><ProjectNavigation projects={projects.index.projects} global="assets"/><main className="pw-main"><header className="pw-top"><a href="/workspace/projects">所有项目</a><span>/</span><span>资料库</span></header><div className="pw-content"><header className="pw-title"><div><h1>资料库</h1><p>跨项目查看资料、笔记与保存的研究成果。</p></div></header><nav className="pw-toolbar" aria-label="资料库资源"><strong>项目文件</strong><a href="/workspace/assets?view=library">知识库</a><a href="/workspace/assets?view=financial-data">数据库</a><a href="/workspace/assets?view=companies">公司与机构</a></nav><ProjectCatalog/></div></main></div>;
   return <div className={`rs-shell fs-workspace fa-workspace ${collapsed?'fa-collapsed':''}`} data-theme={theme}>
     <aside className="fa-nav"><a className="fs-brand" href="/workspace/assets"><span className="fs-logo"><Layers size={21}/></span><strong>FinSight<small>ASSET WORKSPACE</small></strong></a>
-      <div className="fa-area"><a href={research}><Layers size={16}/><span>研究工作台</span></a><a href="/workspace/assets" aria-current="page"><Database size={16}/><span>资产工作区</span></a></div>
+      <div className="fa-area"><a href="/workspace/projects"><FolderOpen size={16}/><span>所有项目</span></a><a href="/workspace/assets?view=files"><Database size={16}/><span>资料库</span></a></div>
       <p className="fa-caption">资产</p><nav aria-label="资产分类导航">{tabs.map(t=><button title={t.title} aria-label={t.title} key={t.id} aria-current={displayView===t.id?'page':undefined} onClick={()=>navigate(t.id)}><t.icon size={18}/><span><strong>{t.title}</strong><small>{t.description}</small></span></button>)}</nav>
       <footer><p>资料和数据统一查阅。<br/>项目文件可在研究中随时打开。</p><a href={research}><ArrowLeft size={15}/><span>返回研究工作台</span></a></footer>
     </aside>

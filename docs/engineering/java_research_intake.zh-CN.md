@@ -6,7 +6,7 @@
 
 ```mermaid
 flowchart LR
-  UI[项目任务页] --> BFF[Python BFF / 登录]
+  UI[项目工作区 / 准备研究] --> BFF[Python BFF / 登录]
   BFF --> Java[Spring Boot / 研究业务受理]
   Java --> PG[(专用业务 PostgreSQL)]
   Java --> Intake[Python 内部研究接入]
@@ -18,7 +18,13 @@ flowchart LR
 
 Java 保存业务任务、输入摘要、固定请求、两个操作凭证及核对结果。Python 继续使用原有 `NewSession`、草稿准备、资料复制、项目授权和原生启动函数。内部 envelope 不放宽公开 `NewSession` 字段；保留文档 wire ID（包括 `UPLOAD::…`）。本批不增加检索端点，不搬 SQL/Redis 访问代码。
 
-`/workspace/projects` 使用真实项目索引，名称旁显示短 ID、侧栏展示完整 ID，并按 ID 排序。URL 定位项目和任务。无项目、失效链接、未启用服务均有明确状态，不选择假定默认项目。可新建个人项目，保存问题、执行方式和最多 12 份项目资料，再确认启动。原研究页负责事件、报告和真实费用；业务页的“启动已确认”仅表示运行受理。
+`/workspace` 默认进入 `/workspace/projects`，沿用现有紫蓝工作区样式。项目列表提供名称/说明搜索、名称/最近添加排序、创建、修改说明、归档与恢复；项目内部统一概览、研究、资料、成果和项目管理。日常页面隐藏 ID，URL 和内部身份保留不变。同名项目可通过说明区分，切换仍按真实 ID 定位。原 `/workspace/session`、报告与资料链接继续兼容。
+
+Java 准备/启动表单嵌入项目内研究入口：保存问题、执行方式和最多 12 份项目资料，再确认启动。原研究页负责事件、报告和真实费用，并带回原项目的导航；“启动已确认”仅表示运行受理。业务任务按 50 条分页，已关联原生记录按 `business_task_id` 去重。原生列表沿用现有接口最近 50 条窗口；本批不宣称完整历史分页已交付。
+
+`/workspace/assets?view=files` 为全局资料库，按项目、名称和类型筛选；打开原版本与返回时保留 URL 中筛选条件和页码。项目内资料复用同一目录与原阅读/编辑组件，上传和撤销复用已有项目资料管理。配置未启用 Java 时，项目/资料管理可用，新研究进入已有资料选择路径；显式访问业务准备页显示未启用。
+
+项目索引新增可选 `description` 和 `archived`，保存仍使用原 revision 乐观并发控制。旧客户端只提交 id/name 时保留新字段。归档是整理状态，不改变授权或停止已有运行。资料库新增 `GET /api/v1/asset-workspace/catalog`，按当前 owner 的实际项目聚合版本族，保留原 AssetRef；合同与规模边界见[资产协议](../architecture/asset_workspace_protocol.zh-CN.md)。
 
 ## 存储与失败语义
 
@@ -101,4 +107,8 @@ Windows 可用 `$env:FINSIGHT_INTAKE_TEST_JAR = (Resolve-Path apps/business-serv
 
 2026-09-23 本地验收：65 项 Python 定向回归、7 项真实 Spring/HTTP/PostgreSQL 测试、1 项双进程重启链路、7 项浏览器交互通过，TypeScript 与生产构建通过。Java 测试包括 20 次并发创建 → 1 个草稿、20 次并发启动 → 1 次派发，丢失响应后按原操作找回、排除较新无关 run、无证明保持未知、不同 owner、错项目与当前权限撤销，以及 Python 409 未知回执不被误判为拒绝。跨进程测试实际重启 Java 与 BFF，再恢复相同 task/thread/run 和项目归属。
 
-浏览器测试使用合成 API，检查同名项目按 ID 排序、切换隔离、未知提交刷新保留、失效项目无回退、功能关闭以及 1440/390 像素界面；原导航另测 1440/1024/390。Java 集成测试把 Python 执行服务替换为脚本；跨语言测试使用真实 BFF/Spring/PostgreSQL/SQLite，仅原生 SDK 是可持久化假执行器。均无真实模型请求，不证明金融研究质量、生产吞吐、机构权限或完整原生 SSE 恢复。
+上述 Java 验收发生于原受理切片。后续项目工作区整合继续验证同名项目按内部 ID 切换、未知提交刷新保留、失效项目无回退、功能关闭以及 1440/390 像素界面；原导航另测 1440/1024/390。Java 集成测试把 Python 执行服务替换为脚本；跨语言测试使用真实 BFF/Spring/PostgreSQL/SQLite，仅原生 SDK 是可持久化假执行器。均无真实模型请求，不证明金融研究质量、生产吞吐、机构权限或完整原生 SSE 恢复。
+
+整合复现增加 `python -m pytest -q tests/test_project_workspace.py` 和前端 `npm run test:public`。真实 BFF 浏览器使用 `playwright.project.config.ts`：先构建前端，设置全新 `FINSIGHT_LOCAL_STATE_ROOT`、可选 `FINSIGHT_E2E_PYTHON`，设置 `FINSIGHT_E2E_DIRECT_BFF=1` 可直接在隔离 BFF 上读取构建产物，避免占用既有 Vite 服务。该配置明确指向本工作区 Python 源码；执行 `npx playwright test --config playwright.project.config.ts project-library.spec.ts` 验证真实 SQLite 上传、项目筛选、版本回读、撤销和新浏览器恢复，原生运行被测试夹具禁用。
+
+2026-09-23 项目工作区整合最终结果：相关 Python 61 passed、1 skipped（需要显式授权本地研究资源）；全量公共浏览器 45 passed；真实 BFF/SQLite 浏览器桌面/手机 2 passed；TypeScript、生产构建、活动基线与秘密扫描通过。浏览器覆盖项目创建/修改/归档/恢复、默认入口、筛选阅读返回、同名项目切换、未知提交与业务/原生记录跨页去重，并保留原报告/对话/资料/配置回归。截图使用合成内容，未调用模型、未切换现有部署；构建保留已有大 chunk 和第三方注释警告。

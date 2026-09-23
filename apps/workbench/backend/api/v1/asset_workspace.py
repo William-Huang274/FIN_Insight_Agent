@@ -54,6 +54,12 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None)
     def catalog(project_id: UUID, request: Request, response: Response):
         return call(workspace.catalog, identity(request, response), project_id)
 
+    @router.get('/catalog')
+    def catalog_page(request: Request, response: Response, project_id: UUID | None = None,
+                     query: str = Query('', max_length=200), role: str = Query('', pattern='^(document|report|database)?$'),
+                     offset: int = Query(0, ge=0), limit: int = Query(30, ge=1, le=100)):
+        return call(workspace.catalog_page, identity(request, response), project_id, query, role, offset, limit)
+
     @router.post('/read')
     def read(ref: AssetRef, request: Request, response: Response):
         return call(workspace.read, identity(request, response), ref)

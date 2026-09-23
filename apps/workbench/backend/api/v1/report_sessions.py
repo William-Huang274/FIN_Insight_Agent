@@ -482,7 +482,8 @@ def build_report_sessions_router(service):
             "title": t.get("metadata", {}).get("title", "研究任务"),
             "phase": (t.get("values") or {}).get("phase"),
             "human_edit_count": len((t.get('values') or {}).get('human_edits', [])),
-            "studio_assistant_id": t.get("metadata", {}).get("studio_assistant_id")} for t in threads]
+            "studio_assistant_id": t.get("metadata", {}).get("studio_assistant_id"),
+            "business_task_id": t.get('metadata', {}).get('business_intake', {}).get('task_id')} for t in threads]
 
     @router.get("/research-session-config")
     async def configuration():

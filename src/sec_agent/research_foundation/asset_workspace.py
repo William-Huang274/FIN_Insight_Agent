@@ -118,6 +118,38 @@ class AssetWorkspace:
             entry['current'] = next((v for v in reversed(entry['versions']) if v['status'] == 'complete'), entry['versions'][-1])
         return {'items': list(groups.values()), 'schema_version': SCHEMA, 'usage':self.library.usage(owner,project)}
 
+    def catalog_page(self, owner, project=None, query='', role='', offset=0, limit=30):
+        """Owner-scoped, read-only catalogue projection; original AssetRefs stay intact.
+
+        Reuse the metadata catalogue. Stop after a page plus one match rather
+        than loading every project's metadata or any document body up front.
+        """
+        if offset < 0 or not 1 <= limit <= 100 or role not in ('','document','report','database'):
+            raise ValueError('invalid_catalog_page')
+        index=self.library.index(owner)
+        projects=index['projects']
+        if project is not None:
+            self.library.scope(owner,project)
+            projects=[p for p in projects if p['id']==str(project)]
+        matches=[]; skipped=0
+        for entry in sorted(projects,key=lambda p:p['id']):
+            for asset in self.catalog(owner,entry['id'])['items']:
+                current=asset['current']
+                if role and current['role']!=role:
+                    continue
+                if query.casefold() not in current['title'].casefold():
+                    continue
+                if skipped<offset:
+                    skipped+=1
+                    continue
+                matches.append({'project_id':entry['id'],'project_name':entry['name'],
+                    'project_archived':entry.get('archived',False),'asset_id':asset['asset_id'],
+                    'kind':asset['kind'],'current':current,'version_count':len(asset['versions'])})
+                if len(matches)>limit:
+                    return {'items':matches[:limit],'next_offset':offset+limit,'offset':offset,
+                            'project_revision':index['revision']}
+        return {'items':matches,'next_offset':None,'offset':offset,'project_revision':index['revision']}
+
     def resolve(self, owner, ref):
         ref = AssetRef.model_validate(ref)
         scope = self.library.scope(owner, ref.project_id)

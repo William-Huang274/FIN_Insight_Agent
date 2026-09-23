@@ -1,5 +1,27 @@
 import { test, expect, type Page } from "./identity-fixture";
 
+test('orientation completion is visible without classifying it as a completed report',async({page})=>{
+  const id='00000000-0000-4000-8000-000000000041';
+  const task={thread_id:id,title:'预研究议题',status:'idle',phase:'research_orientation_submitted',is_draft:false,runs:[],model_events:[],conversation:[],report:null};
+  let writes=0;
+  await page.route('**/api/v1/**',async route=>{
+    const path=new URL(route.request().url()).pathname;
+    if(route.request().method()!=='GET')writes++;
+    let body:unknown={};
+    if(path.endsWith('/projects'))body={revision:0,projects:[],assignments:{},pinned:[]};
+    else if(path.endsWith('/research-sessions'))body=[task];
+    else if(path.endsWith('/'+id))body=task;
+    else if(path.endsWith('/report-versions'))body={versions:[]};
+    await route.fulfill({json:body});
+  });
+  await page.goto(`/workspace/session?thread=${id}&view=report`);
+  await expect(page.locator('.rs-heading .rs-status')).toHaveText('预研究完成');
+  await expect(page.locator('.fs-sidebar .fs-task-link')).toContainText('预研究完成');
+  await page.goto('/workspace/session?view=completed');
+  await expect(page.locator('.fs-research-list>button')).toHaveCount(0);
+  expect(writes).toBe(0);
+});
+
 for (const width of [1440, 1024, 390]) test(`formal navigation, generic tasks and draft continuity at ${width}`, async ({page}) => {
   await page.setViewportSize({width,height:950});
   const a = "00000000-0000-4000-8000-000000000011", b = "00000000-0000-4000-8000-000000000012", checkpoint = "00000000-0000-4000-8000-000000000013";

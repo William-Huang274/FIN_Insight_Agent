@@ -70,6 +70,8 @@ Python 409 回执若标明 `submission_status=unknown`，Java 保持未知。资
 
 SSE、检查点、报告、用量仍走原研究页，本批没有 Java SSE 转发或第二个报告账本。Python 提交回执仍是单 BFF 主机存储；Java 使用 PostgreSQL 不会使 Python 自动支持多主机主动写入。
 
+Lead 返回 `research_orientation_submitted` 时，研究页和列表显示“预研究完成”，不进入“已完成研究/报告”分类。运行中或失败仍优先显示真实执行状态；该展示映射不触发专家、报告或下一次模型调用。预研究规划与反馈接口由对应运行时功能提供。
+
 ## 部署与停用
 
 1. 准备 Java 21 与专用业务 PostgreSQL 数据库。账号仅访问此数据库，不能指向 Agent Server 生产库。Flyway 首次启动创建两个业务表及迁移历史。本批不自动创建或删除数据库。

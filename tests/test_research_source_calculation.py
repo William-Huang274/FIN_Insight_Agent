@@ -39,7 +39,7 @@ def test_read_passage_calculate_native_report_and_preserved_revision(artifacts):
     async def run():
         server = _build_server(case_artifacts=artifacts, source_document_reader=source_reader)
         async with Client(server, raise_exceptions=False) as client:
-            method = await client.call_tool("get_dell_research_method", _method_arguments([BRANCH]))
+            method = await client.call_tool("get_research_source_binding", _method_arguments([BRANCH]))
             scope = method.structured_content["run_scope"]
             unobserved = await client.call_tool("calculate_research_metric", {"request": CALCULATION})
             assert unobserved.is_error

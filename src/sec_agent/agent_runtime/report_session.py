@@ -365,7 +365,7 @@ async def report_session_graph(config: RunnableConfig, runtime: ServerRuntime):
             raise ValueError("session_data_authority_mismatch")
         async with Client(data.mcp_server, raise_exceptions=False, read_timeout_seconds=120) as client:
             args = {"research_as_of": artifacts.research_as_of, "data_snapshot_id": artifacts.snapshot_id, "execution_attempt_id": invocation}
-            binding = await client.call_tool("get_dell_research_method", {"branch_ids": sorted({p["branch_id"] for p in artifacts.catalog()["papers"]}), **args})
+            binding = await client.call_tool("get_research_source_binding", {"branch_ids": sorted({p["branch_id"] for p in artifacts.catalog()["papers"]}), **args})
             if binding.is_error:
                 raise ValueError("session_method_binding_failed")
             tools = await case_mcp_tools(client, run_scope=binding.structured_content["run_scope"], method_arguments=args)

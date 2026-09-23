@@ -41,7 +41,7 @@ from .source_document_navigation import SourceDocumentRequest, SourceDocumentRes
 
 
 # Published tool ID retained so saved calls and method bindings remain valid.
-GET_RESEARCH_METHOD_TOOL = "get_dell_research_method"
+GET_RESEARCH_METHOD_TOOL = "get_research_source_binding"
 SEARCH_LOCAL_KNOWLEDGE_TOOL = "search_local_knowledge"
 SEARCH_REVIEWED_EVIDENCE_TOOL = "search_reviewed_evidence"
 READ_REVIEWED_EVIDENCE_BY_ID_TOOL = "read_reviewed_evidence"
@@ -233,7 +233,7 @@ def build_research_data_mcp_server(
     @server.tool(
         name=GET_RESEARCH_METHOD_TOOL,
         description=(
-            "Read the answer-free DELL question method, formula contracts and "
+            "Read the answer-free task method, formula contracts and "
             "source boundaries for selected branches."
         ),
         structured_output=True,

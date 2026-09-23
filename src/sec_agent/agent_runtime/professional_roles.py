@@ -61,6 +61,6 @@ def child_assignment(parent, spec):
         task['professional'] = ProfessionalAssignment.model_validate(spec['professional']).model_dump(mode='json')
         # The native composition still validates availability and branch scope.
         # A survey requests original-source reading, not inherited finance APIs.
-        task['requested_capability_refs'] = ['capability:dell:source-document-read']
+        task['requested_capability_refs'] = ['capability:research:source-document-read']
     task['objective'] += '\n来源导航/待查方向：' + str(spec['source_hints'])
     return task

@@ -22,6 +22,7 @@ FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工�
 | [原文子块与向量检索](architecture/library_chunks_and_vectors.zh-CN.md) | 有界子块、父原文引用、图边证据关联、正文 embedding、持久索引及失败请求恢复边界 |
 | [知识库与数据库检索优化方案](architecture/retrieval_optimization_review.zh-CN.md) · [执行记录](architecture/retrieval_query_execution.zh-CN.md) | 已批准、实施中：图辅助混合检索、SQL与读取优化、关系遗漏审计、工具边界及分阶段验收 |
 | [Lead 图辅助研究规划](product/lead_graph_research.zh-CN.md) · [工具与测试设计](engineering/lead_graph_planning_evaluation.zh-CN.md) | 已接入预研究、非阻塞反馈与意见卡片，完成一例正式 runtime 开发试跑；独立质量评测与外部取证授权仍待验证 |
+| [当前研究运行契约](engineering/current_research_contract.zh-CN.md) | 任务身份、方法/MCP 绑定、通用能力、旧记录兼容与历史数据边界 |
 | [Java 与 Python 研究资料接口](architecture/java_research_service_contract.zh-CN.md) | 已初步对齐：业务/研究职责、七类查询能力、授权/快照/数值合同及付费与事件恢复；未实现 |
 | [指标工作区](architecture/metric_workspace.zh-CN.md) | 指标日期合同、独立数据卡、趋势与多公司比较、同源工具及行业数据导入 |
 | [指标工作区 r18 交付](architecture/metric_workspace_r18_delivery.zh-CN.md) | 核心20家公司首批行业指标、发布边界与逐公司缺口 |

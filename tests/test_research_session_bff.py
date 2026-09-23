@@ -112,7 +112,8 @@ def test_new_task_and_review_remain_different_native_entries_and_fresh_has_no_se
         assert result.status_code == 200
         assert calls[-1][1][1] == RESEARCH_GRAPH
         payload = calls[-1][2]["input"]
-        assert set(payload) == {"case_profile", "question"} and payload["question"].startswith("A different")
+        assert set(payload) == {"case_profile", "question", "research_stage"} and payload["question"].startswith("A different")
+        assert payload["case_profile"] == "general_research" and payload["research_stage"] == "full"
         assert calls[-1][2]["multitask_strategy"] == "reject"
         result = client.post("/api/v1/research-sessions", json={"mode": "review"}, headers={"x-workbench-request": "1"})
         assert result.status_code == 200 and calls[-1][1][1] == GRAPH and calls[-1][2]["input"] == {"open": True}
@@ -263,7 +264,7 @@ def test_native_parent_schema_needs_no_credentials_or_archived_answer_and_role_b
     async def exercise():
         async with research_session_graph({}, SimpleNamespace(execution_runtime=None)) as graph:
             schema = graph.get_input_jsonschema()
-            assert set(schema["properties"]) == {"case_profile", "question"}
+            assert set(schema["properties"]) == {"case_profile", "question", "research_stage"}
             assert {"research", "case_review", "convergence", "human_review", "research_revision"}.issubset(graph.nodes)
     asyncio.run(exercise())
 

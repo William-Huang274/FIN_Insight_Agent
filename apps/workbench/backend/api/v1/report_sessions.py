@@ -822,7 +822,7 @@ def build_report_sessions_router(service):
                               can_continue_remaining=False,
                               archive_notice='旧版只读研究档案：报告、来源和原始运行记录保留。继续工作请新建研究；旧执行器不会重新调用模型。')
         if not runs and thread.get("metadata", {}).get("pending_question"):
-            projection.update(question=thread["metadata"]["pending_question"], phase="draft", case_profile="dell_growth_quality")
+            projection.update(question=thread["metadata"]["pending_question"], phase="draft", case_profile="general_research")
         public_runs = []
         for run in runs:
             events, usage = public_run_usage(service.audit_root, thread_id, run["run_id"])

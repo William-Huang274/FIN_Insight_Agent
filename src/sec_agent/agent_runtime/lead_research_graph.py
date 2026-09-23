@@ -38,6 +38,9 @@ class _LeadAction(BaseModel):
     execution_plan: ResearchExecutionPlan | None = None
 
 
+from .current_research_contract import canonical_capability
+
+
 class DelegatedResearchTask(ResearchTaskSpec):
     """Only the outputs/states executable by the current research worker."""
     expected_output_kinds: tuple[Literal["branch_notebook", "narrative_artifact", "claim_ledger"], ...] = Field(min_length=1, max_length=3)
@@ -47,8 +50,9 @@ class DelegatedResearchTask(ResearchTaskSpec):
 
     @model_validator(mode='after')
     def professional_capability_scope(self):
-        if self.professional and not set(self.requested_capability_refs).issubset({
-                'capability:dell:source-document-read','capability:research:calculator','capability:research:methods'}):
+        from .current_research_contract import canonical_capability
+        if self.professional and not {canonical_capability(ref) for ref in self.requested_capability_refs}.issubset({
+                'capability:research:source-document-read','capability:research:calculator','capability:research:methods'}):
             raise ValueError('survey_profile_requires_source_read_calculator_or_method_capabilities_not_finance')
         return self
 
@@ -125,7 +129,7 @@ def lead_tool_models(*, require_execution_plan=False, source_read_enabled=False,
 
 LEAD_RESEARCH_SYSTEM_PROMPT = (
     "For survey/questionnaire work explicitly set professional.profile=survey_analysis with purpose/source_hints, "
-    "source_space when known, and requested_capability_refs=['capability:dell:source-document-read']. "
+    "source_space when known, and requested_capability_refs=['capability:research:source-document-read']. "
     "This selects a clean professional context; source dimensions and branch permissions remain unchanged. "
     "You are the Research Lead. Autonomously plan and reflect on the user's research question. "
     "Separate three planning levels: the complete delivery route, the current evidence-producing wave, "
@@ -474,7 +478,7 @@ def build_lead_research_graph(
                         if unfinished_only and branch_seeds and not branch_seeds.intersection(task.dependency_ids):
                             raise ValueError("supplemental_research_must_depend_on_submitted_workpaper")
                         if (task.status not in {"planned", "ready"} or task.required_authority_refs
-                                or not set(task.requested_capability_refs).issubset(available)
+                                or not {canonical_capability(ref) for ref in task.requested_capability_refs}.issubset({canonical_capability(ref) for ref in available})
                                 or not set(task.expected_output_kinds).issubset({"branch_notebook", "claim_ledger", "narrative_artifact"})):
                             raise ValueError("task_status_capability_or_output_not_authorized")
                         if not set(task.dependency_ids).issubset(known | set(ids)):

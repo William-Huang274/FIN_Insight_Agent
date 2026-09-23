@@ -228,7 +228,7 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
         *,
         run_binding: MCPRunBinding,
         source_family_compiler: SourceFamilyCompiler | None = None,
-        subject_ticker: str = "DELL",
+        subject_ticker: str | None = None,
         default_financial_granularity: str = "quarter_discrete",
         read_timeout_seconds: float = 60.0,
         source_read_enabled: bool = False,
@@ -237,10 +237,10 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
         self._source_read_enabled = source_read_enabled
         self._binding = run_binding
         self._source_family_compiler = source_family_compiler
-        self._ticker = subject_ticker.strip().upper()
+        self._ticker = subject_ticker.strip().upper() if subject_ticker else None
         self._granularity = default_financial_granularity.strip()
         self._timeout = read_timeout_seconds
-        if not self._ticker or not self._granularity:
+        if not self._granularity:
             raise ValueError("mcp_adapter_default_empty")
         self._portal_cm: Any | None = None
         self._portal: BlockingPortal | None = None
@@ -1203,10 +1203,13 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
                 metric_ids = [request["metric_id"]]
             if not isinstance(metric_ids, Sequence) or isinstance(metric_ids, (str, bytes)):
                 raise MCPToolAdapterError("mcp_fact_metric_ids_invalid")
+            ticker = request.get('ticker') or self._ticker
+            if not ticker:
+                raise MCPToolAdapterError('mcp_fact_explicit_ticker_required')
             arguments = {
                 "branch_id": lane_task.task.branch_id,
                 "run_scope": scope.model_dump(mode="json"),
-                "ticker": request.get("ticker", self._ticker),
+                "ticker": ticker,
                 "metric_ids": list(metric_ids),
                 "research_as_of": request.get(
                     "research_as_of", _as_of(lane_task.task.research_as_of)[:10]
@@ -1254,6 +1257,7 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
                     items.append(
                         self._gap(
                             "financial_fact_unresolved", [call.receipt],
+                            ticker=row.get("ticker"),
                             metric_id=row.get("metric_id"),
                             typed_gap=row.get("typed_gap"),
                         )
@@ -1263,6 +1267,7 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
                     items.append(
                         self._conflict(
                             [call.receipt],
+                            ticker=row.get("ticker"),
                             metric_id=row.get("metric_id"),
                             typed_conflict=row.get("typed_conflict"),
                         )

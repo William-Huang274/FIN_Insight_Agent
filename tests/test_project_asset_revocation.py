@@ -181,7 +181,7 @@ def test_open_mcp_connection_rechecks_sec_version_and_rejects_cached_source_tool
     with open_approved_data_composition(run_invocation_id='revocation-'+tid, environment=environment, source_read_enabled=True) as composition:
         async def exercise():
             async with Client(composition.mcp_server, raise_exceptions=False) as mcp:
-                binding = await mcp.call_tool('get_dell_research_method', {'branch_ids': ['Q1_ISSUER_TRUTH'],
+                binding = await mcp.call_tool('get_research_source_binding', {'branch_ids': ['Q1_ISSUER_TRUTH'],
                     'research_as_of': '2026-09-02T00:00:00Z', 'data_snapshot_id': APPROVED_DATA_SNAPSHOT_ID, 'execution_attempt_id': 'revocation-'+tid})
                 assert not binding.is_error
                 arguments = {**query(), 'branch_id': 'Q1_ISSUER_TRUTH', 'run_scope': binding.structured_content['run_scope']}

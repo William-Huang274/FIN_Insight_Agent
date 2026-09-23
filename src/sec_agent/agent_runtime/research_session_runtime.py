@@ -1,6 +1,6 @@
 """Agent Server resources for the current research-session product.
 
-Uses the qualified Dell data bridge and existing role graphs. No qualification
+Uses the approved data bridge and task-bound role graphs. No qualification
 runner, archived answer bundle, new provider transport, queue or checkpoint DB.
 The browser selects a case/question, never file paths, budgets or credentials.
 """
@@ -117,7 +117,8 @@ def load_research_runtime_profile(root):
 
 def create_research_phase_runnables(*, root, settings, profile, case, run_id, thread_id, api_key,
                                     environment=None, public_sink, private_sink, read_guidance=None, studio=None, execution=None,
-                                    blocked_model_inputs=(), plan_invocation_id=None, budget_scope=None, author_audit_paths=(), feedback_owner=None):
+                                    blocked_model_inputs=(), plan_invocation_id=None, budget_scope=None, author_audit_paths=(), feedback_owner=None,
+                                    contract_version='research_session.v2'):
     if studio:
         profile = studio.apply_profile(profile)
         case = studio.apply_case(case)
@@ -126,6 +127,13 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     profile = execution.apply_profile(profile)
     environment = {**(os.environ if environment is None else environment), "FINSIGHT_TASK_THREAD_ID": thread_id,
         "FINSIGHT_TASK_RUN_ID": run_id, "FINSIGHT_TASK_AUDIT_ROOT": settings["audit_root"]}
+    from .current_research_contract import CONTRACT_ENV, CONTRACT_VERSION
+    environment.pop(CONTRACT_ENV, None)
+    if contract_version == CONTRACT_VERSION:
+        environment[CONTRACT_ENV] = CONTRACT_VERSION
+        environment.setdefault('FINSIGHT_RESEARCH_AS_OF', datetime.now(timezone.utc).isoformat())
+    elif contract_version != 'legacy':
+        raise ValueError('unknown_research_contract_version')
     if settings.get('research_library'):
         from sec_agent.research_foundation.research_library import open_library
         library_path=Path(settings['research_library']).resolve(strict=True)
@@ -386,7 +394,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 (artifacts.source_route_catalog_digest, data.source_route_catalog_digest))):
                 raise ValueError("research_session_task_data_binding_mismatch")
             async with Client(data.mcp_server, raise_exceptions=False, read_timeout_seconds=120) as client:
-                binding = await client.call_tool("get_dell_research_method", {
+                binding = await client.call_tool("get_research_source_binding", {
                     "branch_ids": [row["branch_id"] for row in case["branch_topics"]],
                     "research_as_of": artifacts.research_as_of, "data_snapshot_id": artifacts.snapshot_id, "execution_attempt_id": invocation})
                 if binding.is_error:
@@ -701,7 +709,14 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
         budget_scope = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,
             metadata=thread.get('metadata', {}), environment=os.environ)
         feedback_thread = await native.threads.get(thread_id)
+        saved = await native.threads.get_state(thread_id)
+        saved_values = saved.get('values') or {}
+        # Continue old checkpoints with their original identities. Fresh runs
+        # and all subsequent runs on v2 threads bind the new task contract.
+        contract_version = saved_values.get('runtime_contract_version') or (
+            'legacy' if saved_values.get('initialized') or saved_values.get('research_tasks') else 'research_session.v2')
         phases = create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
+            contract_version=contract_version,
             feedback_owner=feedback_thread.get('metadata', {}).get('owner_id', 'local-pilot'),
             thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public,
             private_sink=private, read_guidance=read_guidance, studio=studio, execution=execution,

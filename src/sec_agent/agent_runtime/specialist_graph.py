@@ -44,7 +44,7 @@ from .research_graph_contracts import (
 
 
 SPECIALIST_AGENTIC_GRAPH_SCHEMA_VERSION = (
-    "fin_ia_dell_specialist_agentic_graph_v1_0"
+    "fin_ia_specialist_agentic_graph_v1_0"
 )
 _DIGEST_PATTERN = r"^[0-9a-f]{64}$"
 
@@ -82,14 +82,14 @@ class SpecialistL0Context(_StrictModel):
 
 class SpecialistAgenticInput(_StrictModel):
     schema_version: Literal[
-        "fin_ia_dell_specialist_agentic_graph_v1_0"
+        "fin_ia_specialist_agentic_graph_v1_0", "fin_ia_dell_specialist_agentic_graph_v1_0"
     ] = SPECIALIST_AGENTIC_GRAPH_SCHEMA_VERSION
     run_id: str = Field(min_length=1, max_length=240)
     run_invocation_id: str = Field(min_length=1, max_length=240)
     agent_id: str = Field(min_length=1, max_length=240)
     task: BoundBranchTask
     required_route_obligation_ids: tuple[str, ...] = Field(
-        min_length=1,
+        min_length=0,
         max_length=16,
     )
     l0_context: SpecialistL0Context
@@ -102,6 +102,8 @@ class SpecialistAgenticInput(_StrictModel):
 
     @model_validator(mode="after")
     def validate_required_routes(self) -> "SpecialistAgenticInput":
+        if not self.required_route_obligation_ids and not self.task.case_id.startswith('research:'):
+            raise ValueError('historical_specialist_requires_route_obligations')
         criteria = [c.criterion for c in self.required_source_checks]
         if len(criteria) != len(set(criteria)):
             raise ValueError("required_source_check_criterion_duplicate")
@@ -595,8 +597,8 @@ class SpecialistModelTurnRecord(_StrictModel):
     """One composition-attributed model decision and its optional host receipt."""
 
     schema_version: Literal[
-        "fin_ia_dell_specialist_model_turn_record_v1_1"
-    ] = "fin_ia_dell_specialist_model_turn_record_v1_1"
+        "fin_ia_specialist_model_turn_record_v1_1", "fin_ia_dell_specialist_model_turn_record_v1_1"
+    ] = "fin_ia_specialist_model_turn_record_v1_1"
     turn_index: int = Field(ge=1)
     turn_source: SpecialistModelTurnSource = "scripted_qualification"
     model_execution_evidence: bool = False
@@ -667,8 +669,8 @@ class SpecialistToolFailure(_StrictModel):
 
 class SpecialistRouteCompletion(_StrictModel):
     schema_version: Literal[
-        "fin_ia_dell_specialist_route_completion_v1_0"
-    ] = "fin_ia_dell_specialist_route_completion_v1_0"
+        "fin_ia_specialist_route_completion_v1_0", "fin_ia_dell_specialist_route_completion_v1_0"
+    ] = "fin_ia_specialist_route_completion_v1_0"
     route_obligation_id: str = Field(min_length=1, max_length=240)
     owner_data_gate_decision_digest: str = Field(pattern=_DIGEST_PATTERN)
     source_route_catalog_digest: str = Field(pattern=_DIGEST_PATTERN)
@@ -709,8 +711,8 @@ class SpecialistRouteCompletion(_StrictModel):
 
 class SpecialistToolObservation(_StrictModel):
     schema_version: Literal[
-        "fin_ia_dell_specialist_tool_observation_v1_0"
-    ] = "fin_ia_dell_specialist_tool_observation_v1_0"
+        "fin_ia_specialist_tool_observation_v1_0", "fin_ia_dell_specialist_tool_observation_v1_0"
+    ] = "fin_ia_specialist_tool_observation_v1_0"
     action_attempt_id: str = Field(min_length=1, max_length=500)
     kind: Literal["disclosure", "evidence", "finance"]
     provenance_kind: Literal["direct_tool", "mcp_bridge", "runtime_failure"]
@@ -736,7 +738,7 @@ class SpecialistToolObservation(_StrictModel):
                 or self.source_runtime_receipt.actor != f"{self.kind}_tool"
                 or self.runtime_receipt.kind != "host"
                 or self.runtime_receipt.actor
-                != "dell_specialist_agentic_mcp_bridge"
+                not in {"specialist_agentic_mcp_bridge", "dell_specialist_agentic_mcp_bridge"}
             ):
                 raise ValueError("specialist_observation_mcp_identity_invalid")
         elif self.provenance_kind == "direct_tool":
@@ -751,7 +753,7 @@ class SpecialistToolObservation(_StrictModel):
             or self.status != "tool_failure"
             or self.runtime_receipt.kind != "host"
             or self.runtime_receipt.actor
-            != "dell_specialist_agentic_runtime"
+            not in {"specialist_agentic_runtime", "dell_specialist_agentic_runtime"}
         ):
             raise ValueError("specialist_observation_runtime_failure_identity_invalid")
         if self.runtime_receipt.request_digest != self.request_digest:
@@ -823,8 +825,8 @@ class SpecialistFeedback(_StrictModel):
 
 class SpecialistNotebook(_StrictModel):
     schema_version: Literal[
-        "fin_ia_dell_specialist_notebook_v1_0"
-    ] = "fin_ia_dell_specialist_notebook_v1_0"
+        "fin_ia_specialist_notebook_v1_0", "fin_ia_dell_specialist_notebook_v1_0"
+    ] = "fin_ia_specialist_notebook_v1_0"
     run_id: str = Field(min_length=1, max_length=240)
     run_invocation_id: str = Field(min_length=1, max_length=240)
     agent_id: str = Field(min_length=1, max_length=240)
@@ -838,7 +840,7 @@ class SpecialistNotebook(_StrictModel):
     model_turn_count: int = Field(ge=0)
     tool_action_count: int = Field(ge=0)
     required_route_obligation_ids: tuple[str, ...] = Field(
-        min_length=1,
+        min_length=0,
         max_length=16,
     )
     satisfied_route_obligation_ids: tuple[str, ...] = Field(
@@ -905,8 +907,8 @@ class SpecialistCollaborationContext(_StrictModel):
 
 class SpecialistToolRequest(_StrictModel):
     schema_version: Literal[
-        "fin_ia_dell_specialist_tool_request_v1_0"
-    ] = "fin_ia_dell_specialist_tool_request_v1_0"
+        "fin_ia_specialist_tool_request_v1_0", "fin_ia_dell_specialist_tool_request_v1_0"
+    ] = "fin_ia_specialist_tool_request_v1_0"
     action_attempt_id: str = Field(min_length=1, max_length=500)
     run_id: str = Field(min_length=1, max_length=240)
     run_invocation_id: str = Field(min_length=1, max_length=240)
@@ -933,8 +935,8 @@ class SpecialistHumanReviewHandoff(_StrictModel):
     """Terminal handoff until a canonical durable intervention path exists."""
 
     schema_version: Literal[
-        "fin_ia_dell_specialist_human_review_handoff_v1_0"
-    ] = "fin_ia_dell_specialist_human_review_handoff_v1_0"
+        "fin_ia_specialist_human_review_handoff_v1_0", "fin_ia_dell_specialist_human_review_handoff_v1_0"
+    ] = "fin_ia_specialist_human_review_handoff_v1_0"
     handoff_id: str = Field(min_length=1, max_length=240)
     run_id: str = Field(min_length=1, max_length=240)
     run_invocation_id: str = Field(min_length=1, max_length=240)
@@ -1068,7 +1070,7 @@ def _validate_decision(value: Any) -> SpecialistDecision:
 
 def _build_notebook(**fields: Any) -> SpecialistNotebook:
     body = {
-        "schema_version": "fin_ia_dell_specialist_notebook_v1_0",
+        "schema_version": "fin_ia_specialist_notebook_v1_0",
         **fields,
     }
     body = _jsonable(body)
@@ -1112,6 +1114,8 @@ def _model_request(
         "submit_workpaper",
         "request_human_review",
     ]
+    if state['task']['case_id'].startswith('research:'):
+        allowed_actions.remove('request_evidence')
     if l0.source_read_enabled:
         allowed_actions.append("request_source")
     if any(row.get("capability_ref") == "capability:research:methods" for row in l0.capability_summaries):
@@ -1242,7 +1246,7 @@ def _build_model_turn_record(
     runtime_receipt: RuntimeReceipt | None,
 ) -> SpecialistModelTurnRecord:
     body = {
-        "schema_version": "fin_ia_dell_specialist_model_turn_record_v1_1",
+        "schema_version": "fin_ia_specialist_model_turn_record_v1_1",
         "turn_index": turn_index,
         "turn_source": turn_source,
         "model_execution_evidence": turn_source == "provider_model",
@@ -1344,7 +1348,7 @@ def _build_tool_request(
         code="specialist_l0_context_invalid",
     )
     body = {
-        "schema_version": "fin_ia_dell_specialist_tool_request_v1_0",
+        "schema_version": "fin_ia_specialist_tool_request_v1_0",
         "action_attempt_id": _action_attempt_id(
             state,
             notebook=notebook,
@@ -1983,7 +1987,7 @@ def build_specialist_agentic_state_graph(
                 retryability="owner_repair_required",
             )
             failure_body = {
-                "schema_version": "fin_ia_dell_specialist_tool_observation_v1_0",
+                "schema_version": "fin_ia_specialist_tool_observation_v1_0",
                 "action_attempt_id": request.action_attempt_id,
                 "kind": expected_kind,
                 "provenance_kind": "runtime_failure",
@@ -1999,7 +2003,7 @@ def build_specialist_agentic_state_graph(
                         f"specialist-tool-failure:{request.request_digest[:24]}"
                     ),
                     "kind": "host",
-                    "actor": "dell_specialist_agentic_runtime",
+                    "actor": "specialist_agentic_runtime",
                     "status": "failure",
                     "request_digest": request.request_digest,
                     "output_digest": None,
@@ -2703,7 +2707,7 @@ def build_specialist_agentic_state_graph(
         )
         handoff_body = {
             "schema_version": (
-                "fin_ia_dell_specialist_human_review_handoff_v1_0"
+                "fin_ia_specialist_human_review_handoff_v1_0"
             ),
             "handoff_id": handoff_id,
             **handoff_identity,

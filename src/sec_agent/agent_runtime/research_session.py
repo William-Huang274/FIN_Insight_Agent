@@ -1,6 +1,6 @@
 """Thin product composition of existing native research and report subgraphs.
 
-The parent maps this task's submitted artifacts, never saved Dell answers or
+The parent maps this task's submitted artifacts, never saved reference answers or
 another agent's message history. LangGraph owns execution and persistence.
 Provider/data resources are opened by the supplied phase Runnables.
 """
@@ -14,7 +14,7 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.config import get_stream_writer
 from langgraph.graph import START, END
 from langgraph.types import interrupt
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .case_artifacts import CaseArtifacts
 from .case_review_agent import CaseReview
@@ -25,12 +25,19 @@ from .execution_options import execution_from_config, unreviewed_report_status
 
 class ResearchRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-    case_profile: Literal["dell_growth_quality"] = "dell_growth_quality"
+    case_profile: Literal["general_research"] = "general_research"
     question: str = Field(min_length=10, max_length=16000)
     research_stage: Literal['full', 'orientation'] = 'full'
 
+    @field_validator('case_profile', mode='before')
+    @classmethod
+    def migrate_profile(cls, value):
+        # Input-only compatibility. New requests never emit the retired name.
+        return 'general_research' if value == 'dell_growth_quality' else value
+
 
 class ResearchSessionState(SessionState, total=False):
+    runtime_contract_version: str
     case_profile: str
     question: str
     research_as_of: str
@@ -162,6 +169,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
                 raise ValueError('orientation_cannot_continue_specialist_tasks')
             _stage('lead', 'outcome', status=result.get('phase', 'research_needs_attention'))
             return {'research_stage': 'orientation', 'question': request.question,
+                'case_profile': request.case_profile, 'runtime_contract_version': 'research_session.v2',
                 'research_orientation': deepcopy(result.get('research_orientation')),
                 'orientation_run_id': str(config.get('configurable', {}).get('run_id', '')),
                 'research_feedback': deepcopy(result.get('research_feedback', [])),
@@ -213,6 +221,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
                 "citations": report_citations(prose, artifacts), "charts": []}, "report_review": unreviewed_report_status(),
                 "revisions": {}, "phase": "single_agent_unreviewed"}
         return {"case_profile": request.case_profile, "case_papers": papers,
+            "runtime_contract_version": state.get('runtime_contract_version', 'legacy') if continuing else 'research_session.v2',
             "review_triage_count": state.get('review_triage_count', 0) if continuing else 0,
             "review_triage_history": state.get('review_triage_history', []) if continuing else [],
             "review_recovery_instructions": state.get('review_recovery_instructions', {}) if continuing else {},

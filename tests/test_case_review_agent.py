@@ -523,7 +523,7 @@ def test_review_returns_all_independent_quote_errors_at_once(artifacts):
 def test_source_tool_scopes_hidden_and_injected(artifacts):
     async def exercise():
         async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client:
-            binding = await client.call_tool("get_dell_research_method", {"branch_ids": ["Q1_ISSUER_TRUTH"],
+            binding = await client.call_tool("get_research_source_binding", {"branch_ids": ["Q1_ISSUER_TRUTH"],
                 "research_as_of": "2026-09-02T00:00:00Z", "data_snapshot_id": "fixture", "execution_attempt_id": "fixture"})
             assert not binding.is_error
             tools = await case_mcp_tools(client, run_scope=binding.structured_content["run_scope"])

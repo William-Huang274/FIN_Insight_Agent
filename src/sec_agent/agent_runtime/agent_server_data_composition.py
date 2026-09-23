@@ -278,11 +278,21 @@ def open_approved_data_composition(
             snapshot_id=APPROVED_DATA_SNAPSHOT_ID,
         )
         branch_ids = tuple(row.branch_id for row in foundation.question_branches)
+        from .current_research_contract import bind_current_foundation
+        runtime_foundation = bind_current_foundation(foundation, env, root)
+        runtime_snapshot = APPROVED_DATA_SNAPSHOT_ID
+        if runtime_foundation is not foundation:
+            library_digest = ''
+            if env.get('FINSIGHT_RESEARCH_LIBRARY_PATH'):
+                from sec_agent.research_foundation.research_library import open_library
+                library_digest = open_library(env['FINSIGHT_RESEARCH_LIBRARY_PATH']).manifest['sha256']
+            runtime_snapshot = 'research-data:' + sha256(
+                (inventory.inventory_snapshot_digest + runtime_mart_digest + library_digest).encode()).hexdigest()
         graph_run = compose_mcp_graph_run(
-            foundation,
+            runtime_foundation,
             branch_ids=branch_ids,
             research_as_of=task_research_as_of(env),
-            snapshot_id=APPROVED_DATA_SNAPSHOT_ID,
+            snapshot_id=runtime_snapshot,
             execution_attempt_id=run_invocation_id.strip(),
         )
         reviewed_case = load_owner_approved_reviewed_case(
@@ -399,7 +409,7 @@ def open_approved_data_composition(
 
         server = build_research_data_mcp_server(
             ResearchDataMCPDependencies(
-                method_reader=FoundationMethodReader(foundation),
+                method_reader=FoundationMethodReader(runtime_foundation),
                 local_knowledge_reader=local_reader,
                 reviewed_evidence_search_reader=reviewed_reader.search,
                 reviewed_evidence_reader=reviewed_reader,
@@ -422,6 +432,7 @@ def open_approved_data_composition(
         run_binding=graph_run.mcp_run_binding,
         source_family_compiler=compiler,
         source_read_enabled=source_read_enabled,
+        subject_ticker=None if runtime_foundation is not foundation else foundation.case_identity.subject_ticker,
     )
     try:
         with adapter as opened_adapter:

@@ -500,6 +500,8 @@ def create_report_session_app(frontend_dist_root=None):
     install_identity_status(app)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
     app.include_router(build_report_sessions_router(service), prefix="/api/v1")
+    from .api.v1.research_feedback import build_research_feedback_router
+    app.include_router(build_research_feedback_router(service), prefix='/api/v1')
     from .api.v1.conversations import build_conversations_router
     app.include_router(build_conversations_router(service), prefix="/api/v1")
     from .api.v1.data_library import build_data_library_router

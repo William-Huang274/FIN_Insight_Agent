@@ -117,7 +117,7 @@ def load_research_runtime_profile(root):
 
 def create_research_phase_runnables(*, root, settings, profile, case, run_id, thread_id, api_key,
                                     environment=None, public_sink, private_sink, read_guidance=None, studio=None, execution=None,
-                                    blocked_model_inputs=(), plan_invocation_id=None, budget_scope=None, author_audit_paths=()):
+                                    blocked_model_inputs=(), plan_invocation_id=None, budget_scope=None, author_audit_paths=(), feedback_owner=None):
     if studio:
         profile = studio.apply_profile(profile)
         case = studio.apply_case(case)
@@ -220,6 +220,15 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 request = {**request, "question": request["question"] + "\n\n用户为本任务上传了以下材料（不是预设答案，需核对出处/时间）。"
                     + json.dumps(task_material_catalog(uploads), ensure_ascii=False) + "\n通过 read_source_document 的 source_space=uploads 按需目录、检索、原文读取及完整出处；图片/PDF页面可用 operation=inspect_image。"}
         configured = research_config()
+        if request.get('research_stage') == 'orientation':
+            basis = configured.token_budget_basis['lead'].model_copy(update={
+                'node_purpose': 'Preliminary research for the current question: orient using graph clues, test them with original evidence and independent searches, organize research topics; stop before delegation or report writing.',
+                'input_scale': 'Current question and scope, catalog navigation, bounded graph/search results and focused original passages accumulated in native history. No full corpus or prewritten answer.',
+                'required_outputs': ('Source-bound preliminary findings, prioritized topics and dependencies, unresolved scope, and material nonblocking feedback or specific external evidence requests when warranted.',),
+                'schema_burden': 'Source selection, small feedback records, and one orientation submission; no specialist tasks or final report.',
+                'materiality_quality_risk': 'Graph clues may be incomplete or overly broad; do not equate edge presence with truth or absence with no relationship. Check entity, period and transaction scope. Tool failures are execution problems, not proof of missing public disclosure.',
+            })
+            configured = configured.model_copy(update={'token_budget_basis': {**configured.token_budget_basis, 'lead': basis}})
         lead_adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
             audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"),
             dispatch_guards=research_guards(configured), source_access_check=source_access_check)
@@ -235,6 +244,31 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 max_model_turns=specialist_limits["model_calls"], max_tool_actions=specialist_limits["tool_calls"],
                 research_question=request["question"],
                 recovery_state=next(iter(recoveries.values()), None) if execution.mode == "single" else None) as bootstrap:
+            if request.get('research_stage') == 'orientation':
+                from .research_feedback import ResearchFeedbackStore
+                from sec_agent.research_foundation.research_library import open_library
+                if not feedback_owner:
+                    raise ValueError('orientation_feedback_requires_verified_owner')
+                library = open_library(environment['FINSIGHT_RESEARCH_LIBRARY_PATH'])
+                store = ResearchFeedbackStore(Path(settings['audit_root']) / 'research-feedback.sqlite')
+                graph = build_lead_research_graph(expected_input=bootstrap.graph_input,
+                    research_question=request['question'], branch_catalog=branches,
+                    allowed_branch_ids=tuple(b['branch_id'] for b in branches), seed_workpapers={},
+                    model_turn=cancellable_model_turn(lead_adapter.lead_research_turn, cancelled),
+                    run_child=lambda *_: (_ for _ in ()).throw(ValueError('orientation_must_not_delegate')),
+                    source_reader=bootstrap.source_reader, orientation_only=True,
+                    orientation_context={'library_sha256': library.manifest['sha256'],
+                        'navigation': 'Use library catalog to find entity/document IDs; related for graph clues, independent search for missing links, then focused original reads. Dates and coverage may require updates.',
+                        'external_policy': 'Report concrete external_evidence needs with supporting observations for host review; web access is not enabled by a request alone.'},
+                    feedback_run_id=run_id,
+                    feedback_sink=lambda records: store.save(feedback_owner, thread_id, records),
+                    feedback_reader=lambda: store.list(feedback_owner, thread_id, run_id),
+                    public_progress=emit, require_all_branches=False,
+                    max_lead_turns=profile['nodes']['lead']['limits']['model_calls'],
+                    max_tasks=profile['max_tasks'], max_parallel_tasks=profile['max_parallel_tasks'],
+                    turn_source='provider_model').compile()
+                return await graph.ainvoke(bootstrap.graph_input.model_dump(mode='json'),
+                    {**config, 'recursion_limit': 240})
             if execution.mode == "single":
                 emit({"kind": "stage", "actor": "specialist", "event": "started", "objective": "按所选方向独立研究；不启动负责人分派或其他审查 Agent。"})
                 output = await bootstrap.graph.ainvoke(bootstrap.graph_input.model_dump(mode="json"), {**config, "recursion_limit": 200})
@@ -666,7 +700,9 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
         thread = await native.threads.get(thread_id)
         budget_scope = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,
             metadata=thread.get('metadata', {}), environment=os.environ)
+        feedback_thread = await native.threads.get(thread_id)
         phases = create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
+            feedback_owner=feedback_thread.get('metadata', {}).get('owner_id', 'local-pilot'),
             thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public,
             private_sink=private, read_guidance=read_guidance, studio=studio, execution=execution,
             blocked_model_inputs=tuple(ids.get('finsight_blocked_model_inputs', ())),

@@ -145,7 +145,7 @@ def test_orientation_native_wire_excludes_execution_tools_and_old_role_prompt():
     wires=[]
     def transport(request):
         wire=json.loads(request.content);wires.append(wire)
-        assert {t['function']['name'] for t in wire['tools']}=={'RequestSourceAction','SubmitResearchOrientationAction'}
+        assert {t['function']['name'] for t in wire['tools']}=={'RequestSourceAction','SubmitResearchOrientationAction','ReportResearchIssuesAction'}
         assert 'preliminary research' in wire['messages'][0]['content']
         assert 'whole-question scope_map' in wire['messages'][0]['content']
         assert 'research_as_of' in wire['messages'][0]['content']
@@ -153,7 +153,7 @@ def test_orientation_native_wire_excludes_execution_tools_and_old_role_prompt():
         read_schema=next(t['function']['parameters'] for t in wire['tools'] if t['function']['name']=='RequestSourceAction')
         assert read_schema['properties']['selection']['properties']['source_space']['const']=='library'
         payload=json.loads(wire['messages'][1]['content'])
-        assert payload['orientation_context']=={'catalog_navigation':'library'}
+        assert payload['orientation_context']=={'catalog_navigation':'library','finding_original_read_refs':[], 'all_observed_refs':[]}
         args=blocked_submission();args.update(context_digest=payload['context_digest'])
         return httpx.Response(200,json={'id':'offline','object':'chat.completion','created':1,'model':'deepseek-v4-pro',
             'choices':[{'index':0,'finish_reason':'tool_calls','message':{'role':'assistant','content':'',

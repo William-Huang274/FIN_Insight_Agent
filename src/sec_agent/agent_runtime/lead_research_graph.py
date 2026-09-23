@@ -110,7 +110,9 @@ _PLANNED_LEAD_TOOLS = {
 def lead_tool_models(*, require_execution_plan=False, source_read_enabled=False, assistance=False, orientation_only=False):
     if orientation_only:
         from .research_orientation import SubmitResearchOrientationAction, OrientationLibraryReadAction
+        from .research_feedback import ReportResearchIssuesAction
         return {"SubmitResearchOrientationAction": SubmitResearchOrientationAction,
+                "ReportResearchIssuesAction": ReportResearchIssuesAction,
                 **({"RequestSourceAction": OrientationLibraryReadAction} if source_read_enabled else {})}
     from .research_assistance import ProvideResearchGuidanceAction
     models = dict(_PLANNED_LEAD_TOOLS if require_execution_plan else LEAD_RESEARCH_TOOLS)
@@ -213,6 +215,7 @@ class LeadResearchState(TypedDict, total=False):
     active_task_ids: list[str]
     planning_observations: list[dict[str, Any]]
     research_orientation: dict[str, Any] | None
+    research_feedback: list[dict[str, Any]]
     # Only worker Send inputs carry these, never external authority.
     assignment: dict[str, Any]
     dependency_workpapers: dict[str, Any]
@@ -225,6 +228,7 @@ def build_lead_research_graph(
     max_tasks: int = 4, max_parallel_tasks: int = 2, turn_source: str = "scripted_qualification", unfinished_only: bool = False,
     role_method=None, require_all_branches=True, public_progress=None, require_execution_plan=False,
     recovery_tasks=(), source_reader=None, hierarchical=False, orientation_only=False, orientation_context=None,
+    feedback_sink=None, feedback_reader=None, feedback_run_id=None,
 ) -> StateGraph:
     allowed = set(allowed_branch_ids)
     planning_tools = lead_tool_models(require_execution_plan=require_execution_plan,
@@ -287,7 +291,7 @@ def build_lead_research_graph(
     def initialize(state):
         if expected_input is None:
             raise LeadResearchError("schema_introspection_graph_not_executable")
-        if any(state.get(key) for key in ("tasks", "task_results", "lead_turns", "lead_handoff", "assignment", "dependency_workpapers", "research_orientation", "planning_observations")):
+        if any(state.get(key) for key in ("tasks", "task_results", "lead_turns", "lead_handoff", "assignment", "dependency_workpapers", "research_orientation", "planning_observations", "research_feedback")):
             raise LeadResearchError("lead_managed_state_not_public_input")
         body = {k: v for k, v in state.items() if k in SpecialistAgenticInput.model_fields}
         parsed = SpecialistAgenticInput.model_validate_json(json.dumps(body))
@@ -296,7 +300,8 @@ def build_lead_research_graph(
         return {"tasks": resumed, "task_results": [], "lead_turns": [],
                 "tool_results": [ToolMessage(content="{}", tool_call_id="restored-parent-tasks").model_dump(mode="json")] if resumed else [],
                 "phase": "schedule_ready_tasks" if resumed else "lead_observing", "lead_handoff": None, "stop_reason": None,
-                "pending_batch": None, "active_task_ids": [], "planning_observations": [], "research_orientation": None}
+                "pending_batch": None, "active_task_ids": [], "planning_observations": [], "research_orientation": None,
+                "research_feedback": []}
 
     def decide(state):
         if len(state["lead_turns"]) >= max_lead_turns:
@@ -339,12 +344,20 @@ def build_lead_research_graph(
                 "contexts, not whole-task clones. Do not promise skipped Lead judgment for integrated. Limit "
                 "scope and verbosity to the actual question; delegate meaningful work, not roles for their own sake.")
         if orientation_only:
+            from .research_orientation import finding_read_refs
             request.update(orientation_only=True, orientation_context=orientation_context or {},
                 role_method=role_method or get_research_method('research_orientation'),
                 branch_catalog=[], required_branch_ids=[], workpapers=[], tasks=[], require_execution_plan=False,
                 scope_policy="Keep the complete question; inspect material links and explicitly record unexamined scope. Source dimensions are not mandatory specialist roles.",
                 execution_policy="Orientation only. Save findings and proposed topics; no child dispatch or final-report handoff.",
                 continuation_policy="Stop after submitting orientation. Proposed tasks are not executed.")
+            request['orientation_context'] = {**request['orientation_context'],
+                'finding_original_read_refs': list(finding_read_refs(state.get('planning_observations', []))),
+                'all_observed_refs': [o['read_ref'] for o in state.get('planning_observations', [])]}
+            if feedback_reader:
+                request['orientation_context'] = {**request['orientation_context'],
+                    'feedback_updates': feedback_reader(),
+                    'feedback_policy': 'User opinions guide this task, not source evidence or permission to change the library. A request_check choice alone does not enable web tools.'}
             request['capabilities'] = [{**row, 'source_spaces': ['library'],
                 'actions': ['catalog', 'search', 'read', 'related', 'observations', 'company', 'data']}
                 for row in request['capabilities'] if 'library' in row.get('source_spaces', [])]
@@ -405,8 +418,31 @@ def build_lead_research_graph(
                     working["planning_observations"] = [*working.get("planning_observations", state.get("planning_observations", [])), observation]
                     value = {**observation, "research_as_of": expected_input.task.research_as_of,
                              "planning_observation_not_verified_financial_conclusion": True}
+                    if orientation_only:
+                        from .research_orientation import orientation_source_view
+                        value['result'] = orientation_source_view(result)
                     return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
                 if orientation_only:
+                    from .research_feedback import ReportResearchIssuesAction, bind_issues
+                    if isinstance(action, ReportResearchIssuesAction):
+                        records = bind_issues(action, state.get('planning_observations', []),
+                            run_id=str(feedback_run_id or config.get('configurable', {}).get('run_id') or expected_input.run_id),
+                            snapshot_id=expected_input.task.snapshot_id,
+                            library_sha256=(orientation_context or {}).get('library_sha256'))
+                        previous = {r['record_id']: r for r in state.get('research_feedback', [])}
+                        for record in records:
+                            if record['record_id'] in previous and previous[record['record_id']] != record:
+                                raise ValueError('feedback_id_already_used_for_different_content')
+                        if feedback_sink:
+                            feedback_sink(records)
+                        previous.update({r['record_id']: r for r in records})
+                        working['research_feedback'] = list(previous.values())
+                        if public_progress:
+                            public_progress({'kind': 'stage', 'actor': 'lead', 'event': 'progress',
+                                'objective': '已记录资料疑点或补查需求，研究继续；这些记录不代表关系已被证伪。'})
+                        return ToolMessage(content=json.dumps({'saved': True, 'record_ids': [r['record_id'] for r in records],
+                            'blocking': False, 'status': 'pending_review', 'published_graph_changed': False}, ensure_ascii=False),
+                            tool_call_id=call.id, name=call.name)
                     from .research_orientation import bind_orientation
                     orientation = bind_orientation(action, state.get('planning_observations', []))
                     working.update(research_orientation=orientation, phase='research_orientation_submitted', stop_reason=None)

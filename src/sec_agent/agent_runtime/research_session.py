@@ -27,6 +27,7 @@ class ResearchRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     case_profile: Literal["dell_growth_quality"] = "dell_growth_quality"
     question: str = Field(min_length=10, max_length=16000)
+    research_stage: Literal['full', 'orientation'] = 'full'
 
 
 class ResearchSessionState(SessionState, total=False):
@@ -38,6 +39,11 @@ class ResearchSessionState(SessionState, total=False):
     research_tasks: list[dict[str, Any]]
     research_outcomes: list[dict[str, Any]]
     research_handoff: dict[str, Any] | None
+    research_stage: str
+    research_orientation: dict[str, Any] | None
+    orientation_run_id: str
+    research_feedback: list[dict[str, Any]]
+    planning_observations: list[dict[str, Any]]
     research_attempt_history: list[dict[str, Any]]
     research_failed_workpapers: list[dict[str, Any]]
     continue_remaining_research: bool
@@ -140,7 +146,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
                 raise ValueError("only_incomplete_research_can_continue_remaining_tasks")
         elif state.get("initialized") or state.get("case_papers") or state.get("research_tasks"):
             raise ValueError("fresh_research_cannot_restart_existing_session")
-        request = ResearchRequest.model_validate({key: state[key] for key in ("question", "case_profile") if key in state})
+        request = ResearchRequest.model_validate({key: state[key] for key in ("question", "case_profile", "research_stage") if key in state})
         payload = request.model_dump(mode="json")
         retained = deepcopy(state.get("case_papers", [])) if continuing else []
         if continuing:
@@ -151,6 +157,20 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
             payload["failed_workpapers"] = deepcopy(state.get("research_failed_workpapers", []))
         _stage("research", "started", status="continue_remaining" if continuing else "fresh")
         result = await research.ainvoke(payload, config)
+        if request.research_stage == 'orientation':
+            if continuing:
+                raise ValueError('orientation_cannot_continue_specialist_tasks')
+            _stage('lead', 'outcome', status=result.get('phase', 'research_needs_attention'))
+            return {'research_stage': 'orientation', 'question': request.question,
+                'research_orientation': deepcopy(result.get('research_orientation')),
+                'orientation_run_id': str(config.get('configurable', {}).get('run_id', '')),
+                'research_feedback': deepcopy(result.get('research_feedback', [])),
+                'planning_observations': deepcopy(result.get('planning_observations', [])),
+                'research_tasks': [], 'case_papers': [], 'initialized': True,
+                'phase': result.get('phase', 'research_needs_attention'),
+                'research_stop_reason': result.get('stop_reason'),
+                'research_as_of': result.get('task', {}).get('research_as_of', ''),
+                'snapshot_id': result.get('task', {}).get('snapshot_id', '')}
         outcomes = result.get("task_results", [])
         papers = [*retained, *[validate_workpaper_state(row["agent_state"]) for row in outcomes if row["status"] == "submitted"]]
         paper_ids = [row["task"]["task_id"] for row in papers]
@@ -313,6 +333,8 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     graph.add_node("research_attention", attention)
     graph.add_edge(START, "research")
     def after_research(state):
+        if state.get('research_stage') == 'orientation':
+            return END
         plan = (state.get("research_handoff") or {}).get("execution_plan")
         if state["phase"] == "research_reviewing" and plan and plan["depth"] == "focused" and not hierarchical:
             return "convergence"

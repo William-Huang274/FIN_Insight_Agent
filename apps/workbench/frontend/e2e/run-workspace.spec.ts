@@ -1,4 +1,27 @@
 import { test, expect } from "./identity-fixture";
+for (const width of [1440,390]) test(`research feedback is nonblocking and source-bound at ${width}`, async({page})=>{
+  await page.setViewportSize({width,height:950});
+  const id='00000000-0000-4000-8000-000000000093',run='00000000-0000-4000-8000-000000000094'; let writes=0;
+  const session={thread_id:id,title:'Lead 预研究',question:'AI需求兑现',status:'idle',phase:'research_orientation_submitted',
+    runs:[{run_id:run,status:'success',human_action:'orientation',created_at:'2026-09-23T08:00:00Z'}],model_events:[]};
+  const feedback={items:[{record_id:'a'.repeat(64),content_digest:'b'.repeat(64),kind:'relation_scope',summary:'这里的供应关系可能仅限特定项目，不能扩展至所有采购。',next_check:'读取交易对手公告核对范围。',impact:'independent_search',edge_ids:['EDGE::example'],evidence:{O1:{original_read:false,preview:[{title:'示例公告',predicate:'supplies'}]}}}],orientation:{overview:'先区分需求承诺与实际交付。',topics:[],scope_map:[],coverage_and_gaps:'最新季度仍需补充核查。'}};
+  await page.route('**/api/v1/**',async route=>{const path=new URL(route.request().url()).pathname;
+    if(path.includes('/research-feedback')) {if(route.request().method()==='POST') {writes++;return route.fulfill({json:{saved:true}});} return route.fulfill({json:feedback});}
+    return route.fulfill({json:path.endsWith('/projects')?{revision:0,projects:[],assignments:{},pinned:[]}:path.endsWith('research-sessions')?[session]:path.endsWith('research-session-config')?{fresh_research_enabled:true}:session});});
+  await page.goto(`/workspace/session?thread=${id}&view=activity`);
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.getByRole('button').filter({hasText:'这里的供应关系可能仅限特定项目'}).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByText('查看本次工具依据',{exact:true}).click();
+  await expect(page.getByRole('dialog')).toContainText('未据此判定原文错误');
+  await page.getByLabel('建议补充核查',{exact:true}).check();
+  await page.getByLabel('补充说明（可选）').fill('仅核查影响总题的范围。');
+  await page.getByRole('button',{name:'保存意见',exact:true}).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.getByRole('status')).toContainText('意见已保存');
+  expect(writes).toBe(1);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});
 test('task outcome separates author assessment from failure and retains attempt history', async ({page}) => {
   await page.setViewportSize({width:390,height:950});
   const id='00000000-0000-4000-8000-000000000091', run='00000000-0000-4000-8000-000000000092';

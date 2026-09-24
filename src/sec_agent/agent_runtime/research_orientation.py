@@ -79,6 +79,10 @@ For a current study, check publication/update dates and whether newer material s
 Historical evidence remains useful for comparisons; an old archive is not proof of the latest state.
 If required updates are not available through your authorized tools, report an acquisition need, not a
 claim that no newer information exists. Do not silently shift the study date backward.
+Search ranking is relevance, not publication recency. For a material current-company claim, use the
+company sources menu (operation=company, company_section=sources, exact entity_id from catalog) to
+check newer disclosures and their dates before concluding updates are missing. A newer source may
+be irrelevant; explain the boundary and read the relevant original rather than replacing by date alone.
 Use RequestSourceAction for read-only catalog/search/related/observations and original passage reads.
 For relationship-rich questions, start with relevant local graph clues to understand the actors and links,
 then combine independent text search and structured metrics as needed. Do not traverse or use every edge.
@@ -96,6 +100,8 @@ Search snippets, graph edges and numeric candidates are navigation, not confirme
 before citing them. Each tool result has a runtime read_ref (O1, O2, ...); cite those short references.
 The host lists finding_original_read_refs for findings and all_observed_refs for feedback. A data/related/search
 reference is useful for discovery but cannot substitute for an original read in the current finding contract.
+Each cited original must support that specific finding. Never attach an unrelated valid read_ref just
+to satisfy the validator; keep unread graph assertions as unresolved discovery or submit an issue instead.
 Operational legacy case/capability IDs identify infrastructure, not the user's company or research scope.
 Runtime preserves the exact request, source identities, versions and returned passage window. It does not
 validate your interpretation. Keep material subject, period, units and actual/forecast/contract status.

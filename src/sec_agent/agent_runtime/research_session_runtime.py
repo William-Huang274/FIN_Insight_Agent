@@ -273,6 +273,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     feedback_reader=lambda: store.list(feedback_owner, thread_id, run_id),
                     public_progress=emit, require_all_branches=False,
                     max_lead_turns=profile['nodes']['lead']['limits']['model_calls'],
+                    max_lead_tool_actions=profile['nodes']['lead']['limits']['tool_calls'],
                     max_tasks=profile['max_tasks'], max_parallel_tasks=profile['max_parallel_tasks'],
                     turn_source='provider_model').compile()
                 return await graph.ainvoke(bootstrap.graph_input.model_dump(mode='json'),
@@ -378,6 +379,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 recovery_tasks=request.get("unfinished_tasks", []),
                 role_method=studio.method(studio.bindings["lead"]) if studio else None,
                 max_lead_turns=profile["nodes"]["lead"]["limits"]["model_calls"], max_tasks=profile["max_tasks"],
+                max_lead_tool_actions=profile["nodes"]["lead"]["limits"]["tool_calls"],
                 max_parallel_tasks=profile["max_parallel_tasks"], turn_source="provider_model", unfinished_only=bool(seeds)).compile()
             return await graph.ainvoke(bootstrap.graph_input.model_dump(mode="json"), {**config, "recursion_limit": 240})
 

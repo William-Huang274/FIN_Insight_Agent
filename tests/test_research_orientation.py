@@ -116,6 +116,74 @@ def call(req, name, args):
                        'args': {'context_digest': req['context_digest'], **args}}]}}
 
 
+def test_tool_budget_rejects_whole_batch_before_any_source_side_effect():
+    calls=[]
+    def model(req):
+        calls.append(req)
+        assert req['capacity']['max_lead_tool_actions'] == 1
+        result=call(req,'RequestSourceAction',{'action':'request_source','reason_summary':'Read sources.',
+            'selection':{'source_space':'library','operation':'catalog'}})
+        tool=result['action']['tool_calls'][0]
+        result['action']['tool_calls'].append({**tool,'id':'second'})
+        return result
+    graph,value=make_graph(model,reader=lambda _:pytest.fail('over-budget batch must not execute'),
+                           max_lead_tool_actions=1)
+    result=graph.invoke(value.model_dump(mode='json'))
+    assert result['stop_reason']=='lead_tool_action_ceiling'
+    assert result['lead_tool_actions_used']==0 and len(calls)==1
+
+
+def test_tool_budget_exact_boundary_keeps_submission_and_stops_without_extra_model_call():
+    calls=[]
+    def model(req):
+        calls.append(req)
+        assert req['progress']['lead_tool_actions_remaining']==3-len(calls)
+        if len(calls)==1:
+            return call(req,'RequestSourceAction',{'action':'request_source','reason_summary':'Read original.',
+                'selection':{'source_space':'library','operation':'read','document_id':'DOC::test'}})
+        return call(req,'SubmitResearchOrientationAction',submission())
+    graph,value=make_graph(model,max_lead_tool_actions=2)
+    result=graph.invoke(value.model_dump(mode='json'))
+    assert result['phase']=='research_orientation_submitted'
+    assert result['lead_tool_actions_used']==2 and len(calls)==2
+
+
+def test_invalid_tool_attempt_consumes_budget_without_reissuing_model_request():
+    calls=[]
+    def model(req):
+        calls.append(req)
+        return call(req,'RequestSourceAction',{'action':'request_source','reason_summary':'Invalid selection.',
+            'selection':{'source_space':'library','operation':'related'}})
+    graph,value=make_graph(model,reader=lambda _:pytest.fail('invalid request'),max_lead_tool_actions=1)
+    result=graph.invoke(value.model_dump(mode='json'))
+    assert result['stop_reason']=='lead_tool_action_ceiling'
+    assert result['lead_tool_actions_used']==1 and len(calls)==1
+
+
+def test_independent_note_write_does_not_reject_original_reads(monkeypatch):
+    from sec_agent.agent_runtime import working_memory_tools as memory
+    monkeypatch.setattr(memory, 'memory_enabled', lambda: True)
+    saved=[]
+    monkeypatch.setattr(memory, 'execute_memory_tool', lambda name,args,config,role: saved.append(name) or {'saved':True})
+    turns=[]
+    def model(req):
+        turns.append(req)
+        if len(turns)==1:
+            result=call(req,'RequestSourceAction',{'action':'request_source','reason_summary':'Read original.',
+                'selection':{'source_space':'library','operation':'read','document_id':'DOC::test'}})
+            result['action']['tool_calls'].insert(0, {'id':'note','name':'WriteWorkingNote',
+                'args':{'title':'Review','content':'Prior findings only.','mode':'append','base_version':0}})
+            return result
+        assert req['progress']['planning_source_checks']==1
+        return call(req,'SubmitResearchOrientationAction',submission())
+    graph,value=make_graph(model,max_lead_tool_actions=3)
+    result=graph.invoke(value.model_dump(mode='json'))
+    assert saved==['WriteWorkingNote']
+    assert result['phase']=='research_orientation_submitted'
+    assert result['lead_tool_actions_used']==3
+    assert result['research_orientation']['runtime_provenance']['O1']['result']==read_result()
+
+
 def test_orientation_read_submit_keeps_full_provenance_and_stops():
     seen=[]
     def model(req):

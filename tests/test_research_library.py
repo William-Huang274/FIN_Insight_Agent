@@ -32,6 +32,10 @@ def test_publish_separates_diagnostic_and_production_and_preserves_graph_evidenc
     request = SourceDocumentRequest(source_space='library', operation='search', query='supply', entity_id='A')
     result = library.navigate(request, '2025-02-01')
     assert result.total_matches == 2 and result.items[1]['qualifiers']['not_delivered']
+    assert result.items[0]['title']=='Public release'
+    assert result.items[0]['publication_date']=='2025-01-01'
+    assert result.items[0]['source_vintage']=='dated_original'
+    assert result.items[0]['source_known_at'] is None
     assert result.items[1]['evidence'][0]['id'] == 'PASSAGE::p'
     result = library.navigate(SourceDocumentRequest(source_space='library', operation='read', document_id='DOC', node_id='PASSAGE::p'), '2025-02-01')
     assert result.items[0]['passage_id'] == 'PASSAGE::p'
@@ -52,6 +56,25 @@ def test_time_filters_relationships_and_sources_and_missing_is_typed(tmp_path):
     assert library.navigate(request, '2024-01-01').execution_receipt.status == 'scope_ineligible'
     request = SourceDocumentRequest(source_space='library', operation='read', document_id='missing')
     assert 'unknown_source' in library.navigate(request, '2025-02-01').notice
+
+
+def test_catalog_recency_keeps_future_gap_and_search_does_not_invent_publication_date(tmp_path):
+    origin=tmp_path/'origin.sqlite'
+    sources=[dict(id=identity,title='Example report '+identity,url='https://example.test/'+identity,
+                  published_at=day,vintage='known_as_of' if day is None else 'dated_original',
+                  access_state='readable',digest=identity,metadata={'known_at':'2025-01-01'} if day is None else {})
+             for identity,day in [('A-old','2024-01-01'),('Z-new','2025-01-01'),('B-future','2027-01-01'),('C-unknown',None)]]
+    build_snapshot(origin,sources,[dict(id='P'+s['id'],source_id=s['id'],locator='p1',body='Example supply evidence.') for s in sources])
+    target=tmp_path/'published.sqlite'
+    publish_library(target,[origin],public_sources_confirmed=True)
+    library=ResearchLibrary(target,retrieval_environment={})
+    catalog=library.navigate(SourceDocumentRequest(source_space='library',operation='catalog',query='Example report'),'2025-02-01')
+    docs=[i for i in catalog.items if 'document_id' in i]
+    assert [i['document_id'] for i in docs]==['Z-new','A-old','C-unknown','B-future']
+    assert docs[-1]['eligible'] is False
+    result=library.navigate(SourceDocumentRequest(source_space='library',operation='search',query='supply',document_id='C-unknown'),'2025-02-01')
+    assert result.items[0]['publication_date'] is None
+    assert result.items[0]['source_known_at']=='2025-01-01'
 
 
 def test_release_integrity_and_no_overwrite(tmp_path):

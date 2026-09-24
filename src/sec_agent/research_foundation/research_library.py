@@ -331,7 +331,8 @@ class ResearchLibrary(ResearchSnapshot):
         status = 'ok'
         if request.operation == 'catalog':
             rows = [{'result_state': 'retrieval_candidate', 'entity_id': e['id'], **e} for e in self.entities()]
-            rows += [{'result_state': 'retrieval_candidate', 'document_id': s['id'], **s} for s in self.catalog(as_of)]
+            documents = sorted(self.catalog(as_of), key=lambda s: (s['eligible'], s.get('published_at') or '', s['id']), reverse=True)
+            rows += [{'result_state': 'retrieval_candidate', 'document_id': s['id'], **s} for s in documents]
             if request.query.strip() not in {'','*'}:
                 terms=request.query.casefold().split()
                 aliases={a['entity_id']:[] for a in self._query('SELECT entity_id FROM aliases')}
@@ -359,7 +360,18 @@ class ResearchLibrary(ResearchSnapshot):
                 # converted into an empty result or public information gap.
                 candidates,retrieval=rank(self,request.query,as_of,candidates,path=cache,
                     document_id=request.document_id,entity_id=request.entity_id,graph_result=shared_graph)
+            source_ids = list(dict.fromkeys(p['source_id'] for p in candidates))
+            source_details = {}
+            for start in range(0, len(source_ids), 200):
+                batch_ids = source_ids[start:start+200]
+                source_details.update({s['id']: s for s in self._query(
+                    'SELECT id,title,published_at,vintage,metadata FROM sources WHERE id IN ('
+                    + ','.join('?' for _ in batch_ids) + ')', batch_ids)})
             rows = [{'result_state': 'retrieval_candidate', 'document_id': p['source_id'],
+                'title': source_details[p['source_id']]['title'],
+                'publication_date': source_details[p['source_id']]['published_at'],
+                'source_vintage': source_details[p['source_id']]['vintage'],
+                'source_known_at': json.loads(source_details[p['source_id']]['metadata'] or '{}').get('known_at'),
                 'node_id': p['id'], 'preview': p['body'][:500], 'digest': p['digest'], 'retrieval':retrieval,
                 **({'candidate_ranks':p['candidate_ranks'],'rerank_score':p.get('rerank_score')} if 'candidate_ranks' in p else {}),
                 **({'parent_node_id':p['parent_id'],'source_char_start':p['char_start'],'source_char_end':p['char_end'],

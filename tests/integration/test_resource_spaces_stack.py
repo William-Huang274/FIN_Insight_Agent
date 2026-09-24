@@ -69,6 +69,21 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             api('POST',f'/organizations/{org}/invites',{'token':invite})
             joined=api('POST','/join',{'token':invite,'display_name':'Bob'},headers=bob)
             assert all(s['id']!=personal for s in joined['spaces'])
+            # The project authority is Java only; no Python project-index or assets are copied.
+            project = str(uuid4())
+            config = client.get('/api/v1/business/config', headers=WRITE).json()
+            assert config['organization_projects'] and not config['team_collaboration']
+            create_project = {'id':project,'organization_id':org,'name':'Synthetic team project','description':'No model calls'}
+            api('POST','/projects',create_project)
+            api('GET',f'/projects/{project}',headers=bob,status=404)
+            api('POST',f'/projects/{project}/members',{'revision':1,'subject':'bob','role':'researcher'})
+            assert api('GET',f'/projects/{project}',headers=bob)['role']=='researcher'
+            assert all(p['id']!=project for p in client.get('/api/v1/projects',headers=WRITE).json()['projects'])
+            # Ordinary private project routes do not turn organization membership into asset access.
+            assert client.get(f'/api/v1/asset-workspace/projects/{project}',headers=bob).status_code==404
+            for action in ('start','prepare','access','resources'):
+                api('POST',f'/projects/{project}/{action}',{},status=404)
+            assert client.post('/api/v1/business/workspaces/projects',headers={**WRITE,'Origin':'https://foreign.invalid'},json=create_project).status_code==403
             api('POST','/spaces',{'id':team,'organization_id':org,'name':'Research team'})
             api('GET',f'/spaces/{team}/resources',headers=bob,status=404)
             api('POST',f'/spaces/{team}/members',{'subject':'bob','role':'manager'})
@@ -90,11 +105,18 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             # Original private file withdrawal does not retract explicit publication.
             source.library.set_access('bob',bob_ref['project_id'],'document',bob_ref['version_id'],True)
             api('POST',f'/organizations/{org}/remove-member',{'subject':'bob'})
+            api('GET',f'/projects/{project}',headers=bob,status=404)
+            api('GET',f'/projects/{project}/members',headers=bob,status=404)
+            assert api('GET','/projects',headers=bob)['items']==[]
             assert client.get(read,headers=bob).status_code==404
             assert client.get(read,headers=WRITE).status_code==200
             api('POST','/resources',{},status=404) # binding registration is BFF-only
         business.terminate();business.wait(timeout=20);business=start()
         with TestClient(app()) as client:
+            saved=client.get(f'/api/v1/business/workspaces/projects/{project}',headers=WRITE)
+            assert saved.status_code==200 and saved.json()['revision']==2
+            assert client.get(f'/api/v1/business/workspaces/projects/{project}',headers=bob).status_code==404
+            assert client.post('/api/v1/business/workspaces/projects',headers=WRITE,json=create_project).json()['revision']==2
             result=client.get(read,headers=WRITE)
             assert result.status_code==200,result.text
             assert result.json()['text']=='Organization keeps this after author departure.'

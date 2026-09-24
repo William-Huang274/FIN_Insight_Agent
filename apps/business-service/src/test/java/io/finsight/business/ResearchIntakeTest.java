@@ -7,6 +7,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.*;
 import com.sun.net.httpserver.*;
 import org.junit.jupiter.api.*;
+import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -191,6 +192,93 @@ class ResearchIntakeTest {
         workspace(admin,"POST","/spaces/"+team+"/members",Map.of("subject",member,"role","remove"),200);
         workspace(member,"POST","/spaces/"+team+"/access",Map.of("action","read"),404);
         workspace(admin,"POST","/organizations/"+org+"/remove-member",Map.of("subject",admin),409);
+    }
+    void joinProjectOrganization(String admin,String member,UUID org) throws Exception {
+        UUID invite=UUID.randomUUID();
+        workspace(admin,"POST","/organizations/"+org+"/invites",Map.of("token",invite),200);
+        workspace(member,"POST","/join",Map.of("token",invite,"display_name",member),200);
+    }
+    @Test void upgrading_v2_keeps_existing_organization_space_records() {
+        String schema="upgrade_"+UUID.randomUUID().toString().replace("-","");
+        Flyway.configure().dataSource(PG.getJdbcUrl(),PG.getUsername(),PG.getPassword())
+            .schemas(schema).defaultSchema(schema).target("2").load().migrate();
+        UUID org=UUID.randomUUID(),space=UUID.randomUUID();
+        db.update("INSERT INTO "+schema+".resource_organization(id,name,created_by) VALUES(?,?,'alice')",org,"原组织");
+        db.update("INSERT INTO "+schema+".resource_space(id,organization_id,name,kind,principal) VALUES(?,?,'原个人区','personal','alice')",space,org);
+        Flyway.configure().dataSource(PG.getJdbcUrl(),PG.getUsername(),PG.getPassword())
+            .schemas(schema).defaultSchema(schema).load().migrate();
+        assertThat(db.queryForObject("SELECT name FROM "+schema+".resource_space WHERE id=?",String.class,space)).isEqualTo("原个人区");
+        assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".organization_project",Integer.class)).isZero();
+        assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".flyway_schema_history WHERE version='3' AND success",Integer.class)).isEqualTo(1);
+        // The isolated Testcontainers database is discarded at test completion.
+    }
+    @Test void project_roles_live_org_membership_and_space_permissions_are_independent() throws Exception {
+        String admin="project-admin",bob="project-bob",eve="project-eve";UUID org=UUID.randomUUID(),id=UUID.randomUUID(),space=UUID.randomUUID();
+        workspace(admin,"POST","/organizations",Map.of("id",org,"name","项目组织","display_name","管理者"),200);
+        joinProjectOrganization(admin,bob,org);joinProjectOrganization(admin,eve,org);
+        var body=Map.of("id",id,"organization_id",org,"name","AI 基础设施","description","合成项目");
+        workspace(bob,"POST","/projects",body,403);
+        workspace(admin,"POST","/projects",body,200);
+        workspace(bob,"GET","/projects/"+id,null,404);
+        assertThat(workspace(bob,"GET","/projects",null,200).path("items")).isEmpty();
+        workspace(admin,"POST","/projects/"+id+"/members",Map.of("revision",1,"subject",bob,"role","viewer"),200);
+        assertThat(workspace(bob,"GET","/projects/"+id,null,200).path("can_manage").asBoolean()).isFalse();
+        workspace(bob,"POST","/projects/"+id,Map.of("revision",2,"name","越权","description","","archived",false),403);
+        workspace(bob,"POST","/projects/"+id+"/members",Map.of("revision",2,"subject",eve,"role","manager"),403);
+        workspace(admin,"POST","/projects/"+id+"/members",Map.of("revision",2,"subject",bob,"role","manager"),200);
+        workspace(bob,"POST","/projects/"+id+"/members",Map.of("revision",3,"subject",eve,"role","researcher"),200);
+        assertThat(workspace(eve,"GET","/projects/"+id,null,200).path("research_enabled").asBoolean()).isFalse();
+        workspace(admin,"POST","/spaces",Map.of("id",space,"organization_id",org,"name","独立资料权限"),200);
+        workspace(bob,"GET","/spaces/"+space+"/resources",null,404);
+        workspace(admin,"POST","/organizations/"+org+"/remove-member",Map.of("subject",bob),200);
+        workspace(bob,"GET","/projects/"+id,null,404);
+        workspace(bob,"GET","/projects/"+id+"/members",null,404);
+        workspace(bob,"POST","/projects/"+id+"/members",Map.of("revision",4,"subject",eve,"role","remove"),404);
+        workspace(admin,"POST","/projects/"+id+"/members",Map.of("revision",4,"subject",bob,"role","manager"),404);
+        workspace(admin,"POST","/projects/"+id+"/members",Map.of("revision",4,"subject",eve,"role","remove"),200);
+        workspace(eve,"GET","/projects/"+id,null,404);
+        workspace("local-pilot","GET","/projects",null,403);
+    }
+    @Test void project_creation_retry_preserves_edits_and_concurrent_writes_require_reload() throws Exception {
+        String admin="project-conflict";UUID org=UUID.randomUUID(),id=UUID.randomUUID();
+        workspace(admin,"POST","/organizations",Map.of("id",org,"name","组织","display_name","管理员"),200);
+        var create=Map.of("id",id,"organization_id",org,"name","原名称","description","");
+        try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
+            List<Future<JsonNode>> results=new ArrayList<>();
+            for(int i=0;i<8;i++)results.add(pool.submit(()->workspace(admin,"POST","/projects",create,200)));
+            for(var r:results)assertThat(r.get().path("revision").asInt()).isEqualTo(1);
+            List<Future<HttpResponse<String>>> edits=new ArrayList<>();
+            for(int i=0;i<2;i++){
+                String body=JSON.writeValueAsString(Map.of("revision",1,"name","修改"+i,"description","","archived",true));
+                edits.add(pool.submit(()->request(admin,"POST","/v1/workspaces/projects/"+id,body,null)));
+            }
+            assertThat(List.of(edits.get(0).get().statusCode(),edits.get(1).get().statusCode())).containsExactlyInAnyOrder(200,409);
+        }
+        var replay=workspace(admin,"POST","/projects",create,200);
+        assertThat(replay.path("archived").asBoolean()).isTrue();assertThat(replay.path("revision").asInt()).isEqualTo(2);
+        assertThat(workspace(admin,"GET","/projects?organization_id="+org,null,200).path("items")).isEmpty();
+        assertThat(workspace(admin,"GET","/projects?archived=true&organization_id="+org,null,200).path("items")).hasSize(1);
+        workspace(admin,"POST","/projects/"+id,Map.of("revision",2,"name","恢复","description","","archived",false),200);
+        workspace(admin,"POST","/projects",Map.of("id",id,"organization_id",org,"name","不同提交","description",""),409);
+        assertThat(db.queryForObject("SELECT count(*) FROM organization_project_audit WHERE project_id=?",Integer.class,id)).isEqualTo(3);
+    }
+    @Test void project_cross_org_assignment_and_pagination_are_scoped() throws Exception {
+        String admin="project-pages",outsider="project-outsider";UUID org=UUID.randomUUID(),other=UUID.randomUUID();
+        workspace(admin,"POST","/organizations",Map.of("id",org,"name","分页组织","display_name","管理者"),200);
+        workspace(outsider,"POST","/organizations",Map.of("id",other,"name","外部组织","display_name","其他管理员"),200);
+        UUID id=UUID.randomUUID();
+        workspace(admin,"POST","/projects",Map.of("id",id,"organization_id",org,"name","重复名称","description","范围检查"),200);
+        workspace(outsider,"GET","/projects/"+id,null,404);
+        workspace(admin,"POST","/projects/"+id+"/members",Map.of("revision",1,"subject",outsider,"role","manager"),404);
+        workspace(admin,"POST","/projects/"+id+"/members",Map.of("revision",1,"subject",admin,"role","remove"),409);
+        for(int i=0;i<30;i++)workspace(admin,"POST","/projects",Map.of("id",UUID.randomUUID(),"organization_id",org,"name","重复名称","description","合成分页"),200);
+        var first=workspace(admin,"GET","/projects?organization_id="+org,null,200);
+        var second=workspace(admin,"GET","/projects?organization_id="+org+"&offset=30",null,200);
+        assertThat(first.path("items")).hasSize(30);assertThat(first.path("next_offset").asInt()).isEqualTo(30);
+        assertThat(second.path("items")).hasSize(1);assertThat(second.path("next_offset").isNull()).isTrue();
+        Set<String> ids=new HashSet<>();for(var p:first.path("items"))ids.add(p.path("id").asText());for(var p:second.path("items"))ids.add(p.path("id").asText());assertThat(ids).hasSize(31);
+        assertThat(workspace(outsider,"GET","/projects?organization_id="+org,null,200).path("items")).isEmpty();
+        assertThat(workspace(admin,"GET","/projects?query=%25",null,200).path("items")).isEmpty();
     }
     @Test void lost_prepare_response_recovers_only_deterministic_thread() throws Exception {
         var task=create("drop-prepare");String path="/v1/tasks/"+task.path("id").asText();int before=prepares.get();

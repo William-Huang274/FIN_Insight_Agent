@@ -8,10 +8,16 @@ import {ProjectNavigation,projectUrl} from './ProjectNavigation';
 import {ProjectCatalog} from './ProjectCatalog';
 import ProjectResearchWorkspace from './ProjectResearchWorkspace';
 import {isResearchComplete,sessionStatus} from './WorkspaceNavigation';
+import {OrganizationProjectPage,OrganizationProjectHub} from './OrganizationProjects';
 import './research-session.css';
 import './workspace-design.css';
 
 export default function ProjectWorkspace(){
+  const [params]=useSearchParams();
+  return params.get('scope')==='organization'?<OrganizationProjectPage key={params.get('project')||''}/>:<PersonalProjectWorkspace/>;
+}
+
+function PersonalProjectWorkspace(){
   const projects=useWorkspaceProjects(),[params,setParams]=useSearchParams();
   const id=params.get('project')||'',view=params.get('task')?'intake':params.get('view')||'overview';
   const selected=projects.index.projects.find(p=>p.id===id);
@@ -45,6 +51,8 @@ export default function ProjectWorkspace(){
     {projects.error&&<p role="alert">{projects.error} <button onClick={()=>void projects.reload()}>重新载入项目</button></p>}{message&&<p role="status">{message}</p>}
     {!projects.ready?<p role="status">正在读取项目…</p>:id&&!selected?<section><h1>此项目不存在或不可访问</h1><a href="/workspace/projects">返回项目列表</a></section>:!selected?<>
       <header className="pw-title"><div><h1>项目</h1><p>集中管理研究、资料与成果。</p></div><button className="pw-primary" onClick={()=>{setName('');setDescription('');dialog.current?.showModal();}}><Plus size={17}/>新建项目</button></header>
+      <OrganizationProjectHub/>
+      <h2>个人项目</h2><p className="pw-muted">现有个人项目保持原来的资料与研究访问范围。</p>
       <div className="pw-toolbar"><input aria-label="搜索项目" placeholder="搜索项目名称或说明" value={query} onChange={e=>setQuery(e.target.value)}/><select aria-label="项目状态" value={archived?'archived':'active'} onChange={e=>setArchived(e.target.value==='archived')}><option value="active">进行中的项目</option><option value="archived">已归档项目</option></select><select aria-label="项目排序" value={sort} onChange={e=>setSort(e.target.value)}><option value="name">按项目名称</option><option value="created">最近添加</option></select></div>
       <div className="pw-grid">{visible.map(p=><article className="pw-card" key={p.id}><FolderOpen size={22}/><h2><a href={projectUrl(p.id)}>{p.name}</a></h2><p>{p.description||'尚未填写项目说明'}</p><footer><a href={projectUrl(p.id,'research')}>研究</a><a href={projectUrl(p.id,'files')}>资料</a><a href={projectUrl(p.id,'results')}>成果</a><a href={projectUrl(p.id)}>进入项目 →</a></footer></article>)}</div>{!visible.length&&<p className="pw-empty">{projects.index.projects.length?'没有符合条件的项目。':'创建一个项目，开始整理研究与资料。'}</p>}
     </>:<>

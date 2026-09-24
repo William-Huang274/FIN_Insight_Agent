@@ -2,6 +2,8 @@
 
 2026-09-23。对应[产品范围](../product/java_research_intake.zh-CN.md)及[跨语言合同](../architecture/java_research_service_contract.zh-CN.md)。这是可选开发功能；默认部署未启用，不自动迁移历史研究。
 
+2026-09-24 接续：[组织项目与成员](organization_projects.zh-CN.md)增加 Java 管理的新组织项目类型；下文研究准备/启动仍适用于原个人项目。组织项目不复用原个人入口绕过团队资料与成果授权，受控团队研究留待后续批次。
+
 ## 已交付链路
 
 ```mermaid

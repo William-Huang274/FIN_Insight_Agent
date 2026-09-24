@@ -7,6 +7,7 @@ React/Vite frontend and FastAPI BFF for FIN 0.1.3. [中文使用说明](../../do
 | Area | Route / source |
 | --- | --- |
 | Projects and project navigation | `/workspace` → `/workspace/projects` · `frontend/vite/src/app/ProjectWorkspace.tsx`, `ProjectNavigation.tsx` |
+| Organization projects and members (optional) | `/workspace/projects?scope=organization&project=<id>` · `OrganizationProjects.tsx`; Java owns these projects, legacy personal projects stay in Python |
 | Cross-project document library | `/workspace/assets?view=files` · `ProjectCatalog.tsx`, `backend/api/v1/asset_workspace.py` |
 | Project documents (0.1.4 development) | `/workspace/session?view=project&project=<id>` · `ProjectLibrary.tsx`, `backend/api/v1/projects.py` |
 | Research methods and configuration | `/workspace?view=studio` · `ResearchStudio.tsx` |
@@ -21,6 +22,12 @@ The current product can create research, ask follow-up questions and request tar
 The older fixed Evidence Pack view is available at `/workspace/evidence-packs`; its APIs and `/operations` remain compatibility surfaces. Their readiness failures or retired action routes do not describe the newer research-session product. The default `/workspace` opens the project hub. The existing question-first UI remains at `/workspace/session`. Project overview, research, files, results and settings share navigation; document-library project filters survive opening a reader and returning. Project archive is organizational and does not stop runs or revoke access. Java intake is optional and embedded in the project workspace; see [scope and compatibility](../../docs/engineering/java_research_intake.zh-CN.md).
 
 ## Develop and verify
+
+Organization projects require the existing OIDC product identity and resource-space
+deployment switch. Their metadata and current membership are managed by Java; no
+private projects or documents are silently shared. Project-resource associations
+and team research remain pending. See [scope, concurrency rules and static
+acceptance cases](../../docs/engineering/organization_projects.zh-CN.md).
 
 From this directory's `frontend/`:
 

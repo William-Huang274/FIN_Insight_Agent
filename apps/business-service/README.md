@@ -8,6 +8,12 @@ ledger. Research intake supports personal projects on one BFF host. Flyway V2 al
 adds organization resource spaces, membership, publication access and audit records;
 it does not turn existing personal research projects into shared projects.
 
+Flyway V3 adds new organization project metadata, project members and revisioned
+management. Java is their sole authority; Python still owns legacy personal
+projects. Project membership does not grant space access. Shared research and
+resource associations remain disabled. See [organization project scope and static
+acceptance cases](../../docs/engineering/organization_projects.zh-CN.md).
+
 See [deployment, protocol and qualification](../../docs/engineering/java_research_intake.zh-CN.md).
 See [resource spaces and explicit publication](../../docs/engineering/resource_spaces.zh-CN.md)
 for organization-owned personal workspaces, team access and custody boundaries.

@@ -17,6 +17,7 @@ from starlette.responses import JSONResponse, Response
 INTERNAL = '/api/v1/internal-research/'
 _PUBLIC = re.compile(r'(tasks|tasks/[0-9a-f-]{36}(?:/(?:prepare|start|reconcile))?)$')
 _SPACES = re.compile(r'workspaces(?:/(?:organizations|spaces|join)|/organizations/[0-9a-f-]{36}/(?:members|invites|remove-member)|/spaces/[0-9a-f-]{36}/(?:members|resources)|/resources/[0-9a-f-]{36}/revoke)?$')
+_ORG_PROJECTS = re.compile(r'workspaces/projects(?:/[0-9a-f-]{36}(?:/members)?)?$')
 
 
 def resource_spaces_enabled():
@@ -141,7 +142,7 @@ def build_business_gateway():
         from .authentication import current_owner
         current_owner(request)
         return {'enabled': bool(base), 'stage': 'personal_research_intake', 'team_collaboration': False,
-                'resource_spaces': resource_spaces_enabled()}
+                'resource_spaces': resource_spaces_enabled(), 'organization_projects': resource_spaces_enabled()}
 
     @router.api_route('/{path:path}', methods=['GET', 'POST'])
     async def forward(path: str, request: Request):
@@ -149,7 +150,7 @@ def build_business_gateway():
         owner = current_owner(request)
         if not base:
             raise HTTPException(503, '本部署尚未接入研究业务服务')
-        if not _PUBLIC.fullmatch(path) and not (_SPACES.fullmatch(path) and resource_spaces_enabled()):
+        if not _PUBLIC.fullmatch(path) and not ((_SPACES.fullmatch(path) or _ORG_PROJECTS.fullmatch(path)) and resource_spaces_enabled()):
             raise HTTPException(404)
         if request.method == 'POST':
             if request.headers.get('x-workbench-request') != '1':

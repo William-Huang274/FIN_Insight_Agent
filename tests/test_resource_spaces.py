@@ -146,3 +146,18 @@ def test_resource_spaces_fail_closed_without_individual_login(monkeypatch):
     with pytest.raises(HTTPException) as exc:
         asyncio.run(space_business_request('local-pilot','GET',''))
     assert exc.value.status_code == 503
+
+
+def test_organization_project_gateway_requires_enabled_individual_login(tmp_path, monkeypatch):
+    monkeypatch.setenv('FINSIGHT_BUSINESS_API_URL','http://127.0.0.1:9')
+    monkeypatch.setenv('FINSIGHT_BUSINESS_SHARED_SECRET','synthetic-test-secret-with-at-least-32-bytes')
+    app = app_at(tmp_path,monkeypatch)
+    app.include_router(build_business_gateway(),prefix='/api/v1')
+    # Never reach the transport when the deployment/identity gate is off.
+    with TestClient(app) as client:
+        for mode, enabled in [('oidc_product','0'), ('local_pilot','1')]:
+            monkeypatch.setenv('FINSIGHT_AUTH_MODE',mode)
+            monkeypatch.setenv('FINSIGHT_RESOURCE_SPACES_ENABLED',enabled)
+            assert client.get('/api/v1/business/config',headers=WRITE).json()['organization_projects'] is False
+            assert client.get('/api/v1/business/workspaces/projects',headers=WRITE).status_code==404
+            assert client.post('/api/v1/business/workspaces/projects',headers=WRITE,json={}).status_code==404

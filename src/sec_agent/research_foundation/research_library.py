@@ -330,7 +330,12 @@ class ResearchLibrary(ResearchSnapshot):
             return self._result(request,[{'result_state':'retrieval_candidate','numeric_fact_authority':False,**r} for r in page['items']],'ok',total=page['total'],next_offset=page['next_offset'])
         status = 'ok'
         if request.operation == 'catalog':
-            rows = [{'result_state': 'retrieval_candidate', 'entity_id': e['id'], **e} for e in self.entities()]
+            rows = [{'result_state': 'retrieval_candidate', 'entity_id': e['id'], **e,
+                'entity_navigation': {
+                    'related': {'source_space': 'library', 'operation': 'related', 'entity_id': e['id'],
+                                'graph_depth': 1, 'graph_review': 'reviewed', 'limit': 8},
+                    'sources': {'source_space': 'library', 'operation': 'company', 'entity_id': e['id'],
+                                'company_section': 'sources', 'limit': 8}}} for e in self.entities()]
             documents = sorted(self.catalog(as_of), key=lambda s: (s['eligible'], s.get('published_at') or '', s['id']), reverse=True)
             rows += [{'result_state': 'retrieval_candidate', 'document_id': s['id'], **s} for s in documents]
             if request.query.strip() not in {'','*'}:

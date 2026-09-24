@@ -69,7 +69,10 @@ class SourceDocumentRequest(BaseModel):
         body = handler(self)
         # Immutable local-source actions predate source_space. Preserve their
         # serialization so archived action/notebook digests still validate.
-        if "source_space" not in self.model_fields_set:
+        # A specialized request can default to library. Omitting that value
+        # would silently route its serialized request back to the legacy local
+        # store when the receiving endpoint parses the base request type.
+        if "source_space" not in self.model_fields_set and self.source_space == 'local':
             body.pop("source_space", None)
         for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'graph_predicates','graph_direction','graph_review','data_kind','data_group','account_path','fiscal_year','fiscal_period','company_section','derived_view','date_start','date_end','metric_section','metric_record_id','compare_entity_ids','metric_period_kind','metric_frequency','metric_alignment'):
             if key not in self.model_fields_set:

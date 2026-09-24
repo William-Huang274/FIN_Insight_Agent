@@ -11,15 +11,24 @@ from sec_agent.research_foundation.source_document_navigation import SourceDocum
 class OrientationLibrarySelection(SourceDocumentRequest):
     """This stage's archived library; no implicit legacy local or web fallback."""
     source_space: Literal['library'] = 'library'
-    operation: Literal['catalog', 'search', 'read', 'related', 'observations', 'company', 'data']
+    operation: Literal['catalog', 'search', 'read', 'related', 'observations', 'company', 'data'] = Field(
+        description='catalog resolves exact entity IDs. related + entity_id + graph_depth=1 returns local relationship clues and original readbacks. company + company_section=sources checks dated source coverage. search independently discovers text; read obtains the original window. Use catalog entity_navigation for ready-to-call selections.')
     limit: int = Field(default=4, ge=1, le=20)
     max_characters: int = Field(default=8000, ge=2000, le=80000)
 
 
 class OrientationLibraryReadAction(RequestSourceAction):
-    """Navigate the published library. Use search/read, not outline; returned IDs belong to library."""
+    """Explore the library: catalog identities, related graph clues, company sources, independent search, then original read. Graph edges guide discovery; they are not verified findings."""
     model_config = ConfigDict(extra='forbid', strict=True, frozen=True, title='RequestSourceAction')
     selection: OrientationLibrarySelection
+
+
+class OrientationEvidenceSpan(BaseModel):
+    """A short exact excerpt anchors a claim to its actual returned window."""
+    model_config = ConfigDict(extra='forbid', frozen=True)
+    read_ref: str = Field(min_length=1, max_length=40)
+    passage_id: str = Field(min_length=1, max_length=240, description='Exact passage_id returned by this read_ref, not a parent or a search node.')
+    quote: str = Field(min_length=1, max_length=600, description='Short verbatim source excerpt supporting the finding, including necessary qualifiers. Copy text; only whitespace differences are normalized. Use separate spans for noncontiguous evidence.')
 
 
 class OrientationFinding(BaseModel):
@@ -28,6 +37,8 @@ class OrientationFinding(BaseModel):
     judgment: str = Field(min_length=1, max_length=1800, description='Claim within the cited original windows, preserving speaker, subject, period and actual/forecast status. A partial read cannot establish company-wide non-disclosure.')
     kind: Literal['observation', 'conditional', 'hypothesis']
     read_refs: tuple[str, ...] = Field(min_length=1, max_length=12)
+    evidence_spans: tuple[OrientationEvidenceSpan, ...] = Field(default=(), max_length=12,
+        description='For current runs provide exact original-window excerpts for every read_ref. Support the material facts, not just the document topic. Historical saved findings may lack this additive field.')
     unresolved: str = Field(max_length=1500, description='What remains unexamined or unresolved and the next check. Distinguish not yet read, execution failure, conflicting sources and absence within an explicitly checked scope.')
 
 
@@ -75,6 +86,9 @@ ORIENTATION_SYSTEM_PROMPT = """You are the Research Lead doing preliminary resea
 Keep the user's complete research question. Inspect actual available sources and form a useful initial view,
 then propose evidence-triggered first topics. Do not replace the question with a convenient old case.
 Use the host's research_as_of. Model knowledge cutoff and old prepared cases do not set the research date.
+orientation_context.library_time_scope provides the archive's declared baseline date and actual source-date
+range. This is separate from research_as_of and does not certify every company is complete through that date.
+Do not infer the library cutoff from the newest item in a relevance-ranked search or a single catalog page.
 For a current study, check publication/update dates and whether newer material supersedes archived evidence.
 Historical evidence remains useful for comparisons; an old archive is not proof of the latest state.
 If required updates are not available through your authorized tools, report an acquisition need, not a
@@ -86,6 +100,9 @@ be irrelevant; explain the boundary and read the relevant original rather than r
 Use RequestSourceAction for read-only catalog/search/related/observations and original passage reads.
 For relationship-rich questions, start with relevant local graph clues to understand the actors and links,
 then combine independent text search and structured metrics as needed. Do not traverse or use every edge.
+After catalog identifies a relevant actor, use its entity_navigation.related selection for a bounded one-hop
+graph; company sources and an independent search can run alongside it. Record an actual failure or explain
+why graph navigation is irrelevant if you skip it; do not reserve all relationship discovery for later experts.
 The graph reduces repeated discovery work; it is neither a complete map nor a reason to exclude other sources.
 Organize topics around the user's decision, not one topic per company, neighbor, source type or expert.
 Use ReportResearchIssuesAction for concrete doubts, candidate new relations or justified external-source needs.
@@ -102,6 +119,10 @@ The host lists finding_original_read_refs for findings and all_observed_refs for
 reference is useful for discovery but cannot substitute for an original read in the current finding contract.
 Each cited original must support that specific finding. Never attach an unrelated valid read_ref just
 to satisfy the validator; keep unread graph assertions as unresolved discovery or submit an issue instead.
+When require_evidence_spans is true, provide short verbatim evidence_spans with the returned passage_id
+and read_ref for every finding reference. Each material number, contractual term and qualification must be
+supported by those excerpts; split or narrow a finding rather than attach an unrelated quote. A fact visible
+only in a search preview requires reading that exact window. Quote matching verifies location, not reasoning.
 The host's observation_index distinguishes returned original windows, navigation-only results and failures.
 A successful read operation may return only a chapter menu. End of a requested window or next_offset=null
 does not mean the complete report or all relevant disclosures were examined.
@@ -173,7 +194,25 @@ def orientation_source_view(result):
     return {**compact(result), 'transport_receipts': 'retained_in_runtime_observation'}
 
 
-def bind_orientation(action, observations):
+def orientation_library_context(library, research_as_of):
+    """Read immutable archive metadata, not model knowledge or inferred completeness."""
+    rows = [r for r in library.catalog(str(research_as_of)[:10]) if r.get('eligible')]
+    published = sorted(str(r['published_at']) for r in rows if r.get('published_at'))
+    known = sorted(str(r['known_at']) for r in rows if r.get('known_at'))
+    return {'library_sha256': library.manifest['sha256'], 'require_evidence_spans': True,
+        'library_time_scope': {
+            'declared_snapshot_as_of': library.manifest.get('research_as_of'),
+            'research_as_of': str(research_as_of), 'eligible_source_count': len(rows),
+            'earliest_source_publication': published[0] if published else None,
+            'latest_source_publication': published[-1] if published else None,
+            'latest_source_known_at': known[-1] if known else None,
+            'complete_through_date_certified': False,
+            'meaning': 'Snapshot baseline, publication date, acquisition/known time and research cutoff are distinct. Per-company freshness requires company.sources; unknown dates remain unknown. The newest returned search hit is not the archive cutoff.'},
+        'navigation': 'Resolve relevant actors with catalog; copy entity_navigation.related for one-hop graph clues and entity_navigation.sources for current source lists. Read relevant graph evidence and independently search beyond graph coverage. No requirement to exhaust every edge.',
+        'external_policy': 'Report concrete external_evidence needs with supporting observations for host review; web access is not enabled by a request alone.'}
+
+
+def bind_orientation(action, observations, *, require_evidence_spans=False):
     """Check observed provenance, not financial correctness or completeness."""
     reads = finding_read_refs(observations)
     ids = [f.finding_id for f in action.findings]
@@ -185,6 +224,17 @@ def bind_orientation(action, observations):
             invalid = sorted(set(finding.read_refs) - set(reads))
             raise ValueError('orientation_requires_successful_original_read_refs_not_search_or_catalog: '
                 + f'finding={finding.finding_id}; invalid={invalid}; available={list(reads)}. Read the original or leave the point as an unresolved question.')
+        if require_evidence_spans or finding.evidence_spans:
+            if {span.read_ref for span in finding.evidence_spans} != set(finding.read_refs):
+                raise ValueError(f'orientation_evidence_spans_must_cover_read_refs: finding={finding.finding_id}')
+            for span in finding.evidence_spans:
+                matching = [r for r in reads[span.read_ref]['result'].get('items', [])
+                    if r.get('result_state') == 'source_bound_passage' and r.get('passage_id') == span.passage_id]
+                quote = ' '.join(span.quote.split())
+                if not quote or not any(quote in ' '.join(r.get('passage', '').split()) for r in matching):
+                    raise ValueError('orientation_excerpt_not_in_cited_window: '
+                        f'finding={finding.finding_id}; read_ref={span.read_ref}; passage_id={span.passage_id}. '
+                        'Read the actual supporting window or narrow/remove the unsupported claim. Do not substitute a merely topical quote.')
     reference_errors = []
     for index, topic in enumerate(action.topics):
         if not set(topic.finding_ids).issubset(ids):

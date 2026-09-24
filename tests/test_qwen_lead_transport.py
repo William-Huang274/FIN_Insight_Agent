@@ -61,7 +61,7 @@ def test_provider_endpoint_and_role_mismatch_rejected(change):
         DeepSeekStructuredAgentConfig.model_validate_json(json.dumps({**configuration(), **change}))
 
 
-@pytest.mark.parametrize('provider,effort', [('qwen', 'medium'), ('deepseek', 'high')])
+@pytest.mark.parametrize('provider,effort', [('qwen', 'medium'), ('deepseek', 'high'), ('deepseek', 'max')])
 def test_thinking_continuation_preserves_all_reasoning_and_omits_client_cap(provider, effort):
     value = configuration() if provider == 'qwen' else json.loads(
         Path('configs/research/model_routing.json').read_text(encoding='utf8'))

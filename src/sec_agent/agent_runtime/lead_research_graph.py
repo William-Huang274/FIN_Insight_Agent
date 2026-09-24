@@ -464,7 +464,8 @@ def build_lead_research_graph(
                             'blocking': False, 'status': 'pending_review', 'published_graph_changed': False}, ensure_ascii=False),
                             tool_call_id=call.id, name=call.name)
                     from .research_orientation import bind_orientation
-                    orientation = bind_orientation(action, state.get('planning_observations', []))
+                    orientation = bind_orientation(action, state.get('planning_observations', []),
+                        require_evidence_spans=(orientation_context or {}).get('require_evidence_spans', False))
                     working.update(research_orientation=orientation, phase='research_orientation_submitted', stop_reason=None)
                     if public_progress:
                         public_progress({'kind': 'stage', 'actor': 'lead', 'event': 'progress',

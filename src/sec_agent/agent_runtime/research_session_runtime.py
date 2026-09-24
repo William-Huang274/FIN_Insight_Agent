@@ -258,6 +258,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 if not feedback_owner:
                     raise ValueError('orientation_feedback_requires_verified_owner')
                 library = open_library(environment['FINSIGHT_RESEARCH_LIBRARY_PATH'])
+                from .research_orientation import orientation_library_context
                 store = ResearchFeedbackStore(Path(settings['audit_root']) / 'research-feedback.sqlite')
                 graph = build_lead_research_graph(expected_input=bootstrap.graph_input,
                     research_question=request['question'], branch_catalog=branches,
@@ -265,9 +266,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     model_turn=cancellable_model_turn(lead_adapter.lead_research_turn, cancelled),
                     run_child=lambda *_: (_ for _ in ()).throw(ValueError('orientation_must_not_delegate')),
                     source_reader=bootstrap.source_reader, orientation_only=True,
-                    orientation_context={'library_sha256': library.manifest['sha256'],
-                        'navigation': 'Use library catalog to find entity/document IDs; related for graph clues, independent search for missing links, then focused original reads. Dates and coverage may require updates.',
-                        'external_policy': 'Report concrete external_evidence needs with supporting observations for host review; web access is not enabled by a request alone.'},
+                    orientation_context=orientation_library_context(library, bootstrap.graph_input.task.research_as_of),
                     feedback_run_id=run_id,
                     feedback_sink=lambda records: store.save(feedback_owner, thread_id, records),
                     feedback_reader=lambda: store.list(feedback_owner, thread_id, run_id),

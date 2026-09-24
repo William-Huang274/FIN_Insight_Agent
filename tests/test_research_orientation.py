@@ -49,6 +49,25 @@ def bind_test_submission(args):
     return bind_orientation(action, [{'read_ref': 'O1', 'selection': {'operation': 'read'}, 'result': read_result()}])
 
 
+@pytest.mark.parametrize('problem', [None, 'missing', 'wrong_window', 'invented_quote'])
+def test_current_citations_bind_exact_window_and_verbatim_text(problem):
+    args = submission()
+    span = dict(read_ref='O1', passage_id='PASSAGE::test', quote='Test\n original.')
+    if problem == 'wrong_window': span['passage_id'] = 'PASSAGE::other'
+    if problem == 'invented_quote': span['quote'] = 'Test original with 2300 GW.'
+    args['findings'][0]['evidence_spans'] = [] if problem == 'missing' else [span]
+    action = SubmitResearchOrientationAction.model_validate({**args, 'context_digest': 'a'*64})
+    observations = [{'read_ref': 'O1', 'selection': {'operation': 'read'}, 'result': read_result()},
+                    {'read_ref': 'O2', 'selection': {'operation': 'read'}, 'result': {
+                        'status': 'success', 'items': [{**read_result()['items'][0],
+                            'passage_id': 'PASSAGE::other', 'passage': 'Test original with 2300 GW.'}]}}]
+    if problem:
+        with pytest.raises(ValueError, match='orientation_evidence_spans|orientation_excerpt'):
+            bind_orientation(action, observations, require_evidence_spans=True)
+    else:
+        assert bind_orientation(action, observations, require_evidence_spans=True)['findings']
+
+
 def test_one_topic_first_preserves_other_scope_without_fake_evidence():
     result = bind_test_submission(submission())
     assert result['contract_version'] == 'research_orientation.v2'
@@ -105,7 +124,7 @@ def make_graph(model, reader= None, **kwargs):
     graph = build_lead_research_graph(expected_input=value, research_question='AI采用与投入怎样兑现？',
         branch_catalog=[{'branch_id': value.task.branch_id}], allowed_branch_ids=(value.task.branch_id,),
         seed_workpapers={}, model_turn=model, run_child=lambda *_: pytest.fail('orientation must never dispatch'),
-        orientation_only=True, orientation_context={'catalog_navigation': 'library'},
+        orientation_only=True, orientation_context=kwargs.pop('orientation_context', {'catalog_navigation': 'library'}),
         source_reader=reader or (lambda _: read_result()), max_lead_turns=4, **kwargs).compile()
     return graph, value
 
@@ -114,6 +133,23 @@ def call(req, name, args):
     return {'action': {'action': 'native_tool_batch', 'context_digest': req['context_digest'],
         'tool_calls': [{'id': str(req['progress']['turn_index']), 'name': name,
                        'args': {'context_digest': req['context_digest'], **args}}]}}
+
+
+def test_runtime_enforces_excerpt_binding_and_accepts_corrected_submission():
+    turns = []
+    def model(req):
+        turns.append(req)
+        if len(turns) == 1:
+            return call(req, 'RequestSourceAction', {'action': 'request_source', 'reason_summary': 'Read original.',
+                'selection': {'source_space': 'library', 'operation': 'read', 'document_id': 'DOC::test'}})
+        args = submission()
+        if len(turns) == 3:
+            args['findings'][0]['evidence_spans'] = [dict(read_ref='O1', passage_id='PASSAGE::test', quote='Test original.')]
+        return call(req, 'SubmitResearchOrientationAction', args)
+    graph, value = make_graph(model, orientation_context={'require_evidence_spans': True})
+    result = graph.invoke(value.model_dump(mode='json'))
+    assert result['phase'] == 'research_orientation_submitted'
+    assert len(turns) == 3
 
 
 def test_tool_budget_rejects_whole_batch_before_any_source_side_effect():

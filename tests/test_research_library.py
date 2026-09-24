@@ -58,6 +58,27 @@ def test_time_filters_relationships_and_sources_and_missing_is_typed(tmp_path):
     assert 'unknown_source' in library.navigate(request, '2025-02-01').notice
 
 
+def test_catalog_graph_affordance_can_be_executed_without_search(tmp_path):
+    _, target, _ = publish(tmp_path)
+    library = ResearchLibrary(target, retrieval_environment={})
+    from sec_agent.agent_runtime.research_orientation import OrientationLibrarySelection
+    # Model may omit the fixed library default. Round-trip through the real
+    # base request parser used by the tool transport; preserve old local IDs.
+    selected = OrientationLibrarySelection(operation='catalog', query='A')
+    routed = SourceDocumentRequest.model_validate_json(selected.model_dump_json())
+    assert routed.source_space == 'library'
+    assert 'source_space' not in SourceDocumentRequest(operation='catalog').model_dump()
+    catalog = library.navigate(routed, '2025-02-01')
+    actor = next(row for row in catalog.items if row.get('entity_id') == 'A')
+    request = SourceDocumentRequest.model_validate(actor['entity_navigation']['related'])
+    result = library.navigate(request, '2025-02-01')
+    assert result.items[0]['id'] == 'AB'
+    assert result.items[0]['evidence'][0]['id'] == 'PASSAGE::p'
+    omitted = OrientationLibrarySelection(operation='related', entity_id='A', graph_review='reviewed')
+    routed = SourceDocumentRequest.model_validate_json(omitted.model_dump_json())
+    assert library.navigate(routed, '2025-02-01').items[0]['id'] == 'AB'
+
+
 def test_catalog_recency_keeps_future_gap_and_search_does_not_invent_publication_date(tmp_path):
     origin=tmp_path/'origin.sqlite'
     sources=[dict(id=identity,title='Example report '+identity,url='https://example.test/'+identity,
@@ -75,6 +96,14 @@ def test_catalog_recency_keeps_future_gap_and_search_does_not_invent_publication
     result=library.navigate(SourceDocumentRequest(source_space='library',operation='search',query='supply',document_id='C-unknown'),'2025-02-01')
     assert result.items[0]['publication_date'] is None
     assert result.items[0]['source_known_at']=='2025-01-01'
+    from sec_agent.agent_runtime.research_orientation import orientation_library_context
+    context = orientation_library_context(library, '2025-02-01T00:00:00Z')
+    scope = context['library_time_scope']
+    assert scope['latest_source_publication'] == '2025-01-01'
+    assert scope['latest_source_known_at'] == '2025-01-01'
+    assert scope['eligible_source_count'] == 3
+    assert scope['complete_through_date_certified'] is False
+    assert context['require_evidence_spans'] is True
 
 
 def test_release_integrity_and_no_overwrite(tmp_path):

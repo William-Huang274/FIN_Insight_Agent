@@ -1,4 +1,4 @@
-"""Thin DeepSeek structured-output adapters for the DELL reference vertical.
+"""Thin provider adapters for structured research-agent output.
 
 The model is deliberately limited to semantic payloads.  Runtime identity,
 state bindings, digests and execution receipts remain host authority and are
@@ -256,7 +256,7 @@ ModelPurpose = Literal["planner", "specialist", "counter", "verifier", "lead", "
 
 
 class DeepSeekModelProfile(_StrictSemanticModel):
-    model: Literal["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-flash"]
+    model: Literal["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-flash", "qwen3.8-max"]
     reasoning_effort: Literal["low", "high", "max"] = "high"
     thinking: Literal["disabled", "enabled"] | None = None
 
@@ -265,11 +265,11 @@ class DeepSeekStructuredAgentConfig(_StrictSemanticModel):
     schema_version: Literal[
         "fin_ia_dell_reference_vertical_deepseek_structured_agents_v1_0"
     ]
-    provider: Literal["deepseek"]
-    model: Literal["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-flash"]
+    provider: Literal["deepseek", "qwen"]
+    model: Literal["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-flash", "qwen3.8-max"]
     reasoning_effort: Literal["low", "high", "max"] = "high"
     model_profiles: dict[ModelPurpose, DeepSeekModelProfile] = Field(default_factory=dict)
-    base_url: Literal["https://api.deepseek.com"]
+    base_url: Literal["https://api.deepseek.com", "https://dashscope.aliyuncs.com/compatible-mode/v1"]
     structured_output_method: Literal["function_calling"]
     strict_provider_schema: Literal[False]
     thinking: Literal["disabled", "enabled"]
@@ -288,6 +288,13 @@ class DeepSeekStructuredAgentConfig(_StrictSemanticModel):
 
     @model_validator(mode="after")
     def validate_node_budgets(self) -> "DeepSeekStructuredAgentConfig":
+        expected_provider = "qwen" if self.model == "qwen3.8-max" else "deepseek"
+        expected_url = ("https://dashscope.aliyuncs.com/compatible-mode/v1"
+                        if expected_provider == "qwen" else "https://api.deepseek.com")
+        if self.provider != expected_provider or self.base_url != expected_url:
+            raise ValueError("model_provider_endpoint_mismatch")
+        if any((p.model == "qwen3.8-max") != (self.provider == "qwen") for p in self.model_profiles.values()):
+            raise ValueError("mixed_provider_credentials_not_supported")
         if self.runtime_context_binding and not self.agentic_message_history:
             raise ValueError("runtime_context_binding_requires_native_history")
         expected = {"planner", "specialist", "counter", "lead"}
@@ -1338,7 +1345,8 @@ class DeepSeekStructuredAgentAdapter:
                 max_retries=config.max_retries,
                 streaming=False,
                 use_responses_api=False,
-                extra_body={"thinking": {"type": profile.thinking}},
+                extra_body=({"enable_thinking": profile.thinking == "enabled", "preserve_thinking": True}
+                            if config.provider == "qwen" else {"thinking": {"type": profile.thinking}}),
                 **({"tool_context_trigger_tokens": context_editing["trigger_tokens"],
                     "tool_context_keep": context_editing["keep"],
                     "tool_context_policy": context_editing.get("policy", "legacy_window"),

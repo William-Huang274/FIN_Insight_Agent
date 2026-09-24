@@ -23,7 +23,7 @@ REREADABLE_TOOLS = frozenset({
 })
 
 
-def _literal_reference_ids(value):
+def _literal_reference_ids(value, *, include_navigation=False):
     """Retain observed identifiers only; labels/summaries cannot mint evidence."""
     found = []
     def visit(row):
@@ -33,11 +33,22 @@ def _literal_reference_ids(value):
                            "source_id", "citation_id", "evidence_id"} and isinstance(child, str):
                     if child not in found:
                         found.append(child)
+                elif include_navigation and key in {'document_id', 'parent_document_id', 'node_id',
+                        'parent_section_id', 'entity_id', 'candidate_id'} and isinstance(child, str):
+                    if child not in found:
+                        found.append(child)
                 elif key in {"source_ids", "passage_ids", "calculation_ids", "numeric_fact_ids", "fact_ids",
                              "citation_ids", "evidence_ids"} and isinstance(child, (list, tuple)):
                     found.extend(item for item in child if isinstance(item, str) and item not in found)
                 elif key == "citation_quotes" and isinstance(child, dict):
                     found.extend(item for item in child if item not in found)
+                elif include_navigation and key == 'metadata' and isinstance(child, str):
+                    try:
+                        decoded = json.loads(child)
+                    except (ValueError, TypeError):
+                        decoded = None
+                    if isinstance(decoded, dict):
+                        visit(decoded)
                 elif isinstance(child, (dict, list)):
                     visit(child)
         elif isinstance(row, list):
@@ -319,7 +330,7 @@ def task_boundary_history(messages):
         if isinstance(result, dict) and (result.get("failure") or result.get("error") or any(
                 isinstance(o, dict) and o.get("status") != "success" for o in result.get("observations", []))):
             continue
-        if retained.intersection(_literal_reference_ids(result)):
+        if retained.intersection(_literal_reference_ids(result, include_navigation=True)):
             continue
         if checkpoint and index > last_read:
             continue

@@ -196,6 +196,10 @@ def navigate_source_nodes(
     elif request.operation in {"catalog", "read"}:
         rows = [r for r in rows if r.get("node_kind") == "section"]
     if request.operation == "catalog":
+        query = request.query.strip().casefold()
+        if query and query != '*':
+            rows = [r for r in rows if query in ' '.join(str(r.get(k) or '') for k in
+                ('company', 'ticker', 'issuer_id', 'title')).casefold()]
         by_document = {}
         for row in rows:
             by_document.setdefault(str(row["parent_document_id"]), row)

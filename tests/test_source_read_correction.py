@@ -36,6 +36,21 @@ def test_source_read_preserves_full_table_and_separates_authority():
     assert item["source_locator"]["node_id"] == row["node_id"]
 
 
+def test_catalog_company_filter_applies_before_pagination_and_empty_is_not_full_menu():
+    rows = [{**_node(), 'company': 'Example Devices', 'ticker': 'DEV', 'title': 'Quarter results'},
+        {**_node(), 'node_id': 'SECTION::2', 'parent_document_id': 'DOC::2',
+         'company': 'Other Company', 'ticker': 'OTH', 'title': 'Annual report'}]
+    def catalog(query, offset=0):
+        return navigate_source_nodes(rows, SourceDocumentRequest(operation='catalog', query=query,
+            offset=offset, limit=1), snapshot='fixture')
+    assert catalog('dev').items[0]['document_id'] == 'DOC::1'
+    assert catalog('other').items[0]['document_id'] == 'DOC::2'
+    assert catalog('missing company').total_matches == 0
+    assert catalog('dev', 1).items == ()
+    assert catalog('*').total_matches == catalog('').total_matches == 2
+    assert catalog('dev').items[0]['writer_citable'] is False
+
+
 @pytest.mark.parametrize("selection,code", [
     ({"operation": "read", "document_id": "DOC::foreign"}, "not_in_approved"),
     ({"operation": "read", "document_id": "DOC::1", "node_id": "SECTION::foreign"}, "not_in_selected"),

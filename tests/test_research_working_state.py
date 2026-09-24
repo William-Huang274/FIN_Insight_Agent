@@ -49,6 +49,28 @@ def test_rejected_phase_note_cannot_clear_any_evidence():
     assert project_tool_history(rows, policy="task_boundary") == rows
 
 
+def test_navigation_ids_can_be_kept_in_notes_without_minting_evidence():
+    from sec_agent.agent_runtime.research_working_state import observed_sources
+    candidate = {'result_state': 'retrieval_candidate', 'document_id': 'DOC::seen',
+        'node_id': 'SECTION::seen', 'writer_citable': False,
+        'metadata': json.dumps({'entity_id': 'COMPANY::seen'}),
+        'preview': 'Source prose says DOC::invented; this is not navigation metadata.'}
+    numeric = {'result_state': 'numeric_fact', 'numeric_fact_id': 'NUMFACT::parent',
+        'formula_trace': {'inputs': [{'numeric_fact_id': 'NUMFACT::operand'}]}}
+    notebook = {'observations': [{'references': [{'ref_id': 'SOURCELOC::seen'}], 'content': [candidate, numeric]}]}
+    before = deepcopy(notebook)
+    assert observed_sources(notebook) == {'SOURCELOC::seen', 'DOC::seen', 'SECTION::seen',
+        'COMPANY::seen', 'NUMFACT::parent', 'NUMFACT::operand'}
+    assert notebook == before and candidate['writer_citable'] is False
+    messages = [*source_messages('old'), *source_messages('new')]
+    messages[1].content = json.dumps(candidate)
+    messages += [ToolMessage(name='UpdateResearchStateAction', tool_call_id='note', content=json.dumps({
+        'accepted': True, 'checkpoint': True, 'working_state': working_note(
+            findings=[], retain_source_ids=['DOC::seen'])}))]
+    projected = project_tool_history(messages, policy='task_boundary')
+    assert projected[1].content == messages[1].content
+
+
 def test_no_progress_uses_result_content_not_new_receipt_ids():
     obs={"status":"success","kind":"evidence","references":[],"content":[{"text":"Same observed result"}],"observation_digest":"old"}
     before={"observations":[obs]}

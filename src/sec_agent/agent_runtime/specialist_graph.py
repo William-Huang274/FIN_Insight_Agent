@@ -1506,6 +1506,16 @@ def _submission_errors(
     if submission.terminal_state == "bounded_gap":
         errors.append("bounded_gap_requires_canonical_gap_eligibility_receipt")
     for claim in submission.claims:
+        from .source_fact_checks import fact_consistency_issues
+        cited_texts = [str(item['passage']) for obs in notebook.observations for item in obs.content
+            if item.get('result_state') == 'source_bound_passage'
+            and item.get('passage_id') in claim.evidence_ids and item.get('passage')]
+        # Derived/scenario values need not equal a source amount. Their operand
+        # and calculator receipt checks below remain authoritative for arithmetic.
+        fact_issues = fact_consistency_issues(claim.statement, cited_texts) if claim.kind in {'reported_fact', 'numeric_fact'} else []
+        for issue in fact_issues:
+            errors.append('source_fact_consistency:' + claim.claim_id + ':' + json.dumps(issue, ensure_ascii=False)
+                + ':preserve_original_unit_or_explicit_fiscal_label;read_and_cite_distinct_support_if_needed')
         if claim.kind == "calculation" and not any(
             references.get(ref) and references[ref].authority_state == "non_authoritative_metric"
             and any(item.get("calculation_id") == ref and item.get("arithmetic_verified") is True
@@ -2401,8 +2411,10 @@ def build_specialist_agentic_state_graph(
                 note = action.working_state.model_dump(mode="json")
                 refs = set(note["retain_source_ids"]) | {r for f in note["findings"] for r in f["source_ids"]}
                 refs.update(r for q in note["resolved_questions"] for r in q["source_ids"])
-                if not refs.issubset(observed_sources(working["notebook"])):
-                    return reject("working_state_unknown_source", "Use only exact source IDs returned in your original observations.", agent_error=True)
+                unknown = sorted(refs - observed_sources(working["notebook"]))
+                if unknown:
+                    return reject("working_state_unknown_source", "Unobserved IDs: " + json.dumps(unknown) +
+                        ". Copy exact IDs from structured result metadata or references; navigation IDs do not grant citation authority.", agent_error=True)
                 if action.checkpoint:
                     prior_note = working.get("research_working_state") or {}
                     covered = set(note["open_questions"]) | {q["question"] for q in note["resolved_questions"]}

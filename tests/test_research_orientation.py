@@ -76,6 +76,41 @@ def test_one_topic_first_preserves_other_scope_without_fake_evidence():
     assert result['semantic_acceptance'] == 'not_assessed'
 
 
+def test_navigation_requires_actual_attempt_or_scope_specific_reason():
+    args = submission()
+    observations = [{'read_ref': 'O1', 'selection': {'operation': 'read'}, 'result': read_result()}]
+    action = SubmitResearchOrientationAction.model_validate({**args, 'context_digest': 'a'*64})
+    with pytest.raises(ValueError, match='orientation_navigation_unaccounted'):
+        bind_orientation(action, observations, require_navigation_account=True)
+    args.update(graph_skip_reason='Only comparing two paragraphs of one fixed historical report.',
+                recency_skip_reason='User explicitly fixed the historical document edition.')
+    action = SubmitResearchOrientationAction.model_validate({**args, 'context_digest': 'a'*64})
+    result = bind_orientation(action, observations, require_navigation_account=True)
+    assert result['navigation_execution']['graph_attempts'] == []
+    observations += [dict(read_ref='O2', selection={'operation': 'related'}, result={'status': 'failure'}),
+                     dict(read_ref='O3', selection={'operation': 'company', 'company_section': 'sources'}, result={'items': []})]
+    action = action.model_copy(update={'graph_skip_reason': '', 'recency_skip_reason': ''})
+    result = bind_orientation(action, observations, require_navigation_account=True)
+    assert result['navigation_execution']['pending_account'] == []
+    assert result['navigation_execution']['graph_attempts'][0]['status'] == 'failure'
+
+
+def test_orientation_rejects_copied_scale_and_accepts_mechanical_correction():
+    args = submission()
+    text = 'Net Revenue (US$ billions) 40.20'
+    args['findings'][0].update(judgment='收入40.20亿美元', evidence_spans=[
+        dict(read_ref='O1', passage_id='PASSAGE::test', quote=text)])
+    result = read_result()
+    result['items'][0]['passage'] = text
+    observations = [dict(read_ref='O1', selection={'operation': 'read'}, result=result)]
+    action = SubmitResearchOrientationAction.model_validate({**args, 'context_digest': 'a'*64})
+    with pytest.raises(ValueError, match='orientation_fact_consistency'):
+        bind_orientation(action, observations, require_evidence_spans=True, check_fact_consistency=True)
+    args['findings'][0]['judgment'] = '收入402亿美元'
+    action = SubmitResearchOrientationAction.model_validate({**args, 'context_digest': 'a'*64})
+    assert bind_orientation(action, observations, check_fact_consistency=True)['semantic_acceptance'] == 'not_assessed'
+
+
 def test_hypothesis_keeps_public_justification_without_fabricating_source_text():
     args = submission()
     args['findings'][0].update(kind='hypothesis', judgment='该项目可能形成后续需求。',
@@ -347,7 +382,11 @@ def test_orientation_native_wire_excludes_execution_tools_and_old_role_prompt():
         read_schema=next(t['function']['parameters'] for t in wire['tools'] if t['function']['name']=='RequestSourceAction')
         assert read_schema['properties']['selection']['properties']['source_space']['const']=='library'
         payload=json.loads(wire['messages'][1]['content'])
-        assert payload['orientation_context']=={'catalog_navigation':'library','finding_original_read_refs':[], 'all_observed_refs':[], 'observation_index':[]}
+        context = dict(payload['orientation_context'])
+        progress = context.pop('navigation_progress')
+        assert progress['pending_account'] == ['graph', 'recency']
+        assert progress['graph_attempts'] == progress['recency_attempts'] == []
+        assert context=={'catalog_navigation':'library','finding_original_read_refs':[], 'all_observed_refs':[], 'observation_index':[]}
         args=blocked_submission();args.update(context_digest=payload['context_digest'])
         return httpx.Response(200,json={'id':'offline','object':'chat.completion','created':1,'model':'deepseek-v4-pro',
             'choices':[{'index':0,'finish_reason':'tool_calls','message':{'role':'assistant','content':'',

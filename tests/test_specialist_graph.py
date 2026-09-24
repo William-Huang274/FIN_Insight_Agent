@@ -1368,3 +1368,23 @@ def test_new_question_does_not_inherit_historical_issuer_routes_but_retains_clai
     unsupported = numeric[0].model_copy(update={"fact_ids": (), "evidence_ids": ()})
     assert any(e.startswith("unsupported_deliverable_claim:") for e in _submission_errors(scoped.model_copy(update={"claims": (unsupported,)}), notebook, enforce_case_route_requirements=False))
     assert notebook.satisfied_route_obligation_ids == ()
+
+
+def test_specialist_submission_checks_cited_original_scale_and_fiscal_label():
+    result = _run(_ScriptedModel([_evidence_action(), _finance_action(), _submission()]), _ToolPorts())
+    notebook = SpecialistNotebook.model_validate_json(json.dumps(result['notebook']))
+    submission = SubmitWorkpaperAction.model_validate_json(json.dumps(result['final_submission']))
+    text = 'First Quarter Fiscal 2027. Net Revenue (US$ billions) 40.20'
+    observation = notebook.observations[0]
+    reference = observation.references[0].model_copy(update={
+        'ref_id': 'PASSAGE::units', 'authority_state': 'source_bound_passage', 'writer_citable': True})
+    observation = observation.model_copy(update={'references': (reference,), 'content': ({
+        'result_state': 'source_bound_passage', 'passage_id': 'PASSAGE::units', 'passage': text},)})
+    notebook = notebook.model_copy(update={'observations': (observation,), 'required_route_obligation_ids': ()})
+    claim = submission.claims[0].model_copy(update={'kind': 'reported_fact',
+        'statement': '2026财年收入40.20亿美元', 'fact_ids': (), 'evidence_ids': ('PASSAGE::units',),
+        'citation_quotes': {'PASSAGE::units': text}, 'authority_note': 'Issuer original, scope remains to review.'})
+    errors = _submission_errors(submission.model_copy(update={'claims': (claim,)}), notebook, enforce_case_route_requirements=False)
+    assert sum(e.startswith('source_fact_consistency:') for e in errors) == 2
+    claim = claim.model_copy(update={'statement': '2027财年收入402亿美元'})
+    assert not _submission_errors(submission.model_copy(update={'claims': (claim,)}), notebook, enforce_case_route_requirements=False)

@@ -61,7 +61,36 @@ WORKING_STATE_GUIDANCE = (
 
 
 def observed_sources(notebook):
-    return {r["ref_id"] for o in notebook.get("observations", []) for r in o.get("references", [])}
+    """Working notes may retain actual navigation IDs, without citation authority.
+
+    Only structured result metadata counts, never IDs embedded in source prose.
+    Final claims continue to use the separate evidence-reference validator.
+    """
+    import json
+    refs = {r["ref_id"] for o in notebook.get("observations", []) for r in o.get("references", [])}
+    def collect(row):
+        if isinstance(row, dict):
+            refs.update(row[k] for k in ('document_id', 'parent_document_id', 'node_id',
+                'parent_section_id', 'source_id', 'entity_id', 'candidate_id', 'passage_id', 'numeric_fact_id')
+                if isinstance(row.get(k), str) and row[k])
+    for observation in notebook.get('observations', []):
+        for item in observation.get('content', []):
+            if not isinstance(item, dict):
+                continue
+            if item.get('result_state') in {'retrieval_candidate', 'source_bound_passage'}:
+                collect(item)
+                metadata = item.get('metadata', {})
+                if isinstance(metadata, str):
+                    try:
+                        metadata = json.loads(metadata)
+                    except (ValueError, TypeError):
+                        metadata = {}
+                collect(metadata)
+            if item.get('result_state') == 'numeric_fact':
+                collect(item)
+                for operand in (item.get('formula_trace') or {}).get('inputs', []):
+                    collect(operand)
+    return refs
 
 
 def progress_after_tools(before, after, previous, *, has_reads):

@@ -871,9 +871,10 @@ def _observation_from_result(
         raise SpecialistAgenticCompositionError(
             "specialist_mcp_source_receipt_binding_invalid"
         )
+    from .source_fact_checks import with_source_fact_hints
     content = tuple(
         {
-            **dict(item),
+            **with_source_fact_hints(dict(item)),
             "source_tool_lane_receipt_id": source_receipt.receipt_id,
         }
         for item in result.items[:64]

@@ -83,6 +83,8 @@ class SubmitResearchOrientationAction(BaseModel):
     topics: tuple[OrientationTopic, ...] = Field(max_length=12)
     scope_map: tuple[OrientationCoverage, ...] = Field(min_length=1, max_length=16)
     coverage_and_gaps: str = Field(min_length=1, max_length=3000)
+    graph_skip_reason: str = Field(default='', max_length=800, description='If no related graph query was attempted, explain why it is irrelevant or unavailable for this question. Do not claim graph use without an actual receipt.')
+    recency_skip_reason: str = Field(default='', max_length=800, description='If no company sources menu was checked, explain the scope-specific reason (for example a fixed historical document question). Do not equate search ranking with latest disclosure coverage.')
 
 
 ORIENTATION_SYSTEM_PROMPT = """You are the Research Lead doing preliminary research, not writing the final report.
@@ -132,6 +134,12 @@ beyond observed facts conditional or hypothesis and use rationale_summary for a 
 which observed premise and assumption support it, and what check could overturn it. Do not present model
 knowledge as a current company disclosure. A useful, testable hypothesis can proceed to topic design before
 being proved; material fabricated numbers, contradictory premises and mistaken transaction status cannot.
+Original reads may include host_fact_reading_aids: copy the original amount/unit or use the deterministic
+display conversion; never relabel a billion amount as 亿 without conversion. These aids are not new evidence.
+Keep explicit fiscal year labels separate from calendar dates. If a label is unclear, retain the source label
+and dates without inventing a fiscal year. Submission checks flag narrow unit/fiscal contradictions only.
+navigation_progress shows actual graph/recency attempts. If you skip either, provide graph_skip_reason or
+recency_skip_reason specific to the question; a reason is recorded, not certified as a good research choice.
 Prioritize defects that could change the research decision or dispatch. Do not exhaust the library merely
 to prove harmless background explanations or polish wording. This is preliminary research, not final assurance.
 The host's observation_index distinguishes returned original windows, navigation-only results and failures.
@@ -192,6 +200,8 @@ def orientation_public_handoff(orientation):
               if key in orientation}
     public.update(semantic_acceptance=orientation.get('semantic_acceptance', 'not_assessed'),
                   delegation_executed=False, upstream_artifact_sha256=canonical_sha256(orientation))
+    if 'navigation_execution' in orientation:
+        public['navigation_execution'] = deepcopy(orientation['navigation_execution'])
     provenance = {}
     identity_fields = ('document_id', 'node_id', 'passage_id', 'content_sha256', 'source_ref',
         'source_url', 'source_vintage', 'source_known_at', 'publication_date', 'page_start', 'page_end',
@@ -259,7 +269,8 @@ def orientation_source_view(result):
             return row
         if isinstance(value, list): return [compact(v) for v in value]
         return value
-    view = compact(result)
+    from .source_fact_checks import with_source_fact_hints
+    view = with_source_fact_hints(compact(result))
     # Search telemetry is identical across many hits. Reference one full copy in
     # this same receipt, preserving graph truncation and retrieval coverage flags.
     shared = {json.dumps(v, sort_keys=True, ensure_ascii=False): (k, v)
@@ -282,6 +293,7 @@ def orientation_library_context(library, research_as_of):
     published = sorted(str(r['published_at']) for r in rows if r.get('published_at'))
     known = sorted(str(r['known_at']) for r in rows if r.get('known_at'))
     return {'library_sha256': library.manifest['sha256'], 'require_evidence_spans': True,
+        'require_navigation_account': True, 'check_fact_consistency': True,
         'library_time_scope': {
             'declared_snapshot_as_of': library.manifest.get('research_as_of'),
             'research_as_of': str(research_as_of), 'eligible_source_count': len(rows),
@@ -294,7 +306,19 @@ def orientation_library_context(library, research_as_of):
         'external_policy': 'Report concrete external_evidence needs with supporting observations for host review; web access is not enabled by a request alone.'}
 
 
-def bind_orientation(action, observations, *, require_evidence_spans=False):
+def navigation_progress(observations):
+    def refs(operation, section=None):
+        return [{'read_ref': o['read_ref'], 'status': o['result'].get('status', 'success')}
+                for o in observations if o['selection'].get('operation') == operation
+                and (section is None or o['selection'].get('company_section') == section)]
+    graph, recency = refs('related'), refs('company', 'sources')
+    return {'graph_attempts': graph, 'recency_attempts': recency,
+        'pending_account': [name for name, rows in [('graph', graph), ('recency', recency)] if not rows],
+        'instruction': 'For relevant relationship/current-company research use catalog entity_navigation. Otherwise record a question-specific skip reason. Attempts (including failures) are not successful coverage or evidence.'}
+
+
+def bind_orientation(action, observations, *, require_evidence_spans=False,
+                     require_navigation_account=False, check_fact_consistency=False):
     """Check observed provenance, not financial correctness or completeness."""
     reads = finding_read_refs(observations)
     ids = [f.finding_id for f in action.findings]
@@ -317,6 +341,23 @@ def bind_orientation(action, observations, *, require_evidence_spans=False):
                     raise ValueError('orientation_excerpt_not_in_cited_window: '
                         f'finding={finding.finding_id}; read_ref={span.read_ref}; passage_id={span.passage_id}. '
                         'Read the actual supporting window or narrow/remove the unsupported claim. Do not substitute a merely topical quote.')
+        if check_fact_consistency:
+            from .source_fact_checks import fact_consistency_issues
+            texts = [r['passage'] for span in finding.evidence_spans
+                for r in reads[span.read_ref]['result'].get('items', [])
+                if r.get('passage_id') == span.passage_id and r.get('passage')]
+            issues = fact_consistency_issues(finding.judgment, texts)
+            if issues:
+                raise ValueError('orientation_fact_consistency: ' + json.dumps({
+                    'finding': finding.finding_id, 'issues': issues,
+                    'instruction': 'Check cited originals; preserve source unit/fiscal label or cite the distinct supporting window. No source or claim was auto-rewritten.'}, ensure_ascii=False))
+    navigation = navigation_progress(observations)
+    if require_navigation_account:
+        missing = [name for name, reason in [('graph', action.graph_skip_reason), ('recency', action.recency_skip_reason)]
+                   if name in navigation['pending_account'] and not reason.strip()]
+        if missing:
+            raise ValueError('orientation_navigation_unaccounted: ' + ','.join(missing)
+                + '. Use the relevant catalog navigation or supply question-specific skip reasons; do not invent tool use.')
     reference_errors = []
     for index, topic in enumerate(action.topics):
         if not set(topic.finding_ids).issubset(ids):
@@ -354,5 +395,6 @@ def bind_orientation(action, observations, *, require_evidence_spans=False):
         raise ValueError('orientation_ready_requires_a_next_wave')
     used = {ref for f in action.findings for ref in f.read_refs}
     return {**action.model_dump(mode='json'),
+            'navigation_execution': navigation,
             'runtime_provenance': {ref: reads[ref] for ref in sorted(used)},
             'semantic_acceptance': 'not_assessed', 'delegation_executed': False}

@@ -368,7 +368,7 @@ def build_lead_research_graph(
                 "contexts, not whole-task clones. Do not promise skipped Lead judgment for integrated. Limit "
                 "scope and verbosity to the actual question; delegate meaningful work, not roles for their own sake.")
         if orientation_only:
-            from .research_orientation import finding_read_refs, observation_scope
+            from .research_orientation import finding_read_refs, observation_scope, navigation_progress
             request.update(orientation_only=True, orientation_context=orientation_context or {},
                 role_method=role_method or get_research_method('research_orientation'),
                 branch_catalog=[], required_branch_ids=[], workpapers=[], tasks=[], require_execution_plan=False,
@@ -376,6 +376,7 @@ def build_lead_research_graph(
                 execution_policy="Orientation only. Save findings and proposed topics; no child dispatch or final-report handoff.",
                 continuation_policy="Stop after submitting orientation. Proposed tasks are not executed.")
             request['orientation_context'] = {**request['orientation_context'],
+                'navigation_progress': navigation_progress(state.get('planning_observations', [])),
                 'finding_original_read_refs': list(finding_read_refs(state.get('planning_observations', []))),
                 'all_observed_refs': [o['read_ref'] for o in state.get('planning_observations', [])],
                 'observation_index': [observation_scope(o) for o in state.get('planning_observations', [])]}
@@ -477,7 +478,9 @@ def build_lead_research_graph(
                             tool_call_id=call.id, name=call.name)
                     from .research_orientation import bind_orientation
                     orientation = bind_orientation(action, state.get('planning_observations', []),
-                        require_evidence_spans=(orientation_context or {}).get('require_evidence_spans', False))
+                        require_evidence_spans=(orientation_context or {}).get('require_evidence_spans', False),
+                        require_navigation_account=(orientation_context or {}).get('require_navigation_account', False),
+                        check_fact_consistency=(orientation_context or {}).get('check_fact_consistency', False))
                     working.update(research_orientation=orientation, phase='research_orientation_submitted', stop_reason=None)
                     if public_progress:
                         public_progress({'kind': 'stage', 'actor': 'lead', 'event': 'progress',

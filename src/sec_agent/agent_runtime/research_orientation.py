@@ -1,4 +1,5 @@
 """Source-bound preliminary research, before authority to execute topic tasks."""
+import json
 from graphlib import CycleError, TopologicalSorter
 from typing import Literal
 
@@ -23,7 +24,7 @@ class OrientationLibraryReadAction(RequestSourceAction):
 
 class OrientationFinding(BaseModel):
     model_config = ConfigDict(extra='forbid', frozen=True)
-    finding_id: str = Field(min_length=1, max_length=60)
+    finding_id: str = Field(min_length=1, max_length=60, description='Unique ID in this submission; prefer a short stable ID such as F1. References must copy this exact full string.')
     judgment: str = Field(min_length=1, max_length=1800)
     kind: Literal['observation', 'conditional', 'hypothesis']
     read_refs: tuple[str, ...] = Field(min_length=1, max_length=12)
@@ -32,16 +33,16 @@ class OrientationFinding(BaseModel):
 
 class OrientationTopic(BaseModel):
     model_config = ConfigDict(extra='forbid', frozen=True)
-    topic_id: str = Field(min_length=1, max_length=60)
+    topic_id: str = Field(min_length=1, max_length=60, description='Unique ID in this submission; prefer a short stable ID such as T1. Dependencies and scope references must copy this exact full string.')
     question: str = Field(min_length=1, max_length=1200)
     why_now: str = Field(min_length=1, max_length=1200)
-    finding_ids: tuple[str, ...] = Field(min_length=1, max_length=12)
+    finding_ids: tuple[str, ...] = Field(min_length=1, max_length=12, description='Exact finding_id values from findings in this submission; never abbreviate a longer ID.')
     professional_roles: tuple[str, ...] = Field(min_length=1, max_length=5)
     source_dimensions: tuple[Literal['D1', 'D2', 'D3', 'D4', 'D5', 'D6'], ...] = Field(min_length=1, max_length=6)
     next_evidence: str = Field(min_length=1, max_length=1500)
     success_criteria: tuple[str, ...] = Field(min_length=1, max_length=5)
     activation: Literal['next_wave', 'deferred']
-    depends_on: tuple[str, ...] = Field(max_length=12)
+    depends_on: tuple[str, ...] = Field(max_length=12, description='Exact topic_id values from topics in this submission. Only dependencies on a necessary upstream result; independent evidence gathering need not wait.')
     activation_reason: str = Field(min_length=1, max_length=1200)
     revisit_when: str = Field(min_length=1, max_length=1200)
 
@@ -51,7 +52,7 @@ class OrientationCoverage(BaseModel):
     model_config = ConfigDict(extra='forbid', frozen=True)
     question: str = Field(min_length=1, max_length=1000)
     status: Literal['planned', 'needs_discovery', 'excluded']
-    topic_ids: tuple[str, ...] = Field(max_length=12)
+    topic_ids: tuple[str, ...] = Field(max_length=12, description='Exact topic_id values from topics in this submission; never abbreviate a longer ID.')
     reason: str = Field(min_length=1, max_length=1200)
     revisit_when: str = Field(min_length=1, max_length=1200)
 
@@ -153,11 +154,23 @@ def bind_orientation(action, observations):
             invalid = sorted(set(finding.read_refs) - set(reads))
             raise ValueError('orientation_requires_successful_original_read_refs_not_search_or_catalog: '
                 + f'finding={finding.finding_id}; invalid={invalid}; available={list(reads)}. Read the original or leave the point as an unresolved question.')
-    for topic in action.topics:
+    reference_errors = []
+    for index, topic in enumerate(action.topics):
         if not set(topic.finding_ids).issubset(ids):
-            raise ValueError('orientation_topic_requires_existing_finding_ids')
+            reference_errors.append({'code': 'orientation_topic_requires_existing_finding_ids',
+                'path': f'topics[{index}].finding_ids', 'invalid': sorted(set(topic.finding_ids) - set(ids))})
         if not set(topic.depends_on).issubset(topic_ids):
-            raise ValueError('orientation_dependency_requires_existing_topic_ids')
+            reference_errors.append({'code': 'orientation_dependency_requires_existing_topic_ids',
+                'path': f'topics[{index}].depends_on', 'invalid': sorted(set(topic.depends_on) - set(topic_ids))})
+    for index, area in enumerate(action.scope_map):
+        if not set(area.topic_ids).issubset(topic_ids):
+            reference_errors.append({'code': 'orientation_scope_requires_existing_topic_ids',
+                'path': f'scope_map[{index}].topic_ids', 'invalid': sorted(set(area.topic_ids) - set(topic_ids))})
+    if reference_errors:
+        raise ValueError('orientation_invalid_references: ' + json.dumps({
+            'errors': reference_errors, 'available_finding_ids': ids, 'available_topic_ids': topic_ids,
+            'instruction': 'Copy exact IDs from this submission into references; do not shorten IDs. All invalid cross-references are listed together. No references were auto-corrected.'}, ensure_ascii=False))
+    for topic in action.topics:
         if topic.activation == 'next_wave' and topic.depends_on:
             raise ValueError(f'orientation_next_wave_cannot_depend_on_unexecuted_topics: topic={topic.topic_id}; '
                 + f'depends_on={list(topic.depends_on)}. Mark dependent topics deferred; next_wave is the first executable wave, not the whole proposed plan.')
@@ -167,8 +180,6 @@ def bind_orientation(action, observations):
         raise ValueError('orientation_topic_dependencies_must_be_acyclic') from exc
     covered_topics = set()
     for area in action.scope_map:
-        if not set(area.topic_ids).issubset(topic_ids):
-            raise ValueError('orientation_scope_requires_existing_topic_ids')
         if (area.status == 'planned') != bool(area.topic_ids):
             raise ValueError('orientation_planned_scope_requires_topics_other_scope_has_no_topics')
         covered_topics.update(area.topic_ids)

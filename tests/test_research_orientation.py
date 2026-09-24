@@ -66,6 +66,27 @@ def test_deferred_topic_requires_valid_scope_and_acyclic_dependencies():
     with pytest.raises(ValueError, match='acyclic'): bind_test_submission(args)
 
 
+def test_shortened_cross_references_report_all_paths_without_guessing_identity():
+    args = submission()
+    args['findings'][0]['finding_id'] = 'F1-project-status'
+    args['topics'][0].update(topic_id='T1-project', depends_on=['T2'], activation='deferred')
+    args['topics'].append({**args['topics'][0], 'topic_id': 'T2-evidence',
+                          'depends_on': [], 'activation': 'next_wave'})
+    args['scope_map'][0]['topic_ids'] = ['T1', 'T2']
+    with pytest.raises(ValueError, match='orientation_invalid_references') as caught:
+        bind_test_submission(args)
+    details = json.loads(str(caught.value).split(': ', 1)[1])
+    assert {e['path'] for e in details['errors']} == {
+        'topics[0].finding_ids', 'topics[0].depends_on', 'topics[1].finding_ids', 'scope_map[0].topic_ids'}
+    assert details['available_finding_ids'] == ['F1-project-status']
+    assert details['available_topic_ids'] == ['T1-project', 'T2-evidence']
+    assert args['topics'][0]['finding_ids'] == ['F1']
+    for topic in args['topics']: topic['finding_ids'] = ['F1-project-status']
+    args['topics'][0]['depends_on'] = ['T2-evidence']
+    args['scope_map'][0]['topic_ids'] = ['T1-project', 'T2-evidence']
+    assert list(bind_test_submission(args)['topics'][0]['depends_on']) == ['T2-evidence']
+
+
 @pytest.mark.parametrize('problem', ['unknown_dependency', 'early_activation', 'unknown_topic', 'orphan_topic', 'no_wave'])
 def test_schedule_contract_rejects_unexecutable_or_unmapped_plan(problem):
     args = submission()

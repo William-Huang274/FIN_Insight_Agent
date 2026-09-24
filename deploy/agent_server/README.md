@@ -20,6 +20,10 @@ python -m scripts.deployment.research_workbench serve --settings-directory /path
 
 ## 配置与资料 / Configuration and data
 
+For a persistent local deployment, set `FINSIGHT_SERVICE_RESTART_POLICY=unless-stopped` in its ignored `.env`. The default remains `no` so temporary qualification deployments do not restart unexpectedly. To apply the policy without recreating containers, use `docker update --restart unless-stopped` with the three exact container names belonging to that deployment. Do not update every historical container. Docker Desktop must itself start successfully; this policy cannot repair Desktop initialization failures. The Windows-hosted `serve` process is separate and must also be started after a computer reboot. Recover existing runs from their receipts; restarting infrastructure is not permission to resubmit failed or unknown paid requests.
+
+长期使用的本地部署可在忽略的 `.env` 中配置 `FINSIGHT_SERVICE_RESTART_POLICY=unless-stopped`。临时验证部署默认仍为 `no`。已有容器可通过 `docker update --restart unless-stopped` 加上该部署的三个准确容器名就地更新，无需重建镜像或数据卷。手动停止的容器不会因该策略自动恢复。Docker Desktop 自身必须先正常启动；Windows 上单独运行的 `serve` 网页进程也需要恢复。基础设施重启不等于授权重发失败或用量未知的付费请求。
+
 - `host-settings.json` 与 `container-settings.json` 分别配置宿主和容器中的数据路径。Host and container settings bind the same research data through their respective paths.
 - 模型、工具及数据库凭据放在忽略的 `.env` 或本地设置中，参考根目录 `.env.example`。Keep credentials in ignored local configuration; see `.env.example`.
 - `--fresh-only` 使用原始资料开展新研究，设置中不包含旧报告与底稿答案路径。Fresh-only research uses source data and excludes saved report/answer bundles.

@@ -4,6 +4,7 @@ name: finsight-dell-agent-server-local
 
 services:
   langgraph-redis:
+    restart: ${FINSIGHT_SERVICE_RESTART_POLICY:-no}
     image: redis:6@sha256:143f7bfc2358911d6b36138eabfbfffea46273c5d4b5696d90e5cbf23d633cf8
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -12,6 +13,7 @@ services:
       retries: 5
 
   langgraph-postgres:
+    restart: ${FINSIGHT_SERVICE_RESTART_POLICY:-no}
     image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
     environment:
       POSTGRES_DB: postgres
@@ -70,6 +72,7 @@ services:
       interval: 5s
 
   langgraph-api:
+    restart: ${FINSIGHT_SERVICE_RESTART_POLICY:-no}
     build:
       context: ../..
       dockerfile: deploy/agent_server/Dockerfile

@@ -14,7 +14,7 @@ from sec_agent.research_foundation.research_methods import get_research_method
 class ProfessionalAssignment(BaseModel):
     model_config = ConfigDict(extra='forbid', frozen=True)
     version: Literal['professional_assignment.v1'] = 'professional_assignment.v1'
-    profile: Literal['survey_analysis']
+    profile: Literal['survey_analysis'] = Field(description='ONLY for questionnaire/survey methodology, sampling and respondent inference. Not a generic research profile. For company financials, chips, cloud or power research omit the entire professional field or set it null; use the ordinary branch worker and its disclosed capabilities.')
     purpose: str = Field(min_length=1, max_length=1600)
     # Navigation, not copied parent evidence or a hidden answer key.
     source_hints: list[str] = Field(default_factory=list, max_length=24)

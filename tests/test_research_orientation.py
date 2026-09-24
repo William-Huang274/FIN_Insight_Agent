@@ -76,6 +76,54 @@ def test_one_topic_first_preserves_other_scope_without_fake_evidence():
     assert result['semantic_acceptance'] == 'not_assessed'
 
 
+def test_hypothesis_keeps_public_justification_without_fabricating_source_text():
+    args = submission()
+    args['findings'][0].update(kind='hypothesis', judgment='该项目可能形成后续需求。',
+        rationale_summary='原文仅确认项目。一般机制是项目执行带来采购；假设项目未取消，后续查合同。',
+        evidence_spans=[dict(read_ref='O1', passage_id='PASSAGE::test', quote='Test original.')])
+    action = SubmitResearchOrientationAction.model_validate({**args, 'context_digest': 'a'*64})
+    result = bind_orientation(action, [{'read_ref': 'O1', 'selection': {'operation': 'read'},
+        'result': read_result()}], require_evidence_spans=True)
+    assert result['findings'][0]['rationale_summary'] == args['findings'][0]['rationale_summary']
+    assert result['semantic_acceptance'] == 'not_assessed'
+    args['findings'][0]['evidence_spans'][0]['quote'] = 'The project has secured orders.'
+    with pytest.raises(ValueError, match='orientation_excerpt'):
+        bind_orientation(SubmitResearchOrientationAction.model_validate({**args, 'context_digest': 'a'*64}),
+            [{'read_ref': 'O1', 'selection': {'operation': 'read'}, 'result': read_result()}],
+            require_evidence_spans=True)
+
+
+def test_resource_deferred_task_has_no_false_dependency_and_preserves_real_handoff():
+    args = submission()
+    args['topics'].extend([
+        {**args['topics'][0], 'topic_id': 'T2', 'activation': 'deferred', 'depends_on': [],
+         'activation_reason': '先做最重要问题，空出资源后取证。'},
+        {**args['topics'][0], 'topic_id': 'T3', 'activation': 'deferred', 'depends_on': ['T1', 'T2'],
+         'dependency_input': 'T1项目时序和T2采购明细均返回后，综合核对期间和重复计数。'}])
+    args['scope_map'][0]['topic_ids'] = ['T1', 'T2', 'T3']
+    result = bind_test_submission(args)
+    assert result['topics'][1]['depends_on'] == []
+    assert result['topics'][2]['dependency_input'] == args['topics'][2]['dependency_input']
+
+
+def test_public_planning_handoff_preserves_claims_excerpts_and_readbacks_not_raw_windows():
+    from copy import deepcopy
+    from sec_agent.agent_runtime.research_orientation import orientation_public_handoff
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    artifact = bind_test_submission(submission())
+    artifact['findings'][0]['evidence_spans'] = [dict(read_ref='O1', passage_id='PASSAGE::test', quote='Test original.')]
+    before = deepcopy(artifact)
+    projected = orientation_public_handoff(artifact)
+    assert projected['findings'] == artifact['findings']
+    assert projected['topics'] == artifact['topics'] and projected['scope_map'] == artifact['scope_map']
+    assert projected['source_readbacks']['O1']['passages'][0]['content_sha256'] == 'f'*64
+    assert projected['source_readbacks']['O1']['selection'] == {'operation': 'read'}
+    assert projected['upstream_artifact_sha256'] == canonical_sha256(artifact)
+    assert 'runtime_provenance' not in projected and 'passage' not in projected['source_readbacks']['O1']['passages'][0]
+    projected['findings'][0]['judgment'] = 'Changed downstream copy'
+    assert artifact == before
+
+
 def test_deferred_topic_requires_valid_scope_and_acyclic_dependencies():
     args = submission()
     args['topics'].append({**args['topics'][0], 'topic_id': 'T2', 'activation': 'deferred', 'depends_on': ['T1']})

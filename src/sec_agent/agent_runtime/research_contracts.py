@@ -381,7 +381,7 @@ class ResearchTaskSpec(_StrictFrozenModel):
     """A semantic research task; physical routes never belong in this object."""
 
     task_id: str = Field(pattern=_REF_PATTERN)
-    owner_role: str = Field(pattern=_REF_PATTERN)
+    owner_role: str = Field(pattern=_REF_PATTERN, description='Stable ASCII role identifier, for example financial_analyst or power_analyst; use objective for the human-readable role and assignment.')
     objective: str = Field(min_length=12, max_length=4_000,
         description="Question to verify, not a prescribed conclusion. Any preliminary fact retains its source, period, entity, unit and actual/guidance status; relationships across facts remain hypotheses until checked. The specialist may correct the Lead using original evidence.")
     dependency_ids: tuple[str, ...] = Field(default=(), max_length=64)

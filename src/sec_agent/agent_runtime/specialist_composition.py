@@ -507,7 +507,7 @@ def _bind_research_task(
         body['l0_context']['skill_summaries'] = [s for s in body['l0_context']['skill_summaries']
             if (s.get('role_method') or {}).get('method_id') == professional['profile']]
         body['l0_context']['capability_summaries'] = [c for c in body['l0_context']['capability_summaries']
-            if c.get('capability_ref') in {'capability:research:source-document-read', 'capability:research:calculator', 'capability:research:methods'}]
+            if canonical_capability(c.get('capability_ref', '')) in {'capability:research:source-document-read', 'capability:research:calculator', 'capability:research:methods'}]
     return _model_json(SpecialistAgenticInput, body, code="delegated_specialist_input_invalid")
 
 

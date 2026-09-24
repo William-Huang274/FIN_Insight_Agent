@@ -74,6 +74,43 @@ def _graph(model, worker, *, seed=None, **kwargs):
         model_turn=model, run_child=worker, **kwargs).compile(), value
 
 
+def test_native_task_design_checkpoint_stops_before_any_specialist():
+    from langgraph.checkpoint.memory import InMemorySaver
+    value = SpecialistAgenticInput.model_validate_json(json.dumps(_input()))
+    requests = []
+    def model(request):
+        requests.append(request)
+        return _call(request, 'DelegateResearchTasksAction', tasks=[_task('first'), _task('second', BRANCHES[1])])
+    graph = build_lead_research_graph(expected_input=value, research_question='Design the first evidence wave.',
+        branch_catalog=CATALOG, allowed_branch_ids=BRANCHES, seed_workpapers={}, model_turn=model,
+        run_child=lambda *_: pytest.fail('design checkpoint must not dispatch a paid specialist'),
+        require_all_branches=False).compile(checkpointer=InMemorySaver(), interrupt_before=['specialist'])
+    config = {'configurable': {'thread_id': 'task-design-test'}}
+    result = graph.invoke(value.model_dump(mode='json'), config)
+    snapshot = graph.get_state(config)
+    assert len(result['tasks']) == 2 and not result['task_results']
+    assert snapshot.next == ('specialist', 'specialist')
+    assert len(requests) == 1
+
+
+def test_wrong_survey_profile_feedback_keeps_normal_finance_route_available():
+    seen = []
+    task = _task()
+    task['professional'] = {'profile': 'survey_analysis', 'purpose': 'Financial statement research'}
+    def model(request):
+        seen.append(request)
+        if len(seen) == 1:
+            return _call(request, 'DelegateResearchTasksAction', tasks=[task])
+        error = json.loads(request['tool_results'][0]['content'])
+        assert 'professional=null' in error['profile_correction']
+        assert 'retain needed disclosed finance capabilities' in error['profile_correction']
+        return _stop(request, ready=True)
+    graph, value = _graph(model, lambda *_: pytest.fail('wrong profession must not execute'), require_all_branches=False)
+    result = graph.invoke(value.model_dump(mode='json'))
+    assert result['phase'] == 'research_ready_for_review'
+    assert len(seen) == 2
+
+
 @pytest.mark.parametrize("trigger", ["model_execution_failure", "model_turn_ceiling", "tool_action_ceiling"])
 def test_execution_failure_stops_before_lead_can_replace_worker(trigger):
     seed, calls = _seed(), []

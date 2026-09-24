@@ -2,6 +2,8 @@
 
 当前0.1.4研究runtime开发与测点顺序见[按Agent流转的分段资格路线](engineering/runtime_flow_qualification.zh-CN.md)。
 
+Lead初步判断的依据边界、具体任务依赖和分阶段模型试验见[初步判断与模型选择](engineering/lead_reasoning_and_model_routing.zh-CN.md)。
+
 FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工修订的本地金融研究工作台。
 
 | 文档 | 内容 |

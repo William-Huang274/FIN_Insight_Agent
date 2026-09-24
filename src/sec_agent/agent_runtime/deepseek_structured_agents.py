@@ -257,7 +257,7 @@ ModelPurpose = Literal["planner", "specialist", "counter", "verifier", "lead", "
 
 class DeepSeekModelProfile(_StrictSemanticModel):
     model: Literal["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-flash", "qwen3.8-max"]
-    reasoning_effort: Literal["low", "high", "max"] = "high"
+    reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = "high"
     thinking: Literal["disabled", "enabled"] | None = None
 
 
@@ -267,7 +267,7 @@ class DeepSeekStructuredAgentConfig(_StrictSemanticModel):
     ]
     provider: Literal["deepseek", "qwen"]
     model: Literal["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-flash", "qwen3.8-max"]
-    reasoning_effort: Literal["low", "high", "max"] = "high"
+    reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = "high"
     model_profiles: dict[ModelPurpose, DeepSeekModelProfile] = Field(default_factory=dict)
     base_url: Literal["https://api.deepseek.com", "https://dashscope.aliyuncs.com/compatible-mode/v1"]
     structured_output_method: Literal["function_calling"]

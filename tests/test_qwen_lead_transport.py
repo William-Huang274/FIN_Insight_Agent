@@ -59,3 +59,53 @@ def test_qwen_transport_and_returned_usage_are_preserved_without_paid_call():
 def test_provider_endpoint_and_role_mismatch_rejected(change):
     with pytest.raises(ValidationError, match='model_provider_endpoint_mismatch|mixed_provider_credentials_not_supported'):
         DeepSeekStructuredAgentConfig.model_validate_json(json.dumps({**configuration(), **change}))
+
+
+@pytest.mark.parametrize('provider,effort', [('qwen', 'medium'), ('deepseek', 'high')])
+def test_thinking_continuation_preserves_all_reasoning_and_omits_client_cap(provider, effort):
+    value = configuration() if provider == 'qwen' else json.loads(
+        Path('configs/research/model_routing.json').read_text(encoding='utf8'))
+    value.update(thinking='enabled', reasoning_effort=effort,
+                 agentic_message_history=True, runtime_context_binding=True)
+    for profile in value['model_profiles'].values():
+        profile.update(thinking='enabled', reasoning_effort=effort)
+    value['token_budget_basis']['lead']['max_output_tokens'] = None
+    value['token_budget_basis']['lead']['reasoning_profile'] = 'agentic_message_history_thinking_enabled'
+    config = DeepSeekStructuredAgentConfig.model_validate_json(json.dumps(value))
+    adapter = DeepSeekStructuredAgentAdapter.from_config(config=config, api_key=SecretStr('test-only'))
+    model = adapter._chat_models['lead']
+    payloads = []
+
+    def respond(request):
+        payloads.append(json.loads(request.content))
+        return httpx.Response(200, json={'id': 'test', 'object': 'chat.completion', 'created': 1,
+            'model': config.profile_for('lead').model, 'choices': [{'index': 0, 'finish_reason': 'tool_calls',
+                'message': {'role': 'assistant', 'content': '', 'reasoning_content': 'synthetic-private',
+                    'tool_calls': [{'id': 'c1', 'type': 'function', 'function': {'name': 'lookup', 'arguments': '{}'}}]}}],
+            'usage': {'prompt_tokens': 100, 'completion_tokens': 30, 'total_tokens': 130,
+                      'completion_tokens_details': {'reasoning_tokens': 25}}})
+
+    client = OpenAI(api_key='test-only', base_url=config.base_url, max_retries=0,
+                    http_client=httpx.Client(transport=httpx.MockTransport(respond)))
+    model.client = client.chat.completions
+    model.root_client = client
+    bound = model.bind_tools([{'name': 'lookup', 'description': 'test',
+                              'parameters': {'type': 'object', 'properties': {}}}], tool_choice='auto')
+    first = bound.invoke([HumanMessage(content='test')])
+    bound.invoke([HumanMessage(content='test'),
+                  AIMessage(content='Earlier public note', additional_kwargs={'reasoning_content': 'earlier-private'}),
+                  first, ToolMessage(content='result', tool_call_id='c1')])
+    for payload in payloads:
+        assert payload['reasoning_effort'] == effort
+        assert 'max_tokens' not in payload and 'max_completion_tokens' not in payload
+        assert payload['tool_choice'] == 'auto'
+        if provider == 'qwen':
+            assert payload['enable_thinking'] is True and payload['preserve_thinking'] is True
+            assert 'thinking' not in payload
+        else:
+            assert payload['thinking'] == {'type': 'enabled'}
+            assert 'enable_thinking' not in payload
+    assistant_rows = [m for m in payloads[1]['messages'] if m['role'] == 'assistant']
+    assert [m['reasoning_content'] for m in assistant_rows] == ['earlier-private', 'synthetic-private']
+    assert all('private' not in (m.get('content') or '') for m in assistant_rows)
+    assert first.usage_metadata['output_token_details']['reasoning'] == 25

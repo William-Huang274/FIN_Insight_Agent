@@ -1,6 +1,7 @@
 """Feedback provenance, isolation and nonblocking execution; no financial gold claims."""
 import asyncio
 from copy import deepcopy
+import json
 
 import pytest
 from langchain_core.runnables import RunnableLambda
@@ -45,6 +46,32 @@ def test_orientation_projection_keeps_evidence_but_not_repeated_transport_detail
     assert list(finding_read_refs(obs))==['O2']
     with pytest.raises(ValueError,match="finding=F1; invalid=.*O1.*available=.*O2"):
         bind_orientation(SubmitResearchOrientationAction.model_validate({'context_digest':'a'*64,**submission()}),obs)
+
+
+def test_navigation_normalization_preserves_conflicts_dates_units_and_readbacks():
+    from sec_agent.agent_runtime.research_orientation import orientation_source_view
+    telemetry = {'mode': 'hybrid', 'graph_window_truncated': True, 'candidate_chunks': 30}
+    metadata = {'period_end': '2026-06-30', 'unit': 'MW', 'revision': 'r2',
+        'routing_metadata_v1': json.dumps({'period_end': '2026-06-30', 'unit': 'GW', 'old_id': 'v1'})}
+    original = {'status': 'success', 'items': [
+        {'metadata': json.dumps(metadata), 'retrieval': telemetry, 'next_offset': 10},
+        {'retrieval': telemetry, 'source_known_at': None, 'publication_date': '2026-08-01'},
+        {'passage': '{"metadata": "Do not rewrite this source"}', 'passage_id': 'p',
+         'source_locator': {'revision': 'r2', 'page': 7},
+         'context_readbacks': [{'node_id': 'next', 'operation': 'read'}]},
+        {'metadata': 'unparsed metadata', 'failure': {'reason': 'read unavailable'}}]}
+    saved = deepcopy(original)
+    view = orientation_source_view(original)
+    assert original == saved
+    assert view['items'][0]['metadata']['routing_metadata_v1'] == {'unit': 'GW', 'old_id': 'v1'}
+    assert view['items'][0]['metadata']['period_end'] == '2026-06-30'
+    assert view['items'][0]['next_offset'] == 10
+    for index in (0, 1):
+        ref = view['items'][index]['retrieval']['same_receipt_ref']
+        assert view['retrieval_contexts'][ref] == telemetry
+    assert view['items'][1]['source_known_at'] is None
+    assert view['items'][2:] == saved['items'][2:]
+    assert orientation_source_view(view) == view
 
 
 def test_feedback_store_isolation_idempotency_and_no_graph_write(tmp_path):

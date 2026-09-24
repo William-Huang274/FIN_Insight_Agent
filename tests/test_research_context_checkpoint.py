@@ -97,6 +97,46 @@ def test_exact_assignment_copy_reuses_original_human_message_but_keeps_latest_ha
     assert coalesce_context_snapshots(reordered)[0] == rows[1]
 
 
+def test_orientation_compaction_keeps_latest_index_and_provider_reasoning_without_losing_evidence():
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    method = {'instructions': 'Evidence, periods and qualifications. ' * 300}
+    observed = {'read_ref': 'O1', 'source': 'original', 'scope': 'partial window ' * 50}
+    initial = HumanMessage(content=json.dumps({'role_method': method}))
+    context = {'role_method': method, 'orientation_context': {'observation_index': [observed]}}
+    result = {'passage': 'USD 123, Q2 actual; capacity subject to permits.', 'passage_id': 'p1'}
+    first = ToolMessage(tool_call_id='read1', content=json.dumps({'result': result, 'current_context': context}))
+    last = ToolMessage(tool_call_id='read2', content=json.dumps({'result': {'error': 'not fetched'},
+        'current_context': {'role_method': method, 'orientation_context': {'observation_index': [observed, {'read_ref': 'O2'}]}}}))
+    ai = AIMessage(content='', additional_kwargs={'reasoning_content': 'private provider state'}, tool_calls=[
+        {'id': 'read1', 'name': 'RequestSourceAction', 'args': {}, 'type': 'tool_call'}])
+    middle = first.model_copy(update={'tool_call_id': 'middle'})
+    rows = [initial, ai, first, middle, last]
+    saved = deepcopy(rows)
+    projected = coalesce_context_snapshots(rows)
+    assert rows == saved and projected[0] == initial and projected[1] == ai and projected[-1] == last
+    body = json.loads(projected[2].content)
+    assert body['result'] == result
+    assert body['current_context']['role_method']['identical_snapshot_retained_at']['message_index'] == 0
+    assert body['current_context']['orientation_context']['observation_index'] == [observed]
+    pointer = json.loads(projected[3].content)['current_context']['orientation_context']['observation_index'][0]
+    assert pointer['identical_snapshot_retained_at'] == {
+        'tool_call_id': 'read1', 'field': 'current_context.orientation_context.observation_index[0]'}
+    assert len(projected[2].content) < len(first.content) / 3
+    wire = model()._get_request_payload(rows)
+    assert wire['messages'][1]['reasoning_content'] == 'private provider state'
+    assert json.loads(wire['messages'][2]['content'])['result'] == result
+    assert wire['messages'][2]['tool_call_id'] == 'read1'
+    extended = coalesce_context_snapshots([*rows, last.model_copy(update={'tool_call_id': 'read3'})])
+    # No historical pointer may track the newest tool ID and invalidate the
+    # entire already-stable provider prompt prefix on each new batch.
+    assert projected[:-1] == extended[:len(projected)-1]
+    # A changed observation must not silently inherit the latest interpretation.
+    changed = json.loads(last.content)
+    changed['current_context']['orientation_context']['observation_index'][0]['source'] = 'retracted'
+    rows[-1] = last.model_copy(update={'content': json.dumps(changed)})
+    assert json.loads(coalesce_context_snapshots(rows)[2].content)['current_context']['orientation_context']['observation_index'] == [observed]
+
+
 def test_working_phase_checkpoint_preserves_exact_material_evidence_and_recent_batch():
     rows=[HumanMessage(content="Overall assignment; no annual inference from quarter."),
         *source_messages("SOURCE-A"), *source_messages("SOURCE-B"), *source_messages("SOURCE-C"), *source_messages("LATEST")]

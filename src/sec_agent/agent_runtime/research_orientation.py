@@ -185,13 +185,47 @@ def observation_scope(observation):
 
 
 def orientation_source_view(result):
-    """Keep source semantics; leave repeated internal transport receipts in saved observations."""
+    """Lossless navigation normalization; original evidence stays in saved observations.
+
+    Decode metadata once and remove only byte-equivalent routing copies. Unknown
+    or conflicting metadata survives. Never parse or rewrite source passage text.
+    """
     def compact(value):
         if isinstance(value, dict):
-            return {k: compact(v) for k, v in value.items() if k != 'mcp_receipt_chain'}
+            row = {k: compact(v) for k, v in value.items() if k != 'mcp_receipt_chain'}
+            for key in ('metadata', 'routing_metadata_v1'):
+                if isinstance(row.get(key), str):
+                    try:
+                        decoded = json.loads(row[key])
+                    except (ValueError, TypeError):
+                        continue
+                    if isinstance(decoded, dict):
+                        row[key] = compact(decoded)
+            routing = row.get('routing_metadata_v1')
+            if isinstance(routing, dict):
+                distinct = {k: v for k, v in routing.items() if k not in row or row[k] != v}
+                if distinct:
+                    row['routing_metadata_v1'] = distinct
+                else:
+                    del row['routing_metadata_v1']
+            return row
         if isinstance(value, list): return [compact(v) for v in value]
         return value
-    return {**compact(result), 'transport_receipts': 'retained_in_runtime_observation'}
+    view = compact(result)
+    # Search telemetry is identical across many hits. Reference one full copy in
+    # this same receipt, preserving graph truncation and retrieval coverage flags.
+    shared = {json.dumps(v, sort_keys=True, ensure_ascii=False): (k, v)
+              for k, v in view.get('retrieval_contexts', {}).items()}
+    for row in view.get('items', []):
+        retrieval = row.get('retrieval')
+        if isinstance(retrieval, dict) and 'same_receipt_ref' not in retrieval:
+            key = json.dumps(retrieval, sort_keys=True, ensure_ascii=False)
+            if key not in shared:
+                shared[key] = (f'R{len(shared) + 1}', retrieval)
+            row['retrieval'] = {'same_receipt_ref': shared[key][0]}
+    if shared:
+        view['retrieval_contexts'] = dict(shared.values())
+    return {**view, 'transport_receipts': 'retained_in_runtime_observation'}
 
 
 def orientation_library_context(library, research_as_of):

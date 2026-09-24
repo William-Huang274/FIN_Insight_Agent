@@ -150,7 +150,8 @@ def coalesce_context_snapshots(messages):
     projected = deepcopy(list(messages))
     snapshots = {}
     contexts = []
-    snapshot_keys = ("task_context", "submission_to_repair", "progress")
+    snapshot_keys = ("task_context", "submission_to_repair", "progress", "role_method",
+        "scope_policy", "execution_policy", "continuation_policy", "planning_source_policy")
     for index, message in enumerate(projected):
         if not isinstance(message, (HumanMessage, ToolMessage)):
             continue
@@ -172,6 +173,8 @@ def coalesce_context_snapshots(messages):
         for key in snapshot_keys:
             if key not in context:
                 continue
+            if key not in {"task_context", "submission_to_repair", "progress"} and len(json.dumps(context[key])) < 500:
+                continue
             identity = (key, json.dumps(context[key], ensure_ascii=False, sort_keys=True))
             if identity not in snapshots or snapshots[identity].get("message_index", -1) >= index:
                 snapshots[identity] = {"tool_call_id": message.tool_call_id, "field": "current_context." + key}
@@ -184,6 +187,45 @@ def coalesce_context_snapshots(messages):
                     "use the latest current_context for current task and candidate status. Original storage is unchanged."}
             changed = True
         if changed:
+            message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
+    # Stable backward references matter for provider prefix caching. Refer to
+    # each value's FIRST full occurrence, never the latest turn (whose ID changes
+    # on every call). Changed/retracted observations get their own full value.
+    orientation_copies = {}
+    latest_index = contexts[-1][0] if contexts else -1
+    for index, message in enumerate(projected):
+        if not isinstance(message, (HumanMessage, ToolMessage)) or index == latest_index:
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(body, dict):
+            continue
+        context = body if isinstance(message, HumanMessage) else body.get('current_context', {})
+        orientation = context.get('orientation_context') if isinstance(context, dict) else None
+        if not isinstance(orientation, dict):
+            continue
+        original_orientation = deepcopy(orientation)
+        prefix = '' if isinstance(message, HumanMessage) else 'current_context.'
+        def reuse(value, key, field):
+            encoded = json.dumps(value, ensure_ascii=False, sort_keys=True)
+            if len(encoded) <= 240:
+                return value
+            identity = (key, encoded)
+            if identity not in orientation_copies:
+                orientation_copies[identity] = {
+                    **({'message_index': index} if isinstance(message, HumanMessage)
+                       else {'tool_call_id': message.tool_call_id}), 'field': prefix + field}
+                return value
+            return {'identical_snapshot_retained_at': orientation_copies[identity]}
+        for key, value in list(orientation.items()):
+            field = 'orientation_context.' + key
+            if key == 'observation_index' and isinstance(value, list):
+                orientation[key] = [reuse(item, key, f'{field}[{i}]') for i, item in enumerate(value)]
+            else:
+                orientation[key] = reuse(value, key, field)
+        if orientation != original_orientation:
             message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
     return projected
 

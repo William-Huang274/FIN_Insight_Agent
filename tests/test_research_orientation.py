@@ -193,7 +193,10 @@ def test_orientation_read_submit_keeps_full_provenance_and_stops():
             return call(req,'RequestSourceAction',{'reason_summary':'阅读原文。',
                  'action':'request_source',
                  'selection':{'source_space':'library','operation':'read','document_id':'DOC::test'}})
-        assert json.loads(req['tool_results'][0]['content'])['read_ref']=='O1'
+        reply=json.loads(req['tool_results'][0]['content'])
+        assert reply['read_ref']=='O1'
+        assert reply['reading_scope']['evidence_kind']=='original_window'
+        assert req['orientation_context']['observation_index']==[reply['reading_scope']]
         return call(req,'SubmitResearchOrientationAction',submission())
     graph,value=make_graph(model)
     result=graph.invoke(value.model_dump(mode='json'))
@@ -221,6 +224,24 @@ def test_retrieval_failure_can_stop_honestly_without_fake_evidence():
     assert result['research_orientation']['runtime_provenance']=={}
 
 
+@pytest.mark.parametrize('operation,status,items,expected',[
+    ('read','success',[{'result_state':'retrieval_candidate','preview':'Chapter menu'}],'navigation_only'),
+    ('search','success',[{'result_state':'retrieval_candidate','preview':'Matching text'}],'navigation_only'),
+    ('read','failure',read_result()['items'],'execution_failure'),
+    ('read','success',read_result()['items'],'original_window'),
+])
+def test_reading_scope_never_promotes_transport_success_or_window_end(operation,status,items,expected):
+    from sec_agent.agent_runtime.research_orientation import observation_scope
+    observation={'read_ref':'O1','selection':{'operation':operation},
+        'result':{'status':status,'items':items+[{'result_state':'typed_gap','navigation':{'next_offset':None}}]}}
+    before=json.dumps(observation)
+    scope=observation_scope(observation)
+    assert scope['evidence_kind']==expected
+    assert scope['eligible_finding_reference']==(expected=='original_window')
+    assert not scope['whole_document_review_established'] and not scope['public_non_disclosure_established']
+    assert json.dumps(observation)==before
+
+
 def test_orientation_library_default_and_invalid_routes_rejected_before_tool():
     base={'context_digest':'a'*64,'action':'request_source','reason_summary':'导航。'}
     parsed=OrientationLibraryReadAction.model_validate({**base,'selection':{'operation':'catalog'}})
@@ -242,7 +263,7 @@ def test_orientation_native_wire_excludes_execution_tools_and_old_role_prompt():
         read_schema=next(t['function']['parameters'] for t in wire['tools'] if t['function']['name']=='RequestSourceAction')
         assert read_schema['properties']['selection']['properties']['source_space']['const']=='library'
         payload=json.loads(wire['messages'][1]['content'])
-        assert payload['orientation_context']=={'catalog_navigation':'library','finding_original_read_refs':[], 'all_observed_refs':[]}
+        assert payload['orientation_context']=={'catalog_navigation':'library','finding_original_read_refs':[], 'all_observed_refs':[], 'observation_index':[]}
         args=blocked_submission();args.update(context_digest=payload['context_digest'])
         return httpx.Response(200,json={'id':'offline','object':'chat.completion','created':1,'model':'deepseek-v4-pro',
             'choices':[{'index':0,'finish_reason':'tool_calls','message':{'role':'assistant','content':'',

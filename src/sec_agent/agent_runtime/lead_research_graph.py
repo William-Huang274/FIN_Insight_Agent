@@ -356,7 +356,7 @@ def build_lead_research_graph(
                 "contexts, not whole-task clones. Do not promise skipped Lead judgment for integrated. Limit "
                 "scope and verbosity to the actual question; delegate meaningful work, not roles for their own sake.")
         if orientation_only:
-            from .research_orientation import finding_read_refs
+            from .research_orientation import finding_read_refs, observation_scope
             request.update(orientation_only=True, orientation_context=orientation_context or {},
                 role_method=role_method or get_research_method('research_orientation'),
                 branch_catalog=[], required_branch_ids=[], workpapers=[], tasks=[], require_execution_plan=False,
@@ -365,7 +365,8 @@ def build_lead_research_graph(
                 continuation_policy="Stop after submitting orientation. Proposed tasks are not executed.")
             request['orientation_context'] = {**request['orientation_context'],
                 'finding_original_read_refs': list(finding_read_refs(state.get('planning_observations', []))),
-                'all_observed_refs': [o['read_ref'] for o in state.get('planning_observations', [])]}
+                'all_observed_refs': [o['read_ref'] for o in state.get('planning_observations', [])],
+                'observation_index': [observation_scope(o) for o in state.get('planning_observations', [])]}
             if feedback_reader:
                 request['orientation_context'] = {**request['orientation_context'],
                     'feedback_updates': feedback_reader(),
@@ -437,8 +438,9 @@ def build_lead_research_graph(
                     value = {**observation, "research_as_of": expected_input.task.research_as_of,
                              "planning_observation_not_verified_financial_conclusion": True}
                     if orientation_only:
-                        from .research_orientation import orientation_source_view
+                        from .research_orientation import orientation_source_view, observation_scope
                         value['result'] = orientation_source_view(result)
+                        value['reading_scope'] = observation_scope(observation)
                     return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
                 if orientation_only:
                     from .research_feedback import ReportResearchIssuesAction, bind_issues

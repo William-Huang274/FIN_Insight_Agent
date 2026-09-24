@@ -25,17 +25,17 @@ class OrientationLibraryReadAction(RequestSourceAction):
 class OrientationFinding(BaseModel):
     model_config = ConfigDict(extra='forbid', frozen=True)
     finding_id: str = Field(min_length=1, max_length=60, description='Unique ID in this submission; prefer a short stable ID such as F1. References must copy this exact full string.')
-    judgment: str = Field(min_length=1, max_length=1800)
+    judgment: str = Field(min_length=1, max_length=1800, description='Claim within the cited original windows, preserving speaker, subject, period and actual/forecast status. A partial read cannot establish company-wide non-disclosure.')
     kind: Literal['observation', 'conditional', 'hypothesis']
     read_refs: tuple[str, ...] = Field(min_length=1, max_length=12)
-    unresolved: str = Field(max_length=1500)
+    unresolved: str = Field(max_length=1500, description='What remains unexamined or unresolved and the next check. Distinguish not yet read, execution failure, conflicting sources and absence within an explicitly checked scope.')
 
 
 class OrientationTopic(BaseModel):
     model_config = ConfigDict(extra='forbid', frozen=True)
     topic_id: str = Field(min_length=1, max_length=60, description='Unique ID in this submission; prefer a short stable ID such as T1. Dependencies and scope references must copy this exact full string.')
     question: str = Field(min_length=1, max_length=1200)
-    why_now: str = Field(min_length=1, max_length=1200)
+    why_now: str = Field(min_length=1, max_length=1200, description='Explain the trigger using finding_ids. Unread search/graph clues may motivate investigation but must be explicitly described as unverified; do not introduce them as established facts.')
     finding_ids: tuple[str, ...] = Field(min_length=1, max_length=12, description='Exact finding_id values from findings in this submission; never abbreviate a longer ID.')
     professional_roles: tuple[str, ...] = Field(min_length=1, max_length=5)
     source_dimensions: tuple[Literal['D1', 'D2', 'D3', 'D4', 'D5', 'D6'], ...] = Field(min_length=1, max_length=6)
@@ -64,7 +64,7 @@ class SubmitResearchOrientationAction(BaseModel):
     context_digest: str = Field(pattern=r'^[0-9a-f]{64}$')
     reason_summary: str = Field(min_length=1, max_length=1500)
     disposition: Literal['ready_for_topic_design', 'needs_attention']
-    overview: str = Field(min_length=1, max_length=2400)
+    overview: str = Field(min_length=1, max_length=2400, description='Synthesize findings and the proposed sequence. Apply the same evidence boundaries as findings; representative reads do not establish complete library or industry coverage.')
     findings: tuple[OrientationFinding, ...] = Field(max_length=12)
     topics: tuple[OrientationTopic, ...] = Field(max_length=12)
     scope_map: tuple[OrientationCoverage, ...] = Field(min_length=1, max_length=16)
@@ -102,6 +102,15 @@ The host lists finding_original_read_refs for findings and all_observed_refs for
 reference is useful for discovery but cannot substitute for an original read in the current finding contract.
 Each cited original must support that specific finding. Never attach an unrelated valid read_ref just
 to satisfy the validator; keep unread graph assertions as unresolved discovery or submit an issue instead.
+The host's observation_index distinguishes returned original windows, navigation-only results and failures.
+A successful read operation may return only a chapter menu. End of a requested window or next_offset=null
+does not mean the complete report or all relevant disclosures were examined.
+These boundaries apply equally to overview, topic why_now and coverage prose, not just finding.read_refs.
+Synthesize supported findings there; label unread snippets as leads to check. State "not examined in this
+window" with the next check instead of company-wide "not disclosed" unless the checked scope supports it.
+Identify who said a number (for example an analyst question versus management guidance) and expand nearby
+context when actual results, forecasts or period are unclear. Do not turn a sampled bottleneck into a
+conclusion about the whole sector or interpret source coverage as completeness.
 Operational legacy case/capability IDs identify infrastructure, not the user's company or research scope.
 Runtime preserves the exact request, source identities, versions and returned passage window. It does not
 validate your interpretation. Keep material subject, period, units and actual/forecast/contract status.
@@ -136,6 +145,22 @@ def finding_read_refs(observations):
     return {o['read_ref']: o for o in observations
         if o['selection'].get('operation') == 'read' and o['result'].get('status', 'success') == 'success'
         and any(r.get('result_state') == 'source_bound_passage' and r.get('passage') for r in o['result'].get('items', []))}
+
+
+def observation_scope(observation):
+    """Describe returned evidence, never infer whole-document review or semantic correctness."""
+    result = observation['result']
+    items = result.get('items', [])
+    passages = [r for r in items if r.get('result_state') == 'source_bound_passage' and r.get('passage')]
+    successful = result.get('status', 'success') == 'success'
+    original = successful and observation['selection'].get('operation') == 'read' and bool(passages)
+    return {'read_ref': observation.get('read_ref'), 'operation': observation['selection'].get('operation'),
+            'execution_status': result.get('status', 'success'),
+            'evidence_kind': 'original_window' if original else ('navigation_only' if successful else 'execution_failure'),
+            'eligible_finding_reference': original,
+            'returned_passage_count': len(passages), 'returned_characters': sum(len(r['passage']) for r in passages),
+            'document_ids': sorted({r['document_id'] for r in passages if r.get('document_id')}),
+            'whole_document_review_established': False, 'public_non_disclosure_established': False}
 
 
 def orientation_source_view(result):

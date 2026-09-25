@@ -97,6 +97,29 @@ def test_exact_assignment_copy_reuses_original_human_message_but_keeps_latest_ha
     assert coalesce_context_snapshots(reordered)[0] == rows[1]
 
 
+def test_resumed_observation_duplicates_reuse_exact_earlier_value_without_losing_revision():
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    observed = {"kind": "evidence", "status": "success", "references": [{"ref_id": "source-1"}],
+        "content": [{"text": "Original USD source, fiscal period and limitations. " * 100}], "revision": 1}
+    revised = {**observed, "revision": 2}
+    failed = {**observed, "status": "error", "failure": {"code": "unavailable"}}
+    context = {"task_context": {"assignment": "Original scope"}, "progress": {
+        "prior_actions": [{"action": "read", "source_id": "source-1"}],
+        "observations": [observed, deepcopy(observed), revised, failed]}}
+    rows = [HumanMessage(content=json.dumps(context)), HumanMessage(content="User correction: preserve fiscal year.")]
+    original = deepcopy(rows)
+    projected = coalesce_context_snapshots(rows)
+    progress = json.loads(projected[0].content)["progress"]
+    assert progress["observations"][0] == observed
+    assert progress["observations"][1]["identical_snapshot_retained_at"] == {
+        "message_index": 0, "field": "progress.observations[0]"}
+    assert progress["observations"][2:] == [revised, failed]
+    assert progress["prior_actions"] == context["progress"]["prior_actions"]
+    assert projected[1] == rows[1] and rows == original
+    assert len(projected[0].content) < len(rows[0].content) - 3000
+    assert coalesce_context_snapshots(projected) == projected
+
+
 def test_orientation_compaction_keeps_latest_index_and_provider_reasoning_without_losing_evidence():
     from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
     method = {'instructions': 'Evidence, periods and qualifications. ' * 300}

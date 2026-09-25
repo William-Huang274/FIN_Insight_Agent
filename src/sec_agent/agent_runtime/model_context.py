@@ -159,6 +159,41 @@ def coalesce_context_snapshots(messages):
     errors and freshly read sources, are untouched. Stored history is immutable.
     """
     projected = deepcopy(list(messages))
+    # A resumed specialist has its saved observations in the initial semantic
+    # snapshot, not in native ToolMessages. Repeated identical catalog/search
+    # results must not be permanently exempt from request-copy coalescing.
+    # Keep the first COMPLETE observation (including authority and revision),
+    # with stable backward pointers; no summary, dropped identity or reread.
+    for index, message in enumerate(projected):
+        if not isinstance(message, HumanMessage):
+            continue
+        try:
+            body = json.loads(message.content)
+        except (TypeError, json.JSONDecodeError):
+            continue
+        progress = body.get("progress") if isinstance(body, dict) else None
+        observations = progress.get("observations") if isinstance(progress, dict) else None
+        if not isinstance(observations, list):
+            continue
+        seen = {}
+        changed = False
+        for offset, observation in enumerate(observations):
+            if not isinstance(observation, dict) or "kind" not in observation or "status" not in observation:
+                continue
+            identity = json.dumps(observation, ensure_ascii=False, sort_keys=True)
+            if len(identity) <= 240:
+                continue
+            if identity not in seen:
+                seen[identity] = offset
+                continue
+            observations[offset] = {"identical_snapshot_retained_at": {
+                "message_index": index, "field": f"progress.observations[{seen[identity]}]"},
+                "notice": "Exact duplicate observation. Full original including source, period, unit, revision, "
+                    "authority and failure status remains earlier in this same request. Not new evidence; "
+                    "stored observations and tool counts are unchanged."}
+            changed = True
+        if changed:
+            message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
     snapshots = {}
     contexts = []
     snapshot_keys = ("task_context", "submission_to_repair", "progress", "role_method",

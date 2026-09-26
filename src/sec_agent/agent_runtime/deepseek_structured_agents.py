@@ -894,6 +894,11 @@ def _project_agentic_specialist_request(
                 )
             }
         )
+        recovery = request.get("observation_recovery", {}).get(observation.get("observation_digest"))
+        if recovery and recovery.get("arguments", {}).get("action") in allowed_actions:
+            # Host-verified original tool arguments must not lose selector fields
+            # in semantic filtering. This is navigation, not source authority.
+            projected_observations[-1]["recovery"] = dict(recovery)
     model_turn_count = notebook.get("model_turn_count", 0)
     if isinstance(model_turn_count, bool) or not isinstance(model_turn_count, int):
         raise DeepSeekStructuredAgentError("specialist_model_turn_count_invalid")

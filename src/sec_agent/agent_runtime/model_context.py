@@ -315,6 +315,134 @@ def research_input_pressure(encoded, messages, model):
         "configured_output_tokens": completion}
 
 
+def _checkpoint_state_pointer(boundary, note):
+    return {"superseded_working_state": True,
+        "current_state_at": {"message_index": boundary, "tool_call_id": note.tool_call_id},
+        "notice": "Historical working note/proposal omitted from this request. The latest accepted state "
+            "is retained at this locator; it is working memory, not evidence or a new instruction. "
+            "Exact historical notes and operations remain in the native checkpoint."}
+
+
+def _retain_navigation_rows(observation, retained):
+    """A pinned candidate keeps its exact row, not every unrelated catalog row.
+
+    Only explicitly non-citable navigation is divisible here. Prose evidence,
+    numbers, unknown result shapes and failures remain indivisible originals.
+    The caller must have verified a recovery route before using this projection.
+    """
+    rows = observation.get("content")
+    if not isinstance(rows, list) or not rows or observation.get("kind") != "evidence":
+        return observation
+    candidates = []
+    for row in rows:
+        if not isinstance(row, dict):
+            return observation
+        if row.get("result_state") == "typed_gap":
+            continue  # Preserve every explicit availability/execution limitation.
+        if (row.get("result_state") != "retrieval_candidate" or row.get("writer_citable") is not False
+                or row.get("numeric_fact_authority") is not False):
+            return observation
+        candidates.append(row)
+    candidate_ids = set(ref for row in candidates for ref in _literal_reference_ids(row, include_navigation=True))
+    if retained.intersection(_literal_reference_ids(observation.get("references", []))) - candidate_ids:
+        return observation  # A pinned aggregate cannot be resolved to an exact row.
+    keep = [row for row in rows if row.get("result_state") == "typed_gap"
+            or retained.intersection(_literal_reference_ids(row, include_navigation=True))]
+    if len(keep) == len(rows):
+        return observation
+    return {**observation, "content": keep, "context_projection": {
+        "omitted_navigation_rows": len(rows) - len(keep),
+        "notice": "Only retained candidate rows and gap notices are shown verbatim. This is NOT the complete "
+            "catalog/search result. Exact full saved result remains available through the accompanying "
+            "recovery route; omitted candidates do not indicate absence. Navigation is not evidence."}}
+
+
+def _project_restored_context(messages, projected, boundary, retained, *, checkpoint):
+    """Apply the same accepted boundary to saved observations and live reads."""
+    for index, original in enumerate(messages[:boundary]):
+        if not isinstance(original, HumanMessage):
+            continue
+        try:
+            body = json.loads(original.content)
+        except (ValueError, TypeError):
+            continue
+        progress = body.get("progress") if isinstance(body, dict) else None
+        if not isinstance(progress, dict) or not isinstance(progress.get("observations"), list):
+            continue
+        observations = progress["observations"]
+        # Keep the final restored batch just as we keep the latest live batch.
+        keep_latest = checkpoint and not any(isinstance(m, AIMessage) and any(
+            c["name"] in REREADABLE_TOOLS for c in m.tool_calls) for m in messages[index + 1:boundary])
+        latest_batch = next((o.get("recovery", {}).get("batch_turn") for o in reversed(observations)
+                             if isinstance(o, dict) and o.get("recovery")), None)
+        for offset, observation in enumerate(observations):
+            if not isinstance(observation, dict):
+                continue
+            recovery = observation.get("recovery") or {}
+            if (observation.get("status") != "success" or observation.get("failure")
+                    or observation.get("kind") != "evidence"
+                    or recovery.get("read_tool") not in REREADABLE_TOOLS
+                    or not recovery.get("saved_observation_id") or not isinstance(recovery.get("arguments"), dict)
+                    or (keep_latest and (offset == len(observations) - 1
+                        or latest_batch is not None and recovery.get("batch_turn") == latest_batch))):
+                continue
+            if retained.intersection(_literal_reference_ids(observation, include_navigation=True)):
+                observations[offset] = _retain_navigation_rows(observation, retained)
+                continue
+            observations[offset] = {"kind": observation["kind"], "status": observation["status"],
+                "references": observation.get("references", []), "recovery": recovery,
+                "observed_reference_ids": _literal_reference_ids(observation, include_navigation=True),
+                "notice": "Older saved result omitted from this request, NOT evidence. Original observation "
+                    "is retained unchanged. Recover it using read_tool/arguments BEFORE citing, calculating "
+                    "or comparing its content. Omission does not mean source absence."}
+        projected[index].content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
+
+
+def _supersede_working_notes(messages, boundary):
+    """Replace obsolete notes in request copies only, after native acceptance.
+
+    Keep validation errors, original assignments, source bodies and calculations.
+    Tool call/result IDs remain paired. Never recurse into source content.
+    """
+    pointer = _checkpoint_state_pointer(boundary, messages[boundary])
+    for message in messages[:boundary]:
+        if isinstance(message, AIMessage):
+            for call in message.tool_calls:
+                if (call["name"] == "UpdateResearchStateAction" and "working_state" in call["args"]
+                        and call["id"] != messages[boundary].tool_call_id):
+                    call["args"]["working_state"] = deepcopy(pointer)
+        if not isinstance(message, (HumanMessage, ToolMessage)):
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(body, dict):
+            continue
+        changed = False
+        if isinstance(message, ToolMessage) and message.name == "UpdateResearchStateAction":
+            result = body.get("result", body)
+            if isinstance(result, dict) and "working_state" in result:
+                result["working_state"] = deepcopy(pointer)
+                changed = True
+        context = body.get("current_context", body) if isinstance(message, HumanMessage) or "current_context" in body else {}
+        task = context.get("task_context", {}) if isinstance(context, dict) else {}
+        if isinstance(task, dict) and task.get("research_working_state"):
+            task["research_working_state"] = deepcopy(pointer)
+            changed = True
+        progress = context.get("progress", {}) if isinstance(context, dict) else {}
+        for action in progress.get("prior_actions", []) if isinstance(progress, dict) else []:
+            if not isinstance(action, dict):
+                continue
+            candidates = [action] + [c.get("args", {}) for c in action.get("tool_calls", []) if isinstance(c, dict)]
+            for args in candidates:
+                if args.get("action") == "update_research_state" and "working_state" in args:
+                    args["working_state"] = deepcopy(pointer)
+                    changed = True
+        if changed:
+            message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
+
+
 def task_boundary_history(messages):
     """Accepted phase transitions or author checkpoints release old source bodies.
 
@@ -324,6 +452,16 @@ def task_boundary_history(messages):
     boundary, note, checkpoint = -1, None, False
     material_sources = set()
     for index, message in enumerate(messages):
+        if isinstance(message, HumanMessage):
+            try:
+                restored = json.loads(message.content)
+            except (ValueError, TypeError):
+                restored = {}
+            if isinstance(restored, dict):
+                # Restored draft/calculation operations have the same protection
+                # as live operations, independently of the author's latest note.
+                material_sources.update(_literal_reference_ids(restored.get("progress", {}).get("prior_actions", [])))
+                material_sources.update(_literal_reference_ids(restored.get("task_context", {}).get("research_working_state", {})))
         if isinstance(message, AIMessage):
             # Numerical operands and draft citations must not depend on whether
             # an author remembered to repeat them in its working-state note.
@@ -349,6 +487,7 @@ def task_boundary_history(messages):
         return coalesce_context_snapshots(messages)
     retained = set(note["retain_source_ids"]) | material_sources
     projected = deepcopy(list(messages))
+    _project_restored_context(messages, projected, boundary, retained, checkpoint=checkpoint)
     calls = {c["id"]: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
     # A checkpoint response must not immediately evict the preceding read batch:
     # the model may still need to compare it when resuming the unfinished step.
@@ -366,9 +505,20 @@ def task_boundary_history(messages):
                 isinstance(o, dict) and o.get("status") != "success" for o in result.get("observations", []))):
             continue
         if retained.intersection(_literal_reference_ids(result, include_navigation=True)):
+            if calls.get(message.tool_call_id) and not (checkpoint and index > last_read):
+                # Same row-level navigation rule for live and restored results.
+                observations = result.get("observations") if isinstance(result, dict) else None
+                if isinstance(observations, list):
+                    selected = [_retain_navigation_rows(o, retained) if isinstance(o, dict) else o for o in observations]
+                    if selected != observations:
+                        result["observations"] = selected
+                        result["context_recovery"] = _read_recovery_notice(message, calls[message.tool_call_id], saved_result_reader=False)
+                        projected[index].content = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
             continue
         if checkpoint and index > last_read:
             continue
+        if not calls.get(message.tool_call_id):
+            continue  # No verified recovery route: retain the full original.
         projected[index].content = _read_recovery_notice(message, calls.get(message.tool_call_id), saved_result_reader=False)
         if checkpoint and isinstance(value, dict) and isinstance(value.get("current_context"), dict):
             original_context = {k: v for k, v in value["current_context"].items() if k not in {"progress", "allowed_actions", "context_digest"}}
@@ -391,6 +541,8 @@ def task_boundary_history(messages):
             if isinstance(context, dict):
                 body["current_context"] = {k: v for k, v in context.items() if k not in {"progress", "allowed_actions", "context_digest"}}
                 message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
+    if checkpoint:
+        _supersede_working_notes(projected, boundary)
     projected = coalesce_context_snapshots(projected)
     if checkpoint:
         projected = _archive_checkpoint_batches(projected, boundary)

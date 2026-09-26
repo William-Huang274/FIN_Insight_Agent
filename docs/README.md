@@ -4,6 +4,8 @@
 
 Lead初步判断的依据边界、具体任务依赖和分阶段模型试验见[初步判断与模型选择](engineering/lead_reasoning_and_model_routing.zh-CN.md)。
 
+专家接续时的原件保留、准确回读、目录条目投影和工作笔记替代见[研究上下文生命周期](engineering/research_context_lifecycle.zh-CN.md)。
+
 FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工修订的本地金融研究工作台。
 
 | 文档 | 内容 |

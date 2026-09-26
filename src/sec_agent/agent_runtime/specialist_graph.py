@@ -1132,6 +1132,7 @@ def _model_request(
         "task": state["task"],
         "l0_context": state["l0_context"],
         "notebook": notebook.model_dump(mode="json"),
+        "observation_recovery": _observation_recovery_catalog(state, notebook),
         "execution_budget": {
             "max_model_turns": int(state["max_model_turns"]),
             "used_model_turns": notebook.model_turn_count,
@@ -1334,6 +1335,44 @@ def _saved_read_observation(state, notebook, action):
             if observation is not None and observation.status == "success" and observation.failure is None:
                 return observation
     return None
+
+
+def _observation_recovery_catalog(state, notebook):
+    """Bind request-only locators through the same exact replay path as tools.
+
+    Never infer a reader from a source ID or zip observations to model turns:
+    parallel batches, method reads and rejected actions break that alignment.
+    Unmatched/imported observations keep their full body in the request.
+    """
+    catalog = {}
+    for record in notebook.model_turn_records:
+        decision = record.action
+        if isinstance(decision, SpecialistNativeToolBatch):
+            actions = []
+            for call in decision.tool_calls:
+                if isinstance(call, SpecialistNativeToolCall):
+                    try:
+                        actions.append(_validate_action(call.args))
+                    except (ValueError, SpecialistAgenticGraphError):
+                        continue
+        else:
+            actions = [decision]
+        for action in actions:
+            # Calculations/financial operands remain in the working set.
+            if not isinstance(action, (RequestEvidenceAction, RequestSourceAction)):
+                continue
+            saved = _saved_read_observation(state, notebook, action)
+            if saved is None:
+                continue
+            catalog.setdefault(saved.observation_digest, {
+                "read_tool": type(action).__name__,
+                "arguments": action.model_dump(mode="json", exclude={"context_digest"}),
+                "saved_observation_id": saved.observation_digest,
+                "batch_turn": record.turn_index,
+                "notice": "Repeat these arguments with current execution binding to read the exact saved "
+                    "successful observation in this task. No new source dispatch; not new evidence.",
+            })
+    return catalog
 
 
 def _build_tool_request(

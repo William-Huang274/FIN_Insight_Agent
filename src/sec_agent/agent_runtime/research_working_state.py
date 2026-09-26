@@ -23,7 +23,8 @@ class ResearchWorkingState(BaseModel):
     current_subtask: str = Field(min_length=1, max_length=2000)
     phase_status: Literal["working", "completed"]
     findings: list[ObservedFinding] = Field(default_factory=list, max_length=32)
-    rejected_interpretations: list[str] = Field(default_factory=list, max_length=24)
+    rejected_interpretations: list[str] = Field(default_factory=list, max_length=24,
+        description="Rejected author interpretations, not evidence. At explicit checkpoints the host retains all prior entries verbatim and reports inherited entries; omission or rephrasing cannot erase an old constraint. Reuse exact entries to avoid duplicates.")
     open_questions: list[str] = Field(default_factory=list, max_length=24)
     resolved_questions: list[ResolvedResearchQuestion] = Field(default_factory=list, max_length=24)
     next_step: str = Field(min_length=1, max_length=2000)
@@ -54,6 +55,9 @@ WORKING_STATE_GUIDANCE = (
     "overall research logic, every used numerical/metric claim with its source and qualifiers, rejected "
     "interpretations, all unresolved issues, latest task details and exact next action. Do not resolve an issue "
     "just to shorten the note. Original recorded findings and calculations remain protected independently. "
+    "At explicit checkpoints prior rejected interpretations are retained by the host even if omitted or "
+    "rephrased; the accepted result reports inherited entries. This does not resolve open questions or "
+    "validate interpretations. Copy each remaining open question exactly or explicitly resolve it with observed sources. "
     "After an accepted checkpoint the latest working state supersedes older notes in the request, while "
     "the native history remains intact. Saved observation recovery routes return the exact recorded result "
     "without a new source query. Follow the supplied arguments when that original is needed; a partial "

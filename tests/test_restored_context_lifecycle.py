@@ -137,3 +137,55 @@ def test_pinned_navigation_rows_are_identical_in_live_and_restored_views():
                 {"result_state": "numeric_fact", "value": 123}):
         indivisible = {**obs, "content": [kept, row]}
         assert _retain_navigation_rows(indivisible, {"PIN"}) == indivisible
+def test_library_candidate_authority_can_be_bound_in_native_references():
+    from sec_agent.agent_runtime.model_context import _retain_navigation_rows
+    rows=[{'result_state':'retrieval_candidate','node_id':key,'preview':'Literal original preview'} for key in ('PIN','OTHER')]
+    refs=[{'ref_id':r['node_id'],'authority_state':'retrieval_candidate',
+           'writer_citable':False,'numeric_fact_authority':False} for r in rows]
+    obs=observation('library', content=rows, references=refs)
+    original=deepcopy(obs)
+    projected=_retain_navigation_rows(obs, {'PIN'})
+    assert obs==original and projected['content']==[rows[0]] and projected['references']==refs[:1]
+    for bad in ({**obs,'references':[]}, {**obs,'references':[{**r,'writer_citable':True} for r in refs]},
+                {**obs,'content':[rows[0],{**rows[1],'writer_citable':True}]},
+                {**obs,'content':[rows[0],{**rows[1],'node_id':'UNBOUND'}]}):
+        assert _retain_navigation_rows(bad, {'PIN'})==bad
+
+
+def test_checkpoint_preserves_error_payload_and_inherits_method_by_exact_pointer():
+    from sec_agent.agent_runtime.model_context import task_boundary_history
+    task={'assignment':'Original scope ' * 100,'stage_methods':{'text':'Method ' * 200}}
+    rows=[HumanMessage(content=json.dumps({'task_context':task})),
+          ToolMessage(name='RequestSourceAction',tool_call_id='failed',status='error',content=json.dumps({
+              'result':{'error':'Source timeout is not missing disclosure'},
+              'current_context':{'task_context':{**task,'runtime_progress':{'n':2}},'progress':{'counter':2}}})),
+          *checkpoint_message(working_note(phase_status='working',findings=[],retain_source_ids=[]))]
+    original=deepcopy(rows)
+    projected=task_boundary_history(rows)
+    error=json.loads(projected[1].content)
+    assert rows==original and projected[1].status=='error'
+    assert error['result']=={'error':'Source timeout is not missing disclosure'}
+    assert 'progress' not in error['current_context']
+    assert projected[0]==rows[0]
+    assert error['current_context']['task_context']['runtime_progress']=={'n':2}
+
+
+def test_checkpoint_latest_navigation_projection_keeps_latest_original_passage():
+    kept={'result_state':'retrieval_candidate','node_id':'PIN','title':'Exact candidate'}
+    unused={**kept,'node_id':'OTHER','title':'Other candidate'}
+    refs=[{'ref_id':key,'authority_state':'retrieval_candidate','writer_citable':False,
+           'numeric_fact_authority':False} for key in ('PIN','OTHER')]
+    obs=observation('menu',content=[kept,unused],references=refs)
+    rows=source_messages('catalog')
+    rows[-1].content=json.dumps({'result':{'observations':[obs]}})
+    # One live batch holds both the menu and a genuine source result.
+    rows[0].tool_calls.append({'name':'RequestSourceAction','id':'original','args':{},'type':'tool_call'})
+    passage=ToolMessage(name='RequestSourceAction',tool_call_id='original',content=json.dumps({
+        'result':{'observations':[observation('ORIGINAL', content=[{'result_state':'source_bound_passage',
+            'writer_citable':True,'passage':'Exact period, unit and original restriction.'}])]}}))
+    rows += [passage,*checkpoint_message(working_note(phase_status='working',findings=[],retain_source_ids=['PIN']))]
+    original=deepcopy(rows)
+    projected=task_boundary_history(rows)
+    menu=json.loads(projected[1].content)['result']['observations'][0]
+    assert rows==original and menu['content']==[kept] and menu['references']==refs[:1]
+    assert projected[2]==passage

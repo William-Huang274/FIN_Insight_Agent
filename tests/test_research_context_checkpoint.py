@@ -321,6 +321,43 @@ def test_checkpoint_cannot_silently_drop_an_open_question():
     assert "working_state_checkpoint_lost_issues" in json.dumps(calls[-1]["tool_results"])
 
 
+@pytest.mark.parametrize('mode', ['omit', 'shorten', 'unknown_source', 'capacity'])
+def test_checkpoint_inherits_exact_negative_constraints_without_erasing_or_authorizing_sources(mode):
+    calls=[]; ports=_ToolPorts()
+    original='A quarterly ratio is not an annual composition (previous note was rejected).'
+    base=working_note(phase_status='working', findings=[], retain_source_ids=[], resolved_questions=[],
+        rejected_interpretations=[original])
+    shorter='A quarterly ratio is not an annual composition.'
+    proposed={**base, 'rejected_interpretations': [] if mode=='omit' else [shorter]}
+    if mode=='unknown_source': proposed['retain_source_ids']=['UNOBSERVED']
+    if mode=='capacity': proposed['rejected_interpretations']=[f'New restriction {i}' for i in range(24)]
+    saved=deepcopy(proposed)
+    def turn(request):
+        calls.append(request)
+        if len(calls)>2: return _handoff(request)
+        return {'action':'native_tool_batch','context_digest':request['context_digest'],'tool_calls':[{
+            'name':'UpdateResearchStateAction','id':str(len(calls)),'args':{
+                'action':'update_research_state','context_digest':request['context_digest'],
+                'reason_summary':'Preserve constraints and continue research.',
+                'checkpoint':len(calls)==2,'working_state':base if len(calls)==1 else proposed}}]}
+    graph=build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(model_turn=turn,
+        evidence_tool=ports.evidence,finance_tool=ports.finance,working_state_enabled=True)).compile()
+    result=graph.invoke(_input(), {'recursion_limit':20})
+    assert proposed==saved
+    note=result['research_working_state']
+    assert note['open_questions']==base['open_questions']
+    assert original in note['rejected_interpretations']
+    feedback=json.dumps(calls[-1]['tool_results'])
+    if mode in {'omit','shorten'}:
+        assert note['rejected_interpretations']==([original] if mode=='omit' else [original,shorter])
+        assert 'inherited_rejected_interpretations' in feedback
+        assert result['notebook']['tool_action_count']==2
+    else:
+        assert note==base
+        assert ('working_state_unknown_source' if mode=='unknown_source' else
+                'working_state_rejected_interpretations_capacity') in feedback
+
+
 def test_actual_sdk_uses_audited_author_turn_for_checkpoint_and_native_acceptance():
     from test_deepseek_structured_agents import _config, _models
     captured=[];events=[];private=[];ports=_ToolPorts()

@@ -2457,8 +2457,25 @@ def build_specialist_agentic_state_graph(
                 if action.checkpoint:
                     prior_note = working.get("research_working_state") or {}
                     covered = set(note["open_questions"]) | {q["question"] for q in note["resolved_questions"]}
-                    if set(prior_note.get("open_questions", [])) - covered or set(prior_note.get("rejected_interpretations", [])) - set(note["rejected_interpretations"]):
-                        return reject("working_state_checkpoint_lost_issues", "Keep previous open questions verbatim or explicitly resolve each in resolved_questions with actual observed sources. Preserve rejected interpretations; do not silently omit them.", agent_error=True)
+                    missing_questions = [q for q in prior_note.get("open_questions", []) if q not in covered]
+                    if missing_questions:
+                        return reject("working_state_checkpoint_lost_issues", "Unresolved questions omitted: "
+                            + json.dumps(missing_questions, ensure_ascii=False)
+                            + ". Keep these exactly or explicitly resolve each in resolved_questions with actual observed sources.", agent_error=True)
+                    # Negative interpretations are durable author constraints, not
+                    # facts that must be re-authored verbatim at every checkpoint.
+                    # Retain their exact text; never infer semantic equivalence or
+                    # silently accept an omitted constraint as resolved.
+                    inherited_rejections = [r for r in prior_note.get("rejected_interpretations", [])
+                        if r not in note["rejected_interpretations"]]
+                    merged_rejections = list(dict.fromkeys([*prior_note.get("rejected_interpretations", []),
+                        *note["rejected_interpretations"]]))
+                    if len(merged_rejections) > 24:
+                        return reject("working_state_rejected_interpretations_capacity", "Prior constraints remain saved. "
+                            "The combined rejected_interpretations exceeds 24; reuse exact previous entries instead of paraphrased duplicates.", agent_error=True)
+                    note["rejected_interpretations"] = merged_rejections
+                else:
+                    inherited_rejections = []
                 if before.tool_action_count >= state["max_tool_actions"]:
                     return reject("working_state_tool_limit", "Preserve state and stop; no additional allowance is granted.")
                 working["research_working_state"] = note
@@ -2469,6 +2486,7 @@ def build_specialist_agentic_state_graph(
                 working["notebook"] = before.model_dump(mode="json")
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({"accepted": True,
                     "working_state": note, "checkpoint": action.checkpoint,
+                    "inherited_rejected_interpretations": inherited_rejections,
                     "notice": "Author assessment, not independent verification. Original sources remain authoritative. Checkpoint does not complete the task or reset limits."}, ensure_ascii=False))
             if isinstance(action, (DelegateSubtasksAction, ReadDelegatedWorkAction)):
                 saved = dict(working.get("delegated_work", {}))

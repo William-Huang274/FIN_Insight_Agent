@@ -234,6 +234,41 @@ def coalesce_context_snapshots(messages):
             changed = True
         if changed:
             message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
+    # A changed progress counter/note must not force identical assignment and
+    # method instructions to be repeated inside every historical handoff.
+    # Keep first occurrences and the newest handoff complete, including errors.
+    task_fields = {}
+    newest_context = contexts[-1][0] if contexts else -1
+    for index, message in enumerate(projected):
+        if not isinstance(message, (HumanMessage, ToolMessage)):
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(body, dict):
+            continue
+        context = body if isinstance(message, HumanMessage) else body.get('current_context', {})
+        task = context.get('task_context') if isinstance(context, dict) else None
+        if not isinstance(task, dict):
+            continue
+        changed = False
+        for key in ('assignment', 'stage_methods', 'working_state_guidance', 'data_baseline_rule',
+                    'usage_rule', 'overall_assignment', 'authoring_context'):
+            if key not in task:
+                continue
+            encoded = json.dumps(task[key], ensure_ascii=False, sort_keys=True)
+            if len(encoded) <= 240 or isinstance(task[key], dict) and 'identical_snapshot_retained_at' in task[key]:
+                continue
+            identity = (key, encoded)
+            field = ('task_context.' if isinstance(message, HumanMessage) else 'current_context.task_context.') + key
+            if identity not in task_fields:
+                task_fields[identity] = {'message_index': index, 'field': field}
+            elif index != newest_context:
+                task[key] = {'identical_snapshot_retained_at': task_fields[identity]}
+                changed = True
+        if changed:
+            message.content = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
     # Stable backward references matter for provider prefix caching. Refer to
     # each value's FIRST full occurrence, never the latest turn (whose ID changes
     # on every call). Changed/retracted observations get their own full value.
@@ -334,13 +369,18 @@ def _retain_navigation_rows(observation, retained):
     if not isinstance(rows, list) or not rows or observation.get("kind") != "evidence":
         return observation
     candidates = []
+    references = {r.get('ref_id'): r for r in observation.get('references', []) if isinstance(r, dict)}
     for row in rows:
         if not isinstance(row, dict):
             return observation
         if row.get("result_state") == "typed_gap":
             continue  # Preserve every explicit availability/execution limitation.
-        if (row.get("result_state") != "retrieval_candidate" or row.get("writer_citable") is not False
-                or row.get("numeric_fact_authority") is not False):
+        reference = references.get(row.get('candidate_id') or row.get('node_id') or row.get('source_record_id'), {})
+        explicit_navigation = row.get('writer_citable') is False and row.get('numeric_fact_authority') is False
+        bound_navigation = (reference.get('authority_state') == 'retrieval_candidate'
+            and reference.get('writer_citable') is False and reference.get('numeric_fact_authority') is False)
+        if (row.get("result_state") != "retrieval_candidate" or row.get('writer_citable') is True
+                or row.get('numeric_fact_authority') is True or not (explicit_navigation or bound_navigation)):
             return observation
         candidates.append(row)
     candidate_ids = set(ref for row in candidates for ref in _literal_reference_ids(row, include_navigation=True))
@@ -350,8 +390,14 @@ def _retain_navigation_rows(observation, retained):
             or retained.intersection(_literal_reference_ids(row, include_navigation=True))]
     if len(keep) == len(rows):
         return observation
-    return {**observation, "content": keep, "context_projection": {
+    kept_ids = set(ref for row in keep for ref in _literal_reference_ids(row, include_navigation=True)) | retained
+    kept_references = [r for r in observation.get('references', [])
+        if not isinstance(r, dict) or r.get('authority_state') != 'retrieval_candidate'
+        or r.get('writer_citable') is not False or r.get('numeric_fact_authority') is not False
+        or r.get('ref_id') in kept_ids]
+    return {**observation, "content": keep, "references": kept_references, "context_projection": {
         "omitted_navigation_rows": len(rows) - len(keep),
+        "omitted_navigation_references": len(observation.get('references', [])) - len(kept_references),
         "notice": "Only retained candidate rows and gap notices are shown verbatim. This is NOT the complete "
             "catalog/search result. Exact full saved result remains available through the accompanying "
             "recovery route; omitted candidates do not indicate absence. Navigation is not evidence."}}
@@ -408,8 +454,7 @@ def _supersede_working_notes(messages, boundary):
     for message in messages[:boundary]:
         if isinstance(message, AIMessage):
             for call in message.tool_calls:
-                if (call["name"] == "UpdateResearchStateAction" and "working_state" in call["args"]
-                        and call["id"] != messages[boundary].tool_call_id):
+                if call["name"] == "UpdateResearchStateAction" and "working_state" in call["args"]:
                     call["args"]["working_state"] = deepcopy(pointer)
         if not isinstance(message, (HumanMessage, ToolMessage)):
             continue
@@ -505,8 +550,11 @@ def task_boundary_history(messages):
                 isinstance(o, dict) and o.get("status") != "success" for o in result.get("observations", []))):
             continue
         if retained.intersection(_literal_reference_ids(result, include_navigation=True)):
-            if calls.get(message.tool_call_id) and not (checkpoint and index > last_read):
+            if calls.get(message.tool_call_id):
                 # Same row-level navigation rule for live and restored results.
+                # At an accepted checkpoint, unselected navigation rows from
+                # the latest search can also be reread. Actual source passages
+                # remain indivisible and the latest read originals stay full.
                 observations = result.get("observations") if isinstance(result, dict) else None
                 if isinstance(observations, list):
                     selected = [_retain_navigation_rows(o, retained) if isinstance(o, dict) else o for o in observations]
@@ -531,7 +579,7 @@ def task_boundary_history(messages):
         # Keep task_context, user/Lead instructions, notes, errors, calculation
         # results and all assistant operations. Never summarize a summary again.
         for index, message in enumerate(projected[:boundary]):
-            if not isinstance(message, ToolMessage) or message.status == "error":
+            if not isinstance(message, ToolMessage):
                 continue
             try:
                 body = json.loads(message.content)

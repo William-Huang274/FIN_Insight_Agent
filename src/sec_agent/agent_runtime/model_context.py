@@ -159,6 +159,30 @@ def coalesce_context_snapshots(messages):
     errors and freshly read sources, are untouched. Stored history is immutable.
     """
     projected = deepcopy(list(messages))
+    # The native checkpoint receipt and its next-turn handoff carry the same
+    # accepted note. Keep the authoritative receipt once, including at the
+    # newest boundary; otherwise a successful compression immediately grows
+    # again when the real SDK feedback envelope is attached.
+    for message in projected:
+        if not isinstance(message, ToolMessage) or message.name != "UpdateResearchStateAction" or message.status == "error":
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(body, dict):
+            continue
+        result = body.get("result", {})
+        context = body.get("current_context", {})
+        task = context.get("task_context", {}) if isinstance(context, dict) else {}
+        if (isinstance(result, dict) and result.get("accepted") is True
+                and isinstance(result.get("working_state"), dict) and isinstance(task, dict)
+                and task.get("research_working_state") == result["working_state"]):
+            task["research_working_state"] = {
+                "identical_snapshot_retained_at": {"tool_call_id": message.tool_call_id, "field": "result.working_state"},
+                "notice": "The current accepted working state is retained verbatim in this same receipt. "
+                    "This pointer replaces only its exact duplicate in the handoff; working memory is not evidence."}
+            message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
     # A resumed specialist has its saved observations in the initial semantic
     # snapshot, not in native ToolMessages. Repeated identical catalog/search
     # results must not be permanently exempt from request-copy coalescing.

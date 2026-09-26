@@ -189,3 +189,36 @@ def test_checkpoint_latest_navigation_projection_keeps_latest_original_passage()
     menu=json.loads(projected[1].content)['result']['observations'][0]
     assert rows==original and menu['content']==[kept] and menu['references']==refs[:1]
     assert projected[2]==passage
+
+
+def test_accepted_note_is_not_duplicated_by_real_next_turn_envelope():
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    for cycle in range(3):
+        note = working_note(phase_status="working", findings=[], retain_source_ids=[],
+            last_task_detail=f"Unfinished comparison {cycle}: " + "Exact public working memory. " * 1500)
+        receipt = {"result": {"accepted": True, "checkpoint": True, "working_state": note},
+            "current_context": {"allowed_actions": ["request_source"],
+                "task_context": {"assignment": "Original five-company task", "research_working_state": deepcopy(note),
+                    "runtime_progress": {"turn": cycle}}}}
+        message = ToolMessage(name="UpdateResearchStateAction", tool_call_id=f"cp-{cycle}",
+            content=json.dumps(receipt))
+        original = deepcopy(message)
+        projected = coalesce_context_snapshots([message])
+        body = json.loads(projected[0].content)
+        assert message == original and body["result"] == receipt["result"]
+        assert body["current_context"]["allowed_actions"] == ["request_source"]
+        task = body["current_context"]["task_context"]
+        assert task["assignment"] == "Original five-company task" and task["runtime_progress"] == {"turn": cycle}
+        assert task["research_working_state"]["identical_snapshot_retained_at"] == {
+            "tool_call_id": f"cp-{cycle}", "field": "result.working_state"}
+        assert len(projected[0].content) < len(message.content) * .6
+        assert coalesce_context_snapshots(projected) == projected
+        for changed in ("different_note", "rejected", "error"):
+            value = deepcopy(receipt)
+            if changed == "different_note":
+                value["current_context"]["task_context"]["research_working_state"]["last_task_detail"] = "Updated instruction"
+            elif changed == "rejected":
+                value["result"]["accepted"] = False
+            other = ToolMessage(name=message.name, tool_call_id=message.tool_call_id,
+                content=json.dumps(value), status="error" if changed == "error" else "success")
+            assert coalesce_context_snapshots([other]) == [other]

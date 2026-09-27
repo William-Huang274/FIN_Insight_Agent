@@ -30,7 +30,7 @@ from .research_contracts import ProviderEvidenceIntent
 from .task_outcome import AuthorTaskNote, TaskCoverage
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
 from .authoring_context import PrepareWorkpaperAction, bind_authoring, validate_authoring, specialist_basis, stage_methods
-from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools
+from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools, merge_research_subtasks
 from .source_check_scope import RequiredSourceCheck, SOURCE_CHECK_GUIDANCE, source_check_progress, source_check_errors
 from .workpaper_revision_state import revision_state, revision_progress, revision_submission_issues
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
@@ -2448,20 +2448,30 @@ def build_specialist_agentic_state_graph(
                     'status': 'prepared', 'notice': 'Next request restores your public preparation in a writing context; budget and source scope unchanged.'}))
             if isinstance(action, UpdateResearchStateAction):
                 note = action.working_state.model_dump(mode="json")
+                prior_note = working.get("research_working_state") or {}
+                try:
+                    note["subtasks"] = merge_research_subtasks(prior_note, note["subtasks"])
+                except ValueError as error:
+                    return reject("working_state_subtask_update_invalid", str(error), agent_error=True)
+                migrated = {q for t in note["subtasks"] for q in t["migrated_questions"]}
+                note["open_questions"] = [q for q in note["open_questions"] if q not in migrated]
+                if note["phase_status"] == "completed" and any(
+                        t["status"] not in {"completed", "split"} for t in note["subtasks"]):
+                    return reject("working_state_subtasks_unfinished", "Subtasks remain unfinished; keep phase_status working.", agent_error=True)
                 refs = set(note["retain_source_ids"]) | {r for f in note["findings"] for r in f["source_ids"]}
                 refs.update(r for q in note["resolved_questions"] for r in q["source_ids"])
+                refs.update(r for t in note["subtasks"] for r in t["source_ids"])
                 unknown = sorted(refs - observed_sources(working["notebook"]))
                 if unknown:
                     return reject("working_state_unknown_source", "Unobserved IDs: " + json.dumps(unknown) +
                         ". Copy exact IDs from structured result metadata or references; navigation IDs do not grant citation authority.", agent_error=True)
                 if action.checkpoint:
-                    prior_note = working.get("research_working_state") or {}
-                    covered = set(note["open_questions"]) | {q["question"] for q in note["resolved_questions"]}
+                    covered = set(note["open_questions"]) | {q["question"] for q in note["resolved_questions"]} | migrated
                     missing_questions = [q for q in prior_note.get("open_questions", []) if q not in covered]
                     if missing_questions:
                         return reject("working_state_checkpoint_lost_issues", "Unresolved questions omitted: "
                             + json.dumps(missing_questions, ensure_ascii=False)
-                            + ". Keep these exactly or explicitly resolve each in resolved_questions with actual observed sources.", agent_error=True)
+                            + ". Migrate each into subtasks.migrated_questions preserving its full scope, keep it exactly, or resolve it with observed sources.", agent_error=True)
                     # Negative interpretations are durable author constraints, not
                     # facts that must be re-authored verbatim at every checkpoint.
                     # Retain their exact text; never infer semantic equivalence or

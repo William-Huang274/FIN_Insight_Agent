@@ -18,6 +18,21 @@ class ResolvedResearchQuestion(BaseModel):
     source_ids: list[str] = Field(min_length=1, max_length=32)
 
 
+class ResearchSubtask(BaseModel):
+    """Author-maintained progress within the existing assignment, not delegation."""
+    model_config = ConfigDict(extra="forbid")
+    task_id: str = Field(min_length=1, max_length=80, description="Stable local ID. Reuse it to update this task.")
+    parent_id: str | None = Field(default=None, max_length=80)
+    objective: str = Field(min_length=1, max_length=1000)
+    status: Literal["pending", "in_progress", "partial", "completed", "blocked", "split"]
+    result: str = Field(default="", max_length=2000,
+        description="What actually finished, or the concrete blockage; retain period/unit/scope limits. Author assessment, not verified evidence.")
+    next_step: str = Field(default="", max_length=1000, description="Only remaining work. Do not repeat already completed reading.")
+    source_ids: list[str] = Field(default_factory=list, max_length=32)
+    migrated_questions: list[str] = Field(default_factory=list, max_length=24,
+        description="One-time mapping from exact legacy open questions. Historical identity, NOT current unread/pending status. Split their entire scope into children, including unfinished parts.")
+
+
 class ResearchWorkingState(BaseModel):
     model_config = ConfigDict(extra="forbid")
     current_subtask: str = Field(min_length=1, max_length=2000)
@@ -27,6 +42,8 @@ class ResearchWorkingState(BaseModel):
         description="Rejected author interpretations, not evidence. At explicit checkpoints the host retains all prior entries verbatim and reports inherited entries; omission or rephrasing cannot erase an old constraint. Reuse exact entries to avoid duplicates.")
     open_questions: list[str] = Field(default_factory=list, max_length=24)
     resolved_questions: list[ResolvedResearchQuestion] = Field(default_factory=list, max_length=24)
+    subtasks: list[ResearchSubtask] = Field(default_factory=list, max_length=64,
+        description="Changed/new subtask records only; host upserts by task_id and returns the full current list. Omitted tasks stay unchanged. Split progressively using parent_id and status=split; update progress yourself after meaningful research. No new worker, scope or budget.")
     next_step: str = Field(min_length=1, max_length=2000)
     last_task_detail: str = Field(min_length=1, max_length=4000,
         description="What was just investigated, actual outcome, unresolved issues and the precise continuation; not hidden reasoning.")
@@ -57,7 +74,17 @@ WORKING_STATE_GUIDANCE = (
     "just to shorten the note. Original recorded findings and calculations remain protected independently. "
     "At explicit checkpoints prior rejected interpretations are retained by the host even if omitted or "
     "rephrased; the accepted result reports inherited entries. This does not resolve open questions or "
-    "validate interpretations. Copy each remaining open question exactly or explicitly resolve it with observed sources. "
+    "validate interpretations. Prefer a small set of stable-ID subtasks within the existing assignment. "
+    "Split a broad task progressively only when needed: update the parent to split and add children with parent_id. "
+    "After reading, calculation or analysis, update the SAME child to partial/completed/blocked with actual result, "
+    "source_ids and only the remaining next_step. Do not call unread work completed, keep obsolete 'not read' claims "
+    "beside new findings, or append a paraphrased duplicate task. Completed means your scoped work is done, not "
+    "independent verification. Submit only changed subtask records; the host preserves unchanged ones and returns "
+    "the merged list. No need to write a note after every tool call, and planning is not new evidence. "
+    "Migrate legacy compound open_questions once: attach their exact text to migrated_questions on a parent/task, "
+    "represent all their scope in the task/children, then remove them from open_questions. This mapping preserves "
+    "history without claiming the whole question resolved; do not carry obsolete unread wording as a live task. "
+    "For legacy questions not migrated, keep them exactly or resolve them with observed sources. "
     "After an accepted checkpoint the latest working state supersedes older notes in the request, while "
     "the native history remains intact. Saved observation recovery routes return the exact recorded result "
     "without a new source query. Follow the supplied arguments when that original is needed; a partial "
@@ -66,6 +93,41 @@ WORKING_STATE_GUIDANCE = (
     "If warned about repeated reads, inspect actual results and next-block/search options, explain a changed "
     "approach or truthful blockage; do not repeat a past intention as though the source confirmed it."
 )
+
+
+def merge_research_subtasks(prior, updates):
+    """Deterministic upsert only. The author owns decomposition and conclusions."""
+    from copy import deepcopy
+    tasks = {t["task_id"]: deepcopy(t) for t in prior.get("subtasks", [])}
+    if len({t["task_id"] for t in updates}) != len(updates):
+        raise ValueError("Duplicate subtask IDs in one update; submit each changed task once.")
+    known_questions = set(prior.get("open_questions", [])) | {
+        q for t in tasks.values() for q in t.get("migrated_questions", [])}
+    for update in updates:
+        task = deepcopy(update)
+        unknown = set(task["migrated_questions"]) - known_questions
+        if unknown:
+            raise ValueError("Migration must identify existing open questions exactly: " + str(sorted(unknown)))
+        old = tasks.get(task["task_id"], {})
+        task["migrated_questions"] = list(dict.fromkeys([
+            *old.get("migrated_questions", []), *task["migrated_questions"]]))
+        tasks[task["task_id"]] = task
+    if len(tasks) > 64:
+        raise ValueError("At most 64 subtasks per working state; update existing IDs rather than append duplicates.")
+    for task in tasks.values():
+        seen = {task["task_id"]}
+        parent = task["parent_id"]
+        while parent is not None:
+            if parent not in tasks or parent in seen:
+                raise ValueError("Subtask parent must exist and the hierarchy must be acyclic.")
+            seen.add(parent)
+            parent = tasks[parent]["parent_id"]
+        children = [t for t in tasks.values() if t["parent_id"] == task["task_id"]]
+        if bool(children) != (task["status"] == "split"):
+            raise ValueError("A split task needs children; a task with children must be marked split.")
+        if task["status"] == "completed" and (not task["result"].strip() or not task["source_ids"]):
+            raise ValueError("Completed subtasks need an actual result and observed source IDs; status is not verification.")
+    return list(tasks.values())
 
 
 def observed_sources(notebook):

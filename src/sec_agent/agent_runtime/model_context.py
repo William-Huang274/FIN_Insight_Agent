@@ -549,6 +549,7 @@ def task_boundary_history(messages):
         if body.get("accepted"):
             material_sources.update(ref for f in body.get("working_state", {}).get("findings", []) for ref in f["source_ids"])
             material_sources.update(ref for q in body.get("working_state", {}).get("resolved_questions", []) for ref in q["source_ids"])
+            material_sources.update(ref for t in body.get("working_state", {}).get("subtasks", []) for ref in t["source_ids"])
         if body.get("accepted") and (body.get("working_state", {}).get("phase_status") == "completed" or body.get("checkpoint") is True):
             boundary, note = index, body["working_state"]
             checkpoint = body.get("checkpoint") is True
@@ -718,8 +719,11 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
         "research state: overall logic, actual findings with ALL used numerical/metric references and subject, "
         "period, unit, denominator, revision, actual/guidance qualifiers; rejected interpretations; every open "
         "issue; the last unfinished task in detail and its exact next action. Pin source IDs that must be compared "
-        "together. Copy prior open questions verbatim into open_questions, or give each an explicit source-bound "
-        "disposition in resolved_questions. Keep prior rejected_interpretations. This is a public continuity note, "
+        "together. Update stable-ID subtasks with actual partial/completed/blocked progress and only remaining work. "
+        "You may split a task into children and migrate legacy open questions via migrated_questions, preserving "
+        "all their scope without carrying obsolete unread wording. Submit changed tasks only; unchanged tasks persist. "
+        "For unmigrated questions, keep their exact text or resolve them with sources. "
+        "Keep prior rejected_interpretations. This is a public continuity note, "
         "not private reasoning or evidence. Do not invent resolved "
         "issues. Older recoverable source bodies can leave subsequent requests only after this note is accepted. "
         "The original assignment, original findings' evidence, calculations, latest read batch and original "

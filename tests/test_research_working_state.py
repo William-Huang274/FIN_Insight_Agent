@@ -16,7 +16,7 @@ def working_note(**updates):
         "findings": [{"finding": "Fixture quarterly quantity, not an annual composition", "source_ids": ["SOURCE-A"],
             "limitations": "Quarterly actual, fixture units, not annual guidance."}],
         "retain_source_ids": ["SOURCE-B"], "rejected_interpretations": ["The quarterly ratio is not the annual composition."],
-        "open_questions": ["Annual composition remains unknown."], "next_step": "Read the next original section for the annual scope.",
+        "subtasks": [], "open_questions": ["Annual composition remains unknown."], "next_step": "Read the next original section for the annual scope.",
         "last_task_detail": "Compared two original periods and retained the numerical qualifiers and both source records.", **updates}
 
 

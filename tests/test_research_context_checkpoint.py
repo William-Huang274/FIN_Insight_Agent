@@ -318,7 +318,8 @@ def test_checkpoint_cannot_silently_drop_an_open_question():
         evidence_tool=ports.evidence,finance_tool=ports.finance,working_state_enabled=True)).compile()
     result=graph.invoke(_input(),{"recursion_limit":20})
     assert result["research_working_state"]["open_questions"]==base["open_questions"]
-    assert "working_state_checkpoint_lost_issues" in json.dumps(calls[-1]["tool_results"])
+    assert "inherited_open_questions" in json.dumps(calls[-1]["tool_results"])
+    assert result["notebook"]["tool_action_count"] == 2
 
 
 @pytest.mark.parametrize('mode', ['omit', 'shorten', 'unknown_source', 'capacity'])

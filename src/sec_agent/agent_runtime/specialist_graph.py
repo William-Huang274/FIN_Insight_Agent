@@ -2469,13 +2469,17 @@ def build_specialist_agentic_state_graph(
                 if unknown:
                     return reject("working_state_unknown_source", "Unobserved IDs: " + json.dumps(unknown) +
                         ". Copy exact IDs from structured result metadata or references; navigation IDs do not grant citation authority.", agent_error=True)
+                # Like omitted stable-ID tasks, unaddressed legacy questions
+                # remain pending. Copying every old sentence is not a prerequisite
+                # for saving new progress or releasing recoverable source bodies.
+                # Only the author can explicitly resolve or migrate their scope.
+                covered = set(note["open_questions"]) | {q["question"] for q in note["resolved_questions"]} | migrated
+                inherited_questions = [q for q in prior_note.get("open_questions", []) if q not in covered]
+                note["open_questions"] = list(dict.fromkeys([*note["open_questions"], *inherited_questions]))
+                if len(note["open_questions"]) > 24:
+                    return reject("working_state_open_questions_capacity", "Unaddressed prior questions remain saved. "
+                        "The merged open_questions exceeds 24; explicitly resolve or migrate existing questions into stable-ID subtasks, rather than append paraphrased duplicates.", agent_error=True)
                 if action.checkpoint:
-                    covered = set(note["open_questions"]) | {q["question"] for q in note["resolved_questions"]} | migrated
-                    missing_questions = [q for q in prior_note.get("open_questions", []) if q not in covered]
-                    if missing_questions:
-                        return reject("working_state_checkpoint_lost_issues", "Unresolved questions omitted: "
-                            + json.dumps(missing_questions, ensure_ascii=False)
-                            + ". Migrate each into subtasks.migrated_questions preserving its full scope, keep it exactly, or resolve it with observed sources.", agent_error=True)
                     # Negative interpretations are durable author constraints, not
                     # facts that must be re-authored verbatim at every checkpoint.
                     # Retain their exact text; never infer semantic equivalence or
@@ -2501,8 +2505,9 @@ def build_specialist_agentic_state_graph(
                 working["notebook"] = before.model_dump(mode="json")
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({"accepted": True,
                     "working_state": note, "checkpoint": action.checkpoint,
+                    "inherited_open_questions": inherited_questions,
                     "inherited_rejected_interpretations": inherited_rejections,
-                    "notice": "Author assessment, not independent verification. Original sources remain authoritative. Checkpoint does not complete the task or reset limits."}, ensure_ascii=False))
+                    "notice": "Author assessment, not independent verification. Unaddressed old questions remain pending review; historical unread wording is not a fresh assertion about current evidence. Explicitly resolve or migrate them when updating the corresponding subtask. Original sources remain authoritative. Checkpoint does not complete the task or reset limits."}, ensure_ascii=False))
             if isinstance(action, (DelegateSubtasksAction, ReadDelegatedWorkAction)):
                 saved = dict(working.get("delegated_work", {}))
                 digest = _semantic_action_digest(action)

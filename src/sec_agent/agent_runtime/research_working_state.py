@@ -41,7 +41,8 @@ class ResearchWorkingState(BaseModel):
     findings: list[ObservedFinding] = Field(default_factory=list, max_length=32)
     rejected_interpretations: list[str] = Field(default_factory=list, max_length=24,
         description="Rejected author interpretations, not evidence. At explicit checkpoints the host retains all prior entries verbatim and reports inherited entries; omission or rephrasing cannot erase an old constraint. Reuse exact entries to avoid duplicates.")
-    open_questions: list[str] = Field(default_factory=list, max_length=24)
+    open_questions: list[str] = Field(default_factory=list, max_length=24,
+        description="New or still-open questions. The host also retains any prior question not explicitly resolved or migrated, and reports inherited entries. Omission does not resolve a question; old unread wording remains pending author review, not a new factual assertion.")
     resolved_questions: list[ResolvedResearchQuestion] = Field(default_factory=list, max_length=24)
     subtasks: list[ResearchSubtask] = Field(default_factory=list, max_length=64,
         description="Changed/new subtask records only; host upserts by task_id and returns the full current list. Omitted tasks stay unchanged. Split progressively using parent_id and status=split; update progress yourself after meaningful research. No new worker, scope or budget.")
@@ -85,7 +86,10 @@ WORKING_STATE_GUIDANCE = (
     "Migrate legacy compound open_questions once: attach their exact text to migrated_questions on a parent/task, "
     "represent all their scope in the task/children, then remove them from open_questions. This mapping preserves "
     "history without claiming the whole question resolved; do not carry obsolete unread wording as a live task. "
-    "For legacy questions not migrated, keep them exactly or resolve them with observed sources. "
+    "For legacy questions not migrated or explicitly resolved, the host preserves their exact text and reports "
+    "inherited_open_questions; you need not re-copy all of them at every checkpoint. This is a pending-review "
+    "carryover, not confirmation that an old unread statement remains true. Update the relevant subtask and "
+    "explicitly migrate or resolve stale questions after reading; do not rewrite the entire note just to copy them. "
     "After an accepted checkpoint the latest working state supersedes older notes in the request, while "
     "the native history remains intact. Saved observation recovery routes return the exact recorded result "
     "without a new source query. Follow the supplied arguments when that original is needed; a partial "

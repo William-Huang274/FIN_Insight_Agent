@@ -39,6 +39,48 @@ def update(request, note):
             "checkpoint": True, "working_state": note}}]}
 
 
+@pytest.mark.parametrize("finish", ["resolve", "migrate", "capacity", "unknown"])
+def test_omitted_questions_survive_multiple_updates_until_explicit_disposition(finish):
+    ports = _ToolPorts(); requests = []
+    original = "Revenue and cancellation conditions have not yet been read."
+    base = working_note(phase_status="working", findings=[], retain_source_ids=[],
+        open_questions=[original], resolved_questions=[])
+    partial = {**base, "open_questions": [], "subtasks": [
+        {**task("issuer"), "status": "partial", "result": "Revenue read; terms remain.",
+         "source_ids": ["E:DELL:Q1"], "next_step": "Read cancellation terms."}]}
+    final = {**base, "open_questions": [], "subtasks": []}
+    if finish == "resolve":
+        final["resolved_questions"] = [{"question": original,
+            "resolution": "Revenue read; cancellation terms remain an explicit limitation of this bounded investigation.",
+            "source_ids": ["E:DELL:Q1"]}]
+    elif finish == "migrate":
+        final["subtasks"] = [{**partial["subtasks"][0], "migrated_questions": [original]}]
+    elif finish == "capacity":
+        final["open_questions"] = [f"new question {i}" for i in range(24)]
+    else:
+        final["resolved_questions"] = [{"question": original, "resolution": "Claimed read.",
+            "source_ids": ["UNKNOWN"]}]
+    notes = [base, partial, {**partial, "subtasks": []}, final]
+    def turn(request):
+        requests.append(request)
+        if len(requests) == 1: return _batch(request, [_evidence_action()(request)])
+        if len(requests) <= 5: return update(request, notes[len(requests)-2])
+        return _handoff(request)
+    result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
+        working_state_enabled=True)).compile().invoke({**_input(), "max_model_turns": 8, "max_tool_actions": 10})
+    for index in (3, 4):
+        assert requests[index]["task_context"]["research_working_state"]["open_questions"] == [original]
+    current = result["research_working_state"]
+    assert current["subtasks"][0]["status"] == "partial"
+    assert current["open_questions"] == ([] if finish in {"resolve", "migrate"} else [original])
+    assert result["notebook"]["tool_action_count"] == (5 if finish in {"resolve", "migrate"} else 4)
+    assert base["open_questions"] == [original] and partial["open_questions"] == []
+    if finish in {"capacity", "unknown"}:
+        code = "working_state_open_questions_capacity" if finish == "capacity" else "working_state_unknown_source"
+        assert code in json.dumps(requests[-1]["tool_results"])
+
+
 def test_native_partial_migration_split_and_recovery_preserve_progress_without_copying_old_questions():
     ports = _ToolPorts(); requests = []
     legacy = "Revenue, backlog and cancellation conditions have not been read."

@@ -112,7 +112,7 @@ def test_native_recovery_preserves_accepted_preparation_and_submits_without_prep
     resumed = _ScriptedModel([_submission()])
     result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
         model_turn=resumed, evidence_tool=tools.evidence, finance_tool=tools.finance, authoring_enabled=True),
-        recovery_state=first).compile().invoke({**initial, 'run_invocation_id': 'resume-prepared'})
+        recovery_state=first).compile().invoke({**initial, 'run_invocation_id': 'resume-prepared', 'max_model_turns': 1})
     assert result.get('final_submission')
     assert result['notebook']['model_turn_count'] == 4
     assert resumed.requests[0]['task_context']['authoring_context'] == first['authoring_context']

@@ -93,7 +93,7 @@ class SpecialistAgenticInput(_StrictModel):
         max_length=16,
     )
     l0_context: SpecialistL0Context
-    max_model_turns: int = Field(default=8, ge=2, le=24)
+    max_model_turns: int = Field(default=8, ge=1, le=24)
     max_tool_actions: int = Field(default=12, ge=1, le=48)
     # Trusted composition-root artifact handoff, never provider-supplied state.
     collaboration_context: dict[str, Any] | None = None

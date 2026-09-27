@@ -1771,6 +1771,7 @@ def build_specialist_agentic_state_graph(
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
                 "research_working_state": _jsonable(recovery_state.get("research_working_state")),
                 "research_context_checkpoint_accepted": accepted_context_checkpoint(recovery_state),
+                "authoring_context": None if revising else _jsonable(recovery_state.get("authoring_context")),
                 "runtime_progress": _jsonable(recovery_state.get("runtime_progress", {})),
                 "lead_assistance_history": _jsonable(recovery_state.get("lead_assistance_history", [])),
                 "model_turn_invocations": {

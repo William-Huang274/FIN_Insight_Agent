@@ -98,6 +98,28 @@ def test_specialist_preparation_preserves_sources_and_replaces_static_role_metho
     assert result['authoring_context'] == saved['authoring_context']
 
 
+def test_native_recovery_preserves_accepted_preparation_and_submits_without_preparing_again():
+    from test_specialist_graph import _input, _ScriptedModel, _ToolPorts, _evidence_action, _finance_action, _submission, _action
+    from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticDependencies, build_specialist_agentic_state_graph
+    tools = _ToolPorts()
+    model = _ScriptedModel([_evidence_action(), _finance_action(), _action('prepare_workpaper', brief=BRIEF)])
+    initial = {**_input(), 'max_model_turns': 3}
+    first = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=model, evidence_tool=tools.evidence, finance_tool=tools.finance, authoring_enabled=True)).compile().invoke(initial)
+    assert first['phase'] == 'specialist_human_review_handoff_emitted'
+    assert first['authoring_context']['brief'] == BRIEF
+    original = deepcopy(first)
+    resumed = _ScriptedModel([_submission()])
+    result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=resumed, evidence_tool=tools.evidence, finance_tool=tools.finance, authoring_enabled=True),
+        recovery_state=first).compile().invoke({**initial, 'run_invocation_id': 'resume-prepared'})
+    assert result.get('final_submission')
+    assert result['notebook']['model_turn_count'] == 4
+    assert resumed.requests[0]['task_context']['authoring_context'] == first['authoring_context']
+    assert 'prepare_workpaper' not in resumed.requests[0]['allowed_actions']
+    assert first == original
+
+
 def test_provider_writing_request_starts_fresh_but_restores_prepared_state():
     import httpx
     from pydantic import SecretStr

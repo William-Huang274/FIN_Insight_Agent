@@ -1191,7 +1191,12 @@ def _model_request(
             body["task_context"]["accepted_restored_checkpoint"] = True
     if authoring_enabled and not collaboration:
         from sec_agent.research_foundation.research_methods import get_research_method
-        drafting = bool(state.get('authoring_context'))
+        try:
+            validate_authoring(state.get('authoring_context') or {},
+                owner=state['agent_id'], basis=specialist_basis(state))
+            drafting = True
+        except ValueError:
+            drafting = False
         selected_methods = [row['role_method'] for row in body['l0_context']['skill_summaries']
                             if isinstance(row.get('role_method'), dict) and row['role_method'].get('method_id')]
         def authoring_method_reader(method_id):
@@ -1200,8 +1205,8 @@ def _model_request(
             return selected if selected is not None else (method_reader or get_research_method)(method_id)
         body['l0_context'] = {**body['l0_context'], 'skill_summaries': [
             {k: v for k, v in row.items() if k != 'role_method'} for row in body['l0_context']['skill_summaries']]}
-        allowed_actions.append('prepare_workpaper')
         if not drafting:
+            allowed_actions.append('prepare_workpaper')
             allowed_actions.remove('submit_workpaper')
         else:
             allowed_actions[:] = [a for a in allowed_actions if a not in {'delegate_subtasks', 'read_delegated_work'}]
@@ -1209,11 +1214,13 @@ def _model_request(
         # Replace irrelevant role instructions, retaining actual task/evidence state.
         for key in ('role_method', 'research_method', 'delegation_guidance'):
             context.pop(key, None)
-        context['authoring_context'] = state.get('authoring_context')
+        context['authoring_context'] = state.get('authoring_context') if drafting else None
         context['stage_methods'] = stage_methods('workpaper' if drafting else 'prepare_workpaper',
             domain=authoring_domain, reader=authoring_method_reader)
-        context['authoring_instruction'] = ('Draft your own scoped workpaper from the restored public state. '
-            'New research/changed evidence requires preparing again before final submission.' if drafting else
+        context['authoring_instruction'] = ('Preparation is already accepted and bound to the CURRENT evidence and working state. '
+            'Write and use SubmitWorkpaperAction now; do not repeat preparation because an older note or continuation '
+            'instruction still says to prepare. Preparation becomes available again only if research/working-state '
+            'changes invalidate this binding. Preserve original evidence and unresolved limits.' if drafting else
             'Complete the assigned research, then call PrepareWorkpaperAction with your public effective state before final submission. No final submission until prepared.')
         body['task_context'] = context
     last = state.get("last_submission_attempt") or {}

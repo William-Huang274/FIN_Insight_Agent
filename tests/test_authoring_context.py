@@ -77,10 +77,25 @@ def test_specialist_preparation_preserves_sources_and_replaces_static_role_metho
     before,after=model.requests[2:4]
     assert 'submit_workpaper' not in before['allowed_actions']
     assert 'submit_workpaper' in after['allowed_actions']
+    assert 'prepare_workpaper' not in after['allowed_actions']
     assert after['task_context']['authoring_context']['brief']==BRIEF
     assert 'OBSOLETE WHOLE ROLE PROMPT' not in json.dumps(after)
     assert after['task_context']['stage_methods']['stage']=='workpaper'
     assert result['notebook']['model_turn_count']==4
+    # A saved valid preparation resumes directly in writing. Changed evidence
+    # invalidates it and restores preparation, without changing the old packet.
+    from sec_agent.agent_runtime.specialist_graph import _model_request, SpecialistNotebook
+    saved = deepcopy(result)
+    resumed = _model_request(state=result, notebook=SpecialistNotebook.model_validate_json(
+        json.dumps(result['notebook'])), authoring_enabled=True)
+    assert 'prepare_workpaper' not in resumed['allowed_actions']
+    result['research_working_state'] = {'next_step': 'New material issue'}
+    changed = _model_request(state=result, notebook=SpecialistNotebook.model_validate_json(
+        json.dumps(result['notebook'])), authoring_enabled=True)
+    assert 'prepare_workpaper' in changed['allowed_actions']
+    assert 'submit_workpaper' not in changed['allowed_actions']
+    assert changed['task_context']['authoring_context'] is None
+    assert result['authoring_context'] == saved['authoring_context']
 
 
 def test_provider_writing_request_starts_fresh_but_restores_prepared_state():

@@ -28,7 +28,8 @@ class ResearchSubtask(BaseModel):
     result: str = Field(default="", max_length=2000,
         description="What actually finished, or the concrete blockage; retain period/unit/scope limits. Author assessment, not verified evidence.")
     next_step: str = Field(default="", max_length=1000, description="Only remaining work. Do not repeat already completed reading.")
-    source_ids: list[str] = Field(default_factory=list, max_length=32)
+    source_ids: list[str] = Field(default_factory=list, max_length=32,
+        description="Required and nonempty when status=completed: copy the exact observed IDs supporting this task's result, even if also listed in findings. Otherwise include the sources already read; navigation IDs do not prove the source was read.")
     migrated_questions: list[str] = Field(default_factory=list, max_length=24,
         description="One-time mapping from exact legacy open questions. Historical identity, NOT current unread/pending status. Split their entire scope into children, including unfinished parts.")
 
@@ -142,7 +143,7 @@ def merge_research_subtasks(prior, updates):
         if bool(children) != (task["status"] == "split"):
             raise ValueError("A split task needs children; a task with children must be marked split.")
         if task["status"] == "completed" and (not task["result"].strip() or not task["source_ids"]):
-            raise ValueError("Completed subtasks need an actual result and observed source IDs; status is not verification.")
+            raise ValueError(f"Completed subtask {task['task_id']!r} needs a nonempty result and source_ids supporting that result; copy the observed IDs even if already in findings. Status is not verification.")
     return list(tasks.values())
 
 

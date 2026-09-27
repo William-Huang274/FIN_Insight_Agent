@@ -77,6 +77,19 @@ def test_legacy_fragment_failure_explicitly_recommends_local_edit():
     assert 'op=str_replace' in caught.value.issues[0]['remedy']
 
 
+def test_explicit_replace_matches_legacy_and_preserves_atomic_old_value_guard():
+    from pydantic import ValidationError
+    original = paper()
+    edit = {'path': '/claims/0/evidence_ids', 'old_value': original['claims'][0]['evidence_ids'], 'new_value': []}
+    legacy = edit_action(original, [edit])
+    explicit = edit_action(original, [{**edit, 'op': 'replace'}])
+    assert apply_workpaper_edits(original, legacy) == apply_workpaper_edits(original, explicit)
+    with pytest.raises(WorkpaperEditError, match='old_value_or_path_mismatch'):
+        apply_workpaper_edits(original, edit_action(original, [{**edit, 'op': 'replace', 'old_value': ['wrong']}]))
+    with pytest.raises(ValidationError):
+        edit_action(original, [{**edit, 'op': 'remove'}])
+
+
 def test_stale_base_claim_identity_and_duplicate_coverage_remain_guarded():
     original = paper()
     with pytest.raises(WorkpaperEditError, match='base_mismatch'):

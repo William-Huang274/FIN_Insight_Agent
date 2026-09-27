@@ -356,6 +356,7 @@ class SubmitWorkpaperAction(_StrictModel):
 
 
 class WorkpaperFieldEdit(_StrictModel):
+    op: Literal["replace"] = Field(default="replace", description="Replace an existing complete field; omission is accepted for legacy callers. The exact old_value and base digest remain required.")
     path: str = Field(min_length=1, description=("RFC 6901 JSON Pointer into the current rejected workpaper. "
         "Arrays use zero-based numeric indices: /claims/0/kind edits the first claim's kind. "
         "A claim_id is a value, never an array index. Replace existing fields only; no wildcards or partial-string replacements."))

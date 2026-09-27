@@ -151,6 +151,69 @@ def _repair_read_working_set(messages):
     return {index: result for index, result in latest.values()}
 
 
+def _coalesce_observation_rows(messages):
+    """Reuse exact source rows across restored and live results, not their receipts.
+
+    Scope traversal to host-owned observation containers; never interpret source
+    prose as context or merge merely similar passages. Preserve every invocation,
+    recovery route and reference binding, including authority and revision.
+    """
+    seen = {}
+    for index, message in enumerate(messages):
+        if not isinstance(message, (HumanMessage, ToolMessage)) or getattr(message, "status", None) == "error":
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(body, dict):
+            continue
+        containers = []
+        if isinstance(message, HumanMessage):
+            containers.append((body.get("progress", {}), "progress"))
+        else:
+            containers.append((body.get("result", body), "result" if "result" in body else ""))
+            context = body.get("current_context", {})
+            if isinstance(context, dict):
+                containers.append((context.get("progress", {}), "current_context.progress"))
+        changed = False
+        for container, prefix in containers:
+            if not isinstance(container, dict) or container.get("failure") or container.get("error"):
+                continue
+            for offset, observation in enumerate(container.get("observations", [])):
+                if not isinstance(observation, dict) or observation.get("kind") != "evidence" or observation.get("status") != "success" or observation.get("failure"):
+                    continue
+                rows = observation.get("content")
+                if not isinstance(rows, list):
+                    continue
+                for row_index, row in enumerate(rows):
+                    if not isinstance(row, dict) or "identical_source_row_at" in row or row.get("result_state") == "typed_gap":
+                        continue
+                    row_ids = set(_literal_reference_ids(row, include_navigation=True))
+                    references = observation.get("references", [])
+                    bindings = [r for r in references if isinstance(r, dict) and r.get("ref_id") in row_ids]
+                    # Unknown row-to-reference binding: require the whole binding
+                    # set to match rather than infer a new citation authority.
+                    bindings = bindings or references
+                    source_scope = {k: v for k, v in observation.items() if k not in {
+                        "content", "references", "recovery", "context_projection", "action_attempt_id",
+                        "request_digest", "observation_digest", "source_runtime_receipt", "runtime_receipt"}}
+                    identity = json.dumps([row, bindings, source_scope], ensure_ascii=False, sort_keys=True)
+                    if len(identity) <= 600:
+                        continue
+                    location = {"message_index": index, "field": f"{prefix + '.' if prefix else ''}observations[{offset}].content[{row_index}]"}
+                    if identity not in seen:
+                        seen[identity] = location
+                        continue
+                    rows[row_index] = {"identical_source_row_at": seen[identity],
+                        "observed_reference_ids": sorted(row_ids),
+                        "notice": "Exact same row and authority binding already retained in this request. Use that original with this observation's unchanged references; this repeat is not independent evidence."}
+                    changed = True
+        if changed:
+            message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
+    return messages
+
+
 def coalesce_context_snapshots(messages):
     """Normalize byte-equivalent runtime copies, without summarizing research.
 
@@ -332,7 +395,7 @@ def coalesce_context_snapshots(messages):
                 orientation[key] = reuse(value, key, field)
         if orientation != original_orientation:
             message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
-    return projected
+    return _coalesce_observation_rows(projected)
 
 
 def research_input_pressure(encoded, messages, model):
@@ -407,14 +470,20 @@ def _retain_navigation_rows(observation, retained):
                 or row.get('numeric_fact_authority') is True or not (explicit_navigation or bound_navigation)):
             return observation
         candidates.append(row)
-    candidate_ids = set(ref for row in candidates for ref in _literal_reference_ids(row, include_navigation=True))
+    def candidate_identity(row):
+        # A document/entity is the scope of a section hit, not the identity of
+        # every hit beneath it. Pinning DOC must not pin its entire outline.
+        ids = {row[k] for k in ("candidate_id", "node_id", "source_record_id", "ref_id")
+               if isinstance(row.get(k), str)}
+        return ids or ({row["document_id"]} if isinstance(row.get("document_id"), str) else set())
+    candidate_ids = set(ref for row in candidates for ref in candidate_identity(row))
     if retained.intersection(_literal_reference_ids(observation.get("references", []))) - candidate_ids:
         return observation  # A pinned aggregate cannot be resolved to an exact row.
     keep = [row for row in rows if row.get("result_state") == "typed_gap"
-            or retained.intersection(_literal_reference_ids(row, include_navigation=True))]
+            or retained.intersection(candidate_identity(row))]
     if len(keep) == len(rows):
         return observation
-    kept_ids = set(ref for row in keep for ref in _literal_reference_ids(row, include_navigation=True)) | retained
+    kept_ids = set(ref for row in keep for ref in candidate_identity(row)) | retained
     kept_references = [r for r in observation.get('references', [])
         if not isinstance(r, dict) or r.get('authority_state') != 'retrieval_candidate'
         or r.get('writer_citable') is not False or r.get('numeric_fact_authority') is not False
@@ -520,6 +589,7 @@ def task_boundary_history(messages):
     """
     boundary, note, checkpoint = -1, None, False
     material_sources = set()
+    latest_state_sources = set()
     for index, message in enumerate(messages):
         if isinstance(message, HumanMessage):
             try:
@@ -529,13 +599,20 @@ def task_boundary_history(messages):
             if isinstance(restored, dict):
                 # Restored draft/calculation operations have the same protection
                 # as live operations, independently of the author's latest note.
-                material_sources.update(_literal_reference_ids(restored.get("progress", {}).get("prior_actions", [])))
-                material_sources.update(_literal_reference_ids(restored.get("task_context", {}).get("research_working_state", {})))
+                for action in restored.get("progress", {}).get("prior_actions", []):
+                    if not isinstance(action, dict):
+                        continue
+                    operations = [c.get("args", {}) for c in action.get("tool_calls", [])] if action.get("action") == "native_tool_batch" else [action]
+                    for operation in operations:
+                        if operation.get("action") != "update_research_state":
+                            material_sources.update(_literal_reference_ids(operation))
+                latest_state_sources = set(_literal_reference_ids(restored.get("task_context", {}).get("research_working_state", {}))) | latest_state_sources
         if isinstance(message, AIMessage):
             # Numerical operands and draft citations must not depend on whether
             # an author remembered to repeat them in its working-state note.
             for call in message.tool_calls:
-                material_sources.update(_literal_reference_ids(call.get("args", {})))
+                if call["name"] != "UpdateResearchStateAction":
+                    material_sources.update(_literal_reference_ids(call.get("args", {})))
         if not isinstance(message, ToolMessage) or message.name != "UpdateResearchStateAction" or message.status == "error":
             continue
         try:
@@ -547,15 +624,42 @@ def task_boundary_history(messages):
         if not isinstance(body, dict):
             continue
         if body.get("accepted"):
-            material_sources.update(ref for f in body.get("working_state", {}).get("findings", []) for ref in f["source_ids"])
-            material_sources.update(ref for q in body.get("working_state", {}).get("resolved_questions", []) for ref in q["source_ids"])
-            material_sources.update(ref for t in body.get("working_state", {}).get("subtasks", []) for ref in t["source_ids"])
+            state = body.get("working_state", {})
+            current_sources = set(_literal_reference_ids(state)) | set(state.get("retain_source_ids", []))
+            # Only an accepted continuity checkpoint retires old state pins.
+            # A proposal/rejection or ordinary note cannot release originals.
+            latest_state_sources = current_sources if body.get("checkpoint") else latest_state_sources | current_sources
         if body.get("accepted") and (body.get("working_state", {}).get("phase_status") == "completed" or body.get("checkpoint") is True):
             boundary, note = index, body["working_state"]
             checkpoint = body.get("checkpoint") is True
     if boundary < 0:
-        return coalesce_context_snapshots(messages)
-    retained = set(note["retain_source_ids"]) | material_sources
+        projected = deepcopy(list(messages))
+        for index, message in enumerate(messages):
+            if not isinstance(message, HumanMessage):
+                continue
+            try:
+                body = json.loads(message.content)
+            except (ValueError, TypeError):
+                continue
+            task = body.get("task_context", {}) if isinstance(body, dict) else {}
+            current = task.get("research_working_state") if isinstance(task, dict) else None
+            if task.get("accepted_restored_checkpoint") is not True or not isinstance(current, dict):
+                continue
+            retained = set(current.get("retain_source_ids", [])) | latest_state_sources | material_sources
+            _project_restored_context(messages, projected, index + 1, retained, checkpoint=True)
+            body = json.loads(projected[index].content)
+            for action in body.get("progress", {}).get("prior_actions", []):
+                if not isinstance(action, dict):
+                    continue
+                operations = [c.get("args", {}) for c in action.get("tool_calls", [])] if action.get("action") == "native_tool_batch" else [action]
+                for operation in operations:
+                    if operation.get("action") == "update_research_state" and "working_state" in operation:
+                        operation["working_state"] = {"superseded_working_state": True,
+                            "current_state_at": {"message_index": index, "field": "task_context.research_working_state"},
+                            "notice": "Saved accepted state is retained in this recovery message; historical proposals are not current instructions or evidence."}
+            projected[index].content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
+        return coalesce_context_snapshots(projected)
+    retained = set(note["retain_source_ids"]) | material_sources | latest_state_sources
     projected = deepcopy(list(messages))
     _project_restored_context(messages, projected, boundary, retained, checkpoint=checkpoint)
     calls = {c["id"]: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}

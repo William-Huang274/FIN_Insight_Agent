@@ -17,6 +17,94 @@ def observation(key, *, turn=1, **updates):
         **updates}
 
 
+def test_exact_rows_share_one_original_across_restore_live_with_distinct_receipts():
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    item = observation("BODY", content=[{"passage_id": "BODY", "text": "FY2027 USD original " * 100}])
+    rows = [HumanMessage(content=json.dumps({"progress": {"observations": [item]}})),
+        ToolMessage(name="RequestSourceAction", tool_call_id="new", content=json.dumps({"result": {
+            "observations": [{**item, "recovery": {"saved_observation_id": "different-call"}}]}}))]
+    original = deepcopy(rows)
+    projected = coalesce_context_snapshots(rows)
+    second = json.loads(projected[1].content)["result"]["observations"][0]
+    assert second["content"][0]["identical_source_row_at"]["message_index"] == 0
+    assert second["references"] == item["references"]
+    assert second["recovery"]["saved_observation_id"] == "different-call"
+    assert rows == original
+    assert coalesce_context_snapshots(projected) == projected
+    for field, value in (("references", [{"ref_id": "BODY", "authority_state": "retrieval_candidate"}]),
+                         ("status", "tool_failure"), ("provenance_kind", "another-source"),
+                         ("content", [{"passage_id": "BODY", "text": "Changed revision " * 100}])):
+        changed = deepcopy(rows)
+        body = json.loads(changed[1].content)
+        body["result"]["observations"][0][field] = value
+        changed[1].content = json.dumps(body)
+        assert coalesce_context_snapshots(changed)[1] == changed[1]
+
+
+def test_document_pin_does_not_expand_to_all_descendant_candidates():
+    from sec_agent.agent_runtime.model_context import _retain_navigation_rows
+    rows = [{"node_id": name, "candidate_id": "LOC::" + name, "document_id": "DOC",
+        "parent_document_id": "DOC", "result_state": "retrieval_candidate",
+        "writer_citable": False, "numeric_fact_authority": False} for name in ("DOC", "A", "B")]
+    item = observation("LOC::DOC", content=rows)
+    projected = _retain_navigation_rows(item, {"DOC", "LOC::B"})
+    assert [r["node_id"] for r in projected["content"]] == ["DOC", "B"]
+    assert item["content"] == rows
+
+
+def test_latest_accepted_checkpoint_replaces_old_note_pins_but_keeps_calculation_sources():
+    old = working_note(phase_status="working", findings=[{"finding": "Old candidate", "source_ids": ["OLD"],
+        "limitation": "Preview only"}], retain_source_ids=["OLD"])
+    # Use the actual note schema's fixture fields for the source binding.
+    old["findings"] = [{**working_note()["findings"][0], "source_ids": ["OLD"]}]
+    initial = HumanMessage(content=json.dumps({"task_context": {"research_working_state": old},
+        "progress": {"observations": [observation("OLD"), observation("CALC-SOURCE")],
+        "prior_actions": [{"action": "native_tool_batch", "tool_calls": [
+            {"name": "UpdateResearchStateAction", "args": {"action": "update_research_state", "working_state": old}},
+            {"name": "RequestCalculationAction", "args": {"action": "request_calculation", "source_ids": ["CALC-SOURCE"]}}]}]}}))
+    rows = [initial, *source_messages("LATEST"), *checkpoint_message(working_note(
+        phase_status="working", findings=[], retain_source_ids=[]))]
+    projected = task_boundary_history(rows)
+    observations = json.loads(projected[0].content)["progress"]["observations"]
+    assert "content" not in observations[0]
+    assert "content" in observations[1]
+    assert "OLD" in json.loads(initial.content)["task_context"]["research_working_state"]["findings"][0]["source_ids"]
+
+
+def test_first_restored_request_consumes_host_accepted_checkpoint_without_new_note():
+    note = working_note(phase_status="working", findings=[], retain_source_ids=["PIN"])
+    body = {"task_context": {"accepted_restored_checkpoint": True, "research_working_state": note},
+        "progress": {"observations": [observation("OLD"), observation("PIN"), observation("NEW", turn=2)],
+        "prior_actions": [{"action": "native_tool_batch", "tool_calls": [{"name": "UpdateResearchStateAction",
+            "args": {"action": "update_research_state", "working_state": note}}]}]}}
+    initial = HumanMessage(content=json.dumps(body))
+    view = json.loads(task_boundary_history([initial])[0].content)
+    assert "content" not in view["progress"]["observations"][0]
+    assert view["progress"]["observations"][1:] == body["progress"]["observations"][1:]
+    assert view["task_context"]["research_working_state"] == note
+    assert view["progress"]["prior_actions"][0]["tool_calls"][0]["args"]["working_state"]["superseded_working_state"]
+    body["task_context"].pop("accepted_restored_checkpoint")
+    assert "content" in json.loads(task_boundary_history([HumanMessage(content=json.dumps(body))])[0].content)["progress"]["observations"][0]
+
+
+def test_legacy_restored_checkpoint_marker_requires_exact_accepted_receipt():
+    from sec_agent.agent_runtime.specialist_graph import _model_request, SpecialistNotebook
+    from test_specialist_graph import _input, _ScriptedModel, _ToolPorts, _evidence_action
+    from test_specialist_tool_batch import _handoff
+    from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticDependencies, build_specialist_agentic_state_graph
+    ports = _ToolPorts()
+    state = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=_ScriptedModel([_evidence_action(), _handoff]), evidence_tool=ports.evidence,
+        finance_tool=ports.finance)).compile().invoke(_input())
+    note = working_note(phase_status="working")
+    state["research_working_state"] = note
+    for accepted, checkpoint, changed in [(True, True, False), (False, True, False), (True, False, False), (True, True, True)]:
+        receipt = {"accepted": accepted, "checkpoint": checkpoint, "working_state": {**note, **({"next_action": "changed"} if changed else {})}}
+        state["tool_results"] = [{"name": "UpdateResearchStateAction", "content": json.dumps(receipt)}]
+        req = _model_request(state=state, notebook=SpecialistNotebook.model_validate_json(json.dumps(state["notebook"])), working_state_enabled=True)
+        assert bool(req["task_context"].get("accepted_restored_checkpoint")) == (accepted and checkpoint and not changed)
+
+
 def test_restored_checkpoint_has_same_protections_as_live_history_and_no_mutation():
     items = [observation("OLD"), observation("PIN"), observation("CALC", kind="finance"),
         observation("FAIL", status="tool_failure", failure={"code": "timeout"}),

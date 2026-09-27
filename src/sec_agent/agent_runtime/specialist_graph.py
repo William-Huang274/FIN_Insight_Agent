@@ -969,6 +969,7 @@ class SpecialistHumanReviewHandoff(_StrictModel):
 class SpecialistAgenticState(TypedDict, total=False):
     authoring_context: dict[str, Any]
     research_working_state: dict[str, Any]
+    research_context_checkpoint_accepted: bool
     runtime_progress: dict[str, Any]
     lead_assistance_history: list[dict[str, Any]]
     schema_version: str
@@ -1186,6 +1187,20 @@ def _model_request(
             "runtime_progress": state.get("runtime_progress", {}),
             "lead_assistance": state.get("lead_assistance_history", []),
             "overall_assignment": state["task"]["objective"]}
+        accepted_checkpoint = state.get("research_context_checkpoint_accepted", False)
+        # Compatibility for older native checkpoints: trust the saved accepted
+        # receipt only when it exactly matches the actual working state.
+        for result in state.get("tool_results", []):
+            if result.get("name") != "UpdateResearchStateAction" or result.get("status") == "error":
+                continue
+            try:
+                receipt = json.loads(result.get("content", ""))
+            except (ValueError, TypeError):
+                continue
+            if receipt.get("accepted") and receipt.get("working_state") == state.get("research_working_state"):
+                accepted_checkpoint = receipt.get("checkpoint") is True
+        if accepted_checkpoint:
+            body["task_context"]["accepted_restored_checkpoint"] = True
     if authoring_enabled and not collaboration:
         from sec_agent.research_foundation.research_methods import get_research_method
         drafting = bool(state.get('authoring_context'))
@@ -1760,6 +1775,7 @@ def build_specialist_agentic_state_graph(
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
                 "research_working_state": _jsonable(recovery_state.get("research_working_state")),
+                "research_context_checkpoint_accepted": recovery_state.get("research_context_checkpoint_accepted", False),
                 "runtime_progress": _jsonable(recovery_state.get("runtime_progress", {})),
                 "lead_assistance_history": _jsonable(recovery_state.get("lead_assistance_history", [])),
                 "model_turn_invocations": {
@@ -2489,6 +2505,7 @@ def build_specialist_agentic_state_graph(
                 if before.tool_action_count >= state["max_tool_actions"]:
                     return reject("working_state_tool_limit", "Preserve state and stop; no additional allowance is granted.")
                 working["research_working_state"] = note
+                working["research_context_checkpoint_accepted"] = action.checkpoint
                 digest = _semantic_action_digest(action)
                 if digest not in before.dispatched_action_digests:
                     before = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,

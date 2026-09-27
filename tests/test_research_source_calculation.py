@@ -35,6 +35,34 @@ def source_reader(*, request, **_kwargs):
     return navigate_source_nodes([NODE], request, snapshot="frozen-fixture")
 
 
+def test_native_saved_observations_restore_calculator_without_rereading_or_promoting_navigation():
+    async def run():
+        calls = []
+        def tracked_reader(**kwargs):
+            calls.append(kwargs)
+            return source_reader(**kwargs)
+        async with Client(_build_server(source_document_reader=tracked_reader), raise_exceptions=False) as client:
+            method = await client.call_tool("get_research_source_binding", _method_arguments([BRANCH]))
+            read = await client.call_tool("read_source_document", {"request": {"operation": "read", "document_id": NODE["parent_document_id"]},
+                "branch_id": BRANCH, "run_scope": method.structured_content["run_scope"]})
+            items = read.structured_content["items"]
+        observations = [{"kind": "evidence", "status": "success", "content": items}]
+        original = deepcopy(observations)
+        # This is a NEW MCP session. No model-supplied source registration tool.
+        async with Client(_build_server(source_document_reader=tracked_reader, restored_observations=observations), raise_exceptions=False) as client:
+            result = await client.call_tool("calculate_research_metric", {"request": CALCULATION})
+            assert not result.is_error, result.content
+            assert result.structured_content["value_decimal"] == "617.25"
+            assert result.structured_content["numeric_fact_authority"] is False
+            tools = await client.list_tools()
+            assert not any("restore" in t.name for t in tools.tools)
+        assert len(calls) == 1 and observations == original
+        from sec_agent.research_foundation.source_bound_calculator import source_items_from_observations
+        assert not source_items_from_observations([{**observations[0], "status": "tool_failure"}])
+        assert not source_items_from_observations([{**observations[0], "content": [{**items[0], "result_state": "retrieval_candidate"}]}])
+    asyncio.run(run())
+
+
 def test_read_passage_calculate_native_report_and_preserved_revision(artifacts):
     async def run():
         server = _build_server(case_artifacts=artifacts, source_document_reader=source_reader)

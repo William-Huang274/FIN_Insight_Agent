@@ -101,6 +101,7 @@ def _build_server(
     financial_status: str = "typed_gap",
     case_artifacts=None,
     source_document_reader=None,
+    restored_observations=(),
 ):
     guard = PublicURLGuard(resolver=lambda _host: ("93.184.216.34",))
     discovery = ExternalSourceDiscovery(
@@ -251,6 +252,7 @@ def _build_server(
             external_capture=capture,
             case_artifacts=case_artifacts,
             source_document_reader=source_document_reader,
+            restored_observations=restored_observations,
             legacy_reviewed_evidence_cell_reader=(
                 legacy_evidence_reader if include_legacy else None
             ),

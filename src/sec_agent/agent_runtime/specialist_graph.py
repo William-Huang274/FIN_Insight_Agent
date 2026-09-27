@@ -30,7 +30,7 @@ from .research_contracts import ProviderEvidenceIntent
 from .task_outcome import AuthorTaskNote, TaskCoverage
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
 from .authoring_context import PrepareWorkpaperAction, bind_authoring, validate_authoring, specialist_basis, stage_methods
-from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools, merge_research_subtasks
+from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools, merge_research_subtasks, accepted_context_checkpoint
 from .source_check_scope import RequiredSourceCheck, SOURCE_CHECK_GUIDANCE, source_check_progress, source_check_errors
 from .workpaper_revision_state import revision_state, revision_progress, revision_submission_issues
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
@@ -1187,19 +1187,7 @@ def _model_request(
             "runtime_progress": state.get("runtime_progress", {}),
             "lead_assistance": state.get("lead_assistance_history", []),
             "overall_assignment": state["task"]["objective"]}
-        accepted_checkpoint = state.get("research_context_checkpoint_accepted", False)
-        # Compatibility for older native checkpoints: trust the saved accepted
-        # receipt only when it exactly matches the actual working state.
-        for result in state.get("tool_results", []):
-            if result.get("name") != "UpdateResearchStateAction" or result.get("status") == "error":
-                continue
-            try:
-                receipt = json.loads(result.get("content", ""))
-            except (ValueError, TypeError):
-                continue
-            if receipt.get("accepted") and receipt.get("working_state") == state.get("research_working_state"):
-                accepted_checkpoint = receipt.get("checkpoint") is True
-        if accepted_checkpoint:
+        if accepted_context_checkpoint(state):
             body["task_context"]["accepted_restored_checkpoint"] = True
     if authoring_enabled and not collaboration:
         from sec_agent.research_foundation.research_methods import get_research_method
@@ -1775,7 +1763,7 @@ def build_specialist_agentic_state_graph(
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
                 "research_working_state": _jsonable(recovery_state.get("research_working_state")),
-                "research_context_checkpoint_accepted": recovery_state.get("research_context_checkpoint_accepted", False),
+                "research_context_checkpoint_accepted": accepted_context_checkpoint(recovery_state),
                 "runtime_progress": _jsonable(recovery_state.get("runtime_progress", {})),
                 "lead_assistance_history": _jsonable(recovery_state.get("lead_assistance_history", [])),
                 "model_turn_invocations": {

@@ -95,6 +95,22 @@ WORKING_STATE_GUIDANCE = (
 )
 
 
+def accepted_context_checkpoint(state):
+    """Host state or an exact legacy success receipt, never a model proposal."""
+    import json
+    accepted = state.get("research_context_checkpoint_accepted", False)
+    for result in state.get("tool_results", []):
+        if result.get("name") != "UpdateResearchStateAction" or result.get("status") == "error":
+            continue
+        try:
+            receipt = json.loads(result.get("content", ""))
+        except (ValueError, TypeError):
+            continue
+        if isinstance(receipt, dict) and receipt.get("accepted") and receipt.get("working_state") == state.get("research_working_state"):
+            accepted = receipt.get("checkpoint") is True
+    return accepted
+
+
 def merge_research_subtasks(prior, updates):
     """Deterministic upsert only. The author owns decomposition and conclusions."""
     from copy import deepcopy
@@ -149,6 +165,15 @@ def observed_sources(notebook):
                 continue
             if item.get('result_state') in {'retrieval_candidate', 'source_bound_passage'}:
                 collect(item)
+                # Published reader routes and company source menus are observed
+                # navigation too; source prose itself is never searched for IDs.
+                collect(item.get('parent_readback'))
+                for route in item.get('context_readbacks', []):
+                    collect(route)
+                if item.get('company_section') == 'sources':
+                    for source in item.get('sources', []):
+                        if isinstance(source, dict) and isinstance(source.get('id'), str):
+                            refs.add(source['id'])
                 metadata = item.get('metadata', {})
                 if isinstance(metadata, str):
                     try:

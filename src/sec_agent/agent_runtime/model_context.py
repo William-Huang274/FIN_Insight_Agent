@@ -643,10 +643,11 @@ def task_boundary_history(messages):
                 continue
             task = body.get("task_context", {}) if isinstance(body, dict) else {}
             current = task.get("research_working_state") if isinstance(task, dict) else None
-            if task.get("accepted_restored_checkpoint") is not True or not isinstance(current, dict):
+            if not isinstance(current, dict):
                 continue
-            retained = set(current.get("retain_source_ids", [])) | latest_state_sources | material_sources
-            _project_restored_context(messages, projected, index + 1, retained, checkpoint=True)
+            if task.get("accepted_restored_checkpoint") is True:
+                retained = set(current.get("retain_source_ids", [])) | latest_state_sources | material_sources
+                _project_restored_context(messages, projected, index + 1, retained, checkpoint=True)
             body = json.loads(projected[index].content)
             for action in body.get("progress", {}).get("prior_actions", []):
                 if not isinstance(action, dict):

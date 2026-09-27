@@ -1082,6 +1082,7 @@ def _open_specialist_composition(
             source_read_enabled=source_read_enabled,
             live_web_read_enabled=live_web_read_enabled,
             role_method_reader=role_method_reader,
+            restored_observations=(recovery_state or {}).get("notebook", {}).get("observations", ()),
         ) as approved:
             graph_input = _build_graph_input(
                 run_id=run_id,

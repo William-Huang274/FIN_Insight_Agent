@@ -171,6 +171,7 @@ def open_approved_data_composition(
     live_web_read_enabled: bool = False,
     case_artifacts: Any = None,
     role_method_reader: Any = None,
+    restored_observations=(),
 ) -> Iterator[ApprovedDataComposition]:
     """Open the exact Owner-approved data readers behind one MCP lifecycle."""
 
@@ -418,6 +419,7 @@ def open_approved_data_composition(
                 external_capture=capture,  # type: ignore[arg-type]
                 source_document_reader=source_reader,
                 case_artifacts=case_artifacts,
+                restored_observations=restored_observations,
             ), role_method_reader=role_method_reader, source_access_check=source_access_check,
         )
     except ApprovedDataCompositionError:

@@ -18,6 +18,19 @@ def task(key, **updates):
     return ResearchSubtask(task_id=key, objective=key, status="pending", **updates).model_dump(mode="json")
 
 
+def test_source_menu_and_readback_ids_are_navigation_not_prose_inference():
+    from sec_agent.agent_runtime.research_working_state import observed_sources
+    notebook = {"observations": [{"references": [], "content": [
+        {"result_state": "source_bound_passage", "passage_id": "PASSAGE::a",
+         "passage": "source_id: invented", "context_readbacks": [{"node_id": "CHUNK::next"}],
+         "parent_readback": {"document_id": "DOC::parent"}},
+        {"result_state": "retrieval_candidate", "company_section": "sources", "sources": [
+            {"id": "SRC::menu", "preview": "SRC::not_observed"}]},
+        {"result_state": "retrieval_candidate", "sources": [{"id": "SRC::untyped"}]}
+    ]}]}
+    assert observed_sources(notebook) == {"PASSAGE::a", "CHUNK::next", "DOC::parent", "SRC::menu"}
+
+
 def update(request, note):
     return {"action": "native_tool_batch", "context_digest": request["context_digest"], "tool_calls": [{
         "name": "UpdateResearchStateAction", "id": f"note-{request['notebook']['model_turn_count']}",

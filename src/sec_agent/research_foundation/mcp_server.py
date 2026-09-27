@@ -164,6 +164,8 @@ class ResearchDataMCPDependencies:
     # Only a trusted review/report composition supplies a frozen case bundle.
     # Existing single-branch servers do not acquire cross-paper tools by default.
     case_artifacts: Any | None = None
+    # Host-restored native task observations; never accepted from model input.
+    restored_observations: Sequence[Mapping[str, Any]] = ()
 
 
 def build_research_data_mcp_server(
@@ -216,7 +218,8 @@ def build_research_data_mcp_server(
     # must re-query or receive its case archive; never accept a model-supplied
     # number as an observed fact.
     from .source_bound_calculator import source_items_from_tool, register_source_calculator_tool
-    observed_sources: dict[str, dict[str, Any]] = {}
+    from .source_bound_calculator import source_items_from_observations
+    observed_sources = source_items_from_observations(dependencies.restored_observations)
 
     def remember_sources(tool_name, result):
         body = result if isinstance(result, dict) else result.model_dump(mode="json")

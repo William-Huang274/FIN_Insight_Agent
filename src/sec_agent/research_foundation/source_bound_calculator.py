@@ -76,6 +76,32 @@ def source_items_from_tool(tool_name: str, body: dict) -> dict[str, dict]:
     return {}
 
 
+def source_items_from_observations(observations) -> dict[str, dict]:
+    """Restore a trusted native notebook's calculator inputs, never model notes.
+
+    Called by host composition, not exposed as an MCP tool. Existing source
+    adapters retain their authority checks; failed results and navigation cannot
+    acquire calculation authority merely by being present in a saved notebook.
+    """
+    sources = {}
+    for observation in observations:
+        if observation.get("status") != "success" or observation.get("failure"):
+            continue
+        for item in observation.get("content", []):
+            if not isinstance(item, dict):
+                continue
+            if item.get("result_state") == "numeric_fact":
+                sources.update(source_items_from_tool("query_company_financial_facts", {
+                    "authority_state": "s2_numeric_fact_query_result", "results": [{"status": "resolved", "facts": [item]}]}))
+            elif item.get("result_state") == "source_bound_passage":
+                sources.update(source_items_from_tool("read_source_document", {"operation": "read", "items": [item]}))
+            elif item.get("result_state") == "reviewed_evidence":
+                sources.update(source_items_from_tool("read_reviewed_evidence", {"authority_state": "reviewed_evidence_read", "evidence": [item]}))
+            elif item.get("result_state") == "non_authoritative_metric":
+                sources.update(source_items_from_tool("calculate_research_metric", item))
+    return deepcopy(sources)
+
+
 def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Callable[[str], dict]) -> dict:
     values, bindings = {}, {}
     for name, operand in request.operands.items():

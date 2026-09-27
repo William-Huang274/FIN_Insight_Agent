@@ -249,8 +249,13 @@ class SpecialistClaim(_StrictModel):
     ))
     materiality: Literal["high", "medium", "low"]
     statement: str = Field(min_length=1, max_length=4_000)
-    evidence_ids: tuple[str, ...] = Field(default=(), max_length=32)
-    fact_ids: tuple[str, ...] = Field(default=(), max_length=48)
+    evidence_ids: tuple[str, ...] = Field(default=(), max_length=32, description=(
+        "Only observed writer-citable evidence or PASSAGE IDs. CALC receipts belong in fact_ids, "
+        "never here. DOC/SRC/CHUNK navigation identities are not evidence. A boundary about your own "
+        "reading coverage may leave this empty and explain its scope in authority_note; do not claim issuer non-disclosure from search failure."))
+    fact_ids: tuple[str, ...] = Field(default=(), max_length=48, description=(
+        "Observed NUMFACT/S2 IDs for numeric_fact, or canonical CALC IDs for calculation. "
+        "Do not also copy CALC IDs into evidence_ids. Preserve source operands and calculation limitations."))
     numeric_authority: Literal[
         "authoritative", "non_authoritative", "not_applicable"
     ] = Field(default="not_applicable", description=(

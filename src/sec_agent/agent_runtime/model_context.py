@@ -222,6 +222,31 @@ def coalesce_context_snapshots(messages):
     errors and freshly read sources, are untouched. Stored history is immutable.
     """
     projected = deepcopy(list(messages))
+    # Authoring binds an exact copy of working state for host validation. The
+    # model also receives that same state directly; retain one visible original.
+    # Only the request view changes, never the persisted binding or its digest.
+    for index, message in enumerate(projected):
+        if not isinstance(message, (HumanMessage, ToolMessage)):
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(body, dict):
+            continue
+        context = body if isinstance(message, HumanMessage) else body.get('current_context', {})
+        task = context.get('task_context', {}) if isinstance(context, dict) else {}
+        if not isinstance(task, dict):
+            continue
+        authoring = task.get('authoring_context')
+        basis = authoring.get('basis') if isinstance(authoring, dict) else None
+        current = task.get('research_working_state')
+        if isinstance(basis, dict) and isinstance(current, dict) and basis.get('working_state') == current:
+            prefix = '' if isinstance(message, HumanMessage) else 'current_context.'
+            basis['working_state'] = {'identical_snapshot_retained_at': {
+                'message_index': index, 'field': prefix + 'task_context.research_working_state'},
+                'notice': 'Exact authoring-basis copy; host validates the unchanged saved binding.'}
+            message.content = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
     # The native checkpoint receipt and its next-turn handoff carry the same
     # accepted note. Keep the authoritative receipt once, including at the
     # newest boundary; otherwise a successful compression immediately grows

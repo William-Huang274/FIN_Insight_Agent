@@ -17,6 +17,31 @@ from sec_agent.agent_runtime.model_context import project_tool_history
 from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
 
 
+@pytest.mark.parametrize('changed', [False, True])
+def test_authoring_basis_reuses_only_the_exact_current_state_copy(changed):
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    state = {'findings': [{'source_ids': ['PASSAGE::original'], 'finding': 'USD 40.20 billion; FY2027 Q1'}],
+             'open_questions': ['Cancellation terms remain unchecked.']}
+    prior = deepcopy(state)
+    if changed: prior['open_questions'] = ['Different older question']
+    packet = {'task_context': {'research_working_state': state,
+        'authoring_context': {'basis_digest': 'saved-digest', 'basis': {'working_state': prior}}}}
+    rows = [HumanMessage(content=json.dumps(packet))]
+    saved = deepcopy(rows)
+    projected = coalesce_context_snapshots(rows)
+    body = json.loads(projected[0].content)
+    assert body['task_context']['research_working_state'] == state
+    basis = body['task_context']['authoring_context']
+    assert basis['basis_digest'] == 'saved-digest'
+    if changed:
+        assert basis['basis']['working_state'] == prior
+    else:
+        assert basis['basis']['working_state']['identical_snapshot_retained_at'] == {
+            'message_index': 0, 'field': 'task_context.research_working_state'}
+    assert rows == saved
+    assert coalesce_context_snapshots(projected) == projected
+
+
 def history():
     rows = [HumanMessage(content="Synthetic source and protocol retention fixture.")]
     for i, name in enumerate(("read_source_document", "calculate_research_metric", "get_research_method", "query_company_financial_facts", "read_current_workpaper")):

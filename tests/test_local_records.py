@@ -64,6 +64,44 @@ def test_legacy_external_value_cannot_escape_cache_directory(tmp_path):
         LocalRecords(tmp_path)
 
 
+@pytest.mark.parametrize('filename', [r'4d\52\vector.val', '4d/52/vector.val'])
+def test_import_external_windows_and_posix_paths_keeps_provider_receipts(tmp_path, filename):
+    folder = tmp_path / '4d' / '52'
+    folder.mkdir(parents=True)
+    value = {'status': 'completed', 'result': {'values': [[1.0, 0.25]]}}
+    payload = pickle.dumps(value)
+    (folder / 'vector.val').write_bytes(payload)
+    legacy_database(tmp_path, [('paid', None, 4, filename, None),
+        ('unknown', None, 4, None, pickle.dumps({'status': 'failed_usage_unknown'}))])
+    original = hashlib.sha256((tmp_path / 'cache.db').read_bytes()).hexdigest()
+    for _ in range(2):
+        with LocalRecords(tmp_path) as records:
+            assert records['paid'] == value
+            assert not records.add('unknown', {'status': 'started'})
+    assert hashlib.sha256((tmp_path / 'cache.db').read_bytes()).hexdigest() == original
+    assert (folder / 'vector.val').read_bytes() == payload
+
+
+@pytest.mark.parametrize('filename', [r'..\outside.val', '../outside.val', r'C:\outside.val',
+    'C:outside.val', r'\\server\share\outside.val', '/outside.val', r'4d\..\outside.val'])
+def test_cross_platform_legacy_paths_cannot_escape_or_name_a_drive(tmp_path, filename):
+    legacy_database(tmp_path, [('bad', None, 4, filename, None)])
+    with pytest.raises(ValueError, match='path_or_size'):
+        LocalRecords(tmp_path)
+    with sqlite3.connect(tmp_path / 'records-v1.sqlite') as db:
+        assert db.execute('SELECT count(*) FROM metadata').fetchone()[0] == 0
+
+
+def test_missing_legacy_external_file_does_not_admit_new_paid_work(tmp_path):
+    legacy_database(tmp_path, [('valid', None, 1, None, 'keep'),
+        ('missing', None, 4, r'4d\52\missing.val', None)])
+    with pytest.raises(FileNotFoundError):
+        LocalRecords(tmp_path)
+    with sqlite3.connect(tmp_path / 'records-v1.sqlite') as db:
+        assert db.execute('SELECT count(*) FROM records').fetchone()[0] == 0
+        assert db.execute('SELECT count(*) FROM metadata').fetchone()[0] == 0
+
+
 def _claim(directory):
     with LocalRecords(directory) as records:
         return records.add('same-submission', {'status': 'dispatching'})

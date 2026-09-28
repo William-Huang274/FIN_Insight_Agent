@@ -34,6 +34,29 @@ def _handoff(request):
             "reason_summary": "Offline fixture complete, not financial research.", "blocker_code": "offline_complete"}
 
 
+@pytest.mark.parametrize('has_library', [False, True])
+def test_specialist_route_guidance_is_capability_bound_without_rewriting_local_ids(has_library):
+    initial = _input()
+    initial['l0_context']['source_read_enabled'] = True
+    initial['l0_context']['capability_summaries'].append({
+        'capability_ref': 'capability:research:source-document-read',
+        'source_spaces': ['local', 'library'] if has_library else ['local']})
+    requests = []
+    def turn(request):
+        requests.append(request)
+        return _handoff(request)
+    ports = _ToolPorts()
+    result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance)).compile().invoke(initial)
+    guidance = requests[0].get('task_context', {}).get('source_routing_guidance')
+    assert bool(guidance) is has_library
+    if has_library:
+        assert 'source_space=library explicitly' in guidance
+        assert 'originating source_space' in guidance
+    assert not ports.calls
+    assert result['l0_context'] == initial['l0_context']
+
+
 def _exercise(mutate=lambda batch: None, max_actions=12, source_enabled=True):
     requests, ports = [], _ToolPorts()
     actions = [_evidence_action()({}), _finance_action()({}),

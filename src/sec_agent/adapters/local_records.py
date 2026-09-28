@@ -11,7 +11,7 @@ import base64
 import io
 import json
 import math
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import pickle
 import pickletools
 import sqlite3
@@ -58,7 +58,15 @@ class _PrimitiveUnpickler(pickle.Unpickler):
 
 def _legacy_value(root, mode, filename, value):
     if filename is not None:
-        path = (root / filename).resolve()
+        # DiskCache persists platform-specific relative filenames. A Windows
+        # cache copied to Linux still names subdirectories with backslashes.
+        # Interpret both separators, but never admit drives, roots or traversal.
+        if not isinstance(filename, str) or not filename:
+            raise ValueError("legacy_value_path_or_size_invalid")
+        relative = PureWindowsPath(filename)
+        if relative.drive or relative.root or '..' in relative.parts:
+            raise ValueError("legacy_value_path_or_size_invalid")
+        path = root.joinpath(*relative.parts).resolve()
         if not path.is_relative_to(root) or path.stat().st_size > MAX_VALUE_BYTES:
             raise ValueError("legacy_value_path_or_size_invalid")
         value = path.read_bytes()

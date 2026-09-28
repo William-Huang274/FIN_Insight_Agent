@@ -1170,6 +1170,16 @@ def _model_request(
         body["task_context"] = state["task_context"]
         if state['task_context'].get('professional'):
             allowed_actions[:] = [a for a in allowed_actions if a not in {'request_finance','request_evidence'}]
+    if l0.source_read_enabled and any('library' in row.get('source_spaces', []) for row in l0.capability_summaries):
+        body['task_context'] = {**body.get('task_context', {}), 'source_routing_guidance': (
+            'For company/industry discovery and current coverage use source_space=library explicitly: '
+            'catalog/company/search/related share the published library and its prepared chunk vectors. '
+            'local is a separate frozen document tree, not an alias of library. Use local to read/search '
+            'an exact local document or section already returned, or when the assignment specifically needs that tree. '
+            'Keep each document/node ID in its originating source_space; never replace DOC with SRC or infer an equivalent ID. '
+            'If local search reports hybrid unavailable, retain its lexical candidates and mark degraded retrieval; '
+            'use library search to find additional sources, then copy the newly returned IDs. '
+            'Do not call a degraded or unsearched result an issuer disclosure gap.')}
     if state.get("required_source_checks"):
         body["task_context"] = {**(body.get("task_context") or {}),
             "source_check_guidance": SOURCE_CHECK_GUIDANCE,

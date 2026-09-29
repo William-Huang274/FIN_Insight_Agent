@@ -76,8 +76,8 @@ def test_future_completion_and_actual_tool_batch_trigger_before_character_ceilin
     assert notice["growth_reserve_characters"] > 160000
     assert projected[:-1] == rows and rows == original
     assert projected[-1].additional_kwargs['fin_context_checkpoint_instruction'] is True
-    assert 'CURRENT REQUEST STATE: context_checkpoint_required=true' in projected[-1].content
-    assert 'overrides allowed_actions' in projected[-1].content
+    assert notice['advisory'] is True
+    assert 'All research tools remain available' in projected[-1].content
 
 
 def test_growth_reserve_does_not_count_host_handoff_as_future_source_output():
@@ -206,7 +206,7 @@ def test_rejected_checkpoint_and_unfinished_uncheckpointed_phase_never_release_r
     assert task_boundary_history(rows)==rows
 
 
-def test_cited_draft_and_calculation_sources_survive_even_if_omitted_from_working_note():
+def test_completed_draft_and_calculation_inputs_are_recoverable_not_permanent_pins():
     rows=[*source_messages("DRAFT"),*source_messages("OPERAND"),*source_messages("UNUSED"),*source_messages("LATEST")]
     rows += [AIMessage(content="",tool_calls=[{"name":"SubmitWorkpaperAction","id":"draft","args":{
         "claims":[{"evidence_ids":["DRAFT"]}]},"type":"tool_call"}]),
@@ -216,7 +216,9 @@ def test_cited_draft_and_calculation_sources_survive_even_if_omitted_from_workin
         ToolMessage(content='{"result":"66.6666666667"}',tool_call_id="calc")]
     rows += checkpoint_message(working_note(phase_status="working",findings=[],retain_source_ids=[]))
     projected=task_boundary_history(rows)
-    assert projected[1]==rows[1] and projected[3]==rows[3]
+    assert '"node_id":"DRAFT"' in projected[1].content
+    assert '"node_id":"OPERAND"' in projected[3].content
+    assert 'Original numbers' not in projected[1].content
     assert "Original numbers" not in projected[5].content
     assert projected[9]==rows[9] and projected[11]==rows[11]
 
@@ -264,11 +266,10 @@ def test_actual_sdk_checkpoint_then_continuation_preserves_readers_and_originals
     assert rows[:len(original)]==original
 
 
-def test_same_checkpoint_cannot_be_repaid_when_protected_context_still_exceeds_threshold():
+def test_pressure_after_checkpoint_is_advisory_not_a_research_stop():
     rows=[HumanMessage(content="Original task"),*source_messages("SOURCE-A"),
         *checkpoint_message(working_note(phase_status="working"))]
-    with pytest.raises(ValueError,match="research_context_checkpoint_insufficient"):
-        request_checkpoint(rows,model(research_checkpoint_tokens=1))
+    assert request_checkpoint(rows,model(research_checkpoint_tokens=1))[2]['advisory']
 
 
 def test_accepted_checkpoint_archives_completed_reasoning_without_losing_exact_results():
@@ -326,7 +327,7 @@ def test_context_blockage_notifies_lead_once_and_never_restarts_the_expert_allow
     assert result["notebook"]["model_turn_count"]==0  # both blocks were pre-transport
 
 
-def test_checkpoint_cannot_silently_drop_an_open_question():
+def test_authored_current_questions_replace_the_old_list():
     calls=[];ports=_ToolPorts()
     base=working_note(phase_status="working",findings=[],retain_source_ids=[])
     def turn(request):
@@ -340,13 +341,13 @@ def test_checkpoint_cannot_silently_drop_an_open_question():
     graph=build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(model_turn=turn,
         evidence_tool=ports.evidence,finance_tool=ports.finance,working_state_enabled=True)).compile()
     result=graph.invoke(_input(),{"recursion_limit":20})
-    assert result["research_working_state"]["open_questions"]==base["open_questions"]
-    assert "inherited_open_questions" in json.dumps(calls[-1]["tool_results"])
+    assert result["research_working_state"]["open_questions"] == []
+    assert base["open_questions"]  # Prior input and native history are not rewritten.
     assert result["notebook"]["tool_action_count"] == 2
 
 
 @pytest.mark.parametrize('mode', ['omit', 'shorten', 'unknown_source', 'capacity'])
-def test_checkpoint_inherits_exact_negative_constraints_without_erasing_or_authorizing_sources(mode):
+def test_current_judgments_replace_history_but_unknown_sources_still_fail(mode):
     calls=[]; ports=_ToolPorts()
     original='A quarterly ratio is not an annual composition (previous note was rejected).'
     base=working_note(phase_status='working', findings=[], retain_source_ids=[], resolved_questions=[],
@@ -370,16 +371,14 @@ def test_checkpoint_inherits_exact_negative_constraints_without_erasing_or_autho
     assert proposed==saved
     note=result['research_working_state']
     assert note['open_questions']==base['open_questions']
-    assert original in note['rejected_interpretations']
     feedback=json.dumps(calls[-1]['tool_results'])
-    if mode in {'omit','shorten'}:
-        assert note['rejected_interpretations']==([original] if mode=='omit' else [original,shorter])
-        assert 'inherited_rejected_interpretations' in feedback
+    if mode != 'unknown_source':
+        assert note['rejected_interpretations'] == proposed['rejected_interpretations']
+        assert 'inherited_rejected_interpretations' not in feedback
         assert result['notebook']['tool_action_count']==2
     else:
         assert note==base
-        assert ('working_state_unknown_source' if mode=='unknown_source' else
-                'working_state_rejected_interpretations_capacity') in feedback
+        assert 'working_state_unknown_source' in feedback
 
 
 def test_actual_sdk_uses_audited_author_turn_for_checkpoint_and_native_acceptance():
@@ -388,10 +387,10 @@ def test_actual_sdk_uses_audited_author_turn_for_checkpoint_and_native_acceptanc
     note=working_note(phase_status="working",findings=[],retain_source_ids=[])
     def serve(request):
         body=json.loads(request.content);captured.append(body)
-        assert {t["function"]["name"] for t in body["tools"]}=={"UpdateResearchStateAction","RequestHumanReviewAction"}
-        assert "Runtime context checkpoint required" in json.dumps(body["messages"])
+        assert {"UpdateResearchStateAction", "RequestEvidenceAction"} <= {t["function"]["name"] for t in body["tools"]}
+        assert "Context size reminder" in json.dumps(body["messages"])
         assert body['messages'][-1]['role'] == 'system'
-        assert 'CURRENT REQUEST STATE' in body['messages'][-1]['content']
+        assert 'All research tools remain available' in body['messages'][-1]['content']
         args={"action":"update_research_state","reason_summary":"Save the unresolved research step.","checkpoint":True,"working_state":note}
         return httpx.Response(200,json={"id":"fixture","object":"chat.completion","created":1,"model":"deepseek-v4-pro",
             "choices":[{"index":0,"finish_reason":"tool_calls","message":{"role":"assistant","content":"","tool_calls":[{
@@ -405,12 +404,12 @@ def test_actual_sdk_uses_audited_author_turn_for_checkpoint_and_native_acceptanc
         graph=build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
             model_turn=adapter.specialist_model_turn,turn_source="provider_model",
             evidence_tool=ports.evidence,finance_tool=ports.finance,working_state_enabled=True)).compile()
-        result=graph.invoke(_input(),{"recursion_limit":20})
+        result=graph.invoke({**_input(), 'max_model_turns': 1},{"recursion_limit":20})
     assert result["research_working_state"]["last_task_detail"]==note["last_task_detail"]
     assert result["research_working_state"]["phase_status"]=="working"
     assert len(captured)==1 and result["notebook"]["model_turn_count"]==1
     assert any(e.get("context_checkpoint") for e in events)
-    assert result["review_reason"]=="research_context_checkpoint_unresolved"
+    assert result.get("review_reason") != "research_context_checkpoint_unresolved"
     response = next(e['raw_response'] for e in private if e.get('raw_response'))
     assert response['response_metadata']['fin_runtime_input_measurement']['provider_input_tokens'] == 100
     assert 'fin_runtime_input_measurement' not in json.dumps(captured)

@@ -238,6 +238,12 @@ def coalesce_context_snapshots(messages):
         task = context.get('task_context', {}) if isinstance(context, dict) else {}
         if not isinstance(task, dict):
             continue
+        if 'working_state_guidance' in task:
+            from .research_working_state import WORKING_STATE_GUIDANCE
+            # Owned runtime policy is current, even when resuming a saved old
+            # request. User instructions and source content are never rewritten.
+            task['working_state_guidance'] = WORKING_STATE_GUIDANCE
+            message.content = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
         authoring = task.get('authoring_context')
         basis = authoring.get('basis') if isinstance(authoring, dict) else None
         current = task.get('research_working_state')
@@ -569,11 +575,17 @@ def _project_restored_context(messages, projected, boundary, retained, *, checkp
                 observations[offset] = _retain_navigation_rows(observation, retained)
                 continue
             observations[offset] = {"kind": observation["kind"], "status": observation["status"],
-                "references": observation.get("references", []), "recovery": recovery,
+                "recovery": recovery,
                 "observed_reference_ids": _literal_reference_ids(observation, include_navigation=True),
                 "notice": "Older saved result omitted from this request, NOT evidence. Original observation "
                     "is retained unchanged. Recover it using read_tool/arguments BEFORE citing, calculating "
                     "or comparing its content. Omission does not mean source absence."}
+        # Execution history is an archive, not another current working note.
+        # Keep exact result recovery entries above, not old tool arguments/drafts.
+        progress["archived_action_count"] = progress.get("archived_action_count", 0) + len(progress.get("prior_actions", []))
+        progress["prior_actions"] = []
+        progress["archived_feedback_count"] = progress.get("archived_feedback_count", 0) + len(progress.get("feedback", []))
+        progress["feedback"] = []
         projected[index].content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
 
 
@@ -585,6 +597,8 @@ def _supersede_working_notes(messages, boundary):
     """
     pointer = _checkpoint_state_pointer(boundary, messages[boundary])
     for message in messages[:boundary]:
+        if message.additional_kwargs.get("fin_context_checkpoint_instruction"):
+            message.content = "Historical context reminder superseded by the accepted working state."
         if isinstance(message, AIMessage):
             for call in message.tool_calls:
                 if call["name"] == "UpdateResearchStateAction" and "working_state" in call["args"]:
@@ -622,10 +636,10 @@ def _supersede_working_notes(messages, boundary):
 
 
 def task_boundary_history(messages):
-    """Accepted phase transitions or author checkpoints release old source bodies.
+    """One accepted working state, current source pins, recent reads, archive routes.
 
-    All active-phase reads and material findings' originals survive together.
-    No inferred phase boundary, unaccepted summary, or change to stored messages.
+    A source used in an old action is not a permanent prompt pin. All originals
+    and calculation provenance remain in the native notebook for exact recovery.
     """
     boundary, note, checkpoint = -1, None, False
     material_sources = set()
@@ -637,19 +651,11 @@ def task_boundary_history(messages):
             except (ValueError, TypeError):
                 restored = {}
             if isinstance(restored, dict):
-                # Restored draft/calculation operations have the same protection
-                # as live operations, independently of the author's latest note.
-                for action in restored.get("progress", {}).get("prior_actions", []):
-                    if not isinstance(action, dict):
-                        continue
-                    operations = [c.get("args", {}) for c in action.get("tool_calls", [])] if action.get("action") == "native_tool_batch" else [action]
-                    for operation in operations:
-                        if operation.get("action") != "update_research_state":
-                            material_sources.update(_literal_reference_ids(operation))
-                latest_state_sources = set(_literal_reference_ids(restored.get("task_context", {}).get("research_working_state", {}))) | latest_state_sources
+                current = restored.get("task_context", {}).get("research_working_state") or {}
+                latest_state_sources = set(current.get("retain_source_ids", []))
         if isinstance(message, AIMessage):
-            # Numerical operands and draft citations must not depend on whether
-            # an author remembered to repeat them in its working-state note.
+            # Outstanding operations after the latest accepted note keep their
+            # inputs until the author has observed and organized their results.
             for call in message.tool_calls:
                 if call["name"] != "UpdateResearchStateAction":
                     material_sources.update(_literal_reference_ids(call.get("args", {})))
@@ -665,13 +671,11 @@ def task_boundary_history(messages):
             continue
         if body.get("accepted"):
             state = body.get("working_state", {})
-            current_sources = set(_literal_reference_ids(state)) | set(state.get("retain_source_ids", []))
-            # Only an accepted continuity checkpoint retires old state pins.
-            # A proposal/rejection or ordinary note cannot release originals.
-            latest_state_sources = current_sources if body.get("checkpoint") else latest_state_sources | current_sources
-        if body.get("accepted") and (body.get("working_state", {}).get("phase_status") == "completed" or body.get("checkpoint") is True):
+            latest_state_sources = set(state.get("retain_source_ids", []))
+            material_sources = set()
+        if body.get("accepted"):
             boundary, note = index, body["working_state"]
-            checkpoint = body.get("checkpoint") is True
+            checkpoint = True
     if boundary < 0:
         projected = deepcopy(list(messages))
         for index, message in enumerate(messages):
@@ -685,7 +689,7 @@ def task_boundary_history(messages):
             current = task.get("research_working_state") if isinstance(task, dict) else None
             if not isinstance(current, dict):
                 continue
-            if task.get("accepted_restored_checkpoint") is True:
+            if current.get("current_subtask"):
                 retained = set(current.get("retain_source_ids", [])) | latest_state_sources | material_sources
                 _project_restored_context(messages, projected, index + 1, retained, checkpoint=True)
             body = json.loads(projected[index].content)
@@ -827,67 +831,19 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
     reserve_chars = pressure["growth_reserve_characters"]
     if estimate < trigger and len(encoded) < max_input_characters - reserve_chars:
         return messages, native_tools, None
-    attempts = 0
-    rejected_checkpoint_turn = False
-    for message in reversed(messages):
-        if isinstance(message, AIMessage):
-            if not rejected_checkpoint_turn and not any(c["name"] == "UpdateResearchStateAction" for c in message.tool_calls):
-                break
-            attempts += 1
-            rejected_checkpoint_turn = False
-        if isinstance(message, ToolMessage) and message.status == "error":
-            try:
-                feedback = json.loads(message.content)
-                feedback = feedback.get("result", feedback)
-                rejected_checkpoint_turn |= (feedback.get("error") == "native_tool_not_allowed_this_turn"
-                    and feedback.get("context_checkpoint_required") is True)
-            except (TypeError, json.JSONDecodeError):
-                pass
-        if isinstance(message, ToolMessage) and message.name == "UpdateResearchStateAction" and message.status != "error":
-            try:
-                body = json.loads(message.content)
-                body = body.get("result", body)
-            except (TypeError, json.JSONDecodeError):
-                continue
-            if body.get("accepted") and body.get("checkpoint"):
-                raise ValueError("research_context_checkpoint_insufficient")
-    if attempts >= 2:
-        raise ValueError("research_context_checkpoint_not_resolved")
     notice = SystemMessage(content=(
-        "CURRENT REQUEST STATE: context_checkpoint_required=true. Runtime context checkpoint required now, "
-        "before any further research. This is an active interruption for THIS response, not a future policy "
-        "or a historical instruction. It overrides allowed_actions and next-step plans in earlier tool snapshots. "
-        "The only currently executable tools are UpdateResearchStateAction and RequestHumanReviewAction. "
-        "This task is still in progress. "
-        "Read the latest tool results now; do not repeat the reads. Submit UpdateResearchStateAction alone with "
-        "checkpoint=true, phase_status=working unless the phase actually finished. Self-compress the current "
-        "research state: overall logic, actual findings with ALL used numerical/metric references and subject, "
-        "period, unit, denominator, revision, actual/guidance qualifiers; rejected interpretations; every open "
-        "issue; the last unfinished task in detail and its exact next action. Pin source IDs that must be compared "
-        "together. Update stable-ID subtasks with actual partial/completed/blocked progress and only remaining work. "
-        "You may split a task into children and migrate legacy open questions via migrated_questions, preserving "
-        "all their scope without carrying obsolete unread wording. Submit changed tasks only; unchanged tasks persist. "
-        "Unaddressed prior questions are retained exactly by the host and reported as inherited_open_questions, "
-        "so omission does not discard them or require rewriting the checkpoint. Explicitly resolve or migrate "
-        "stale questions when updating the relevant task; historical unread wording is pending author review. "
-        "Keep prior rejected_interpretations. This is a public continuity note, "
-        "not private reasoning or evidence. Do not invent resolved "
-        "issues. Older recoverable source bodies can leave subsequent requests only after this note is accepted. "
-        "The original assignment, original findings' evidence, calculations, latest read batch and original "
-        "operations remain protected. Every omitted read supplies its exact tool and arguments; retrieve it "
-        "BEFORE dependent citing/calculation/comparison when the original is no longer present. "
-        "Do not redo completed research. No budget, task or turn count is reset. "
-        "If a truthful note cannot be prepared, use RequestHumanReviewAction with the actual blockage."))
-    # Replace this temporary runtime instruction on every request; it is not
-    # historical research data and must not become a growing stack of prompts.
+        "Context size reminder: organize the current findings, interpretation, remaining work and next action "
+        "with UpdateResearchStateAction at the next useful boundary (checkpoint=true). "
+        "Replace stale wording instead of copying history. Pin only sources needed together now. "
+        "The runtime archives older recoverable results after acceptance. All research tools remain available; "
+        "a note validation error is repairable, not a reason to stop research. If distinct necessary evidence "
+        "keeps exceeding the working window, consider the available subtask delegation tools. "
+        "The configured hard input and execution budgets still apply."))
     notice.additional_kwargs["fin_context_checkpoint_instruction"] = True
     clean = [m for m in messages if not m.additional_kwargs.get("fin_context_checkpoint_instruction")]
-    # Put the active execution state after the latest results. Historical
-    # snapshots retain their original instructions but cannot reopen tools now.
-    return [*clean, notice], {k: v for k, v in native_tools.items()
-        if k in {"UpdateResearchStateAction", "RequestHumanReviewAction"}}, {
-            **pressure,
-            "reason": "token_threshold" if estimate >= trigger else "input_character_headroom"}
+    return [*clean, notice], native_tools, {
+        **pressure, "advisory": True,
+        "reason": "token_threshold" if estimate >= trigger else "input_character_headroom"}
 
 
 def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False, workpaper_navigation=False, policy="legacy_window"):

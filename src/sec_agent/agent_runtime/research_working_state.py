@@ -1,5 +1,5 @@
 """Research working state and factual progress signals over native notebooks."""
-from typing import Literal
+from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -30,73 +30,65 @@ class ResearchSubtask(BaseModel):
     next_step: str = Field(default="", max_length=1000, description="Only remaining work. Do not repeat already completed reading.")
     source_ids: list[str] = Field(default_factory=list, max_length=32,
         description="Required and nonempty when status=completed: copy the exact observed IDs supporting this task's result, even if also listed in findings. Otherwise include the sources already read; navigation IDs do not prove the source was read.")
-    migrated_questions: list[str] = Field(default_factory=list, max_length=24,
-        description="One-time mapping from exact legacy open questions. Historical identity, NOT current unread/pending status. Omit when updating an existing task to retain its old migrations unchanged; never paraphrase the keys. Split their entire scope into children, including unfinished parts.")
+    migrated_questions: list[str] = Field(default_factory=list,
+        description="Optional legacy question history, not current pending status. Omit to keep the existing value; current remaining work belongs in result/next_step.")
+
+
+class ResearchSubtaskUpdate(ResearchSubtask):
+    objective: str | None = Field(default=None, min_length=1, max_length=1000)
+    status: Literal["pending", "in_progress", "partial", "completed", "blocked", "split"] | None = None
 
 
 class ResearchWorkingState(BaseModel):
     model_config = ConfigDict(extra="forbid")
     current_subtask: str = Field(min_length=1, max_length=2000)
     phase_status: Literal["working", "completed"]
-    findings: list[ObservedFinding] = Field(default_factory=list, max_length=32)
-    rejected_interpretations: list[str] = Field(default_factory=list, max_length=24,
-        description="Rejected author interpretations, not evidence. At explicit checkpoints the host retains all prior entries verbatim and reports inherited entries; omission or rephrasing cannot erase an old constraint. Reuse exact entries to avoid duplicates.")
-    open_questions: list[str] = Field(default_factory=list, max_length=24,
-        description="New or still-open questions. The host also retains any prior question not explicitly resolved or migrated, and reports inherited entries. Omission does not resolve a question; old unread wording remains pending author review, not a new factual assertion.")
-    resolved_questions: list[ResolvedResearchQuestion] = Field(default_factory=list, max_length=24)
-    subtasks: list[ResearchSubtask] = Field(default_factory=list, max_length=64,
+    findings: list[ObservedFinding] = Field(default_factory=list)
+    rejected_interpretations: list[str] = Field(default_factory=list,
+        description="Current author judgments; replaces the prior list. Merge or revise obsolete judgments yourself. History stays archived, not appended here.")
+    open_questions: list[str] = Field(default_factory=list,
+        description="Current unresolved questions; replaces the prior list. Preserve meaningful remaining work, not stale unread wording.")
+    resolved_questions: list[ResolvedResearchQuestion] = Field(default_factory=list)
+    subtasks: list[ResearchSubtaskUpdate] = Field(default_factory=list,
         description="Changed/new subtask records only; host upserts by task_id and returns the full current list. Omitted tasks stay unchanged. Split progressively using parent_id and status=split; update progress yourself after meaningful research. No new worker, scope or budget.")
     next_step: str = Field(min_length=1, max_length=2000)
     last_task_detail: str = Field(min_length=1, max_length=4000,
         description="What was just investigated, actual outcome, unresolved issues and the precise continuation; not hidden reasoning.")
-    retain_source_ids: list[str] = Field(default_factory=list, max_length=128,
-        description="Exact observed source IDs whose original context must remain together for current comparisons. All findings' sources are also retained automatically.")
+    retain_source_ids: list[str] = Field(default_factory=list,
+        description="Exact observed source IDs whose original context must remain together for current comparisons. Findings and completed tasks do not permanently pin their originals.")
+
+
+class ResearchStateEdit(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    path: str = Field(pattern=r"^/", description="JSON Pointer to a field in the saved pending working_state, e.g. /subtasks/0/parent_id. Existing values are replaced; an omitted object field may be supplied.")
+    value: Any
 
 
 class UpdateResearchStateAction(BaseModel):
-    """Record current evidence/invalidated interpretations/gaps and next work. Alone in a tool batch. A completed phase permits deterministic clearing of unneeded older source bodies only; original records remain readable."""
+    """Replace current working state or repair a saved rejected draft. Alone in a tool batch. Older versions and recoverable results remain archived; this is not research completion."""
     model_config = ConfigDict(extra="forbid")
     action: Literal["update_research_state"]
     context_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
     reason_summary: str = Field(min_length=1, max_length=1000)
-    working_state: ResearchWorkingState
-    checkpoint: bool = Field(default=False, description="Self-compress the current research state at runtime's context threshold. Keep phase_status working if unfinished. Original cited evidence, current comparison sources and latest read batch remain exact; only older recoverable source bodies may leave the request.")
+    working_state: ResearchWorkingState | None = None
+    pending_update_digest: str | None = Field(default=None, description="To repair a rejected draft, copy its returned digest, omit working_state and provide edits. All checks run again.")
+    edits: list[ResearchStateEdit] = Field(default_factory=list)
+    checkpoint: bool = Field(default=False, description="Mark a useful compaction boundary. Accepted current state supersedes old notes; current pinned sources and latest reads stay visible, older recoverable results become archive entries. No task or budget reset.")
 
 
 WORKING_STATE_GUIDANCE = (
-    "Maintain the current research state with UpdateResearchStateAction after meaningful findings, a rejected "
-    "interpretation or completing a subquestion. Preserve observed findings and their exact source/period/unit/"
-    "denominator limits, rejected interpretations, remaining evidence, next step and last task detail. "
-    "This is a public working note, not hidden reasoning or evidence. Keep sources needed together in "
-    "retain_source_ids. New source bodies stay visible during the active phase; only a completed phase can "
-    "release older non-retained bodies, except an explicit within-phase checkpoint requested by runtime. "
-    "At that checkpoint, keep phase_status working for unfinished work and set checkpoint=true. Preserve the "
-    "overall research logic, every used numerical/metric claim with its source and qualifiers, rejected "
-    "interpretations, all unresolved issues, latest task details and exact next action. Do not resolve an issue "
-    "just to shorten the note. Original recorded findings and calculations remain protected independently. "
-    "At explicit checkpoints prior rejected interpretations are retained by the host even if omitted or "
-    "rephrased; the accepted result reports inherited entries. This does not resolve open questions or "
-    "validate interpretations. Prefer a small set of stable-ID subtasks within the existing assignment. "
-    "Split a broad task progressively only when needed: update the parent to split and add children with parent_id. "
-    "After reading, calculation or analysis, update the SAME child to partial/completed/blocked with actual result, "
-    "source_ids and only the remaining next_step. Do not call unread work completed, keep obsolete 'not read' claims "
-    "beside new findings, or append a paraphrased duplicate task. Completed means your scoped work is done, not "
-    "independent verification. Submit only changed subtask records; the host preserves unchanged ones and returns "
-    "the merged list. No need to write a note after every tool call, and planning is not new evidence. "
-    "Migrate legacy compound open_questions once: attach their exact text to migrated_questions on a parent/task, "
-    "represent all their scope in the task/children, then remove them from open_questions. This mapping preserves "
-    "history without claiming the whole question resolved; do not carry obsolete unread wording as a live task. "
-    "For legacy questions not migrated or explicitly resolved, the host preserves their exact text and reports "
-    "inherited_open_questions; you need not re-copy all of them at every checkpoint. This is a pending-review "
-    "carryover, not confirmation that an old unread statement remains true. Update the relevant subtask and "
-    "explicitly migrate or resolve stale questions after reading; do not rewrite the entire note just to copy them. "
-    "After an accepted checkpoint the latest working state supersedes older notes in the request, while "
-    "the native history remains intact. Saved observation recovery routes return the exact recorded result "
-    "without a new source query. Follow the supplied arguments when that original is needed; a partial "
-    "catalog projection is not the full search result and cannot prove that another source is absent. "
-    "Updating a note does not prove progress or reset runtime warnings. "
-    "If warned about repeated reads, inspect actual results and next-block/search options, explain a changed "
-    "approach or truthful blockage; do not repeat a past intention as though the source confirmed it."
+    "Maintain one current working state after meaningful research, not after every tool call. "
+    "State your findings and current interpretation, decisive remaining questions and next action. "
+    "A new working_state replaces the previous narrative and lists; consolidate or revise obsolete wording. "
+    "Originals and prior versions stay in the native archive. Notes are author assessments, not evidence. "
+    "Use stable-ID subtasks when helpful; submit changed records only. Omitted fields of existing tasks "
+    "remain unchanged; explicit null clears an optional field. migrated_questions is optional legacy history. "
+    "Pin only sources currently needed together in retain_source_ids; other originals have exact recovery "
+    "routes and must be recovered when necessary to verify a quote or calculation. Preserve source, period, "
+    "unit and scope in findings. At a useful research boundary or a context-size reminder, set checkpoint=true "
+    "to archive completed history, keeping phase_status=working if unfinished. A rejected update returns a "
+    "pending_update_digest: repair only affected fields with edits or submit a replacement draft. "
+    "Saving a note does not complete research or reset budget. Continue investigating what can change the answer."
 )
 
 
@@ -122,24 +114,11 @@ def merge_research_subtasks(prior, updates):
     tasks = {t["task_id"]: deepcopy(t) for t in prior.get("subtasks", [])}
     if len({t["task_id"] for t in updates}) != len(updates):
         raise ValueError("Duplicate subtask IDs in one update; submit each changed task once.")
-    known_questions = set(prior.get("open_questions", [])) | {
-        q for t in tasks.values() for q in t.get("migrated_questions", [])}
     for update in updates:
-        task = deepcopy(update)
-        old = tasks.get(task["task_id"], {})
-        unknown = set(task["migrated_questions"]) - known_questions
-        if unknown:
-            raise ValueError("Migration must identify existing open questions exactly: " + str(sorted(unknown))
-                + f". Task {task['task_id']!r} already retains these exact migrations: "
-                + str(old.get('migrated_questions', []))
-                + ". For an existing task, omit migrated_questions to retain those migrations unchanged; "
-                "update its result/next_step instead of paraphrasing migration keys. "
-                "No part of this update was applied; the previous accepted state remains current.")
-        task["migrated_questions"] = list(dict.fromkeys([
-            *old.get("migrated_questions", []), *task["migrated_questions"]]))
+        old = tasks.get(update["task_id"], {})
+        task = {**deepcopy(old), **deepcopy(update)}
+        task = ResearchSubtask.model_validate(task).model_dump(mode="json")
         tasks[task["task_id"]] = task
-    if len(tasks) > 64:
-        raise ValueError("At most 64 subtasks per working state; update existing IDs rather than append duplicates.")
     for task in tasks.values():
         seen = {task["task_id"]}
         parent = task["parent_id"]

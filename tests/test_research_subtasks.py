@@ -18,17 +18,13 @@ def task(key, **updates):
     return ResearchSubtask(task_id=key, objective=key, status="pending", **updates).model_dump(mode="json")
 
 
-def test_existing_migrations_survive_partial_updates_and_paraphrases_have_actionable_feedback():
+def test_existing_fields_survive_omission_and_explicit_replacement_is_allowed():
     question = 'Definition unread (old retrieval failed).'
     prior = {'open_questions': [], 'subtasks': [task('terms', migrated_questions=[question])]}
-    changed = task('terms', next_step='Read the newly located clause.')
+    changed = {'task_id': 'terms', 'next_step': 'Read the newly located clause.'}
     assert merge_research_subtasks(prior, [changed])[0]['migrated_questions'] == [question]
     assert merge_research_subtasks(prior, prior['subtasks']) == prior['subtasks']
-    with pytest.raises(ValueError) as error:
-        merge_research_subtasks(prior, [{**changed, 'migrated_questions': ['Definition unread (retrieval previously failed).']}])
-    assert question in str(error.value)
-    assert 'omit migrated_questions' in str(error.value)
-    assert 'No part of this update was applied' in str(error.value)
+    assert merge_research_subtasks(prior, [{**changed, 'migrated_questions': []}])[0]['migrated_questions'] == []
     assert prior['subtasks'][0]['next_step'] == ''
 
 
@@ -54,7 +50,7 @@ def update(request, note):
 
 
 @pytest.mark.parametrize("finish", ["resolve", "migrate", "capacity", "unknown"])
-def test_omitted_questions_survive_multiple_updates_until_explicit_disposition(finish):
+def test_current_questions_replace_old_wording_across_multiple_updates(finish):
     ports = _ToolPorts(); requests = []
     original = "Revenue and cancellation conditions have not yet been read."
     base = working_note(phase_status="working", findings=[], retain_source_ids=[],
@@ -84,15 +80,14 @@ def test_omitted_questions_survive_multiple_updates_until_explicit_disposition(f
         model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
         working_state_enabled=True)).compile().invoke({**_input(), "max_model_turns": 8, "max_tool_actions": 10})
     for index in (3, 4):
-        assert requests[index]["task_context"]["research_working_state"]["open_questions"] == [original]
+        assert requests[index]["task_context"]["research_working_state"]["open_questions"] == []
     current = result["research_working_state"]
     assert current["subtasks"][0]["status"] == "partial"
-    assert current["open_questions"] == ([] if finish in {"resolve", "migrate"} else [original])
-    assert result["notebook"]["tool_action_count"] == (5 if finish in {"resolve", "migrate"} else 4)
+    assert current["open_questions"] == (final['open_questions'] if finish == 'capacity' else [])
+    assert result["notebook"]["tool_action_count"] == (4 if finish == 'unknown' else 5)
     assert base["open_questions"] == [original] and partial["open_questions"] == []
-    if finish in {"capacity", "unknown"}:
-        code = "working_state_open_questions_capacity" if finish == "capacity" else "working_state_unknown_source"
-        assert code in json.dumps(requests[-1]["tool_results"])
+    if finish == 'unknown':
+        assert 'working_state_unknown_source' in json.dumps(requests[-1]["tool_results"])
 
 
 def test_native_partial_migration_split_and_recovery_preserve_progress_without_copying_old_questions():
@@ -147,7 +142,7 @@ def test_native_partial_migration_split_and_recovery_preserve_progress_without_c
     assert final["final_submission"] is None  # Completed checklist is not a workpaper.
 
 
-@pytest.mark.parametrize("mode", ["duplicate", "cycle", "missing_parent", "split_without_children", "completion_without_sources", "invented_migration"])
+@pytest.mark.parametrize("mode", ["duplicate", "cycle", "missing_parent", "split_without_children", "completion_without_sources"])
 def test_invalid_subtask_changes_are_atomic(mode):
     prior = {"open_questions": ["Existing question"], "subtasks": [task("saved")]}
     original = deepcopy(prior)
@@ -185,7 +180,8 @@ def test_native_rejects_unknown_subtask_sources_or_premature_phase_completion(mo
     receipt = json.loads(requests[-1]['tool_results'][0]['content'])['working_state_update']
     assert receipt['accepted'] is False and receipt['batch_applied'] is False
     assert receipt['state_unchanged'] is True
-    assert 'entire intended update' in receipt['next_action']
+    assert receipt['pending_update_digest']
+    assert 'edits' in receipt['next_action']
 
 
 def test_legacy_notes_and_native_schema_and_subtask_original_retention():
@@ -198,7 +194,9 @@ def test_legacy_notes_and_native_schema_and_subtask_original_retention():
     note = working_note(phase_status="working", findings=[], retain_source_ids=[], subtasks=[
         {**task("checked"), "status": "completed", "result": "Original checked", "source_ids": ["PIN"]}])
     rows = [*source_messages("PIN"), *source_messages("LATEST"), *checkpoint_message(note)]
-    assert task_boundary_history(rows)[1] == rows[1]
+    assert '"node_id":"PIN"' in task_boundary_history(rows)[1].content
+    note['retain_source_ids'] = ['PIN']
+    assert task_boundary_history([*rows[:-2], *checkpoint_message(note)])[1] == rows[1]
 
 
 def test_rejected_parent_update_keeps_migrations_atomic_before_followup_read():

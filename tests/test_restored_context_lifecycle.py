@@ -103,7 +103,7 @@ def test_document_pin_does_not_expand_to_all_descendant_candidates():
     assert item["content"] == rows
 
 
-def test_latest_accepted_checkpoint_replaces_old_note_pins_but_keeps_calculation_sources():
+def test_latest_accepted_state_releases_old_pins_and_completed_operand_reads():
     old = working_note(phase_status="working", findings=[{"finding": "Old candidate", "source_ids": ["OLD"],
         "limitation": "Preview only"}], retain_source_ids=["OLD"])
     # Use the actual note schema's fixture fields for the source binding.
@@ -118,7 +118,8 @@ def test_latest_accepted_checkpoint_replaces_old_note_pins_but_keeps_calculation
     projected = task_boundary_history(rows)
     observations = json.loads(projected[0].content)["progress"]["observations"]
     assert "content" not in observations[0]
-    assert "content" in observations[1]
+    assert "content" not in observations[1]
+    assert observations[1]['recovery']['saved_observation_id'] == 'CALC-SOURCE'
     assert "OLD" in json.loads(initial.content)["task_context"]["research_working_state"]["findings"][0]["source_ids"]
 
 
@@ -133,9 +134,10 @@ def test_first_restored_request_consumes_host_accepted_checkpoint_without_new_no
     assert "content" not in view["progress"]["observations"][0]
     assert view["progress"]["observations"][1:] == body["progress"]["observations"][1:]
     assert view["task_context"]["research_working_state"] == note
-    assert view["progress"]["prior_actions"][0]["tool_calls"][0]["args"]["working_state"]["superseded_working_state"]
+    assert view["progress"]["prior_actions"] == []
+    assert view["progress"]["archived_action_count"] == 1
     body["task_context"].pop("accepted_restored_checkpoint")
-    assert "content" in json.loads(task_boundary_history([HumanMessage(content=json.dumps(body))])[0].content)["progress"]["observations"][0]
+    assert "content" not in json.loads(task_boundary_history([HumanMessage(content=json.dumps(body))])[0].content)["progress"]["observations"][0]
 
 
 def test_legacy_restored_checkpoint_marker_requires_exact_accepted_receipt():
@@ -194,7 +196,8 @@ def test_repeated_restored_and_live_checkpoints_release_space_and_supersede_note
             rows += source_messages(f"BULK-{cycle}")
             rows[-1].content = json.dumps({"ref_id": f"BULK-{cycle}", "text": "old search " * 65000})
             rows += source_messages(f"RECENT-{cycle}")
-        assert request_checkpoint(rows, chat)[2] is not None
+        if cycle:
+            assert request_checkpoint(rows, chat)[2] is not None
         note = working_note(phase_status="working", findings=[], retain_source_ids=[],
             last_task_detail=f"Current unfinished comparison {cycle}")
         pair = checkpoint_message(note)

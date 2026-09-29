@@ -88,20 +88,18 @@ def test_completed_notes_and_fresh_submission_cannot_clear_unchanged_repair(full
 
 
 @pytest.mark.parametrize('name', ['ReviseWorkpaperAction', 'SubmitWorkpaperAction', 'RequestEvidenceAction', 'UpdateResearchStateAction'])
-def test_actual_sdk_checkpoint_rejects_unoffered_actions_and_stops_after_two(name):
+def test_actual_sdk_pressure_keeps_research_tools_and_does_not_stop_after_two_errors(name):
     from test_deepseek_structured_agents import _config, _models
     from test_research_context_checkpoint import model
     requests, wires, ports = [], [], _ToolPorts()
     def serve(request):
         body = json.loads(request.content); wires.append(body)
-        assert {t['function']['name'] for t in body['tools']} == {'UpdateResearchStateAction', 'RequestHumanReviewAction'}
+        assert {'UpdateResearchStateAction', 'RequestEvidenceAction'} <= {t['function']['name'] for t in body['tools']}
         if len(wires) == 2:
             assert body['messages'][-1]['role'] == 'system'
-            assert 'CURRENT REQUEST STATE' in body['messages'][-1]['content']
+            assert 'Context size reminder' in body['messages'][-1]['content']
             feedback = json.loads(next(m['content'] for m in reversed(body['messages']) if m['role'] == 'tool'))['result']
-            assert feedback['error'] == 'native_tool_not_allowed_this_turn'
-            assert feedback['batch_dispatched'] is False
-            assert feedback['context_checkpoint_required'] is True
+            assert feedback.get('context_checkpoint_required') is not True
         return httpx.Response(200, json={'id': 'offline', 'object': 'chat.completion', 'created': 1, 'model': 'deepseek-v4-pro',
             'choices': [{'index': 0, 'finish_reason': 'tool_calls', 'message': {'role': 'assistant', 'content': '', 'tool_calls': [
                 {'id': f'call-{len(wires)}', 'type': 'function', 'function': {'name': name, 'arguments': '{}'}}]}}],
@@ -116,10 +114,10 @@ def test_actual_sdk_checkpoint_rejects_unoffered_actions_and_stops_after_two(nam
         graph = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(model_turn=turn,
             turn_source='provider_model', evidence_tool=ports.evidence, finance_tool=ports.finance,
             working_state_enabled=True, allow_workpaper_field_edits=True)).compile()
-        result = graph.invoke(_input(), {'recursion_limit': 25})
-    assert len(wires) == 2 and result['notebook']['model_turn_count'] == 2
-    assert result['review_reason'] == 'research_context_checkpoint_unresolved'
-    assert not ports.calls and result.get('last_submission_attempt') is None
+        result = graph.invoke({**_input(), 'max_model_turns': 3}, {'recursion_limit': 25})
+    assert len(wires) == 3 and result['notebook']['model_turn_count'] == 3
+    assert result.get('review_reason') != 'research_context_checkpoint_unresolved'
+    assert not ports.calls
     assert result['final_submission'] is None
 
 

@@ -572,19 +572,15 @@ class SpecialistNativeToolBatch(_StrictModel):
         return self
 
     def scope_rejection(self) -> list[dict[str, Any]]:
-        wrong_checkpoint = self.context_checkpoint_required and any(
-            c.name == "UpdateResearchStateAction" and isinstance(c.args, dict) and c.args.get("checkpoint") is not True
-            for c in self.tool_calls)
-        if not wrong_checkpoint and (self.runtime_tool_scope is None or all(c.name in self.runtime_tool_scope for c in self.tool_calls)):
+        # Legacy checkpoint flag is readable for stored wire compatibility only.
+        # Current tool permissions do not depend on a context-size reminder.
+        if self.runtime_tool_scope is None or all(c.name in self.runtime_tool_scope for c in self.tool_calls):
             return []
         body = {"error": "native_tool_not_allowed_this_turn", "batch_dispatched": False,
-            "context_checkpoint_required": self.context_checkpoint_required,
+            "context_checkpoint_required": False,
             "allowed_tools": list(self.runtime_tool_scope or ()),
-            "rejected_tools": [c.name for c in self.tool_calls if c.name not in (self.runtime_tool_scope or ()) or wrong_checkpoint],
-            "next_action": ("No calls or edits in this batch executed. First submit UpdateResearchStateAction alone with checkpoint=true, "
-                "preserving the current unfinished repair and original sources, or RequestHumanReviewAction for the actual blockage."
-                if self.context_checkpoint_required else
-                "No calls in this batch executed. Choose only tools offered for this turn; do not reuse historical tool permissions.")}
+            "rejected_tools": [c.name for c in self.tool_calls if c.name not in (self.runtime_tool_scope or ())],
+            "next_action": "No calls in this batch executed. Choose only tools offered for this turn; do not reuse historical tool permissions."}
         return [ToolMessage(name=c.name, tool_call_id=c.id, status="error",
             content=json.dumps(body, ensure_ascii=False)).model_dump(mode="json") for c in self.tool_calls]
 
@@ -975,6 +971,7 @@ class SpecialistHumanReviewHandoff(_StrictModel):
 class SpecialistAgenticState(TypedDict, total=False):
     authoring_context: dict[str, Any]
     research_working_state: dict[str, Any]
+    pending_working_state_update: dict[str, Any] | None
     research_context_checkpoint_accepted: bool
     runtime_progress: dict[str, Any]
     lead_assistance_history: list[dict[str, Any]]
@@ -1200,6 +1197,7 @@ def _model_request(
         body["task_context"] = {**body.get("task_context", {}),
             "working_state_guidance": WORKING_STATE_GUIDANCE,
             "research_working_state": state.get("research_working_state"),
+            "pending_working_state_update": state.get("pending_working_state_update"),
             "runtime_progress": state.get("runtime_progress", {}),
             "lead_assistance": state.get("lead_assistance_history", []),
             "overall_assignment": state["task"]["objective"]}
@@ -1796,6 +1794,7 @@ def build_specialist_agentic_state_graph(
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
                 "research_working_state": _jsonable(recovery_state.get("research_working_state")),
+                "pending_working_state_update": _jsonable(recovery_state.get("pending_working_state_update")),
                 "research_context_checkpoint_accepted": accepted_context_checkpoint(recovery_state),
                 "authoring_context": None if revising else _jsonable(recovery_state.get("authoring_context")),
                 "runtime_progress": _jsonable(recovery_state.get("runtime_progress", {})),
@@ -2377,10 +2376,16 @@ def build_specialist_agentic_state_graph(
                     working["last_submission_attempt"]["feedback"] = [feedback.model_dump(mode="json")]
                 body = {"observations": [], "feedback": [feedback.model_dump(mode="json")]}
                 if call.name == "UpdateResearchStateAction":
+                    if isinstance(call.args, dict) and isinstance(call.args.get("working_state"), dict):
+                        draft = deepcopy(call.args["working_state"])
+                        working["pending_working_state_update"] = {"working_state": draft,
+                            "digest": canonical_sha256(draft), "checkpoint": call.args.get("checkpoint", False)}
+                    pending = working.get("pending_working_state_update") or {}
                     body["working_state_update"] = {
                         "accepted": False, "batch_applied": False, "state_unchanged": True,
                         "current_state_at": "current_context.task_context.research_working_state",
-                        "next_action": "No part of this update was applied, including subtasks, migrations and resolutions. Correct and resubmit the entire intended update against the last accepted state. Do not send only a delta against this rejected proposal. Reuse existing task IDs; omitted accepted tasks remain unchanged."}
+                        "pending_update_digest": pending.get("digest"),
+                        "next_action": "Draft saved, accepted state unchanged. Correct affected fields using pending_update_digest and edits (JSON Pointer path/value), omitting working_state; or submit a replacement working_state. Other research tools remain available."}
                 if call.name == "ReviseWorkpaperAction":
                     detail = {"batch_applied": False, "candidate_unchanged": True,
                         "base_submission_digest": canonical_sha256((working.get("last_submission_attempt") or {}).get("arguments")),
@@ -2490,14 +2495,38 @@ def build_specialist_agentic_state_graph(
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({
                     'status': 'prepared', 'notice': 'Next request restores your public preparation in a writing context; budget and source scope unchanged.'}))
             if isinstance(action, UpdateResearchStateAction):
-                note = action.working_state.model_dump(mode="json")
+                from .research_working_state import ResearchWorkingState
+                if action.working_state is not None:
+                    if action.edits or action.pending_update_digest:
+                        return reject("working_state_update_mode_invalid", "Supply a working_state OR a pending digest with edits.")
+                    proposal = action.working_state
+                else:
+                    pending = working.get("pending_working_state_update") or {}
+                    if not action.edits or action.pending_update_digest != pending.get("digest") or not pending:
+                        return reject("working_state_pending_update_invalid", "Copy the current pending_update_digest and supply edits, or send a working_state.")
+                    draft = deepcopy(pending["working_state"])
+                    try:
+                        for edit in action.edits:
+                            # jsonpatch owns JSON Pointer escaping and array validation.
+                            try:
+                                jsonpatch.JsonPointer(edit.path).resolve(draft)
+                                operation = "replace"
+                            except jsonpatch.JsonPointerException:
+                                operation = "add"
+                            draft = jsonpatch.apply_patch(draft, [{"op": operation, "path": edit.path, "value": edit.value}])
+                        working["pending_working_state_update"] = {"working_state": draft,
+                            "digest": canonical_sha256(draft), "checkpoint": pending.get("checkpoint", False)}
+                        proposal = ResearchWorkingState.model_validate(draft)
+                        action = action.model_copy(update={"checkpoint": pending.get("checkpoint", False)})
+                    except (ValueError, TypeError, jsonpatch.JsonPatchException, jsonpatch.JsonPointerException) as error:
+                        return reject("working_state_repair_invalid", str(error), agent_error=True)
+                note = proposal.model_dump(mode="json")
                 prior_note = working.get("research_working_state") or {}
                 try:
-                    note["subtasks"] = merge_research_subtasks(prior_note, note["subtasks"])
+                    note["subtasks"] = merge_research_subtasks(prior_note,
+                        [t.model_dump(mode="json", exclude_unset=True) for t in proposal.subtasks])
                 except ValueError as error:
                     return reject("working_state_subtask_update_invalid", str(error), agent_error=True)
-                migrated = {q for t in note["subtasks"] for q in t["migrated_questions"]}
-                note["open_questions"] = [q for q in note["open_questions"] if q not in migrated]
                 if note["phase_status"] == "completed" and any(
                         t["status"] not in {"completed", "split"} for t in note["subtasks"]):
                     return reject("working_state_subtasks_unfinished", "Subtasks remain unfinished; keep phase_status working.", agent_error=True)
@@ -2508,34 +2537,12 @@ def build_specialist_agentic_state_graph(
                 if unknown:
                     return reject("working_state_unknown_source", "Unobserved IDs: " + json.dumps(unknown) +
                         ". Copy exact IDs from structured result metadata or references; navigation IDs do not grant citation authority.", agent_error=True)
-                # Like omitted stable-ID tasks, unaddressed legacy questions
-                # remain pending. Copying every old sentence is not a prerequisite
-                # for saving new progress or releasing recoverable source bodies.
-                # Only the author can explicitly resolve or migrate their scope.
-                covered = set(note["open_questions"]) | {q["question"] for q in note["resolved_questions"]} | migrated
-                inherited_questions = [q for q in prior_note.get("open_questions", []) if q not in covered]
-                note["open_questions"] = list(dict.fromkeys([*note["open_questions"], *inherited_questions]))
-                if len(note["open_questions"]) > 24:
-                    return reject("working_state_open_questions_capacity", "Unaddressed prior questions remain saved. "
-                        "The merged open_questions exceeds 24; explicitly resolve or migrate existing questions into stable-ID subtasks, rather than append paraphrased duplicates.", agent_error=True)
-                if action.checkpoint:
-                    # Negative interpretations are durable author constraints, not
-                    # facts that must be re-authored verbatim at every checkpoint.
-                    # Retain their exact text; never infer semantic equivalence or
-                    # silently accept an omitted constraint as resolved.
-                    inherited_rejections = [r for r in prior_note.get("rejected_interpretations", [])
-                        if r not in note["rejected_interpretations"]]
-                    merged_rejections = list(dict.fromkeys([*prior_note.get("rejected_interpretations", []),
-                        *note["rejected_interpretations"]]))
-                    if len(merged_rejections) > 24:
-                        return reject("working_state_rejected_interpretations_capacity", "Prior constraints remain saved. "
-                            "The combined rejected_interpretations exceeds 24; reuse exact previous entries instead of paraphrased duplicates.", agent_error=True)
-                    note["rejected_interpretations"] = merged_rejections
-                else:
-                    inherited_rejections = []
+                # These are the author's CURRENT lists, not append-only ledgers.
+                # Complete previous versions remain in native model/tool history.
                 if before.tool_action_count >= state["max_tool_actions"]:
                     return reject("working_state_tool_limit", "Preserve state and stop; no additional allowance is granted.")
                 working["research_working_state"] = note
+                working["pending_working_state_update"] = None
                 working["research_context_checkpoint_accepted"] = action.checkpoint
                 digest = _semantic_action_digest(action)
                 if digest not in before.dispatched_action_digests:
@@ -2544,9 +2551,7 @@ def build_specialist_agentic_state_graph(
                 working["notebook"] = before.model_dump(mode="json")
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({"accepted": True,
                     "working_state": note, "checkpoint": action.checkpoint,
-                    "inherited_open_questions": inherited_questions,
-                    "inherited_rejected_interpretations": inherited_rejections,
-                    "notice": "Author assessment, not independent verification. Unaddressed old questions remain pending review; historical unread wording is not a fresh assertion about current evidence. Explicitly resolve or migrate them when updating the corresponding subtask. Original sources remain authoritative. Checkpoint does not complete the task or reset limits."}, ensure_ascii=False))
+                    "notice": "Current author state replaced; older versions remain archived. This is not evidence or independent verification. Continue the research; budgets unchanged."}, ensure_ascii=False))
             if isinstance(action, (DelegateSubtasksAction, ReadDelegatedWorkAction)):
                 saved = dict(working.get("delegated_work", {}))
                 digest = _semantic_action_digest(action)

@@ -976,8 +976,7 @@ def _project_agentic_specialist_request(
             "feedback_notice": "This is ordered historical validation feedback, including earlier corrected attempts. "
                 "It is not a list of current instructions or unresolved defects. Use the latest tool result, "
                 "accepted research_working_state and current allowed_actions to decide what remains. "
-                "A context checkpoint is mandatory only when the current runtime interruption explicitly requires it; "
-                "an old checkpoint notice does not require another note.",
+                "Context-size reminders are advisory; old checkpoint notices do not restrict current tools.",
         },
         "execution_budget": _agentic_semantic_value(execution_budget),
         "allowed_actions": list(allowed_actions),
@@ -1806,7 +1805,7 @@ class DeepSeekStructuredAgentAdapter:
                     valid = valid and all(isinstance(value, str) and value.strip() for value in ids) and len(ids) == len(set(ids))
                     decision = {"action": "native_tool_batch", "context_digest": request_value["context_digest"],
                                 "tool_calls": tool_calls, "runtime_tool_scope": list(native_tools),
-                                "context_checkpoint_required": checkpoint_notice is not None}
+                                "context_checkpoint_required": False}
                     if not is_lead and len(tool_calls) == 1 and tool_calls[0].get("type") == "tool_call" and tool_calls[0].get("name") in native_tools and tool_calls[0].get("name") in {
                         "SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
                     }:

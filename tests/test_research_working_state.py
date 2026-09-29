@@ -15,7 +15,7 @@ def working_note(**updates):
     return {"current_subtask": "Compare the actual quarter and guidance period", "phase_status": "completed",
         "findings": [{"finding": "Fixture quarterly quantity, not an annual composition", "source_ids": ["SOURCE-A"],
             "limitations": "Quarterly actual, fixture units, not annual guidance."}],
-        "retain_source_ids": ["SOURCE-B"], "rejected_interpretations": ["The quarterly ratio is not the annual composition."],
+        "retain_source_ids": ["SOURCE-A", "SOURCE-B"], "rejected_interpretations": ["The quarterly ratio is not the annual composition."],
         "subtasks": [], "open_questions": ["Annual composition remains unknown."], "next_step": "Read the next original section for the annual scope.",
         "last_task_detail": "Compared two original periods and retained the numerical qualifiers and both source records.", **updates}
 
@@ -38,8 +38,7 @@ def test_phase_cleanup_keeps_active_material_sources_and_original_records():
     projected=project_tool_history(rows, policy="task_boundary", trigger_tokens=1, keep=1)
     assert rows == before
     for i in (2,4,10,12): assert projected[i] == rows[i]
-    assert "Original numbers" not in projected[6].content
-    assert '"node_id":"SOURCE-C"' in projected[6].content
+    assert projected[6] == rows[6]  # Latest read is still available after the note.
     assert projected[8] == rows[8]  # latest task detail and invalidated interpretation
 
 

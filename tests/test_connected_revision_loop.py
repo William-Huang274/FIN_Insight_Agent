@@ -41,6 +41,10 @@ def test_original_author_continues_and_records_actual_change_without_note_claim(
         baseline = request['task_context']['accepted_revision_baseline']
         assert baseline['submission'] == original['final_submission']
         assert 'not research quality' in baseline['notice']
+        from sec_agent.agent_runtime.deepseek_structured_agents import _project_agentic_specialist_request
+        semantic = _project_agentic_specialist_request(request)
+        assert 'claims' not in semantic['task_context']['accepted_revision_baseline']['submission']
+        assert semantic['submission_to_repair']['candidate']['claims'] == request['submission_to_repair']['candidate']['claims']
         candidate = request['submission_to_repair']['candidate']
         answers = [{'finding_id': 'verifier:F1', 'disposition': 'corrected',
                     'explanation': 'Changed the precise fixture fragment; independent verification still required.'}]

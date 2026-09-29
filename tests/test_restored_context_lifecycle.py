@@ -9,6 +9,57 @@ from test_research_context_checkpoint import checkpoint_message, model, request_
 from test_research_working_state import working_note, source_messages
 
 
+def test_accepted_revision_replaces_only_older_authoring_proposals():
+    from sec_agent.agent_runtime.deepseek_structured_agents import _prior_research_actions
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    old = {'action': 'submit_workpaper', 'narrative_markdown': 'Old draft ' * 300,
+        'claims': [{'evidence_ids': ['OLD'], 'fact_ids': ['CALC::1']}]}
+    read = {'action': 'request_source', 'selection': {'node_id': 'ORIGINAL'}}
+    calculation = {'action': 'request_calculation', 'source_ids': ['OPERAND']}
+    latest = {**old, 'narrative_markdown': 'New unresolved draft'}
+    submission = {**old, 'narrative_markdown': 'Accepted baseline'}
+    request = {'notebook': {'model_turn_records': [
+        {'action': {'action': 'native_tool_batch', 'tool_calls': [
+            {'name': 'SubmitWorkpaperAction', 'id': 'old', 'args': old},
+            {'name': 'RequestSourceAction', 'id': 'read', 'args': read}]}},
+        {'action': calculation}, {'action': latest}]},
+        'task_context': {'accepted_revision_baseline': {'submission': submission,
+            'submission_digest': canonical_sha256(submission), 'through_model_turn': 2}}}
+    original = deepcopy(request)
+    actions = _prior_research_actions(request)
+    assert actions[0]['tool_calls'][0]['args']['source_ids'] == ['OLD', 'CALC::1']
+    assert 'historical_operation' in actions[0]['tool_calls'][0]['args']
+    assert actions[0]['tool_calls'][1]['args']['action'] == read['action']
+    assert actions[1:] == [calculation, latest]
+    assert request == original
+    for invalid in ({}, {'through_model_turn': 4}, {'submission_digest': 'stale'}):
+        changed = deepcopy(request)
+        if invalid: changed['task_context']['accepted_revision_baseline'].update(invalid)
+        else: changed['task_context'] = {}
+        assert _prior_research_actions(changed) == [r['action'] for r in original['notebook']['model_turn_records']]
+
+
+def test_latest_handoff_reuses_identical_accepted_baseline_and_working_state():
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    task = {'accepted_revision_baseline': {'submission': {'narrative_markdown': 'Original answer. ' * 300}},
+        'research_working_state': working_note(phase_status='working')}
+    rows = [HumanMessage(content=json.dumps({'task_context': task})),
+        ToolMessage(tool_call_id='fresh', content=json.dumps({'result': {'passage': 'New source'},
+            'current_context': {'task_context': task, 'allowed_actions': ['request_source']}}))]
+    original = deepcopy(rows)
+    out = coalesce_context_snapshots(rows)
+    body = json.loads(out[1].content)
+    assert body['result'] == {'passage': 'New source'}
+    for key in task:
+        assert body['current_context']['task_context'][key]['identical_snapshot_retained_at']['message_index'] == 0
+    changed = deepcopy(rows)
+    new = json.loads(changed[1].content)
+    new['current_context']['task_context']['research_working_state']['next_step'] = 'Different next read'
+    changed[1].content = json.dumps(new)
+    assert json.loads(coalesce_context_snapshots(changed)[1].content)['current_context']['task_context']['research_working_state'] == new['current_context']['task_context']['research_working_state']
+    assert rows == original
+
+
 def observation(key, *, turn=1, **updates):
     return {"kind": "evidence", "status": "success", "failure": None,
         "references": [{"ref_id": key}], "content": [{"text": key + " original USD FY2027 " * 8000}],

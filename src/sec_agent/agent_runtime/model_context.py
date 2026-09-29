@@ -366,7 +366,8 @@ def coalesce_context_snapshots(messages):
             continue
         changed = False
         for key in ('assignment', 'stage_methods', 'working_state_guidance', 'data_baseline_rule',
-                    'usage_rule', 'overall_assignment', 'authoring_context'):
+                    'usage_rule', 'overall_assignment', 'authoring_context',
+                    'accepted_revision_baseline', 'research_working_state'):
             if key not in task:
                 continue
             encoded = json.dumps(task[key], ensure_ascii=False, sort_keys=True)
@@ -376,7 +377,7 @@ def coalesce_context_snapshots(messages):
             field = ('task_context.' if isinstance(message, HumanMessage) else 'current_context.task_context.') + key
             if identity not in task_fields:
                 task_fields[identity] = {'message_index': index, 'field': field}
-            elif index != newest_context:
+            elif index != newest_context or key in {'accepted_revision_baseline', 'research_working_state'}:
                 task[key] = {'identical_snapshot_retained_at': task_fields[identity]}
                 changed = True
         if changed:

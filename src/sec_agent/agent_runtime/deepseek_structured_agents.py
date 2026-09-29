@@ -861,6 +861,38 @@ def _agentic_semantic_value(value: Any) -> Any:
     return value
 
 
+def _prior_research_actions(request):
+    """Accepted workpaper supersedes earlier authoring proposals, not evidence.
+
+    The native revision host supplies the validated baseline and its turn bound.
+    Preserve newer drafts, failed tool receipts, readings, calculations and all
+    source pins. Only the request copy changes; no model summary or new state.
+    """
+    from copy import deepcopy
+    from .model_context import _literal_reference_ids
+    actions = [deepcopy(row.get('action')) for row in request['notebook'].get('model_turn_records', ())]
+    baseline = (request.get('task_context') or {}).get('accepted_revision_baseline') or {}
+    bound = baseline.get('through_model_turn')
+    submission = baseline.get('submission')
+    if (type(bound) is not int or not 0 < bound <= len(actions) or not isinstance(submission, dict)
+            or canonical_sha256(submission) != baseline.get('submission_digest')):
+        return actions
+    for action in actions[:bound]:
+        if not isinstance(action, dict):
+            continue
+        operations = [c.get('args', {}) for c in action.get('tool_calls', [])] if action.get('action') == 'native_tool_batch' else [action]
+        for operation in operations:
+            if operation.get('action') not in {'submit_workpaper', 'revise_workpaper', 'prepare_workpaper',
+                    'request_source', 'request_evidence', 'request_method'}:
+                continue
+            retained = {k: operation[k] for k in ('action',) if k in operation}
+            retained['source_ids'] = _literal_reference_ids(operation)
+            retained['historical_operation'] = True
+            operation.clear()
+            operation.update(retained)
+    return actions
+
+
 def _project_agentic_specialist_request(
     request: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -937,12 +969,7 @@ def _project_agentic_specialist_request(
                 "satisfied_route_obligation_ids", ()
             ),
             "prior_actions": _agentic_semantic_value(
-                [
-                    _as_mapping(row, label="specialist_model_turn_record").get(
-                        "action"
-                    )
-                    for row in notebook.get("model_turn_records", ())
-                ]
+                _prior_research_actions(request)
             ),
             "observations": projected_observations,
             "feedback": _agentic_semantic_value(notebook.get("feedback", ())),
@@ -959,6 +986,17 @@ def _project_agentic_specialist_request(
     if request.get("task_context") is not None:
         task_context = request["task_context"]
         projected["task_context"] = _agentic_semantic_value(task_context)
+        baseline = projected['task_context'].get('accepted_revision_baseline')
+        if isinstance(baseline, dict) and isinstance(baseline.get('submission'), dict):
+            # Research needs the author's actual answer, not an extra copy of
+            # its large citation ledger. Writing receives the full current
+            # candidate through submission_to_repair; evidence stays in the
+            # notebook, independently of this prior workpaper's presentation.
+            baseline['submission'].pop('claims', None)
+            baseline['submission'].pop('task_note', None)
+            baseline['view_notice'] = ('Prior answer view. Full claims and author task note remain in native storage; '
+                'the complete current candidate is supplied as submission_to_repair in the writing phase. '
+                'Use original observations for research, not a workpaper as independent evidence.')
         # These are semantic dependency names, not host execution identities.
         # A direct single-researcher question has no Lead assignment or sibling
         # handoffs. Preserve the question-only contract instead of inventing one.

@@ -1773,6 +1773,8 @@ def build_specialist_agentic_state_graph(
                     **({"revision_feedback": _jsonable(revision_feedback),
                         "accepted_revision_baseline": {
                             "submission_digest": canonical_sha256(recovery_state["final_submission"]),
+                            "through_model_turn": prior.model_turn_count,
+                            "history_notice": "Earlier source requests and authoring proposals may be marked historical_operation in this request. Their original arguments remain in native history; exact results, failures and saved-read routes remain in observations. A historical request is not proof that it succeeded. Newer proposals, financial requests and calculations are not replaced.",
                             "submission": _jsonable(recovery_state["final_submission"]),
                             "notice": "This is the last accepted workpaper, supplied after native validation. Acceptance covers the submission contract, not research quality. Older failed submissions and tool errors remain audit history; they do not establish an unresolved defect in this baseline. Continue the assigned research revision and evaluate current evidence; do not repeat historical repairs unless the current candidate actually needs them."},
                         "revision_instruction": "Continue your original task and current candidate. Use precise edits. Read relevant original sources to evaluate every assigned finding; correct related prose and claim bindings together, or explain disagreement/unresolved work. Return task_note.finding_responses for every exact finding_id once. Runtime changes are not semantic closure; preserve the overall assignment and unfinished details."} if revising else {})},

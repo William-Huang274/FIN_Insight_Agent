@@ -80,6 +80,29 @@ def test_future_completion_and_actual_tool_batch_trigger_before_character_ceilin
     assert 'overrides allowed_actions' in projected[-1].content
 
 
+def test_growth_reserve_does_not_count_host_handoff_as_future_source_output():
+    from sec_agent.agent_runtime.model_context import research_input_pressure
+    chat = model(research_checkpoint_tokens=180000)
+    result = {'accepted': True, 'checkpoint': True, 'working_state': working_note()}
+    rows = checkpoint_message(result['working_state'])
+    rows[-1].content = json.dumps({'result': result, 'current_context': {
+        'task_context': {'research_working_state': result['working_state']},
+        'progress': {'feedback': ['retained error ' * 5000]}}})
+    original = deepcopy(rows)
+    pressure = research_input_pressure('x' * 520000, rows, chat)
+    result_chars = len(json.dumps({'result': result}, ensure_ascii=False, separators=(',', ':')))
+    assert pressure['recent_tool_batch_characters'] == result_chars
+    assert pressure['recent_tool_envelope_characters'] == len(rows[-1].content)
+    assert pressure['growth_reserve_characters'] == result_chars + 8192 * 4
+    assert rows == original
+    # Result prose/errors are indivisible, even if they happen to use a field
+    # called current_context. Only the runtime envelope can be discounted.
+    for body in ({'result': {'current_context': 'source text ' * 1000}},
+                 {'error': 'unknown shape', 'current_context': {'data': 'x' * 1000}}):
+        rows[-1].content = json.dumps(body)
+        assert research_input_pressure('x', rows, chat)['recent_tool_batch_characters'] == len(rows[-1].content)
+
+
 def test_exact_assignment_copy_reuses_original_human_message_but_keeps_latest_handoff():
     from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
     context = {"assignment": {"objective": "Compare two quarters", "units": "USD/share"}}

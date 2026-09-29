@@ -446,20 +446,34 @@ def research_input_pressure(encoded, messages, model):
     density = max(density, *calibrations) if calibrations else density
     estimate = count_tokens_approximately([HumanMessage(content=encoded)], chars_per_token=1 / density)
     # One future completion (including reasoning/tool arguments), one actual
-    # recent tool batch, plus the configured checkpoint allowance. This is a
-    # conservative growth reserve, not permission to discard tool responses.
+    # recent tool-result batch, plus the configured checkpoint allowance.
+    # The SDK envelope's current_context is already counted in encoded and
+    # coalesced on the next request. It is host state, not new source output:
+    # reserving another full copy can reject a successfully reduced checkpoint.
+    # Keep every actual result/error in the estimate; do not recurse into prose.
     latest_batch = 0
+    latest_envelope = 0
     for message in reversed(messages):
         if isinstance(message, AIMessage):
             break
         if isinstance(message, ToolMessage):
-            latest_batch += len(str(message.content))
+            content = str(message.content)
+            latest_envelope += len(content)
+            try:
+                body = json.loads(content)
+            except (ValueError, TypeError):
+                body = None
+            if isinstance(body, dict) and 'result' in body and isinstance(body.get('current_context'), dict):
+                content = json.dumps({k: v for k, v in body.items() if k != 'current_context'},
+                                     ensure_ascii=False, separators=(',', ':'))
+            latest_batch += len(content)
     completion = model.max_tokens or 0
     reserve = (model.research_checkpoint_reserve_tokens + completion) * 4 + latest_batch
     return {"estimated_input_tokens": estimate, "trigger_tokens": model.research_checkpoint_tokens,
         "token_basis": "langchain_ds_character_estimate_with_same_model_wire_usage_calibration",
         "calibration_samples": len(calibrations), "estimated_tokens_per_character": density,
         "growth_reserve_characters": reserve, "recent_tool_batch_characters": latest_batch,
+        "recent_tool_envelope_characters": latest_envelope,
         "configured_output_tokens": completion}
 
 

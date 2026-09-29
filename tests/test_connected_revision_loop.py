@@ -38,6 +38,9 @@ def test_original_author_continues_and_records_actual_change_without_note_claim(
     def turn(request):
         seen.append(request)
         assert request['task_context']['revision_feedback'] == feedback
+        baseline = request['task_context']['accepted_revision_baseline']
+        assert baseline['submission'] == original['final_submission']
+        assert 'not research quality' in baseline['notice']
         candidate = request['submission_to_repair']['candidate']
         answers = [{'finding_id': 'verifier:F1', 'disposition': 'corrected',
                     'explanation': 'Changed the precise fixture fragment; independent verification still required.'}]

@@ -168,6 +168,10 @@ def test_native_rejects_unknown_subtask_sources_or_premature_phase_completion(mo
         working_state_enabled=True)).compile().invoke(_input())
     assert result["research_working_state"]["subtasks"] == [task("remaining")]
     assert code in json.dumps(requests[-1]["tool_results"])
+    receipt = json.loads(requests[-1]['tool_results'][0]['content'])['working_state_update']
+    assert receipt['accepted'] is False and receipt['batch_applied'] is False
+    assert receipt['state_unchanged'] is True
+    assert 'entire intended update' in receipt['next_action']
 
 
 def test_legacy_notes_and_native_schema_and_subtask_original_retention():
@@ -181,3 +185,38 @@ def test_legacy_notes_and_native_schema_and_subtask_original_retention():
         {**task("checked"), "status": "completed", "result": "Original checked", "source_ids": ["PIN"]}])
     rows = [*source_messages("PIN"), *source_messages("LATEST"), *checkpoint_message(note)]
     assert task_boundary_history(rows)[1] == rows[1]
+
+
+def test_rejected_parent_update_keeps_migrations_atomic_before_followup_read():
+    ports = _ToolPorts(); requests = []
+    question = 'Review the remaining delivery evidence.'
+    base = working_note(phase_status='working', findings=[], retain_source_ids=[],
+        open_questions=[question], resolved_questions=[], subtasks=[])
+    parent = {**task('parent'), 'status': 'in_progress', 'migrated_questions': [question]}
+    child = task('child', parent_id='parent')
+    rejected = {**base, 'open_questions': [], 'subtasks': [parent, child]}
+    corrected = {**rejected, 'subtasks': [{**parent, 'status': 'split'}, child]}
+    def turn(request):
+        requests.append(request)
+        if len(requests) == 1: return update(request, base)
+        if len(requests) == 2: return update(request, rejected)
+        if len(requests) == 3:
+            receipt = json.loads(request['tool_results'][0]['content'])
+            assert receipt['working_state_update']['batch_applied'] is False
+            assert "'parent'" in receipt['feedback'][0]['message']
+            assert "'child'" in receipt['feedback'][0]['message']
+            current = request['task_context']['research_working_state']
+            assert current['subtasks'] == [] and current['open_questions'] == [question]
+            return update(request, corrected)
+        if len(requests) == 4:
+            current = request['task_context']['research_working_state']
+            assert current['open_questions'] == []
+            assert len(current['subtasks']) == 2
+            return _batch(request, [_evidence_action()(request)])
+        return _handoff(request)
+    result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
+        working_state_enabled=True)).compile().invoke({**_input(), 'max_model_turns': 6})
+    assert len(result['notebook']['observations']) == 1
+    assert len(result['research_working_state']['subtasks']) == 2
+    assert rejected['subtasks'][0]['status'] == 'in_progress'

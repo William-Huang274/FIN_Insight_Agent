@@ -145,7 +145,9 @@ def merge_research_subtasks(prior, updates):
             parent = tasks[parent]["parent_id"]
         children = [t for t in tasks.values() if t["parent_id"] == task["task_id"]]
         if bool(children) != (task["status"] == "split"):
-            raise ValueError("A split task needs children; a task with children must be marked split.")
+            raise ValueError(f"Subtask {task['task_id']!r} has status {task['status']!r} and children "
+                f"{[t['task_id'] for t in children]!r}. A split task needs children; "
+                "a task with children must be marked split. The entire update was rejected.")
         if task["status"] == "completed" and (not task["result"].strip() or not task["source_ids"]):
             raise ValueError(f"Completed subtask {task['task_id']!r} needs a nonempty result and source_ids supporting that result; copy the observed IDs even if already in findings. Status is not verification.")
     return list(tasks.values())

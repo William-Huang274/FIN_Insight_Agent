@@ -1771,6 +1771,10 @@ def build_specialist_agentic_state_graph(
             return {**validated.model_dump(mode="json"),
                 "task_context": {**_jsonable(recovery_state.get("task_context") or {}), **_jsonable(validated.task_context or {}),
                     **({"revision_feedback": _jsonable(revision_feedback),
+                        "accepted_revision_baseline": {
+                            "submission_digest": canonical_sha256(recovery_state["final_submission"]),
+                            "submission": _jsonable(recovery_state["final_submission"]),
+                            "notice": "This is the last accepted workpaper, supplied after native validation. Acceptance covers the submission contract, not research quality. Older failed submissions and tool errors remain audit history; they do not establish an unresolved defect in this baseline. Continue the assigned research revision and evaluate current evidence; do not repeat historical repairs unless the current candidate actually needs them."},
                         "revision_instruction": "Continue your original task and current candidate. Use precise edits. Read relevant original sources to evaluate every assigned finding; correct related prose and claim bindings together, or explain disagreement/unresolved work. Return task_note.finding_responses for every exact finding_id once. Runtime changes are not semantic closure; preserve the overall assignment and unfinished details."} if revising else {})},
                 "workpaper_change_history": _jsonable(recovery_state.get("workpaper_change_history", [])),
                 "notebook": _replace_notebook(prior, run_invocation_id=validated.run_invocation_id,
@@ -2366,6 +2370,11 @@ def build_specialist_agentic_state_graph(
                 if terminal_submission:
                     working["last_submission_attempt"]["feedback"] = [feedback.model_dump(mode="json")]
                 body = {"observations": [], "feedback": [feedback.model_dump(mode="json")]}
+                if call.name == "UpdateResearchStateAction":
+                    body["working_state_update"] = {
+                        "accepted": False, "batch_applied": False, "state_unchanged": True,
+                        "current_state_at": "current_context.task_context.research_working_state",
+                        "next_action": "No part of this update was applied, including subtasks, migrations and resolutions. Correct and resubmit the entire intended update against the last accepted state. Do not send only a delta against this rejected proposal. Reuse existing task IDs; omitted accepted tasks remain unchanged."}
                 if call.name == "ReviseWorkpaperAction":
                     detail = {"batch_applied": False, "candidate_unchanged": True,
                         "base_submission_digest": canonical_sha256((working.get("last_submission_attempt") or {}).get("arguments")),

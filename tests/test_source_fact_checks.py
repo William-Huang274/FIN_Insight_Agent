@@ -38,3 +38,15 @@ def test_fiscal_not_calendar_and_mixed_periods_left_for_review():
 def test_navigation_snippets_are_not_numeric_evidence():
     row = {'result_state': 'retrieval_candidate', 'passage': 'US$40.2 billion'}
     assert with_source_fact_hints(row) == row
+
+
+def test_prior_year_report_with_next_year_outlook_is_not_single_period():
+    text = 'Backlog increased as we exited the year. Expectations regarding performance in Fiscal 2027 follow.'
+    assert not fact_consistency_issues('2026财年年末backlog增加', [text],
+        source_contexts=['FY2026', 'Issuer FY2026 Form 10-K'])
+    # Calendar publication dates do not establish a fiscal period.
+    assert fact_consistency_issues('2026财年收入', ['First Quarter Fiscal 2027'],
+        source_contexts=['2026-05-20', 'FY2027 Q1'])[0]['code'] == 'explicit_fiscal_year_conflict'
+    # Metadata broadens period context only, never supplies a missing amount.
+    assert fact_consistency_issues('40.20亿美元', ['Revenue US$40.20 billion'],
+        source_contexts=['Another US$4.02 billion'])

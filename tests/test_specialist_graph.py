@@ -1388,3 +1388,13 @@ def test_specialist_submission_checks_cited_original_scale_and_fiscal_label():
     assert sum(e.startswith('source_fact_consistency:') for e in errors) == 2
     claim = claim.model_copy(update={'statement': '2027财年收入402亿美元'})
     assert not _submission_errors(submission.model_copy(update={'claims': (claim,)}), notebook, enforce_case_route_requirements=False)
+    # A FY2026 report reviewing the past year and then giving FY2027 outlook
+    # cannot inherit the outlook year as the period of every cited sentence.
+    review = 'Backlog increased as we exited the year. Our expectations for Fiscal 2027 follow.'
+    mixed = observation.model_copy(update={'content': ({
+        'result_state': 'source_bound_passage', 'passage_id': 'PASSAGE::units',
+        'passage': review, 'fiscal_period': 'FY2026', 'title': 'Issuer FY2026 Form 10-K'},)})
+    notebook = notebook.model_copy(update={'observations': (mixed,)})
+    claim = claim.model_copy(update={'statement': '2026财年年末backlog增加',
+        'citation_quotes': {'PASSAGE::units': 'Backlog increased as we exited the year.'}})
+    assert not _submission_errors(submission.model_copy(update={'claims': (claim,)}), notebook, enforce_case_route_requirements=False)

@@ -1572,12 +1572,16 @@ def _submission_errors(
         errors.append("bounded_gap_requires_canonical_gap_eligibility_receipt")
     for claim in submission.claims:
         from .source_fact_checks import fact_consistency_issues
-        cited_texts = [str(item['passage']) for obs in notebook.observations for item in obs.content
+        cited_passages = [item for obs in notebook.observations for item in obs.content
             if item.get('result_state') == 'source_bound_passage'
             and item.get('passage_id') in claim.evidence_ids and item.get('passage')]
+        cited_texts = [str(item['passage']) for item in cited_passages]
+        source_contexts = [str(item.get(key, '')) for item in cited_passages
+                           for key in ('fiscal_period', 'title', 'section_path')]
         # Derived/scenario values need not equal a source amount. Their operand
         # and calculator receipt checks below remain authoritative for arithmetic.
-        fact_issues = fact_consistency_issues(claim.statement, cited_texts) if claim.kind in {'reported_fact', 'numeric_fact'} else []
+        fact_issues = fact_consistency_issues(claim.statement, cited_texts,
+            source_contexts=source_contexts) if claim.kind in {'reported_fact', 'numeric_fact'} else []
         for issue in fact_issues:
             errors.append('source_fact_consistency:' + claim.claim_id + ':' + json.dumps(issue, ensure_ascii=False)
                 + ':preserve_original_unit_or_explicit_fiscal_label;read_and_cite_distinct_support_if_needed')

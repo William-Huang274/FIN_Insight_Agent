@@ -52,13 +52,16 @@ def with_source_fact_hints(value):
     return result
 
 
-def fact_consistency_issues(statement, cited_texts):
+def fact_consistency_issues(statement, cited_texts, *, source_contexts=()):
     """Flag narrow contradictions for correction, not missing/unsupported facts.
 
     Currency checks require a copied mantissa with a changed scale and no equal
     supported amount. Fiscal checks require a single explicit source fiscal
     year and a single conflicting claim year. Mixed-period sources are not
-    automatically adjudicated. No calendar-to-fiscal inference is performed.
+    automatically adjudicated. Include explicit report/section fiscal labels:
+    a prior-year review followed by next-year outlook is not a single-year
+    source merely because the prose spells out only the outlook year.
+    No calendar-to-fiscal inference is performed.
     """
     source = '\n'.join(cited_texts)
     hints = source_fact_hints(source)
@@ -74,7 +77,8 @@ def fact_consistency_issues(statement, cited_texts):
             issues.append({'code': 'copied_currency_mantissa_changed_scale', 'claim_text': match.group(0),
                 'source_text': same[0]['source_text'], 'mechanical_display': same[0]['display_zh']})
     claim_years = {a or b for a, b in _FY.findall(statement)}
-    years = set(hints['explicit_fiscal_years'])
+    years = set(hints['explicit_fiscal_years']) | {
+        a or b for text in source_contexts for a, b in _FY.findall(text)}
     if len(years) == len(claim_years) == 1 and years != claim_years:
         issues.append({'code': 'explicit_fiscal_year_conflict', 'claim_year': next(iter(claim_years)),
             'source_year': next(iter(years))})

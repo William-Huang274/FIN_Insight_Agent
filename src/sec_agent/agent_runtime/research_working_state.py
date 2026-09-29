@@ -31,7 +31,7 @@ class ResearchSubtask(BaseModel):
     source_ids: list[str] = Field(default_factory=list, max_length=32,
         description="Required and nonempty when status=completed: copy the exact observed IDs supporting this task's result, even if also listed in findings. Otherwise include the sources already read; navigation IDs do not prove the source was read.")
     migrated_questions: list[str] = Field(default_factory=list, max_length=24,
-        description="One-time mapping from exact legacy open questions. Historical identity, NOT current unread/pending status. Split their entire scope into children, including unfinished parts.")
+        description="One-time mapping from exact legacy open questions. Historical identity, NOT current unread/pending status. Omit when updating an existing task to retain its old migrations unchanged; never paraphrase the keys. Split their entire scope into children, including unfinished parts.")
 
 
 class ResearchWorkingState(BaseModel):
@@ -126,10 +126,15 @@ def merge_research_subtasks(prior, updates):
         q for t in tasks.values() for q in t.get("migrated_questions", [])}
     for update in updates:
         task = deepcopy(update)
+        old = tasks.get(task["task_id"], {})
         unknown = set(task["migrated_questions"]) - known_questions
         if unknown:
-            raise ValueError("Migration must identify existing open questions exactly: " + str(sorted(unknown)))
-        old = tasks.get(task["task_id"], {})
+            raise ValueError("Migration must identify existing open questions exactly: " + str(sorted(unknown))
+                + f". Task {task['task_id']!r} already retains these exact migrations: "
+                + str(old.get('migrated_questions', []))
+                + ". For an existing task, omit migrated_questions to retain those migrations unchanged; "
+                "update its result/next_step instead of paraphrasing migration keys. "
+                "No part of this update was applied; the previous accepted state remains current.")
         task["migrated_questions"] = list(dict.fromkeys([
             *old.get("migrated_questions", []), *task["migrated_questions"]]))
         tasks[task["task_id"]] = task

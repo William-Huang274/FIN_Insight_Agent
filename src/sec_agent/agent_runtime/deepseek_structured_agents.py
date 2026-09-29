@@ -973,6 +973,11 @@ def _project_agentic_specialist_request(
             ),
             "observations": projected_observations,
             "feedback": _agentic_semantic_value(notebook.get("feedback", ())),
+            "feedback_notice": "This is ordered historical validation feedback, including earlier corrected attempts. "
+                "It is not a list of current instructions or unresolved defects. Use the latest tool result, "
+                "accepted research_working_state and current allowed_actions to decide what remains. "
+                "A context checkpoint is mandatory only when the current runtime interruption explicitly requires it; "
+                "an old checkpoint notice does not require another note.",
         },
         "execution_budget": _agentic_semantic_value(execution_budget),
         "allowed_actions": list(allowed_actions),

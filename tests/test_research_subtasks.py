@@ -18,6 +18,20 @@ def task(key, **updates):
     return ResearchSubtask(task_id=key, objective=key, status="pending", **updates).model_dump(mode="json")
 
 
+def test_existing_migrations_survive_partial_updates_and_paraphrases_have_actionable_feedback():
+    question = 'Definition unread (old retrieval failed).'
+    prior = {'open_questions': [], 'subtasks': [task('terms', migrated_questions=[question])]}
+    changed = task('terms', next_step='Read the newly located clause.')
+    assert merge_research_subtasks(prior, [changed])[0]['migrated_questions'] == [question]
+    assert merge_research_subtasks(prior, prior['subtasks']) == prior['subtasks']
+    with pytest.raises(ValueError) as error:
+        merge_research_subtasks(prior, [{**changed, 'migrated_questions': ['Definition unread (retrieval previously failed).']}])
+    assert question in str(error.value)
+    assert 'omit migrated_questions' in str(error.value)
+    assert 'No part of this update was applied' in str(error.value)
+    assert prior['subtasks'][0]['next_step'] == ''
+
+
 def test_source_menu_and_readback_ids_are_navigation_not_prose_inference():
     from sec_agent.agent_runtime.research_working_state import observed_sources
     notebook = {"observations": [{"references": [], "content": [

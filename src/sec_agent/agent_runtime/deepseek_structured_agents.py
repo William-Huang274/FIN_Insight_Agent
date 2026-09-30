@@ -880,9 +880,10 @@ def _prior_research_actions(request):
     for action in actions[:bound]:
         if not isinstance(action, dict):
             continue
-        operations = [c.get('args', {}) for c in action.get('tool_calls', [])] if action.get('action') == 'native_tool_batch' else [action]
+        operations = [c.get('args', {}) for c in action.get('tool_calls', [])
+            if isinstance(c, dict) and c.get('type') != 'invalid_tool_call'] if action.get('action') == 'native_tool_batch' else [action]
         for operation in operations:
-            if operation.get('action') not in {'submit_workpaper', 'revise_workpaper', 'prepare_workpaper',
+            if not isinstance(operation, dict) or operation.get('action') not in {'submit_workpaper', 'revise_workpaper', 'prepare_workpaper',
                     'request_source', 'request_evidence', 'request_method'}:
                 continue
             retained = {k: operation[k] for k in ('action',) if k in operation}

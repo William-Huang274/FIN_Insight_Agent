@@ -39,6 +39,30 @@ def test_accepted_revision_replaces_only_older_authoring_proposals():
         assert _prior_research_actions(changed) == [r['action'] for r in original['notebook']['model_turn_records']]
 
 
+def test_accepted_revision_preserves_malformed_call_receipts_without_interpreting_them():
+    from sec_agent.agent_runtime.deepseek_structured_agents import _prior_research_actions
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    failed = [
+        {'name': 'SubmitWorkpaperAction', 'type': 'invalid_tool_call', 'args': '{"action":'},
+        {'name': 'SubmitWorkpaperAction', 'args': '{"action":"submit_workpaper"}'},
+        {'name': 'SubmitWorkpaperAction', 'args': None},
+        {'name': 'SubmitWorkpaperAction', 'args': []},
+        {'name': 'SubmitWorkpaperAction', 'type': 'invalid_tool_call',
+            'args': {'action': 'submit_workpaper', 'narrative_markdown': 'Rejected proposal'}},
+        None,
+    ]
+    accepted = {'action': 'submit_workpaper', 'narrative_markdown': 'Accepted answer'}
+    request = {'notebook': {'model_turn_records': [{'action': {
+        'action': 'native_tool_batch', 'tool_calls': [*failed, {'name': 'SubmitWorkpaperAction', 'args': accepted}]}}]},
+        'task_context': {'accepted_revision_baseline': {'submission': accepted,
+            'submission_digest': canonical_sha256(accepted), 'through_model_turn': 1}}}
+    original = deepcopy(request)
+    projected = _prior_research_actions(request)
+    assert projected[0]['tool_calls'][:-1] == failed
+    assert projected[0]['tool_calls'][-1]['args']['historical_operation'] is True
+    assert request == original
+
+
 def test_latest_handoff_reuses_identical_accepted_baseline_and_working_state():
     from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
     task = {'accepted_revision_baseline': {'submission': {'narrative_markdown': 'Original answer. ' * 300}},

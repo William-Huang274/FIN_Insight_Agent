@@ -1,6 +1,6 @@
 """Research working state and factual progress signals over native notebooks."""
 from typing import Any, Literal
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_serializer
 
 
 class ObservedFinding(BaseModel):
@@ -56,6 +56,15 @@ class ResearchWorkingState(BaseModel):
         description="What was just investigated, actual outcome, unresolved issues and the precise continuation; not hidden reasoning.")
     retain_source_ids: list[str] = Field(default_factory=list,
         description="Exact observed source IDs whose original context must remain together for current comparisons. Findings and completed tasks do not permanently pin their originals.")
+    reference_issues: list[dict[str, Any]] = Field(default_factory=list,
+        description="Runtime-recomputed unresolved citation markers. Saving author progress does not verify these references.")
+
+    @model_serializer(mode='wrap')
+    def preserve_archived_note(self, handler):
+        body = handler(self)
+        if 'reference_issues' not in self.model_fields_set:
+            body.pop('reference_issues', None)
+        return body
 
 
 class ResearchStateEdit(BaseModel):
@@ -73,7 +82,15 @@ class UpdateResearchStateAction(BaseModel):
     working_state: ResearchWorkingState | None = None
     pending_update_digest: str | None = Field(default=None, description="To repair a rejected draft, copy its returned digest, omit working_state and provide edits. All checks run again.")
     edits: list[ResearchStateEdit] = Field(default_factory=list)
+    release_source_ids: list[str] = Field(default_factory=list, description="Optional: remove already-read document/paragraph/company results from the next working context, retaining request history and exact recovery. May be sent alone without working_state or edits. Copy observed IDs. Later reads are visible again; archives are never deleted.")
     checkpoint: bool = Field(default=False, description="Mark a useful compaction boundary. Accepted current state supersedes old notes; current pinned sources and latest reads stay visible, older recoverable results become archive entries. No task or budget reset.")
+
+    @model_serializer(mode='wrap')
+    def preserve_archived_action(self, handler):
+        body = handler(self)
+        if 'release_source_ids' not in self.model_fields_set:
+            body.pop('release_source_ids', None)
+        return body
 
 
 WORKING_STATE_GUIDANCE = (
@@ -85,7 +102,11 @@ WORKING_STATE_GUIDANCE = (
     "remain unchanged; explicit null clears an optional field. migrated_questions is optional legacy history. "
     "Pin only sources currently needed together in retain_source_ids; other originals have exact recovery "
     "routes and must be recovered when necessary to verify a quote or calculation. Preserve source, period, "
-    "unit and scope in findings. At a useful research boundary or a context-size reminder, set checkpoint=true "
+    "unit and scope in findings. "
+    "Use release_source_ids alone to dismiss no-longer-needed results without rewriting a note. "
+    "Unique observed identifier typos are repaired with a receipt; ambiguous or unknown references are marked "
+    "in reference_issues without rejecting the note. These markers are not valid evidence. "
+    "At a useful research boundary or a context-size reminder, set checkpoint=true "
     "to archive completed history, keeping phase_status=working if unfinished. A rejected update returns a "
     "pending_update_digest: repair only affected fields with edits or submit a replacement draft. "
     "Saving a note does not complete research or reset budget. Continue investigating what can change the answer."

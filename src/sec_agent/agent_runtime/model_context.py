@@ -558,8 +558,8 @@ def _project_restored_context(messages, projected, boundary, retained, *, checkp
         # Keep the final restored batch just as we keep the latest live batch.
         keep_latest = checkpoint and not any(isinstance(m, AIMessage) and any(
             c["name"] in REREADABLE_TOOLS for c in m.tool_calls) for m in messages[index + 1:boundary])
-        latest_batch = next((o.get("recovery", {}).get("batch_turn") for o in reversed(observations)
-                             if isinstance(o, dict) and o.get("recovery")), None)
+        latest_batch = max((o.get("recovery", {}).get("batch_turn", -1) for o in observations
+                             if isinstance(o, dict) and o.get("recovery")), default=None)
         for offset, observation in enumerate(observations):
             if not isinstance(observation, dict):
                 continue
@@ -848,7 +848,9 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
 
 def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False, workpaper_navigation=False, policy="legacy_window"):
     from .source_result_view import source_message_views
+    from .context_release import release_history
     messages = source_message_views(messages)
+    messages = release_history(messages)
     if policy == "task_boundary":
         return task_boundary_history(messages)
     if trigger_tokens is None:

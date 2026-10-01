@@ -1023,6 +1023,8 @@ class SpecialistHumanReviewHandoff(_StrictModel):
 
 
 class SpecialistAgenticState(TypedDict, total=False):
+    context_releases: list[dict[str, Any]]
+    context_reopen_turns: dict[str, int]
     authoring_context: dict[str, Any]
     research_working_state: dict[str, Any]
     pending_working_state_update: dict[str, Any] | None
@@ -1252,6 +1254,7 @@ def _model_request(
         body["task_context"] = {**body.get("task_context", {}),
             "working_state_guidance": WORKING_STATE_GUIDANCE,
             "research_working_state": state.get("research_working_state"),
+            "context_releases": state.get("context_releases", []),
             "pending_working_state_update": state.get("pending_working_state_update"),
             "runtime_progress": state.get("runtime_progress", {}),
             "lead_assistance": state.get("lead_assistance_history", []),
@@ -1437,8 +1440,9 @@ def _observation_recovery_catalog(state, notebook):
         else:
             actions = [decision]
         for action in actions:
-            # Calculations/financial operands remain in the working set.
-            if not isinstance(action, (RequestEvidenceAction, RequestSourceAction)):
+            # Financial results remain by default, but now also have a verified
+            # saved-read route for explicit author dismissal and recovery.
+            if not isinstance(action, (RequestEvidenceAction, RequestSourceAction, RequestFinanceAction, RequestCalculationAction)):
                 continue
             saved = _saved_read_observation(state, notebook, action)
             if saved is None:
@@ -1447,7 +1451,7 @@ def _observation_recovery_catalog(state, notebook):
                 "read_tool": type(action).__name__,
                 "arguments": action.model_dump(mode="json", exclude={"context_digest"}),
                 "saved_observation_id": saved.observation_digest,
-                "batch_turn": record.turn_index,
+                "batch_turn": max(record.turn_index, state.get("context_reopen_turns", {}).get(saved.observation_digest, 0)),
                 "notice": "Repeat these arguments with current execution binding to read the exact saved "
                     "successful observation in this task. No new source dispatch; not new evidence.",
             })
@@ -1850,6 +1854,8 @@ def build_specialist_agentic_state_graph(
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
                 "research_working_state": _jsonable(recovery_state.get("research_working_state")),
+                "context_releases": _jsonable(recovery_state.get("context_releases", [])),
+                "context_reopen_turns": _jsonable(recovery_state.get("context_reopen_turns", {})),
                 "pending_working_state_update": _jsonable(recovery_state.get("pending_working_state_update")),
                 "research_context_checkpoint_accepted": accepted_context_checkpoint(recovery_state),
                 "authoring_context": None if revising else _jsonable(recovery_state.get("authoring_context")),
@@ -2563,6 +2569,25 @@ def build_specialist_agentic_state_graph(
                     'status': 'prepared', 'notice': 'Next request restores your public preparation in a writing context; budget and source scope unchanged.'}))
             if isinstance(action, UpdateResearchStateAction):
                 from .research_working_state import ResearchWorkingState
+                from .reference_repair import repair_working_references, resolve_reference
+                observed = observed_sources({"observations": [o for o in working["notebook"]["observations"]
+                    if o.get("status") == "success" and not o.get("failure")]})
+                release = None
+                if action.release_source_ids:
+                    resolved = [resolve_reference(ref, observed) for ref in action.release_source_ids]
+                    release = {"source_ids": sorted({ref for ref, _ in resolved if ref in observed}),
+                        "through_model_turn": before.model_turn_count,
+                        "reference_feedback": [receipt for _, receipt in resolved if receipt]}
+                if action.working_state is None and not action.edits and not action.pending_update_digest and release:
+                    if before.tool_action_count >= state["max_tool_actions"]:
+                        return reject("working_state_tool_limit", "Preserve state and stop; no additional allowance is granted.")
+                    working["context_releases"] = [*working.get("context_releases", []), release]
+                    digest = _semantic_action_digest(action)
+                    if digest not in before.dispatched_action_digests:
+                        working["notebook"] = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,
+                            dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode="json")
+                    return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({
+                        "context_release": release, "notice": "Released consumed results from the working context only. Request history and exact recovery remain; later reads are visible again. Research state and pending draft unchanged."}))
                 if action.working_state is not None:
                     if action.edits or action.pending_update_digest:
                         return reject("working_state_update_mode_invalid", "Supply a working_state OR a pending digest with edits.")
@@ -2597,18 +2622,14 @@ def build_specialist_agentic_state_graph(
                 if note["phase_status"] == "completed" and any(
                         t["status"] not in {"completed", "split"} for t in note["subtasks"]):
                     return reject("working_state_subtasks_unfinished", "Subtasks remain unfinished; keep phase_status working.", agent_error=True)
-                refs = set(note["retain_source_ids"]) | {r for f in note["findings"] for r in f["source_ids"]}
-                refs.update(r for q in note["resolved_questions"] for r in q["source_ids"])
-                refs.update(r for t in note["subtasks"] for r in t["source_ids"])
-                unknown = sorted(refs - observed_sources(working["notebook"]))
-                if unknown:
-                    return reject("working_state_unknown_source", "Unobserved IDs: " + json.dumps(unknown) +
-                        ". Copy exact IDs from structured result metadata or references; navigation IDs do not grant citation authority.", agent_error=True)
+                note, reference_repairs, reference_issues = repair_working_references(note, observed)
                 # These are the author's CURRENT lists, not append-only ledgers.
                 # Complete previous versions remain in native model/tool history.
                 if before.tool_action_count >= state["max_tool_actions"]:
                     return reject("working_state_tool_limit", "Preserve state and stop; no additional allowance is granted.")
                 working["research_working_state"] = note
+                if release:
+                    working["context_releases"] = [*working.get("context_releases", []), release]
                 working["pending_working_state_update"] = None
                 working["research_context_checkpoint_accepted"] = action.checkpoint
                 digest = _semantic_action_digest(action)
@@ -2618,6 +2639,8 @@ def build_specialist_agentic_state_graph(
                 working["notebook"] = before.model_dump(mode="json")
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({"accepted": True,
                     "working_state": note, "checkpoint": action.checkpoint,
+                    "reference_repairs": reference_repairs, "reference_issues": reference_issues,
+                    "context_release": release,
                     "notice": "Current author state replaced; older versions remain archived. This is not evidence or independent verification. Continue the research; budgets unchanged."}, ensure_ascii=False))
             if isinstance(action, (DelegateSubtasksAction, ReadDelegatedWorkAction)):
                 saved = dict(working.get("delegated_work", {}))
@@ -2699,6 +2722,8 @@ def build_specialist_agentic_state_graph(
             kind = "finance" if isinstance(action, (RequestFinanceAction, RequestCalculationAction)) else "evidence"
             saved = _saved_read_observation(working, before, action)
             if saved is not None:
+                working["context_reopen_turns"] = {**working.get("context_reopen_turns", {}),
+                    saved.observation_digest: before.model_turn_count}
                 body = {"observations": [{key: saved.model_dump(mode="json")[key] for key in (
                     "kind", "status", "references", "content", "route_completions", "failure")}],
                     "feedback": [], "checkpoint_replay": {

@@ -262,7 +262,8 @@ def test_restored_recovery_locators_execute_against_native_saved_results_after_n
             return _handoff(request)
         projected = _project_agentic_specialist_request(request)
         evidence, finance = projected["progress"]["observations"]
-        assert "recovery" not in finance  # Numeric operands stay pinned.
+        assert finance['recovery']['read_tool'] == 'RequestFinanceAction'
+        assert finance['content']  # Numeric operands stay visible until explicit dismissal.
         locator = evidence["recovery"]
         assert locator["saved_observation_id"] == initial["notebook"]["observations"][0]["observation_digest"]
         disabled = deepcopy(request)

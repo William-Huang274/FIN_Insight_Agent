@@ -14,6 +14,60 @@ _TRANSPORT_KEYS = {"mcp_receipt_chain", "mcp_receipt", "cell_binding_used", "sou
 _PARSER_IMPLEMENTATION_KEYS = {"parser", "material_card_version"}
 
 
+def _company_source_menu(row):
+    """A known company sources section is a file menu, not a company profile.
+
+    Keep all records and financial/source identity. Detailed profile remains
+    available through company navigation, documents through outline/read.
+    """
+    if row.get('company_section') != 'sources' or not isinstance(row.get('sources'), list):
+        return row
+    menu = {k: v for k, v in row.items() if k not in {
+        'card', 'profile', 'listing', 'data_counts', 'positions_count',
+        'financial_groups', 'data_channels', 'relationship_processing', 'section_navigation'}}
+    sources = []
+    for original in row['sources']:
+        if not isinstance(original, dict) or not original.get('id'):
+            sources.append(original)
+            continue
+        item = {k: v for k, v in original.items() if k not in {
+            'captured_at', 'material_group_label', 'display_title', 'url',
+            'link_role', 'material_group', 'categories', 'publisher_names'}}
+        if original.get('publisher_names'):
+            item['publisher_names'] = original['publisher_names']
+        if original.get('display_title') not in (None, original.get('title')):
+            item['display_title'] = original['display_title']
+        meta = _metadata(item.get('metadata', {}))
+        if isinstance(meta, dict):
+            meta = {k: v for k, v in meta.items() if k not in {
+                'captured_at', 'data_tables', 'runtime_compatibility_parse', 'window',
+                'entity_id', 'research_dimension'} and not
+                (k in item and item[k] == v) and not
+                (k == 'origin_url' and v == original.get('url')) and not
+                (k == 'publication_date' and v == item.get('published_at'))}
+        if meta:
+            item['metadata'] = meta
+        else:
+            item.pop('metadata', None)
+        item['document_id'] = original['id']
+        item['readback'] = {'source_space': 'library', 'operation': 'outline', 'document_id': original['id']}
+        sources.append(item)
+    # One identical coverage description for this menu, not 20 repeated copies.
+    coverage = [s.get('metadata', {}).get('document_coverage') for s in sources
+        if isinstance(s, dict) and isinstance(s.get('metadata', {}), dict)]
+    if len(coverage) == len(sources) and len(sources) > 1 and coverage[0] and all(c == coverage[0] for c in coverage):
+        menu['shared_document_coverage'] = coverage[0]
+        for source in sources:
+            source['metadata'].pop('document_coverage')
+            if not source['metadata']:
+                source.pop('metadata')
+    menu['sources'] = sources
+    menu['menu_notice'] = 'File navigation, not evidence. Shared document coverage applies to all rows when present. URLs, profile and processing details remain in original records; use document_id with outline/search/read. Counts and all returned files are preserved.'
+    if row.get('entity_id'):
+        menu['company_readback'] = {'operation': 'company', 'source_space': 'library', 'entity_id': row['entity_id']}
+    return menu
+
+
 def _metadata(value):
     if isinstance(value, str):
         try:
@@ -57,6 +111,8 @@ def source_result_view(value):
                 row["metadata"] = metadata
             else:
                 row.pop("metadata")
+        if row.get('result_state') == 'retrieval_candidate':
+            row = _company_source_menu(row)
         return row
     if isinstance(value, (list, tuple)):
         return [source_result_view(v) for v in value]

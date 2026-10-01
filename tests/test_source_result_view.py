@@ -46,6 +46,28 @@ def test_directory_preserves_selection_scope_revision_and_all_candidates():
     assert len(json.dumps(view)) < len(json.dumps(rows)) * .65
 
 
+def test_company_sources_are_file_cards_not_full_company_profiles():
+    source = {'id': 'SRC::one', 'title': 'Issuer report', 'published_at': '2026-08-01',
+        'access_state': 'readable', 'preview': 'Short selection excerpt',
+        'metadata': {'period_end': '2026-06-30', 'unit': 'USD million',
+            'parse_revision': {'supersedes': 'SRC::old'}, 'document_coverage': {'complete_document': False},
+            'runtime_compatibility_parse': {'diagnostic': 'Long parser details '*200}}}
+    menu = {'result_state': 'retrieval_candidate', 'company_section': 'sources', 'entity_id': 'COMPANY::A',
+        'card': {'registered_address': 'address '*500}, 'sources': [source]*20,
+        'section_total': 32, 'sources_total': 32, 'next_offset': 20, 'unknown_scope': 'preserve'}
+    original = deepcopy(menu)
+    view = source_result_view(menu)
+    assert 'card' not in view and len(view['sources']) == 20
+    assert view['section_total'] == 32 and view['next_offset'] == 20 and view['unknown_scope'] == 'preserve'
+    for row in view['sources']:
+        assert row['document_id'] == 'SRC::one' and row['readback']['operation'] == 'outline'
+        for key in ('period_end', 'unit', 'parse_revision'):
+            assert row['metadata'][key] == source['metadata'][key]
+        assert view['shared_document_coverage'] == source['metadata']['document_coverage']
+    assert source_result_view(view) == view and menu == original
+    assert len(json.dumps(view)) < len(json.dumps(menu))*.25
+
+
 @pytest.mark.parametrize('metadata', ['{bad json', 'null', '[1,2]', 17, 0, None, False, ''])
 def test_unrecognized_metadata_and_prose_are_never_parsed_or_dropped(metadata):
     row = {**candidate(), 'metadata': metadata, 'passage': '{"parser":"source text"}'}

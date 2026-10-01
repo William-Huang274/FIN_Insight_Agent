@@ -84,10 +84,10 @@ def test_current_questions_replace_old_wording_across_multiple_updates(finish):
     current = result["research_working_state"]
     assert current["subtasks"][0]["status"] == "partial"
     assert current["open_questions"] == (final['open_questions'] if finish == 'capacity' else [])
-    assert result["notebook"]["tool_action_count"] == (4 if finish == 'unknown' else 5)
+    assert result["notebook"]["tool_action_count"] == 5
     assert base["open_questions"] == [original] and partial["open_questions"] == []
     if finish == 'unknown':
-        assert 'working_state_unknown_source' in json.dumps(requests[-1]["tool_results"])
+        assert current['reference_issues'][0]['submitted_id'] == 'UNKNOWN'
 
 
 def test_native_partial_migration_split_and_recovery_preserve_progress_without_copying_old_questions():
@@ -159,8 +159,8 @@ def test_invalid_subtask_changes_are_atomic(mode):
     assert prior == original
 
 
-@pytest.mark.parametrize("mode,code", [("unknown", "working_state_unknown_source"), ("unfinished", "working_state_subtasks_unfinished")])
-def test_native_rejects_unknown_subtask_sources_or_premature_phase_completion(mode, code):
+@pytest.mark.parametrize("mode,code", [("unknown", "reference_issues"), ("unfinished", "working_state_subtasks_unfinished")])
+def test_native_flags_unknown_subtask_sources_but_rejects_premature_phase_completion(mode, code):
     ports = _ToolPorts(); requests = []
     base = working_note(phase_status="working", findings=[], retain_source_ids=[], open_questions=[])
     def turn(request):
@@ -175,8 +175,13 @@ def test_native_rejects_unknown_subtask_sources_or_premature_phase_completion(mo
     result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
         model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
         working_state_enabled=True)).compile().invoke(_input())
-    assert result["research_working_state"]["subtasks"] == [task("remaining")]
     assert code in json.dumps(requests[-1]["tool_results"])
+    if mode == 'unknown':
+        assert result['research_working_state']['subtasks'][0]['source_ids'] == ['UNKNOWN']
+        assert result['research_working_state']['reference_issues'][0]['status'] == 'unresolved'
+        assert json.loads(requests[-1]['tool_results'][0]['content'])['accepted']
+        return
+    assert result["research_working_state"]["subtasks"] == [task("remaining")]
     receipt = json.loads(requests[-1]['tool_results'][0]['content'])['working_state_update']
     assert receipt['accepted'] is False and receipt['batch_applied'] is False
     assert receipt['state_unchanged'] is True

@@ -347,7 +347,7 @@ def test_authored_current_questions_replace_the_old_list():
 
 
 @pytest.mark.parametrize('mode', ['omit', 'shorten', 'unknown_source', 'capacity'])
-def test_current_judgments_replace_history_but_unknown_sources_still_fail(mode):
+def test_current_judgments_replace_history_and_unknown_sources_are_marked(mode):
     calls=[]; ports=_ToolPorts()
     original='A quarterly ratio is not an annual composition (previous note was rejected).'
     base=working_note(phase_status='working', findings=[], retain_source_ids=[], resolved_questions=[],
@@ -377,8 +377,10 @@ def test_current_judgments_replace_history_but_unknown_sources_still_fail(mode):
         assert 'inherited_rejected_interpretations' not in feedback
         assert result['notebook']['tool_action_count']==2
     else:
-        assert note==base
-        assert 'working_state_unknown_source' in feedback
+        assert note['rejected_interpretations'] == proposed['rejected_interpretations']
+        assert note['reference_issues'][0]['submitted_id'] == 'UNOBSERVED'
+        assert note['reference_issues'][0]['status'] == 'unresolved'
+        assert 'reference_issues' in feedback
 
 
 def test_actual_sdk_uses_audited_author_turn_for_checkpoint_and_native_acceptance():

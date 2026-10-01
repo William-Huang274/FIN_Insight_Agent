@@ -145,7 +145,7 @@ def test_repeated_failure_after_bounded_lead_help_stops_without_resetting_allowa
     assert result['max_model_turns']==24 and result['notebook']['model_turn_count']==13
 
 
-def test_unobserved_working_state_source_is_rejected_without_clearing_authority():
+def test_unobserved_working_state_source_is_flagged_without_granting_authority():
     calls=[];ports=_ToolPorts()
     def model(request):
         calls.append(request)
@@ -156,8 +156,10 @@ def test_unobserved_working_state_source_is_rejected_without_clearing_authority(
     graph=build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(model_turn=model,
         evidence_tool=ports.evidence,finance_tool=ports.finance,working_state_enabled=True)).compile()
     result=graph.invoke(_input(),{'recursion_limit':20})
-    assert not result.get('research_working_state')
-    assert 'working_state_unknown_source' in json.dumps(calls[-1]['tool_results'])
+    assert result['research_working_state']['reference_issues']
+    assert all(i['status'] == 'unresolved' for i in result['research_working_state']['reference_issues'])
+    assert result['notebook']['observations'] == []
+    assert json.loads(calls[-1]['tool_results'][0]['content'])['accepted']
 
 
 def test_lead_assistance_uses_existing_sdk_schema_and_bound_receipt_without_network():

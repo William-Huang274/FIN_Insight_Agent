@@ -847,6 +847,8 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
 
 
 def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False, workpaper_navigation=False, policy="legacy_window"):
+    from .source_result_view import source_message_views
+    messages = source_message_views(messages)
     if policy == "task_boundary":
         return task_boundary_history(messages)
     if trigger_tokens is None:

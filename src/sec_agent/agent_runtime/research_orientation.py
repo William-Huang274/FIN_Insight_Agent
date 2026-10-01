@@ -248,29 +248,9 @@ def orientation_source_view(result):
     Decode metadata once and remove only byte-equivalent routing copies. Unknown
     or conflicting metadata survives. Never parse or rewrite source passage text.
     """
-    def compact(value):
-        if isinstance(value, dict):
-            row = {k: compact(v) for k, v in value.items() if k != 'mcp_receipt_chain'}
-            for key in ('metadata', 'routing_metadata_v1'):
-                if isinstance(row.get(key), str):
-                    try:
-                        decoded = json.loads(row[key])
-                    except (ValueError, TypeError):
-                        continue
-                    if isinstance(decoded, dict):
-                        row[key] = compact(decoded)
-            routing = row.get('routing_metadata_v1')
-            if isinstance(routing, dict):
-                distinct = {k: v for k, v in routing.items() if k not in row or row[k] != v}
-                if distinct:
-                    row['routing_metadata_v1'] = distinct
-                else:
-                    del row['routing_metadata_v1']
-            return row
-        if isinstance(value, list): return [compact(v) for v in value]
-        return value
+    from .source_result_view import source_result_view
     from .source_fact_checks import with_source_fact_hints
-    view = with_source_fact_hints(compact(result))
+    view = with_source_fact_hints(source_result_view(result))
     # Search telemetry is identical across many hits. Reference one full copy in
     # this same receipt, preserving graph truncation and retrieval coverage flags.
     shared = {json.dumps(v, sort_keys=True, ensure_ascii=False): (k, v)

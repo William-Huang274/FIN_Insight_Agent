@@ -845,6 +845,9 @@ def _agentic_semantic_value(value: Any) -> Any:
     """Remove host identity/authority internals from model-visible loop state."""
 
     if isinstance(value, Mapping):
+        if value.get("result_state") in {"retrieval_candidate", "source_bound_passage"}:
+            from .source_result_view import source_result_view
+            value = source_result_view(value)
         return {
             str(key): _agentic_semantic_value(child)
             for key, child in value.items()

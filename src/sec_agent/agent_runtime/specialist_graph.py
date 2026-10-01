@@ -23,6 +23,7 @@ from pydantic import (
     TypeAdapter,
     ValidationError,
     field_validator,
+    model_serializer,
     model_validator,
 )
 
@@ -382,13 +383,64 @@ class WorkpaperEditError(ValueError):
         self.issues = issues
 
 
+class WorkpaperEditCorrection(_StrictModel):
+    edit_index: int = Field(ge=0)
+    edit: WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit
+
+
 class ReviseWorkpaperAction(_StrictModel):
     action: Literal["revise_workpaper"]
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
     reason_summary: str = Field(min_length=1, max_length=1000)
     base_submission_digest: str = Field(pattern=_DIGEST_PATTERN)
-    edits: tuple[WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit, ...] = Field(min_length=1, max_length=24,
-        description="One atomic batch. Prefer str_replace for text fragments and upsert_coverage for one task assessment. Legacy old_value/new_value replaces a complete field.")
+    edits: tuple[WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit, ...] = Field(default=(),
+        description="One atomic batch. On rejection it is saved; repair only affected edits with pending_revision_digest and edit_corrections. Prefer str_replace for text fragments and upsert_coverage for one assessment.")
+    pending_revision_digest: str | None = Field(default=None, pattern=_DIGEST_PATTERN)
+    edit_corrections: tuple[WorkpaperEditCorrection, ...] = ()
+
+    @model_serializer(mode="wrap")
+    def preserve_archived_revision_shape(self, handler):
+        body = handler(self)
+        for field in ('pending_revision_digest', 'edit_corrections'):
+            if field not in self.model_fields_set:
+                body.pop(field, None)
+        return body
+
+    @model_validator(mode="after")
+    def revision_mode(self):
+        if self.edits:
+            if self.pending_revision_digest or self.edit_corrections:
+                raise ValueError("send_edits_or_pending_revision_corrections")
+        elif not self.pending_revision_digest or not self.edit_corrections:
+            raise ValueError("revision_requires_edits_or_pending_revision_corrections")
+        return self
+
+
+def resolve_workpaper_revision(action: ReviseWorkpaperAction, pending: dict | None) -> ReviseWorkpaperAction:
+    """Repair a saved atomic batch without guessing or dropping its other edits."""
+    if action.edits:
+        return action
+    if not pending or action.pending_revision_digest != pending.get("digest"):
+        raise ValueError("pending_revision_digest_mismatch_use_current_edit_feedback")
+    if action.base_submission_digest != pending.get("base_submission_digest"):
+        raise ValueError("pending_revision_base_mismatch")
+    edits = deepcopy(pending["edits"])
+    seen = set()
+    for correction in action.edit_corrections:
+        index = correction.edit_index
+        if index >= len(edits) or index in seen:
+            raise ValueError("pending_revision_edit_index_invalid_or_repeated")
+        seen.add(index)
+        edits[index] = correction.edit.model_dump(mode="json")
+    return ReviseWorkpaperAction.model_validate_json(json.dumps({
+        **action.model_dump(mode="json"), "edits": edits,
+        "pending_revision_digest": None, "edit_corrections": []}))
+
+
+def save_workpaper_revision(action: ReviseWorkpaperAction) -> dict:
+    batch = {"base_submission_digest": action.base_submission_digest,
+        "edits": [edit.model_dump(mode="json") for edit in action.edits]}
+    return {**batch, "digest": canonical_sha256(batch)}
 
 
 def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperAction) -> dict[str, Any]:
@@ -396,6 +448,8 @@ def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperActio
 
     No file access, accepted-report mutation or independent acceptance authority.
     """
+    if not action.edits:
+        raise ValueError('resolve_pending_revision_before_applying')
     if canonical_sha256(original) != action.base_submission_digest:
         raise WorkpaperEditError("workpaper_edit_base_mismatch", [{"location": ["base_submission_digest"],
             "code": "stale_base", "remedy": "Use submission_to_repair's current candidate and base_submission_digest; recheck intended fragments before retrying."}])
@@ -992,6 +1046,7 @@ class SpecialistAgenticState(TypedDict, total=False):
     revision_target_origins: dict[str, Any]
     revision_tracking_version: int
     last_edit_feedback: dict[str, Any]
+    pending_workpaper_revision: dict[str, Any] | None
     notebook: dict[str, Any]
     pending_action: dict[str, Any] | None
     tool_results: list[dict[str, Any]]
@@ -1791,6 +1846,7 @@ def build_specialist_agentic_state_graph(
                     if revising else _jsonable(recovery_state.get("last_submission_attempt"))),
                 **({"revision_targets": {}, "revision_target_origins": {}} if revising else revision_state(recovery_state)),
                 "last_edit_feedback": _jsonable(recovery_state.get("last_edit_feedback", {})),
+                "pending_workpaper_revision": None if revising else _jsonable(recovery_state.get("pending_workpaper_revision")),
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
                 "research_working_state": _jsonable(recovery_state.get("research_working_state")),
@@ -2349,6 +2405,7 @@ def build_specialist_agentic_state_graph(
                 working["last_submission_attempt"] = {**(working.get("last_submission_attempt") or {}),
                     "tool_call_id": call.id, "tool_name": call.name, "feedback": [], "accepted": False}
             elif terminal_submission:
+                working["pending_workpaper_revision"] = None
                 # Retain the original assertion even when schema validation fails.
                 # This is checkpoint evidence, never an accepted deliverable.
                 working["last_submission_attempt"] = {
@@ -2387,10 +2444,14 @@ def build_specialist_agentic_state_graph(
                         "pending_update_digest": pending.get("digest"),
                         "next_action": "Draft saved, accepted state unchanged. Correct affected fields using pending_update_digest and edits (JSON Pointer path/value), omitting working_state; or submit a replacement working_state. Other research tools remain available."}
                 if call.name == "ReviseWorkpaperAction":
+                    pending = working.get("pending_workpaper_revision") or {}
                     detail = {"batch_applied": False, "candidate_unchanged": True,
+                        "pending_revision_digest": pending.get("digest"),
+                        "saved_edit_count": len(pending.get("edits", [])),
                         "base_submission_digest": canonical_sha256((working.get("last_submission_attempt") or {}).get("arguments")),
                         "issues": edit_details or (working.get("last_submission_attempt") or {}).get("validation_issues", []),
-                        "next_action": "No edits from this batch were applied. Correct the identified edits and resubmit the intended atomic batch against the current candidate. Keep other required repairs in scope."}
+                        "next_action": ("Candidate unchanged; the batch is saved. Send pending_revision_digest and edit_corrections [{edit_index, edit}] for affected edits only, omitting edits. Other saved edits are retained and the entire batch is revalidated atomically. Alternatively send a replacement edits batch."
+                            if pending else "Candidate unchanged. No valid edit batch was saved; correct the reported argument fields and submit edits against the current candidate.")}
                     working["last_edit_feedback"] = detail
                     body["edit_result"] = detail
                 return ToolMessage(name=call.name, tool_call_id=call.id, status="error",
@@ -2447,6 +2508,11 @@ def build_specialist_agentic_state_graph(
                 return reject("specialist_evidence_route_not_assigned", "This evidence route is outside this Specialist task assignment.")
             if isinstance(action, ReviseWorkpaperAction):
                 prior = working.get("last_submission_attempt") or {}
+                try:
+                    action = resolve_workpaper_revision(action, working.get("pending_workpaper_revision"))
+                    working["pending_workpaper_revision"] = save_workpaper_revision(action)
+                except ValueError as exc:
+                    return reject("specialist_workpaper_edit_invalid", str(exc), agent_error=True)
                 targets = dict(working.get("revision_targets", {}))
                 for edit in action.edits:
                     path = "/task_note/coverage" if isinstance(edit, WorkpaperCoverageEdit) else edit.path
@@ -2466,6 +2532,7 @@ def build_specialist_agentic_state_graph(
                     working["last_edit_feedback"] = {"batch_applied": True, "candidate_unchanged": False,
                         "base_submission_digest": canonical_sha256(candidate), "issues": [],
                         "notice": "Edits applied to candidate only; submission checks and semantic review still apply."}
+                    working["pending_workpaper_revision"] = None
                 except ValidationError as exc:
                     working["last_submission_attempt"]["validation_issues"] = [
                         {"location": list(item["loc"]), "type": item["type"], "message": item["msg"]}

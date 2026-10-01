@@ -1353,7 +1353,6 @@ class DeepSeekStructuredAgentAdapter:
         self._audit_sink = audit_sink
         self._private_audit_sink = private_audit_sink
         self._agentic_history: dict[str, list[Any]] = {}
-        self._authoring_context_keys: dict[str, str] = {}
         self._dispatch_guards = dispatch_guards
         self._source_access_check = source_access_check
 
@@ -1542,7 +1541,6 @@ class DeepSeekStructuredAgentAdapter:
             ) + " Execution context is injected by the runtime. Do not supply context_digest in tool arguments.")
             messages[1] = HumanMessage(content=json.dumps(semantic_input, ensure_ascii=False, separators=(",", ":")))
         authoring = semantic_input.get('task_context', {}).get('authoring_context')
-        authoring_key = canonical_sha256(authoring) if authoring else ''
         if authoring:
             messages[0] = SystemMessage(content=(
                 'You are the same responsible domain researcher now writing your own scoped workpaper. '
@@ -1560,9 +1558,11 @@ class DeepSeekStructuredAgentAdapter:
                 'Give concise public grounds, not private reasoning; method guidance grants no new source or tool authority.')
             semantic_input['progress']['prior_actions'] = []
             messages[1] = HumanMessage(content=json.dumps(semantic_input, ensure_ascii=False))
-        if persistent_history and actor in self._agentic_history and self._authoring_context_keys.get(actor, '') == authoring_key:
+        if persistent_history and actor in self._agentic_history:
             # Refresh host instructions/schema after a code/configured-role
-            # revision; retain every original non-system message verbatim.
+            # revision. Preparation is a stage change in the SAME research task,
+            # not a new session: retain tool-call/result pairing and let the
+            # shared projection deduplicate/archive old source bodies normally.
             history = list(self._agentic_history[actor])
             if history and isinstance(history[0], SystemMessage):
                 history[0] = messages[0]
@@ -2051,7 +2051,6 @@ class DeepSeekStructuredAgentAdapter:
         )
         if persistent_history and saved_envelope is None:
             self._agentic_history[actor] = [*messages, envelope["raw"]]
-            self._authoring_context_keys[actor] = authoring_key
         return (
             parsed,
             envelope.get("raw"),

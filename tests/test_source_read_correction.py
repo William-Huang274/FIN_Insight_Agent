@@ -70,11 +70,37 @@ def test_raw_paths_and_urls_are_not_resource_ids(bad):
 def test_no_silent_truncation_and_search_is_not_citable():
     row = _node(content="source text " * 500)
     result = navigate_source_nodes([row], SourceDocumentRequest(operation="read", document_id="DOC::1", max_characters=2000), snapshot="a" * 64)
-    assert result.items == () and result.next_offset == 0
-    assert "without truncating" in result.notice
+    candidate = result.items[0]
+    assert not candidate['writer_citable'] and 'passage' not in candidate
+    assert candidate['read_status'] == 'window_required'
+    parts = []
+    follow = candidate['readback']
+    while follow:
+        window = navigate_source_nodes([row], SourceDocumentRequest(**follow), snapshot='a' * 64).items[0]
+        parts.append(window['passage'])
+        assert window['source_locator']['whole_node_sha256'] == row['content_sha256']
+        assert window['read_scope'] == 'character_window' and window['truncated']
+        follow = window['next_readback']
+    assert ''.join(parts) == row['content']
     child = {**row, "node_kind": "chunk"}
     result = navigate_source_nodes([child], SourceDocumentRequest(operation="search", query="source"), snapshot="a" * 64)
     assert result.items[0]["writer_citable"] is False
+
+
+def test_exact_returned_citation_can_be_read_without_guessing_node_ids():
+    row = _node()
+    first = navigate_source_nodes([row], SourceDocumentRequest(operation='read', document_id='DOC::1'), snapshot='fixture')
+    follow = SourceDocumentRequest(operation='read', document_id='DOC::1', node_id=first.items[0]['passage_id'])
+    assert navigate_source_nodes([row], follow, snapshot='fixture').items[0]['passage'] == row['content']
+    with pytest.raises(ValueError, match='not_in_selected'):
+        navigate_source_nodes([row], follow.model_copy(update={'node_id': first.items[0]['passage_id'][:-1] + 'x'}), snapshot='fixture')
+
+
+def test_character_window_does_not_change_legacy_serialization_or_allow_wrong_route():
+    request = SourceDocumentRequest(operation='read', document_id='DOC::1')
+    assert 'character_offset' not in request.model_dump()
+    with pytest.raises(ValidationError, match='character_window_requires'):
+        SourceDocumentRequest(source_space='library', operation='read', document_id='DOC::1', node_id='x', character_offset=0)
 
 
 @pytest.mark.parametrize("tool_case", ["valid", "wrong_action_tag"])

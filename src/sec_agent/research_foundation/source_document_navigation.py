@@ -52,6 +52,8 @@ class SourceDocumentRequest(BaseModel):
     page_start: int | None = Field(default=None, ge=1)
     page_end: int | None = Field(default=None, ge=1)
     offset: int = Field(default=0, ge=0)
+    character_offset: int | None = Field(default=None, ge=0,
+        description="Explicit character window for a local/upload node read. Copy readback/next_readback; offset still paginates nodes. A window is not the complete section/table.")
     limit: int = Field(default=8, ge=1, le=20)
     max_characters: int = Field(default=24000, ge=2000, le=80000)
     include_domains: tuple[str, ...] = Field(default_factory=tuple, max_length=12)
@@ -67,6 +69,8 @@ class SourceDocumentRequest(BaseModel):
     @model_serializer(mode="wrap")
     def preserve_legacy_local_request(self, handler):
         body = handler(self)
+        if "character_offset" not in self.model_fields_set:
+            body.pop("character_offset", None)
         # Immutable local-source actions predate source_space. Preserve their
         # serialization so archived action/notebook digests still validate.
         # A specialized request can default to library. Omitting that value
@@ -81,6 +85,9 @@ class SourceDocumentRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
+        if self.character_offset is not None and (self.source_space not in {'local', 'uploads'}
+                or self.operation != 'read' or not self.node_id or self.offset):
+            raise ValueError('character_window_requires_local_or_upload_node_read_without_row_offset')
         if {'graph_predicates','graph_direction','graph_review'} & self.model_fields_set:
             if self.source_space!='library' or self.operation not in {'related','search'} or not self.entity_id:
                 raise ValueError('graph_filters_require_library_entity_search_or_related')
@@ -108,8 +115,8 @@ class SourceDocumentRequest(BaseModel):
             raise ValueError('graph_navigation_requires_library')
         if self.operation in {'related','observations','company','data'} and not self.entity_id:
             raise ValueError('relation_or_observation_requires_entity_id_from_catalog')
-        if self.source_space == 'library' and self.operation not in {'catalog', 'search', 'read', 'related','observations','company','data'}:
-            raise ValueError('library_supports_catalog_search_read_related_observations')
+        if self.source_space == 'library' and self.operation not in {'catalog', 'outline', 'search', 'read', 'related','observations','company','data'}:
+            raise ValueError('library_supports_catalog_outline_search_read_related_observations_company_data')
         if (self.include_domains or self.start_published_date or self.end_published_date) and (
                 self.source_space != 'web' or self.operation != 'search' or self.document_id):
             raise ValueError('publication_and_domain_filters_require_web_discovery')
@@ -190,7 +197,10 @@ def navigate_source_nodes(
         if not rows:
             raise ValueError("source_document_not_in_approved_snapshot")
     if request.node_id:
-        rows = [r for r in rows if r.get("node_id") == request.node_id]
+        # A previously returned citation ID can resolve only by exact identity,
+        # within this document. Never strip prefixes and guess another node.
+        rows = [r for r in rows if r.get("node_id") == request.node_id or request.node_id ==
+            'PASSAGE::' + str(r.get('node_id')) + '::' + str(r.get('content_sha256'))[:16]]
         if not rows:
             raise ValueError("source_node_not_in_selected_document")
     elif request.operation in {"catalog", "read"}:
@@ -261,25 +271,53 @@ def navigate_source_nodes(
             "content_characters": len(content), "result_state": "retrieval_candidate",
             "candidate_id": "SOURCELOC::" + str(row["node_id"]), "writer_citable": False,
             "numeric_fact_authority": False,
+            "readback": {"source_space": allowed_space, "operation": "read",
+                "document_id": row["parent_document_id"], "node_id": row["node_id"],
+                "max_characters": request.max_characters},
         })
         if request.operation == "read":
-            if used + len(content) > request.max_characters:
+            if request.character_offset is None and used + len(content) > request.max_characters:
                 notice = "Response budget reached without truncating a block. Continue at next_offset; if the first block is too large increase max_characters or use outline/search and read a child node."
+                if not items:
+                    item['readback']['character_offset'] = 0
+                    item['read_status'] = 'window_required'
+                    items.append(item)
+                    notice = 'This node exceeds the response budget. No text has been read. Follow readback for an explicitly bounded character window, then next_readback until the needed context is read.'
                 break
             digest = sha256(content.encode("utf-8")).hexdigest()
             if not content or digest != row.get("content_sha256"):
                 raise ValueError("source_node_content_integrity_failure")
+            whole_digest = digest
+            start, end = 0, len(content)
+            if request.character_offset is not None:
+                start = request.character_offset
+                if start >= len(content):
+                    raise ValueError('character_offset_outside_node_use_returned_readback')
+                end = min(len(content), start + request.max_characters)
+                content = content[start:end]
+                digest = sha256(content.encode('utf-8')).hexdigest()
+            partial = start != 0 or end != item['content_characters']
+            passage_id = 'PASSAGE::' + str(row['node_id']) + '::' + digest[:16]
+            if partial:
+                passage_id += f'::chars-{start}-{end}'
             item.update({
                 "result_state": "source_bound_passage", "writer_citable": True,
-                "passage_id": "PASSAGE::" + str(row["node_id"]) + "::" + digest[:16],
+                "passage_id": passage_id,
                 "passage": content, "content_sha256": digest,
                 "raw_body_sha256": row.get("raw_body_sha256"),
                 "source_locator": {"document_id": row["parent_document_id"],
                                    "node_id": row["node_id"], "section_path": row.get("section_path"),
                                    "source_url": url, "content_sha256": digest},
                 "authority_note": "Source-bound parsed passage; not Reviewed Evidence or S2 NumericFact. Preserve issuer/period/unit/footnotes; report parser errors separately and verify semantic use in context.",
-                "truncated": False,
+                "truncated": partial,
             })
+            if request.character_offset is not None:
+                item['readback']['character_offset'] = start
+                item['source_locator'].update(character_start=start, character_end=end,
+                    whole_node_sha256=whole_digest)
+                item['read_scope'] = 'character_window' if partial else 'complete_node'
+                item['next_readback'] = {**item['readback'], 'character_offset': end} if end < item['content_characters'] else None
+                notice = 'Exact source character window; offsets are zero-based, end exclusive. Read adjacent windows before interpreting split tables, sentences or footnotes.'
             used += len(content)
         elif request.operation == "search":
             item["preview"] = content[:500]

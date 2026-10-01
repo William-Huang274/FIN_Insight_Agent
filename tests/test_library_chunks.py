@@ -61,9 +61,18 @@ def test_runtime_child_search_read_and_graph_evidence(tmp_path):
     assert graph['edges'][0]['evidence'][0]['id']==cid
     assert graph['edges'][0]['chunk_binding']['status']=='parent_locator_bound'
     req=SourceDocumentRequest(source_space='library',operation='read',document_id='DOC',node_id=cid)
+    outline_req=SourceDocumentRequest(source_space='library',operation='outline',document_id='DOC')
+    outline=lib.navigate(outline_req,'2025-02-01')
+    assert not outline.items[0]['writer_citable'] and 'passage' not in outline.items[0]
+    assert lib.navigate(outline_req,'2024-01-01').items == ()
+    assert lib.navigate(SourceDocumentRequest(**outline.items[0]['readback']),'2025-02-01').items[0]['passage']==found[0]['body']
     read=lib.navigate(req,'2025-02-01')
     assert read.items[0]['parent_node_id']=='PASSAGE::p'
     assert read.items[0]['passage']==found[0]['body']
+    citation=lib.navigate(req.model_copy(update={'node_id':read.items[0]['passage_id']}),'2025-02-01')
+    assert citation.items[0]['passage']==found[0]['body']
+    assert lib.navigate(req.model_copy(update={'node_id':read.items[0]['passage_id']}),'2024-01-01').items == ()
+    assert lib.navigate(SourceDocumentRequest(**citation.items[0]['readback']),'2025-02-01').items[0]['passage_id'] == read.items[0]['passage_id']
     old=lib.navigate(req.model_copy(update={'node_id':'PASSAGE::p'}),'2025-02-01')
     assert old.items[0]['passage']==found[0]['body']
     scoped=lib.navigate(SourceDocumentRequest(source_space='library',operation='search',

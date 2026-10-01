@@ -162,3 +162,65 @@ def test_schema_invalid_edit_batch_preserves_prior_candidate_and_locations():
         evidence_tool=ports.evidence, finance_tool=ports.finance, allow_workpaper_field_edits=True)).compile()
     result = graph.invoke(_input(), {'recursion_limit': 50})
     assert result['final_submission'] is None
+
+
+@pytest.mark.parametrize('restore', [False, True])
+def test_native_failed_batch_repairs_only_bad_edit_and_retains_all_other_changes(restore):
+    ports, requests = _ToolPorts(), []
+    def model(request):
+        requests.append(request)
+        n = len(requests)
+        if n == 1: return _batch(request, [_evidence_action()({}), _finance_action()({})])
+        if n == 2:
+            value = paper(); value['claims'][0]['evidence_ids'] = ['E:unobserved']
+            return _batch(request, [value])
+        candidate = request['submission_to_repair']['candidate']
+        if n == 3:
+            return _batch(request, [edit_action(candidate, [
+                text_edit(old='①Expense table absent.'),
+                {'path': '/claims/0/evidence_ids', 'old_value': ['E:unobserved'], 'new_value': ['E:DELL:Q1']},
+                {'path': '/counterevidence/0', 'old_value': candidate['counterevidence'][0], 'new_value': 'Corrected limit.'}
+            ]).model_dump(mode='json')])
+        assert n == 4
+        detail = json.loads(request['tool_results'][0]['content'])['edit_result']
+        assert detail['saved_edit_count'] == 3 and detail['candidate_unchanged']
+        assert candidate == requests[2]['submission_to_repair']['candidate']
+        return _batch(request, [edit_action(candidate, [],
+            pending_revision_digest=detail['pending_revision_digest'],
+            edit_corrections=[{'edit_index': 0, 'edit': text_edit()}]).model_dump(mode='json')])
+    dependencies = SpecialistAgenticDependencies(model_turn=model,
+        evidence_tool=ports.evidence, finance_tool=ports.finance, allow_workpaper_field_edits=True)
+    graph = build_specialist_agentic_state_graph(dependencies=dependencies).compile()
+    initial = {**_input(), 'max_model_turns': 3} if restore else _input()
+    result = graph.invoke(initial, {'recursion_limit': 60})
+    if restore:
+        assert len(result['pending_workpaper_revision']['edits']) == 3
+        saved = deepcopy(result)
+        result = build_specialist_agentic_state_graph(dependencies=dependencies,
+            recovery_state=result).compile().invoke({**_input(), 'run_invocation_id': 'resume-edit-batch'}, {'recursion_limit': 60})
+        assert len(saved['pending_workpaper_revision']['edits']) == 3
+    assert result['phase'] == 'specialist_submission_accepted'
+    assert result['pending_workpaper_revision'] is None
+    assert result['final_submission']['counterevidence'][0] == 'Corrected limit.'
+    assert result['final_submission']['claims'][0]['evidence_ids'] == ['E:DELL:Q1']
+    assert text_edit()['new_string'] in result['final_submission']['narrative_markdown']
+
+
+def test_saved_revision_is_serializable_and_stale_or_ambiguous_corrections_are_rejected():
+    from sec_agent.agent_runtime.specialist_graph import save_workpaper_revision, resolve_workpaper_revision
+    original = paper()
+    legacy = {'action':'revise_workpaper','context_digest':'b'*64,'reason_summary':'Legacy action',
+        'base_submission_digest':canonical_sha256(original),'edits':[text_edit()]}
+    assert ReviseWorkpaperAction.model_validate_json(json.dumps(legacy)).model_dump(mode='json') == legacy
+    draft = save_workpaper_revision(edit_action(original, [text_edit(old='wrong')]))
+    restored = json.loads(json.dumps(draft))
+    repair = edit_action(original, [], pending_revision_digest=draft['digest'],
+        edit_corrections=[{'edit_index': 0, 'edit': text_edit()}])
+    fixed = resolve_workpaper_revision(repair, restored)
+    assert text_edit()['new_string'] in apply_workpaper_edits(original, fixed)['narrative_markdown']
+    with pytest.raises(ValueError, match='digest_mismatch'):
+        resolve_workpaper_revision(repair.model_copy(update={'pending_revision_digest': '0' * 64}), restored)
+    with pytest.raises(ValueError, match='index_invalid_or_repeated'):
+        resolve_workpaper_revision(repair.model_copy(update={'edit_corrections': repair.edit_corrections * 2}), restored)
+    with pytest.raises(WorkpaperEditError, match='base_mismatch'):
+        apply_workpaper_edits({**original, 'narrative_markdown': 'Changed meanwhile'}, fixed)

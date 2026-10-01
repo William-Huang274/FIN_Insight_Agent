@@ -120,12 +120,13 @@ def test_native_recovery_preserves_accepted_preparation_and_submits_without_prep
     assert first == original
 
 
-def test_provider_writing_request_starts_fresh_but_restores_prepared_state():
+def test_provider_stage_changes_preserve_same_research_session_and_tool_pairing():
     import httpx
     from pydantic import SecretStr
     from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekStructuredAgentAdapter, ReasoningPreservingChatDeepSeek
     from test_deepseek_structured_agents import _config, _models, _agentic_turn_request
-    request=_agentic_turn_request(); request['task_context']={'obsolete_dispatch':'DO_NOT_CARRY_THIS_PROMPT'}
+    request=_agentic_turn_request(); request['task_context']={'research_question':'ORIGINAL_RESEARCH_QUESTION',
+        'source_context':'Exact definition previously read: remaining performance obligations are not realized revenue.'}
     seen=[]
     def serve(wire):
         seen.append(json.loads(wire.content))
@@ -143,10 +144,20 @@ def test_provider_writing_request_starts_fresh_but_restores_prepared_state():
         request['task_context']={'authoring_context':bind_authoring(BRIEF,owner='expert',stage='workpaper',
             basis={'source':'retained original period and denominator'}),'stage_methods':stage_methods('workpaper')}
         adapter.specialist_model_turn(request)
-    assert len(seen[1]['messages'])==2
-    assert 'DO_NOT_CARRY_THIS_PROMPT' not in json.dumps(seen[1])
+        request['task_context']={'research_question':'ORIGINAL_RESEARCH_QUESTION', 'authoring_context':None}
+        adapter.specialist_model_turn(request)
+    assert len(seen[1]['messages']) > 2
+    assert 'ORIGINAL_RESEARCH_QUESTION' in json.dumps(seen[1])
+    assert 'Exact definition previously read' in json.dumps(seen[1])
     assert 'retained original period and denominator' in json.dumps(seen[1])
     assert 'Same population' in json.dumps(seen[1])
+    assert 'Exact definition previously read' in json.dumps(seen[2])
+    for wire in seen[1:]:
+        messages = wire['messages']
+        for index, message in enumerate(messages):
+            if message.get('tool_calls'):
+                assert messages[index+1]['role'] == 'tool'
+                assert messages[index+1]['tool_call_id'] == message['tool_calls'][0]['id']
 
 
 @pytest.mark.parametrize('change',[{'version':2},{'enabled':'yes'},{'context_version':'unknown.v9'}])

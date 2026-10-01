@@ -390,6 +390,18 @@ class ResearchLibrary(ResearchSnapshot):
                 rows += [{'result_state': 'retrieval_candidate', **e}
                          for e in graph_edges
                          if not request.document_id or e['source_id'] == request.document_id]
+        elif request.operation == 'outline':
+            result = self.read(request.document_id, as_of, start=request.offset, limit=request.limit)
+            rows = [{'result_state':'retrieval_candidate', 'writer_citable':False,
+                'document_id':p['source_id'], 'node_id':p['id'], 'locator':p['locator'],
+                'content_characters':len(p['body']), 'parent_node_id':p.get('parent_id'),
+                'context':p.get('context'),
+                'readback':{'source_space':'library','operation':'read','document_id':p['source_id'],'node_id':p['id']}}
+                for p in result['items']]
+            table = 'retrieval_chunks' if self.has_retrieval_chunks else 'passages'
+            total = self._query(f'SELECT COUNT(*) AS n FROM {table} WHERE source_id=?',
+                (request.document_id,))[0]['n'] if result['status']=='readable' else 0
+            return self._result(request, rows, result['status'], total=total, next_offset=result.get('next_start'))
         elif request.operation == 'observations':
             rows=[{'result_state':'retrieval_candidate', **o, 'numeric_fact_authority':False,
                 'readback':{'source_space':'library','operation':'read','document_id':o['source_id']}}
@@ -404,6 +416,12 @@ class ResearchLibrary(ResearchSnapshot):
                 passages = self._query('SELECT * FROM passages WHERE id=? AND source_id=?', (request.node_id, request.document_id)) if status == 'readable' else []
                 if not passages and status=='readable' and self.has_retrieval_chunks:
                     passages=self._query('SELECT * FROM retrieval_chunks WHERE id=? AND source_id=?',(request.node_id,request.document_id))
+                    # read() emits PASSAGE::<chunk ID> as its citation identity.
+                    # Accept that exact emitted identity within the same source;
+                    # do not drop source eligibility/as-of checks or fuzzy-match.
+                    if not passages and request.node_id.startswith('PASSAGE::'):
+                        passages=self._query('SELECT * FROM retrieval_chunks WHERE id=? AND source_id=?',
+                            (request.node_id[len('PASSAGE::'):],request.document_id))
                 if not passages and status == 'readable':
                     status = 'unknown_node'
             rows = []
@@ -414,6 +432,7 @@ class ResearchLibrary(ResearchSnapshot):
                 used += len(p['body'])
                 rows.append({'result_state': 'source_bound_passage', 'document_id': p['source_id'],
                     'node_id': p['id'], 'passage_id': p['id'] if p['id'].startswith('PASSAGE::') else 'PASSAGE::' + p['id'], 'passage': p['body'],
+                    'readback': {'source_space':'library','operation':'read','document_id':p['source_id'],'node_id':p['id']},
                     'content_sha256': p['digest'], 'source_url': source['url'], 'writer_citable': True,
                     'numeric_fact_authority': False, 'source_locator': {'document_id': p['source_id'],
                         'node_id': p['id'], 'locator': p['locator'], 'source_url': source['url'], 'content_sha256': p['digest']},

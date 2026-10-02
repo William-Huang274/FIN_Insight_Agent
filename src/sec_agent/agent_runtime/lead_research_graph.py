@@ -156,7 +156,7 @@ LEAD_RESEARCH_SYSTEM_PROMPT = (
     "findings belong to downstream review, not a research task output. Ready specialists use their "
     "own multi-turn source/finance tool loops; do not dictate physical paths or tool queries for them. "
     "One task covers one disclosed obligation for this qualification: coverage_obligation_ids must "
-    "contain exactly one branch_id from required_branch_ids (e.g. [\"Q2_DEMAND_QUALITY\"]). "
+    "contain exactly one branch_id from branch_catalog (e.g. [\"Q2_DEMAND_QUALITY\"]). "
     "Do not copy a route:...:required-reviewed identifier from a workpaper into that field. "
     "You may add follow-up tasks "
     "after observing results, but cannot rewrite completed tasks or grant permissions. Use actual "

@@ -113,6 +113,10 @@ def test_wrong_survey_profile_feedback_keeps_normal_finance_route_available():
 
 @pytest.mark.parametrize('require_all', [False, True])
 def test_available_branch_catalog_does_not_imply_mandatory_research(require_all):
+    from sec_agent.agent_runtime import lead_research_graph as lead_module
+    instructions = '\n'.join(v for k, v in vars(lead_module).items() if k.isupper() and isinstance(v, str))
+    assert 'one branch_id from branch_catalog' in instructions
+    assert 'one branch_id from required_branch_ids' not in instructions
     seen = []
     def model(request):
         seen.append(request)

@@ -126,6 +126,22 @@ def test_available_branch_catalog_does_not_imply_mandatory_research(require_all)
     assert len(seen) == 1
 
 
+def test_submitted_paper_replaces_scratch_state_in_lead_handoff():
+    seed = deepcopy(_seed())
+    seed['research_working_state'] = {'old_unresolved': 'historical scratch claim already superseded'}
+    original = deepcopy(seed)
+    def model(request):
+        paper = request['workpapers'][0]
+        assert paper['research_working_state'] is None
+        assert paper['workpaper']['thesis'] == seed['final_submission']['thesis']
+        assert paper['workpaper']['claims'] == seed['final_submission']['claims']
+        return _stop(request, ready=True)
+    graph, value = _graph(model, lambda *_: pytest.fail('Do not repeat submitted research'),
+                          seed=seed, require_all_branches=False)
+    assert graph.invoke(value.model_dump(mode='json'))['phase'] == 'research_ready_for_review'
+    assert seed == original
+
+
 @pytest.mark.parametrize("trigger", ["model_execution_failure", "model_turn_ceiling", "tool_action_ceiling"])
 def test_execution_failure_stops_before_lead_can_replace_worker(trigger):
     seed, calls = _seed(), []

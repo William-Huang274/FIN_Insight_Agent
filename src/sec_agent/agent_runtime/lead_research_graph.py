@@ -301,7 +301,9 @@ def build_lead_research_graph(
         paper = value.get("final_submission")
         return {"task_id": key, "branch_id": value["task"]["branch_id"],
                 "task_outcome": task_outcome(value),
-                "research_working_state": value.get("research_working_state"),
+                # The accepted paper is the author's current handoff. Keep
+                # superseded scratch notes in the saved author state only.
+                "research_working_state": value.get("research_working_state") if not paper else None,
                 "lead_assistance": value.get("lead_assistance_history", []),
                 "workpaper": {k: v for k, v in paper.items() if k != "task_note"} if paper else None,
                 "uncompleted_reviewed_route_ids": sorted(set(value["notebook"]["required_route_obligation_ids"])

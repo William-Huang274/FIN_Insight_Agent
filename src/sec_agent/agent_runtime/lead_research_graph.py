@@ -333,7 +333,7 @@ def build_lead_research_graph(
             "role_method": role_method or get_research_method("lead"),
             "research_as_of": expected_input.task.research_as_of,
             "branch_catalog": [row for row in branch_catalog if row["branch_id"] in allowed],
-            "required_branch_ids": list(allowed_branch_ids),
+            "required_branch_ids": list(allowed_branch_ids) if require_all_branches else [],
             "scope_policy": ("All listed branches require submitted research." if require_all_branches else
                 "The catalog is available scope, NOT a checklist. Select only branches material to this question; explain your selection and omitted scope in public handoff notes. At least one source-grounded workpaper is required.")
                 + (" This is a current-user task, not the historical foundation case. Uncompleted Reviewed route IDs in saved papers are historical coverage receipts, NOT mandatory delivery gates for this question. "

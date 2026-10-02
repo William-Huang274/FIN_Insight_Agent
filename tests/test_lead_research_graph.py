@@ -111,6 +111,21 @@ def test_wrong_survey_profile_feedback_keeps_normal_finance_route_available():
     assert len(seen) == 2
 
 
+@pytest.mark.parametrize('require_all', [False, True])
+def test_available_branch_catalog_does_not_imply_mandatory_research(require_all):
+    seen = []
+    def model(request):
+        seen.append(request)
+        assert {b['branch_id'] for b in request['branch_catalog']} == set(BRANCHES)
+        assert request['required_branch_ids'] == (list(BRANCHES) if require_all else [])
+        return _stop(request, ready=False)
+    graph, value = _graph(model, lambda *_: pytest.fail('Scope inspection must not dispatch work'),
+                          require_all_branches=require_all)
+    result = graph.invoke(value.model_dump(mode='json'))
+    assert result['phase'] == 'research_needs_attention'
+    assert len(seen) == 1
+
+
 @pytest.mark.parametrize("trigger", ["model_execution_failure", "model_turn_ceiling", "tool_action_ceiling"])
 def test_execution_failure_stops_before_lead_can_replace_worker(trigger):
     seed, calls = _seed(), []

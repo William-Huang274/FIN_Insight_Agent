@@ -645,13 +645,16 @@ def build_lead_research_graph(
         replies[0]["content"] = json.dumps(content, ensure_ascii=False)
         # A semantic follow-up is permitted; recreating a failed model worker
         # would reset its limits and may repeat an unaccounted provider call.
-        # Preserve all sibling results and stop before another Lead/model call.
+        # Preserve all sibling results and stop before another Lead/model call
+        # for failed provider requests or exhausted execution allowances. An
+        # input-size guard sent no request: let Lead assess that saved gap and
+        # continue independent ready work. ready() excludes attempted tasks, so
+        # this never silently resubmits the blocked author.
         execution_failures = [row["task_id"] for row in new
             if (row["agent_state"].get("human_review_handoff") or {}).get("trigger")
             in {"model_execution_failure", "model_turn_ceiling", "tool_action_ceiling"}
             or row["agent_state"].get("review_reason") in {
-                "repeated_no_progress_after_lead_assistance", "lead_could_not_resolve_research_blockage",
-                "research_context_checkpoint_unresolved"}]
+                "repeated_no_progress_after_lead_assistance", "lead_could_not_resolve_research_blockage"}]
         return {"tool_results": replies,
                 "phase": "research_needs_attention" if execution_failures else "lead_observing",
                 "stop_reason": "delegated_execution_failure_requires_new_attempt" if execution_failures else None,

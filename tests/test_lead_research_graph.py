@@ -166,6 +166,33 @@ def test_execution_failure_stops_before_lead_can_replace_worker(trigger):
     assert result["task_results"][0]["agent_state"]["human_review_handoff"]["trigger"] == trigger
 
 
+def test_input_guard_returns_to_lead_and_preserves_independent_ready_work():
+    seed, requests, executed = _seed(), [], []
+    tasks = [_task('blocked'), _task('independent', BRANCHES[1])]
+    def model(request):
+        requests.append(request)
+        if len(requests) == 1:
+            return _call(request, 'DelegateResearchTasksAction', tasks=tasks)
+        if len(requests) == 2:
+            assert 'research_context_checkpoint_unresolved' in str(request['tool_results'])
+            return _call(request, 'ContinueResearchTasksAction')
+        return _stop(request, incomplete=['task:blocked'])
+    def worker(task, dependencies, config):
+        executed.append(task['task_id'])
+        result = _worker_result(task, seed)
+        if task['task_id'] == 'task:blocked':
+            result.update(phase='specialist_human_review_handoff_emitted', final_submission=None,
+                review_reason='research_context_checkpoint_unresolved',
+                human_review_handoff={'trigger': 'model_request', 'reason_code': 'research_context_checkpoint_unresolved'})
+        return result
+    graph, value = _graph(model, worker, max_parallel_tasks=1, require_all_branches=False)
+    result = graph.invoke(value.model_dump(mode='json'))
+    assert executed == ['task:blocked', 'task:independent']
+    assert len(requests) == 3
+    assert result['phase'] == 'research_needs_attention'
+    assert [r['status'] for r in result['task_results']] == ['needs_attention', 'submitted']
+
+
 def test_adaptive_handoff_requires_model_plan_and_exposes_reasons():
     events, requests = [], []
     plan = {"depth": "focused", "rationale": "One self-contained source-bound paper answers the user's complete limited scope.",

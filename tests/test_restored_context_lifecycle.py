@@ -84,6 +84,35 @@ def test_latest_handoff_reuses_identical_accepted_baseline_and_working_state():
     assert rows == original
 
 
+def test_dependency_papers_reuse_exact_values_across_changing_task_progress():
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    paper = {'task_id': 'cloud', 'revision': 'r1', 'narrative': 'Source-bound finding. ' * 500,
+             'source_ids': ['PASSAGE::original']}
+    task = {'assignment': 'Research demand', 'dependency_workpapers': [paper],
+            'future_runtime_handoff': {'instructions': 'Preserve original scope. ' * 30}}
+    rows = [HumanMessage(content=json.dumps({'task_context': task}))]
+    for i in range(3):
+        rows.append(ToolMessage(tool_call_id=f'read-{i}', content=json.dumps({
+            'result': {'passage': f'Fresh original {i}', 'period': 'FY2027 Q1'},
+            'current_context': {'task_context': {**task, 'runtime_progress': {'n': i}}}})))
+    original = deepcopy(rows)
+    projected = coalesce_context_snapshots(rows)
+    for i in (1, 2):
+        body = json.loads(projected[i].content)
+        for key in ('dependency_workpapers', 'future_runtime_handoff'):
+            assert body['current_context']['task_context'][key]['identical_snapshot_retained_at'] == {
+                'message_index': 0, 'field': f'task_context.{key}'}
+        assert body['result'] == json.loads(rows[i].content)['result']
+    assert json.loads(projected[-1].content)['current_context']['task_context']['dependency_workpapers'] == [paper]
+    assert coalesce_context_snapshots(projected) == projected
+    changed = deepcopy(rows)
+    body = json.loads(changed[1].content)
+    body['current_context']['task_context']['dependency_workpapers'][0]['revision'] = 'r2'
+    changed[1].content = json.dumps(body)
+    assert json.loads(coalesce_context_snapshots(changed)[1].content)['current_context']['task_context']['dependency_workpapers'][0]['revision'] == 'r2'
+    assert rows == original
+
+
 def observation(key, *, turn=1, **updates):
     return {"kind": "evidence", "status": "success", "failure": None,
         "references": [{"ref_id": key}], "content": [{"text": key + " original USD FY2027 " * 8000}],

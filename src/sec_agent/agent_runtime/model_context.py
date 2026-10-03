@@ -371,11 +371,11 @@ def coalesce_context_snapshots(messages):
         if not isinstance(task, dict):
             continue
         changed = False
-        for key in ('assignment', 'stage_methods', 'working_state_guidance', 'data_baseline_rule',
-                    'usage_rule', 'overall_assignment', 'authoring_context',
-                    'accepted_revision_baseline', 'research_working_state'):
-            if key not in task:
-                continue
+        # Task envelopes grow with new runtime capabilities (for example,
+        # dependency papers). Exact-value reuse must not depend on a whitelist
+        # of field names, or each changing progress counter resends those papers.
+        # Keep the first original and newest handoff; changed values stay full.
+        for key in task:
             encoded = json.dumps(task[key], ensure_ascii=False, sort_keys=True)
             if len(encoded) <= 240 or isinstance(task[key], dict) and 'identical_snapshot_retained_at' in task[key]:
                 continue

@@ -113,6 +113,39 @@ def test_dependency_papers_reuse_exact_values_across_changing_task_progress():
     assert rows == original
 
 
+def test_checkpoint_archived_reads_do_not_reintroduce_dependency_papers():
+    paper = {'task_id': 'upstream', 'revision': 'r1',
+             'narrative': 'Original upstream evidence and interpretation. ' * 800}
+    task = {'assignment': 'Original scope', 'dependency_workpapers': [paper]}
+    rows = [HumanMessage(content=json.dumps({'task_context': task}))]
+    for i in range(4):
+        batch = source_messages(f'OLD-{i}')
+        body = json.loads(batch[-1].content)
+        body['current_context'] = {'task_context': {**deepcopy(task), 'runtime_progress': {'n': i}}}
+        if i == 2:
+            body['current_context']['task_context']['dependency_workpapers'][0]['revision'] = 'r2'
+        batch[-1].content = json.dumps(body)
+        rows.extend(batch)
+    recent = source_messages('RECENT')
+    rows.extend(recent)
+    rows.extend(checkpoint_message(working_note(phase_status='working', findings=[], retain_source_ids=[])))
+    original = deepcopy(rows)
+    projected = task_boundary_history(rows)
+    assert rows == original
+    assert projected[-3] == recent[-1]  # Latest read still available in full.
+    for i in range(4):
+        body = json.loads(projected[2 + i * 2].content)
+        assert 'archived_result' in body and 'RequestSourceAction' in body['archived_result']
+        saved = body['current_context']['task_context']
+        if i == 2:
+            assert saved['dependency_workpapers'][0]['revision'] == 'r2'
+        else:
+            assert saved['dependency_workpapers']['identical_snapshot_retained_at'] == {
+                'message_index': 0, 'field': 'task_context.dependency_workpapers'}
+        assert saved['runtime_progress'] == {'n': i}
+    assert sum(m.content.count(paper['narrative']) for m in projected) == 2
+
+
 def observation(key, *, turn=1, **updates):
     return {"kind": "evidence", "status": "success", "failure": None,
         "references": [{"ref_id": key}], "content": [{"text": key + " original USD FY2027 " * 8000}],

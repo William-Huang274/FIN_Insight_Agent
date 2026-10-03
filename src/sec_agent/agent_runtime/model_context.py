@@ -744,7 +744,15 @@ def task_boundary_history(messages):
         projected[index].content = _read_recovery_notice(message, calls.get(message.tool_call_id), saved_result_reader=False)
         if checkpoint and isinstance(value, dict) and isinstance(value.get("current_context"), dict):
             original_context = {k: v for k, v in value["current_context"].items() if k not in {"progress", "allowed_actions", "context_digest"}}
-            projected[index].content += "\nOriginal task/Lead handoff (historical instructions retain their original authority):\n" + json.dumps(original_context, ensure_ascii=False)
+            # Keep the handoff in the same owned envelope as live results so
+            # exact-copy coalescing can see it. Concatenating JSON behind a
+            # prose recovery notice makes every archived read carry another
+            # opaque full copy of its assignment and dependency papers.
+            projected[index].content = json.dumps({
+                "archived_result": projected[index].content,
+                "current_context": original_context,
+                "notice": "Historical task/Lead handoff retains its original authority; use the latest context for current state."
+            }, ensure_ascii=False, separators=(",", ":"))
         projected[index].artifact = None
         projected[index].response_metadata = {**projected[index].response_metadata,
             "context_editing": {"cleared": True, "reason": "research_context_checkpoint" if checkpoint else "completed_research_phase"}}

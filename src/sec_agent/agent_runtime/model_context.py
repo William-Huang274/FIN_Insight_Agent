@@ -890,9 +890,45 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
         "reason": "token_threshold" if estimate >= trigger else "input_character_headroom"}
 
 
+def current_review_candidate(messages):
+    """A complete replacement review draft supersedes earlier failed attempts.
+
+    This changes only the request projection. Keep the latest candidate and its
+    full validation feedback, source reads and durable findings; never claim a
+    superseded draft was accepted or alter the persisted native call journal.
+    """
+    attempts = [(i, call) for i, message in enumerate(messages) if isinstance(message, AIMessage)
+        for call in message.tool_calls if call.get('name') == 'submit_case_review'
+        and isinstance(call.get('args', {}).get('review'), dict)
+        and {'summary', 'assessments', 'inspection_checks', 'unresolved_data_requests'} <= call['args']['review'].keys()]
+    if len(attempts) < 2:
+        return messages
+    latest_index, latest = attempts[-1]
+    prior = {call['id'] for index, call in attempts[:-1] if index < latest_index}
+    # Retire only attempts with observed failure feedback. Accepted or pending
+    # submissions are not a replaceable draft.
+    failed = {m.tool_call_id for m in messages if isinstance(m, ToolMessage)
+        and m.tool_call_id in prior and m.status == 'error'}
+    if not failed:
+        return messages
+    projected = deepcopy(list(messages))
+    notice = {'superseded_review_draft': True, 'latest_tool_call_id': latest['id'],
+        'notice': 'Historical rejected draft superseded by the full later review candidate. '
+            'Original call and feedback remain in the host journal. This is not review acceptance or evidence.'}
+    for message in projected:
+        if isinstance(message, AIMessage):
+            for call in message.tool_calls:
+                if call['id'] in failed:
+                    call['args'] = deepcopy(notice)
+        elif isinstance(message, ToolMessage) and message.tool_call_id in failed:
+            message.content = json.dumps(notice, ensure_ascii=False, separators=(',', ':'))
+    return projected
+
+
 def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False, workpaper_navigation=False, policy="legacy_window"):
     from .source_result_view import source_message_views
     from .context_release import release_history
+    messages = current_review_candidate(messages)
     messages = source_message_views(messages)
     messages = release_history(messages)
     if policy == "task_boundary":

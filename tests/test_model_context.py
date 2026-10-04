@@ -17,6 +17,27 @@ from sec_agent.agent_runtime.model_context import project_tool_history
 from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
 
 
+@pytest.mark.parametrize('prior_status,complete_replacement', [('error',True),('success',True),('error',False)])
+def test_only_rejected_complete_review_drafts_are_superseded(prior_status,complete_replacement):
+    from sec_agent.agent_runtime.model_context import current_review_candidate
+    draft={'summary':'prior assessment','assessments':[],'inspection_checks':[],'unresolved_data_requests':[]}
+    newer={**draft,'summary':'revised assessment'} if complete_replacement else {'summary':'partial input'}
+    rows=[HumanMessage(content='Original question'),
+        AIMessage(content='',tool_calls=[{'name':'submit_case_review','args':{'review':draft},'id':'old','type':'tool_call'}]),
+        ToolMessage(content='Old validation feedback',tool_call_id='old',name='submit_case_review',status=prior_status),
+        ToolMessage(content='Exact newly observed source',tool_call_id='read',name='read_research_source'),
+        AIMessage(content='',tool_calls=[{'name':'submit_case_review','args':{'review':newer},'id':'new','type':'tool_call'}]),
+        ToolMessage(content='Current validation feedback',tool_call_id='new',name='submit_case_review',status='error')]
+    original=deepcopy(rows);view=current_review_candidate(rows)
+    assert rows==original and view[3:]==rows[3:]
+    if prior_status=='error' and complete_replacement:
+        assert view[1].tool_calls[0]['args']['latest_tool_call_id']=='new'
+        assert view[2].status=='error' and view[2].tool_call_id=='old'
+        assert current_review_candidate(view)==view
+    else:
+        assert view==rows
+
+
 @pytest.mark.parametrize('changed', [False, True])
 def test_authoring_basis_reuses_only_the_exact_current_state_copy(changed):
     from sec_agent.agent_runtime.model_context import coalesce_context_snapshots

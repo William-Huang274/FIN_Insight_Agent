@@ -201,3 +201,28 @@ def test_native_author_bridge_keeps_second_paper_aliases_and_source_identity():
     assert revision['workpaper']['claims'] == artifacts.read_paper('P02')['claims']
     assert revision['sources'] == {} and revision['author_identity']['agent_id'] == saved['agent_id']
     assert artifacts.with_revisions({'P02': revision}).source_item(ref) == artifacts.source_item(ref)
+
+
+def test_new_review_source_is_reread_navigation_not_author_evidence():
+    from sec_agent.agent_runtime.author_revision import author_feedback
+    artifacts = artifact_fixture()
+    ref = 'NUMFACT::review_discovery_not_in_original_paper'
+    findings = [{'finding_id': 'verifier:new', 'source_checks': [
+        {'source_id': ref, 'quote': 'Reviewer observation remains unchanged.'}]}]
+    mapped = author_feedback(findings, artifacts)
+    check = mapped[0]['source_checks'][0]
+    assert check['source_id'] == ref
+    assert check['source_binding_status'] == 'requires_original_source_read'
+    assert check['quote'] == findings[0]['source_checks'][0]['quote']
+    assert 'source_binding_status' not in findings[0]['source_checks'][0]
+    with pytest.raises(ValueError, match='unknown_source_id'):
+        artifacts.source_item(ref)
+
+
+def test_author_feedback_does_not_swallow_source_identity_conflicts():
+    from sec_agent.agent_runtime.author_revision import author_feedback
+    class Conflicting:
+        def source_item(self, ref):
+            raise ValueError('canonical_source_observation_conflict:' + ref)
+    with pytest.raises(ValueError, match='canonical_source_observation_conflict'):
+        author_feedback([{'source_checks': [{'source_id': 'NUMFACT::x'}]}], Conflicting())

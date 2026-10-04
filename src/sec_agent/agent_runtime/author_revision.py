@@ -89,7 +89,19 @@ def author_feedback(findings, artifacts):
     for finding in result:
         for check in finding.get("source_checks", []):
             ref = check["source_id"]
-            item = artifacts.source_item(ref)
+            try:
+                item = artifacts.source_item(ref)
+            except ValueError as exc:
+                if not str(exc).startswith('unknown_source_id_read_paper_sources_first:'):
+                    raise
+                # A reviewer can discover a new source after the author's
+                # submission. Feedback is navigation, never source authority.
+                # Retain the exact identity and require an original read rather
+                # than aborting the author's entire repair before it starts.
+                check.update(review_source_alias=ref,
+                    source_binding_status='requires_original_source_read',
+                    source_binding_notice='Review observation only; this source is not in the current author artifact catalog. Read the original via source/SQL tools before citing it. Do not invent an alias or treat feedback as evidence.')
+                continue
             canonical = next(item[k] for k in ("passage_id", "evidence_id", "numeric_fact_id", "calculation_id", "fact_id") if item.get(k))
             check.update(source_id=canonical, review_source_alias=ref)
     return result

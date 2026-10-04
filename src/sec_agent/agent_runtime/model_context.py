@@ -678,6 +678,7 @@ def task_boundary_history(messages):
     and calculation provenance remain in the native notebook for exact recovery.
     """
     boundary, note, checkpoint = -1, None, False
+    completed_submission = False
     material_sources = set()
     latest_state_sources = set()
     for index, message in enumerate(messages):
@@ -695,7 +696,8 @@ def task_boundary_history(messages):
             for call in message.tool_calls:
                 if call["name"] != "UpdateResearchStateAction":
                     material_sources.update(_literal_reference_ids(call.get("args", {})))
-        if not isinstance(message, ToolMessage) or message.name != "UpdateResearchStateAction" or message.status == "error":
+        if not isinstance(message, ToolMessage) or message.name not in {
+                "UpdateResearchStateAction", "SubmitWorkpaperAction", "ReviseWorkpaperAction"} or message.status == "error":
             continue
         try:
             body = json.loads(message.content)
@@ -705,6 +707,17 @@ def task_boundary_history(messages):
             body = body.get("result", body)  # synchronous SDK feedback envelope
         if not isinstance(body, dict):
             continue
+        if message.name != 'UpdateResearchStateAction':
+            accepted = body.get('accepted') and (message.name == 'SubmitWorkpaperAction'
+                or (body.get('edit_result') or {}).get('submission_accepted'))
+            if accepted:
+                # An accepted artifact is a durable completion boundary. A
+                # later revision keeps that artifact and its new feedback, not
+                # every source pinned during the already completed research.
+                boundary, note, checkpoint = index, {'retain_source_ids': []}, True
+                material_sources, latest_state_sources = set(), set()
+                completed_submission = True
+            continue
         if body.get("accepted"):
             state = body.get("working_state", {})
             latest_state_sources = set(state.get("retain_source_ids", []))
@@ -712,6 +725,7 @@ def task_boundary_history(messages):
         if body.get("accepted"):
             boundary, note = index, body["working_state"]
             checkpoint = True
+            completed_submission = False
     if boundary < 0:
         projected = deepcopy(list(messages))
         for index, message in enumerate(messages):
@@ -742,11 +756,12 @@ def task_boundary_history(messages):
         return coalesce_context_snapshots(projected)
     retained = set(note["retain_source_ids"]) | material_sources | latest_state_sources
     projected = deepcopy(list(messages))
-    _project_restored_context(messages, projected, boundary, retained, checkpoint=checkpoint)
+    _project_restored_context(messages, projected, boundary, retained,
+                              checkpoint=checkpoint and not completed_submission)
     calls = {c["id"]: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
     # A checkpoint response must not immediately evict the preceding read batch:
     # the model may still need to compare it when resuming the unfinished step.
-    last_read = max((i for i, m in enumerate(messages[:boundary]) if isinstance(m, AIMessage)
+    last_read = boundary if completed_submission else max((i for i, m in enumerate(messages[:boundary]) if isinstance(m, AIMessage)
         and any(c["name"] in REREADABLE_TOOLS for c in m.tool_calls)), default=boundary)
     for index, message in enumerate(messages):
         if index >= boundary or not isinstance(message, ToolMessage) or message.status == "error" or message.name not in REREADABLE_TOOLS:

@@ -9,6 +9,30 @@ from test_research_context_checkpoint import checkpoint_message, model, request_
 from test_research_working_state import working_note, source_messages
 
 
+def test_accepted_submission_archives_completed_reads_for_later_revision():
+    old = source_messages('OLD-SOURCE')
+    old[-1].content = json.dumps({'ref_id': 'OLD-SOURCE', 'passage': 'Prior source body ' * 600})
+    submit = AIMessage(content='', tool_calls=[{'id': 'submit', 'name': 'SubmitWorkpaperAction',
+        'args': {'narrative_markdown': 'Current accepted artifact', 'source_ids': ['OLD-SOURCE']}}])
+    receipt = ToolMessage(name='SubmitWorkpaperAction', tool_call_id='submit', content=json.dumps({
+        'result': {'accepted': True}, 'current_context': {'task_context': {
+            'accepted_revision_baseline': {'submission': 'Current accepted artifact'},
+            'revision_feedback': [{'diagnosis': 'Check changed period'}]}}}))
+    new = source_messages('NEW-SOURCE')
+    new[-1].content = json.dumps({'ref_id': 'NEW-SOURCE', 'passage': 'Current revision evidence'})
+    rows = [*old, submit, receipt, *new]
+    original = deepcopy(rows)
+    out = task_boundary_history(rows)
+    assert 'Prior source body' not in '\n'.join(str(m.content) for m in out)
+    assert 'Current revision evidence' in '\n'.join(str(m.content) for m in out)
+    assert 'Current accepted artifact' in '\n'.join(str(m.content) for m in out)
+    assert 'Check changed period' in '\n'.join(str(m.content) for m in out)
+    assert rows == original
+    rejected = deepcopy(rows)
+    rejected[len(old)+1].content = json.dumps({'result': {'accepted': False}})
+    assert 'Prior source body' in '\n'.join(str(m.content) for m in task_boundary_history(rejected))
+
+
 def test_accepted_revision_replaces_only_older_authoring_proposals():
     from sec_agent.agent_runtime.deepseek_structured_agents import _prior_research_actions
     from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256

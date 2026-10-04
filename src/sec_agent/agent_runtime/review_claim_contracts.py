@@ -60,7 +60,7 @@ def calculation_lineage(artifacts, messages, reference):
 # Narrow arithmetic navigation hint, not a classifier. A slash alone may mean
 # current/prior values or source locators. Only a slash with an explicit result
 # marker is an arithmetic hint; unmarked ratios still need model declaration.
-_NUMBER = r'\d(?:[\d,.]*\d)?'
+_NUMBER = r'(?<![A-Za-z0-9_:])\d(?:[\d,.]*\d)?'
 ARITHMETIC = re.compile(
     _NUMBER + r'\s*(?:(?:÷|\*|×|\+|=)\s*[−-]?' + _NUMBER
     + r'|/\s*[−-]?' + _NUMBER + r'(?=\s*[=≈≃]))')

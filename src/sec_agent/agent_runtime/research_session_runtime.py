@@ -467,7 +467,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             summary_audit = CaseModelAudit(actor="context_summary:" + audit.actor, profile=summary_profile,
                 basis=summary_basis, public_sink=public_sink, private_sink=private_sink, stream_public=True,
                 dispatch_guard=budget_scope.guard('context_summary', summary_profile) if budget_scope else None, source_access_check=source_access_check)
-            summary_audit.review_execution_control = review_execution_control
+            # Optional memory compression can fail without stopping a successful
+            # sibling review. Its middleware retains the prior view and failure
+            # receipt, never retries, and the main request still has its guard.
             audit.context_summary = RequestSummaryMiddleware(model=summary_model,
                 audited_model=summary_audit.model_runnable(summary_model), trigger_tokens=summary["trigger_tokens"],
                 keep_tokens=summary["keep_tokens"], max_summaries=summary["max_summaries"])

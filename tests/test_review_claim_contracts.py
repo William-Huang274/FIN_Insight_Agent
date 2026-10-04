@@ -124,6 +124,7 @@ def test_arithmetic_hint_does_not_confuse_period_values_or_reference_locators_wi
     from sec_agent.agent_runtime.review_claim_contracts import arithmetic_hint
     assert not arithmetic_hint('Net sales 155,667/143,313; profit 18,405/15,307; EPS 1.59/0.98.')
     assert not arithmetic_hint('PASSAGE::...2:0/2:1/2:5/2:6; CALC::cc53a469/25440550016805cd4e823447.')
+    assert not arithmetic_hint('NUMFACT::1fe3808c94b2b742f5f4379b86f608c6=81,615M、NUMFACT::92806b83d65600d79e5d8f754acb6419=44,062M')
     assert arithmetic_hint('11,547/29,267=39.45%, 2,126/3,098≈69%.')
     assert arithmetic_hint('5,841+1,017+11,547=18,405')
     # An unmarked ratio is ambiguous to this mechanical hint. The reviewer's

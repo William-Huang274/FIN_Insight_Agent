@@ -115,7 +115,8 @@ def test_local_input_guard_preserves_review_history_without_redispatch():
         calls.append('blocked')
         return {**state, 'execution_error': {
             'reason':'case_review_input_ceiling_before_transport', 'provider_call_attempted':False,
-            'automatic_resume_allowed':False}, 'messages':[*state['messages'],
+            'automatic_resume_allowed':False}, 'request_summary':{'count':1},
+                'request_summary_failure':{'automatic_retry':False,'reason':'saved_failure'}, 'messages':[*state['messages'],
                 AIMessage(content='', tool_calls=[{'name':'read_probe','id':'settled','args':{},'type':'tool_call'}]),
                 ToolMessage(content='Exact completed source result',tool_call_id='settled',name='read_probe')]}
     graph=build_case_review_graph(reviewers={r:RunnableLambda(blocked) for r in ('counter','verifier')},
@@ -125,6 +126,8 @@ def test_local_input_guard_preserves_review_history_without_redispatch():
     for role in ('counter','verifier'):
         assert result[role]['recovery_state']['messages'][-1]['data']['content']=='Exact completed source result'
         assert result[role]['execution_error']['automatic_resume_allowed'] is False
+        assert result[role]['recovery_state']['request_summary']=={'count':1}
+        assert result[role]['recovery_state']['request_summary_failure']['automatic_retry'] is False
 
 
 def test_control_preserves_terminal_reason_and_blocks_further_dispatch():

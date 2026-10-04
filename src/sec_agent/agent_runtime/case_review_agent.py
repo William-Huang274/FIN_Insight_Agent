@@ -1058,7 +1058,8 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                 raise ValueError("case_review_run_identity_mismatch")
             saved = (previous_review or {}).get(_role, {}).get("recovery_state")
             if saved:
-                return {"recorded_findings": deepcopy(saved.get("recorded_findings", {})),
+                return {**{k:deepcopy(saved[k]) for k in ('request_summary','request_summary_failure') if k in saved},
+                    "recorded_findings": deepcopy(saved.get("recorded_findings", {})),
                     "messages": [*messages_from_dict(saved["messages"]),
                     HumanMessage(content="Continue this same review using the saved reads and findings. Finish only outstanding checks; explain unresolved items explicitly. This is a new configured run allowance, not a reset of lifetime usage. Lead assignment (fallible, not source evidence): " + json.dumps((recovery_instructions or {}).get(_role), ensure_ascii=False))],
                     "review": None}
@@ -1079,7 +1080,8 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                 "runtime_parsing":state.get('runtime_parsing',[]),
                 **({'execution_error': execution_error} if execution_error else {}),
                 "model_calls": count,
-                **({"recovery_state": {"messages": messages_to_dict(state["messages"]),
+                **({"recovery_state": {**{k:deepcopy(state[k]) for k in ('request_summary','request_summary_failure') if k in state},
+                     "messages": messages_to_dict(state["messages"]),
                      "recorded_findings": deepcopy(state.get("recorded_findings", {})),
                      "thread_model_call_count": count,
                      "thread_tool_call_count": deepcopy(state.get("thread_tool_call_count", {}))}}

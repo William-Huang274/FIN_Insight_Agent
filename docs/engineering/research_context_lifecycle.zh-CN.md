@@ -86,6 +86,8 @@
 
 ## 验证范围
 
+退回底稿的原生工具调用已携带完整稿件时，下一轮修订上下文仅以准确消息位置引用完全相同的稿件副本。宿主注入的 context digest、当前候选版本及校验反馈单独保留；改动后的稿件不得复用旧副本。存储中的原调用、正文和来源均不修改。共享引文未被主张引用时，错误反馈列出具体引用 ID，供作者局部修正，不替作者增删研究主张。
+
 - `test_working_context_lifecycle.py`：漏填父级保留、显式清空校验、拒绝后继续读取、跨恢复局部修正、29 条当前判断可保存、schema 错误修正。
 - `test_restored_context_lifecycle.py`：恢复/实时读取与连续四轮整理、准确结果回读、原件不变、最新材料保护。
 - `test_research_context_checkpoint.py` / `test_revision_continuation.py`：真实 SDK 的 mock transport、压力提醒不限制工具、不再两次错误强停、硬上限仍禁止传输。

@@ -52,6 +52,40 @@ def history():
     return rows
 
 
+@pytest.mark.parametrize('changed', [False, True])
+def test_rejected_draft_reuses_exact_native_call_without_losing_error(changed):
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    draft = {'action': 'submit_workpaper', 'context_digest': 'bound',
+             'narrative_markdown': 'source-bound draft ' * 100}
+    current = deepcopy(draft)
+    if changed:
+        current['narrative_markdown'] += ' revised'
+    raw_args = {k: v for k, v in draft.items() if k != 'context_digest'}
+    rows = [AIMessage(content='', tool_calls=[{'id': 'submission',
+        'name': 'SubmitWorkpaperAction', 'args': raw_args, 'type': 'tool_call'}]),
+        ToolMessage(name='SubmitWorkpaperAction', tool_call_id='submission', status='error',
+            content=json.dumps({'result': {'feedback': ['unused quote']},
+                'current_context': {'submission_to_repair': {'candidate': current,
+                    'base_submission_digest': 'original-digest', 'validation_feedback': {'issues': ['unused quote']}}}}))]
+    before = deepcopy(rows)
+    projected = coalesce_context_snapshots(rows)
+    body = json.loads(projected[1].content)
+    repair = body['current_context']['submission_to_repair']
+    assert projected[0] == rows[0]
+    assert projected[1].status == 'error'
+    assert body['result'] == {'feedback': ['unused quote']}
+    assert repair['base_submission_digest'] == 'original-digest'
+    assert repair['validation_feedback'] == {'issues': ['unused quote']}
+    if changed:
+        assert repair['candidate'] == current
+    else:
+        assert repair['candidate']['context_digest'] == 'bound'
+        assert repair['candidate']['identical_snapshot_retained_at'] == {
+            'message_index': 0, 'field': 'tool_calls[0].args', 'tool_call_id': 'submission'}
+    assert rows == before
+    assert coalesce_context_snapshots(projected) == projected
+
+
 def test_native_edit_only_changes_request_copy_and_retains_errors_methods_calculations():
     rows = history()
     before = deepcopy(rows)

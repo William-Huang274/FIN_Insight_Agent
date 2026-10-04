@@ -222,6 +222,42 @@ def coalesce_context_snapshots(messages):
     errors and freshly read sources, are untouched. Stored history is immutable.
     """
     projected = deepcopy(list(messages))
+    # A rejected submission is already present in the preceding native tool
+    # call. Its repair envelope must retain errors/digests, but need not resend
+    # that entire identical draft. Never rewrite the call or a changed draft.
+    submitted = {}
+    for index, message in enumerate(projected):
+        if isinstance(message, AIMessage):
+            for offset, call in enumerate(message.tool_calls):
+                if call.get('name') == 'SubmitWorkpaperAction' and isinstance(call.get('args'), dict):
+                    identity = json.dumps({k: v for k, v in call['args'].items() if k != 'context_digest'},
+                        ensure_ascii=False, sort_keys=True)
+                    submitted.setdefault(identity, {'message_index': index,
+                        'field': f'tool_calls[{offset}].args', 'tool_call_id': call['id']})
+            continue
+        if not isinstance(message, (HumanMessage, ToolMessage)):
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(body, dict):
+            continue
+        context = body if isinstance(message, HumanMessage) else body.get('current_context', {})
+        repair = context.get('submission_to_repair') if isinstance(context, dict) else None
+        candidate = repair.get('candidate') if isinstance(repair, dict) else None
+        if not isinstance(candidate, dict) or 'identical_snapshot_retained_at' in candidate:
+            continue
+        identity = json.dumps({k: v for k, v in candidate.items() if k != 'context_digest'},
+            ensure_ascii=False, sort_keys=True)
+        if len(identity) > 600 and identity in submitted:
+            repair['candidate'] = {'identical_snapshot_retained_at': submitted[identity],
+                **({'context_digest': candidate['context_digest']} if 'context_digest' in candidate else {}),
+                'notice': 'Exact current draft remains in the native submission call above. '
+                    'The separately preserved context_digest is host-injected metadata. '
+                    'Use the unchanged draft with the current repair digest and validation feedback. '
+                    'This pointer is not a submission or evidence.'}
+            message.content = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
     # Authoring binds an exact copy of working state for host validation. The
     # model also receives that same state directly; retain one visible original.
     # Only the request view changes, never the persisted binding or its digest.

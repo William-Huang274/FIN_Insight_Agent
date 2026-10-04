@@ -59,7 +59,7 @@ def test_shared_quote_mapping_preserves_explicit_claim_references_only():
     assert result.claims[0].citation_quotes[ref] == 'shared source quote'
     assert result.claims[1].citation_quotes == {}
     assert paper == before
-    with pytest.raises(ValueError, match='not_referenced'):
+    with pytest.raises(ValueError, match='not_referenced: unknown; remove only'):
         SubmitWorkpaperAction.model_validate_json(json.dumps({**paper,'citation_quotes':{'unknown':'quote'}}))
 
 

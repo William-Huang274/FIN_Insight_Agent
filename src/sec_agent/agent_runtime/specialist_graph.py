@@ -339,8 +339,10 @@ class SubmitWorkpaperAction(_StrictModel):
     @model_validator(mode="after")
     def validate_submission_shape(self) -> "SubmitWorkpaperAction":
         referenced = {ref for claim in self.claims for ref in claim.evidence_ids}
-        if set(self.citation_quotes) - referenced:
-            raise ValueError("workpaper_shared_quote_not_referenced")
+        unused_quotes = sorted(set(self.citation_quotes) - referenced)
+        if unused_quotes:
+            raise ValueError("workpaper_shared_quote_not_referenced: " + ", ".join(unused_quotes)
+                + "; remove only the unused shared quote entries, or cite them in a supported claim if intended")
         for claim in self.claims:
             for ref in claim.evidence_ids:
                 if ref not in self.citation_quotes:

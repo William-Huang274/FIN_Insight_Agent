@@ -24,6 +24,7 @@ def review_recovery_handoff(review, artifacts, question):
             'findings': [deepcopy(item) for items in feedback.values() for item in items if item['reviewer']==role],
             'inspection_checks': submitted.get('inspection_checks', []),
             'unresolved_data_requests': submitted.get('unresolved_data_requests', []),
+            'research_limitations': submitted.get('research_limitations', []),
             'model_calls': row.get('model_calls'), 'tool_calls': row.get('tool_calls'),
             'tool_feedback': deepcopy(row.get('tool_feedback', [])[-4:]),
             'resumable': bool(row.get('recovery_state')),

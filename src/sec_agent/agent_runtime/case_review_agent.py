@@ -124,10 +124,12 @@ class CaseReview(BaseModel):
     summary: str = Field(min_length=20, max_length=12000)
     assessments: list[PaperAssessment] = Field(min_length=1, max_length=12)
     findings: list[CaseReviewFinding] = Field(default_factory=list, max_length=80)
-    inspection_checks: list[ReviewInspectionCheck] = Field(default_factory=list, max_length=160)
+    inspection_checks: list[ReviewInspectionCheck] = Field(default_factory=list)
     finding_checks: list[FindingConfirmation] = Field(default_factory=list, max_length=80,
         description="In a revision confirmation, check EVERY exact assigned finding ID against current text and sources. Author claims and changed hashes do not prove resolution.")
     unresolved_data_requests: list[str] = Field(default_factory=list, max_length=30)
+    research_limitations: list[str] = Field(default_factory=list,
+        description='Known limits of the research answer after review, with affected scope and impact. Not unfinished verification. Do not move an unchecked material claim here to claim completion.')
     withdrawn_finding_reasons: dict[str, Annotated[str, Field(min_length=20, max_length=2000)]] = Field(
         default_factory=dict, max_length=80, description="Saved finding IDs disproved by subsequent inspection, with source-grounded reasons. Do not silently drop findings.")
 
@@ -155,13 +157,14 @@ class SubmittedReviewInspectionCheck(ReviewInspectionCheck):
 
 
 class InspectedCaseReview(SubmittedCaseReview):
-    inspection_checks: list[SubmittedReviewInspectionCheck] = Field(min_length=1, max_length=160,
-        description="Version-bound public checks of material claims, prose/citation consistency and question scope. Unchecked required dimensions remain incomplete.")
+    inspection_checks: list[SubmittedReviewInspectionCheck] = Field(default_factory=list,
+        description="New or corrected version-bound checks, merged with previously saved checks. Can be empty when all checks were saved using record_review_checks. Unchecked required dimensions remain incomplete.")
 
 
 class CaseReviewerState(AgentState):
     review: dict[str, Any]
     recorded_findings: Annotated[dict[str, dict[str, Any]], operator.or_]
+    recorded_inspections: Annotated[dict[str, dict[str, Any]], operator.or_]
     runtime_parsing: Annotated[list[dict[str, Any]], operator.add]
 
 
@@ -955,6 +958,10 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
                 parsing.extend(records)
                 merged.update({row['finding_id']:row for row in generated})
             review = CaseReview.model_validate({**review.model_dump(mode="json"), "findings": list(merged.values())})
+            from .review_check_store import merge_checks
+            if require_inspection and not revision_target:
+                review.inspection_checks = [ReviewInspectionCheck.model_validate(row) for row in
+                    merge_checks(runtime.state.get('recorded_inspections', {}), review.inspection_checks).values()]
             validate_case_review(review, artifacts, runtime.state["messages"], revision_target=revision_target,parsing_records=parsing)
             if confirmation:
                 validate_finding_confirmation(review, confirmation, artifacts)
@@ -972,7 +979,9 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
         if revision_target:
             value["review_scope"] = {k: revision_target[k] for k in ("kind", "paper_id", "baseline_digest", "current_digest", "changed_claim_ids")}
             value["completion"] = completion
-        return Command(update={"review": value, "runtime_parsing":runtime_parsing, "messages": [ToolMessage(
+        return Command(update={"review": value,
+            "recorded_inspections": merge_checks({}, review.inspection_checks),
+            "runtime_parsing":runtime_parsing, "messages": [ToolMessage(
             content=("Revision-only review saved; unchanged research was not reviewed. Not whole-case or financial acceptance."
                 if revision_target else "Review handoff accepted for case convergence; not a product or financial PASS."),
             name="submit_case_review", tool_call_id=runtime.tool_call_id)]})
@@ -995,7 +1004,29 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             return save_review(CaseReview.model_validate(review.model_dump(exclude={'completion'})), runtime, completion=review.completion)
 
         submit_case_review = submit_inspected_review
-        tools = [*tools, read_review_location]
+        @tool
+        def record_review_checks(checks: list[SubmittedReviewInspectionCheck], runtime: ToolRuntime) -> Command:
+            """Save a batch of checked locations without closing review. Corrected locations replace older checks of the same paper version. Returns exact remaining coverage; submission still validates all checks."""
+            from .review_check_store import merge_checks, inspection_progress
+            if audit and audit.source_access_check:
+                audit.source_access_check()
+            probe = CaseReview(summary='Incremental inspection batch, not final review acceptance.',
+                assessments=[PaperAssessment(paper_id=p['paper_id'], assessment='Incremental check persistence only; no overall verdict.') for p in artifacts.catalog()['papers']],
+                findings=[CaseReviewFinding.model_validate(f) for f in runtime.state.get('recorded_findings', {}).values()],
+                inspection_checks=checks, unresolved_data_requests=['Batch recording is not final review completion.'])
+            try:
+                validate_inspection_checks(probe, artifacts, runtime.state['messages'], complete=False)
+            except ValueError as exc:
+                return Command(update={'messages':[ToolMessage(content=str(exc), status='error', name='record_review_checks', tool_call_id=runtime.tool_call_id)]})
+            records = merge_checks(runtime.state.get('recorded_inspections', {}), probe.inspection_checks)
+            return Command(update={'recorded_inspections':records,
+                'recorded_findings':{f.finding_id:f.model_dump(mode='json') for f in probe.findings},
+                'messages':[ToolMessage(
+                content=json.dumps({'saved':len(records), 'remaining':inspection_progress(records, artifacts),
+                    'notice':'Saved source-bound checks, not final acceptance. No need to resend unchanged checks.'}, ensure_ascii=False),
+                name='record_review_checks', tool_call_id=runtime.tool_call_id)]})
+        tools = [*tools, read_review_location, record_review_checks]
+        prompt += '\nSave inspection_checks incrementally with record_review_checks; unchanged saved checks survive continuation and need not be recopied. Final submit merges them and validates full current-version coverage. research_limitations describes known boundaries of the answer; unresolved_data_requests describes necessary review work still undone. Review can finish with proved findings or clearly scoped research limitations, but never with unchecked required claims.'
     if confirmation:
         prompt += "\nThis is independent confirmation before Lead's final judgment. Read current papers, all changed locations and related explanations/claims; use original sources for necessary checks. Return finding_checks for EVERY ID in findings_to_confirm, with source-grounded reasons. still_open must reference a current finding ID; unresolved must also be recorded in unresolved_data_requests. Inspect newly introduced issues together. Do not re-run unrelated unchanged research, or accept an author's completed note as proof."
         prompt += "\nA finding_type=clarification is a delivery wording issue, not automatically a wrong financial conclusion. To mark it resolved, supply current_quote and clarity_verdict=clear based on the actual corrected wording. Repeating that the central thesis or arithmetic is supported does not close the clarification. Leave remaining ambiguity still_open with a current actionable finding."
@@ -1058,10 +1089,15 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                 raise ValueError("case_review_run_identity_mismatch")
             saved = (previous_review or {}).get(_role, {}).get("recovery_state")
             if saved:
+                from .review_check_store import restore_checks, restore_findings, inspection_progress
+                inspections = restore_checks(saved)
+                prior_review = (previous_review or {}).get(_role, {}).get('review') or {}
+                findings = restore_findings(saved, prior_review)
                 return {**{k:deepcopy(saved[k]) for k in ('request_summary','request_summary_failure') if k in saved},
-                    "recorded_findings": deepcopy(saved.get("recorded_findings", {})),
+                    "recorded_findings": findings,
+                    "recorded_inspections": inspections,
                     "messages": [*messages_from_dict(saved["messages"]),
-                    HumanMessage(content="Continue this same review using the saved reads and findings. Finish only outstanding checks; explain unresolved items explicitly. This is a new configured run allowance, not a reset of lifetime usage. Lead assignment (fallible, not source evidence): " + json.dumps((recovery_instructions or {}).get(_role), ensure_ascii=False))],
+                    HumanMessage(content="Continue this same review using saved reads, findings and version-bound checks. Save new checks in batches; unchanged checks need not be recopied. Known limits of the research answer belong in research_limitations; unfinished necessary verification belongs in unresolved_data_requests. This is a new configured run allowance, not a reset of lifetime usage. Remaining coverage: " + json.dumps(inspection_progress(inspections, artifacts), ensure_ascii=False) + ". Lead assignment (fallible, not source evidence): " + json.dumps((recovery_instructions or {}).get(_role), ensure_ascii=False))],
                     "review": None}
             return {"messages": [HumanMessage(content=json.dumps({"role": _role, "question": question,
                 "catalog": artifacts.catalog(), "research_handoff": research_handoff, "revision_confirmation": confirmation,
@@ -1083,6 +1119,7 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                 **({"recovery_state": {**{k:deepcopy(state[k]) for k in ('request_summary','request_summary_failure') if k in state},
                      "messages": messages_to_dict(state["messages"]),
                      "recorded_findings": deepcopy(state.get("recorded_findings", {})),
+                     "recorded_inspections": deepcopy(state.get("recorded_inspections", {})),
                      "thread_model_call_count": count,
                      "thread_tool_call_count": deepcopy(state.get("thread_tool_call_count", {}))}}
                    if not complete and (not execution_error or execution_error.get('provider_call_attempted') is False) else {}),

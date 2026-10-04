@@ -1082,7 +1082,8 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                 **({"recovery_state": {"messages": messages_to_dict(state["messages"]),
                      "recorded_findings": deepcopy(state.get("recorded_findings", {})),
                      "thread_model_call_count": count,
-                     "thread_tool_call_count": deepcopy(state.get("thread_tool_call_count", {}))}} if not complete and not execution_error else {}),
+                     "thread_tool_call_count": deepcopy(state.get("thread_tool_call_count", {}))}}
+                   if not complete and (not execution_error or execution_error.get('provider_call_attempted') is False) else {}),
                 **({"incomplete_output": [m.content for m in answers[:count] if m.content],
                     "recorded_findings": state.get("recorded_findings", {}),
                     "runtime_notices": [m.content for m in answers[count:] if m.content],

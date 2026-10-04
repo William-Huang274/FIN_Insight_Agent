@@ -100,9 +100,31 @@ def test_native_review_failure_drains_paid_sibling_and_blocks_new_dispatch(failu
         assert result['counter']['execution_error']['reason']==('case_review_truncated_no_partial_acceptance'
             if failure=='truncated' else 'review_provider_failure_usage_may_be_unknown')
         assert result['verifier']['execution_error']['reason']=='review_wave_stopped_no_new_dispatch'
-        assert all('recovery_state' not in result[r] and result[r]['review'] is None for r in reviewers)
+        assert all(result[r]['review'] is None for r in reviewers)
+        assert 'recovery_state' not in result['counter']  # Failed paid call still requires explicit handling.
+        assert result['verifier']['recovery_state']['messages']  # Settled sibling reads survive a local stop.
         assert 'PRIVATE_TRUNCATED_SENTINEL' not in __import__('json').dumps(result)
     asyncio.run(exercise())
+
+
+def test_local_input_guard_preserves_review_history_without_redispatch():
+    from langchain_core.runnables import RunnableLambda
+    from langchain_core.messages import ToolMessage
+    calls=[]
+    def blocked(state):
+        calls.append('blocked')
+        return {**state, 'execution_error': {
+            'reason':'case_review_input_ceiling_before_transport', 'provider_call_attempted':False,
+            'automatic_resume_allowed':False}, 'messages':[*state['messages'],
+                AIMessage(content='', tool_calls=[{'name':'read_probe','id':'settled','args':{},'type':'tool_call'}]),
+                ToolMessage(content='Exact completed source result',tool_call_id='settled',name='read_probe')]}
+    graph=build_case_review_graph(reviewers={r:RunnableLambda(blocked) for r in ('counter','verifier')},
+        artifacts=artifact_fixture(),question='Original scope',run_id='run',run_invocation_id='inv').compile()
+    result=graph.invoke({'run_id':'run','run_invocation_id':'inv'})
+    assert len(calls)==2 and result['phase']=='case_review_incomplete'
+    for role in ('counter','verifier'):
+        assert result[role]['recovery_state']['messages'][-1]['data']['content']=='Exact completed source result'
+        assert result[role]['execution_error']['automatic_resume_allowed'] is False
 
 
 def test_control_preserves_terminal_reason_and_blocks_further_dispatch():

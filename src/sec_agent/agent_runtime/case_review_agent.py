@@ -163,6 +163,8 @@ class InspectedCaseReview(SubmittedCaseReview):
 
 class CaseReviewerState(AgentState):
     review: dict[str, Any]
+    request_summary: dict[str, Any]
+    request_summary_failure: dict[str, Any] | None
     recorded_findings: Annotated[dict[str, dict[str, Any]], operator.or_]
     recorded_inspections: Annotated[dict[str, dict[str, Any]], operator.or_]
     runtime_parsing: Annotated[list[dict[str, Any]], operator.add]
@@ -1005,27 +1007,52 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
 
         submit_case_review = submit_inspected_review
         @tool
-        def record_review_checks(checks: list[SubmittedReviewInspectionCheck], runtime: ToolRuntime) -> Command:
+        def record_review_checks(checks: list[SubmittedReviewInspectionCheck | dict[str, Any]], runtime: ToolRuntime) -> Command:
             """Save a batch of checked locations without closing review. Corrected locations replace older checks of the same paper version. Returns exact remaining coverage; submission still validates all checks."""
             from .review_check_store import merge_checks, inspection_progress
             if audit and audit.source_access_check:
                 audit.source_access_check()
-            probe = CaseReview(summary='Incremental inspection batch, not final review acceptance.',
-                assessments=[PaperAssessment(paper_id=p['paper_id'], assessment='Incremental check persistence only; no overall verdict.') for p in artifacts.catalog()['papers']],
-                findings=[CaseReviewFinding.model_validate(f) for f in runtime.state.get('recorded_findings', {}).values()],
-                inspection_checks=checks, unresolved_data_requests=['Batch recording is not final review completion.'])
-            try:
-                validate_inspection_checks(probe, artifacts, runtime.state['messages'], complete=False)
-            except ValueError as exc:
-                return Command(update={'messages':[ToolMessage(content=str(exc), status='error', name='record_review_checks', tool_call_id=runtime.tool_call_id)]})
-            records = merge_checks(runtime.state.get('recorded_inspections', {}), probe.inspection_checks)
+            records=deepcopy(runtime.state.get('recorded_inspections', {}))
+            findings=deepcopy(runtime.state.get('recorded_findings', {}))
+            errors=[];accepted=[]
+            for index,check in enumerate(checks):
+                try:
+                    check=SubmittedReviewInspectionCheck.model_validate(check)
+                    probe = CaseReview(summary='Incremental inspection batch, not final review acceptance.',
+                        assessments=[PaperAssessment(paper_id=p['paper_id'], assessment='Incremental check persistence only; no overall verdict.') for p in artifacts.catalog()['papers']],
+                        findings=[CaseReviewFinding.model_validate(f) for f in findings.values()],
+                        inspection_checks=[check], unresolved_data_requests=['Batch recording is not final review completion.'])
+                    validate_inspection_checks(probe, artifacts, runtime.state['messages'], complete=False)
+                except ValueError as exc:
+                    errors.append({'check_index':index,'error':str(exc)});continue
+                records=merge_checks(records,probe.inspection_checks)
+                findings.update({f.finding_id:f.model_dump(mode='json') for f in probe.findings})
+                accepted.append(index)
             return Command(update={'recorded_inspections':records,
-                'recorded_findings':{f.finding_id:f.model_dump(mode='json') for f in probe.findings},
+                'recorded_findings':findings,
                 'messages':[ToolMessage(
-                content=json.dumps({'saved':len(records), 'remaining':inspection_progress(records, artifacts),
-                    'notice':'Saved source-bound checks, not final acceptance. No need to resend unchanged checks.'}, ensure_ascii=False),
-                name='record_review_checks', tool_call_id=runtime.tool_call_id)]})
-        tools = [*tools, read_review_location, record_review_checks]
+                content=json.dumps({'saved':len(records),'accepted_check_indices':accepted,'errors':errors,
+                    'remaining':inspection_progress(records, artifacts),
+                    'notice':'Valid entries saved independently. Resend only corrected rejected entries. Saved checks are not final acceptance.'}, ensure_ascii=False),
+                status='error' if errors else 'success',name='record_review_checks', tool_call_id=runtime.tool_call_id)]})
+        @tool
+        def read_saved_review_checks(paper_id: str, runtime: ToolRuntime, offset: int=0):
+            """Read up to five exact saved checks of one paper; offset pages through own saved state."""
+            if offset<0:raise ToolException('offset_must_be_nonnegative')
+            rows=[r for r in runtime.state.get('recorded_inspections',{}).values() if r['paper_id']==paper_id]
+            return json.dumps({'checks':rows[offset:offset+5],'next_offset':offset+5 if offset+5<len(rows) else None,'total':len(rows)},ensure_ascii=False)
+        @tool
+        def read_review_history(runtime: ToolRuntime, index: int|None=None, offset: int=0):
+            """List own original public message journal, or read one indexed message in6000character windows. Source tools remain the citation readers; history includes failed attempts, never sibling/private reasoning."""
+            from .review_context import history_page
+            return json.dumps(history_page(runtime.state['messages'],index=index,offset=offset),ensure_ascii=False)
+        tools = [*tools, read_review_location, record_review_checks, read_saved_review_checks, read_review_history]
+        if audit:
+            from .review_context import ReviewWorkingContext
+            # One current working view replaces accumulated histories in requests.
+            # Existing successful summary is reused; no new summarizer spend.
+            audit.context_summary=None
+            audit.extra_middlewares.append(ReviewWorkingContext(artifacts))
         prompt += '\nSave inspection_checks incrementally with record_review_checks; unchanged saved checks survive continuation and need not be recopied. Final submit merges them and validates full current-version coverage. research_limitations describes known boundaries of the answer; unresolved_data_requests describes necessary review work still undone. Review can finish with proved findings or clearly scoped research limitations, but never with unchecked required claims.'
     if confirmation:
         prompt += "\nThis is independent confirmation before Lead's final judgment. Read current papers, all changed locations and related explanations/claims; use original sources for necessary checks. Return finding_checks for EVERY ID in findings_to_confirm, with source-grounded reasons. still_open must reference a current finding ID; unresolved must also be recorded in unresolved_data_requests. Inspect newly introduced issues together. Do not re-run unrelated unchanged research, or accept an author's completed note as proof."

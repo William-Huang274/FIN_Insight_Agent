@@ -48,6 +48,43 @@ def test_legacy_recovery_uses_recorded_old_values_never_proposed_answers():
     assert revision_progress({**state, **restored}, changed)[0]['status'] == 'changed_not_semantically_verified'
 
 
+def test_new_revision_marks_fresh_tracking_instead_of_remigrating_accepted_history():
+    from test_connected_revision_loop import submitted_original
+    original = submitted_original()
+    ports = _ToolPorts()
+    builder = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=lambda _: pytest.fail('Initialization must not call a model'),
+        evidence_tool=ports.evidence, finance_tool=ports.finance),
+        recovery_state=original, revision_feedback=[{'finding_id': 'new', 'diagnosis': 'New narrow repair.'}])
+    events = builder.compile().stream(_input(), stream_mode='values')
+    next(events)  # initial input
+    initialized = next(events)
+    events.close()
+    assert initialized['revision_tracking_version'] == 1
+    assert initialized['revision_targets'] == initialized['revision_target_origins'] == {}
+    candidate = initialized['last_submission_attempt']['arguments']
+    # Previously recorded old values can still occur in an accepted workpaper.
+    # They are not pending obligations in this NEW revision.
+    initialized['notebook']['model_turn_records'].append({'turn_index': 0, 'action': {
+        'action': 'native_tool_batch', 'tool_calls': [{'name': 'ReviseWorkpaperAction', 'args': {
+            'edits': [{'path': '/narrative_markdown', 'old_value': candidate['narrative_markdown'],
+                       'new_value': 'Old rejected proposal must stay historical.'}]}}]}})
+    assert revision_progress(initialized, candidate) == []
+
+
+def test_saved_revision_drops_only_legacy_targets_before_accepted_baseline():
+    state = {'revision_tracking_version': 1,
+        'task_context': {'accepted_revision_baseline': {'through_model_turn': 12, 'submission_digest': 'bound'}},
+        'revision_targets': {'/thesis': 'old', '/mechanism': 'current', '/open_gaps': 'explicit'},
+        'revision_target_origins': {
+            '/thesis': {'basis': 'legacy_record_old_value_still_present', 'turn_index': 12},
+            '/mechanism': {'basis': 'legacy_record_old_value_still_present', 'turn_index': 13}}}
+    original = deepcopy(state)
+    restored = revision_state(state)
+    assert restored['revision_targets'] == {'/mechanism': 'current', '/open_gaps': 'explicit'}
+    assert state == original
+
+
 @pytest.mark.parametrize('full_submission', [False, True])
 def test_completed_notes_and_fresh_submission_cannot_clear_unchanged_repair(full_submission):
     ports, requests = _ToolPorts(), []

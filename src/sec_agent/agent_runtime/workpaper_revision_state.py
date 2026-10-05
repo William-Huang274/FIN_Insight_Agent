@@ -9,6 +9,17 @@ from .research_graph_contracts import canonical_sha256
 def revision_state(state):
     targets = dict(state.get("revision_targets", {}))
     origins = dict(state.get("revision_target_origins", {}))
+    baseline = state.get('task_context', {}).get('accepted_revision_baseline', {})
+    through = baseline.get('through_model_turn')
+    if isinstance(through, int) and baseline.get('submission_digest'):
+        # Compatibility for saved new revisions that accidentally remigrated
+        # intents from BEFORE their accepted baseline. Preserve current edits.
+        for path, origin in list(origins.items()):
+            turn = origin.get('turn_index')
+            if (origin.get('basis') == 'legacy_record_old_value_still_present'
+                    and isinstance(turn, int) and turn <= through):
+                targets.pop(path, None)
+                origins.pop(path, None)
     if state.get("revision_tracking_version") == 1:
         return {"revision_targets": targets, "revision_target_origins": origins, "revision_tracking_version": 1}
     candidate = (state.get("last_submission_attempt") or {}).get("arguments")
@@ -17,6 +28,8 @@ def revision_state(state):
         # atomic edits. Recover only old values still present in the candidate;
         # never parse malformed JSON, apply proposed corrections or infer prose.
         for turn in state.get("notebook", {}).get("model_turn_records", []):
+            if isinstance(through, int) and baseline.get('submission_digest') and turn.get('turn_index', through + 1) <= through:
+                continue
             action = turn.get("action", {})
             calls = action.get("tool_calls", []) if action.get("action") == "native_tool_batch" else []
             scope = action.get("runtime_tool_scope")

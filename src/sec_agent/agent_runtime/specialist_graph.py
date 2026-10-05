@@ -1850,7 +1850,8 @@ def build_specialist_agentic_state_graph(
                 "max_tool_actions": prior.tool_action_count + validated.max_tool_actions,
                 "last_submission_attempt": ({"arguments": revision_candidate, "accepted": False, "feedback": []}
                     if revising else _jsonable(recovery_state.get("last_submission_attempt"))),
-                **({"revision_targets": {}, "revision_target_origins": {}} if revising else revision_state(recovery_state)),
+                **({"revision_targets": {}, "revision_target_origins": {}, "revision_tracking_version": 1}
+                   if revising else revision_state(recovery_state)),
                 "last_edit_feedback": _jsonable(recovery_state.get("last_edit_feedback", {})),
                 "pending_workpaper_revision": None if revising else _jsonable(recovery_state.get("pending_workpaper_revision")),
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),

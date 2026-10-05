@@ -38,6 +38,30 @@ def test_legacy_terminal_feedback_uses_live_envelope_without_losing_draft_or_err
     assert coalesce_context_snapshots(unpaired) == unpaired
 
 
+def test_current_candidate_replaces_historical_snapshots_but_not_sources_or_errors():
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    def repair(version):
+        return {'candidate': {'thesis': f'Draft version {version}. ' * 600},
+            'current_candidate_digest': str(version) * 64, 'base_submission_digest': 'b' * 64,
+            'validation_feedback': [{'code': f'error{version}', 'path': '/claims/1'}]}
+    rows = [HumanMessage(content=json.dumps({'submission_to_repair': repair(1)}))]
+    for v in (2, 3):
+        rows.append(ToolMessage(tool_call_id=f'edit{v}', name='ReviseWorkpaperAction', content=json.dumps({
+            'result': {'accepted': False, 'exact_error': f'field error {v}', 'passage': 'Exact original source.'},
+            'current_context': {'submission_to_repair': repair(v)}})))
+    original = deepcopy(rows)
+    out = coalesce_context_snapshots(rows)
+    old = json.loads(out[0].content)['submission_to_repair']
+    assert old['superseded_candidate'] is True and 'candidate' not in old
+    assert old['current_candidate_at'] == {'message_index': 2, 'field': 'current_context.submission_to_repair'}
+    assert old['historical_validation_feedback'] == repair(1)['validation_feedback']
+    assert json.loads(out[-1].content)['current_context']['submission_to_repair'] == repair(3)
+    for i in (1, 2):
+        assert json.loads(out[i].content)['result'] == json.loads(rows[i].content)['result']
+    assert rows == original and coalesce_context_snapshots(out) == out
+    assert sum(len(m.content) for m in out) < sum(len(m.content) for m in rows) * .5
+
+
 def test_accepted_submission_archives_completed_reads_for_later_revision():
     old = source_messages('OLD-SOURCE')
     old[-1].content = json.dumps({'ref_id': 'OLD-SOURCE', 'passage': 'Prior source body ' * 600})

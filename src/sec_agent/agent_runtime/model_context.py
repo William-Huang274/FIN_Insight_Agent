@@ -252,6 +252,44 @@ def coalesce_context_snapshots(messages):
     errors and freshly read sources, are untouched. Stored history is immutable.
     """
     projected = _normalize_terminal_feedback(messages)
+    # Candidate versions are mutable host state, unlike source observations.
+    # A newer repair envelope supersedes older draft copies even when edits
+    # made them non-identical. Preserve historical errors and version identity;
+    # the full original journal is unchanged. Run before exact-copy pointers
+    # are constructed so none can point into a removed historical candidate.
+    candidates = []
+    for index, message in enumerate(projected):
+        if not isinstance(message, (HumanMessage, ToolMessage)):
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(body, dict):
+            continue
+        context = body if isinstance(message, HumanMessage) else body.get('current_context', {})
+        repair = context.get('submission_to_repair') if isinstance(context, dict) else None
+        if (isinstance(repair, dict) and isinstance(repair.get('candidate'), dict)
+                and isinstance(repair.get('current_candidate_digest'), str)
+                and len(repair['current_candidate_digest']) == 64):
+            candidates.append((index, body, repair))
+    if len(candidates) > 1:
+        latest = candidates[-1][0]
+        target = {'message_index': latest, 'field': (
+            '' if isinstance(projected[latest], HumanMessage) else 'current_context.') + 'submission_to_repair'}
+        for index, body, repair in candidates[:-1]:
+            context = body if isinstance(projected[index], HumanMessage) else body['current_context']
+            context['submission_to_repair'] = {
+                'superseded_candidate': True,
+                'base_submission_digest': repair.get('base_submission_digest'),
+                'historical_candidate_digest': repair['current_candidate_digest'],
+                'historical_validation_feedback': deepcopy(repair.get('validation_feedback', [])),
+                'historical_edit_feedback': deepcopy(repair.get('last_edit_feedback', {})),
+                'current_candidate_at': target,
+                'notice': 'Historical candidate state, not the current draft or an acceptance. '
+                    'Use the latest repair envelope for current text, pending edits and errors. '
+                    'Original versions remain in the native checkpoint and audit; source observations are unchanged.'}
+            projected[index].content = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
     # A rejected submission is already present in the preceding native tool
     # call. Its repair envelope must retain errors/digests, but need not resend
     # that entire identical draft. Never rewrite the call or a changed draft.

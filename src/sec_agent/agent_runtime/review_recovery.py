@@ -3,6 +3,30 @@ from copy import deepcopy
 from .case_review_agent import case_review_scope_digest
 
 
+def public_confirmation(record):
+    """Project review handoff; recovery journals belong only to their author.
+
+    Keep the native record intact for resumption. A submitted but incomplete
+    review remains incomplete in this view; projection is not acceptance.
+    """
+    if not record:
+        return {}
+    review = record.get('review', {})
+    public = {key: deepcopy(review[key]) for key in (
+        'run_id', 'run_invocation_id', 'phase', 'scope_digest',
+        'material_finding_count', 'pending_saved_material_finding_count') if key in review}
+    for role in ('counter', 'verifier'):
+        if role not in review:
+            continue
+        row = review[role]
+        public[role] = {key: deepcopy(row[key]) for key in (
+            'status', 'review', 'recorded_findings', 'model_calls', 'tool_calls') if key in row}
+        public[role]['tool_feedback'] = deepcopy(row.get('tool_feedback', [])[-4:])
+        public[role]['resumable'] = bool(row.get('recovery_state'))
+    return {**{key: deepcopy(record[key]) for key in ('context', 'correction_round') if key in record},
+            'review': public}
+
+
 def review_recovery_handoff(review, artifacts, question):
     from .workpaper_changes import paper_versions
     if review.get('phase') != 'case_review_incomplete' or review.get('scope_digest') != case_review_scope_digest(artifacts, question):

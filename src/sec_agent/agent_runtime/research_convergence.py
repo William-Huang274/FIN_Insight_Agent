@@ -25,6 +25,7 @@ from .report_synthesis_agent import ReportReview, report_model_view, review_resp
 from .research_execution_plan import ResearchExecutionPlan
 from .research_graph_contracts import canonical_sha256
 from .authoring_context import bind_authoring, validate_authoring
+from .review_recovery import public_confirmation
 
 
 def research_decision_context(artifacts, current, state, *, question, research_review_context):
@@ -160,7 +161,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             'lead_decision': deepcopy(state.get('lead_decision', {})),
             'pending_feedback': deepcopy(state.get('pending_feedback', {})),
             'independent_research_review': deepcopy(research_review_context),
-            'confirmation': deepcopy(state.get('workpaper_confirmation', {}))}
+            'confirmation': public_confirmation(state.get('workpaper_confirmation', {}))}
 
     def event(actor, event, **details):
         get_stream_writer()({"kind": "stage", "actor": actor, "event": event,
@@ -243,7 +244,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                 question=question, research_review_context=research_review_context)
             body["research_decision_context"] = decision_context
             if state.get("workpaper_confirmation"):
-                body["independent_current_workpaper_confirmation"] = deepcopy(state["workpaper_confirmation"])
+                body["independent_current_workpaper_confirmation"] = public_confirmation(state["workpaper_confirmation"])
             body.update(catalog=current.catalog(),
                 author_responses={pid: row["finding_responses"] for pid, row in state.get("revisions", {}).items()})
             if hierarchical:

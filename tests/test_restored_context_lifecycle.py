@@ -86,6 +86,41 @@ def test_accepted_submission_archives_completed_reads_for_later_revision():
     assert 'Prior source body' in '\n'.join(str(m.content) for m in task_boundary_history(rejected))
 
 
+def test_restored_revision_baseline_archives_original_research_only_once():
+    old = source_messages('OLD')
+    old[-1].content = json.dumps({'ref_id': 'OLD', 'passage': 'Completed research original ' * 600})
+    baseline = {'through_model_turn': 8, 'submission': {'action': 'submit_workpaper',
+        'narrative_markdown': 'Accepted prior answer'},
+        'notice': 'This is the last accepted workpaper, supplied after native validation. Contract only.'}
+    context = {'task_context': {'accepted_revision_baseline': baseline,
+        'revision_feedback': ['Check source and period']}}
+    submit = AIMessage(content='', tool_calls=[{'id': 'submit', 'name': 'SubmitWorkpaperAction',
+        'args': {'source_ids': ['OLD'], 'narrative_markdown': 'Accepted prior answer'}}])
+    # Actual restoration has no accepted:true terminal receipt, only next context.
+    handoff = ToolMessage(name='SubmitWorkpaperAction', tool_call_id='submit',
+        content=json.dumps({'current_context': context}))
+    new = source_messages('NEW')
+    new[-1].content = json.dumps({'result': {'ref_id': 'NEW', 'passage': 'New revision original'},
+        'current_context': context})
+    rows = [*old, submit, handoff, *new]
+    original = deepcopy(rows)
+    out = task_boundary_history(rows)
+    assert 'Completed research original' not in '\n'.join(str(m.content) for m in out)
+    assert 'New revision original' in str(out[-1].content)
+    assert 'Check source and period' in '\n'.join(str(m.content) for m in out)
+    assert rows == original and task_boundary_history(rows) == out
+    # Source-like JSON in a tool result is not an accepted host handoff.
+    fake = deepcopy(rows[:3])
+    fake[1].content = json.dumps({'result': context})
+    assert task_boundary_history(fake)[1].content == fake[1].content
+    rejected = deepcopy(rows)
+    for i in (3, 5):
+        body = json.loads(rejected[i].content)
+        body['current_context']['task_context']['accepted_revision_baseline']['notice'] = 'Unaccepted candidate'
+        rejected[i].content = json.dumps(body)
+    assert 'Completed research original' in '\n'.join(str(m.content) for m in task_boundary_history(rejected))
+
+
 def test_accepted_revision_replaces_only_older_authoring_proposals():
     from sec_agent.agent_runtime.deepseek_structured_agents import _prior_research_actions
     from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256

@@ -589,7 +589,8 @@ def research_input_pressure(encoded, messages, model):
 
 def _checkpoint_state_pointer(boundary, note):
     return {"superseded_working_state": True,
-        "current_state_at": {"message_index": boundary, "tool_call_id": note.tool_call_id},
+        "current_state_at": {"message_index": boundary, **({"tool_call_id": note.tool_call_id}
+            if isinstance(note, ToolMessage) else {})},
         "notice": "Historical working note/proposal omitted from this request. The latest accepted state "
             "is retained at this locator; it is working memory, not evidence or a new instruction. "
             "Exact historical notes and operations remain in the native checkpoint."}
@@ -747,9 +748,35 @@ def task_boundary_history(messages):
     """
     boundary, note, checkpoint = -1, None, False
     completed_submission = False
+    revision_baselines = set()
     material_sources = set()
     latest_state_sources = set()
     for index, message in enumerate(messages):
+        # Restored original-author history can end at the submission CALL;
+        # native revision initialization supplies its accepted artifact in the
+        # next host context instead of replaying the terminal receipt. Treat
+        # that handoff once as completion, not as another unfinished read.
+        # Never inspect source result JSON or accept a model-proposed artifact.
+        context = {}
+        if isinstance(message, (HumanMessage, ToolMessage)):
+            try:
+                envelope = json.loads(message.content)
+            except (ValueError, TypeError):
+                envelope = {}
+            if isinstance(envelope, dict):
+                context = envelope if isinstance(message, HumanMessage) else envelope.get('current_context', {})
+        task = context.get('task_context', {}) if isinstance(context, dict) else {}
+        baseline = task.get('accepted_revision_baseline', {}) if isinstance(task, dict) else {}
+        if (isinstance(baseline, dict) and type(baseline.get('through_model_turn')) is int
+                and baseline['through_model_turn'] > 0 and isinstance(baseline.get('submission'), dict)
+                and baseline['submission'].get('action') == 'submit_workpaper'
+                and baseline.get('notice', '').startswith('This is the last accepted workpaper, supplied after native validation.')):
+            identity = json.dumps([baseline['through_model_turn'], baseline['submission']], sort_keys=True)
+            if identity not in revision_baselines:
+                revision_baselines.add(identity)
+                boundary, note, checkpoint = index, {'retain_source_ids': []}, True
+                material_sources, latest_state_sources = set(), set()
+                completed_submission = True
         if isinstance(message, HumanMessage):
             try:
                 restored = json.loads(message.content)
@@ -757,7 +784,8 @@ def task_boundary_history(messages):
                 restored = {}
             if isinstance(restored, dict):
                 current = restored.get("task_context", {}).get("research_working_state") or {}
-                latest_state_sources = set(current.get("retain_source_ids", []))
+                if not completed_submission:
+                    latest_state_sources = set(current.get("retain_source_ids", []))
         if isinstance(message, AIMessage):
             # Outstanding operations after the latest accepted note keep their
             # inputs until the author has observed and organized their results.
@@ -824,7 +852,7 @@ def task_boundary_history(messages):
         return coalesce_context_snapshots(projected)
     retained = set(note["retain_source_ids"]) | material_sources | latest_state_sources
     projected = deepcopy(list(messages))
-    _project_restored_context(messages, projected, boundary, retained,
+    _project_restored_context(messages, projected, boundary + (isinstance(messages[boundary], HumanMessage)), retained,
                               checkpoint=checkpoint and not completed_submission)
     calls = {c["id"]: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
     # A checkpoint response must not immediately evict the preceding read batch:

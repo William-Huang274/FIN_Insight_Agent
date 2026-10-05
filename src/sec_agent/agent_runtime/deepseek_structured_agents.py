@@ -1624,8 +1624,8 @@ class DeepSeekStructuredAgentAdapter:
                     raise DeepSeekStructuredAgentError("specialist_native_tool_results_missing")
                 # A rejected terminal creates feedback, not a new source read.
                 # All observations already arrived in exact earlier messages.
-                messages = [*history, ToolMessage(content=json.dumps(delta, ensure_ascii=False),
-                    tool_call_id=prior_raw.tool_calls[0]["id"])]
+                messages = [*history, ToolMessage(content=json.dumps({"current_context": delta}, ensure_ascii=False),
+                    tool_call_id=prior_raw.tool_calls[0]["id"], name=prior_raw.tool_calls[0]["name"])]
         if notes_enabled and saved_envelope is None:
             from .user_workpaper_context import current_scope_revision_prompt
             guidance = current_scope_revision_prompt(actor)

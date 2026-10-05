@@ -214,6 +214,36 @@ def _coalesce_observation_rows(messages):
     return messages
 
 
+def _normalize_terminal_feedback(messages):
+    """Read old host terminal feedback through the same envelope as live replies.
+
+    Match an actual terminal call and the complete runtime context signature;
+    never reinterpret source prose or infer a successful submission. Originals
+    remain in the journal, including every validation error and pending draft.
+    """
+    projected = deepcopy(list(messages))
+    calls = {c['id']: c for m in projected if isinstance(m, AIMessage) for c in m.tool_calls}
+    terminals = {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SubmitReviewAction', 'RequestHumanReviewAction'}
+    for message in projected:
+        if not isinstance(message, ToolMessage):
+            continue
+        call = calls.get(message.tool_call_id, {})
+        if call.get('name') not in terminals or message.name not in {None, call.get('name')}:
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if (not isinstance(body, dict) or 'current_context' in body or 'result' in body
+                or not isinstance(body.get('turn_index'), int)
+                or not all(isinstance(body.get(k), dict) for k in ('task_context', 'progress', 'execution_budget'))
+                or not isinstance(body.get('allowed_actions'), list)):
+            continue
+        message.content = json.dumps({'current_context': body}, ensure_ascii=False, separators=(',', ':'))
+        message.name = call['name']
+    return projected
+
+
 def coalesce_context_snapshots(messages):
     """Normalize byte-equivalent runtime copies, without summarizing research.
 
@@ -221,7 +251,7 @@ def coalesce_context_snapshots(messages):
     First occurrences and the latest handoff remain full; tool results, including
     errors and freshly read sources, are untouched. Stored history is immutable.
     """
-    projected = deepcopy(list(messages))
+    projected = _normalize_terminal_feedback(messages)
     # A rejected submission is already present in the preceding native tool
     # call. Its repair envelope must retain errors/digests, but need not resend
     # that entire identical draft. Never rewrite the call or a changed draft.

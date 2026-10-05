@@ -9,6 +9,35 @@ from test_research_context_checkpoint import checkpoint_message, model, request_
 from test_research_working_state import working_note, source_messages
 
 
+def test_legacy_terminal_feedback_uses_live_envelope_without_losing_draft_or_errors():
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    candidate = {'narrative_markdown': 'Current draft with exact financial scope. ' * 500}
+    context = {'turn_index': 7, 'task_context': {'assignment': 'Original research question'},
+        'progress': {'feedback': [{'code': 'invalid_field', 'path': '/claims/2/statement'}]},
+        'execution_budget': {'remaining_model_turns': 3}, 'allowed_actions': ['revise_workpaper'],
+        'submission_to_repair': {'candidate': candidate, 'base_submission_digest': 'a' * 64}}
+    action = AIMessage(content='', tool_calls=[{'id': 'submit', 'name': 'SubmitWorkpaperAction', 'args': candidate}])
+    rows = [HumanMessage(content='Original user question'), action,
+        ToolMessage(tool_call_id='submit', content=json.dumps(context))]
+    original = deepcopy(rows)
+    out = coalesce_context_snapshots(rows)
+    current = json.loads(out[-1].content)['current_context']
+    assert current['progress'] == context['progress']
+    assert current['task_context'] == context['task_context']
+    assert current['submission_to_repair']['base_submission_digest'] == 'a' * 64
+    assert current['submission_to_repair']['candidate']['identical_snapshot_retained_at']['tool_call_id'] == 'submit'
+    assert out[-1].name == 'SubmitWorkpaperAction' and out[-1].tool_call_id == 'submit'
+    assert out[1].tool_calls[0]['args'] == candidate and rows == original
+    assert len(out[-1].content) < len(rows[-1].content) / 4
+    assert coalesce_context_snapshots(out) == out
+    # A source tool returning JSON that resembles a runtime object is not host state.
+    source = deepcopy(rows)
+    source[1].tool_calls[0]['name'] = 'RequestSourceAction'
+    assert coalesce_context_snapshots(source)[-1] == source[-1]
+    unpaired = [rows[-1]]
+    assert coalesce_context_snapshots(unpaired) == unpaired
+
+
 def test_accepted_submission_archives_completed_reads_for_later_revision():
     old = source_messages('OLD-SOURCE')
     old[-1].content = json.dumps({'ref_id': 'OLD-SOURCE', 'passage': 'Prior source body ' * 600})

@@ -34,7 +34,16 @@ def paper_versions(artifacts):
 
 def confirmation_context(artifacts, revisions, feedback):
     current = artifacts.with_revisions(revisions)
+    changes = {}
+    for pid in feedback:
+        row = revisions.get(pid, {})
+        observed = row.get('runtime_changes', {})
+        # Native author output binds the immediate before/after versions.
+        # Older saved revisions without that record retain the original diff.
+        changes[pid] = (deepcopy(observed) if observed.get('current_digest') ==
+            canonical_sha256(current.read_paper(pid)) else
+            workpaper_changes(artifacts.read_paper(pid), current.read_paper(pid)))
     return {"paper_version_digests": paper_versions(current), "findings_to_confirm": deepcopy(feedback),
-        "changes": {pid: workpaper_changes(artifacts.read_paper(pid), current.read_paper(pid)) for pid in revisions},
-        "author_responses": {pid: deepcopy(row.get("finding_responses", [])) for pid, row in revisions.items()},
-        "instruction": "Independently check each assigned finding against current workpaper and original sources. Author responses are claims, not closure. Inspect changed text, citation bindings and consequential related explanations; reuse unchanged research. Record newly introduced issues together. Necessary unchecked dependencies mean incomplete. Do not infer absence from a failed or incomplete read."}
+        "changes": changes,
+        "author_responses": {pid: deepcopy(revisions.get(pid, {}).get("finding_responses", [])) for pid in feedback},
+        "instruction": "Independently check each assigned finding against current workpaper and original sources. Changes are the latest version-bound author edits for assigned papers, not a cumulative whole-case re-review. All other papers remain readable when relevant; their omission here does not mean their review passed. Author responses are claims, not closure. Inspect changed text, citation bindings and consequential related explanations; reuse unchanged research. Record newly introduced issues together. Necessary unchecked dependencies mean incomplete. Do not infer absence from a failed or incomplete read."}

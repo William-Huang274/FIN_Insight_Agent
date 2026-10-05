@@ -83,6 +83,28 @@ def test_lead_discovers_issue_before_synthesis_without_reviewer_finding():
     assert result['revisions']['P02']['finding_responses'][0]['finding_id'] == 'lead_new_scope'
 
 
+def test_only_explicit_advisory_can_be_carried_with_report_handling():
+    row = {'paper_id': 'P01', 'finding_id': 'F1', 'disposition': 'carry_advisory',
+        'rationale': 'Repeated wording does not change the source-bound research answer.',
+        'expected_progress': 'Preserve the finding without repeating the defective wording.',
+        'report_handling': 'Use the source-supported statement once; keep the original advisory visible.'}
+    decision = LeadIssueDecision(summary='Proceed with a bounded answer while retaining the advisory finding.',
+        action='synthesize', dispositions=[row])
+    feedback = {'P01': [{'finding_id': 'F1', 'severity': 'advisory'}]}
+    assert not decision_errors(decision, feedback, {'P01'})
+    for severity in ('material', None):
+        assert decision_errors(decision, {'P01': [{'finding_id': 'F1', 'severity': severity}]}, {'P01'})
+    missing = decision.model_copy(deep=True)
+    missing.dispositions[0].report_handling = ''
+    assert decision_errors(missing, feedback, {'P01'})
+    new = decision.model_copy(deep=True)
+    new.new_findings = new.dispositions
+    new.dispositions = []
+    assert decision_errors(new, {}, {'P01'})
+    # This option does not unlock synthesis in incomplete-review triage.
+    assert decision_errors(decision, feedback, {'P01'}, incomplete_reviewers=['counter'])
+
+
 def test_claimed_repair_with_unchanged_paper_stops_before_more_paid_roles():
     result, sequence, _ = asyncio.run(exercise_case(hierarchical=True, research_owner='research', unchanged_repair=True))
     assert result['stop_reason'] == 'author_claimed_correction_without_research_change'

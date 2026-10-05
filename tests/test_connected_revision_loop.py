@@ -170,6 +170,25 @@ def test_change_navigation_preserves_offsets_without_copying_source_or_claiming_
     assert 'Alpha unchanged' not in json.dumps(result)
 
 
+def test_confirmation_navigation_uses_assigned_latest_changes_not_all_history():
+    artifacts = artifact_fixture()
+    old = artifacts.read_paper('P01')
+    prior = deepcopy(old); prior['narrative_markdown'] += '\nEarlier amended paragraph.'
+    latest = deepcopy(prior); latest['thesis'] += ' Current precise correction.'
+    observed = workpaper_changes(prior, latest)
+    revisions = {'P01': {'status': 'revision_submitted', 'workpaper': latest, 'sources': {}, 'finding_responses': [], 'runtime_changes': observed},
+        'P02': {'status': 'revision_submitted', 'workpaper': artifacts.read_paper('P02'), 'sources': {}, 'finding_responses': []}}
+    feedback = {'P01': [{'finding_id': 'current'}]}
+    context = confirmation_context(artifacts, revisions, feedback)
+    assert set(context['changes']) == set(context['author_responses']) == {'P01'}
+    assert context['changes']['P01'] == observed
+    assert '/narrative_markdown' not in [x['path'] for x in context['changes']['P01']['locations']]
+    assert 'P02' in context['paper_version_digests']
+    revisions['P01']['runtime_changes']['current_digest'] = 'stale'
+    fallback = confirmation_context(artifacts, revisions, feedback)
+    assert fallback['changes']['P01'] == workpaper_changes(old, latest)
+
+
 def test_private_history_restore_requires_exact_original_actor_and_receipt(tmp_path):
     from types import SimpleNamespace
     from langchain_core.messages import SystemMessage, HumanMessage, AIMessage

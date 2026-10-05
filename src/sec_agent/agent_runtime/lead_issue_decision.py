@@ -7,11 +7,13 @@ class IssueDisposition(BaseModel):
     model_config = ConfigDict(extra="forbid")
     finding_id: str
     paper_id: str
-    disposition: Literal["repair", "disagree_with_sources", "unresolved"]
+    disposition: Literal["repair", "disagree_with_sources", "unresolved", "carry_advisory"]
     rationale: str = Field(min_length=20, max_length=3000)
     requested_change: str = Field(default="", max_length=3000)
     expected_progress: str = Field(min_length=10, max_length=2000)
     citation_ids: list[str] = Field(default_factory=list, max_length=16)
+    report_handling: str = Field(default="", max_length=2000,
+        description="For carry_advisory, explain why the existing advisory does not block the answer and exactly how synthesis should avoid or qualify the affected wording. This does not mark the paper corrected or independently approved.")
 
 
 class ReviewerRecoveryAssignment(BaseModel):
@@ -72,6 +74,13 @@ def decision_errors(decision, feedback, paper_ids, *, incomplete_reviewers=None,
     if any(row.paper_id not in paper_ids or row.disposition == "disagree_with_sources" for row in decision.new_findings):
         errors.append("A new issue must name an existing paper and require repair or remain unresolved.")
     rows = [*decision.dispositions, *decision.new_findings]
+    severity = {(pid, f['finding_id']): f.get('severity') for pid, fs in feedback.items() for f in fs}
+    for row in rows:
+        if row.disposition == 'carry_advisory':
+            if severity.get((row.paper_id, row.finding_id)) != 'advisory':
+                errors.append('Only an explicitly advisory supplied finding may be carried; material, unknown and new findings require another disposition.')
+            if len(row.report_handling.strip()) < 20:
+                errors.append('Carried advisory requires an explicit non-blocking rationale and report handling; it is not a repaired or approved finding.')
     repairs = any(row.disposition == "repair" for row in rows)
     unresolved = any(row.disposition == "unresolved" for row in rows)
     if any(row.disposition == "disagree_with_sources" and not row.citation_ids for row in rows):

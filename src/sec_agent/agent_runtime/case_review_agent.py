@@ -964,7 +964,16 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             if require_inspection and not revision_target:
                 review.inspection_checks = [ReviewInspectionCheck.model_validate(row) for row in
                     merge_checks(runtime.state.get('recorded_inspections', {}), review.inspection_checks).values()]
-            validate_case_review(review, artifacts, runtime.state["messages"], revision_target=revision_target,parsing_records=parsing)
+            confirmation_papers = None
+            if confirmation:
+                # Confirmation covers the assigned repairs, not an implicit
+                # restart of every unchanged paper. Optional additional
+                # assessments/findings still require their own actual reads.
+                confirmation_papers = (set(confirmation['findings_to_confirm'])
+                    | {a.paper_id for a in review.assessments}
+                    | {f.paper_id for f in review.findings})
+            validate_case_review(review, artifacts, runtime.state["messages"], paper_ids=confirmation_papers,
+                revision_target=revision_target, parsing_records=parsing)
             if confirmation:
                 validate_finding_confirmation(review, confirmation, artifacts)
             if require_inspection and not revision_target:
@@ -1055,6 +1064,9 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             audit.extra_middlewares.append(ReviewWorkingContext(artifacts))
         prompt += '\nSave inspection_checks incrementally with record_review_checks; unchanged saved checks survive continuation and need not be recopied. Final submit merges them and validates full current-version coverage. research_limitations describes known boundaries of the answer; unresolved_data_requests describes necessary review work still undone. Review can finish with proved findings or clearly scoped research limitations, but never with unchecked required claims.'
     if confirmation:
+        tools = [*tools, read_review_location]
+        prompt += "\nAssessment scope: assess every paper in findings_to_confirm, plus any other paper for which you choose to submit a new assessment or finding. Each assessed paper needs an actual full-workpaper read. Unchanged unassigned papers need not be reread or assessed."
+        prompt += " Use read_review_location for bounded exact current wording when an older full-paper result has been archived; a navigation label is not the full text."
         prompt += "\nThis is independent confirmation before Lead's final judgment. Read current papers, all changed locations and related explanations/claims; use original sources for necessary checks. Return finding_checks for EVERY ID in findings_to_confirm, with source-grounded reasons. still_open must reference a current finding ID; unresolved must also be recorded in unresolved_data_requests. Inspect newly introduced issues together. Do not re-run unrelated unchanged research, or accept an author's completed note as proof."
         prompt += "\nA finding_type=clarification is a delivery wording issue, not automatically a wrong financial conclusion. To mark it resolved, supply current_quote and clarity_verdict=clear based on the actual corrected wording. Repeating that the central thesis or arithmetic is supported does not close the clarification. Leave remaining ambiguity still_open with a current actionable finding."
     if revision_target:

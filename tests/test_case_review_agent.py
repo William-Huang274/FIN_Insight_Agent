@@ -82,6 +82,33 @@ def call(name, args, identity):
     return {"name": name, "args": args, "id": identity, "type": "tool_call"}
 
 
+def test_confirmation_accepts_assigned_papers_without_unrelated_full_review(artifacts):
+    from sec_agent.agent_runtime.workpaper_changes import paper_versions
+
+    async def exercise():
+        confirmation = {'paper_version_digests': paper_versions(artifacts),
+            'findings_to_confirm': {'P02': [{'finding_id': 'fix-2', 'paper_id': 'P02'}]}}
+        review = {**review_fixture(artifacts), 'completion': 'complete',
+            'assessments': [{'paper_id': 'P02', 'assessment': 'Synthetic repaired paper read; no financial verdict.'}],
+            'finding_checks': [{'finding_id': 'fix-2', 'status': 'resolved',
+                'reason': 'Synthetic assigned repair checked for runtime qualification only.'}]}
+        async with Client(_build_server(case_artifacts=artifacts)) as client:
+            agent = build_case_reviewer(role='verifier', artifacts=artifacts,
+                tools=await case_mcp_tools(client), confirmation=confirmation,
+                model=ScriptedNativeChat(marker='confirmation', replies=[
+                    [call('submit_case_review', {'review': review}, 'unread')],
+                    [call('read_research_artifact', {'paper_id': 'P02', 'section': 'workpaper'}, 'read')],
+                    [call('submit_case_review', {'review': review}, 'submit')]]))
+            result = await agent.ainvoke({'messages': [HumanMessage(content='Check only assigned repair.')]})
+        assert result['review']['assessments'] == review['assessments']
+        errors = [m.content for m in result['messages'] if isinstance(m, ToolMessage) and m.status == 'error']
+        assert len(errors) == 1 and "read_missing_papers_before_review:['P02']" in errors[0]
+        # The same scoped submission cannot masquerade as an all-paper review.
+        with pytest.raises(ValueError, match='assess_each_paper_once'):
+            validate_case_review(CaseReview.model_validate(result['review']), artifacts, result['messages'])
+    asyncio.run(exercise())
+
+
 def test_revision_review_scope_preserves_valid_findings_and_never_passes_whole_case():
     from copy import deepcopy
     from test_research_convergence import artifact_fixture

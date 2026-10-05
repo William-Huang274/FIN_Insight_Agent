@@ -193,6 +193,30 @@ def test_lead_can_submit_source_bound_charts_and_plain_prose_is_not_false_comple
     asyncio.run(run())
 
 
+def test_current_claim_read_does_not_require_prior_report_citation(artifacts):
+    async def run():
+        claim = artifacts.read_paper("P01", "claims")[0]
+        ref = "P01:" + claim["claim_id"]
+        report = {"title": "Exact current claim read", "narrative_markdown":
+            "Synthetic source navigation regression, not financial correctness. " * 5 + f"[{ref}]", "charts": []}
+        model = NativeFixtureModel(marker="current-claim", replies=[
+            [call("read_current_source", {"source_id": ref, "max_characters": 100}, "read-claim"),
+             call("read_current_source", {"source_id": ref + "-unknown"}, "unknown-claim")],
+            [call("submit_research_synthesis", {"synthesis": report}, "submit")]])
+        agent = build_case_output_agent(role="synthesis", model=model, tools=[], artifacts=artifacts,
+            limits={"model_calls": 3, "tool_calls": 4})
+        result = await agent.ainvoke({"messages": [{"role": "user", "content": "Inspect a current claim before writing."}]})
+        reads = [m for m in result["messages"] if isinstance(m, ToolMessage) and m.name == "read_current_source"]
+        assert reads[0].status == "success"
+        body = json.loads(reads[0].content)
+        assert body["read_origin"] == "current_workpaper_citation_binding" and body["next_offset"] == 100
+        assert reads[0].artifact["citations"][ref]["claim"] == claim
+        assert reads[0].artifact["citations"][ref]["sources"]
+        assert reads[1].status == "error"
+        assert result["output"]["citations"][ref]["claim"] == claim
+    asyncio.run(run())
+
+
 def test_native_reviewer_can_read_and_quote_persisted_chart_only_source(artifacts):
     async def run():
         ref = "PASSAGE::WEB::saved-chart-window"

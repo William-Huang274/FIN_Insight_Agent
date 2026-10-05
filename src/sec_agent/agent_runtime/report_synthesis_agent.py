@@ -663,6 +663,19 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         if not 0 <= offset or not 100 <= max_characters <= 16000:
             raise ToolException("source_window_invalid")
         citations = saved_citation_bindings(runtime.state.get("messages", []), prior_citations=prior_bindings(runtime))
+        read_origin = "persisted_citation_binding"
+        if source_id not in citations and re.fullmatch(r"P\d{2}:[^\s\[\]]+", source_id):
+            current = artifacts.with_revisions(runtime.state.get("revisions", {})).with_human_edits(runtime.state.get('human_edits', []))
+            pid, claim_id = source_id.split(":", 1)
+            try:
+                claims = current.read_paper(pid, "claims")
+            except ValueError:
+                claims = []
+            # Exact current claim identity only; no fuzzy aliases and no need
+            # to cite a claim in a report before inspecting its source bundle.
+            if any(claim["claim_id"] == claim_id for claim in claims):
+                citations.update(report_citations(f"[{source_id}]", current))
+                read_origin = "current_workpaper_citation_binding"
         if source_id in citations:
             text = json.dumps(citations[source_id], ensure_ascii=False, indent=2)
             end = offset + max_characters
@@ -670,7 +683,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             verification = source.get("calculation", source)
             return {"citation_id": source_id, "text": text[offset:end], "offset": offset,
                     "next_offset": end if end < len(text) else None, "total_characters": len(text),
-                    "citation_status": "bound", "read_origin": "persisted_citation_binding",
+                    "citation_status": "bound", "read_origin": read_origin,
                     **({"calculation_reuse": CALCULATION_READ_GUIDANCE,
                         "verification_status": {key: "verified" if verification.get(key) is True else
                             "not_verified" if verification.get(key) is False else "not_recorded"

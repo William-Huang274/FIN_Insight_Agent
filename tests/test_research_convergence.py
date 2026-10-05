@@ -237,9 +237,15 @@ def test_research_finding_returns_only_responsible_paper_then_lead_and_both_revi
 
 
 def test_research_review_repairs_before_first_report_not_a_premature_writer():
-    result, sequence, _ = asyncio.run(exercise_case(research_owner="research"))
+    result, sequence, models = asyncio.run(exercise_case(research_owner="research"))
     assert [s[0] for s in sequence] == ["synthesis", "research_verifier", "repair", "synthesis", "research_verifier", "writer", "report_verifier"]
     assert result["phase"] == "case_report_ready_for_human_review"
+    first = json.loads(models[("research_verifier", None, 0)].contexts[0][1].content)
+    second = json.loads(models[("research_verifier", None, 1)].contexts[0][1].content)
+    assert 'report_changes_from_previous_review' not in first
+    assert 'report_changes_from_previous_review' in second
+    assert 'This is a correction review' in second['instruction']
+    assert second['previous_review']['findings']
 
 
 @pytest.mark.parametrize("owner", ["data_tool", "human"])

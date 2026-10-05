@@ -285,16 +285,17 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                             report=report_model_view(state[target]))
                 if role == "report_verifier":
                     body["research_synthesis"] = report_model_view(state["synthesis"]) if state.get("synthesis") else None
-                    body["completed_research_reviews"] = deepcopy(research_review_context)
-                    body["instruction"] = "Independently verify the report's material claims and transformations against actual sources. Prior reviews are navigation and completed-work records, not evidence or automatic approval. Reuse immutable source/calculation bindings; do not re-query an unchanged value merely to recreate its ID. Explain your inspection scope and any need to reopen prior work. No unrelated research expansion."
-                    reports = [r["output"] for r in state.get("artifact_history", []) if r["actor"] == "writer"]
-                    baseline = reports[-2] if len(reports) > 1 else (existing_state or {}).get("report")
-                    if baseline and reports:
-                        body["report_changes_from_previous_review"] = "\n".join(unified_diff(
-                            json.dumps(report_model_view(baseline), ensure_ascii=False, indent=2).splitlines(),
-                            json.dumps(report_model_view(reports[-1]), ensure_ascii=False, indent=2).splitlines(),
-                            fromfile="previously_reviewed_report", tofile="current_report", lineterm=""))
-                        body["instruction"] += " This is a correction review: verify closure of prior findings, changed text/charts and newly introduced consequences. Reopen unchanged research only for a stated material reason; do not automatically repeat a full-case review."
+                body["completed_research_reviews"] = deepcopy(research_review_context)
+                body["instruction"] = "Independently verify the report's material claims and transformations against actual sources. Prior reviews are navigation and completed-work records, not evidence or automatic approval. Reuse immutable source/calculation bindings; do not re-query an unchanged value merely to recreate its ID. Explain your inspection scope and any need to reopen prior work. No unrelated research expansion."
+                author_role = "synthesis" if target == "synthesis" else "writer"
+                reports = [r["output"] for r in state.get("artifact_history", []) if r["actor"] == author_role]
+                baseline = reports[-2] if len(reports) > 1 else (existing_state or {}).get(target)
+                if baseline and reports:
+                    body["report_changes_from_previous_review"] = "\n".join(unified_diff(
+                        json.dumps(report_model_view(baseline), ensure_ascii=False, indent=2).splitlines(),
+                        json.dumps(report_model_view(reports[-1]), ensure_ascii=False, indent=2).splitlines(),
+                        fromfile="previously_reviewed_report", tofile="current_report", lineterm=""))
+                    body["instruction"] += " This is a correction review: verify closure of prior findings, changed text/charts and newly introduced consequences. Reopen unchanged research only for a stated material reason; do not automatically repeat a full-case review."
                 if round_index or existing_state:
                     body["previous_review"] = deepcopy(state.get("synthesis_review" if role == "research_verifier" else "report_review", {}))
         value["messages"] = [HumanMessage(content=json.dumps(body, ensure_ascii=False))]

@@ -463,7 +463,16 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                     "pending_feedback": routed["feedback"]}
         if not needs_change:
             return {"route": writing_entry if stage == "synthesis_review" else "finish", "stop_reason": None}
-        if state["correction_round"] >= max_correction_rounds:
+        # Author corrections must not consume the first synthesis/report's
+        # opportunity to correct its own wording. Count accepted drafts for
+        # the responsible writing stage; keep the global round for lineage
+        # and the existing research-repair limit.
+        owner = "synthesis" if stage == "synthesis_review" else "writer"
+        baseline_key = "synthesis" if owner == "synthesis" else "report"
+        drafts = sum(row["actor"] == owner for row in state.get("artifact_history", []))
+        drafts += int(bool((existing_state or {}).get(baseline_key)))
+        corrections = state["correction_round"] if routed["feedback"] else max(0, drafts - 1)
+        if corrections >= max_correction_rounds:
             return {"route": "finish", "stop_reason": "material_findings_remain_after_targeted_correction",
                     "pending_feedback": routed["feedback"]}
         # Expression in a Lead brief belongs to the Lead; expression in a report

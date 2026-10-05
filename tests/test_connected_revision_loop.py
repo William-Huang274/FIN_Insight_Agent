@@ -105,8 +105,8 @@ def test_confirmation_cannot_silently_omit_remaining_work(failure):
         validate_finding_confirmation(CaseReview.model_validate(value), context, artifacts)
 
 
-@pytest.mark.parametrize('stale,repeat', [(False, False), (True, False), (False, True), (False, 'once')])
-def test_connected_graph_confirms_before_lead_and_stops_repeated_failure(stale, repeat):
+@pytest.mark.parametrize('stale,repeat,writing_issue', [(False, False, False), (True, False, False), (False, True, False), (False, 'once', False), (False, 'once', True)])
+def test_connected_graph_confirms_before_lead_and_stops_repeated_failure(stale, repeat, writing_issue):
     artifacts, sequence, inputs = artifact_fixture(), [], []
     new_source = {'result_state': 'numeric_fact', 'numeric_fact_id': 'NUMFACT::revision-one',
                   'numeric_fact_authority': True, 'value_decimal': '123', 'unit': 'USD',
@@ -125,6 +125,9 @@ def test_connected_graph_confirms_before_lead_and_stops_repeated_failure(stale, 
                 output = {'action': 'repair' if dispositions else 'synthesize', 'dispositions': dispositions}
             elif role.endswith('verifier'):
                 output = {'summary': 'Fixture stage review after workpaper confirmation.', 'findings': [], 'unresolved_data_requests': []}
+                if writing_issue and role == 'research_verifier' and sequence.count(role) == 1:
+                    from test_research_convergence import finding
+                    output['findings'] = [finding('writer')]
             else: output = {'title': 'Fixture', 'narrative_markdown': 'Fixture synthesis', 'citations': {}, 'charts': []}
             return {'output': output}
         graph = StateGraph(Child); graph.add_node('model', execute); graph.add_edge(START, 'model'); graph.add_edge('model', END)
@@ -160,13 +163,17 @@ def test_connected_graph_confirms_before_lead_and_stops_repeated_failure(stale, 
         assert sequence.count('original_author') == 2 and 'synthesis' not in sequence
     else:
         if repeat == 'once':
-            assert sequence.count('original_author') == 2 and result['correction_round'] == 1
+            assert sequence.count('original_author') == 2 and result['correction_round'] == 1 + int(writing_issue)
             first_synthesis = next(body for role, body in inputs if role == 'synthesis')
             assert 'revision_request' not in first_synthesis
             assert first_synthesis['independent_current_workpaper_confirmation']
         else:
             assert sequence[3:5] == ['lead_decision', 'synthesis']
         assert result['phase'] == 'case_report_ready_for_human_review'
+        if writing_issue:
+            assert sequence.count('synthesis') == 2
+            assert sequence.count('research_verifier') == 2
+            assert sequence.count('writer') == 1
         assert inputs[1][1]['independent_current_workpaper_confirmation']['context']['author_responses']
 
 

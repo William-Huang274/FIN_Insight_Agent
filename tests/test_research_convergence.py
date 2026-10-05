@@ -78,7 +78,7 @@ def test_legacy_synthesis_without_version_basis_requires_reassessment():
     assert view['previous_synthesis_status'] == 'requires_reassessment_against_current_papers'
 
 
-async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None, local_writer_edits=False, depth=None, hierarchical=False, unchanged_repair=False, discovered_issue=False, authoring_stages=False, author_ready=True):
+async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None, local_writer_edits=False, depth=None, hierarchical=False, unchanged_repair=False, discovered_issue=False, authoring_stages=False, author_ready=True, research_limitations=(), unresolved_checks=()):
     artifacts = artifact_fixture()
     if depth == "focused":
         artifacts = CaseArtifacts([_worker_result(_task("first"), _new_worker_fixture())])
@@ -119,7 +119,9 @@ async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=Fals
             elif role.endswith("verifier"):
                 owner = research_owner if role == "research_verifier" else terminal_owner
                 findings = [finding(owner)] if owner and (repeat or correction_round == 0) else []
-                replies = [[call("submit_report_review", {"review": {**independent_review(findings), "completion": "complete"}}, "verify")]]
+                review = {**independent_review(findings), "completion": "incomplete" if unresolved_checks else "complete",
+                    "research_limitations": list(research_limitations), "unresolved_data_requests": list(unresolved_checks)}
+                replies = [[call("submit_report_review", {"review": review}, "verify")]]
             elif role == "writer" and revising_report and local_writer_edits:
                 replies = [[call("submit_report_edits", {"edits": [
                     {"old_str": f"[{ref}]", "new_str": f"Locally revised wording [{ref}]"}]}, "local-edit")]]
@@ -158,6 +160,28 @@ def test_focused_workpaper_goes_directly_to_independent_final_verification():
     assert [s[0] for s in sequence] == ["report_verifier"]
     assert result["report"]["citations"]
     assert result["phase"] == "case_report_ready_for_human_review"
+
+
+def test_known_research_limits_reach_writer_and_final_review_without_becoming_blockers():
+    limits = ['Actual facility load is unavailable; the report makes no realized-load claim.']
+    result, sequence, models = asyncio.run(exercise_case(research_limitations=limits))
+    assert result['phase'] == 'case_report_ready_for_human_review'
+    assert result['synthesis_review']['research_limitations'] == limits
+    assert result['report_review']['research_limitations'] == limits
+    writer_input = json.loads(models[('writer', None, 0)].contexts[0][1].content)
+    assert writer_input['research_review']['research_limitations'] == limits
+    assert result['report_review']['unresolved_data_requests'] == []
+    assert [s[0] for s in sequence].count('writer') == 1
+
+
+def test_real_unfinished_material_check_still_blocks_even_with_known_limits():
+    missing = ['A retained material revenue claim has an unverified currency denominator.']
+    result, sequence, _ = asyncio.run(exercise_case(
+        research_limitations=['Deployment coverage is incomplete.'], unresolved_checks=missing))
+    assert result['phase'] == 'research_convergence_needs_attention'
+    assert result['stop_reason'] == 'unresolved_data_or_author_response'
+    assert result['synthesis_review']['unresolved_data_requests'] == missing
+    assert not any(s[0] == 'writer' for s in sequence)
 
 
 def test_integrated_research_omits_duplicate_synthesis_and_keeps_final_review():

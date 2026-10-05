@@ -152,6 +152,8 @@ class ReportReview(BaseModel):
     model_config = ConfigDict(extra="forbid")
     summary: str = Field(min_length=50, max_length=8000)
     findings: list[ReportFinding] = Field(default_factory=list, max_length=40)
+    research_limitations: list[str] = Field(default_factory=list,
+        description="Known evidence or coverage limits to carry into the answer and future work. Use when the current report already removes or appropriately qualifies the unsupported inference. These do not certify missing facts and do not block writing by themselves. If a retained material claim still depends on an unchecked fact, keep that check in unresolved_data_requests instead.")
     unresolved_data_requests: list[str] = Field(default_factory=list, max_length=20,
         description="Only data still indispensable to a remaining material claim, so the report cannot safely stand without it. Optional future disclosure, future S2 ingestion, or limits already handled by removing/qualifying the claim belong in summary/advisory findings, not this blocking list. Do not require forbidden SQL/Evidence writes.")
 
@@ -159,7 +161,7 @@ class ReportReview(BaseModel):
 class SubmittedReportReview(ReportReview):
     completion: Literal["complete", "incomplete"] = Field(description="Whether all necessary checks in the requested scope were completed.")
     unresolved_data_requests: list[str] = Field(max_length=20,
-        description="Explicit required list of indispensable checks still undone, including those mentioned in prose. Empty only when none remain.")
+        description="Checks still indispensable to the material claims actually retained in this report, preventing safe delivery. Known coverage limits, optional future ingestion, and claims already removed or adequately qualified belong in research_limitations. State why each remaining check prevents the current answer from standing; do not equate incomplete industry knowledge with unfinished verification.")
 
     @model_validator(mode="after")
     def completion_matches_unresolved(self):

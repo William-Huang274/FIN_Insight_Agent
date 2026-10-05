@@ -9,7 +9,7 @@ from .research_graph_contracts import canonical_sha256
 def revision_state(state):
     targets = dict(state.get("revision_targets", {}))
     origins = dict(state.get("revision_target_origins", {}))
-    baseline = state.get('task_context', {}).get('accepted_revision_baseline', {})
+    baseline = (state.get('task_context') or {}).get('accepted_revision_baseline') or {}
     through = baseline.get('through_model_turn')
     if isinstance(through, int) and baseline.get('submission_digest'):
         # Compatibility for saved new revisions that accidentally remigrated

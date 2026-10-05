@@ -108,6 +108,9 @@ def test_confirmation_cannot_silently_omit_remaining_work(failure):
 @pytest.mark.parametrize('stale,repeat', [(False, False), (True, False), (False, True), (False, 'once')])
 def test_connected_graph_confirms_before_lead_and_stops_repeated_failure(stale, repeat):
     artifacts, sequence, inputs = artifact_fixture(), [], []
+    new_source = {'result_state': 'numeric_fact', 'numeric_fact_id': 'NUMFACT::revision-one',
+                  'numeric_fact_authority': True, 'value_decimal': '123', 'unit': 'USD',
+                  'period_end': '2025-12-31', 'source_observation_ids': ['fixture-observation']}
     class Child(TypedDict, total=False):
         messages: list
         output: dict
@@ -130,11 +133,15 @@ def test_connected_graph_confirms_before_lead_and_stops_repeated_failure(stale, 
         sequence.append('original_author')
         current = artifacts.with_revisions(state.get('revisions', {}))
         value = current.read_paper(pid); value['narrative_markdown'] += '\nActual amendment.'
-        return {'status': 'revision_submitted', 'workpaper': value, 'sources': {},
+        return {'status': 'revision_submitted', 'workpaper': value,
+            'sources': {'NUMFACT::revision-one': new_source} if sequence.count('original_author') == 1 else {},
             'finding_responses': [{'finding_id': f['finding_id'], 'disposition': 'corrected', 'explanation': 'A fixture assertion requiring independent review.'}
                 for f in state['pending_feedback'][pid]]}
     async def confirm(current, context, config):
         sequence.append('independent_confirmation')
+        # The second author emits a delta with no new sources. The first
+        # revision's exact binding must still be readable in the new version.
+        assert current.source_item('NUMFACT::revision-one') == new_source
         assert context['changes']['P01']['locations']
         return review_result(current, context['findings_to_confirm'], stale=stale,
             open_issue=repeat is True or (repeat == 'once' and sequence.count('independent_confirmation') == 1))
@@ -144,6 +151,8 @@ def test_connected_graph_confirms_before_lead_and_stops_repeated_failure(stale, 
         run_author=author, review_revisions=confirm, hierarchical=True, max_correction_rounds=1).compile(checkpointer=InMemorySaver())
     result = asyncio.run(graph.ainvoke({}, {'recursion_limit': 100, 'configurable': {'thread_id': 'connected-loop'}}))
     assert sequence[:3] == ['lead_decision', 'original_author', 'independent_confirmation']
+    assert result['revisions']['P01']['sources']['NUMFACT::revision-one'] == new_source
+    assert any(row['finding_id'] == 'verifier:F1' for row in result['revisions']['P01']['finding_responses'])
     if stale:
         assert result['stop_reason'] == 'independent_confirmation_stale_version' and 'synthesis' not in sequence
     elif repeat is True:

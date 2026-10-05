@@ -370,6 +370,18 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             current = artifacts.with_revisions(state.get("revisions", {}))
             event("author_" + pid, "started", paper_id=pid, correction_round=state["correction_round"])
             output = await run_author(pid, state, config)
+            # Native author projections return only sources newly observed in
+            # this revision. State replaces the whole paper row, so retain the
+            # previous revisions' bindings before publishing the current view.
+            previous = state.get("revisions", {}).get(pid, {})
+            sources = deepcopy(previous.get("sources", {}))
+            for ref, source in output.get("sources", {}).items():
+                if ref in sources and sources[ref] != source:
+                    raise ValueError("revision_source_conflict:" + ref)
+                sources[ref] = deepcopy(source)
+            responses = {row["finding_id"]: row for row in previous.get("finding_responses", [])}
+            responses.update({row["finding_id"]: row for row in output["finding_responses"]})
+            output = {**output, "sources": sources, "finding_responses": list(responses.values())}
             after = artifacts.with_revisions({**state.get("revisions", {}), pid: output})
             changes = workpaper_changes(current.read_paper(pid), after.read_paper(pid))
             output = {**output, "runtime_changes": changes}

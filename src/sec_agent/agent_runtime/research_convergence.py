@@ -256,8 +256,11 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                 body["independent_research_review"] = deepcopy(research_review_context)
                 if state.get("synthesis"):
                     body["previous_synthesis"] = report_model_view(state["synthesis"])
-                if round_index:
-                    body["revision_request"] = deepcopy(state[state["active_review"]])
+                # Author corrections can precede the first synthesis. A round
+                # number alone does not imply an existing synthesis/report review.
+                stage_review = state.get(state.get("active_review", ""))
+                if stage_review:
+                    body["revision_request"] = deepcopy(stage_review)
             elif role == 'prepare':
                 body['writing_basis'] = writing_basis(state, current)
                 body['instruction'] = 'Prepare the effective research state for your own final writing; retain reviewed conditions and unresolved issues.'

@@ -105,7 +105,7 @@ def test_confirmation_cannot_silently_omit_remaining_work(failure):
         validate_finding_confirmation(CaseReview.model_validate(value), context, artifacts)
 
 
-@pytest.mark.parametrize('stale,repeat', [(False, False), (True, False), (False, True)])
+@pytest.mark.parametrize('stale,repeat', [(False, False), (True, False), (False, True), (False, 'once')])
 def test_connected_graph_confirms_before_lead_and_stops_repeated_failure(stale, repeat):
     artifacts, sequence, inputs = artifact_fixture(), [], []
     class Child(TypedDict, total=False):
@@ -136,7 +136,8 @@ def test_connected_graph_confirms_before_lead_and_stops_repeated_failure(stale, 
     async def confirm(current, context, config):
         sequence.append('independent_confirmation')
         assert context['changes']['P01']['locations']
-        return review_result(current, context['findings_to_confirm'], stale=stale, open_issue=repeat)
+        return review_result(current, context['findings_to_confirm'], stale=stale,
+            open_issue=repeat is True or (repeat == 'once' and sequence.count('independent_confirmation') == 1))
     from langgraph.checkpoint.memory import InMemorySaver
     graph = build_research_convergence_graph(artifacts=artifacts, question='fixture question',
         feedback={'P01': [{'finding_id': 'verifier:F1'}]}, research_review_context={}, make_agent=make_agent,
@@ -145,11 +146,17 @@ def test_connected_graph_confirms_before_lead_and_stops_repeated_failure(stale, 
     assert sequence[:3] == ['lead_decision', 'original_author', 'independent_confirmation']
     if stale:
         assert result['stop_reason'] == 'independent_confirmation_stale_version' and 'synthesis' not in sequence
-    elif repeat:
+    elif repeat is True:
         assert result['stop_reason'] == 'material_findings_remain_after_targeted_correction'
         assert sequence.count('original_author') == 2 and 'synthesis' not in sequence
     else:
-        assert sequence[3:5] == ['lead_decision', 'synthesis']
+        if repeat == 'once':
+            assert sequence.count('original_author') == 2 and result['correction_round'] == 1
+            first_synthesis = next(body for role, body in inputs if role == 'synthesis')
+            assert 'revision_request' not in first_synthesis
+            assert first_synthesis['independent_current_workpaper_confirmation']
+        else:
+            assert sequence[3:5] == ['lead_decision', 'synthesis']
         assert result['phase'] == 'case_report_ready_for_human_review'
         assert inputs[1][1]['independent_current_workpaper_confirmation']['context']['author_responses']
 

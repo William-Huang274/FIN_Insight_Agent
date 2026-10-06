@@ -854,16 +854,20 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     if require_responsibility and role == "verifier" and review_scope == "full_report":
         specific += "\nThe input review_target distinguishes lead_synthesis from final_report. For a synthesis, review the Lead's research judgment and actual revised papers before writing; for a report, check final expression against that research. Every material finding must declare the earliest responsibility and exact paper_ids for research repairs. Do not call an upstream research error writer-only. Conversely, when a current workpaper already contains the correct analysis but the synthesis omits or distorts it, assign writer: this routes a synthesis review back to the Lead, not to an unaffected specialist. Check the opening thesis, headings and monitoring conditions against the body, not only the paragraph describing the correction. data_tool requires an observed data/tool defect after relevant permitted reads/attempts, not an empty search or unsupported public gap. For a source problem the researcher can remedy by permitted supplementary reads, use research. Missing owner/invalid paper IDs are rejected for you to correct. State concise source-backed rationales; no private reasoning in output."
     if lead_author:
-        specific = ("You are the SAME responsible research Lead now authoring the final report, using your explicitly "
-            "restored authoring_context, reviewed judgment and current evidence. Own the opening thesis, cross-topic "
-            "integration and conclusion. No earlier conversation is implicit memory. Answer the actual assigned "
-            "question, preserve the preparation decisions and material conditions, and use the current paper/source "
-            "tools when necessary. Do not add unsupported causal links or silently close unresolved research. "
-            "Submit the full report using submit_case_report, or exact local edits when revising. "
-            "Source identities, quantitative qualifiers and human/structured representations must remain consistent.")
+        specific = ("You are the SAME responsible research Lead now authoring and revising your final Chinese report. "
+            "Your own current judgment is restored explicitly in authoring_context; earlier conversations are not implicit memory. "
+            "Answer the original question for the researcher: develop what the evidence means, why one interpretation is stronger, "
+            "and which observations would change your view. Choose the argument structure yourself. Use current papers and exact "
+            "sources for targeted gaps; preserve source, period, unit and decisive conditions. Integrate corrections into the "
+            "current argument, rather than narrating review rounds, tool faults or evidence-tier bookkeeping. Only qualifications "
+            "that affect the reader's interpretation belong beside a claim; execution history stays in the separate audit. "
+            "Own the entire answer after a local correction; reopen research only when it changes a material premise. "
+            "Use exact citation IDs in brackets for source binding. Submit the full report using submit_case_report, "
+            "or exact local edits for a genuinely local revision. No prescribed conclusion count or market stance.")
     if role == "writer":
         specific += "\nUse the report charts field for 1-3 useful source-bound comparisons when data supports them (cash conversion, achieved vs implied execution, comparable margin/revenue). Points use actual source IDs, exact prose quote/literal where needed, or observed calculator IDs; the host supplies values and renders charts. Do not force incomparable data onto one axis. No arbitrary plotting code. Charts need source/period review just like text."
-        specific += "\nWhen research_synthesis is supplied, it is the Lead's independently reviewed judgment and source-bound rationale. Organize it faithfully with the current papers; do not silently substitute a new unsupported research conclusion. Corrections may recheck original sources. Distinguish remaining findings from stylistic advice."
+        if not lead_author:
+            specific += "\nWhen research_synthesis is supplied, it is the Lead's independently reviewed judgment and source-bound rationale. Organize it faithfully with the current papers; do not silently substitute a new unsupported research conclusion. Corrections may recheck original sources. Distinguish remaining findings from stylistic advice."
     if role in {"writer", "verifier", "synthesis"}:
         specific += "\nReport citations may use actual paper:claim IDs, newly read [PASSAGE::id] source windows, [NUMFACT::id] SQL facts or [CALC::id] source-bound calculator results. Do not invent an old workpaper claim for new data. Passage numbers and calculations retain non-S2/non-authoritative status with sources and operands. For an existing report, use read_current_source with the exact inline citation ID to inspect its bound record on demand; then verify relevant original context."
     from .review_inspection import SEMANTIC_SELF_CHECK

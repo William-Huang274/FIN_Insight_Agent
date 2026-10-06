@@ -87,9 +87,28 @@ def bind_authoring(brief, *, owner, stage, basis):
 
 
 def validate_authoring(packet, *, owner, basis):
+    if packet.get('version') == 'lead_authoring_state.v1':
+        if (owner != 'research_lead' or packet.get('owner') != owner
+                or packet.get('basis') != basis or packet.get('basis_digest') != canonical_sha256(basis)
+                or not basis.get('synthesis', {}).get('narrative_markdown')):
+            raise ValueError('lead_authoring_state_changed')
+        return
     if (packet.get('owner') != owner or packet.get('basis_digest') != canonical_sha256(basis)
             or packet.get('basis') != basis or not packet.get('brief', {}).get('ready')):
         raise ValueError('authoring_owner_or_basis_changed_prepare_again')
+
+
+def bind_lead_authoring_state(basis):
+    """Resume the Lead's accepted public judgment, without another model summary.
+
+    The complete source-bound state is durable. This is explicit state restoration,
+    not a claim that a new model request remembers an earlier conversation.
+    """
+    if not basis.get('synthesis', {}).get('narrative_markdown'):
+        raise ValueError('lead_synthesis_required')
+    return {'version': 'lead_authoring_state.v1', 'owner': 'research_lead',
+            'stage': 'report', 'basis': deepcopy(basis), 'basis_digest': canonical_sha256(basis),
+            'financial_acceptance': False}
 
 
 def specialist_basis(state):

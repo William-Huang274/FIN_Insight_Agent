@@ -24,7 +24,7 @@ from langgraph.types import Command, Send
 from .report_synthesis_agent import ReportReview, report_model_view, review_responsibility_errors, paper_revision_input
 from .research_execution_plan import ResearchExecutionPlan
 from .research_graph_contracts import canonical_sha256
-from .authoring_context import bind_authoring, validate_authoring
+from .authoring_context import bind_authoring, bind_lead_authoring_state, validate_authoring
 from .review_recovery import public_confirmation
 
 
@@ -268,6 +268,23 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                 if authoring_stages:
                     validate_authoring(state['authoring_context'], owner='research_lead', basis=writing_basis(state, current))
                     body['authoring_context'] = deepcopy(state['authoring_context'])
+                    if body['authoring_context']['version'] == 'lead_authoring_state.v1':
+                        # Binding records stay in native state; the model needs
+                        # its judgment and exact readback IDs, not a second copy
+                        # of every source object inside the authoring packet.
+                        basis = body['authoring_context'].pop('basis')
+                        body['authoring_context']['question'] = basis['question']
+                        body['authoring_context']['research_as_of'] = basis['research_as_of']
+                        body['authoring_context']['current_judgment'] = report_model_view(basis['synthesis'])
+                        body['authoring_context']['paper_versions'] = basis['papers']
+                        body['authoring_context']['current_review'] = deepcopy(basis['synthesis_review'])
+                        body['authoring_context']['continuity'] = 'Restore your own current research judgment; sources remain readable through read_current_source and read_current_workpaper. Historical review is not report prose.'
+                        # The effective state replaces old issue narratives in
+                        # the writing view. Full review/history remains durable.
+                        body.pop('author_responses', None)
+                        body.pop('independent_current_workpaper_confirmation', None)
+                        body.pop('lead_issue_decision', None)
+                        body.pop('research_decision_context', None)
                 if not authoring_stages:
                     body["research_synthesis"] = report_model_view(state["synthesis"]) if state.get("synthesis") else None
                     body["research_review"] = deepcopy(state.get("synthesis_review", research_review_context))
@@ -502,7 +519,16 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     graph.add_edge("decision_stop", "finish")
     graph.add_edge("apply_lead_repairs", "prepare_authors")
     graph.add_node("prepare_authors", prepare_authors)
-    graph.add_node('prepare_writing', actor_node('prepare'))
+    async def prepare_writing(state, config: RunnableConfig):
+        # An accepted Lead synthesis already is its public research state.
+        # Rewriting that state into another mandatory brief loses detail and
+        # spends another turn without changing the research responsibility.
+        if state.get('synthesis', {}).get('narrative_markdown'):
+            current = artifacts.with_revisions(state.get('revisions', {}))
+            return {'authoring_context': bind_lead_authoring_state(writing_basis(state, current))}
+        return await invoke('prepare', state, config)
+
+    graph.add_node('prepare_writing', prepare_writing)
     graph.add_conditional_edges('prepare_writing', lambda s: 'finish' if s.get('stop_reason') else 'writer', ['finish', 'writer'])
     graph.add_node("prepare_focused_report", prepare_focused_report)
     graph.add_node("responsible_author", author)

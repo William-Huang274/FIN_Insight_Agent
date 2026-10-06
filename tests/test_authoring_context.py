@@ -45,12 +45,17 @@ def test_native_mcp_method_envelope_preserves_receipt_and_stage_content():
 def test_real_convergence_lead_prepares_before_writing_and_reprepares_on_revision():
     result, sequence, models=asyncio.run(exercise_case(hierarchical=True,authoring_stages=True,terminal_owner='writer'))
     roles=[r[0] for r in sequence]
-    assert roles==['lead_decision','synthesis','research_verifier','prepare','writer','report_verifier','prepare','writer','report_verifier']
+    assert roles==['lead_decision','synthesis','research_verifier','writer','report_verifier','writer','report_verifier']
     for round_ in (0,1):
         model=models[('writer',None,round_)]
         payload=json.loads(model.contexts[0][1].content)
         assert payload['authoring_context']['owner']=='research_lead'
-        assert payload['authoring_context']['brief']['material_conditions']==['Same period only']
+        packet = payload['authoring_context']
+        assert packet['version'] == 'lead_authoring_state.v1'
+        assert packet['current_judgment']['narrative_markdown'] == result['synthesis']['narrative_markdown']
+        assert packet['question'] == payload['question']
+        assert packet['paper_versions'] == result['authoring_context']['basis']['papers']
+        assert 'basis' not in packet  # No duplicate complete source objects in prompt.
         assert 'SAME responsible research Lead' in model.contexts[0][0].content
         assert len(model.contexts[0]) == 2  # New current-version input, no previous draft/tool transcript.
     assert result['phase']=='case_report_ready_for_human_review'
@@ -58,9 +63,42 @@ def test_real_convergence_lead_prepares_before_writing_and_reprepares_on_revisio
 
 
 def test_preparation_with_unresolved_material_work_never_reaches_writer():
-    result,sequence,_=asyncio.run(exercise_case(hierarchical=True,authoring_stages=True,author_ready=False))
+    result,sequence,_=asyncio.run(exercise_case(depth='integrated',authoring_stages=True,author_ready=False))
     assert 'writer' not in [r[0] for r in sequence]
     assert result['stop_reason']=='lead_preparation_retains_material_research'
+
+
+def test_lead_state_retains_exact_evidence_and_rejects_stale_basis():
+    from sec_agent.agent_runtime.authoring_context import bind_lead_authoring_state
+    basis = {'question': 'Original problem', 'papers': {'P01': 'v1'},
+        'synthesis': {'narrative_markdown': 'A finding, countercase and unresolved mechanism [P01:C1]',
+            'citations': {'P01:C1': {'period': 'FY2026', 'unit': 'USD', 'source': 'exact-original'}}},
+        'synthesis_review': {'research_limitations': ['Actual usage unavailable'], 'findings': []}}
+    packet = bind_lead_authoring_state(basis)
+    validate_authoring(packet, owner='research_lead', basis=basis)
+    assert packet['basis'] == basis and packet['financial_acceptance'] is False
+    changed = deepcopy(basis)
+    changed['papers']['P01'] = 'v2'
+    with pytest.raises(ValueError):
+        validate_authoring(packet, owner='research_lead', basis=changed)
+    with pytest.raises(ValueError):
+        validate_authoring(packet, owner='independent_writer', basis=basis)
+
+
+def test_lead_report_resume_keeps_judgment_limits_and_latest_feedback():
+    from test_research_convergence import independent_review, finding
+    first, _, _ = asyncio.run(exercise_case(authoring_stages=True,
+        research_limitations=['A relevant usage measure was not available.']))
+    original = deepcopy(first)
+    first['report_review'] = independent_review([finding('writer')])
+    resumed, sequence, models = asyncio.run(exercise_case(authoring_stages=True, existing_state=first))
+    assert [s[0] for s in sequence] == ['writer', 'report_verifier']
+    request = json.loads(next(m for m in models.values()).contexts[0][1].content)
+    assert request['authoring_context']['current_judgment']['narrative_markdown'] == original['synthesis']['narrative_markdown']
+    assert request['authoring_context']['current_review']['research_limitations'] == ['A relevant usage measure was not available.']
+    assert request['revision_request']['findings'][0]['finding_id'] == 'F1'
+    assert request['report']['narrative_markdown'] == original['report']['narrative_markdown']
+    assert resumed['phase'] == 'case_report_ready_for_human_review'
 
 
 def test_specialist_preparation_preserves_sources_and_replaces_static_role_method():

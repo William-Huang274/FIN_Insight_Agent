@@ -891,7 +891,11 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     scope_notice = ("\nInvocation scope: selected claims only. Apply the supplied role method within those targets, not its whole-report coverage steps. The verifier method is already fully loaded here; other methods are optional only when necessary to a target. Missing unselected sections are NOT unresolved checks. Only an indispensable unanswered dependency of a selected claim may block its check. completion describes this selected scope, never the whole report. Keep the summary compact and account for every target ID. Submit inspected results with explicit unresolved dependencies; do not infer acceptance from correct arithmetic or the presence of a qualifier."
         if review_scope == "selected_claims" else "")
     from .working_memory_tools import working_memory_tools, WORKING_MEMORY_GUIDANCE
-    notes = working_memory_tools(f"{role}:{paper_id or 'report'}")
+    # Final writing is a stage of this Lead's research, not a new notebook
+    # owner. Reuse the existing synthesis namespace; legacy standalone writers
+    # and independent reviewers retain their original identities.
+    note_role = 'synthesis' if lead_author or role == 'prepare' else role
+    notes = working_memory_tools(f"{note_role}:{paper_id or 'report'}")
     return create_agent(model=model, tools=[*selected, *notes, submit], state_schema=CaseOutputState,
         system_prompt=CONTEXT_RULES + specific + (WORKING_MEMORY_GUIDANCE if notes else "") + METHOD_TOOL_GUIDANCE + method_instructions + scope_notice + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
         middleware=[StopOnOutput(), InvalidToolCallFeedback(recover_report=role == 'writer'), AnswerSubmissionFeedback(submit.name), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="end" if incomplete_reviewers is not None else "error"),

@@ -85,6 +85,18 @@ def test_lead_state_retains_exact_evidence_and_rejects_stale_basis():
         validate_authoring(packet, owner='independent_writer', basis=basis)
 
 
+def test_lead_writing_uses_its_existing_research_note_owner(monkeypatch):
+    import sec_agent.agent_runtime.working_memory_tools as memory
+    from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_agent
+    from test_report_synthesis_agent import NativeFixtureModel
+    owners=[]
+    monkeypatch.setattr(memory, 'working_memory_tools', lambda owner: owners.append(owner) or [])
+    for role in ('synthesis','prepare','lead_writer','writer','verifier'):
+        build_case_output_agent(role=role, model=NativeFixtureModel(marker='test', replies=[]),
+            tools=[], artifacts=None, limits={'model_calls':2,'tool_calls':4})
+    assert owners == ['synthesis:report','synthesis:report','synthesis:report','writer:report','verifier:report']
+
+
 def test_lead_report_resume_keeps_judgment_limits_and_latest_feedback():
     from test_research_convergence import independent_review, finding
     first, _, _ = asyncio.run(exercise_case(authoring_stages=True,

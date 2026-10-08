@@ -267,33 +267,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             elif role == "writer":
                 if authoring_stages:
                     validate_authoring(state['authoring_context'], owner='research_lead', basis=writing_basis(state, current))
-                    body['authoring_context'] = deepcopy(state['authoring_context'])
-                    if body['authoring_context']['version'] == 'lead_authoring_state.v1':
-                        # Binding records stay in native state; the model needs
-                        # its judgment and exact readback IDs, not a second copy
-                        # of every source object inside the authoring packet.
-                        basis = body['authoring_context'].pop('basis')
-                        body['authoring_context']['question'] = basis['question']
-                        body['authoring_context']['research_as_of'] = basis['research_as_of']
-                        body['authoring_context']['current_judgment'] = report_model_view(basis['synthesis'])
-                        body['authoring_context']['paper_versions'] = basis['papers']
-                        body['authoring_context']['current_review'] = deepcopy(basis['synthesis_review'])
-                        body['authoring_context']['continuity'] = 'Restore your own current research judgment; sources remain readable through read_current_source and read_current_workpaper. Historical review is not report prose.'
-                        # The effective state replaces old issue narratives in
-                        # the writing view. Full review/history remains durable.
-                        body.pop('author_responses', None)
-                        body.pop('independent_current_workpaper_confirmation', None)
-                        body.pop('lead_issue_decision', None)
-                        body.pop('research_decision_context', None)
-                if not authoring_stages:
-                    body["research_synthesis"] = report_model_view(state["synthesis"]) if state.get("synthesis") else None
-                    body["research_review"] = deepcopy(state.get("synthesis_review", research_review_context))
-                if plan:
-                    body["execution_plan"] = plan.model_dump(mode="json")
-                    body["instruction"] = "Answer only the user's scope. Read relevant workpapers on demand and integrate them directly. Do not repeat unchanged source queries; re-query only for a concrete missing/contradictory field. Retain evidence, limitations and necessary checks. Charts are optional when they do not help this question."
                 if state.get("report"):
                     value["report"] = deepcopy(state["report"])
-                    body.update(report=report_model_view(state["report"]), revision_request=deepcopy(state["report_review"]))
                     value["request_action"] = "revise"
             else:
                 target = "synthesis" if role == "research_verifier" else "report"
@@ -315,17 +290,27 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                     body["instruction"] += " This is a correction review: verify closure of prior findings, changed text/charts and newly introduced consequences. Reopen unchanged research only for a stated material reason; do not automatically repeat a full-case review."
                 if round_index or existing_state:
                     body["previous_review"] = deepcopy(state.get("synthesis_review" if role == "research_verifier" else "report_review", {}))
+        if role == 'writer':
+            from .report_authoring import report_authoring_input
+            conditions = list(state.get('synthesis_review', {}).get('research_limitations', []))
+            for reviewed in (research_review_context or {}).values():
+                if isinstance(reviewed, dict):
+                    conditions.extend(reviewed.get('research_limitations', []))
+            body = report_authoring_input(question, current, human_feedback=human_feedback,
+                report=state.get('report'), review=state.get('report_review'), material_conditions=conditions)
+            # Binding/review archives stay in state, not in the writing assignment.
+            body['authoring_basis_digest'] = canonical_sha256(writing_basis(state, current))
         value["messages"] = [HumanMessage(content=json.dumps(body, ensure_ascii=False))]
         # An explicitly retried parent can reach a child whose native loop ended
         # without its required submission. Reopen only that completed child via
         # the documented Command API; retain its own messages and accepted peers.
         saved = await agent.aget_state(config)
-        same_authoring_basis = not authoring_stages or role not in {'prepare', 'writer'}
-        if authoring_stages and role in {'prepare', 'writer'}:
+        same_authoring_basis = role != 'writer' and (not authoring_stages or role != 'prepare')
+        if role == 'writer' or (authoring_stages and role == 'prepare'):
             # Re-enter with this version's public state, not old research/writing turns.
             # Previous checkpoint snapshots and provider audits remain available.
             value['messages'] = [RemoveMessage(id=REMOVE_ALL_MESSAGES), *value['messages']]
-            basis_key = 'authoring_context' if role == 'writer' else 'writing_basis'
+            basis_key = 'authoring_basis_digest' if role == 'writer' else 'writing_basis'
             for message in reversed(saved.values.get('messages', [])):
                 if isinstance(message, HumanMessage) and isinstance(message.content, str):
                     try:

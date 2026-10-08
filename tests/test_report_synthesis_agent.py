@@ -140,9 +140,10 @@ def test_revision_comparison_changes_only_edit_interface_not_revision_role(artif
             limits={"model_calls": 2, "tool_calls": 3}, report_revision=True, allow_report_edits=allow_edits)
         result = await agent.ainvoke({"report": report, "messages": [{"role": "user", "content": "Synthetic revision mode comparison."}]})
         prompt = model.contexts[0][0].content
-        assert "Revise the supplied full Chinese report" in prompt
-        assert "Not separately disclosed does not mean not achieved" in prompt
-        assert "similar wording alone does not prove comparability" in prompt
+        assert "根据具体复核意见修正当前报告" in prompt
+        assert "不重写无关段落" in prompt
+        assert "重要条件和准确引用 ID" in prompt
+        assert "Not separately disclosed does not mean not achieved" not in prompt
         assert ("prefer submit_report_edits" in prompt) is allow_edits
         assert ("submit_report_edits" in model.seen[0]) is allow_edits
         assert "submit_case_report" in model.seen[0]
@@ -301,7 +302,9 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
             assert "Synthetic corrected current thesis for fixture paper P01" in catalog.content
             method = next(m for m in writer.contexts[1] if isinstance(m, ToolMessage) and m.name == "get_research_method")
             assert method.artifact["method_id"] == "writer" and "局部编辑" in method.artifact["content"]
-            assert "get_research_method" in writer.contexts[0][0].content
+            # Methods remain callable; first composition no longer auto-injects
+            # the packaged review-heavy method before the author asks for it.
+            assert 'submit_case_report' in writer.contexts[0][0].content
             for pid in PAPERS:
                 metrics = state["actor_metrics"]["author_"+pid]
                 assert metrics["model_calls"] == (0 if pid in reused else 2)

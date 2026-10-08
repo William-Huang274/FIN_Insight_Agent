@@ -423,6 +423,12 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 return studio.method(selected) if studio else get_research_method(selected)
             method_instructions = json.dumps(stage_methods('prepare_report' if role == 'prepare' else 'report',
                 reader=authoring_method_reader), ensure_ascii=False)
+        if role == 'writer' and not interactive:
+            # Replace packaged writing/review methods; preserve explicit customization.
+            from sec_agent.research_foundation.research_methods import get_research_method
+            selected = studio.bindings['writer'] if studio else 'writer'
+            custom = studio.method(selected)['content'] if studio else None
+            method_instructions = custom if custom is not None and custom != get_research_method(selected)['content'] else ''
         async def report_progress(message: str):
             emit({"kind": "stage", "actor": actor_override or ("author_" + paper_id if paper_id else role),
                 "event": "progress", "objective": message})
@@ -454,6 +460,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             public_sink=public_sink, private_sink=private_sink, stream_public=True,
             dispatch_guard=budget_scope.guard(profile_role, model_profile) if budget_scope else None, source_access_check=source_access_check)
         audit.review_execution_control = review_execution_control
+        if role == 'writer' and not interactive:
+            audit.working_note_context = lambda: ''
         if any(t.name == "consult_research_specialist" for t in tools):
             from langchain.agents.middleware import ToolCallLimitMiddleware
             audit.extra_middlewares = [ToolCallLimitMiddleware(tool_name="consult_research_specialist", run_limit=2, exit_behavior="error")]

@@ -1036,6 +1036,41 @@ def current_review_candidate(messages):
     return projected
 
 
+def deduplicate_read_results(messages):
+    """Keep exact repeated successful reads at their latest retained occurrence.
+
+    No semantic matching, source merging, or checkpoint mutation. Pairing and
+    original arguments remain; different versions/windows and errors survive.
+    """
+    from .research_graph_contracts import canonical_sha256
+    calls = {c['id']: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
+    projected, latest = messages, {}
+    # Specialist action envelopes also contain live execution state. Their
+    # existing lifecycle owns that projection; only pure readers belong here.
+    readers = {'read_current_workpaper', 'read_current_source', 'read_source_document',
+               'search_research_sources', 'query_company_financial_facts'}
+    for i in range(len(messages) - 1, -1, -1):
+        message = messages[i]
+        if not isinstance(message, ToolMessage) or message.status != 'success':
+            continue
+        call = calls.get(message.tool_call_id)
+        if not call or call['name'] not in readers or not message.content:
+            continue
+        if message.response_metadata.get('context_editing', {}).get('cleared'):
+            continue
+        key = canonical_sha256({'tool': call['name'], 'arguments': call['args'], 'content': message.content})
+        if key not in latest:
+            latest[key] = message.tool_call_id
+            continue
+        if projected is messages:
+            projected = list(messages)
+        projected[i] = message.model_copy(update={'content': json.dumps({
+            'duplicate_of_tool_call_id': latest[key], 'read_tool': call['name'], 'arguments': call['args'],
+            'notice': 'The identical result is retained later in this request. Original call and full result remain saved.'},
+            ensure_ascii=False)})
+    return projected
+
+
 def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False, workpaper_navigation=False, policy="legacy_window"):
     from .source_result_view import source_message_views
     from .context_release import release_history
@@ -1043,9 +1078,9 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_
     messages = source_message_views(messages)
     messages = release_history(messages)
     if policy == "task_boundary":
-        return task_boundary_history(messages)
+        return deduplicate_read_results(task_boundary_history(messages))
     if trigger_tokens is None:
-        return messages
+        return deduplicate_read_results(messages)
     names = {call["id"]: call["name"] for m in messages if isinstance(m, AIMessage) for call in m.tool_calls}
     calls = {call["id"]: call for m in messages if isinstance(m, AIMessage) for call in m.tool_calls}
     known = set(names.values()) | {m.name for m in messages if isinstance(m, ToolMessage)}
@@ -1094,7 +1129,7 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_
                 saved_result_reader=saved_result_reader)
             if workpaper_navigation:
                 projected[index].content += _workpaper_navigation(message)
-    return projected
+    return deduplicate_read_results(projected)
 
 
 SUMMARY_GUIDANCE = """

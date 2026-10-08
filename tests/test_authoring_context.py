@@ -49,14 +49,12 @@ def test_real_convergence_lead_prepares_before_writing_and_reprepares_on_revisio
     for round_ in (0,1):
         model=models[('writer',None,round_)]
         payload=json.loads(model.contexts[0][1].content)
-        assert payload['authoring_context']['owner']=='research_lead'
-        packet = payload['authoring_context']
-        assert packet['version'] == 'lead_authoring_state.v1'
-        assert packet['current_judgment']['narrative_markdown'] == result['synthesis']['narrative_markdown']
-        assert packet['question'] == payload['question']
-        assert packet['paper_versions'] == result['authoring_context']['basis']['papers']
-        assert 'basis' not in packet  # No duplicate complete source objects in prompt.
-        assert 'SAME responsible research Lead' in model.contexts[0][0].content
+        assert payload['authoring_view'] == 'research_handoff.v1'
+        assert len(payload['authoring_basis_digest']) == 64
+        assert {p['paper_id']: p['version'] for p in payload['catalog']['papers']} == result['authoring_context']['basis']['papers']
+        assert 'authoring_context' not in payload
+        assert 'research_synthesis' not in payload
+        assert ('report' in payload) is bool(round_)
         assert len(model.contexts[0]) == 2  # New current-version input, no previous draft/tool transcript.
     assert result['phase']=='case_report_ready_for_human_review'
     assert result['authoring_context']['basis']['report_review']['findings']
@@ -106,8 +104,8 @@ def test_lead_report_resume_keeps_judgment_limits_and_latest_feedback():
     resumed, sequence, models = asyncio.run(exercise_case(authoring_stages=True, existing_state=first))
     assert [s[0] for s in sequence] == ['writer', 'report_verifier']
     request = json.loads(next(m for m in models.values()).contexts[0][1].content)
-    assert request['authoring_context']['current_judgment']['narrative_markdown'] == original['synthesis']['narrative_markdown']
-    assert request['authoring_context']['current_review']['research_limitations'] == ['A relevant usage measure was not available.']
+    assert 'authoring_context' not in request
+    assert request['material_conditions'] == ['A relevant usage measure was not available.']
     assert request['revision_request']['findings'][0]['finding_id'] == 'F1'
     assert request['report']['narrative_markdown'] == original['report']['narrative_markdown']
     assert resumed['phase'] == 'case_report_ready_for_human_review'

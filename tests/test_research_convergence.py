@@ -169,7 +169,8 @@ def test_known_research_limits_reach_writer_and_final_review_without_becoming_bl
     assert result['synthesis_review']['research_limitations'] == limits
     assert result['report_review']['research_limitations'] == limits
     writer_input = json.loads(models[('writer', None, 0)].contexts[0][1].content)
-    assert writer_input['research_review']['research_limitations'] == limits
+    assert writer_input['material_conditions'] == limits
+    assert 'research_review' not in writer_input
     assert result['report_review']['unresolved_data_requests'] == []
     assert [s[0] for s in sequence].count('writer') == 1
 
@@ -188,7 +189,8 @@ def test_integrated_research_omits_duplicate_synthesis_and_keeps_final_review():
     result, sequence, models = asyncio.run(exercise_case(depth="integrated"))
     assert [s[0] for s in sequence] == ["writer", "report_verifier"]
     writer_input = json.loads(models[("writer", None, 0)].contexts[0][1].content)
-    assert writer_input["research_review"]["counter"]
+    assert writer_input['authoring_view'] == 'research_handoff.v1'
+    assert 'research_review' not in writer_input
     verifier_input = json.loads(models[("report_verifier", None, 0)].contexts[0][1].content)
     assert verifier_input["completed_research_reviews"]["verifier"]
     assert result["phase"] == "case_report_ready_for_human_review"
@@ -216,12 +218,14 @@ def test_lead_actual_method_read_and_revised_papers_enter_writer_without_private
     saved_lead = next(r for r in result['artifact_history'] if r['actor'] == 'synthesis')
     assert saved_lead['decision_context'] == decision
     writer = json.loads(models[('writer', None, 0)].contexts[0][1].content)
-    assert writer['research_decision_context']['previous_synthesis_status'] == 'current_paper_versions_not_automatic_approval'
+    assert 'research_decision_context' not in writer
     assert any(getattr(m, "name", "") == "get_research_method" for m in lead.contexts[-1])
     assert result["revisions"]["P02"]["workpaper"]["thesis"] in str(lead.contexts[0])
     writer_input = json.loads(models[("writer", None, 0)].contexts[0][1].content)
-    assert writer_input["research_synthesis"]["narrative_markdown"] == result["synthesis"]["narrative_markdown"]
-    assert "citations" not in writer_input["research_synthesis"]
+    assert 'research_synthesis' not in writer_input
+    assert writer_input['authoring_basis_digest']
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    assert next(p['version'] for p in writer_input['catalog']['papers'] if p['paper_id'] == 'P02') == canonical_sha256(result['revisions']['P02']['workpaper'])
     assert "lead-private" not in json.dumps(writer_input)
 
 

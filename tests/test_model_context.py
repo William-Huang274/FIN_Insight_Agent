@@ -325,6 +325,8 @@ def test_resumed_specialist_guidance_reaches_sdk_without_repeating_unchanged_ass
         adapter.specialist_model_turn(request)
     assert json.loads(wires[1]["messages"][1]["content"])["task_context"] == initial
     feedback = json.loads(wires[1]["messages"][-1]["content"])
+    # Native continuation feedback uses the common current_context envelope.
+    feedback = feedback.get('current_context', feedback)
     if guidance:
         assert feedback["task_context"]["continuation_guidance"] == guidance
     else:

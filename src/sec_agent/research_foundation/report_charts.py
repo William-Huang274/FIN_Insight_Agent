@@ -25,30 +25,50 @@ class ReportChart(BaseModel):
         description="Explain the relationship, comparison periods and relevant caveat; no unsupported causal claim.")
 
 
+class ReportChartBindingError(ValueError):
+    """Return every failed point so a local repair does not guess the location."""
+    def __init__(self, issues):
+        self.issues = issues
+        super().__init__('; '.join(f"{i['path']}: {i['message']}" for i in issues))
+
+
 def bind_report_charts(charts, source_lookup):
-    bound = []
-    for chart in charts:
+    bound, issues = [], []
+    for chart_index, chart in enumerate(charts):
         if len({(p.label, p.series) for p in chart.points}) != len(chart.points):
-            raise ValueError("chart_duplicate_label_series_would_hide_values")
+            issues.append({'path': f'charts.{chart_index}.points',
+                'message': 'chart_duplicate_label_series_would_hide_values'})
+            continue
         points = []
-        for point in chart.points:
-            if not point.source.source_id or point.source.assumption_note:
-                raise ValueError("chart_points_require_observed_sources_not_unsourced_values")
-            item = source_lookup(point.source.source_id)
-            if item.get("result_state") == "numeric_fact" and item.get("unit") != chart.unit:
-                raise ValueError("chart_unit_differs_from_numeric_fact_use_scale_divisor")
-            if item.get("arithmetic_verified") is True and item.get("result_state") == "non_authoritative_metric":
-                value = Decimal(item["value_decimal"])
-                provenance = {"calculation": item}
-            else:
-                result = calculate_from_sources(SourceBoundCalculation(expression="v", operands={"v": point.source},
-                    result_unit=chart.unit, rationale="Read source value for chart; labels and comparability require independent review"), source_lookup)
-                value = Decimal(result["value_decimal"])
-                provenance = result["operands"]["v"]
+        for point_index, point in enumerate(chart.points):
+            try:
+                if not point.source.source_id or point.source.assumption_note:
+                    raise ValueError("chart_points_require_observed_sources_not_unsourced_values")
+                item = source_lookup(point.source.source_id)
+                if item.get('result_state') in {'source_bound_passage', 'reviewed_evidence'} and (
+                        not point.source.quote or point.source.literal is None):
+                    raise ValueError('prose_chart_point_requires_literal_and_exact_quote; '
+                        'source_id alone suffices only for a structured numeric fact or saved calculation')
+                if item.get("result_state") == "numeric_fact" and item.get("unit") != chart.unit:
+                    raise ValueError("chart_unit_differs_from_numeric_fact_use_scale_divisor")
+                if item.get("arithmetic_verified") is True and item.get("result_state") == "non_authoritative_metric":
+                    value = Decimal(item["value_decimal"])
+                    provenance = {"calculation": item}
+                else:
+                    result = calculate_from_sources(SourceBoundCalculation(expression="v", operands={"v": point.source},
+                        result_unit=chart.unit, rationale="Read source value for chart; labels and comparability require independent review"), source_lookup)
+                    value = Decimal(result["value_decimal"])
+                    provenance = result["operands"]["v"]
+            except ValueError as exc:
+                issues.append({'path': f'charts.{chart_index}.points.{point_index}.source',
+                    'source_id': point.source.source_id, 'label': point.label, 'message': str(exc)})
+                continue
             points.append({"label": point.label, "series": point.series, "value": float(value / chart.scale_divisor),
                 "source_id": point.source.source_id, "provenance": provenance})
         bound.append({**chart.model_dump(mode="json", exclude={"points"}), "points": points,
             "numeric_fact_authority": False, "notice": "图示依据已观察来源，缩放和算术不代表财务可比性已获独立验证。"})
+    if issues:
+        raise ReportChartBindingError(issues)
     return bound
 
 

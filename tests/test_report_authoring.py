@@ -188,3 +188,50 @@ def test_report_draft_survives_missing_title_and_repeated_local_chart_error(arti
             assert '修正应融入文章' in model.contexts[0][0].content
             assert 'restored explicitly in authoring_context' not in model.contexts[0][0].content
     asyncio.run(run())
+
+
+def test_chart_feedback_locates_all_failed_points_and_preserves_report(artifacts):
+    async def run():
+        source_id = next(s for s, row in artifacts.read_paper('P01', 'sources').items()
+                         if row['result_state'] == 'numeric_fact')
+        citation = 'P01:' + artifacts.read_paper('P01')['claims'][0]['claim_id']
+        prose = 'Retain the full report while repairing only identified source bindings. ' * 5 + f'[{citation}]'
+        chart = {'title': 'Comparison fixture', 'unit': artifacts.source_item(source_id)['unit'],
+            'interpretation': 'Synthetic labels share a known source, without a financial comparison.',
+            'points': [{'label': label, 'source': {'source_id': source_id}} for label in ('A', 'B')]}
+        charts = [deepcopy(chart), deepcopy(chart)]
+        charts[0]['points'][1]['source']['source_id'] = 'P01:unknown-first'
+        charts[1]['points'][0]['source']['source_id'] = 'P01:unknown-second'
+        draft = {'title': 'Report with isolated chart repairs', 'narrative_markdown': prose, 'charts': charts}
+        model = NativeFixtureModel(marker='point-feedback', replies=[
+            [call('submit_case_report', {'report': draft}, 'draft')],
+            [call('repair_report_fields', {'fields': {
+                'charts.0.points.1.source.source_id': source_id,
+                'charts.1.points.0.source.source_id': source_id}}, 'repair')]])
+        agent = build_case_output_agent(role='lead_writer', model=model, tools=[], artifacts=artifacts,
+            limits={'model_calls': 3, 'tool_calls': 3})
+        result = await agent.ainvoke({'messages': [{'role': 'user', 'content': 'Write a report.'}]})
+        errors = [m for m in result['messages'] if isinstance(m, ToolMessage) and m.status == 'error']
+        assert len(errors) == 1
+        body = json.loads(errors[0].content)
+        assert body['status'] == 'draft_saved_needs_repair'
+        assert [e['path'] for e in body['errors']] == ['charts.0.points.1.source', 'charts.1.points.0.source']
+        assert [e['source_id'] for e in body['errors']] == ['P01:unknown-first', 'P01:unknown-second']
+        assert result['output']['narrative_markdown'] == prose
+        assert len(result['output']['charts']) == 2
+        assert citation in result['output']['citations']
+        assert draft['charts'][0]['points'][1]['source']['source_id'] == 'P01:unknown-first'
+    asyncio.run(run())
+
+
+def test_chart_prose_id_alone_gets_actionable_feedback_without_requiring_s2(artifacts):
+    from sec_agent.research_foundation.report_charts import ReportChart, ReportChartBindingError, bind_report_charts
+    source_id = next(s for s in artifacts.read_paper('P01', 'sources')
+        if artifacts.source_item(s)['result_state'] in {'reviewed_evidence', 'source_bound_passage'})
+    chart = ReportChart(title='Source paragraph example', unit='USD', interpretation='Exercise source ID semantics only.',
+        points=[{'label': label, 'source': {'source_id': source_id}} for label in ('A', 'B')])
+    with pytest.raises(ReportChartBindingError) as failure:
+        bind_report_charts([chart], artifacts.source_item)
+    assert len(failure.value.issues) == 2
+    assert failure.value.issues[1]['path'] == 'charts.0.points.1.source'
+    assert all('prose_chart_point_requires_literal_and_exact_quote' in e['message'] for e in failure.value.issues)

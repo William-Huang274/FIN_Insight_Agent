@@ -71,7 +71,7 @@ class PaperRevision(BaseModel):
 
 
 from sec_agent.research_foundation.report_charts import (
-    ReportChart, bind_report_charts, chart_source_records, chart_submission_view, chart_calculation_sources,
+    ReportChart, ReportChartBindingError, bind_report_charts, chart_source_records, chart_submission_view, chart_calculation_sources,
 )
 
 
@@ -756,14 +756,10 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
                 runtime.state.get("messages", []), prior_citations={**runtime.state.get("synthesis", {}).get("citations", {}),
                     **runtime.state.get("report", {}).get("citations", {})})
             current = artifacts.with_revisions(runtime.state.get("revisions", {}))
-            charts = []
-            for index, chart in enumerate(report.charts):
-                try:
-                    charts.extend(bind_report_charts([chart], chart_lookup(runtime, current)))
-                except ValueError as exc:
-                    raise ValueError(f'charts.{index}: {exc}; unit is the source base unit; scaling belongs in scale_divisor') from exc
+            charts = bind_report_charts(report.charts, chart_lookup(runtime, current))
         except ValueError as exc:
-            errors = ([{'path': '.'.join(map(str, e['loc'])), 'message': e['msg']} for e in exc.errors(include_input=False, include_url=False)]
+            errors = (exc.issues if isinstance(exc, ReportChartBindingError) else
+                [{'path': '.'.join(map(str, e['loc'])), 'message': e['msg']} for e in exc.errors(include_input=False, include_url=False)]
                 if isinstance(exc, ValidationError) else [{'message': str(exc)}])
             return Command(update={'report_draft': deepcopy(candidate), 'messages': [ToolMessage(
                 tool_call_id=runtime.tool_call_id, status='error', content=json.dumps({
@@ -775,7 +771,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_case_report(report: dict[str, Any], runtime: ToolRuntime) -> Command:
-        """Save a complete Chinese report: report={title: string (5-250 chars), narrative_markdown: string (200-80000 chars), charts: optional array}. Use exact returned citation IDs in brackets. Charts use title, kind (bar/line), unit (source base unit), scale_divisor (1/1000/1000000/1000000000), interpretation, points [{label, series?, source:{source_id, literal?, quote?}}]. Charts are optional. Invalid fields preserve the draft for repair_report_fields; never resend unchanged prose just to fix a title or chart unit."""
+        """Save a complete Chinese report: report={title: string (5-250 chars), narrative_markdown: string (200-80000 chars), charts: optional array}. Use exact returned citation IDs in brackets. Charts use title, kind (bar/line), unit (source base unit), scale_divisor (1/1000/1000000/1000000000), interpretation, points [{label, series?, source:{source_id, literal?, quote?}}]. A chart source_id is an actual source, not a claim ID. Prose sources require a decimal literal and its exact contiguous quote; only structured numeric facts or saved calculations can omit them. Charts are optional. Invalid fields preserve the draft for repair_report_fields; never resend unchanged prose just to fix a title or chart unit."""
         return save_report_candidate(report, runtime)
 
     @tool

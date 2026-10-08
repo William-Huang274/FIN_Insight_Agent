@@ -49,7 +49,7 @@ def test_real_convergence_lead_prepares_before_writing_and_reprepares_on_revisio
     for round_ in (0,1):
         model=models[('writer',None,round_)]
         payload=json.loads(model.contexts[0][1].content)
-        assert payload['authoring_view'] == 'research_handoff.v1'
+        assert payload['authoring_view'] == 'source_materials.v2'
         assert len(payload['authoring_basis_digest']) == 64
         assert {p['paper_id']: p['version'] for p in payload['catalog']['papers']} == result['authoring_context']['basis']['papers']
         assert 'authoring_context' not in payload

@@ -651,8 +651,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             raise ToolException(str(exc)) from None
 
     @tool
-    def read_current_workpaper(paper_id: str, runtime: ToolRuntime, section: Literal["handoff", "citations", "workpaper", "claims", "sources"] = "handoff", claim_ids: list[str] | None = None) -> dict:
-        """Read research findings, facts and conditions via handoff (already includes exact citation IDs). Use citations for a compact ID/preview index, workpaper for full prose, claims with optional claim_ids for specific quotes/qualifiers, or sources for original locators. All versions remain immutable."""
+    def read_current_workpaper(paper_id: str, runtime: ToolRuntime, section: Literal["handoff", "analysis", "citations", "workpaper", "claims", "sources"] = "handoff", claim_ids: list[str] | None = None) -> dict:
+        """Default handoff reads original excerpts, numeric records and calculations with exact citations and source conditions. Read analysis for the author's judgments, counterarguments and gap assessments; these are available for your synthesis, not source facts. Use citations for a compact ID index, claims with claim_ids for selected full claims/quotes, workpaper for full prose, or sources for locators. Originals and versions remain unchanged."""
         try:
             current = artifacts.with_revisions(runtime.state.get("revisions", {})).with_human_edits(runtime.state.get('human_edits', []))
             if claim_ids is not None and section != 'claims':
@@ -660,6 +660,9 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             if section == 'handoff':
                 from .report_authoring import research_handoff
                 return research_handoff(current, paper_id)
+            if section == 'analysis':
+                from .report_authoring import author_analysis
+                return author_analysis(current, paper_id)
             if section == 'citations':
                 from .report_authoring import citation_index
                 return citation_index(current, paper_id)

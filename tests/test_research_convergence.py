@@ -189,7 +189,7 @@ def test_integrated_research_omits_duplicate_synthesis_and_keeps_final_review():
     result, sequence, models = asyncio.run(exercise_case(depth="integrated"))
     assert [s[0] for s in sequence] == ["writer", "report_verifier"]
     writer_input = json.loads(models[("writer", None, 0)].contexts[0][1].content)
-    assert writer_input['authoring_view'] == 'research_handoff.v1'
+    assert writer_input['authoring_view'] == 'source_materials.v2'
     assert 'research_review' not in writer_input
     verifier_input = json.loads(models[("report_verifier", None, 0)].contexts[0][1].content)
     assert verifier_input["completed_research_reviews"]["verifier"]

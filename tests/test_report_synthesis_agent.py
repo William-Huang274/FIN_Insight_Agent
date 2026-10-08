@@ -299,7 +299,11 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
             assert artifacts.read_paper("P01") == original
             assert all("read_research_artifact" not in names for names in writer.seen)
             catalog = next(m for m in writer.contexts[1] if isinstance(m, ToolMessage) and m.name == "research_artifact_catalog")
-            assert "Synthetic corrected current thesis for fixture paper P01" in catalog.content
+            assert "Synthetic corrected current thesis for fixture paper P01" not in catalog.content
+            from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+            current_entry = next(p for p in json.loads(catalog.content)['papers'] if p['paper_id'] == 'P01')
+            assert current_entry['version'] == canonical_sha256(state['revisions']['P01']['workpaper'])
+            assert current_entry['read']['arguments']['section'] == 'handoff'
             method = next(m for m in writer.contexts[1] if isinstance(m, ToolMessage) and m.name == "get_research_method")
             assert method.artifact["method_id"] == "writer" and "局部编辑" in method.artifact["content"]
             # Methods remain callable; first composition no longer auto-injects

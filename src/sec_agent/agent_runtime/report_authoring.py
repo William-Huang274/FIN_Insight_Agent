@@ -32,36 +32,95 @@ def authoring_catalog(artifacts):
     """Navigation without review verdicts, old success rubrics or claim dumps."""
     catalog = artifacts.catalog()
     return {"case_id": catalog["case_id"], "research_as_of": catalog["research_as_of"],
-        "papers": [{"paper_id": p["paper_id"], "topic": p.get("assignment", {}).get("objective") or p["thesis"],
+        "papers": [{"paper_id": p["paper_id"], "topic": p.get("assignment", {}).get("objective") or f"研究底稿 {p['paper_id']}",
             "version": canonical_sha256(artifacts.read_paper(p["paper_id"])),
             "read": {"tool": "read_current_workpaper", "arguments": {"paper_id": p["paper_id"], "section": "handoff"}}}
             for p in catalog["papers"]]}
 
 
-def research_handoff(artifacts, paper_id):
-    """Keep every claim and substantive qualifier, separate facts from interpretation.
+def _paper_read(paper_id, section):
+    return {"tool": "read_current_workpaper", "arguments": {"paper_id": paper_id, "section": section}}
 
-No keyword-based removal of limitations: even inconvenient author judgments
-remain visible. Quotes, authority flags and execution history are available
-through the unchanged full paper/claims views rather than repeated inline.
+
+def research_handoff(artifacts, paper_id):
+    """Literal source observations, independent of the authors' claim-kind labels.
+
+All cited sources and all selected quotes are included, including evidence cited
+only by counterarguments or boundary claims. No sentiment/keyword classifier or
+model rewrite decides what counts as a fact. Author interpretations, including
+mixed reported_fact statements, remain available through the analysis view.
 """
     paper = artifacts.read_paper(paper_id)
     catalog = next(p for p in artifacts.catalog()["papers"] if p["paper_id"] == paper_id)
-    rows = []
+    selected = {}
     for claim in paper["claims"]:
-        rows.append({"citation_id": f"{paper_id}:{claim['claim_id']}",
-            **{k: deepcopy(claim[k]) for k in ("kind", "statement", "reasoning_summary", "source_ids", "authority_note")
-               if claim.get(k) is not None}})
+        citation_id = f"{paper_id}:{claim['claim_id']}"
+        for ref in claim['source_ids']:
+            row = selected.setdefault(ref, {'source_id': ref, 'citation_ids': [], 'quotes': []})
+            if citation_id not in row['citation_ids']:
+                row['citation_ids'].append(citation_id)
+            quotes = claim.get('citation_quotes', {}).get(ref, [])
+            for quote in [quotes] if isinstance(quotes, str) else quotes:
+                if quote and quote not in row['quotes']:
+                    row['quotes'].append(quote)
+    rows = []
+    for ref, row in selected.items():
+        row['readback'] = {'tool': 'read_current_source', 'arguments': {'source_id': ref}}
+        try:
+            source = artifacts.source_item(ref)
+        except ValueError as exc:
+            row['source_read_error'] = str(exc)
+            rows.append(row)
+            continue
+        # Keep actual source metadata/conditions, not the claim author's own
+        # authority_note. Full receipts and context remain in the original store.
+        row['source'] = {k: v for k, v in artifacts._source_summary(ref, source).items()
+            if k not in {'source_id', 'source_locator', 'document_id', 'node_id', 'content_sha256', 'raw_body_sha256'}}
+        row['source'].update({k: deepcopy(source[k]) for k in (
+            'context', 'chunk_flags', 'numeric_fact_id',
+            'fact_id', 'period_basis', 'reporting_basis', 'filing_date', 'revision',
+            'expression', 'operands', 'rationale', 'operand_source_aliases',
+            'formula_trace', 'host_fact_reading_aids') if k in source})
+        for operand in row['source'].get('operands', {}).values():
+            if isinstance(operand.get('source_provenance'), dict):
+                operand['source_provenance'] = {k: v for k, v in operand['source_provenance'].items()
+                    if k not in {'source_locator', 'content_sha256'}}
+        if source['result_state'] in {'numeric_fact', 'non_authoritative_metric'}:
+            row['source']['value_decimal'] = source.get('value_decimal')
+        elif not row['quotes']:
+            # Older evidence may lack selected quotes. This is a labelled source
+            # window, never a guessed fact or author-statement fallback.
+            row['source_window'] = artifacts.read_source(ref, offset=0, max_characters=1600)
+        rows.append(row)
     return {"paper_id": paper_id, "version": canonical_sha256(paper),
+        "view": "source_materials.v2",
         "research_question": catalog.get("assignment", {}).get("objective", ""),
+        "source_materials": rows,
+        "usage": "原文摘录与数值按来源列示；摘录沿用作者选择，不等于全文。citation_ids 沿用底稿绑定，引用时以这里的原文和实际适用范围为准。可用 readback 阅读完整上下文。",
+        "author_analysis": {"claim_count": len(paper['claims']),
+            "counterevidence_count": len(paper.get('counterevidence', [])),
+            "open_gap_count": len(paper.get('open_gaps', [])),
+            "contents": "作者判断、全部主张及评注、反证、未决项和改变判断的条件；可按需读取并综合评估。",
+            "read": _paper_read(paper_id, 'analysis')},
+        **({"human_editorial_revision": deepcopy(paper["human_editorial_revision"]),
+            "current_editorial_prose": _paper_read(paper_id, 'analysis')} if paper.get('human_editorial_revision') else {}),
+        "citation_lookup": _paper_read(paper_id, 'citations'),
+        "readback": _paper_read(paper_id, 'workpaper')}
+
+
+def author_analysis(artifacts, paper_id):
+    """Opt-in, unchanged author judgments/conditions; not source fact records."""
+    paper = artifacts.read_paper(paper_id)
+    return {"paper_id": paper_id, "version": canonical_sha256(paper),
+        "view": "author_analysis.v1",
         **{k: deepcopy(paper[k]) for k in ("thesis", "mechanism", "counterevidence", "what_would_change", "open_gaps") if k in paper},
-        "facts": [r for r in rows if r["kind"] in {"reported_fact", "numeric_fact", "calculation"}],
-        "interpretations": [r for r in rows if r["kind"] in {"inference", "hypothesis"}],
-        "limitations": [r for r in rows if r["kind"] == "boundary"],
+        "claims": [{"citation_id": f"{paper_id}:{c['claim_id']}",
+            **{k: deepcopy(c[k]) for k in ('kind', 'materiality', 'statement', 'authority_note', 'reasoning_summary', 'source_ids') if k in c}}
+            for c in paper['claims']],
         **({"human_editorial_revision": deepcopy(paper["human_editorial_revision"]),
             "current_narrative_markdown": paper["narrative_markdown"]} if paper.get("human_editorial_revision") else {}),
-        "citation_lookup": {"tool": "read_current_workpaper", "arguments": {"paper_id": paper_id, "section": "citations"}},
-        "readback": {"tool": "read_current_workpaper", "arguments": {"paper_id": paper_id, "section": "workpaper"}}}
+        "source_materials": _paper_read(paper_id, 'handoff'),
+        "readback": _paper_read(paper_id, 'workpaper')}
 
 
 def citation_index(artifacts, paper_id):
@@ -83,7 +142,7 @@ Do not recursively copy a synthesis/review/working-note archive into writing.
 The original question and all current papers are the substantive continuity.
 """
     body = {"question": question, "research_as_of": artifacts.research_as_of,
-        "catalog": authoring_catalog(artifacts), "authoring_view": "research_handoff.v1"}
+        "catalog": authoring_catalog(artifacts), "authoring_view": "source_materials.v2"}
     if human_feedback:
         body["human_feedback"] = deepcopy(human_feedback)
     if material_conditions:

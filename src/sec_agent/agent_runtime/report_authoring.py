@@ -60,7 +60,20 @@ through the unchanged full paper/claims views rather than repeated inline.
         "limitations": [r for r in rows if r["kind"] == "boundary"],
         **({"human_editorial_revision": deepcopy(paper["human_editorial_revision"]),
             "current_narrative_markdown": paper["narrative_markdown"]} if paper.get("human_editorial_revision") else {}),
+        "citation_lookup": {"tool": "read_current_workpaper", "arguments": {"paper_id": paper_id, "section": "citations"}},
         "readback": {"tool": "read_current_workpaper", "arguments": {"paper_id": paper_id, "section": "workpaper"}}}
+
+
+def citation_index(artifacts, paper_id):
+    """Exact IDs and literal previews; retrieving IDs need not reread all quotes."""
+    paper = artifacts.read_paper(paper_id)
+    return {"paper_id": paper_id, "version": canonical_sha256(paper),
+        **({"human_editorial_revision": deepcopy(paper['human_editorial_revision'])} if paper.get('human_editorial_revision') else {}),
+        "citations": [{"claim_id": c['claim_id'], "citation_id": f"{paper_id}:{c['claim_id']}",
+            "kind": c['kind'], "statement_preview": c['statement'][:160],
+            "preview_truncated": len(c['statement']) > 160} for c in paper['claims']],
+        "readback": {"tool": "read_current_workpaper", "arguments": {"paper_id": paper_id,
+            "section": "claims"}, "optional_argument": "claim_ids selects full quotes for the chosen IDs"}}
 
 
 def report_authoring_input(question, artifacts, *, human_feedback=None, report=None, review=None, material_conditions=()):

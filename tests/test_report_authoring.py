@@ -7,7 +7,7 @@ from langchain_core.messages import AIMessage, ToolMessage
 
 from test_case_review_agent import artifacts, call
 from test_report_synthesis_agent import NativeFixtureModel
-from sec_agent.agent_runtime.report_authoring import authoring_catalog, research_handoff, report_authoring_input
+from sec_agent.agent_runtime.report_authoring import authoring_catalog, research_handoff, report_authoring_input, citation_index
 from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_agent, report_citations
 from sec_agent.agent_runtime.model_context import deduplicate_read_results
 
@@ -31,6 +31,30 @@ def test_handoff_is_lossless_for_claim_meaning_and_keeps_original_readback(artif
     assert 'semantic_review_required' not in json.dumps(catalog)
     assert 'NOT a verified report' not in json.dumps(catalog)
     assert view['version'] == catalog['papers'][0]['version']
+
+
+def test_citation_directory_reads_ids_then_only_requested_full_claim(artifacts):
+    async def run():
+        original = artifacts.read_paper('P01')
+        index = citation_index(artifacts, 'P01')
+        assert index['version'] == research_handoff(artifacts, 'P01')['version']
+        assert [c['claim_id'] for c in index['citations']] == [c['claim_id'] for c in original['claims']]
+        for preview, full in zip(index['citations'], original['claims']):
+            assert preview['statement_preview'] == full['statement'][:160]
+        chosen = original['claims'][0]['claim_id']
+        model = NativeFixtureModel(marker='citation-index', replies=[
+            [call('read_current_workpaper', {'paper_id': 'P01', 'section': 'citations'}, 'index')],
+            [call('read_current_workpaper', {'paper_id': 'P01', 'section': 'claims', 'claim_ids': [chosen]}, 'claim')]])
+        agent = build_case_output_agent(role='lead_writer', model=model, tools=[], artifacts=artifacts,
+            limits={'model_calls': 3, 'tool_calls': 4})
+        # Only consume through the second read; this is an interface test, not authoring.
+        async for value in agent.astream({'messages': [{'role': 'user', 'content': 'Read the citation index and one full claim.'}]}, stream_mode='values'):
+            found = [m for m in value['messages'] if isinstance(m, ToolMessage)]
+            if len(found) == 2:
+                assert json.loads(found[0].content) == index
+                assert json.loads(found[1].content) == [original['claims'][0]]
+                break
+    asyncio.run(run())
 
 
 def test_fresh_report_and_local_review_have_different_inputs(artifacts):

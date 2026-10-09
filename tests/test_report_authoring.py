@@ -325,6 +325,43 @@ def test_chart_feedback_locates_all_failed_points_and_preserves_report(artifacts
     asyncio.run(run())
 
 
+@pytest.mark.parametrize('invalid_first', [False, True])
+def test_field_repair_rebinds_current_report_charts_without_resending_prose(artifacts, invalid_first):
+    from test_report_synthesis_agent import saved_calculation_chart
+
+    async def run():
+        report, chart, _ = saved_calculation_chart(artifacts)
+        before = deepcopy(report)
+        fields = {'charts.0.scale_divisor': 1, 'charts.0.title': 'Corrected display scale',
+                  'charts.0.points.0.series': 'Current source scope'}
+        replies = []
+        if invalid_first:
+            replies.append([call('repair_report_fields', {'fields': {
+                'charts.0.scale_divisor': 7, 'charts.0.title': 'Corrected display scale'}}, 'bad')])
+            del fields['charts.0.title']  # The second patch must retain the saved candidate's title.
+        replies.append([call('repair_report_fields', {'fields': fields}, 'fixed')])
+        model = NativeFixtureModel(marker='current-chart-repair', replies=replies)
+        agent = build_case_output_agent(role='lead_writer', model=model, tools=[], artifacts=artifacts,
+            limits={'model_calls': 3, 'tool_calls': 3}, report_revision=True)
+        result = await agent.ainvoke({'request_action': 'revise', 'report': report,
+            'messages': [{'role': 'user', 'content': 'Correct the chart fields, retaining the current report.'}]})
+        accepted = result['output']
+        assert accepted['narrative_markdown'] == before['narrative_markdown']
+        assert accepted['title'] == before['title']
+        assert accepted['charts'][0]['title'] == 'Corrected display scale'
+        assert accepted['charts'][0]['points'][0]['series'] == 'Current source scope'
+        assert accepted['charts'][0]['points'][0]['value'] == before['charts'][0]['points'][0]['value'] * 1000
+        assert accepted['charts'][0]['points'][0]['source_id'] == before['charts'][0]['points'][0]['source_id']
+        assert report == before
+        errors = [m for m in result['messages'] if isinstance(m, ToolMessage) and m.status == 'error']
+        assert len(errors) == int(invalid_first)
+        if invalid_first:
+            assert json.loads(errors[0].content)['status'] == 'draft_saved_needs_repair'
+        assert all('submit_case_report' != t['name'] for r in replies for t in r)
+
+    asyncio.run(run())
+
+
 def test_chart_prose_id_alone_gets_actionable_feedback_without_requiring_s2(artifacts):
     from sec_agent.research_foundation.report_charts import ReportChart, ReportChartBindingError, bind_report_charts
     source_id = next(s for s in artifacts.read_paper('P01', 'sources')

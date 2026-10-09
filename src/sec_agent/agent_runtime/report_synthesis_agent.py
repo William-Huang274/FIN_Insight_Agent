@@ -786,10 +786,13 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def repair_report_fields(fields: dict[str, Any], runtime: ToolRuntime) -> Command:
-        """Repair the saved draft by changed field paths only (e.g. title, charts.0.unit). All unchanged fields remain. Sources, schema and chart checks run again before acceptance."""
+        """Submit changed field paths (e.g. title, charts.0.scale_divisor) against the pending draft, or the current report during revision. All unchanged fields remain. Sources, schema and chart checks run again before acceptance."""
         candidate = deepcopy(runtime.state.get('report_draft'))
+        if not candidate and (report_revision or runtime.state.get('request_action') == 'revise') and runtime.state.get('report'):
+            current = report_model_view(runtime.state['report'])
+            candidate = {key: deepcopy(current[key]) for key in ('title', 'narrative_markdown', 'charts') if key in current}
         if not candidate:
-            return output_message(runtime, error='No pending draft; use submit_case_report first.')
+            return output_message(runtime, error='No pending draft or current revision report; use submit_case_report first.')
         try:
             if not fields:
                 raise ValueError('provide_changed_fields')
@@ -945,7 +948,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     # A full-submission control can disable only the edit interface while
     # keeping the same revision role, sources, model and validation.
     if role == "writer" and (report_revision or allow_answers) and allow_report_edits:
-        specific += "\nFor a few corrections, prefer submit_report_edits with exact old_str/new_str spans from the supplied current report; unchanged paragraphs and charts are preserved locally, not generated again. Read relevant original sources as needed. Use submit_case_report for a genuinely extensive rewrite or changed charts. The supplied charts field uses the submission schema; chart_display_values is read-only display data, never tool arguments."
+        specific += "\nFor a few prose corrections, prefer submit_report_edits with exact old_str/new_str spans from the supplied current report; unchanged paragraphs and charts are preserved locally, not generated again. For chart or other field changes, use repair_report_fields against the current report; combine all intended field changes in one submission. Read relevant original sources as needed. Use submit_case_report for a genuinely extensive rewrite. The supplied charts field uses the submission schema; chart_display_values is read-only display data, never tool arguments."
         selected = [*selected, read_current_report, submit_report_edits]
     if allow_answers:
         if role != "writer":

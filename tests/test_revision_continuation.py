@@ -86,7 +86,7 @@ def test_saved_revision_drops_only_legacy_targets_before_accepted_baseline():
 
 
 @pytest.mark.parametrize('full_submission', [False, True])
-def test_completed_notes_and_fresh_submission_cannot_clear_unchanged_repair(full_submission):
+def test_prior_edit_intent_is_advisory_after_current_reference_errors_are_fixed(full_submission):
     ports, requests = _ToolPorts(), []
     def turn(request):
         requests.append(request)
@@ -100,8 +100,8 @@ def test_completed_notes_and_fresh_submission_cannot_clear_unchanged_repair(full
             return _batch(request, [edit_action(candidate, [{'path': '/narrative_markdown',
                 'old_value': 'Expense table absent.', 'new_value': 'Provided.'}]).model_dump(mode='json')])
         if n == 4:
-            # All old reference failures fixed. Completion note alone must not
-            # close the recorded body repair, even via a full Submit alternative.
+            # Fix the actual reference error. A previous proposed prose edit
+            # can be abandoned without changing text just to satisfy a gate.
             edits = [{'path': '/claims/0/evidence_ids', 'old_value': ['E:unobserved'], 'new_value': ['E:DELL:Q1']},
                 {'op': 'upsert_coverage', 'assessment': assessment('all corrected')}]
             action = edit_action(candidate, edits)
@@ -109,19 +109,15 @@ def test_completed_notes_and_fresh_submission_cannot_clear_unchanged_repair(full
                 from sec_agent.agent_runtime.specialist_graph import apply_workpaper_edits
                 return _batch(request, [apply_workpaper_edits(candidate, action)])
             return _batch(request, [action.model_dump(mode='json')])
-        if n == 5:
-            result = json.loads(request['tool_results'][0]['content'])
-            assert result['accepted'] is False
-            assert any(i['type'] == 'requested_revision_not_applied' and i['path'] == '/narrative_markdown'
-                for i in result['validation_issues'])
-            assert candidate['claims'][0]['evidence_ids'] == ['E:DELL:Q1']
-            return _batch(request, [edit_action(candidate, [text_edit()]).model_dump(mode='json')])
         pytest.fail('no extra retry should be needed')
     graph = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(model_turn=turn,
         evidence_tool=ports.evidence, finance_tool=ports.finance, allow_workpaper_field_edits=True)).compile()
     result = graph.invoke(_input(), {'recursion_limit': 40})
-    assert len(requests) == 5 and result['phase'] == 'specialist_submission_accepted'
-    assert 'Expense table absent.' not in result['final_submission']['narrative_markdown']
+    assert len(requests) == 4 and result['phase'] == 'specialist_submission_accepted'
+    assert 'Expense table absent.' in result['final_submission']['narrative_markdown']
+    assert result['final_submission']['claims'][0]['evidence_ids'] == ['E:DELL:Q1']
+    assert any(i['type'] == 'requested_revision_not_applied' and i['path'] == '/narrative_markdown'
+        for i in result['last_submission_attempt']['validation_notices'])
 
 
 @pytest.mark.parametrize('name', ['ReviseWorkpaperAction', 'SubmitWorkpaperAction', 'RequestEvidenceAction', 'UpdateResearchStateAction'])

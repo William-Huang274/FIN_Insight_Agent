@@ -81,13 +81,11 @@ def revision_progress(state, candidate):
 
 
 def revision_submission_issues(state, candidate):
-    # An unchanged requested field cannot be discharged by writing a completion
-    # note. Changes still require independent financial review. An author who
-    # contests the repair can hand off to Lead with the actual disagreement.
+    # An unchanged proposed edit is an advisory review item, not a reason to
+    # reject an otherwise valid submission. The proposed edit may itself be
+    # wrong. Neither applying nor abandoning it establishes financial truth.
     return [{"location": jsonpatch.JsonPointer(row["path"]).parts,
         "type": "requested_revision_not_applied", "path": row["path"],
-        "message": "Requested repair location is unchanged in this candidate; a completed task note is not an applied edit.",
-        "remedy": "Inspect this current field and use str_replace for the affected text; keep related claims and prose consistent. "
-            "If the earlier repair intent was wrong, use RequestHumanReviewAction with the actual disagreement for Lead/reviewer resolution. "
-            "Do not make cosmetic edits to satisfy this check."}
+        "message": "Earlier proposed edit is unchanged or was reverted; this alone does not establish an error in the current candidate.",
+        "remedy": "Review the current statement and its evidence if material. The original proposal is archived; no cosmetic edit or human approval is required merely to differ from it."}
         for row in revision_progress(state, candidate) if row["status"] == "unchanged_since_revision_requested"]

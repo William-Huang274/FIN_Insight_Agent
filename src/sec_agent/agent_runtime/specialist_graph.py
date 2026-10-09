@@ -2896,8 +2896,11 @@ def build_specialist_agentic_state_graph(
                 if set(ids) != expected or len(ids) != len(expected):
                     errors += ("revision_finding_responses_required:" + json.dumps(sorted(expected)),)
         revision_issues = revision_submission_issues(state, action.model_dump(mode="json")) if isinstance(action, SubmitWorkpaperAction) else []
-        if errors or revision_issues:
-            locations = list(revision_issues)
+        # A past edit proposal is navigation for review, not a permanent duty
+        # to change a field. Authors may correctly abandon an invalid proposal.
+        # Actual citation/source/assigned-finding checks above remain blocking.
+        if errors:
+            locations = []
             for error in errors:
                 quote_issue = _quote_issue_location(error, action, notebook)
                 if quote_issue is not None:
@@ -2915,8 +2918,8 @@ def build_specialist_agentic_state_graph(
                     location, error_type = ["required_source_checks", index, "required_source_ids"], "required_read_missing"
                 locations.append({"location": location, "type": error_type, "message": error})
             feedback = _feedback(
-                "specialist_submission_reference_validation_failed" if errors else "specialist_submission_revision_incomplete",
-                "Submission rejected: " + "; ".join([*errors, *(row["path"] + ": " + row["message"] for row in revision_issues)]),
+                "specialist_submission_reference_validation_failed",
+                "Submission rejected: " + "; ".join(errors),
                 owner_layer="agent",
                 next_actions=(
                     "correct_claim_ledger",
@@ -2931,7 +2934,8 @@ def build_specialist_agentic_state_graph(
                     **parsing,
                     "arguments": action.model_dump(mode="json"), "accepted": False,
                     "validated_candidate_digest": canonical_sha256(action.model_dump(mode="json")),
-                    "validation_issues": locations, "feedback": [feedback.model_dump(mode="json")]},
+                    "validation_issues": locations, "validation_notices": revision_issues,
+                    "feedback": [feedback.model_dump(mode="json")]},
                 "pending_action": None,
                 "notebook": _replace_notebook(
                     notebook,
@@ -2944,7 +2948,7 @@ def build_specialist_agentic_state_graph(
                 **parsing,
                 "arguments": action.model_dump(mode="json"), "accepted": True,
                 "validated_candidate_digest": canonical_sha256(action.model_dump(mode="json")),
-                "validation_issues": [], "feedback": []},
+                "validation_issues": [], "validation_notices": revision_issues, "feedback": []},
             **revision_state(state),
             "pending_action": None,
             "final_submission": action.model_dump(mode="json"),

@@ -27,9 +27,40 @@ def dependency_navigation(task_id, paper):
     }
 
 
+def saved_material_navigation(task_id, paper):
+    """A fresh formation session receives sources, never an earlier author state."""
+    value = dependency_navigation(task_id, paper)
+    value.pop('author_analysis')
+    value['available_sections'] = ['sources', 'handoff']
+    value['read_materials'] = {'tool': 'ReadDependencyWorkAction',
+        'arguments': {'task_id': task_id, 'section': 'handoff'}}
+    value['notice'] = 'Saved originals and calculations from this assignment. Read them to form a new answer; no previous conclusion or operational guidance is supplied.'
+    return value
+
+
+def bind_saved_materials(graph_input, paper):
+    """Validate the archived task/data boundary before exposing a source-only reader."""
+    from .specialist_graph import SpecialistAgenticInput
+    from .workpaper_review_graph import validate_workpaper_state
+    import json
+    old = validate_workpaper_state(paper)
+    current = graph_input.model_dump(mode='json')
+    for key in ('case_id', 'snapshot_id', 'research_as_of', 'foundation_digest', 'task_id', 'branch_id'):
+        if old['task'][key] != current['task'][key]:
+            raise ValueError('saved_material_task_scope_mismatch:' + key)
+    for key in ('owner_data_gate_decision_digest', 'source_route_catalog_digest', 'inventory_snapshot_digest'):
+        if old['notebook'][key] != current['l0_context'][key]:
+            raise ValueError('saved_material_data_scope_mismatch:' + key)
+    current['task_context']['saved_source_materials'] = saved_material_navigation(old['task']['task_id'], old)
+    return SpecialistAgenticInput.model_validate_json(json.dumps(current))
+
+
 class DependencyReader:
-    def __init__(self, papers):
+    def __init__(self, papers, *, source_only_tasks=()):
         self.papers = deepcopy(papers)
+        self.source_only_tasks = frozenset(source_only_tasks)
+        if not self.source_only_tasks.issubset(papers):
+            raise ValueError('unknown_source_only_task')
         self.artifacts = CaseArtifacts(list(self.papers.values()))
         self.ids = {task_id: f'P{i:02d}' for i, task_id in enumerate(self.papers, 1)}
 
@@ -39,18 +70,40 @@ class DependencyReader:
             raise ValueError('unknown_dependency_task_id_use_task_context_catalog')
         paper_id = self.ids[task_id]
         section = request.get('section', 'sources')
+        if task_id in self.source_only_tasks and section not in {'sources', 'handoff'}:
+            raise ValueError('saved_materials_are_source_only_use_sources_or_handoff')
         refs = []
         if section == 'sources':
             sources = self.artifacts.read_paper(paper_id, 'sources')
             offset, limit = request.get('offset', 0), request.get('limit', 4)
             page = list(sources)[offset:offset + limit]
-            payload = {'source_count': len(sources), 'sources': [sources[key] for key in page],
+            payload = {'source_count': len(sources), 'sources': [
+                {**sources[key], 'read': {'tool': 'ReadDependencyWorkAction', 'arguments': {
+                    'task_id': task_id, 'section': 'handoff', 'source_ids': [key]},
+                    'notice': 'Read this saved original directly; document/node IDs are provenance, not a substitute reader request.'}}
+                for key in page],
+                       'read_page': {'tool': 'ReadDependencyWorkAction', 'arguments': {
+                           'task_id': task_id, 'section': 'handoff', 'source_ids': page, 'limit': limit}},
                        'next_read': {'tool': 'ReadDependencyWorkAction', 'arguments': {
                            'task_id': task_id, 'section': 'sources', 'offset': offset + len(page), 'limit': limit}}
                        if offset + len(page) < len(sources) else None}
         elif section == 'handoff':
-            payload = research_handoff(self.artifacts, paper_id, source_ids=request.get('source_ids'),
-                                      offset=request.get('offset', 0), limit=request.get('limit', 4), include_uncited=True)
+            if task_id in self.source_only_tasks:
+                sources = self.artifacts.read_paper(paper_id, 'sources')
+                requested = request.get('source_ids')
+                if requested is not None and set(requested) - set(sources):
+                    raise ValueError('unknown_saved_source_id_use_sources_catalog')
+                keys = [key for key in sources if requested is None or key in requested]
+                offset, limit = request.get('offset', 0), request.get('limit', 4)
+                page = keys[offset:offset + limit]
+                next_offset = offset + len(page) if offset + len(page) < len(keys) else None
+                payload = {'source_materials': [{'source_id': key, 'source': sources[key]} for key in page],
+                    'source_count': len(sources), 'next_read': {'tool': 'ReadDependencyWorkAction',
+                    'arguments': {'task_id': task_id, 'section': 'handoff', 'offset': next_offset, 'limit': limit,
+                        **({'source_ids': requested} if requested is not None else {})}} if next_offset is not None else None}
+            else:
+                payload = research_handoff(self.artifacts, paper_id, source_ids=request.get('source_ids'),
+                                          offset=request.get('offset', 0), limit=request.get('limit', 4), include_uncited=True)
             refs = [row['source_id'] for row in payload['source_materials']]
         elif section == 'overview':
             payload = author_overview(self.artifacts, paper_id)

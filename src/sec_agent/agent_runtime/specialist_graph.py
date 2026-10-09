@@ -209,7 +209,7 @@ class ReadResearchHistoryAction(_StrictModel):
 
 
 class ReadDependencyWorkAction(_StrictModel):
-    """Read assigned predecessors' sources or, on request, their analysis."""
+    """Read saved task/predecessor sources; predecessor analysis is optional."""
     action: Literal['read_dependency_work'] = 'read_dependency_work'
     context_digest: str
     task_id: str
@@ -1252,7 +1252,7 @@ def _model_request(
         body["collaboration_context"] = collaboration
     if state.get("task_context") is not None:
         body["task_context"] = state["task_context"]
-        if state['task_context'].get('dependency_workpapers'):
+        if state['task_context'].get('dependency_workpapers') or state['task_context'].get('saved_source_materials'):
             allowed_actions.append('read_dependency_work')
         if state['task_context'].get('professional'):
             allowed_actions[:] = [a for a in allowed_actions if a not in {'request_finance','request_evidence'}]

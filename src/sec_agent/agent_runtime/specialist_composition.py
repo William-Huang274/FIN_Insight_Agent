@@ -1065,6 +1065,7 @@ def _open_specialist_composition(
     plan_invocation_id: str | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
+    source_workpaper: Mapping[str, Any] | None = None,
     research_question: str | None = None,
     role_method_reader=None,
     role_method=None,
@@ -1076,9 +1077,21 @@ def _open_specialist_composition(
     required_source_checks=(),
 ) -> Iterator[_OpenedSpecialistComposition]:
     try:
-        from .specialist_handoff import DependencyReader
-        dependency_reader = (DependencyReader(dependency_workpapers)
-            if dependency_workpapers and not (research_task or {}).get('professional') else None)
+        from .specialist_handoff import DependencyReader, bind_saved_materials
+        if source_workpaper is not None and (recovery_state is not None or collaboration_context is not None or revision_feedback):
+            raise SpecialistAgenticCompositionError('fresh_source_formation_cannot_restore_author_state')
+        saved_papers = dict(dependency_workpapers or {})
+        source_only = ()
+        if source_workpaper is not None:
+            if not research_task or research_task.get('professional'):
+                raise SpecialistAgenticCompositionError('fresh_source_formation_requires_research_assignment')
+            own_id = research_task['task_id']
+            if own_id in saved_papers:
+                raise SpecialistAgenticCompositionError('fresh_source_task_cannot_be_its_own_dependency')
+            saved_papers[own_id] = source_workpaper
+            source_only = (own_id,)
+        dependency_reader = (DependencyReader(saved_papers, source_only_tasks=source_only)
+            if saved_papers and not (research_task or {}).get('professional') else None)
         with open_approved_data_composition(
             run_invocation_id=run_invocation_id,
             environment=environment,
@@ -1136,6 +1149,8 @@ def _open_specialist_composition(
                 graph_input = _bind_research_task(graph_input, research_task, dependency_workpapers or {})
             elif dependency_workpapers:
                 raise SpecialistAgenticCompositionError("delegated_dependencies_require_task")
+            if source_workpaper is not None:
+                graph_input = bind_saved_materials(graph_input, source_workpaper)
             if collaboration_context is not None:
                 collaboration = _model_json(SpecialistCollaborationContext, collaboration_context,
                                             code="specialist_collaboration_context_invalid")
@@ -1273,6 +1288,7 @@ def open_specialist_receipted_composition(
     plan_invocation_id: str | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
+    source_workpaper: Mapping[str, Any] | None = None,
     research_question: str | None = None,
     role_method_reader=None,
     role_method=None,
@@ -1308,6 +1324,7 @@ def open_specialist_receipted_composition(
         plan_invocation_id=plan_invocation_id,
         research_task=research_task,
         dependency_workpapers=dependency_workpapers,
+        source_workpaper=source_workpaper,
         research_question=research_question,
         role_method_reader=role_method_reader,
         role_method=role_method,

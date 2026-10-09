@@ -55,6 +55,10 @@ def test_dependency_reader_keeps_analysis_optional_and_restores_original_receipt
     assert not restored
     assert 'thesis' not in json.dumps(catalog)
     source_ids = [row['source_id'] for row in catalog['sources']]
+    for row in catalog['sources']:
+        assert row['read']['arguments'] == {'task_id': dep, 'section': 'handoff', 'source_ids': [row['source_id']]}
+    _, page_originals = reader(catalog['read_page']['arguments'])
+    assert page_originals
     materials, restored = reader({'task_id': dep, 'section': 'handoff', 'source_ids': source_ids, 'limit': 12})
     assert restored and all(obs in seed['notebook']['observations'] for obs in restored)
     assert 'read_current_' not in json.dumps(materials)
@@ -95,6 +99,51 @@ def test_native_dependency_read_is_citable_without_inheriting_author_interpretat
     assert result['notebook']['tool_action_count'] == 1
     wire = _project_agentic_specialist_request(calls[0])
     assert wire['task_context']['dependency_workpapers'][0]['read']['arguments']['task_id'] == dep
+
+
+def test_fresh_formation_exposes_all_saved_sources_without_old_author_or_stop_guidance():
+    from sec_agent.agent_runtime.specialist_handoff import DependencyReader, bind_saved_materials
+    from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticDependencies, build_specialist_agentic_state_graph
+    from test_specialist_graph import _ToolPorts
+    from test_research_session import _new_worker_fixture
+    old = _new_worker_fixture()
+    task_id = old['task']['task_id']
+    old['lead_assistance_history'] = [{'next_action': 'LEGACY_STOP_READING_SENTINEL'}]
+    old['research_working_state'] = {'thesis': 'LEGACY_NOTE_SENTINEL'}
+    assignment = _assignment()
+    assignment['task_id'] = task_id
+    initial = _bind_research_task(SpecialistAgenticInput.model_validate_json(json.dumps(_input())), assignment, {})
+    initial = bind_saved_materials(initial, old)
+    reader = DependencyReader({task_id: old}, source_only_tasks=(task_id,))
+    sources, _ = reader({'task_id': task_id, 'section': 'sources', 'limit': 12})
+    material, observations = reader({'task_id': task_id, 'section': 'handoff', 'limit': 12})
+    assert material['source_count'] == sources['source_count']
+    assert observations == old['notebook']['observations']
+    assert 'author_analysis' not in json.dumps(material)
+    for section in ('overview', 'analysis', 'assignment'):
+        with pytest.raises(ValueError, match='source_only'):
+            reader({'task_id': task_id, 'section': section})
+    calls = []
+    def model(request):
+        calls.append(request)
+        return {'action':'request_human_review', 'context_digest':request['context_digest'],
+                'reason_summary':'Offline input inspection complete.', 'blocker_code':'fixture_complete'}
+    ports = _ToolPorts()
+    graph = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance,
+        dependency_reader=reader, working_state_enabled=True)).compile()
+    graph.invoke(initial.model_dump(mode='json'))
+    wire = _project_agentic_specialist_request(calls[0])
+    text = json.dumps(wire, ensure_ascii=False)
+    assert 'LEGACY_' not in text and old['final_submission']['thesis'] not in text
+    assert calls[0]['notebook']['model_turn_records'] == []
+    assert calls[0]['notebook']['observations'] == []
+    assert 'read_dependency_work' in calls[0]['allowed_actions']
+    assert wire['task_context']['saved_source_materials']['read']['arguments']['task_id'] == task_id
+    changed = deepcopy(old)
+    changed['task']['task_id'] = 'another_task'
+    with pytest.raises(ValueError, match='saved_material_task_scope_mismatch'):
+        bind_saved_materials(initial, changed)
 
 
 @pytest.mark.parametrize("defect", ["scope", "status", "missing_dependency", "identity", "as_of", "capability", "authority", "unfinished"])

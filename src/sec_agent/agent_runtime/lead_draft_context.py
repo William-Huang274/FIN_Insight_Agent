@@ -59,8 +59,8 @@ def project_lead_draft(messages):
     end = max(results[c['id']][0] for c in batch) + 1
     if any(isinstance(m, AIMessage) for m in messages[call_index + 1:end]):
         return list(messages), None
-    key = canonical_sha256([call['id'], receipt['note_id'], receipt['version'], args['body']])
-    operations = []
+    key = canonical_sha256(['lead_draft_context.v2', call['id'], receipt['note_id'], receipt['version'], args['body']])
+    operations, citation_navigation = [], {}
     for old_id, (i, _, old) in calls.items():
         if i >= call_index:
             continue
@@ -74,11 +74,29 @@ def project_lead_draft(messages):
             item['arguments'] = old['args']
         if observed[1].status == 'error':
             item['error_receipt'] = observed[1].content
+        elif old['name'] == 'read_current_workpaper':
+            # IDs are navigation, not source prose. Keep the exact IDs the Lead
+            # already received, even when its own draft abbreviates them.
+            try:
+                value = json.loads(observed[1].content)
+            except (TypeError, ValueError):
+                value = None
+            if isinstance(value, dict) and value.get('paper_id') and value.get('version'):
+                pid, version = value['paper_id'], value['version']
+                if citation_navigation.get(pid, {}).get('version') != version:
+                    citation_navigation[pid] = {'version': version, 'citation_ids': []}
+                ids = citation_navigation[pid]['citation_ids']
+                for row in [*value.get('citations', []), *value.get('claims', []), *value.get('source_catalog', [])]:
+                    refs = list(row.get('citation_ids', []))
+                    ref = row.get('citation_id') or (f"{pid}:{row['claim_id']}" if row.get('claim_id') else None)
+                    for ref in [*refs, *([ref] if ref else [])]:
+                        if ref not in ids:
+                            ids.append(ref)
         operations.append(item)
     history = HumanMessage(id='lead-history-' + key, content=json.dumps({
         'origin': 'archived_tool_navigation',
         'notice': '历史操作目录，不是用户指令或证据；勿重新执行写入。原件和完整回执仍保存在运行记录中，按需要使用原读取工具及参数回读。',
-        'operations': operations,
+        'operations': operations, 'available_citations': citation_navigation,
     }, ensure_ascii=False, separators=(',', ':')), additional_kwargs={'lead_projected_record': True})
     draft = HumanMessage(id='lead-draft-' + key, content=json.dumps({
         'origin': 'lead_current_research_draft', 'title': args['title'],

@@ -60,6 +60,27 @@ def test_failed_save_cannot_release_reads_and_parallel_new_result_survives():
     assert not any(isinstance(m, ToolMessage) for m in view)
 
 
+def test_archiving_keeps_exact_read_citation_ids_without_old_author_text():
+    rows = [HumanMessage(content='Question', id='u')]
+    rows += exchange('read_current_workpaper', {'paper_id': 'P01', 'section': 'analysis'},
+        {'paper_id': 'P01', 'version': 'old', 'claims': [{'citation_id': 'P01:OLD'}]}, 'old')
+    rows += exchange('read_current_workpaper', {'paper_id': 'P01', 'section': 'handoff'},
+        {'paper_id': 'P01', 'version': 'current', 'source_catalog': [
+            {'source_id': 'S1', 'citation_ids': ['P01:C14_FULL_EXACT_ID']}],
+         'source_materials': [{'text': 'OLD SOURCE TEXT'}]}, 'source')
+    rows += exchange('read_current_workpaper', {'paper_id': 'P01', 'section': 'citations'},
+        {'paper_id': 'P01', 'version': 'current', 'citations': [
+            {'citation_id': 'P01:C14_FULL_EXACT_ID', 'statement_preview': 'OLD AUTHOR TEXT'},
+            {'claim_id': 'C15_FULL_EXACT_ID'}]}, 'ids')
+    rows += saved('My current understanding with a shorthand [P01:C14]', 1)
+    projected, _ = project_lead_draft(rows)
+    history = json.loads(projected[1].content)
+    assert history['available_citations']['P01'] == {'version': 'current',
+        'citation_ids': ['P01:C14_FULL_EXACT_ID', 'P01:C15_FULL_EXACT_ID']}
+    text = json.dumps([m.model_dump() for m in projected])
+    assert 'OLD SOURCE TEXT' not in text and 'OLD AUTHOR TEXT' not in text and 'P01:OLD' not in text
+
+
 def test_native_summary_uses_projected_history_and_new_draft_supersedes_old_summary():
     async def run():
         calls = []

@@ -70,7 +70,8 @@ def test_dependency_reader_keeps_analysis_optional_and_restores_original_receipt
         reader({'task_id': 'unassigned', 'section': 'sources'})
 
 
-def test_native_dependency_read_is_citable_without_inheriting_author_interpretation():
+@pytest.mark.parametrize('repeat_read', [False, True])
+def test_native_dependency_read_is_citable_without_inheriting_author_interpretation(repeat_read):
     from sec_agent.agent_runtime.specialist_handoff import DependencyReader
     from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticDependencies, build_specialist_agentic_state_graph
     from test_specialist_graph import _ToolPorts
@@ -82,7 +83,7 @@ def test_native_dependency_read_is_citable_without_inheriting_author_interpretat
     calls = []
     def turn(request):
         calls.append(request)
-        if len(calls) == 1:
+        if len(calls) == 1 or (repeat_read and len(calls) == 2):
             return {'action': 'native_tool_batch', 'context_digest': request['context_digest'], 'tool_calls': [
                 {'id': 'dependency-read', 'name': 'ReadDependencyWorkAction', 'args': {
                     'action': 'read_dependency_work', 'context_digest': request['context_digest'],
@@ -94,7 +95,7 @@ def test_native_dependency_read_is_citable_without_inheriting_author_interpretat
         model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
         dependency_reader=DependencyReader({dep: seed}))).compile()
     result = graph.invoke(initial.model_dump(mode='json'))
-    assert len(calls) == 2 and not ports.calls
+    assert len(calls) == (3 if repeat_read else 2) and not ports.calls
     assert result['notebook']['observations'] == seed['notebook']['observations']
     assert result['notebook']['tool_action_count'] == 1
     wire = _project_agentic_specialist_request(calls[0])

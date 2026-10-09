@@ -2717,9 +2717,11 @@ def build_specialist_agentic_state_graph(
                         'notice': 'Read the original saved dependency observation; no fresh external query.'} for obs in restored}}
                 restored = [obs for obs in restored if obs.observation_digest not in known]
                 digest = _semantic_action_digest(action)
+                fresh_read = digest not in before.dispatched_action_digests
                 before = _replace_notebook(before, observations=(*before.observations, *restored),
-                    tool_action_count=before.tool_action_count + 1,
-                    dispatched_action_digests=(*before.dispatched_action_digests, digest))
+                    tool_action_count=before.tool_action_count + int(fresh_read),
+                    dispatched_action_digests=(*before.dispatched_action_digests, digest)
+                        if fresh_read else before.dispatched_action_digests)
                 working.update(notebook=before.model_dump(mode='json'), pending_action=None, phase='tool_observation_ready')
                 # Return canonical sources in full; the compact view alone must not
                 # hide required qualifiers or make Pxx aliases citable identities.

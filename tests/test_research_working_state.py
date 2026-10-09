@@ -27,6 +27,38 @@ def source_messages(i):
             "passage": "Original numbers and period qualifiers. " * 300}))]
 
 
+def test_current_note_replaces_old_input_but_history_reader_preserves_original():
+    from sec_agent.agent_runtime.deepseek_structured_agents import _project_agentic_specialist_request
+    requests = []
+    ports = _ToolPorts()
+    def turn(request):
+        requests.append(deepcopy(request))
+        n = len(requests)
+        if n in (1, 2):
+            name = 'UpdateResearchStateAction'
+            args = {'action': 'update_research_state', 'working_state': working_note(
+                findings=[], retain_source_ids=[], rejected_interpretations=[],
+                current_subtask='OLD_NOTE_ONLY' if n == 1 else 'CURRENT_NOTE_ONLY'),
+                'reason_summary': '更新当前认识'}
+        elif n == 3:
+            name = 'ReadResearchHistoryAction'
+            args = {'action': 'read_research_history', 'section': 'turn', 'index': 1, 'reason_summary': '按需回读旧记录'}
+        else:
+            return _handoff(request)
+        return {'action': 'native_tool_batch', 'context_digest': request['context_digest'], 'tool_calls': [
+            {'id': f'history-{n}', 'name': name, 'args': {**args, 'context_digest': request['context_digest']}}]}
+    seed = _input()
+    seed['max_model_turns'] = 6
+    result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance, working_state_enabled=True)).compile().invoke(seed)
+    projected = _project_agentic_specialist_request(requests[2])
+    assert 'OLD_NOTE_ONLY' not in json.dumps(projected['progress']['prior_actions'])
+    assert 'CURRENT_NOTE_ONLY' in json.dumps(projected['task_context']['research_working_state'])
+    assert 'OLD_NOTE_ONLY' in requests[3]['tool_results'][0]['content']
+    assert result['research_working_state']['current_subtask'] == 'CURRENT_NOTE_ONLY'
+    assert not ports.calls
+
+
 def test_phase_cleanup_keeps_active_material_sources_and_original_records():
     rows = [HumanMessage(content="Overall research and exact latest user requirement."), *source_messages("SOURCE-A"),
         *source_messages("SOURCE-B"), *source_messages("SOURCE-C")]

@@ -199,6 +199,29 @@ class RequestFinanceAction(_StrictModel):
     intent: SpecialistFinanceIntent
 
 
+class ReadResearchHistoryAction(_StrictModel):
+    """Read this expert's archived public action or Lead assistance, without executing it."""
+    action: Literal['read_research_history'] = 'read_research_history'
+    context_digest: str
+    section: Literal['turn', 'lead_assistance']
+    index: int = Field(ge=1)
+    reason_summary: str
+
+
+class ReadDependencyWorkAction(_StrictModel):
+    """Read assigned predecessors' sources or, on request, their analysis."""
+    action: Literal['read_dependency_work'] = 'read_dependency_work'
+    context_digest: str
+    task_id: str
+    section: Literal['sources', 'handoff', 'overview', 'analysis', 'assignment'] = 'sources'
+    source_ids: tuple[str, ...] | None = None
+    claim_ids: tuple[str, ...] | None = None
+    analysis_fields: tuple[str, ...] | None = None
+    offset: int = Field(default=0, ge=0)
+    limit: int = Field(default=4, ge=1, le=12)
+    reason_summary: str
+
+
 class RequestSourceAction(_StrictModel):
     action: Literal["request_source"]
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
@@ -566,7 +589,7 @@ class SubmitReviewAction(_StrictModel):
 
 
 SpecialistResearchAction = Annotated[
-    RequestEvidenceAction | RequestSourceAction | RequestFinanceAction | RequestCalculationAction | RequestResearchMethodAction
+    RequestEvidenceAction | RequestSourceAction | ReadDependencyWorkAction | RequestFinanceAction | RequestCalculationAction | RequestResearchMethodAction
     | RequestHumanReviewAction | SubmitWorkpaperAction,
     Field(discriminator="action"),
 ]
@@ -574,6 +597,8 @@ SpecialistResearchAction = Annotated[
 SpecialistAction = Annotated[
     RequestEvidenceAction
     | RequestSourceAction
+    | ReadDependencyWorkAction
+    | ReadResearchHistoryAction
     | RequestResearchMethodAction
     | RequestFinanceAction
     | RequestCalculationAction
@@ -1057,6 +1082,8 @@ class SpecialistAgenticState(TypedDict, total=False):
     # Native-state provenance for archived turns; not model-editable input.
     model_turn_invocations: dict[str, str]
     delegated_work: dict[str, Any]
+    dependency_readbacks: dict[str, Any]
+    lead_assistance_acknowledged: int
     final_submission: dict[str, Any] | None
     last_submission_attempt: dict[str, Any] | None
     human_review_handoff: dict[str, Any] | None
@@ -1086,6 +1113,7 @@ class SpecialistAgenticDependencies:
     authoring_enabled: bool = False
     authoring_domain: str = 'finance'
     lead_assistance: Callable | None = None
+    dependency_reader: Callable | None = None
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
@@ -1224,6 +1252,8 @@ def _model_request(
         body["collaboration_context"] = collaboration
     if state.get("task_context") is not None:
         body["task_context"] = state["task_context"]
+        if state['task_context'].get('dependency_workpapers'):
+            allowed_actions.append('read_dependency_work')
         if state['task_context'].get('professional'):
             allowed_actions[:] = [a for a in allowed_actions if a not in {'request_finance','request_evidence'}]
     if l0.source_read_enabled and any('library' in row.get('source_spaces', []) for row in l0.capability_summaries):
@@ -1253,13 +1283,16 @@ def _model_request(
             "continuation_guidance": continuation_guidance}
     if working_state_enabled:
         allowed_actions.append("update_research_state")
+        allowed_actions.append('read_research_history')
         body["task_context"] = {**body.get("task_context", {}),
             "working_state_guidance": WORKING_STATE_GUIDANCE,
             "research_working_state": state.get("research_working_state"),
             "context_releases": state.get("context_releases", []),
             "pending_working_state_update": state.get("pending_working_state_update"),
             "runtime_progress": state.get("runtime_progress", {}),
-            "lead_assistance": state.get("lead_assistance_history", []),
+            "lead_assistance": state.get("lead_assistance_history", [])[state.get('lead_assistance_acknowledged', 0):],
+            "archived_assistance": [{'tool': 'ReadResearchHistoryAction', 'arguments': {
+                'section': 'lead_assistance', 'index': i + 1}} for i in range(state.get('lead_assistance_acknowledged', 0))],
             "overall_assignment": state["task"]["objective"]}
         if accepted_context_checkpoint(state):
             body["task_context"]["accepted_restored_checkpoint"] = True
@@ -1428,7 +1461,8 @@ def _observation_recovery_catalog(state, notebook):
     parallel batches, method reads and rejected actions break that alignment.
     Unmatched/imported observations keep their full body in the request.
     """
-    catalog = {}
+    catalog = {key: deepcopy(value) for key, value in state.get('dependency_readbacks', {}).items()
+               if key in {obs.observation_digest for obs in notebook.observations}}
     for record in notebook.model_turn_records:
         decision = record.action
         if isinstance(decision, SpecialistNativeToolBatch):
@@ -1856,6 +1890,7 @@ def build_specialist_agentic_state_graph(
                 "pending_workpaper_revision": None if revising else _jsonable(recovery_state.get("pending_workpaper_revision")),
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
+                "dependency_readbacks": _jsonable(recovery_state.get("dependency_readbacks", {})),
                 "research_working_state": _jsonable(recovery_state.get("research_working_state")),
                 "context_releases": _jsonable(recovery_state.get("context_releases", [])),
                 "context_reopen_turns": _jsonable(recovery_state.get("context_reopen_turns", {})),
@@ -1864,6 +1899,7 @@ def build_specialist_agentic_state_graph(
                 "authoring_context": None if revising else _jsonable(recovery_state.get("authoring_context")),
                 "runtime_progress": _jsonable(recovery_state.get("runtime_progress", {})),
                 "lead_assistance_history": _jsonable(recovery_state.get("lead_assistance_history", [])),
+                "lead_assistance_acknowledged": recovery_state.get('lead_assistance_acknowledged', 0),
                 "model_turn_invocations": {
                     str(record.turn_index): recovery_state.get("model_turn_invocations", {}).get(
                         str(record.turn_index), recovery_state["run_invocation_id"])
@@ -2372,10 +2408,13 @@ def build_specialist_agentic_state_graph(
             RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
             SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
         )}
+        if dependencies.dependency_reader is not None:
+            models['ReadDependencyWorkAction'] = ReadDependencyWorkAction
         if dependencies.subtask_runner is not None:
             models.update({m.__name__: m for m in (DelegateSubtasksAction, ReadDelegatedWorkAction)})
         if dependencies.working_state_enabled:
             models["UpdateResearchStateAction"] = UpdateResearchStateAction
+            models['ReadResearchHistoryAction'] = ReadResearchHistoryAction
         if dependencies.authoring_enabled:
             models['PrepareWorkpaperAction'] = PrepareWorkpaperAction
         from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, execute_memory_tool
@@ -2570,6 +2609,22 @@ def build_specialist_agentic_state_graph(
                         dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode='json')
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({
                     'status': 'prepared', 'notice': 'Next request restores your public preparation in a writing context; budget and source scope unchanged.'}))
+            if isinstance(action, ReadResearchHistoryAction):
+                if before.tool_action_count >= working['max_tool_actions']:
+                    return reject('specialist_history_tool_limit', 'No additional history read executed.')
+                if action.section == 'turn':
+                    record = next((r for r in before.model_turn_records if r.turn_index == action.index), None)
+                    payload = record.action.model_dump(mode='json') if record else None
+                else:
+                    history = working.get('lead_assistance_history', [])
+                    payload = history[action.index - 1] if action.index <= len(history) else None
+                if payload is None:
+                    return reject('unknown_public_history_record', 'Use the exact archived record index.')
+                digest = _semantic_action_digest(action)
+                working['notebook'] = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,
+                    dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode='json')
+                return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({
+                    'historical_record': payload, 'notice': 'Historical public record, not current instructions or a new tool execution.'}, ensure_ascii=False))
             if isinstance(action, UpdateResearchStateAction):
                 from .research_working_state import ResearchWorkingState
                 from .reference_repair import repair_working_references, resolve_reference
@@ -2631,6 +2686,7 @@ def build_specialist_agentic_state_graph(
                 if before.tool_action_count >= state["max_tool_actions"]:
                     return reject("working_state_tool_limit", "Preserve state and stop; no additional allowance is granted.")
                 working["research_working_state"] = note
+                working['lead_assistance_acknowledged'] = len(working.get('lead_assistance_history', []))
                 if release:
                     working["context_releases"] = [*working.get("context_releases", []), release]
                 working["pending_working_state_update"] = None
@@ -2645,6 +2701,32 @@ def build_specialist_agentic_state_graph(
                     "reference_repairs": reference_repairs, "reference_issues": reference_issues,
                     "context_release": release,
                     "notice": "Current author state replaced; older versions remain archived. This is not evidence or independent verification. Continue the research; budgets unchanged."}, ensure_ascii=False))
+            if isinstance(action, ReadDependencyWorkAction):
+                if before.tool_action_count >= working['max_tool_actions']:
+                    return reject('specialist_dependency_tool_limit', 'No additional read executed; preserve saved results.')
+                try:
+                    payload, originals = dependencies.dependency_reader(action.model_dump(mode='json'))
+                    restored = [SpecialistToolObservation.model_validate_json(json.dumps(obs)) for obs in originals]
+                except (ValueError, KeyError) as exc:
+                    return reject('specialist_dependency_read_invalid', str(exc), agent_error=True)
+                known = {obs.observation_digest for obs in before.observations}
+                working['dependency_readbacks'] = {**working.get('dependency_readbacks', {}),
+                    **{obs.observation_digest: {'read_tool': 'ReadDependencyWorkAction',
+                        'arguments': action.model_dump(mode='json', exclude={'context_digest'}),
+                        'saved_observation_id': obs.observation_digest, 'batch_turn': before.model_turn_count,
+                        'notice': 'Read the original saved dependency observation; no fresh external query.'} for obs in restored}}
+                restored = [obs for obs in restored if obs.observation_digest not in known]
+                digest = _semantic_action_digest(action)
+                before = _replace_notebook(before, observations=(*before.observations, *restored),
+                    tool_action_count=before.tool_action_count + 1,
+                    dispatched_action_digests=(*before.dispatched_action_digests, digest))
+                working.update(notebook=before.model_dump(mode='json'), pending_action=None, phase='tool_observation_ready')
+                # Return canonical sources in full; the compact view alone must not
+                # hide required qualifiers or make Pxx aliases citable identities.
+                payload['source_observations'] = [{k: obs.model_dump(mode='json')[k]
+                    for k in ('kind', 'status', 'references', 'content')} for obs in
+                    [SpecialistToolObservation.model_validate_json(json.dumps(obs)) for obs in originals]]
+                return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps(payload, ensure_ascii=False))
             if isinstance(action, (DelegateSubtasksAction, ReadDelegatedWorkAction)):
                 saved = dict(working.get("delegated_work", {}))
                 digest = _semantic_action_digest(action)
@@ -2769,7 +2851,7 @@ def build_specialist_agentic_state_graph(
                               config={**config, "max_concurrency": 1})
         if dependencies.working_state_enabled:
             working["runtime_progress"] = progress_after_tools(state["notebook"], working["notebook"], state.get("runtime_progress"),
-                has_reads=any(c.name in {"RequestSourceAction", "RequestEvidenceAction", "RequestFinanceAction", "RequestCalculationAction", "ReadDelegatedWorkAction"} for c in batch.tool_calls))
+                has_reads=any(c.name in {"RequestSourceAction", "RequestEvidenceAction", "RequestFinanceAction", "RequestCalculationAction", "ReadDelegatedWorkAction", "ReadDependencyWorkAction"} for c in batch.tool_calls))
         return {**working, "pending_action": None,
                 "tool_results": [message.model_dump(mode="json") for message in replies]}
 
@@ -2996,6 +3078,15 @@ def build_specialist_agentic_state_graph(
                 name='PrepareWorkpaperAction', args=state['pending_action']),))
         return execute_native_tools({**state, 'pending_action':batch.model_dump(mode='json')}, config)
     graph.add_node('execute_preparation', execute_preparation)
+    def execute_dependency(state, config):
+        action = _validate_action(state['pending_action'])
+        batch = SpecialistNativeToolBatch(context_digest=action.context_digest,
+            tool_calls=(SpecialistNativeToolCall(id='dependency:' + _semantic_action_digest(action)[:24],
+                name=type(action).__name__, args=action.model_dump(mode='json')),))
+        return execute_native_tools({**state, 'pending_action': batch.model_dump(mode='json')}, config)
+    graph.add_node('execute_dependency', execute_dependency)
+    graph.add_conditional_edges('execute_dependency', route_after_tool,
+        {'decide': 'model_decide', 'human_review': 'human_review', 'end': END})
     graph.add_conditional_edges('execute_preparation', route_after_tool,
         {'decide':'model_decide','human_review':'human_review','end':END})
     graph.add_node("validate_submission", validate_submission)
@@ -3011,6 +3102,8 @@ def build_specialist_agentic_state_graph(
             "lead_assistance": "lead_assistance",
             "request_evidence": "execute_evidence",
             "request_source": "execute_evidence",
+            "read_dependency_work": "execute_dependency",
+            "read_research_history": "execute_dependency",
             "request_finance": "execute_finance",
             "request_calculation": "execute_finance",
             "request_method": "execute_method",

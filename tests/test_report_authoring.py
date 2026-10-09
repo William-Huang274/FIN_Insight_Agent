@@ -12,6 +12,17 @@ from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_age
 from sec_agent.agent_runtime.model_context import deduplicate_read_results
 
 
+def test_uncited_originals_remain_available_without_promoting_author_prose(artifacts):
+    paper = artifacts._papers['P01']['workpaper']
+    all_ids = set(artifacts.read_paper('P01', 'sources'))
+    paper['claims'] = []  # Deliberately no author-selected evidence in this view.
+    assert research_handoff(artifacts, 'P01')['source_count'] == 0
+    view = research_handoff(artifacts, 'P01', include_uncited=True, limit=12)
+    assert {row['source_id'] for row in view['source_catalog']} == all_ids
+    assert all(not row['citation_ids'] for row in view['source_materials'])
+    assert paper['thesis'] not in json.dumps(view, ensure_ascii=False)
+
+
 def test_completed_assignment_is_readable_but_never_injected_as_current_task(artifacts):
     from sec_agent.agent_runtime.report_authoring import historical_assignment, author_overview
     assignment = {'task_id': 'old-task', 'objective': 'HISTORICAL_DIRECTIVE_ONLY',

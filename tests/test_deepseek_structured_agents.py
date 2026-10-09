@@ -836,6 +836,7 @@ def test_agentic_provider_function_has_object_root_not_union_root() -> None:
     assert "oneOf" not in parameters and "anyOf" not in parameters
     assert {row["properties"]["action"]["const"] for row in parameters["properties"]["action"]["oneOf"]} == {
         "request_evidence", "request_finance", "request_source", "request_method", "request_calculation",
+        "read_dependency_work",
         "request_human_review", "submit_workpaper",
     }
 

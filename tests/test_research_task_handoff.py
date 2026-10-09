@@ -37,9 +37,64 @@ def test_assignment_is_bound_without_inheriting_authority_counts_or_source_obser
     assert bound.task.evidence_requests == base.task.evidence_requests
     assert bound.required_route_obligation_ids == base.required_route_obligation_ids
     assert bound.l0_context == base.l0_context
-    assert bound.task_context["dependency_workpapers"][0]["workpaper"] == seed["final_submission"]
+    assert 'workpaper' not in bound.task_context['dependency_workpapers'][0]
+    assert bound.task_context['dependency_workpapers'][0]['read']['tool'] == 'ReadDependencyWorkAction'
+    assert bound.task_context['dependency_workpapers'][0]['read']['arguments']['task_id'] == dep
     assert "notebook" not in bound.task_context["dependency_workpapers"][0]
     assert seed == original
+
+
+def test_dependency_reader_keeps_analysis_optional_and_restores_original_receipts():
+    from sec_agent.agent_runtime.specialist_handoff import DependencyReader
+    from test_research_session import _new_worker_fixture
+    seed = _new_worker_fixture()
+    dep = seed['task']['task_id']
+    reader = DependencyReader({dep: seed})
+    original = deepcopy(seed)
+    catalog, restored = reader({'task_id': dep, 'section': 'sources', 'limit': 12})
+    assert not restored
+    assert 'thesis' not in json.dumps(catalog)
+    source_ids = [row['source_id'] for row in catalog['sources']]
+    materials, restored = reader({'task_id': dep, 'section': 'handoff', 'source_ids': source_ids, 'limit': 12})
+    assert restored and all(obs in seed['notebook']['observations'] for obs in restored)
+    assert 'read_current_' not in json.dumps(materials)
+    analysis, observations = reader({'task_id': dep, 'section': 'analysis'})
+    assert not observations
+    assert seed['final_submission']['thesis'] in json.dumps(analysis, ensure_ascii=False)
+    assert seed == original
+    with pytest.raises(ValueError, match='unknown_dependency'):
+        reader({'task_id': 'unassigned', 'section': 'sources'})
+
+
+def test_native_dependency_read_is_citable_without_inheriting_author_interpretation():
+    from sec_agent.agent_runtime.specialist_handoff import DependencyReader
+    from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticDependencies, build_specialist_agentic_state_graph
+    from test_specialist_graph import _ToolPorts
+    from test_research_session import _new_worker_fixture
+    seed = _new_worker_fixture()
+    dep = seed['task']['task_id']
+    base = SpecialistAgenticInput.model_validate_json(json.dumps(_input()))
+    initial = _bind_research_task(base, _assignment(dependencies=(dep,)), {dep: seed})
+    calls = []
+    def turn(request):
+        calls.append(request)
+        if len(calls) == 1:
+            return {'action': 'native_tool_batch', 'context_digest': request['context_digest'], 'tool_calls': [
+                {'id': 'dependency-read', 'name': 'ReadDependencyWorkAction', 'args': {
+                    'action': 'read_dependency_work', 'context_digest': request['context_digest'],
+                    'task_id': dep, 'section': 'handoff', 'limit': 12, 'reason_summary': '读取原始材料'}}]}
+        return {'action': 'request_human_review', 'context_digest': request['context_digest'],
+                'reason_summary': '离线接口验证结束', 'blocker_code': 'offline_complete'}
+    ports = _ToolPorts()
+    graph = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
+        dependency_reader=DependencyReader({dep: seed}))).compile()
+    result = graph.invoke(initial.model_dump(mode='json'))
+    assert len(calls) == 2 and not ports.calls
+    assert result['notebook']['observations'] == seed['notebook']['observations']
+    assert result['notebook']['tool_action_count'] == 1
+    wire = _project_agentic_specialist_request(calls[0])
+    assert wire['task_context']['dependency_workpapers'][0]['read']['arguments']['task_id'] == dep
 
 
 @pytest.mark.parametrize("defect", ["scope", "status", "missing_dependency", "identity", "as_of", "capability", "authority", "unfinished"])

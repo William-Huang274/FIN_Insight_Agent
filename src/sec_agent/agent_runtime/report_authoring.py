@@ -58,7 +58,7 @@ def _paper_read(paper_id, section):
     return {"tool": "read_current_workpaper", "arguments": {"paper_id": paper_id, "section": section}}
 
 
-def research_handoff(artifacts, paper_id, *, source_ids=None, offset=0, limit=None):
+def research_handoff(artifacts, paper_id, *, source_ids=None, offset=0, limit=None, include_uncited=False):
     """Literal source observations, independent of the authors' claim-kind labels.
 
 All cited sources and all selected quotes are included, including evidence cited
@@ -78,6 +78,9 @@ mixed reported_fact statements, remain available through the analysis view.
             for quote in [quotes] if isinstance(quotes, str) else quotes:
                 if quote and quote not in row['quotes']:
                     row['quotes'].append(quote)
+    if include_uncited:
+        for ref in artifacts.read_paper(paper_id, 'sources'):
+            selected.setdefault(ref, {'source_id': ref, 'citation_ids': [], 'quotes': []})
     if offset < 0 or (limit is not None and not 1 <= limit <= 12):
         raise ValueError('handoff_requires_nonnegative_offset_and_limit_1_to_12')
     if source_ids is not None and set(source_ids) - set(selected):

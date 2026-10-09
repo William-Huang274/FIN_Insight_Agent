@@ -445,7 +445,8 @@ def test_runtime_context_is_not_a_model_argument_and_quote_guards_still_apply():
     assert result["final_submission"]["context_digest"] == requests[-1]["context_digest"]
     # Last correction adds only an error/status: the original source messages
     # (and the model's own reasoning) are still in history, not copied again.
-    assert json.loads(wires[-1]["messages"][-1]["content"])["progress"]["observations"] == []
+    last = json.loads(wires[-1]["messages"][-1]["content"])
+    assert last.get('current_context', last)["progress"]["observations"] == []
     assert any("Synthetic private reasoning" in m.get("reasoning_content", "")
                for m in wires[-1]["messages"] if m["role"] == "assistant")
 

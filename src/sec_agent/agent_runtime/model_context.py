@@ -1177,6 +1177,20 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
         self.max_summaries = max_summaries
         self.per_user_turn = per_user_turn
         self.trigger_tokens = trigger_tokens
+        self.history_projection = None
+
+    def _working_state(self, state):
+        if self.history_projection is None:
+            return state
+        messages, key = self.history_projection(state['messages'])
+        result = {**state, 'messages': messages, '_projection_key': key}
+        record = result.get('request_summary')
+        result['_summary_count'] = (record or {}).get('count', 0)
+        if record and record.get('projection_key') != key:
+            # A newer saved research draft supersedes the old compressed view;
+            # the original summary and source history remain in checkpoint state.
+            result.pop('request_summary', None)
+        return result
 
     @staticmethod
     def projected_messages(state, *, pin_user=True):
@@ -1192,18 +1206,24 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
         # The most recent user turn in the omitted prefix must not depend on a
         # lossy summary. Preserve it verbatim; older instructions remain in the
         # canonical checkpoint and can be read on demand.
-        latest_user = next((m for m in reversed(messages[1:end]) if isinstance(m, HumanMessage)), None)
+        latest_user = next((m for m in reversed(messages[1:end]) if isinstance(m, HumanMessage)
+                           and not m.additional_kwargs.get('lead_projected_record')), None)
         pinned = [latest_user] if pin_user and latest_user is not None else []
+        if pin_user:
+            pinned += [m for m in messages[1:end] if m.additional_kwargs.get('lead_current_research_draft')]
         return [messages[0], HumanMessage.model_validate(record["message"]), *pinned, *messages[end:]]
 
     async def abefore_model(self, state, runtime):
+        state = self._working_state(state)
         if state.get("output") or state.get("review") or state.get("request_summary_failure"):
             return None
         full = state["messages"]
         if not full or not isinstance(full[0], HumanMessage):
             raise ValueError("request_summary_requires_original_user_task")
-        latest_user_id = next((m.id for m in reversed(full) if isinstance(m, HumanMessage)), None)
+        latest_user_id = next((m.id for m in reversed(full) if isinstance(m, HumanMessage)
+                               and not m.additional_kwargs.get('lead_projected_record')), None)
         previous = state.get("request_summary", {})
+        summary_count = state.get('_summary_count', previous.get('count', 0))
         if self.per_user_turn and latest_user_id and previous.get('last_summary_user_id') == latest_user_id:
             return None
         # Extra pinned turns are request-only. Native cutoff accounting must
@@ -1220,7 +1240,7 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
             # A large indivisible tool batch may exceed keep. Do not pay again
             # just to summarize the same cached note while retaining that batch.
             return None
-        if not self.per_user_turn and previous.get("count", 0) >= self.max_summaries:
+        if not self.per_user_turn and summary_count >= self.max_summaries:
             # This caps paid summarizer calls, not the research task. Keep the
             # last projection and every subsequent message; the ordinary model
             # input/cost/call ceilings still stop an oversized continuation.
@@ -1240,7 +1260,7 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
             return {"request_summary_failure": {
                 "reason": str(exc) if isinstance(exc, ValueError) else type(exc).__name__,
                 "original_history_retained": True, "automatic_retry": False,
-                "previous_summary_count": previous.get("count", 0)}}
+                "previous_summary_count": summary_count}}
         if not update:
             return None
         # Native update = RemoveMessage(all), one summary, complete recent pairs.
@@ -1273,11 +1293,12 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
             raise ValueError("request_summary_boundary_invalid")
         return {"request_summary": {"message": summary.model_dump(mode="json"),
             "prefix_end": end, "first_original_id": full[0].id,
-            "last_original_id": full[end - 1].id, "count": previous.get("count", 0) + 1,
-            "last_summary_user_id": latest_user_id, "frequency": "once_per_user_turn" if self.per_user_turn else "thread_limit"}}
+            "last_original_id": full[end - 1].id, "count": summary_count + 1,
+            "last_summary_user_id": latest_user_id, "frequency": "once_per_user_turn" if self.per_user_turn else "thread_limit",
+            **({'projection_key': state.get('_projection_key')} if self.history_projection else {})}}
 
     async def awrap_model_call(self, request, handler):
-        update = {"messages": self.projected_messages(request.state)}
+        update = {"messages": self.projected_messages(self._working_state(request.state))}
         if request.state.get("request_summary_failure"):
             content = request.system_message.content if request.system_message else ""
             blocks = [{"type":"text", "text":content}] if isinstance(content,str) else list(content)

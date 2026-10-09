@@ -42,7 +42,7 @@ def _paper_read(paper_id, section):
     return {"tool": "read_current_workpaper", "arguments": {"paper_id": paper_id, "section": section}}
 
 
-def research_handoff(artifacts, paper_id):
+def research_handoff(artifacts, paper_id, *, source_ids=None, offset=0, limit=None):
     """Literal source observations, independent of the authors' claim-kind labels.
 
 All cited sources and all selected quotes are included, including evidence cited
@@ -63,8 +63,15 @@ mixed reported_fact statements, remain available through the analysis view.
             for quote in [quotes] if isinstance(quotes, str) else quotes:
                 if quote and quote not in row['quotes']:
                     row['quotes'].append(quote)
+    if offset < 0 or (limit is not None and not 1 <= limit <= 12):
+        raise ValueError('handoff_requires_nonnegative_offset_and_limit_1_to_12')
+    if source_ids is not None and set(source_ids) - set(selected):
+        raise ValueError('unknown_handoff_source_ids_use_source_catalog')
+    keys = [ref for ref in selected if source_ids is None or ref in source_ids]
+    page = keys[offset:offset + limit] if limit is not None else keys[offset:]
     rows = []
-    for ref, row in selected.items():
+    for ref in page:
+        row = selected[ref]
         row['readback'] = {'tool': 'read_current_source', 'arguments': {'source_id': ref}}
         try:
             source = artifacts.source_item(ref)
@@ -87,16 +94,32 @@ mixed reported_fact statements, remain available through the analysis view.
                     if k not in {'source_locator', 'content_sha256'}}
         if source['result_state'] in {'numeric_fact', 'non_authoritative_metric'}:
             row['source']['value_decimal'] = source.get('value_decimal')
-        elif not row['quotes']:
-            # Older evidence may lack selected quotes. This is a labelled source
-            # window, never a guessed fact or author-statement fallback.
-            row['source_window'] = artifacts.read_source(ref, offset=0, max_characters=1600)
+        else:
+            from .source_reading_windows import reading_windows
+            row['reading_context'] = reading_windows(artifacts, ref, row['quotes'])
+            # Keep quotes in the stored workpaper; context already includes the
+            # matched text. Missing anchors stay explicitly visible above.
+            row['selected_quote_count'] = len(row.pop('quotes'))
         rows.append(row)
+    catalog_rows = []
+    for ref in selected:
+        try:
+            source = artifacts.source_item(ref)
+            metadata = {k: source[k] for k in ('title', 'period_start', 'period_end', 'publication_date', 'result_state') if k in source}
+        except ValueError:
+            metadata = {'source_read_error': True}
+        catalog_rows.append({'source_id': ref, **metadata, 'citation_ids': selected[ref]['citation_ids']})
+    next_offset = offset + len(page) if offset + len(page) < len(keys) else None
     return {"paper_id": paper_id, "version": canonical_sha256(paper),
-        "view": "source_materials.v2",
+        "view": "source_materials.v3",
         "research_question": catalog.get("assignment", {}).get("objective", ""),
         "source_materials": rows,
-        "usage": "原文摘录与数值按来源列示；摘录沿用作者选择，不等于全文。citation_ids 沿用底稿绑定，引用时以这里的原文和实际适用范围为准。可用 readback 阅读完整上下文。",
+        "source_catalog": catalog_rows, "source_count": len(selected),
+        "offset": offset, "next_offset": next_offset,
+        "next_read": {"tool": "read_current_workpaper", "arguments": {"paper_id": paper_id,
+            "section": "handoff", "offset": next_offset, "limit": limit,
+            **({'source_ids': source_ids} if source_ids is not None else {})}} if next_offset is not None else None,
+        "usage": "按来源分组的完整相关句段与数值；引用沿用原身份，作者判断另行读取。用 source_ids 选读相关来源或按 next_read 翻页；本页不等于整篇底稿。",
         "author_analysis": {"claim_count": len(paper['claims']),
             "counterevidence_count": len(paper.get('counterevidence', [])),
             "open_gap_count": len(paper.get('open_gaps', [])),
@@ -142,7 +165,7 @@ Do not recursively copy a synthesis/review/working-note archive into writing.
 The original question and all current papers are the substantive continuity.
 """
     body = {"question": question, "research_as_of": artifacts.research_as_of,
-        "catalog": authoring_catalog(artifacts), "authoring_view": "source_materials.v2"}
+        "catalog": authoring_catalog(artifacts), "authoring_view": "source_materials.v3"}
     if human_feedback:
         body["human_feedback"] = deepcopy(human_feedback)
     if material_conditions:

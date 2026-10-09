@@ -29,7 +29,9 @@ def test_handoff_reads_sources_while_analysis_preserves_every_author_claim(artif
         for ref in claim['source_ids']:
             assert row['citation_id'] in sources[ref]['citation_ids']
             quotes = claim['citation_quotes'].get(ref, [])
-            assert all(q in sources[ref]['quotes'] for q in ([quotes] if isinstance(quotes, str) else quotes))
+            delivered = json.dumps(sources[ref], ensure_ascii=False)
+            for q in ([quotes] if isinstance(quotes, str) else quotes):
+                assert q in delivered or q in json.dumps(sources[ref].get('reading_context', {}).get('unlocated_quotes', []), ensure_ascii=False)
     assert analysis['open_gaps'] == paper['open_gaps']
     assert analysis['counterevidence'] == paper['counterevidence']
     assert not {'thesis', 'mechanism', 'facts', 'claims', 'interpretations', 'limitations'} & set(view)
@@ -63,8 +65,10 @@ def test_mixed_author_fact_and_counterargument_do_not_override_original_evidence
     body = json.dumps(view)
     assert all(s not in body for s in ('OLD_AUTHOR_THESIS', 'MIXED_AUTHOR_JUDGMENT', 'AUTHOR_COUNTERARGUMENT', 'AUTHOR_CONDITION_REQUIRES_ANALYSIS'))
     source = next(s for s in view['source_materials'] if s['source_id'] == source_id)
-    assert source['quotes'].count('Subject A expects, subject to approval, up to 5 GW in 2028.') == 1
-    assert 'The facility was not operational at that date.' in source['quotes']
+    # Synthetic quotes deliberately do not occur in the original fixture.
+    # Keep them as unlocated anchors, never silently present them as verified.
+    assert source['reading_context']['unlocated_quotes'].count('Subject A expects, subject to approval, up to 5 GW in 2028.') == 1
+    assert 'The facility was not operational at that date.' in source['reading_context']['unlocated_quotes']
     assert 'P01:COUNTER_ONLY' in source['citation_ids']
     analysis = json.dumps(author_analysis(current, 'P01'))
     assert all(s in analysis for s in ('OLD_AUTHOR_THESIS', 'MIXED_AUTHOR_JUDGMENT', 'AUTHOR_COUNTERARGUMENT', 'AUTHOR_CONDITION_REQUIRES_ANALYSIS'))

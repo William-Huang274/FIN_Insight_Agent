@@ -61,6 +61,8 @@ class DelegatedResearchTask(ResearchTaskSpec):
         body = handler(self)
         if 'professional' not in self.model_fields_set:
             body.pop('professional', None)
+        if self.topic_title is None:
+            body.pop('topic_title', None)
         return body
 
 

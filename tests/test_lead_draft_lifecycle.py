@@ -183,7 +183,7 @@ def test_native_lead_reads_updates_twice_then_writes_from_latest_draft(artifacts
     assert result['output']['title'] == 'Synthetic report'
     last = json.dumps([m.model_dump() for m in model.contexts[-1]])
     assert 'Changed interpretation' in last and 'Initial understanding' not in last
-    assert 'source_materials.v3' not in last
+    assert 'source_materials.v4' not in last
     mem = WorkingMemory(tmp_path/'notes.sqlite',owner='local-pilot',workspace='test-lead',actor='synthesis:report')
     note = mem.search()['items'][0]
     assert mem.read(note['id'],version=1)['body'].startswith('Initial')

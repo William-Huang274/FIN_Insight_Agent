@@ -12,7 +12,7 @@ from typing import Annotated, Any, Iterable, Literal, Mapping, Protocol, TypeVar
 from urllib.parse import unquote
 import unicodedata
 
-from pydantic import BaseModel, Field, TypeAdapter, field_validator, model_validator
+from pydantic import BaseModel, Field, TypeAdapter, field_validator, model_serializer, model_validator
 
 from sec_agent.canonical_runtime.contracts_v1_2 import (
     StrictFrozenModel,
@@ -381,6 +381,8 @@ class ResearchTaskSpec(_StrictFrozenModel):
     """A semantic research task; physical routes never belong in this object."""
 
     task_id: str = Field(pattern=_REF_PATTERN)
+    topic_title: str | None = Field(default=None, min_length=1, max_length=96,
+        description='Short navigation title naming the research subject; no instructions or predicted conclusion. Supply when assigning a new task. Optional for historical tasks.')
     owner_role: str = Field(pattern=_REF_PATTERN, description='Stable ASCII role identifier, for example financial_analyst or power_analyst; use objective for the human-readable role and assignment.')
     objective: str = Field(min_length=12, max_length=4_000,
         description="Question to verify, not a prescribed conclusion. Any preliminary fact retains its source, period, entity, unit and actual/guidance status; relationships across facts remain hypotheses until checked. The specialist may correct the Lead using original evidence.")
@@ -405,6 +407,13 @@ class ResearchTaskSpec(_StrictFrozenModel):
     ] = Field(min_length=1, max_length=5)
     materiality: Materiality
     status: TaskStatus = "planned"
+
+    @model_serializer(mode='wrap')
+    def preserve_historical_task_identity(self, handler):
+        body = handler(self)
+        if self.topic_title is None:
+            body.pop('topic_title', None)
+        return body
 
     @model_validator(mode="after")
     def validate_semantic_task(self) -> "ResearchTaskSpec":
@@ -639,6 +648,7 @@ class ModifyTaskAction(_PlanDeltaAction):
     target_task_id: str = Field(pattern=_REF_PATTERN)
     changed_fields: tuple[
         Literal[
+            "topic_title",
             "owner_role",
             "objective",
             "dependency_ids",
@@ -651,7 +661,7 @@ class ModifyTaskAction(_PlanDeltaAction):
             "status",
         ],
         ...,
-    ] = Field(min_length=1, max_length=11)
+    ] = Field(min_length=1, max_length=12)
     successor_task: ResearchTaskSpec
 
     @model_validator(mode="after")

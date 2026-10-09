@@ -12,6 +12,92 @@ from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_age
 from sec_agent.agent_runtime.model_context import deduplicate_read_results
 
 
+def test_completed_assignment_is_readable_but_never_injected_as_current_task(artifacts):
+    from sec_agent.agent_runtime.report_authoring import historical_assignment, author_overview
+    assignment = {'task_id': 'old-task', 'objective': 'HISTORICAL_DIRECTIVE_ONLY',
+                  'success_criteria': ['OLD_ACCEPTANCE_RUBRIC']}
+    artifacts._papers['P01']['task_context']['assignment'] = deepcopy(assignment)
+    before = deepcopy(artifacts._papers)
+    fresh = report_authoring_input('CURRENT_USER_QUESTION', artifacts)
+    handoff = research_handoff(artifacts, 'P01', limit=1)
+    overview = author_overview(artifacts, 'P01')
+    wire = json.dumps([fresh, handoff, overview])
+    assert 'CURRENT_USER_QUESTION' in wire
+    assert 'HISTORICAL_DIRECTIVE_ONLY' not in wire and 'OLD_ACCEPTANCE_RUBRIC' not in wire
+    assert 'research_question' not in handoff
+    assert handoff['view'] == 'source_materials.v4'
+    entry = fresh['catalog']['papers'][0]
+    assert entry['topic'] == assignment['task_id']
+    assert entry['historical_assignment']['arguments']['section'] == 'assignment'
+    assert historical_assignment(artifacts, 'P01')['assignment'] == assignment
+    assert artifacts._papers == before
+    artifacts._papers['P01']['task_context']['assignment']['topic_title'] = 'Deployment and demand'
+    assert authoring_catalog(artifacts)['papers'][0]['topic'] == 'Deployment and demand'
+
+
+def test_viewpoint_selection_preserves_author_reasoning_sources_and_conditions(artifacts):
+    from sec_agent.agent_runtime.report_authoring import author_overview
+    paper = artifacts.read_paper('P01')
+    overview = author_overview(artifacts, 'P01')
+    assert overview['thesis'] == paper['thesis']
+    assert 'claims' not in overview and 'mechanism' not in overview
+    assert {c['claim_id'] for c in overview['viewpoints']} == {c['claim_id'] for c in paper['claims']}
+    chosen = paper['claims'][-1]['claim_id']
+    full = author_analysis(artifacts, 'P01')
+    subset = author_analysis(artifacts, 'P01', claim_ids=[chosen], fields=['counterevidence', 'what_would_change'])
+    assert subset['claims'] == [c for c in full['claims'] if c['citation_id'] == f'P01:{chosen}']
+    assert subset['counterevidence'] == paper['counterevidence']
+    assert subset['what_would_change'] == paper['what_would_change']
+    assert 'mechanism' not in subset and 'open_gaps' not in subset
+    assert artifacts.read_paper('P01') == paper
+    with pytest.raises(ValueError, match='unknown_claim_ids'):
+        author_analysis(artifacts, 'P01', claim_ids=['UNKNOWN'])
+    with pytest.raises(ValueError, match='unknown_analysis_fields'):
+        author_analysis(artifacts, 'P01', fields=['unknown'])
+
+
+def test_native_readers_route_historical_assignment_and_selected_analysis(artifacts):
+    async def run():
+        from sec_agent.agent_runtime.report_authoring import author_overview, historical_assignment
+        claim = artifacts.read_paper('P01')['claims'][0]['claim_id']
+        requests = [
+            {'paper_id': 'P01', 'section': 'overview'},
+            {'paper_id': 'P01', 'section': 'analysis', 'analysis_fields': ['mechanism']},
+            {'paper_id': 'P01', 'section': 'analysis', 'claim_ids': [claim]},
+            {'paper_id': 'P01', 'section': 'assignment'}]
+        model = NativeFixtureModel(marker='selected-readers', replies=[
+            [call('read_current_workpaper', args, str(i))] for i, args in enumerate(requests)])
+        agent = build_case_output_agent(role='lead_writer', model=model, tools=[], artifacts=artifacts,
+            limits={'model_calls': 5, 'tool_calls': 5})
+        async for value in agent.astream({'messages': [{'role': 'user', 'content': 'Inspect selected viewpoints.'}]}, stream_mode='values'):
+            results = [m for m in value['messages'] if isinstance(m, ToolMessage)]
+            if len(results) == 4:
+                assert all(m.status == 'success' for m in results)
+                actual = [json.loads(m.content) for m in results]
+                assert actual == [author_overview(artifacts, 'P01'),
+                    author_analysis(artifacts, 'P01', fields=['mechanism']),
+                    author_analysis(artifacts, 'P01', claim_ids=[claim]), historical_assignment(artifacts, 'P01')]
+                system = model.contexts[0][0].content
+                assert '过去专家的任务书只用于了解分工' in system
+                assert '无法精确测算也不自动否定所有判断' in system
+                break
+    asyncio.run(run())
+
+
+def test_optional_topic_title_keeps_historical_task_serialization_unchanged():
+    from sec_agent.agent_runtime.research_contracts import ResearchTaskSpec
+    from sec_agent.agent_runtime.lead_research_graph import DelegatedResearchTask
+    body = dict(task_id='T1', owner_role='analyst', objective='Research the original user question',
+        dependency_ids=[], coverage_obligation_ids=['Q2_DEMAND_QUALITY'], success_criteria=['Answer the question'],
+        requested_capability_refs=['capability:research:source-document-read'], required_authority_refs=[],
+        expected_output_kinds=['branch_notebook'], materiality='high', status='planned')
+    for cls in (ResearchTaskSpec, DelegatedResearchTask):
+        old = cls.model_validate_json(json.dumps(body))
+        assert old.model_dump(mode='json') == body
+        titled = cls.model_validate_json(json.dumps({**body, 'topic_title': 'Demand and deployment'}))
+        assert titled.model_dump(mode='json') == {**body, 'topic_title': 'Demand and deployment'}
+
+
 def test_handoff_reads_sources_while_analysis_preserves_every_author_claim(artifacts):
     paper = artifacts.read_paper('P01')
     before = deepcopy(paper)

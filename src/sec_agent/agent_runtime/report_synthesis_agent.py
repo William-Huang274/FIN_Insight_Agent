@@ -651,18 +651,28 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             raise ToolException(str(exc)) from None
 
     @tool
-    def read_current_workpaper(paper_id: str, runtime: ToolRuntime, section: Literal["handoff", "analysis", "citations", "workpaper", "claims", "sources"] = "handoff", claim_ids: list[str] | None = None, source_ids: list[str] | None = None, offset: int = 0, limit: int = 4) -> dict:
-        """Default handoff returns a source menu and one page of complete related passages/numbers. Select source_ids across topics or follow next_read; a page is not the entire workpaper. analysis reads author judgments and conditions, citations lists IDs, claims plus claim_ids selects claims, workpaper reads full prose, sources lists locators. Stored originals and identities remain unchanged."""
+    def read_current_workpaper(paper_id: str, runtime: ToolRuntime, section: Literal["handoff", "overview", "analysis", "assignment", "citations", "workpaper", "claims", "sources"] = "handoff", claim_ids: list[str] | None = None, source_ids: list[str] | None = None, offset: int = 0, limit: int = 4, analysis_fields: list[Literal["thesis", "mechanism", "counterevidence", "what_would_change", "open_gaps", "claims"]] | None = None) -> dict:
+        """handoff reads a source menu and original passages/numbers; select source_ids or follow next_read. overview lists author viewpoints; claims plus claim_ids reads selected arguments, conditions and quotes. analysis_fields selects thesis, mechanism, counterevidence, what_would_change, open_gaps or claims in analysis; omitting selectors reads full author analysis. assignment reads historical specialist instructions, not the Lead's current task. citations lists IDs; workpaper reads full prose; sources lists locators. Originals remain unchanged."""
         try:
             current = artifacts.with_revisions(runtime.state.get("revisions", {})).with_human_edits(runtime.state.get('human_edits', []))
-            if claim_ids is not None and section != 'claims':
-                raise ValueError('claim_ids_requires_section_claims')
+            if claim_ids is not None and section not in {'claims', 'analysis'}:
+                raise ValueError('claim_ids_requires_section_claims_or_analysis')
+            if analysis_fields is not None and section != 'analysis':
+                raise ValueError('analysis_fields_requires_section_analysis')
+            if source_ids is not None and section != 'handoff':
+                raise ValueError('source_ids_requires_section_handoff')
             if section == 'handoff':
                 from .report_authoring import research_handoff
                 return research_handoff(current, paper_id, source_ids=source_ids, offset=offset, limit=limit)
             if section == 'analysis':
                 from .report_authoring import author_analysis
-                return author_analysis(current, paper_id)
+                return author_analysis(current, paper_id, fields=analysis_fields, claim_ids=claim_ids)
+            if section == 'overview':
+                from .report_authoring import author_overview
+                return author_overview(current, paper_id)
+            if section == 'assignment':
+                from .report_authoring import historical_assignment
+                return historical_assignment(current, paper_id)
             if section == 'citations':
                 from .report_authoring import citation_index
                 return citation_index(current, paper_id)

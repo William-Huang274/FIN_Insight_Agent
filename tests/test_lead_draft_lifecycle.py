@@ -72,13 +72,17 @@ def test_archiving_keeps_exact_read_citation_ids_without_old_author_text():
         {'paper_id': 'P01', 'version': 'current', 'citations': [
             {'citation_id': 'P01:C14_FULL_EXACT_ID', 'statement_preview': 'OLD AUTHOR TEXT'},
             {'claim_id': 'C15_FULL_EXACT_ID'}]}, 'ids')
+    rows += exchange('read_current_workpaper', {'paper_id': 'P01', 'section': 'overview'},
+        {'paper_id': 'P01', 'version': 'current', 'viewpoints': [
+            {'citation_id': 'P01:C16_NOT_SELECTED_YET', 'statement_preview': 'OLD VIEWPOINT TEXT'}]}, 'overview')
     rows += saved('My current understanding with a shorthand [P01:C14]', 1)
     projected, _ = project_lead_draft(rows)
     history = json.loads(projected[1].content)
     assert history['available_citations']['P01'] == {'version': 'current',
-        'citation_ids': ['P01:C14_FULL_EXACT_ID', 'P01:C15_FULL_EXACT_ID']}
+        'citation_ids': ['P01:C14_FULL_EXACT_ID', 'P01:C15_FULL_EXACT_ID', 'P01:C16_NOT_SELECTED_YET']}
     text = json.dumps([m.model_dump() for m in projected])
     assert 'OLD SOURCE TEXT' not in text and 'OLD AUTHOR TEXT' not in text and 'P01:OLD' not in text
+    assert 'OLD VIEWPOINT TEXT' not in text
 
 
 def test_native_summary_uses_projected_history_and_new_draft_supersedes_old_summary():

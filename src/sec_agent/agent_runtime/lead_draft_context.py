@@ -87,7 +87,7 @@ def project_lead_draft(messages):
                 if citation_navigation.get(pid, {}).get('version') != version:
                     citation_navigation[pid] = {'version': version, 'citation_ids': []}
                 ids = citation_navigation[pid]['citation_ids']
-                for row in [*value.get('citations', []), *value.get('claims', []), *value.get('source_catalog', [])]:
+                for row in [*value.get('citations', []), *value.get('viewpoints', []), *value.get('claims', []), *value.get('source_catalog', [])]:
                     refs = list(row.get('citation_ids', []))
                     ref = row.get('citation_id') or (f"{pid}:{row['claim_id']}" if row.get('claim_id') else None)
                     for ref in [*refs, *([ref] if ref else [])]:

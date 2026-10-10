@@ -90,6 +90,26 @@ def test_explicit_replace_matches_legacy_and_preserves_atomic_old_value_guard():
         edit_action(original, [{**edit, 'op': 'remove'}])
 
 
+def test_mismatch_exposes_exact_small_field_and_large_field_locator_without_applying():
+    original = paper()
+    original['narrative_markdown'] = 'Long current document ' * 1000
+    saved = deepcopy(original)
+    with pytest.raises(WorkpaperEditError) as caught:
+        apply_workpaper_edits(original, edit_action(original, [
+            {'path': '/claims/0/evidence_ids', 'old_value': ['missing'], 'new_value': []},
+            {'path': '/narrative_markdown', 'old_value': 'fragment', 'new_value': 'replacement'}]))
+    small, large = caught.value.issues
+    assert small['current_value'] == original['claims'][0]['evidence_ids']
+    assert small['current_value_digest'] == canonical_sha256(small['current_value'])
+    assert large['current_value_at'] == 'submission_to_repair.candidate/narrative_markdown'
+    assert 'current_value' not in large and original == saved
+    # The exact field returned by the runtime supports the next atomic repair.
+    updated = apply_workpaper_edits(original, edit_action(original, [
+        {'path': small['path'], 'old_value': small['current_value'], 'new_value': []}]))
+    assert updated['claims'][0]['evidence_ids'] == []
+    assert updated['narrative_markdown'] == original['narrative_markdown']
+
+
 def test_stale_base_claim_identity_and_duplicate_coverage_remain_guarded():
     original = paper()
     with pytest.raises(WorkpaperEditError, match='base_mismatch'):

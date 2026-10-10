@@ -94,8 +94,10 @@ class SpecialistAgenticInput(_StrictModel):
         max_length=16,
     )
     l0_context: SpecialistL0Context
-    max_model_turns: int = Field(default=8, ge=1, le=24)
-    max_tool_actions: int = Field(default=12, ge=1, le=48)
+    # Match the host runtime profile envelope; task-specific limits still bind
+    # every invocation. Legacy paid-shadow authority keeps its narrower caps.
+    max_model_turns: int = Field(default=8, ge=1, le=48)
+    max_tool_actions: int = Field(default=12, ge=1, le=96)
     # Trusted composition-root artifact handoff, never provider-supplied state.
     collaboration_context: dict[str, Any] | None = None
     task_context: dict[str, Any] | None = None
@@ -532,8 +534,11 @@ def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperActio
                 replacement.append(edit.assessment.model_dump(mode="json"))
         else:
             if current != edit.old_value:
+                encoded = json.dumps(current, ensure_ascii=False)
                 issue("old_value_mismatch", "old_value must equal the entire current field. For a text fragment use op=str_replace with old_string/new_string; for one assessment use op=upsert_coverage.",
-                    field_characters=len(current) if isinstance(current, str) else None)
+                    field_characters=len(encoded), current_value_digest=canonical_sha256(current),
+                    **({'current_value': deepcopy(current)} if len(encoded) <= 4096 else
+                       {'current_value_at': 'submission_to_repair.candidate' + path}))
                 continue
             replacement = edit.new_value
         try:

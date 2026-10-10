@@ -293,6 +293,26 @@ def coalesce_context_snapshots(messages):
                     'Use the latest repair envelope for current text, pending edits and errors. '
                     'Original versions remain in the native checkpoint and audit; source observations are unchanged.'}
             projected[index].content = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
+    if candidates:
+        # The host's current editable candidate is the authoritative draft
+        # state, including normalization and pending validation. Keep it once,
+        # instead of pinning every earlier full submit/revise argument beside
+        # it. These are completed public operations, not original evidence.
+        latest, _, repair = candidates[-1]
+        target = {'message_index': latest, 'field': (
+            '' if isinstance(projected[latest], HumanMessage) else 'current_context.') + 'submission_to_repair.candidate'}
+        completed = {m.tool_call_id for m in projected[:latest + 1] if isinstance(m, ToolMessage)}
+        for message in projected[:latest]:
+            if not isinstance(message, AIMessage):
+                continue
+            for call in message.tool_calls:
+                if (call['id'] in completed and call['name'] in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}
+                        and not call['args'].get('archived_workpaper_operation')):
+                    call['args'] = {'archived_workpaper_operation': True,
+                        'original_tool_call_id': call['id'], 'current_candidate_at': target,
+                        'current_candidate_digest': repair['current_candidate_digest'],
+                        'notice': 'Completed historical draft operation. Its original arguments remain in the native journal. '
+                            'Use the complete current host candidate and its validation feedback below; this is not acceptance or evidence.'}
     # A rejected submission is already present in the preceding native tool
     # call. Its repair envelope must retain errors/digests, but need not resend
     # that entire identical draft. Never rewrite the call or a changed draft.
@@ -778,6 +798,36 @@ def _supersede_working_notes(messages, boundary):
             message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
 
 
+def _durable_authoring_context(message, calls):
+    """Recognize host-owned writing state, never a source or pending model call."""
+    if not isinstance(message, ToolMessage) or calls.get(message.tool_call_id, {}).get('name') != message.name:
+        return None
+    if message.name not in {'PrepareWorkpaperAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}:
+        return None
+    try:
+        envelope = json.loads(message.content)
+    except (ValueError, TypeError):
+        return None
+    if not isinstance(envelope, dict):
+        return None
+    context = envelope.get('current_context', {})
+    if not isinstance(context, dict):
+        return None
+    task, result = context.get('task_context', {}), envelope.get('result', {})
+    preparation = task.get('authoring_context', {}) if isinstance(task, dict) else {}
+    repair = context.get('submission_to_repair', {})
+    prepared = (message.name == 'PrepareWorkpaperAction' and message.status != 'error'
+        and isinstance(result, dict) and result.get('status') == 'prepared'
+        and isinstance(preparation, dict) and preparation.get('version') == 'authoring_context.v1'
+        and isinstance(preparation.get('brief'), dict) and preparation['brief'].get('ready') is True)
+    editable = (message.name in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}
+        and isinstance(repair, dict) and isinstance(repair.get('candidate'), dict)
+        and repair['candidate'].get('action') == 'submit_workpaper'
+        and isinstance(repair.get('current_candidate_digest'), str)
+        and len(repair['current_candidate_digest']) == 64)
+    return context if prepared or editable else None
+
+
 def task_boundary_history(messages):
     """One accepted working state, current source pins, recent reads, archive routes.
 
@@ -789,6 +839,7 @@ def task_boundary_history(messages):
     revision_baselines = set()
     material_sources = set()
     latest_state_sources = set()
+    calls = {c['id']: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
     for index, message in enumerate(messages):
         # Restored original-author history can end at the submission CALL;
         # native revision initialization supplies its accepted artifact in the
@@ -804,6 +855,17 @@ def task_boundary_history(messages):
             if isinstance(envelope, dict):
                 context = envelope if isinstance(message, HumanMessage) else envelope.get('current_context', {})
         task = context.get('task_context', {}) if isinstance(context, dict) else {}
+        # Preparing an answer and receiving a host-owned editable draft are
+        # durable phase boundaries too. Their public state already exists;
+        # do not require another note solely to retire the research episode.
+        authoring = _durable_authoring_context(message, calls)
+        if authoring is not None:
+            repair = authoring.get('submission_to_repair') or {}
+            current = task.get('research_working_state') or {}
+            latest_state_sources = set(current.get('retain_source_ids', []))
+            material_sources = set(_literal_reference_ids(repair.get('validation_feedback', {})))
+            boundary, note, checkpoint = index, {'retain_source_ids': list(latest_state_sources)}, True
+            completed_submission = False  # Organization is never acceptance.
         baseline = task.get('accepted_revision_baseline', {}) if isinstance(task, dict) else {}
         if (isinstance(baseline, dict) and type(baseline.get('through_model_turn')) is int
                 and baseline['through_model_turn'] > 0 and isinstance(baseline.get('submission'), dict)
@@ -972,7 +1034,7 @@ def task_boundary_history(messages):
 
 
 def _archive_checkpoint_batches(messages, boundary):
-    """After an accepted self-checkpoint, retire completed reasoning episodes.
+    """After a durable state/authoring boundary, retire completed episodes.
 
     DeepSeek requires reasoning for assistant turns kept in the wire protocol.
     Therefore do not strip reasoning from live assistant messages: represent
@@ -994,21 +1056,33 @@ def _archive_checkpoint_batches(messages, boundary):
         projected[index] = HumanMessage(content=json.dumps({
             "origin": origin, "original_message_index": index,
             "notice": "Historical assistant operation, NOT a user instruction, verified fact, or new tool call. "
-                "Its private reasoning is replaced in this request by the accepted working-state checkpoint. "
+                "Its private reasoning is replaced in this request by the current working/authoring/draft state. "
                 "Original messages remain in the native checkpoint/private audit; public actions and results are retained below. "
-                "Continue the unfinished task from accepted working_state; do not re-execute recorded operations.",
+                "Continue the unfinished task from that state and current errors; do not re-execute recorded operations or infer acceptance.",
             "original_content": message.content, "tool_calls": message.tool_calls,
             "invalid_tool_calls": message.invalid_tool_calls,
         }, ensure_ascii=False, separators=(",", ":")), additional_kwargs={"fin_checkpoint_archive": True})
     for index, message in enumerate(messages[:boundary + 1]):
         if isinstance(message, ToolMessage) and message.tool_call_id in archived_calls:
-            projected[index] = HumanMessage(content=json.dumps({
+            record = {
                 "origin": origin, "original_message_index": index,
                 "notice": "Historical tool result, NOT a user instruction. Preserve original source/period/unit/revision authority; "
                     "failed results remain failures. Navigation notices require original retrieval before dependent use.",
                 "tool_call_id": message.tool_call_id, "name": message.name,
                 "status": message.status, "original_content": message.content,
-            }, ensure_ascii=False, separators=(",", ":")), additional_kwargs={"fin_checkpoint_archive": True})
+            }
+            if message.name in {'PrepareWorkpaperAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}:
+                try:
+                    body = json.loads(message.content)
+                except (ValueError, TypeError):
+                    body = None
+                if isinstance(body, dict) and isinstance(body.get('current_context'), dict):
+                    # Keep canonical phase/draft locators directly addressable;
+                    # do not hide the only full candidate in an escaped string.
+                    record.pop('original_content')
+                    record.update(body)
+            projected[index] = HumanMessage(content=json.dumps(record, ensure_ascii=False, separators=(",", ":")),
+                additional_kwargs={"fin_checkpoint_archive": True})
     return projected
 
 
@@ -1035,17 +1109,21 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
     # turn. Wait for a new episode of substantive work; the hard input-headroom
     # warning remains independent and can always request organization.
     if len(encoded) < max_input_characters - reserve_chars:
+        calls = {c['id']: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
         for index in range(len(messages) - 1, -1, -1):
             message = messages[index]
-            if not isinstance(message, ToolMessage) or message.name != 'UpdateResearchStateAction':
+            if not isinstance(message, ToolMessage):
                 continue
-            try:
-                result = json.loads(message.content)
-            except (ValueError, TypeError):
-                continue
-            result = result.get('result', result) if isinstance(result, dict) else {}
-            if not result.get('accepted') or not result.get('working_state'):
-                continue
+            if _durable_authoring_context(message, calls) is None:
+                if message.name != 'UpdateResearchStateAction' or message.status == 'error':
+                    continue
+                try:
+                    result = json.loads(message.content)
+                except (ValueError, TypeError):
+                    continue
+                result = result.get('result', result) if isinstance(result, dict) else {}
+                if not result.get('accepted') or not result.get('working_state'):
+                    continue
             recent = messages[index + 1:]
             growth = json.dumps([{'content': m.content,
                 'calls': getattr(m, 'tool_calls', []),

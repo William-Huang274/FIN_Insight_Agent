@@ -37,6 +37,70 @@ def request_checkpoint(rows, chat):
         runtime_context_binding=True, schema=_native_function_schema, max_input_characters=2000000)
 
 
+def test_pressure_can_release_reads_while_rejected_note_and_feedback_stay_repairable():
+    from sec_agent.agent_runtime.model_context import pressure_read_history
+    rows = [HumanMessage(content='Original Lead question'),
+        *source_messages('PIN'), *source_messages('OLD'), *source_messages('NEW'),
+        *checkpoint_message(working_note(retain_source_ids=['PIN']), accepted=True),
+        AIMessage(content='', tool_calls=[{'name': 'UpdateResearchStateAction', 'id': 'bad-note',
+            'args': {'working_state': {'subtasks': [{'task_id': 'x', 'result_note': 'Draft finding'}]}},
+            'type': 'tool_call'}]),
+        ToolMessage(name='UpdateResearchStateAction', tool_call_id='bad-note', status='error',
+            content='Unknown field result_note; original draft retained')]
+    original = deepcopy(rows)
+    projected = pressure_read_history(rows)
+    assert projected[2] == rows[2]  # explicit original pin
+    assert 'Older read result omitted' in projected[4].content
+    assert '"node_id":"OLD"' in projected[4].content
+    assert projected[6] == rows[6]  # most recent batch remains full
+    assert projected[-2:] == rows[-2:]  # model repairs its own failed draft
+    assert [getattr(m, 'tool_call_id', None) for m in projected] == [getattr(m, 'tool_call_id', None) for m in rows]
+    assert rows == original
+    assert pressure_read_history(projected) == projected
+
+
+def test_pretransport_pressure_projection_reduces_input_without_approving_note():
+    rows = [HumanMessage(content='Original scope'), *source_messages('OLD'), *source_messages('NEW'),
+        *checkpoint_message(working_note(retain_source_ids=[]), accepted=False)]
+    rows[2].content = json.dumps({'ref_id': 'OLD', 'passage': 'original period and units ' * 15000})
+    original = deepcopy(rows)
+    projected, tools, _ = research_checkpoint_request(rows, model=model(research_checkpoint_tokens=140000),
+        native_tools={'UpdateResearchStateAction': UpdateResearchStateAction}, runtime_context_binding=True,
+        schema=_native_function_schema, max_input_characters=300000)
+    assert sum(len(str(m.content)) for m in projected) < 100000
+    assert projected[4] == rows[4]
+    assert any(isinstance(m, ToolMessage) and m.status == 'error' and m.tool_call_id == 'checkpoint' for m in projected)
+    assert set(tools) == {'UpdateResearchStateAction'}
+    assert rows == original
+
+
+def test_pressure_keeps_failed_and_unrecoverable_results():
+    from sec_agent.agent_runtime.model_context import pressure_read_history
+    rows = [ToolMessage(name='RequestSourceAction', tool_call_id='missing-call', content='Unknown original'),
+        *source_messages('ERROR'), *source_messages('LATEST')]
+    rows[2].status = 'error'
+    assert pressure_read_history(rows) == rows
+
+
+def test_pressure_restored_reads_keep_current_errors_actions_and_exact_recovery():
+    from sec_agent.agent_runtime.model_context import pressure_read_history
+    observation = {'kind': 'evidence', 'status': 'success', 'content': [{'passage': 'Saved original', 'ref_id': 'OLD'}],
+        'recovery': {'read_tool': 'ReadResearchHistoryAction', 'saved_observation_id': 'digest',
+            'arguments': {'section': 'observation', 'observation_digest': 'digest'}, 'batch_turn': 2}}
+    context = {'task_context': {'assignment': 'Original Lead task', 'research_working_state': working_note(retain_source_ids=[])},
+        'progress': {'observations': [observation], 'prior_actions': [{'action': 'failed note'}],
+            'feedback': [{'code': 'missing_objective'}]}}
+    rows = [HumanMessage(content=json.dumps(context)), *source_messages('LATEST')]
+    projected = pressure_read_history(rows)
+    restored = json.loads(projected[0].content)
+    assert restored['task_context'] == context['task_context']
+    assert restored['progress']['feedback'] == context['progress']['feedback']
+    assert restored['progress']['prior_actions'] == context['progress']['prior_actions']
+    assert 'content' not in restored['progress']['observations'][0]
+    assert restored['progress']['observations'][0]['recovery'] == observation['recovery']
+    assert projected[-2:] == rows[-2:]
+
+
 def test_configurable_140k_272k_threshold_counts_wire_input_without_sending():
     rows=[HumanMessage(content="Original assignment " + "x" * 600000)]
     initial=deepcopy(rows)

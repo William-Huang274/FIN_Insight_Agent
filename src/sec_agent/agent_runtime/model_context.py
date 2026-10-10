@@ -710,7 +710,7 @@ def _retain_original_rows(observation, retained):
                       'remain in the saved result; use the accompanying recovery route before citing omitted rows.'}}
 
 
-def _project_restored_context(messages, projected, boundary, retained, *, checkpoint):
+def _project_restored_context(messages, projected, boundary, retained, *, checkpoint, preserve_progress=False):
     """Apply the same accepted boundary to saved observations and live reads."""
     for index, original in enumerate(messages[:boundary]):
         if not isinstance(original, HumanMessage):
@@ -750,10 +750,11 @@ def _project_restored_context(messages, projected, boundary, retained, *, checkp
                     "or comparing its content. Omission does not mean source absence."}
         # Execution history is an archive, not another current working note.
         # Keep exact result recovery entries above, not old tool arguments/drafts.
-        progress["archived_action_count"] = progress.get("archived_action_count", 0) + len(progress.get("prior_actions", []))
-        progress["prior_actions"] = []
-        progress["archived_feedback_count"] = progress.get("archived_feedback_count", 0) + len(progress.get("feedback", []))
-        progress["feedback"] = []
+        if not preserve_progress:
+            progress["archived_action_count"] = progress.get("archived_action_count", 0) + len(progress.get("prior_actions", []))
+            progress["prior_actions"] = []
+            progress["archived_feedback_count"] = progress.get("archived_feedback_count", 0) + len(progress.get("feedback", []))
+            progress["feedback"] = []
         projected[index].content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
 
 
@@ -1104,6 +1105,59 @@ def _archive_checkpoint_batches(messages, boundary):
     return projected
 
 
+def pressure_read_history(messages):
+    """Release consumed recoverable reads independently of note validation.
+
+    Keep current task/state, failed drafts and feedback, explicit source pins,
+    calculation receipts, and the latest read batch. No inferred summary or
+    state acceptance; canonical records and provider message pairing stay intact.
+    """
+    calls = {c['id']: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
+    latest_read = max((i for i, m in enumerate(messages) if isinstance(m, AIMessage)
+        and any(c['name'] in REREADABLE_TOOLS for c in m.tool_calls)), default=len(messages))
+    retained = set()
+    for message in messages:
+        if not isinstance(message, (HumanMessage, ToolMessage)):
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(body, dict):
+            continue
+        context = body if isinstance(message, HumanMessage) else body.get('current_context', {})
+        if isinstance(context, dict) and isinstance(context.get('task_context'), dict):
+            note = context['task_context'].get('research_working_state')
+            if isinstance(note, dict):
+                retained = set(note.get('retain_source_ids', []))
+        if isinstance(message, ToolMessage) and message.name == 'UpdateResearchStateAction' and message.status != 'error':
+            result = body.get('result', body)
+            if isinstance(result, dict) and result.get('accepted') and isinstance(result.get('working_state'), dict):
+                retained = set(result['working_state'].get('retain_source_ids', []))
+    projected = deepcopy(list(messages))
+    _project_restored_context(messages, projected, len(messages), retained,
+                              checkpoint=True, preserve_progress=True)
+    for i, message in enumerate(messages[:latest_read]):
+        if (not isinstance(message, ToolMessage) or message.status == 'error'
+                or message.name not in REREADABLE_TOOLS or message.tool_call_id not in calls):
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        result = body.get('result', body) if isinstance(body, dict) else None
+        if (not isinstance(result, dict) or result.get('failure') or result.get('error')
+                or any(isinstance(o, dict) and o.get('status') != 'success'
+                       for o in result.get('observations', []))
+                or retained.intersection(_literal_reference_ids(result, include_navigation=True))):
+            continue
+        notice = _read_recovery_notice(message, calls[message.tool_call_id], saved_result_reader=False)
+        projected[i].content = (json.dumps({'archived_result': notice, 'current_context': body['current_context']},
+            ensure_ascii=False, separators=(',', ':')) if isinstance(body.get('current_context'), dict) else notice)
+        projected[i].artifact = None
+    return coalesce_context_snapshots(projected)
+
+
 def research_checkpoint_request(messages, *, model, native_tools, runtime_context_binding, schema, max_input_characters):
     """One ordinary audited author turn requests a durable within-phase note.
 
@@ -1121,6 +1175,16 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
     pressure = research_input_pressure(encoded, messages, model)
     estimate = pressure["estimated_input_tokens"]
     reserve_chars = pressure["growth_reserve_characters"]
+    if len(encoded) >= max_input_characters - reserve_chars:
+        projected = pressure_read_history(messages)
+        candidate = model._get_request_payload(projected, tools=[schema(t, runtime_context_binding=runtime_context_binding)
+            for t in native_tools.values()], tool_choice="auto")
+        candidate_encoded = json.dumps(candidate, ensure_ascii=False)
+        if len(candidate_encoded) < len(encoded):
+            messages, encoded = projected, candidate_encoded
+            pressure = research_input_pressure(encoded, messages, model)
+            estimate = pressure['estimated_input_tokens']
+            reserve_chars = pressure['growth_reserve_characters']
     if estimate < trigger and len(encoded) < max_input_characters - reserve_chars:
         return messages, native_tools, None
     # A large pinned working set is not a reason to ask for the same note every

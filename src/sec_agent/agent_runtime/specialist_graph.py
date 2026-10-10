@@ -1844,7 +1844,8 @@ def build_specialist_agentic_state_graph(
             prior = _validate_model_json(SpecialistNotebook, recovery_state.get("notebook"),
                                         code="recovery_notebook_invalid")
             revising = bool(revision_feedback)
-            same_invocation = recovery_state.get('run_invocation_id') == validated.run_invocation_id
+            same_invocation = (not revising
+                and recovery_state.get('run_invocation_id') == validated.run_invocation_id)
             interrupted_at_read_boundary = (same_invocation
                 and recovery_state.get('phase') in {'ready_for_model_decision', 'tool_observation_ready'}
                 and recovery_state.get('pending_action') is None)

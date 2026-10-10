@@ -19,7 +19,7 @@ REREADABLE_TOOLS = frozenset({
     "read_public_source", "read_company_library", "read_task_material", "query_financial_data", "read_saved_result",
     "read_research_artifact", "read_current_workpaper", "read_research_source", "search_research_sources",
     "read_current_source", "read_source_document", "query_company_financial_facts",
-    "RequestEvidenceAction", "RequestFinanceAction", "RequestSourceAction", "ReadDependencyWorkAction", "ReadResearchHistoryAction", "ReadWorkpaperAction",
+    "RequestEvidenceAction", "RequestFinanceAction", "RequestSourceAction", "ReadDependencyWorkAction", "ReadDelegatedWorkAction", "ReadResearchHistoryAction", "ReadWorkpaperAction",
 })
 
 
@@ -71,6 +71,11 @@ def _read_recovery_notice(message, call, *, saved_result_reader):
     elif call:
         recovery["read_tool"] = call["name"]
         recovery["arguments"] = deepcopy(call["args"])
+        if call['name'] == 'ReadDelegatedWorkAction' and 'section' not in recovery['arguments']:
+            result = value.get('result', value) if isinstance(value, dict) else {}
+            # Before paged helper views, omitted section meant full workpaper.
+            # New receipts declare their view; old replay must keep its reader.
+            recovery['arguments']['section'] = result.get('delegated_view', 'workpaper')
         # Context binding changes each turn; source selection does not.
         recovery["arguments"].pop("context_digest", None)
         recovery["binding_notice"] = "Use current execution binding if the tool requires one."
@@ -800,9 +805,10 @@ def _supersede_working_notes(messages, boundary):
 
 def _durable_authoring_context(message, calls):
     """Recognize host-owned writing state, never a source or pending model call."""
-    if not isinstance(message, ToolMessage) or calls.get(message.tool_call_id, {}).get('name') != message.name:
-        return None
-    if message.name not in {'PrepareWorkpaperAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}:
+    restored = isinstance(message, HumanMessage)
+    if not restored and (not isinstance(message, ToolMessage)
+            or calls.get(message.tool_call_id, {}).get('name') != message.name
+            or message.name not in {'PrepareWorkpaperAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}):
         return None
     try:
         envelope = json.loads(message.content)
@@ -810,17 +816,21 @@ def _durable_authoring_context(message, calls):
         return None
     if not isinstance(envelope, dict):
         return None
-    context = envelope.get('current_context', {})
+    if restored and (not isinstance(envelope.get('turn_index'), int)
+            or not all(isinstance(envelope.get(k), dict) for k in ('task_context', 'progress', 'execution_budget'))
+            or not isinstance(envelope.get('allowed_actions'), list)):
+        return None
+    context = envelope if restored else envelope.get('current_context', {})
     if not isinstance(context, dict):
         return None
     task, result = context.get('task_context', {}), envelope.get('result', {})
     preparation = task.get('authoring_context', {}) if isinstance(task, dict) else {}
     repair = context.get('submission_to_repair', {})
-    prepared = (message.name == 'PrepareWorkpaperAction' and message.status != 'error'
-        and isinstance(result, dict) and result.get('status') == 'prepared'
+    prepared = ((restored or (message.name == 'PrepareWorkpaperAction' and message.status != 'error'
+        and isinstance(result, dict) and result.get('status') == 'prepared'))
         and isinstance(preparation, dict) and preparation.get('version') == 'authoring_context.v1'
         and isinstance(preparation.get('brief'), dict) and preparation['brief'].get('ready') is True)
-    editable = (message.name in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}
+    editable = ((restored or message.name in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction'})
         and isinstance(repair, dict) and isinstance(repair.get('candidate'), dict)
         and repair['candidate'].get('action') == 'submit_workpaper'
         and isinstance(repair.get('current_candidate_digest'), str)
@@ -862,7 +872,11 @@ def task_boundary_history(messages):
         if authoring is not None:
             repair = authoring.get('submission_to_repair') or {}
             current = task.get('research_working_state') or {}
-            latest_state_sources = set(current.get('retain_source_ids', []))
+            # Research pins belong to the research working set. Once a complete
+            # editable artifact exists, use that artifact, concrete feedback and
+            # recent reads; do not make every old research pin permanent during
+            # local edits. Original evidence stays available through saved readers.
+            latest_state_sources = set() if repair else set(current.get('retain_source_ids', []))
             material_sources = set(_literal_reference_ids(repair.get('validation_feedback', {})))
             boundary, note, checkpoint = index, {'retain_source_ids': list(latest_state_sources)}, True
             completed_submission = False  # Organization is never acceptance.
@@ -884,7 +898,7 @@ def task_boundary_history(messages):
                 restored = {}
             if isinstance(restored, dict):
                 current = restored.get("task_context", {}).get("research_working_state") or {}
-                if not completed_submission:
+                if not completed_submission and not (authoring and authoring.get('submission_to_repair')):
                     latest_state_sources = set(current.get("retain_source_ids", []))
         if isinstance(message, AIMessage):
             # Outstanding operations after the latest accepted note keep their
@@ -970,7 +984,11 @@ def task_boundary_history(messages):
         if isinstance(result, dict) and (result.get("failure") or result.get("error") or any(
                 isinstance(o, dict) and o.get("status") != "success" for o in result.get("observations", []))):
             continue
-        if retained.intersection(_literal_reference_ids(result, include_navigation=True)):
+        call = calls.get(message.tool_call_id, {})
+        analysis_read = (message.name in {'ReadDelegatedWorkAction', 'ReadDependencyWorkAction'}
+            and call.get('args', {}).get('section', result.get('delegated_view', 'workpaper'))
+                in {'workpaper', 'overview', 'analysis', 'assignment', 'sources'})
+        if not analysis_read and retained.intersection(_literal_reference_ids(result, include_navigation=True)):
             if calls.get(message.tool_call_id):
                 # Same row-level navigation rule for live and restored results.
                 # At an accepted checkpoint, unselected navigation rows from

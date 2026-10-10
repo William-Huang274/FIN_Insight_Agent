@@ -1844,6 +1844,10 @@ def build_specialist_agentic_state_graph(
             prior = _validate_model_json(SpecialistNotebook, recovery_state.get("notebook"),
                                         code="recovery_notebook_invalid")
             revising = bool(revision_feedback)
+            same_invocation = recovery_state.get('run_invocation_id') == validated.run_invocation_id
+            interrupted_at_read_boundary = (same_invocation
+                and recovery_state.get('phase') in {'ready_for_model_decision', 'tool_observation_ready'}
+                and recovery_state.get('pending_action') is None)
             if revising:
                 from .workpaper_review_graph import validate_workpaper_state
                 validate_workpaper_state(recovery_state)
@@ -1852,7 +1856,8 @@ def build_specialist_agentic_state_graph(
                     # Runtime opens this round's response slots, retaining the
                     # prior author's note in the immutable submitted artifact.
                     revision_candidate["task_note"]["finding_responses"] = []
-            if ((not revising and (recovery_state.get("phase") != "specialist_human_review_handoff_emitted"
+            if ((not revising and ((recovery_state.get("phase") != "specialist_human_review_handoff_emitted"
+                    and not interrupted_at_read_boundary)
                     or recovery_state.get("final_submission") is not None))
                     or recovery_state.get("run_id") != validated.run_id
                     or recovery_state.get("agent_id") != validated.agent_id
@@ -1877,10 +1882,13 @@ def build_specialist_agentic_state_graph(
                 "workpaper_change_history": _jsonable(recovery_state.get("workpaper_change_history", [])),
                 "notebook": _replace_notebook(prior, run_invocation_id=validated.run_invocation_id,
                                              status="researching").model_dump(mode="json"),
-                # A user-initiated new run has its configured allowance. Lifetime
-                # counts are retained, not reset by inventing a replacement task.
-                "max_model_turns": prior.model_turn_count + validated.max_model_turns,
-                "max_tool_actions": prior.tool_action_count + validated.max_tool_actions,
+                # A new user run has its configured allowance. Resuming the
+                # same interrupted invocation keeps its original ceiling and
+                # lifetime counters, including successful responses before stop.
+                "max_model_turns": (recovery_state['max_model_turns'] if same_invocation
+                    else prior.model_turn_count + validated.max_model_turns),
+                "max_tool_actions": (recovery_state['max_tool_actions'] if same_invocation
+                    else prior.tool_action_count + validated.max_tool_actions),
                 "last_submission_attempt": ({"arguments": revision_candidate, "accepted": False, "feedback": []}
                     if revising else _jsonable(recovery_state.get("last_submission_attempt"))),
                 **({"revision_targets": {}, "revision_target_origins": {}, "revision_tracking_version": 1}
@@ -2763,7 +2771,19 @@ def build_specialist_agentic_state_graph(
                     else:
                         child = validate_workpaper_state(child)
                         observations = child["notebook"]["observations"]
-                        if action.section == "workpaper":
+                        if action.section not in {'workpaper', 'source'}:
+                            from .specialist_delegation import delegated_artifact_view
+                            try:
+                                payload, restored = delegated_artifact_view(child, action)
+                            except (ValueError, KeyError) as exc:
+                                return reject('specialist_subtask_read_invalid', str(exc), agent_error=True)
+                            known = {o.observation_digest for o in before.observations}
+                            added = tuple(SpecialistToolObservation.model_validate_json(json.dumps(obs))
+                                for obs in restored if obs['observation_digest'] not in known)
+                            if added:
+                                before = _replace_notebook(before, observations=(*before.observations, *added))
+                            payload['source_observations'] = restored
+                        elif action.section == "workpaper":
                             payload = {"workpaper": child["final_submission"],
                                 "sources": [{"source_observation_ref": obs["observation_digest"], "references": obs["references"]}
                                     for obs in observations if obs["status"] == "success"],
@@ -2778,6 +2798,7 @@ def build_specialist_agentic_state_graph(
                                 before = _replace_notebook(before, observations=(*before.observations, source))
                             payload = {"references": observation["references"], "content": observation["content"],
                                 "notice": "Original successful source observation restored; no new query, authority or route completion is inferred."}
+                        payload['delegated_view'] = action.section
                 if digest not in before.dispatched_action_digests:
                     before = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,
                         dispatched_action_digests=(*before.dispatched_action_digests, digest))

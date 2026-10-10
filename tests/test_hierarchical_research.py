@@ -58,6 +58,60 @@ def test_integrated_route_now_includes_lead_decision_and_final_judgment_when_ena
     assert result['lead_decision']['action'] == 'synthesize'
 
 
+def test_helper_default_overview_and_paged_originals_allow_local_read_correction():
+    from test_research_session import _new_worker_fixture
+    child = _new_worker_fixture()
+    child['private_history'] = 'PRIVATE_HELPER_HISTORY'
+    requests, selected = [], []
+    spec = {'subtask_id': 'numbers', 'objective': 'Read the reported metric and original period.',
+        'success_criteria': ['Explain the assigned metric with its source.'],
+        'relieved_work': 'Parent reuses this extraction.',
+        'retained_parent_work': 'Parent integrates demand and delivery.', 'source_hints': []}
+    def model(request):
+        requests.append(request)
+        assert 'PRIVATE_HELPER_HISTORY' not in json.dumps(request)
+        n = len(requests)
+        if n == 1:
+            name, args = 'DelegateSubtasksAction', {'action': 'delegate_subtasks', 'tasks': [spec]}
+        else:
+            name, args = 'ReadDelegatedWorkAction', {'action': 'read_delegated_work', 'subtask_id': 'numbers'}
+            if n == 3:
+                body = json.loads(request['tool_results'][0]['content'])
+                assert body['view'] == 'author_overview.v1'
+                assert 'workpaper' not in body and not body['source_observations']
+                assert body['source_materials']['tool'] == name
+                assert body['source_materials']['arguments']['subtask_id'] == 'numbers'
+                args.update(section='handoff', source_ids=['missing'])
+            elif n == 4:
+                feedback = request['tool_results'][0]
+                assert feedback['status'] == 'error'
+                assert 'unknown_handoff_source' in feedback['content']
+                assert not request['notebook']['observations']
+                args.update(section='sources', limit=1)
+            elif n == 5:
+                body = json.loads(request['tool_results'][0]['content'])
+                assert len(body['sources']) == 1 and not body['source_observations']
+                selected.extend(body['read_page']['arguments']['source_ids'])
+                args.update(body['read_page']['arguments'])
+            elif n == 6:
+                body = json.loads(request['tool_results'][0]['content'])
+                assert [row['source_id'] for row in body['source_materials']] == selected
+                originals = body['source_observations']
+                assert originals and all(obs in child['notebook']['observations'] for obs in originals)
+                assert request['notebook']['observations'] == originals
+                return {'action': 'request_human_review', 'context_digest': request['context_digest'],
+                    'reason_summary': 'Paged source restoration and local correction checked.', 'blocker_code': 'fixture_done'}
+        return {'action': 'native_tool_batch', 'context_digest': request['context_digest'], 'tool_calls': [{
+            'id': f'call-{n}', 'name': name, 'args': {**args, 'context_digest': request['context_digest'],
+                'reason_summary': 'Read the selected helper view with original source identity.'}}]}
+    ports = _ToolPorts()
+    graph = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance,
+        subtask_runner=lambda *args: deepcopy(child))).compile()
+    result = graph.invoke({**_input(), 'max_model_turns': 8}, {'recursion_limit': 40})
+    assert result['notebook']['model_turn_count'] == 6 and not ports.calls
+
+
 def test_material_finding_reaches_lead_before_targeted_repair():
     result, sequence, _ = asyncio.run(exercise_case(depth='integrated', hierarchical=True, research_owner='research'))
     roles = [r[0] for r in sequence]

@@ -173,3 +173,47 @@ def test_source_lookalike_and_unfinished_draft_never_trigger_authoring_boundary(
     messages = source + [pending]
     view = project_tool_history(messages, policy='task_boundary')
     assert view == messages
+
+
+@pytest.mark.parametrize('view_name', [None, 'overview', 'analysis', 'sources'])
+def test_helper_analysis_can_retire_without_pinning_full_paper_through_its_citations(view_name):
+    args = {'subtask_id': 'helper'}
+    if view_name is not None:
+        args['section'] = view_name
+    value = {'workpaper': {'thesis': 'Old author interpretation ' * 200, 'source_ids': ['SRC1']}}
+    if view_name is not None:
+        value['delegated_view'] = view_name
+    messages = [AIMessage(content='', tool_calls=[{'id': 'helper', 'name': 'ReadDelegatedWorkAction',
+        'args': args, 'type': 'tool_call'}]), ToolMessage(name='ReadDelegatedWorkAction', tool_call_id='helper',
+        content=json.dumps({'result': value}))]
+    source = observation('SRC1', 'Exact source still needed for the active research question. ' * 100)
+    messages += read('original', [source])
+    messages += checkpoint_message(working_note(retain_source_ids=['SRC1']))
+    saved = deepcopy(messages)
+    projected = project_tool_history(messages, policy='task_boundary')
+    assert messages == saved
+    archived = projected[1].content
+    assert 'Old author interpretation' not in archived
+    assert 'ReadDelegatedWorkAction' in archived and 'helper' in archived
+    assert json.loads(archived[archived.index('{'):])['arguments']['section'] == (view_name or 'workpaper')
+    assert source in json.loads(projected[3].content)['result']['source_observations']
+
+
+def test_complete_editable_draft_releases_old_research_pins_but_preserves_current_feedback_source():
+    old = observation('OLD', 'Old successfully read source ' * 120)
+    needed = observation('NEEDED', 'Current feedback evidence ' * 120)
+    messages = read('old', [old]) + read('needed', [needed])
+    current = {'task_context': {'research_working_state': working_note(retain_source_ids=['OLD', 'NEEDED'])},
+        'submission_to_repair': {'candidate': {'action': 'submit_workpaper', 'thesis': 'Current answer'},
+            'current_candidate_digest': 'd' * 64, 'validation_feedback': {'source_id': 'NEEDED'}}}
+    messages += [AIMessage(content='', tool_calls=[{'id': 'draft', 'name': 'SubmitWorkpaperAction',
+        'args': current['submission_to_repair']['candidate'], 'type': 'tool_call'}]),
+        ToolMessage(name='SubmitWorkpaperAction', tool_call_id='draft', status='error',
+            content=json.dumps({'result': {'accepted': False}, 'current_context': current}))]
+    saved = deepcopy(messages)
+    projected = project_tool_history(messages, policy='task_boundary')
+    assert messages == saved
+    assert 'Old successfully read source' not in projected[1].content
+    assert 'ReadDependencyWorkAction' in projected[1].content
+    assert needed in json.loads(projected[3].content)['result']['source_observations']
+    assert json.loads(projected[-1].content)['current_context']['submission_to_repair'] == current['submission_to_repair']

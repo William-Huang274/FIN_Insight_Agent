@@ -99,6 +99,51 @@ def test_product_can_resume_before_first_formal_paper_and_preserves_failed_attem
     asyncio.run(exercise())
 
 
+def test_same_invocation_resumes_completed_reads_without_granting_a_new_allowance():
+    value = {**_input(), 'max_model_turns': 3}
+    ports = _ToolPorts()
+    first = _ScriptedModel([_evidence_action(), _finance_action()])
+    def graph(model, prior=None):
+        return build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+            model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance), recovery_state=prior).compile()
+    stream = graph(first).stream(value, stream_mode='values')
+    for saved in stream:
+        if saved.get('phase') == 'tool_observation_ready' and saved['notebook']['model_turn_count'] == 2:
+            break
+    stream.close()
+    original = deepcopy(saved)
+    second = _ScriptedModel([_submission()])
+    resumed = graph(second, saved).invoke(value)
+    assert resumed['phase'] == 'specialist_submission_accepted'
+    assert resumed['notebook']['model_turn_count'] == 3
+    assert resumed['max_model_turns'] == 3
+    assert second.requests[0]['execution_budget']['remaining_model_turns'] == 1
+    assert resumed['notebook']['observations'] == original['notebook']['observations']
+    assert saved == original
+    for changed in ({**value, 'run_invocation_id': 'unconfirmed-active-run'}, value):
+        unfinished = deepcopy(saved)
+        if changed == value:
+            unfinished['pending_action'] = {'action': 'request_evidence'}
+        with pytest.raises(SpecialistAgenticGraphError, match='recovery_task_or_data_scope_mismatch'):
+            graph(second, unfinished).invoke(changed)
+
+
+def test_same_invocation_cannot_resume_at_ceiling_to_gain_another_model_call():
+    value = {**_input(), 'max_model_turns': 1}
+    ports = _ToolPorts()
+    dependencies = SpecialistAgenticDependencies(model_turn=_ScriptedModel([_evidence_action()]),
+        evidence_tool=ports.evidence, finance_tool=ports.finance)
+    stopped = build_specialist_agentic_state_graph(dependencies=dependencies).compile().invoke(value)
+    assert stopped['phase'] == 'specialist_human_review_handoff_emitted'
+    def never_called(request):
+        raise AssertionError('Same invocation must not acquire new model capacity')
+    result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=never_called, evidence_tool=ports.evidence, finance_tool=ports.finance),
+        recovery_state=stopped).compile().invoke(value)
+    assert result['notebook']['model_turn_count'] == 1
+    assert result['review_trigger'] == 'model_turn_ceiling'
+
+
 def test_lead_restores_original_task_before_planning_and_can_supplement_submitted_branch():
     seed = _seed()
     original = _task("unfinished", BRANCHES[0], (seed["task"]["task_id"],))

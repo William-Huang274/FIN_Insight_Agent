@@ -19,9 +19,24 @@ from retrieval.text import tokenize
 from .research_methods import REPORT_PROCESSING_TOOL_GUIDANCE
 
 
+LIBRARY_SOURCE_ROUTING_GUIDANCE = (
+    'For company/industry discovery and current coverage use source_space=library explicitly: '
+    'catalog/company/search/related share the published library and its prepared chunk vectors. '
+    'local is a separate frozen document tree, not an alias of library. Its catalog count and company mix '
+    'describe only that tree, not the full database or the subjects of the user question. '
+    'Use local to read/search an exact local document or section already returned, or when the assignment '
+    'specifically needs that tree. Keep each document/node ID in its originating source_space; never '
+    'replace DOC with SRC or infer an equivalent ID. If local search reports hybrid unavailable, retain '
+    'its lexical candidates and mark degraded retrieval; use library search for additional sources. '
+    'A parameter validation error is not a database availability test or an issuer disclosure gap.')
+
+
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    source_space: Literal["local", "web", "uploads", "library"] = "local"
+    source_space: Literal["local", "web", "uploads", "library"] = Field(default="local", description=(
+        'library is the shared company/industry knowledge database, when authorized. local is only the '
+        'frozen document tree attached to this case, not the whole database. company/data/related require '
+        'library. Choose the space explicitly and keep IDs in their originating space.'))
     operation: Literal["catalog", "outline", "search", "read", "inspect_image", "related", "observations", "company", "data"] = Field(description=REPORT_PROCESSING_TOOL_GUIDANCE.strip())
     company_section: Literal['sources', 'accounts', 'periods', 'coverage', 'relationships', 'gaps', 'macro_series'] = Field(default='sources', description='company returns a compact identity/menu and one paginated section. sources lists original documents; accounts lists financial account paths; periods lists fiscal periods; coverage lists processing records; relationships lists stored relationship navigation; gaps lists known missing work. Copy section requests from company.section_navigation.')
     data_kind: Literal['financial', 'prices', 'positions', 'holders', 'filings', 'derived', 'disclosures', 'relationships','metrics'] = Field(default='financial',description='metrics: shared frontend/Agent catalog, observation series and data cards. Use metric_section=catalog to discover exact metric IDs; query=<metric ID> for series/compare; metric_record_id for one source-linked card. Valuation uses trade dates, not denominator fiscal year. relationships returns reviewed assertions; disclosures returns extracted counterparties and concentration facts. Unprocessed is not undisclosed.')

@@ -113,6 +113,58 @@ def test_legacy_schema_stays_readable_and_unauthorized_source_tool_absent():
     assert 'RequestSourceAction' not in old
 
 
+@pytest.mark.parametrize('library_enabled', [False, True])
+def test_full_lead_receives_library_entrypoint_and_local_catalog_is_bounded(library_enabled):
+    body = _input()
+    spaces = ['local', 'library'] if library_enabled else ['local']
+    body['l0_context']['capability_summaries'].append({'capability_ref': 'read', 'source_spaces': spaces})
+    value = SpecialistAgenticInput.model_validate_json(json.dumps(body))
+    requests, reads = [], []
+    original = {'status': 'success', 'total': 20, 'items': [{'title': 'Reference issuer annual report'}]}
+    def turn(request):
+        requests.append(request)
+        if library_enabled:
+            assert request['source_navigation']['selection']['source_space'] == 'library'
+            assert 'not the full database' in request['source_routing_guidance']
+        else:
+            assert 'source_navigation' not in request and 'source_routing_guidance' not in request
+        return _call(request, 'RequestSourceAction', action='request_source',
+            selection={'source_space': 'local', 'operation': 'catalog'})
+    def read(selection):
+        reads.append(selection.source_space)
+        return original
+    graph = build_lead_research_graph(expected_input=value, research_question='Industry-wide research, no core issuer selected.',
+        branch_catalog=CATALOG, allowed_branch_ids=BRANCHES, seed_workpapers={}, model_turn=turn,
+        run_child=lambda *_: pytest.fail('No worker execution'), source_reader=read,
+        require_all_branches=False).compile(checkpointer=InMemorySaver(), interrupt_after=['lead_tools'])
+    config = {'configurable': {'thread_id': 'scope-discovery'}}
+    graph.invoke(value.model_dump(mode='json'), config)
+    state = graph.get_state(config).values
+    result = json.loads(state['tool_results'][0]['content'])
+    assert reads == ['local'] and result['result'] == original
+    assert 'does not establish the full library coverage' in result['reading_scope']
+    assert ('library_navigation' in result) == library_enabled
+    assert state['planning_observations'][0]['result'] == original
+
+
+def test_invalid_local_company_request_explains_route_without_claiming_database_missing():
+    body = _input()
+    body['l0_context']['capability_summaries'].append({'capability_ref': 'read', 'source_spaces': ['local','library']})
+    value = SpecialistAgenticInput.model_validate_json(json.dumps(body))
+    def turn(request):
+        return _call(request, 'RequestSourceAction', action='request_source',
+            selection={'source_space': 'local', 'operation': 'company', 'company_section': 'coverage', 'entity_id': 'UNKNOWN'})
+    graph = build_lead_research_graph(expected_input=value, research_question='Check the authorized database.',
+        branch_catalog=CATALOG, allowed_branch_ids=BRANCHES, seed_workpapers={}, model_turn=turn,
+        run_child=lambda *_: pytest.fail('No worker execution'), source_reader=lambda *_: pytest.fail('Invalid request is not executed'),
+        require_all_branches=False).compile(checkpointer=InMemorySaver(), interrupt_after=['lead_tools'])
+    config = {'configurable': {'thread_id': 'route-correction'}}
+    graph.invoke(value.model_dump(mode='json'), config)
+    result = json.loads(graph.get_state(config).values['tool_results'][0]['content'])
+    assert 'company_section_requires_library_company' in str(result['schema_errors'])
+    assert 'not evidence that the database is missing' in result['source_space_correction']
+
+
 @pytest.mark.parametrize('mixed', [False, True])
 def test_read_batch_preserves_each_observation_and_cannot_mix_with_mutations(mixed):
     body = _input()

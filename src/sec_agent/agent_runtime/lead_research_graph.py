@@ -367,6 +367,12 @@ def build_lead_research_graph(
                          "ready_task_ids": [task["task_id"] for task in ready(state)],
                          "task_outcomes": [{k: row[k] for k in ("task_id", "status")} for row in state["task_results"]]},
         }
+        if source_reader is not None and any('library' in row.get('source_spaces', [])
+                for row in expected_input.l0_context.capability_summaries):
+            from sec_agent.research_foundation.source_document_navigation import LIBRARY_SOURCE_ROUTING_GUIDANCE
+            request['source_routing_guidance'] = LIBRARY_SOURCE_ROUTING_GUIDANCE
+            request['source_navigation'] = {'tool': 'RequestSourceAction', 'selection': {
+                'source_space': 'library', 'operation': 'catalog', 'query': '', 'limit': 8}}
         if hierarchical:
             request["execution_policy"] = (
                 "Plan the complete research and current wave. focused has one self-contained domain paper; integrated "
@@ -458,6 +464,10 @@ def build_lead_research_graph(
                     working["planning_observations"] = [*working.get("planning_observations", state.get("planning_observations", [])), observation]
                     value = {**observation, "research_as_of": expected_input.task.research_as_of,
                              "planning_observation_not_verified_financial_conclusion": True}
+                    if action.selection.source_space == 'local':
+                        value['reading_scope'] = 'This result covers only the frozen local document tree. It does not establish the full library coverage or choose a core issuer for the user question.'
+                        if 'library' in spaces:
+                            value['library_navigation'] = {'source_space': 'library', 'operation': 'catalog', 'query': '', 'limit': 8}
                     if orientation_only:
                         from .research_orientation import orientation_source_view, observation_scope
                         value['result'] = orientation_source_view(result)
@@ -576,6 +586,10 @@ def build_lead_research_graph(
                 detail = ({"schema_errors": [{"loc": list(e["loc"]), "type": e["type"], "msg": e["msg"]}
                                              for e in exc.errors(include_url=False, include_input=False)]}
                           if isinstance(exc, ValidationError) else {"error": str(exc)})
+                if call.name == 'RequestSourceAction' and 'require' in str(exc) and 'library' in str(exc):
+                    detail['source_space_correction'] = ('This is a request-shape error, not evidence that the database is missing. '
+                        'company/data/related use source_space=library when authorized; discover exact entity IDs with library catalog. '
+                        'Keep a local document ID in local. Inspect disclosed source_spaces before retrying a corrected tool request.')
                 if str(exc) == "task_status_capability_or_output_not_authorized":
                     detail.update(allowed_statuses=["planned", "ready"], allowed_capability_refs=sorted(available),
                                   allowed_output_kinds=["branch_notebook", "narrative_artifact", "claim_ledger"],

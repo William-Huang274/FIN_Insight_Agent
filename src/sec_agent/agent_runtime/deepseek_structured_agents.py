@@ -360,12 +360,15 @@ def _native_function_schema(schema: type[BaseModel], *, runtime_context_binding:
 def _bind_native_call_context(call: Mapping[str, Any], context_digest: str) -> dict[str, Any]:
     """Build a host-bound view, preserving the raw provider message unchanged.
 
-    An unsolicited model context is NOT silently overwritten: existing strict
-    context checks reject a different value. Invalid JSON remains tool feedback.
+    This lane omits context_digest from the provider schema: the host owns it.
+    An unsolicited echo cannot select an execution context. Preserve that echo
+    in the raw response audit, and bind this execution view to the current
+    request. Receipt and graph context checks still validate the host binding.
+    Invalid JSON remains tool feedback.
     """
     bound = dict(call)
     if isinstance(call.get("args"), Mapping):
-        bound["args"] = {"context_digest": context_digest, **call["args"]}
+        bound["args"] = {**call["args"], "context_digest": context_digest}
     return bound
 
 

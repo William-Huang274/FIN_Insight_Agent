@@ -326,7 +326,7 @@ def test_missing_or_misattributed_batch_feedback_stops_before_next_transport(res
         adapter.specialist_model_turn(request)
 
 
-def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=False, local_edit=False, partial_edit=False):
+def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=False, local_edit=False, partial_edit=False, unsolicited_context=False):
     """Offline model responses, actual SDK/ToolNode/history; not paid research."""
     from test_deepseek_structured_agents import _config
     requests, wires, public, ports = [], [], [], _ToolPorts()
@@ -364,6 +364,8 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=Fals
         if runtime_context_binding:
             for call in calls:
                 call["args"].pop("context_digest", None)
+                if unsolicited_context:
+                    call["args"]["context_digest"] = "a" * 64
         reasoning = (saved_raw["additional_kwargs"]["reasoning_content"]
                      if saved_raw is not None and n == 2 else "Synthetic private reasoning, not evidence.")
         return httpx.Response(200, json={"id": f"offline-terminal-{n}", "object": "chat.completion", "created": 1,
@@ -456,11 +458,20 @@ def test_runtime_context_is_not_a_model_argument_and_quote_guards_still_apply():
                for m in wires[-1]["messages"] if m["role"] == "assistant")
 
 
-def test_runtime_binding_does_not_overwrite_an_unsolicited_wrong_context():
+def test_runtime_binding_owns_execution_context_and_preserves_raw_echo():
     from sec_agent.agent_runtime.deepseek_structured_agents import _bind_native_call_context
     raw = {"name": "RequestEvidenceAction", "args": {"context_digest": "a" * 64}}
-    assert _bind_native_call_context(raw, "b" * 64)["args"]["context_digest"] == "a" * 64
+    assert _bind_native_call_context(raw, "b" * 64)["args"]["context_digest"] == "b" * 64
     assert raw == {"name": "RequestEvidenceAction", "args": {"context_digest": "a" * 64}}
+
+
+def test_unsolicited_context_echo_survives_sdk_feedback_and_terminal_submission():
+    result, requests, wires = _terminal_feedback_sdk_graph(
+        runtime_context_binding=True, unsolicited_context=True)
+    assert result["phase"] == "specialist_submission_accepted"
+    assert len(wires) == 4
+    assert result["final_submission"]["context_digest"] == requests[-1]["context_digest"]
+    assert "unknown_evidence_id:E:invented" in json.dumps(requests[3]["notebook"]["feedback"])
 
 
 @pytest.mark.parametrize("terminal", ["submission", "handoff"])

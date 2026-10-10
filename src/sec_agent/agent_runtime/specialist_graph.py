@@ -1847,7 +1847,11 @@ def build_specialist_agentic_state_graph(
             same_invocation = (not revising
                 and recovery_state.get('run_invocation_id') == validated.run_invocation_id)
             interrupted_at_read_boundary = (same_invocation
-                and recovery_state.get('phase') in {'ready_for_model_decision', 'tool_observation_ready'}
+                # Native preparation and completed validation feedback also
+                # return to model_decide without a pending tool dispatch.
+                and recovery_state.get('phase') in {
+                    'ready_for_model_decision', 'tool_observation_ready',
+                    'typed_feedback_ready', 'model_action_selected'}
                 and recovery_state.get('pending_action') is None)
             if revising:
                 from .workpaper_review_graph import validate_workpaper_state

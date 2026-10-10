@@ -99,7 +99,9 @@ def test_product_can_resume_before_first_formal_paper_and_preserves_failed_attem
     asyncio.run(exercise())
 
 
-def test_same_invocation_resumes_completed_reads_without_granting_a_new_allowance():
+@pytest.mark.parametrize('boundary', [
+    'tool_observation_ready', 'typed_feedback_ready', 'model_action_selected'])
+def test_same_invocation_resumes_completed_reads_without_granting_a_new_allowance(boundary):
     value = {**_input(), 'max_model_turns': 3}
     ports = _ToolPorts()
     first = _ScriptedModel([_evidence_action(), _finance_action()])
@@ -111,6 +113,7 @@ def test_same_invocation_resumes_completed_reads_without_granting_a_new_allowanc
         if saved.get('phase') == 'tool_observation_ready' and saved['notebook']['model_turn_count'] == 2:
             break
     stream.close()
+    saved = {**saved, 'phase': boundary}
     original = deepcopy(saved)
     second = _ScriptedModel([_submission()])
     resumed = graph(second, saved).invoke(value)

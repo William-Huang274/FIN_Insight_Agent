@@ -68,6 +68,32 @@ def test_exact_lowercase_request_keeps_existing_receipt_shape():
     assert 'runtime_compatibility_parse' not in result['operands']['n']
 
 
+@pytest.mark.parametrize('literal,quote', [
+    ('1,000', 'Today that number exceeds 1,000, doubling in two months.'),
+    ('1000', 'Today that number exceeds 1,000, doubling in two months.'),
+    ('1,000', 'The total was 1,000.'),
+    ('1,000', 'The total was 1000. It increased.'),
+    ('1,000.25', 'The total was 1,000.25, as reported.'),
+])
+def test_punctuation_after_complete_number_is_not_a_numeric_continuation(literal, quote):
+    result = run(literal, quote)
+    assert result['operands']['N_total']['quote'] == quote
+    assert result['operands']['N_total']['literal'] == literal
+    assert not result['financial_semantics_verified']
+    assert result['value_decimal'] == ('999.25' if '.25' in literal else '999')
+
+
+@pytest.mark.parametrize('literal,quote', [
+    ('1,000', 'The total was 1,000,000, as reported.'),
+    ('1,000', 'The total was 1,000.25, as reported.'),
+    ('25', 'The total was 1,000.25, as reported.'),
+    ('000', 'The total was 1,000, as reported.'),
+])
+def test_punctuation_compatibility_still_rejects_partial_numeric_tokens(literal, quote):
+    with pytest.raises(ValueError, match='numeric_literal_not_in_exact_source_quote'):
+        run(literal, quote)
+
+
 @pytest.mark.parametrize('name',['_hidden','a.b','a-b','变量','x'*33])
 def test_unsafe_or_unsupported_names_remain_rejected(name):
     with pytest.raises(ValueError,match='ascii_identifier'):

@@ -141,7 +141,10 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                 if not operand.quote or operand.quote not in text or operand.literal is None:
                     raise ValueError("operand_quote_not_in_observed_source")
                 literal_pattern = r"(?<![\w.,])" + re.escape(operand.literal)
-                literal_match = re.search(literal_pattern + r"(?![\w.,])", operand.quote)
+                # A comma or period followed by prose is punctuation, whereas
+                # one followed by a digit continues the numeric token.
+                numeric_end = r"(?!\w|[.,]\d)"
+                literal_match = re.search(literal_pattern + numeric_end, operand.quote)
                 quantity_match = None
                 quantity_rule = "numeric_quantity_x_suffix_v1"
                 if literal_match is None:
@@ -163,7 +166,7 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                         # a unique complete token in the already exact quote;
                         # never round, change sign/scale or match identifiers.
                         matches = [m for m in re.finditer(
-                            r"(?<![\w.,])-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?![\w.,])",
+                            r"(?<![\w.,])-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?" + numeric_end,
                             operand.quote)
                             if m.group().replace(',', '') == operand.literal.replace(',', '')]
                         if len(matches) == 1:

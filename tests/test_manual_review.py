@@ -21,7 +21,7 @@ def test_followup_tool_reads_human_corrected_paper_not_original(artifacts):
             'paper_edits': [{'paper_id': 'P01', 'body': correction}],
             'reason': 'User withdrew causal attribution', 'confirmed': True}}), config)
         models['quick_writer'].replies = [
-            [call('read_current_workpaper', {'paper_id': 'P01'}, 'read-current')],
+            [call('read_current_workpaper', {'paper_id': 'P01', 'section': 'workpaper'}, 'read-current')],
             [call('submit_case_answer', {'answer_markdown': f'Observation only. [{ref}]'}, 'answer-current')]]
         await graph.ainvoke(Command(resume={'action': 'ask', 'answer_mode': 'quick',
             'message': 'Read the current working paper before answering.'}), config)

@@ -180,7 +180,10 @@ def _coalesce_observation_rows(messages):
         for container, prefix in containers:
             if not isinstance(container, dict) or container.get("failure") or container.get("error"):
                 continue
-            for offset, observation in enumerate(container.get("observations", [])):
+            observations = [(key, offset, observation)
+                for key in ("observations", "source_observations")
+                for offset, observation in enumerate(container.get(key, []) if isinstance(container.get(key, []), list) else [])]
+            for key, offset, observation in observations:
                 if not isinstance(observation, dict) or observation.get("kind") != "evidence" or observation.get("status") != "success" or observation.get("failure"):
                     continue
                 rows = observation.get("content")
@@ -201,7 +204,7 @@ def _coalesce_observation_rows(messages):
                     identity = json.dumps([row, bindings, source_scope], ensure_ascii=False, sort_keys=True)
                     if len(identity) <= 600:
                         continue
-                    location = {"message_index": index, "field": f"{prefix + '.' if prefix else ''}observations[{offset}].content[{row_index}]"}
+                    location = {"message_index": index, "field": f"{prefix + '.' if prefix else ''}{key}[{offset}].content[{row_index}]"}
                     if identity not in seen:
                         seen[identity] = location
                         continue
@@ -647,6 +650,41 @@ def _retain_navigation_rows(observation, retained):
             "recovery route; omitted candidates do not indicate absence. Navigation is not evidence."}}
 
 
+def _retain_original_rows(observation, retained):
+    """An exact source pin keeps that original, not its entire read batch.
+
+    Called only at an accepted boundary with a verified saved reader. Keep
+    unknown shapes, failures and gap notices intact. Never slice passage text,
+    formula operands or a table; select only independently identified rows.
+    """
+    rows = observation.get('content')
+    if (observation.get('kind') != 'evidence' or observation.get('status') != 'success'
+            or observation.get('failure') or not isinstance(rows, list)):
+        return observation
+    refs = observation.get('references', [])
+    identities = []
+    for row in rows:
+        if not isinstance(row, dict):
+            return observation
+        if row.get('result_state') == 'typed_gap':
+            identities.append(None)
+            continue
+        ids = {row[k] for k in ('passage_id', 'evidence_id', 'numeric_fact_id', 'calculation_id', 'fact_id')
+               if isinstance(row.get(k), str)}
+        if not ids or not any(isinstance(r, dict) and r.get('ref_id') in ids for r in refs):
+            return _retain_navigation_rows(observation, retained)
+        identities.append(ids)
+    kept = [(row, ids) for row, ids in zip(rows, identities) if ids is None or retained.intersection(ids)]
+    if len(kept) == len(rows):
+        return observation
+    kept_ids = {ref for _, ids in kept if ids for ref in ids}
+    return {**observation, 'content': [row for row, _ in kept],
+        'references': [r for r in refs if not isinstance(r, dict) or r.get('ref_id') in kept_ids],
+        'context_projection': {'omitted_original_rows': len(rows) - len(kept),
+            'notice': 'Only current source pins and gap notices are retained here. Full original rows and bindings '
+                      'remain in the saved result; use the accompanying recovery route before citing omitted rows.'}}
+
+
 def _project_restored_context(messages, projected, boundary, retained, *, checkpoint):
     """Apply the same accepted boundary to saved observations and live reads."""
     for index, original in enumerate(messages[:boundary]):
@@ -677,7 +715,7 @@ def _project_restored_context(messages, projected, boundary, retained, *, checkp
                         or latest_batch is not None and recovery.get("batch_turn") == latest_batch))):
                 continue
             if retained.intersection(_literal_reference_ids(observation, include_navigation=True)):
-                observations[offset] = _retain_navigation_rows(observation, retained)
+                observations[offset] = _retain_original_rows(observation, retained)
                 continue
             observations[offset] = {"kind": observation["kind"], "status": observation["status"],
                 "recovery": recovery,
@@ -876,13 +914,20 @@ def task_boundary_history(messages):
                 # At an accepted checkpoint, unselected navigation rows from
                 # the latest search can also be reread. Actual source passages
                 # remain indivisible and the latest read originals stay full.
-                observations = result.get("observations") if isinstance(result, dict) else None
-                if isinstance(observations, list):
-                    selected = [_retain_navigation_rows(o, retained) if isinstance(o, dict) else o for o in observations]
-                    if selected != observations:
-                        result["observations"] = selected
-                        result["context_recovery"] = _read_recovery_notice(message, calls[message.tool_call_id], saved_result_reader=False)
-                        projected[index].content = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+                # The newest read has not been consumed yet. Older packets can
+                # release unrelated rows even when one row is pinned.
+                changed = False
+                for key in ('observations', 'source_observations'):
+                    observations = result.get(key)
+                    if isinstance(observations, list):
+                        select = _retain_navigation_rows if index > last_read else _retain_original_rows
+                        selected = [select(o, retained) if isinstance(o, dict) else o for o in observations]
+                        if selected != observations:
+                            result[key] = selected
+                            changed = True
+                if changed:
+                    result["context_recovery"] = _read_recovery_notice(message, calls[message.tool_call_id], saved_result_reader=False)
+                    projected[index].content = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
             continue
         if checkpoint and index > last_read:
             continue
@@ -986,6 +1031,28 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
     reserve_chars = pressure["growth_reserve_characters"]
     if estimate < trigger and len(encoded) < max_input_characters - reserve_chars:
         return messages, native_tools, None
+    # A large pinned working set is not a reason to ask for the same note every
+    # turn. Wait for a new episode of substantive work; the hard input-headroom
+    # warning remains independent and can always request organization.
+    if len(encoded) < max_input_characters - reserve_chars:
+        for index in range(len(messages) - 1, -1, -1):
+            message = messages[index]
+            if not isinstance(message, ToolMessage) or message.name != 'UpdateResearchStateAction':
+                continue
+            try:
+                result = json.loads(message.content)
+            except (ValueError, TypeError):
+                continue
+            result = result.get('result', result) if isinstance(result, dict) else {}
+            if not result.get('accepted') or not result.get('working_state'):
+                continue
+            recent = messages[index + 1:]
+            growth = json.dumps([{'content': m.content,
+                'calls': getattr(m, 'tool_calls', []),
+                'reasoning': m.additional_kwargs.get('reasoning_content', '')} for m in recent], ensure_ascii=False)
+            if research_input_pressure(growth, recent, model)['estimated_input_tokens'] < trigger:
+                return messages, native_tools, None
+            break
     notice = SystemMessage(content=(
         "Context size reminder: organize the current findings, interpretation, remaining work and next action "
         "with UpdateResearchStateAction at the next useful boundary (checkpoint=true). "

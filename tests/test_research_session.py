@@ -243,7 +243,7 @@ def test_new_question_native_parent_to_report_human_point_and_followup_without_r
         assert set(result["revisions"]) == ({"P01"} if material else set())
         assert "independent_research_review" in str(models["synthesis"].contexts[0])
         writer_input = json.loads(models['writer'].contexts[0][1].content)
-        assert writer_input['authoring_view'] == 'source_materials.v2'
+        assert writer_input['authoring_view'] == 'source_materials.v4'
         assert 'research_synthesis' not in writer_input
         assert "citations" not in json.loads(models["terminal"].contexts[0][1].content)["report"]
         original = deepcopy(result["report"])

@@ -54,7 +54,7 @@ def test_navigation_normalization_preserves_conflicts_dates_units_and_readbacks(
     metadata = {'period_end': '2026-06-30', 'unit': 'MW', 'revision': 'r2',
         'routing_metadata_v1': json.dumps({'period_end': '2026-06-30', 'unit': 'GW', 'old_id': 'v1'})}
     original = {'status': 'success', 'items': [
-        {'metadata': json.dumps(metadata), 'retrieval': telemetry, 'next_offset': 10},
+        {'result_state': 'retrieval_candidate', 'metadata': json.dumps(metadata), 'retrieval': telemetry, 'next_offset': 10},
         {'retrieval': telemetry, 'source_known_at': None, 'publication_date': '2026-08-01'},
         {'passage': '{"metadata": "Do not rewrite this source"}', 'passage_id': 'p',
          'source_locator': {'revision': 'r2', 'page': 7},

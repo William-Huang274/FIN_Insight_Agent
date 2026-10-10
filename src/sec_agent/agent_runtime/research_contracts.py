@@ -385,14 +385,14 @@ class ResearchTaskSpec(_StrictFrozenModel):
         description='Short navigation title naming the research subject; no instructions or predicted conclusion. Supply when assigning a new task. Optional for historical tasks.')
     owner_role: str = Field(pattern=_REF_PATTERN, description='Stable ASCII role identifier, for example financial_analyst or power_analyst; use objective for the human-readable role and assignment.')
     objective: str = Field(min_length=12, max_length=4_000,
-        description="Question to verify, not a prescribed conclusion. Any preliminary fact retains its source, period, entity, unit and actual/guidance status; relationships across facts remain hypotheses until checked. The specialist may correct the Lead using original evidence.")
+        description="Question to answer and why it matters to the overall research. Define the business/professional explanation sought, without prescribing a conclusion. Preliminary facts retain source, period, entity, unit and actual/guidance status. Initial hypotheses may be supported, revised or rejected using evidence.")
     dependency_ids: tuple[str, ...] = Field(default=(), max_length=64)
     coverage_obligation_ids: tuple[str, ...] = Field(min_length=1, max_length=32,
         description="Semantic coverage IDs from the disclosed scope, never physical route IDs. "
                     "For Lead research use exactly one branch_id from the disclosed branch_catalog "
                     "(e.g. Q2_DEMAND_QUALITY), not route:...:required-reviewed.")
     success_criteria: tuple[str, ...] = Field(min_length=1, max_length=32,
-        description="Required deliverables to check individually against observed evidence/calculation receipts. State unresolved work explicitly; a readable paper or exhausted budget is not completion.")
+        description="Observable completion conditions: an answer to the assigned question, decisive evidence and relevant competing explanations, and the effect of any remaining uncertainty on that answer. Source checks support this deliverable, not replace it. Do not require an initial hypothesis to remain unverified or be proved true. Narrow data/audit tasks retain their explicit scope; submission or budget exhaustion is not semantic acceptance.")
     requested_capability_refs: tuple[str, ...] = Field(min_length=1, max_length=32)
     required_authority_refs: tuple[str, ...] = Field(default=(), max_length=32)
     expected_output_kinds: tuple[

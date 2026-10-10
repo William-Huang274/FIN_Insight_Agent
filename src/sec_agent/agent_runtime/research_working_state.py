@@ -1,6 +1,6 @@
 """Research working state and factual progress signals over native notebooks."""
 from typing import Any, Literal
-from pydantic import BaseModel, ConfigDict, Field, model_serializer
+from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
 
 class ObservedFinding(BaseModel):
@@ -78,12 +78,28 @@ class UpdateResearchStateAction(BaseModel):
     model_config = ConfigDict(extra="forbid")
     action: Literal["update_research_state"]
     context_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
-    reason_summary: str = Field(min_length=1, max_length=1000)
+    reason_summary: str = Field(default="Save the supplied current research state.", min_length=1, max_length=1000)
     working_state: ResearchWorkingState | None = None
     pending_update_digest: str | None = Field(default=None, description="To repair a rejected draft, copy its returned digest, omit working_state and provide edits. All checks run again.")
     edits: list[ResearchStateEdit] = Field(default_factory=list)
     release_source_ids: list[str] = Field(default_factory=list, description="Optional: remove already-read document/paragraph/company results from the next working context, retaining request history and exact recovery. May be sent alone without working_state or edits. Copy observed IDs. Later reads are visible again; archives are never deleted.")
     checkpoint: bool = Field(default=False, description="Mark a useful compaction boundary. Accepted current state supersedes old notes; current pinned sources and latest reads stay visible, older recoverable results become archive entries. No task or budget reset.")
+
+    @model_validator(mode='before')
+    @classmethod
+    def wrap_flat_working_state(cls, value):
+        """Accept the one unambiguous envelope error without changing contents.
+
+        Original tool arguments remain in the notebook. Mixed nested/flat or
+        unknown fields still fail normally; no missing research is invented.
+        """
+        if not isinstance(value, dict) or 'working_state' in value:
+            return value
+        state_keys = set(ResearchWorkingState.model_fields).intersection(value)
+        if not state_keys or not {'current_subtask', 'phase_status', 'next_step', 'last_task_detail'}.issubset(state_keys):
+            return value
+        return {**{k: v for k, v in value.items() if k not in state_keys},
+                'working_state': {k: value[k] for k in state_keys}}
 
     @model_serializer(mode='wrap')
     def preserve_archived_action(self, handler):

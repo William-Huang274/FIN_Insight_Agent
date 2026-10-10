@@ -89,7 +89,9 @@ class SubmitResearchHandoffAction(_LeadAction):
     disposition: Literal["ready_for_review", "needs_attention"]
     question_coverage: tuple[QuestionCoverage, ...] = Field(default=(), max_length=24)
     synthesis_notes: str = Field(min_length=1, max_length=12000, description=(
-        "Brief handoff notes, normally <=1800 characters: main issues and what downstream reviewers should check. "
+        "Brief handoff notes, normally <=1800 characters: current answer to the user's question, "
+        "how the submitted findings support or change it, strongest contrary evidence and material unresolved questions. "
+        "This is the Lead's revisable interpretation, not verified evidence or a prescribed report outline. "
         "Do not repeat all workpapers or write the final report; downstream responsibilities follow execution_plan."
     ))
     acknowledged_incomplete_task_ids: tuple[str, ...] = Field(default=(), max_length=32, description=(
@@ -146,7 +148,9 @@ LEAD_RESEARCH_SYSTEM_PROMPT = (
     "unsearched sources, no search matches and proved disclosure boundaries. Do not invent missing segment metrics. "
     "After a rejected plan, check the whole affected route, tasks and success criteria, not just the named field. "
     "Use DelegateResearchTasksAction to create semantic ResearchTaskSpecs with your own objectives, "
-    "roles, success criteria and dependencies from the disclosed scope. "
+    "roles, success criteria and dependencies from the disclosed scope. Objectives state what needs explaining "
+    "and its use for the overall answer. Acceptance concerns that answer, its decisive evidence and alternatives; "
+    "source checks support it. Initial hypotheses can be supported, revised or rejected, never frozen as a required outcome. "
     "A dependency requires a concrete upstream deliverable needed to execute the task, not just an economic "
     "connection or shared terminology. Independent fact collection can run before later synthesis; separate "
     "those steps when necessary. Priority/resource deferral is not a data dependency. Explain what result "

@@ -12,6 +12,32 @@ from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_age
 from sec_agent.agent_runtime.model_context import deduplicate_read_results
 
 
+@pytest.mark.parametrize('options', [
+    {'role': 'lead_writer'}, {'role': 'writer'},
+    {'role': 'lead_writer', 'report_revision': True},
+    {'role': 'lead_writer', 'allow_answers': True},
+])
+def test_report_writing_method_reaches_native_initial_and_revision_requests(artifacts, options):
+    from sec_agent.research_foundation.research_methods import research_writing_guidance
+
+    async def run():
+        citation = 'P01:' + artifacts.read_paper('P01')['claims'][0]['claim_id']
+        report = {'title': 'Synthetic submission for prompt delivery',
+            'narrative_markdown': 'Existing source-bound analysis remains available. ' * 8 + f'[{citation}]'}
+        model = NativeFixtureModel(marker='writing-method-delivery', replies=[
+            [call('submit_case_report', {'report': report}, 'write')]])
+        agent = build_case_output_agent(model=model, tools=[], artifacts=artifacts,
+            limits={'model_calls': 2, 'tool_calls': 2}, **options)
+        result = await agent.ainvoke({'request_action': 'revise',
+            'messages': [{'role': 'user', 'content': 'Answer the original research question.'}]})
+        system = model.contexts[0][0].content
+        assert research_writing_guidance('report') in system
+        assert research_writing_guidance('workpaper') not in system
+        assert result['output']['narrative_markdown'] == report['narrative_markdown']
+        assert citation in result['output']['citations']
+    asyncio.run(run())
+
+
 def test_uncited_originals_remain_available_without_promoting_author_prose(artifacts):
     paper = artifacts._papers['P01']['workpaper']
     all_ids = set(artifacts.read_paper('P01', 'sources'))

@@ -25,7 +25,7 @@ METHODS = {
     "public_observations": ("公开调查、新闻转述与研究线索", "原始证据链、题目分母、抽样范围、转述核对和可检验的商业假设。"),
     "survey_analysis": ("问卷与调查结果分析", "专门处理调查设计、统计口径、可比变化与有条件的联合推断；不承担商业综合。"),
     "counter": ("反证与替代解释", "检验主要判断、最强反证及可观察的改变判断条件。"),
-    "writer": ("综合研究与可读交付", "判断驱动写作、必要图表、自由正文与局部修订。"),
+    "writer": ("投研底稿与报告写作", "回答研究问题，解释经营机制与意义；关键依据、可读论证和局部修订。"),
     "verifier": ("研究与报告复核", "来源上下文、关键核算、因果与重要分析遗漏。"),
 }
 
@@ -74,3 +74,20 @@ def get_research_method(method_id: str = "") -> dict:
     content = files("sec_agent.research_foundation").joinpath("methods", method_id + ".md").read_text(encoding="utf-8")
     return {"version": 2, "method_id": method_id, "title": title, "summary": summary,
             "content": content, "answer_free": True, "grants_authority": False}
+
+
+def research_writing_guidance(stage: str) -> str:
+    """Project the relevant brief from the same packaged method as the tool.
+
+    Examples and handoff details remain available on demand. This changes
+    guidance, never task scope, tool rights or submission checks.
+    """
+    headings = {"workpaper": "专题底稿行文", "report": "综合报告行文"}
+    if stage not in headings:
+        raise ValueError("unknown_research_writing_stage")
+    content = get_research_method("writer")["content"]
+    sections = {}
+    for block in content.split("\n## ")[1:]:
+        title, _, body = block.partition("\n")
+        sections[title.strip()] = body.strip()
+    return "\n\n".join(sections[title] for title in (headings[stage], "共同写作原则"))

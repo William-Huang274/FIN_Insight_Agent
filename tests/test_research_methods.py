@@ -3,7 +3,21 @@ import asyncio
 import pytest
 from mcp import Client
 
-from sec_agent.research_foundation.research_methods import METHODS, get_research_method
+from sec_agent.research_foundation.research_methods import METHODS, get_research_method, research_writing_guidance
+
+
+def test_writing_briefs_select_audience_without_copying_the_entire_method():
+    method = get_research_method('writer')['content']
+    workpaper = research_writing_guidance('workpaper')
+    report = research_writing_guidance('report')
+    for brief in (workpaper, report):
+        assert all(part in method for part in brief.split('\n\n'))
+        assert '决定判断能否成立的条件写在判断附近' in brief
+        assert '虚构运输企业' not in brief
+    assert '分派问题' in workpaper and 'schema' in workpaper
+    assert '跨公司、跨底稿选材' in report and 'schema' not in report
+    with pytest.raises(ValueError, match='unknown_research_writing_stage'):
+        research_writing_guidance('../../private')
 from test_research_mcp import _build_server
 
 

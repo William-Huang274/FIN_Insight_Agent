@@ -932,7 +932,9 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             "Use exact citation IDs in brackets for source binding. Submit the full report using submit_case_report, "
             "or exact local edits for a genuinely local revision. No prescribed conclusion count or market stance.")
     if role == "writer" and allow_answers:
-        specific += "\nUse the report charts field for 1-3 useful source-bound comparisons when data supports them (cash conversion, achieved vs implied execution, comparable margin/revenue). Points use actual source IDs, exact prose quote/literal where needed, or observed calculator IDs; the host supplies values and renders charts. Do not force incomparable data onto one axis. No arbitrary plotting code. Charts need source/period review just like text."
+        from sec_agent.research_foundation.research_methods import research_writing_guidance
+        specific += "\n" + research_writing_guidance("report")
+        specific += "\nUse the report charts field for useful source-bound comparisons when data supports them. Points use actual source IDs, exact prose quote/literal where needed, or observed calculator IDs; the host supplies values and renders charts. Do not force incomparable data onto one axis. No arbitrary plotting code. Charts need source/period review just like text."
         if not lead_author:
             specific += "\nWhen research_synthesis is supplied, it is the Lead's independently reviewed judgment and source-bound rationale. Organize it faithfully with the current papers; do not silently substitute a new unsupported research conclusion. Corrections may recheck original sources. Distinguish remaining findings from stylistic advice."
     if role == 'writer':

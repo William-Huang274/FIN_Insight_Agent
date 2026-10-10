@@ -30,7 +30,8 @@ def test_stage_disclosure_replaces_research_method_but_preserves_semantics():
     assert all(m['selection']!='full_resource' for m in final['methods'])
     survey=stage_methods('workpaper',domain='survey_analysis')
     assert [m['method_id'] for m in survey['methods']]==['writer','survey_analysis']
-    assert survey['methods'][0]['selection']==['先确定交付对象：报告或专题底稿']
+    assert survey['methods'][0]['selection']==['专题底稿行文', '共同写作原则']
+    assert '综合报告行文' not in survey['methods'][0]['content']
 
 
 def test_native_mcp_method_envelope_preserves_receipt_and_stage_content():
@@ -49,7 +50,7 @@ def test_real_convergence_lead_prepares_before_writing_and_reprepares_on_revisio
     for round_ in (0,1):
         model=models[('writer',None,round_)]
         payload=json.loads(model.contexts[0][1].content)
-        assert payload['authoring_view'] == 'source_materials.v2'
+        assert payload['authoring_view'] == 'source_materials.v4'
         assert len(payload['authoring_basis_digest']) == 64
         assert {p['paper_id']: p['version'] for p in payload['catalog']['papers']} == result['authoring_context']['basis']['papers']
         assert 'authoring_context' not in payload

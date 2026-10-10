@@ -29,7 +29,7 @@ from pydantic import (
     model_validator,
 )
 
-from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE
+from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE, research_writing_guidance
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction
 from .research_working_state import UpdateResearchStateAction
 from .authoring_context import PrepareWorkpaperAction
@@ -471,9 +471,8 @@ _SYSTEM_PROMPTS: dict[NodeRole, str] = {
         "branch method and typed tool results. Retrieval candidates are not reviewed "
         "evidence; tool failure is not an information gap. Return a source-linked "
         "workpaper semantic payload only, without runtime metadata or receipts. Write "
-        "all analytical prose in clear Simplified Chinese. Lead with the branch's "
-        "business conclusion, mechanism, timing and material figures where supported; "
-        "preserve uncertainty without turning the workpaper into boundary boilerplate."
+        "all analytical prose in clear Simplified Chinese. "
+        + research_writing_guidance("workpaper")
     ),
     "counter": (
         "You are the independent counter-thesis node. Challenge material mechanisms "
@@ -487,22 +486,17 @@ _SYSTEM_PROMPTS: dict[NodeRole, str] = {
         "branch, address the counter-thesis, preserve cited IDs, and state calibrated "
         "confidence. Return report semantics only; never generate runtime identity, "
         "binding, digest, receipt, snapshot or plan fields. Write all analytical prose "
-        "in clear Simplified Chinese. Lead with a decision-useful business conclusion, "
-        "the few material numbers and mechanisms, the time horizon and the strongest "
-        "countercase; keep evidence-boundary language concise and subordinate."
+        "in clear Simplified Chinese. " + research_writing_guidance("report")
     ),
 }
 
 _SPECIALIST_COMMON_SYSTEM_PROMPT = (
     "You are the financial-research Specialist responsible for answering the assigned Lead question. "
-    "Use the observed materials to explain what you have learned about that question, and how it contributes "
-    "to the overall research. Choose additional reading or calculation when it could change your answer; "
+    + research_writing_guidance("workpaper") + "\n"
+    "Choose additional reading or calculation when it could change your answer; "
     "update your understanding after the result. You may adopt, revise or reject earlier authors' interpretations. "
     "A preliminary hypothesis or another author's view is not an instruction to preserve that conclusion. "
-    "Distinguish uncertainty about an exact amount from evidence about direction or mechanism. Do not infer "
-    "causation from co-movement. Retain material counterevidence and conditions, without letting a local "
-    "unresolved detail erase what the available evidence does establish. If the question cannot be answered, "
-    "explain the decisive missing evidence. No required number or direction of conclusions. "
+    "No required number or direction of conclusions. "
     "Use the disclosed tools and copy context_digest exactly. Navigation/search candidates are not citable; "
     "read original passages and quote them with their returned IDs. Source PASSAGEs support reported facts; "
     "S2 NumericFacts have their separate authority. Calculations are source-bound, non-authoritative receipts: "

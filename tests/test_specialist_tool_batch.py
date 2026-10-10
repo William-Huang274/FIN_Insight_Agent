@@ -397,6 +397,11 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=Fals
 
 def test_terminal_schema_feedback_then_semantic_feedback_then_corrected_submission():
     result, requests, wires = _terminal_feedback_sdk_graph()
+    from sec_agent.research_foundation.research_methods import research_writing_guidance
+    system = wires[0]['messages'][0]['content']
+    assert research_writing_guidance('workpaper') in system
+    assert research_writing_guidance('report') not in system
+    assert 'No required number or direction of conclusions' in system
     assert len(requests) == 4
     feedback = json.loads(requests[2]["tool_results"][0]["content"])["feedback"][0]
     assert feedback["owner_layer"] == "agent"

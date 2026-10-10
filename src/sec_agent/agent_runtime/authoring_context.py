@@ -67,8 +67,7 @@ def stage_methods(stage, *, domain='finance', reader=get_research_method):
             methods.append(method_sections('lead', ('专家Lead的适用范围与交付责任',) if workpaper else ('执行顺序与交付',), reader))
     else:
         methods = []
-    headings = ('先确定交付对象：报告或专题底稿',) if workpaper else (
-        '成文风格与研究价值', '边界项与未决项如何落笔', '执行顺序与交付')
+    headings = ('专题底稿行文' if workpaper else '综合报告行文', '共同写作原则')
     methods.append(method_sections('writer', headings, reader))
     # D5 never receives the report/financial synthesis instructions.
     if domain == 'survey_analysis' and not stage.startswith('prepare'):

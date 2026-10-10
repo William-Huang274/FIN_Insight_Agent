@@ -89,6 +89,44 @@ def test_reader_and_calculator_share_newly_observed_source_lookup():
         artifacts.source_item(source["numeric_fact_id"])  # no cross-session mutation
 
 
+def _repeated_passage_artifacts():
+    from test_research_session import _new_worker_fixture
+    artifacts = CaseArtifacts([_new_worker_fixture()])
+    original = {"result_state": "source_bound_passage", "writer_citable": True,
+        "passage_id": "PASSAGE::same-fixture", "passage": "Fixture revenue was 100 USD.",
+        "unit": "USD", "period_end": "2025-12-31", "source_url": "https://example.com/fixture",
+        "source_tool_lane_receipt_id": "first-read", "mcp_receipt_chain": [{"request": "first"}]}
+    reread = {**deepcopy(original), "source_tool_lane_receipt_id": "second-read",
+        "mcp_receipt_chain": [{"request": "second"}]}
+    artifacts._sources = {"P01:S001": original, "P02:S001": reread}
+    return artifacts
+
+
+def test_repeated_source_receipts_allow_canonical_read_and_bound_calculation():
+    artifacts = _repeated_passage_artifacts()
+    before = deepcopy(artifacts._sources)
+    request = SourceBoundCalculation(expression="revenue / 2",
+        operands={"revenue": {"source_id": "PASSAGE::same-fixture", "literal": "100",
+            "quote": "revenue was 100 USD"}}, result_unit="USD", rationale="Fixture arithmetic.")
+    result = calculate_from_sources(request, artifacts.source_item)
+    assert result["value_decimal"] == "50"
+    assert artifacts.source_item("PASSAGE::same-fixture")["passage"] == before["P01:S001"]["passage"]
+    assert artifacts.source_item("P02:S001")["source_tool_lane_receipt_id"] == "second-read"
+    assert artifacts._sources == before
+
+
+@pytest.mark.parametrize("change", [
+    {"passage": "Fixture revenue was 200 USD."}, {"unit": "CNY"},
+    {"period_end": "2024-12-31"}, {"source_url": "https://example.com/different-fixture"},
+    {"numeric_fact_authority": True},
+])
+def test_repeated_receipts_do_not_hide_real_evidence_conflicts(change):
+    artifacts = _repeated_passage_artifacts()
+    artifacts._sources["P02:S001"].update(change)
+    with pytest.raises(ValueError, match="canonical_source_observation_conflict"):
+        artifacts.source_item("PASSAGE::same-fixture")
+
+
 def _calculate(expression="a / 2", operands=None):
     request = SourceBoundCalculation(expression=expression, operands=operands or {"a": {"source_id": "fact"}},
         result_unit="test_unit", rationale="Fixture arithmetic, not a financial conclusion.")

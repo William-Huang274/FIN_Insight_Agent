@@ -22,7 +22,7 @@ PLAN = {"depth": "integrated", "rationale": "Two independent papers need source 
         "escalation_conditions": "Add synthesis only if actual cross-paper conflicts require distinct analysis."}
 
 
-@pytest.mark.parametrize("space", ["uploads", "web"])
+@pytest.mark.parametrize("space", ["uploads", "web", "library"])
 def test_native_lead_repairs_schema_then_queries_current_source_before_delegation(space, tmp_path, monkeypatch):
     from sec_agent.agent_runtime.working_memory import WorkingMemory
     from sec_agent.agent_runtime.working_memory_tools import native_memory_scope
@@ -58,6 +58,12 @@ def test_native_lead_repairs_schema_then_queries_current_source_before_delegatio
         assert f'"version": {2 if turn==1 else 3}' in system
         assert 'Human revision body' not in system
         if turn == 1:
+            semantic = json.loads(wire['messages'][-1]['content'])
+            if space == 'library':
+                assert semantic['source_navigation']['selection']['source_space'] == 'library'
+                assert 'not the full database' in semantic['source_routing_guidance']
+            else:
+                assert 'source_navigation' not in semantic
             memory.save('Current working assumption','New human revision between model turns.',2,user_edit=True)
             action = _call(current, 'DelegateResearchTasksAction', tasks=[_task('a'), _task('b')])
         elif turn == 2:

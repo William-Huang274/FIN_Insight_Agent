@@ -1032,7 +1032,8 @@ def _project_request(
         )}
         projected.update({key: request[key] for key in ('scope_policy', 'execution_policy',
             'continuation_policy', 'allowed_planning_tools', 'role_method', 'require_execution_plan',
-            'source_read_enabled', 'planning_source_policy', 'orientation_only', 'orientation_context') if key in request})
+            'source_read_enabled', 'planning_source_policy', 'source_routing_guidance', 'source_navigation',
+            'orientation_only', 'orientation_context') if key in request})
         return projected
     if role == "planner":
         catalog = request.get("branch_catalog")

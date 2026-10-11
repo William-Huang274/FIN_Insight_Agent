@@ -69,7 +69,15 @@ def working_messages(state, artifacts, confirmation=None):
         'legacy_record_counts_for_reference_only':legacy,
         'archived_messages':cutoff,'history_read_tool':'read_review_history',
         'saved_checks_read_tool':'read_saved_review_checks'}
-    recent=[m for m in full[cutoff:] if not isinstance(m,HumanMessage)]
+    def runtime_stop(message):
+        # Native limit middleware emits these as AI messages, but they are host
+        # control receipts, not model completions (and have no thinking state).
+        return (isinstance(message,AIMessage) and not message.tool_calls
+            and not message.response_metadata and not message.additional_kwargs
+            and isinstance(message.content,str) and message.content.startswith((
+                'Model call limits exceeded:', 'Tool call limit reached:')))
+    recent=[m for m in full[cutoff:] if not runtime_stop(m) and (
+        not isinstance(m,HumanMessage) or 'review_handoff_contract_v2' in str(m.content))]
     from .model_context import deduplicate_read_results
     return deduplicate_read_results([*user_messages,
         HumanMessage(id='review-working-state-v2',content=json.dumps(packet,ensure_ascii=False)),*recent])

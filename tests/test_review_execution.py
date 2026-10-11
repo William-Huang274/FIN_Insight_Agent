@@ -102,6 +102,7 @@ def test_native_review_failure_drains_paid_sibling_and_blocks_new_dispatch(failu
         assert result['verifier']['execution_error']['reason']=='review_wave_stopped_no_new_dispatch'
         assert all(result[r]['review'] is None for r in reviewers)
         assert 'recovery_state' not in result['counter']  # Failed paid call still requires explicit handling.
+        assert result['counter']['blocked_recovery_state']['messages']  # Preserve progress separately from retry permission.
         assert result['verifier']['recovery_state']['messages']  # Settled sibling reads survive a local stop.
         assert 'PRIVATE_TRUNCATED_SENTINEL' not in __import__('json').dumps(result)
     asyncio.run(exercise())

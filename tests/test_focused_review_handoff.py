@@ -14,6 +14,18 @@ from test_review_inspection_recovery import reads
 from test_research_mcp import _build_server
 
 
+def test_resume_keeps_current_instruction_and_does_not_serialize_host_stop_as_model_answer():
+    a=artifact_fixture()
+    rows=[HumanMessage(content=json.dumps({'question':'Original question'})),
+        HumanMessage(content='review_handoff_contract_v2: first migration'),
+        AIMessage(content='Model call limits exceeded: run limit (24/24)'),
+        HumanMessage(id='resume',content='review_handoff_contract_v2: continue the pending task')]
+    projected=working_messages({'messages':rows},a)
+    assert projected[-1]==rows[-1]
+    assert not any(isinstance(m,AIMessage) for m in projected)
+    assert len(rows)==4  # Original host receipt remains archived.
+
+
 def test_parent_resumes_latest_confirmation_then_passes_revisions_to_lead():
     from langgraph.checkpoint.memory import InMemorySaver
     from langchain_core.runnables import RunnableLambda

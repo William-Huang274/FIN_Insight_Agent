@@ -616,6 +616,8 @@ class CaseModelAudit(AgentMiddleware):
         try:
             response = await handler(request)
         except BaseException as exc:
+            private({'event':'provider_error','call_id':call_id,'actor':self.actor,
+                'error_type':type(exc).__name__,'body':getattr(exc,'body',None)})
             public({**common, "event": "outcome", "status": "provider_failed",
                 "usage_reported": False, "error_type": type(exc).__name__,
                 "http_status_code": getattr(exc, "status_code", None), "elapsed_ms": round((perf_counter()-start)*1000, 3)})
@@ -1188,13 +1190,14 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                 "runtime_parsing":state.get('runtime_parsing',[]),
                 **({'execution_error': execution_error} if execution_error else {}),
                 "model_calls": count,
-                **({"recovery_state": {**{k:deepcopy(state[k]) for k in ('request_summary','request_summary_failure','author_change_projection') if k in state},
+                **({("blocked_recovery_state" if execution_error and execution_error.get('provider_call_attempted') else "recovery_state"):
+                    {**{k:deepcopy(state[k]) for k in ('request_summary','request_summary_failure','author_change_projection') if k in state},
                      "messages": messages_to_dict(state["messages"]),
                      "recorded_findings": deepcopy(state.get("recorded_findings", {})),
                      "recorded_inspections": deepcopy(state.get("recorded_inspections", {})),
                      "thread_model_call_count": count,
                      "thread_tool_call_count": deepcopy(state.get("thread_tool_call_count", {}))}}
-                   if not complete and (not execution_error or execution_error.get('provider_call_attempted') is False) else {}),
+                   if not complete else {}),
                 **({"incomplete_output": [m.content for m in answers[:count] if m.content],
                     "recorded_findings": state.get("recorded_findings", {}),
                     "runtime_notices": [m.content for m in answers[count:] if m.content],

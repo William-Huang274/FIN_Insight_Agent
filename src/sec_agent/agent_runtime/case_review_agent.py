@@ -829,7 +829,7 @@ class ReviewWorkBudget(AgentMiddleware):
         return await handler(self.request_with_budget(request))
 
 
-def validate_finding_confirmation(review, confirmation, artifacts):
+def validate_finding_confirmation(review, confirmation, artifacts, *, parsing_records=None):
     """Check coverage/version navigation, not the reviewer's financial verdict."""
     expected = {f["finding_id"] for rows in confirmation["findings_to_confirm"].values() for f in rows}
     checks = [c.finding_id for c in review.finding_checks]
@@ -844,7 +844,9 @@ def validate_finding_confirmation(review, confirmation, artifacts):
         if assigned and assigned.get('finding_type')=='clarification' and check.status=='resolved':
             current=artifacts.read_paper(assigned['paper_id'])
             from .review_inspection import text_locations, PROSE_FIELDS
-            prose=[text for path,text in text_locations(current) if path.split('/')[1] in PROSE_FIELDS]
+            # A corrected claim is current author wording too. Restricting this
+            # check to prose rejected exact statements in structured claims.
+            prose=[text for path,text in text_locations(current) if path.split('/')[1] in (*PROSE_FIELDS, 'claims')]
             if (check.clarity_verdict!='clear' or not check.current_quote.strip()
                     or not any(check.current_quote in text for text in prose)):
                 errors.append('clarification_closure_requires_current_clear_wording:' + check.finding_id)
@@ -861,10 +863,24 @@ def validate_finding_confirmation(review, confirmation, artifacts):
         for source in check.source_checks:
             try:
                 body = artifacts._source_text(artifacts.source_item(source.source_id))
+                from .evidence_resolution import resolve_quote, select_source_span, parsing_record
+                receipt = None
+                if source.quote_span:
+                    selected = select_source_span(body, source.quote_span.source_digest,
+                        source.quote_span.start, source.quote_span.end)
+                    if source.quote and source.quote != selected:
+                        raise ValueError('source_span_quote_conflict')
+                    receipt = parsing_record('digest_bound_source_span_v1', source.model_dump(mode='json'), selected,
+                        source_digest=source.quote_span.source_digest)
+                    source.quote = selected
+                elif source.quote not in body:
+                    source.quote, receipt = resolve_quote(body, source.quote)
+                if receipt is not None and parsing_records is not None:
+                    parsing_records.append({**receipt, 'finding_id':check.finding_id, 'source_id':source.source_id})
                 if not contains_source_quote(body, source.quote):
                     errors.append("confirmation_source_quote_not_exact:" + check.finding_id + ":" + source.source_id)
-            except ValueError:
-                errors.append("confirmation_source_unknown:" + check.finding_id + ":" + source.source_id)
+            except ValueError as exc:
+                errors.append("confirmation_source_invalid:" + check.finding_id + ":" + source.source_id + ':' + str(exc))
     if errors:
         raise ValueError(json.dumps({"errors": errors}, ensure_ascii=False))
 
@@ -1006,7 +1022,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             validate_case_review(review, artifacts, runtime.state["messages"], paper_ids=confirmation_papers,
                 revision_target=revision_target, parsing_records=parsing)
             if confirmation:
-                validate_finding_confirmation(review, confirmation, artifacts)
+                validate_finding_confirmation(review, confirmation, artifacts, parsing_records=parsing)
             # Legacy checks remain readable, but their count is not completion.
         except ValueError as exc:
             # A bad sibling does not discard already valid substantive work.
@@ -1072,9 +1088,12 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             return json.dumps(history_page(runtime.state['messages'],index=index,offset=offset),ensure_ascii=False)
         tools = [*tools, read_review_location, read_saved_review_checks, read_review_history]
         if audit:
-            from .review_context import ReviewWorkingContext
-            audit.context_summary=None
-            audit.extra_middlewares.append(ReviewWorkingContext(artifacts, confirmation))
+            from .review_context import ReviewWorkingContext, working_messages
+            if audit.context_summary:
+                audit.context_summary.state_projection = lambda state: (
+                    working_messages(state, artifacts, confirmation), 'review-working-state-v2')
+            else:
+                audit.extra_middlewares.append(ReviewWorkingContext(artifacts, confirmation))
     if confirmation:
         if not any(t.name == 'read_review_location' for t in tools):
             tools = [*tools, read_review_location]

@@ -3,7 +3,7 @@ import asyncio
 from copy import deepcopy
 import json
 import pytest
-from langchain_core.messages import HumanMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from mcp import Client
 from sec_agent.agent_runtime.case_review_agent import CaseReview, ReviewHandoff, validate_case_review, build_case_reviewer, case_mcp_tools
 from sec_agent.agent_runtime.review_inspection import read_location
@@ -62,6 +62,19 @@ def test_lead_receives_findings_without_legacy_paragraph_forms():
     assert projected=={'summary':'Current findings','findings':[{'finding_id':'F'}]}
     assert saved['inspection_checks']
     assert 'OLD_FORM' not in json.dumps(public_confirmation({'review':{'counter':{'review':saved}}}))
+
+
+def test_repeated_resume_preserves_current_work_and_deduplicates_identical_reads():
+    a=artifact_fixture(); messages=[HumanMessage(content='review_handoff_contract_v2')]
+    for i in range(5):
+        messages.extend([AIMessage(content='Current public judgment '+str(i),tool_calls=[call('read_review_location',{'paper_id':'P01','field_path':'/thesis'},str(i))]),
+            ToolMessage(name='read_review_location',tool_call_id=str(i),content='IDENTICAL_SOURCE')])
+    messages.append(HumanMessage(content='review_handoff_contract_v2: resume same unfinished review'))
+    view=working_messages({'messages':messages},a)
+    assert sum(isinstance(m,AIMessage) for m in view)==5
+    assert sum(m.content=='IDENTICAL_SOURCE' for m in view)==1
+    assert 'duplicate_of_tool_call_id' in view[2].content
+    assert sum(m.content=='IDENTICAL_SOURCE' for m in messages)==5
 
 
 def test_location_identity_binds_current_read_quote_and_rejects_stale_or_unread():

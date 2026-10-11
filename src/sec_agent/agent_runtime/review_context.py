@@ -25,12 +25,12 @@ def history_page(messages, *, index=None, offset=0, limit=20):
 
 def working_messages(state, artifacts, confirmation=None):
     full=state['messages']
-    turns=[i for i,m in enumerate(full) if isinstance(m,AIMessage)]
-    cutoff=turns[-2] if len(turns)>2 else 0
     # Legacy instructions/checklist errors remain in the journal, not active
     # instructions. A contract-transition boundary does not erase source reads.
     boundaries=[i for i,m in enumerate(full) if isinstance(m,HumanMessage) and 'review_handoff_contract_v2' in str(m.content)]
-    if boundaries:cutoff=max(cutoff,boundaries[-1]+1)
+    # A migration boundary retires the old contract once. Resuming again must
+    # not discard the work performed under the current contract.
+    cutoff=boundaries[0]+1 if boundaries else 0
     question=None
     user_messages=[]
     for m in full:
@@ -70,7 +70,9 @@ def working_messages(state, artifacts, confirmation=None):
         'archived_messages':cutoff,'history_read_tool':'read_review_history',
         'saved_checks_read_tool':'read_saved_review_checks'}
     recent=[m for m in full[cutoff:] if not isinstance(m,HumanMessage)]
-    return [*user_messages,HumanMessage(content=json.dumps(packet,ensure_ascii=False)),*recent]
+    from .model_context import deduplicate_read_results
+    return deduplicate_read_results([*user_messages,
+        HumanMessage(id='review-working-state-v2',content=json.dumps(packet,ensure_ascii=False)),*recent])
 
 
 class ReviewWorkingContext(AgentMiddleware):

@@ -1275,7 +1275,8 @@ def deduplicate_read_results(messages):
     # Specialist action envelopes also contain live execution state. Their
     # existing lifecycle owns that projection; only pure readers belong here.
     readers = {'read_current_workpaper', 'read_current_source', 'read_source_document',
-               'search_research_sources', 'query_company_financial_facts'}
+               'search_research_sources', 'query_company_financial_facts',
+               'read_research_artifact', 'read_research_source', 'read_review_location', 'read_review_source_span'}
     for i in range(len(messages) - 1, -1, -1):
         message = messages[i]
         if not isinstance(message, ToolMessage) or message.status != 'success':
@@ -1405,11 +1406,12 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
         self.per_user_turn = per_user_turn
         self.trigger_tokens = trigger_tokens
         self.history_projection = None
+        self.state_projection = None
 
     def _working_state(self, state):
-        if self.history_projection is None:
+        if self.history_projection is None and self.state_projection is None:
             return state
-        messages, key = self.history_projection(state['messages'])
+        messages, key = (self.state_projection(state) if self.state_projection else self.history_projection(state['messages']))
         result = {**state, 'messages': messages, '_projection_key': key}
         record = result.get('request_summary')
         result['_summary_count'] = (record or {}).get('count', 0)
@@ -1522,7 +1524,7 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
             "prefix_end": end, "first_original_id": full[0].id,
             "last_original_id": full[end - 1].id, "count": summary_count + 1,
             "last_summary_user_id": latest_user_id, "frequency": "once_per_user_turn" if self.per_user_turn else "thread_limit",
-            **({'projection_key': state.get('_projection_key')} if self.history_projection else {})}}
+            **({'projection_key': state.get('_projection_key')} if self.history_projection or self.state_projection else {})}}
 
     async def awrap_model_call(self, request, handler):
         update = {"messages": self.projected_messages(self._working_state(request.state))}

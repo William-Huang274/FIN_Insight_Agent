@@ -85,6 +85,23 @@ def test_native_prefix_is_not_4k_trimmed_and_pairs_original_task_are_retained():
     asyncio.run(run())
 
 
+def test_review_state_projection_keeps_updated_findings_outside_native_summary():
+    async def run():
+        calls=[];middleware=policy(calls);rows=history();original=deepcopy(rows)
+        def project(state):
+            return [HumanMessage(id='review-state',content=json.dumps(state['findings'])),*state['messages'][1:]],'review-v2'
+        middleware.state_projection=project
+        state={'messages':rows,'findings':['Existing material issue']}
+        state.update(await middleware.abefore_model(state,None))
+        assert state['request_summary']['projection_key']=='review-v2'
+        state['findings'].append('New finding after compaction')
+        projected=middleware.projected_messages(middleware._working_state(state))
+        assert 'New finding after compaction' in projected[0].content
+        assert projected[-2:]==rows[-2:] and rows==original and len(calls)==1
+        assert await middleware.abefore_model(state,None) is None
+    asyncio.run(run())
+
+
 def test_summary_failure_has_no_native_automatic_retry():
     async def run():
         calls = []

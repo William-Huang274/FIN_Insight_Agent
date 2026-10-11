@@ -79,6 +79,32 @@ def test_clarification_cannot_close_on_financial_support_without_current_wording
     validate_finding_confirmation(review,confirmation,a)  # Assertion is traceable, not proven true by runtime.
 
 
+def test_confirmation_accepts_current_claim_wording_and_bound_source_spans():
+    from sec_agent.agent_runtime.case_review_agent import ReviewSourceCheck
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    a=artifact_fixture();review,check=clarity_review(a)
+    validate_inspection_checks(review,a,reads(a),complete=True)
+    f=review.findings[0].model_dump();confirmation={'findings_to_confirm':{'counter':[f]}}
+    current=a.read_paper(f['paper_id'])['claims'][0]['statement']
+    body='Revenue | 100 | 90\nOperating profit | 20 | 10'
+    a._sources['P01:S099']={'result_state':'source_bound_passage','passage':body}
+    item=FindingConfirmation(finding_id=f['finding_id'],status='resolved',
+        reason='Current claim wording explicitly contains the corrected statement.',
+        clarity_verdict='clear',current_quote=current,
+        source_checks=[ReviewSourceCheck(source_id='P01:S099',quote_span={
+            'source_digest':canonical_sha256(body),'start':0,'end':len(body)})])
+    review.finding_checks=[item];records=[]
+    validate_finding_confirmation(review,confirmation,a,parsing_records=records)
+    assert item.source_checks[0].quote==body and records[0]['method']=='digest_bound_source_span_v1'
+    item.current_quote='Invented corrected wording absent from the current paper.'
+    with pytest.raises(ValueError,match='clarification_closure_requires_current_clear_wording'):
+        validate_finding_confirmation(review,confirmation,a)
+    item.current_quote=current;item.source_checks[0].quote_span=None
+    item.source_checks[0].quote='Revenue | 100 | 91'
+    with pytest.raises(ValueError,match='confirmation_source_quote_not_exact'):
+        validate_finding_confirmation(review,confirmation,a)
+
+
 def calculation_fixture(a):
     for sid,text in [('P01:S090','Segment income 100 million for the quarter.'),('P01:S091','Group revenue 800 million for the quarter.')]:
         a._sources[sid]={'result_state':'source_bound_passage','writer_citable':True,'passage_id':'PASSAGE::'+sid,'passage':text}

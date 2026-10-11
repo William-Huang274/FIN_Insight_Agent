@@ -88,10 +88,10 @@ def test_current_view_keeps_task_state_and_complete_recent_pairs_with_readable_a
         'request_summary':{'message':HumanMessage(content='Previously accepted working note, not evidence').model_dump(mode='json')}}
     view=working_messages(state,a)
     assert messages_to_dict(messages)==before
-    assert len([m for m in view if isinstance(m,AIMessage)])==2
-    assert [m.tool_call_id for m in view if isinstance(m,ToolMessage)]==['6','7']
+    assert len([m for m in view if isinstance(m,AIMessage)])==8
+    assert [m.tool_call_id for m in view if isinstance(m,ToolMessage)]==[str(i) for i in range(8)]
     assert any(m.content=='Keep this scope correction verbatim' for m in view)
     assert any('Known public finding' in str(m.content) for m in view)
-    assert not any('OLD_BODY_0' in str(m.content) for m in view)
+    assert any('OLD_BODY_0' in str(m.content) for m in view)
     assert 'PRIVATE_THOUGHT' not in str(history_page(messages,index=1))
     assert 'OLD_BODY_0' in history_page(messages,index=2)['text']

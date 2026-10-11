@@ -44,12 +44,12 @@ def decision_errors(decision, feedback, paper_ids, *, incomplete_reviewers=None,
     errors = []
     if incomplete_reviewers is not None:
         roles = [row.reviewer for row in decision.review_assignments]
-        if decision.action not in {'resume_review', 'stop'}:
-            errors.append('Incomplete review permits only resume_review or stop; no repair/synthesis acceptance.')
+        if decision.action not in {'resume_review', 'repair', 'stop'}:
+            errors.append('Incomplete review permits resume_review, repair or stop; never synthesis acceptance.')
         if decision.action == 'resume_review' and (len(roles) != len(set(roles)) or set(roles) != set(incomplete_reviewers)):
             errors.append('Assign every incomplete reviewer once, retaining its own saved reads and findings.')
-        if decision.action == 'stop' and roles:
-            errors.append('Stop must not schedule reviewer work.')
+        if decision.action in {'stop', 'repair'} and roles:
+            errors.append('Stop/repair must not schedule checks against a nonexistent future revision.')
         if current_versions is not None:
             for assignment in decision.review_assignments:
                 if assignment.prerequisite != 'current_candidate':

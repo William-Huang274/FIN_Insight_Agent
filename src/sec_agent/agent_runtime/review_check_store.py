@@ -19,6 +19,8 @@ def merge_checks(previous, checks):
 
 def restore_checks(saved):
     """Migrate only successful legacy submissions; failed drafts are not checks."""
+    if saved.get('author_change_projection'):
+        return deepcopy(saved.get('recorded_inspections', {}))
     from langchain_core.messages import messages_from_dict
     pending, records = {}, {}
     for message in messages_from_dict(saved.get('messages', [])):
@@ -37,6 +39,8 @@ def restore_checks(saved):
 
 def restore_findings(saved, latest_review):
     """Retain findings from successful legacy review submissions, including withdrawals."""
+    if saved.get('author_change_projection'):
+        return deepcopy(saved.get('recorded_findings', {}))
     from langchain_core.messages import messages_from_dict
     records = deepcopy(saved.get('recorded_findings', {}))
     pending = {}

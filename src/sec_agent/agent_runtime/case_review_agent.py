@@ -162,6 +162,7 @@ class InspectedCaseReview(SubmittedCaseReview):
 
 
 class CaseReviewerState(AgentState):
+    author_change_projection: bool
     review: dict[str, Any]
     request_summary: dict[str, Any]
     request_summary_failure: dict[str, Any] | None
@@ -965,7 +966,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
                 review.inspection_checks = [ReviewInspectionCheck.model_validate(row) for row in
                     merge_checks(runtime.state.get('recorded_inspections', {}), review.inspection_checks).values()]
             confirmation_papers = None
-            if confirmation:
+            if confirmation and not require_inspection:
                 # Confirmation covers the assigned repairs, not an implicit
                 # restart of every unchanged paper. Optional additional
                 # assessments/findings still require their own actual reads.
@@ -1132,7 +1133,7 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                 inspections = restore_checks(saved)
                 prior_review = (previous_review or {}).get(_role, {}).get('review') or {}
                 findings = restore_findings(saved, prior_review)
-                return {**{k:deepcopy(saved[k]) for k in ('request_summary','request_summary_failure') if k in saved},
+                return {**{k:deepcopy(saved[k]) for k in ('request_summary','request_summary_failure','author_change_projection') if k in saved},
                     "recorded_findings": findings,
                     "recorded_inspections": inspections,
                     "messages": [*messages_from_dict(saved["messages"]),
@@ -1155,7 +1156,7 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                 "runtime_parsing":state.get('runtime_parsing',[]),
                 **({'execution_error': execution_error} if execution_error else {}),
                 "model_calls": count,
-                **({"recovery_state": {**{k:deepcopy(state[k]) for k in ('request_summary','request_summary_failure') if k in state},
+                **({"recovery_state": {**{k:deepcopy(state[k]) for k in ('request_summary','request_summary_failure','author_change_projection') if k in state},
                      "messages": messages_to_dict(state["messages"]),
                      "recorded_findings": deepcopy(state.get("recorded_findings", {})),
                      "recorded_inspections": deepcopy(state.get("recorded_inspections", {})),

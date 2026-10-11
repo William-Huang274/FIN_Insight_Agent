@@ -455,7 +455,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             if incomplete_reviewers is not None:
                 basis = basis.model_copy(update={
                     'node_purpose': 'Lead diagnoses incomplete review from saved public findings and exact tool errors, without restarting research or accepting the paper.',
-                    'required_outputs': ('One bounded outstanding-check assignment per incomplete reviewer, with expected progress and stop condition; or explicit stop. No report or author-edit execution.',)})
+                    'required_outputs': ('Choose a bounded review continuation, targeted author repairs followed by completion of independent review, or explicit stop. No final report or acceptance of unfinished review.',)})
         audit = CaseModelAudit(actor=actor_override or ("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
             public_sink=public_sink, private_sink=private_sink, stream_public=True,
             dispatch_guard=budget_scope.guard(profile_role, model_profile) if budget_scope else None, source_access_check=source_access_check)
@@ -484,7 +484,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         if role in {"counter", "verifier"}:
             return build_case_reviewer(role=role, model=model, tools=tools, artifacts=artifacts,
                 max_model_calls=limits["model_calls"], max_tool_calls=limits["tool_calls"], audit=audit,
-                method_instructions=method_instructions, confirmation=confirmation, require_inspection=confirmation is None)
+                method_instructions=method_instructions, confirmation=confirmation,
+                require_inspection=confirmation is None or bool(confirmation.get('complete_pending_case_review')))
         output_role = ("prepare" if role == 'prepare' else "lead_writer" if role == 'writer' and profile.get('authoring', {}).get('enabled') and not interactive else "verifier" if role in {"report_verifier", "research_verifier"} else "writer" if role in {"writer", "quick_writer"}
                        else "synthesis" if role == "synthesis" else "decision" if role == "lead_decision" else "repair")
         return build_case_output_agent(role=output_role, model=model, tools=tools, artifacts=artifacts,
@@ -514,7 +515,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             agent = native_agent('lead_decision', tools, artifacts, feedback=handoff['feedback'],
                 actor_override='lead_review_triage', incomplete_reviewers=handoff['incomplete_reviewers'])
             result = await agent.ainvoke({'messages': [HumanMessage(content=json.dumps({
-                'question': state['question'], 'catalog': artifacts.catalog(), 'incomplete_review_handoff': handoff}, ensure_ascii=False))],
+                'question': state['question'], 'catalog': artifacts.catalog(), 'incomplete_review_handoff': handoff,
+                'previous_triage_decisions': [row['decision'] for row in state.get('review_triage_history', [])],
+                'routing_notice': 'The native runtime can now execute repair before completing review. Reuse your prior source-bound dispositions when still valid; choose repair, resume_review or stop. No previous stop is silently changed into approval.'}, ensure_ascii=False))],
                 'revisions': state.get('revisions', {})}, config)
             output = result.get('output')
             if not output or output.get('kind') != 'lead_issue_decision':
@@ -576,11 +579,18 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 # must see the same current candidate the review validator sees.
                 async with tools_for(state, current) as (_, current_tools):
                     from .review_execution import ReviewExecutionControl
+                    from .review_recovery import review_after_author_changes
+                    pending_case = state.get('case_review', {}).get('phase') == 'case_review_incomplete'
+                    if pending_case:
+                        context = {**context, 'complete_pending_case_review': True}
+                    previous = review_after_author_changes(state['case_review'], artifacts, current,
+                        state['question'], context) if pending_case else None
                     control = ReviewExecutionControl()
                     reviewers = {role: native_agent(role, current_tools, current, confirmation=context,
                         actor_override="confirmation_" + role, review_execution_control=control) for role in ("counter", "verifier")}
                     graph = build_case_review_graph(reviewers=reviewers, artifacts=current, question=state["question"],
                         run_id=research_id, run_invocation_id=invocation, confirmation=context,
+                        previous_review=previous, require_inspection=pending_case,
                         review_order=studio.review_order if studio else "parallel").compile()
                     return await graph.ainvoke({"run_id": research_id, "run_invocation_id": invocation}, child_config)
 
@@ -590,8 +600,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             graph = build_research_convergence_graph(artifacts=artifacts, question=state["question"], feedback=state["feedback"],
                 hierarchical=True, max_correction_rounds=2, authoring_stages=profile.get('authoring', {}).get('enabled', False),
                 run_author=run_author, review_revisions=review_revisions,
+                initial_lead_decision=state.get('review_repair_decision'),
                 make_agent=make_agent, max_parallel_authors=profile["max_parallel_tasks"],
-                research_review_context={**{r: state.get("case_review", {})[r]["review"] for r in ("counter", "verifier") if r in state.get("case_review", {})},
+                research_review_context={**{r: state.get("case_review", {})[r].get("review") or {} for r in ("counter", "verifier") if r in state.get("case_review", {})},
                     "lead_handoff": state.get("research_handoff"),
                     "incomplete_review_records": {r: {k: state['case_review'][r].get(k) for k in ('status', 'recorded_findings', 'incomplete_output')}
                         for r in ('counter', 'verifier') if state.get('case_review', {}).get(r, {}).get('status') not in (None, 'review_submitted')}}, existing_state=existing,

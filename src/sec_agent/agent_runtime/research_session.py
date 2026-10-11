@@ -59,6 +59,7 @@ class ResearchSessionState(SessionState, total=False):
     review_triage_count: int
     review_triage_history: list[dict[str, Any]]
     review_recovery_instructions: dict[str, Any]
+    review_repair_decision: dict[str, Any]
     author_feedback: dict[str, list[dict[str, Any]]]
     research_stop_reason: str | None
     synthesis: dict[str, Any]
@@ -272,26 +273,30 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         output = await triage_review.ainvoke(state, config)
         assignments = output.get('review_assignments', [])
         errors = []
-        if output.get('action') == 'resume_review':
+        if output.get('action') in {'resume_review', 'repair'}:
             decision = LeadIssueDecision.model_validate({k: v for k, v in output.items() if k in LeadIssueDecision.model_fields})
             errors = decision_errors(decision, handoff['feedback'], set(handoff['feedback']) | {
                 p['paper_id'] for p in current_task_artifacts(state).catalog()['papers']}, incomplete_reviewers=handoff['incomplete_reviewers'],
                 current_versions=handoff['available_candidate_versions'])
         resume = output.get('action') == 'resume_review' and not errors
-        _stage('lead_review_triage', 'outcome', status='bounded_review_continuation' if resume else 'needs_attention',
+        repair = output.get('action') == 'repair' and not errors
+        _stage('lead_review_triage', 'outcome', status='author_repair_before_review' if repair else 'bounded_review_continuation' if resume else 'needs_attention',
             objective=output.get('summary', '复核未完成，保留当前发现并停止。'))
         return {'review_triage_count': state.get('review_triage_count', 0) + 1,
             'review_triage_history': [*state.get('review_triage_history', []), {'handoff': handoff, 'decision': output, 'validation_errors': errors}],
             'review_recovery_instructions': {row['reviewer']: row for row in assignments} if resume else {},
+            'review_repair_decision': deepcopy(output) if repair else {},
+            'author_feedback': deepcopy(handoff['feedback']) if repair else state.get('author_feedback', {}),
             'continue_remaining_research': resume,
-            'phase': 'research_reviewing' if resume else 'research_needs_attention',
-            'research_stop_reason': None if resume else 'lead_review_triage_stopped_without_acceptance'}
+            'phase': 'research_reviewing' if resume else 'research_repairing_review' if repair else 'research_needs_attention',
+            'research_stop_reason': None if resume or repair else 'lead_review_triage_stopped_without_acceptance'}
 
     async def converge_node(state, config: RunnableConfig):
         _stage("convergence", "started")
         result = await converge.ainvoke({"question": state["question"], "case_papers": state["case_papers"],
             "human_edits": state.get("human_edits", []),
             "feedback": state.get("author_feedback", {}), "case_review": state.get("case_review", {}),
+            "review_repair_decision": state.get('review_repair_decision'),
             "research_handoff": state["research_handoff"]}, config)
         retained = {key: deepcopy(result.get(key, {})) for key in ("synthesis", "synthesis_review", "authoring_context")}
         retained.update(convergence_history=deepcopy(result.get("artifact_history", [])),
@@ -351,7 +356,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     graph.add_conditional_edges("research", after_research)
     graph.add_conditional_edges("remaining_research", after_research)
     graph.add_conditional_edges("case_review", lambda state: 'lead_review_triage' if state['phase'] == 'research_review_triage' else "research_attention" if state["phase"] == "research_needs_attention" else "convergence")
-    graph.add_conditional_edges('lead_review_triage', lambda state: 'case_review' if state['phase'] == 'research_reviewing' else 'research_attention')
+    graph.add_conditional_edges('lead_review_triage', lambda state: 'case_review' if state['phase'] == 'research_reviewing' else 'convergence' if state['phase'] == 'research_repairing_review' else 'research_attention')
     graph.add_conditional_edges("convergence", lambda state: "research_attention" if state["phase"] == "research_needs_attention" else "initialize")
     graph.add_conditional_edges("research_attention", lambda state: 'convergence' if state.get('phase') == 'research_writing' else 'case_review' if state.get('phase') == 'research_reviewing' else ("case_review" if state.get("case_review") else "remaining_research") if state.get("continue_remaining_research") else END)
     return graph

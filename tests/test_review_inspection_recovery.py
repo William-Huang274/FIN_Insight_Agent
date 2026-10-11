@@ -193,7 +193,7 @@ def test_native_lead_tool_rejects_synthesis_during_incomplete_review_triage():
             limits={'model_calls':2,'tool_calls':4}, incomplete_reviewers=['counter'])
         result = await agent.ainvoke({'messages':[HumanMessage(content='Triage the outstanding saved review only.')], 'revisions':{}})
         assert result['output']['action']=='resume_review'
-        assert any(isinstance(m,ToolMessage) and m.status=='error' and 'only resume_review or stop' in m.content for m in result['messages'])
+        assert any(isinstance(m,ToolMessage) and m.status=='error' and 'never synthesis acceptance' in m.content for m in result['messages'])
         assert 'incomplete-review triage' in model.contexts[0][0].content
     asyncio.run(exercise())
 

@@ -131,7 +131,8 @@ def route_material_findings(review, artifacts, *, stage, round_index):
 def build_research_convergence_graph(*, artifacts, question, feedback, research_review_context,
                                      make_agent, max_parallel_authors=2, existing_state=None, human_feedback=None,
                                      execution_plan=None, hierarchical=False, max_correction_rounds=1,
-                                     run_author=None, review_revisions=None, authoring_stages=False):
+                                     run_author=None, review_revisions=None, authoring_stages=False,
+                                     initial_lead_decision=None):
     """A current-task graph: authors -> Lead -> research review -> report review.
 
     make_agent reuses native create_agent and current read-only MCP tools. It is
@@ -144,6 +145,13 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         raise ValueError("invalid_correction_round_limit")
     if not set(feedback).issubset(p["paper_id"] for p in artifacts.catalog()["papers"]):
         raise ValueError("unknown_initial_responsible_paper")
+    if initial_lead_decision:
+        from .lead_issue_decision import LeadIssueDecision, decision_errors
+        parsed = LeadIssueDecision.model_validate({k: v for k, v in initial_lead_decision.items()
+            if k in LeadIssueDecision.model_fields})
+        errors = decision_errors(parsed, feedback, {p['paper_id'] for p in artifacts.catalog()['papers']})
+        if parsed.action != 'repair' or errors or not review_revisions or existing_state:
+            raise ValueError('initial_review_repair_requires_valid_decision_and_independent_confirmation')
     graph = StateGraph(ResearchConvergenceState)
     plan = ResearchExecutionPlan.model_validate(execution_plan) if execution_plan else None
     depth = plan.depth if plan else "extended"  # old persisted sessions keep their contract
@@ -170,10 +178,12 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     def initialize(_):
         previous = {key: deepcopy(existing_state[key]) for key in
             ("revisions", "synthesis", "synthesis_review", "report", "report_review") if existing_state and key in existing_state}
-        return {**previous, "pending_feedback": deepcopy(feedback), "correction_round": 0,
+        return {**previous, **({'lead_decision': deepcopy(initial_lead_decision)} if initial_lead_decision else {}), "pending_feedback": deepcopy(feedback), "correction_round": 0,
                 "stop_reason": None, "active_review": "report_review"}
 
     def initial_route(state):
+        if initial_lead_decision:
+            return 'apply_lead_repairs'
         if hierarchical and not existing_state:
             return "lead_decision"
         if not existing_state:
@@ -523,7 +533,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     graph.add_node("route_review", route_review)
     graph.add_node("finish", finish)
     graph.add_edge(START, "initialize")
-    graph.add_conditional_edges("initialize", initial_route, ["lead_decision", "prepare_authors", "prepare_focused_report", "route_review", "writer", 'prepare_writing'])
+    graph.add_conditional_edges("initialize", initial_route, ["lead_decision", "apply_lead_repairs", "prepare_authors", "prepare_focused_report", "route_review", "writer", 'prepare_writing'])
     graph.add_conditional_edges("prepare_authors", author_routes, ["responsible_author", "confirm_workpapers", "lead_synthesis", "writer", "prepare_writing", "prepare_focused_report", "finish"])
     graph.add_edge("prepare_focused_report", "report_verifier")
     graph.add_edge("responsible_author", "prepare_authors")

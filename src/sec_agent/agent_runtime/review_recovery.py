@@ -3,6 +3,56 @@ from copy import deepcopy
 from .case_review_agent import case_review_scope_digest
 
 
+def review_after_author_changes(review, before, current, question, context):
+    """Retain unchanged checks; an edited paper is never approved by old checks.
+
+    Source reads, lifetime usage and the original review remain recoverable.
+    Confirmation of the pending findings is required separately from coverage.
+    """
+    import json
+    from langchain_core.messages import HumanMessage, message_to_dict
+    from .review_check_store import restore_checks, restore_findings
+    from .workpaper_changes import paper_versions
+    if review.get('phase') != 'case_review_incomplete' or review.get('scope_digest') != case_review_scope_digest(before, question):
+        raise ValueError('author_change_review_requires_original_incomplete_scope')
+    old, new = paper_versions(before), paper_versions(current)
+    if old.keys() != new.keys() or not context.get('findings_to_confirm'):
+        raise ValueError('author_change_review_requires_same_papers_and_pending_findings')
+    changed = {pid for pid in old if old[pid] != new[pid]}
+    result = deepcopy(review)
+    result['scope_digest'] = case_review_scope_digest(current, question)
+    result['author_change_baseline_scope_digest'] = review['scope_digest']
+    for role in ('counter', 'verifier'):
+        row = result[role]
+        saved = deepcopy(row.get('recovery_state'))
+        if not saved:
+            # A completed peer can retain its public checks/findings without
+            # acquiring another reviewer's private history.
+            if row.get('status') != 'review_submitted':
+                raise ValueError('author_change_review_requires_saved_reviewer_state:' + role)
+            submitted = row.get('review') or {}
+            from .review_check_store import merge_checks
+            saved = {'messages': [], 'recorded_inspections': merge_checks({}, submitted.get('inspection_checks', [])),
+                     'recorded_findings': {f['finding_id']: f for f in submitted.get('findings', [])}}
+        checks = restore_checks(saved)
+        findings = restore_findings(saved, row.get('review') or {})
+        saved['recorded_inspections'] = {k: c for k, c in checks.items()
+            if c['paper_id'] not in changed and c['paper_digest'] == new.get(c['paper_id'])}
+        saved['recorded_findings'] = {k: f for k, f in findings.items() if f['paper_id'] not in changed}
+        saved['author_change_projection'] = True
+        saved.pop('request_summary', None)
+        saved.pop('request_summary_failure', None)
+        saved['messages'] = [*saved.get('messages', []), message_to_dict(HumanMessage(content=
+            'Authors revised the current candidate. Historical paper text and findings are NOT the current version. '
+            'Read the changed papers; independently confirm each pending finding and complete all missing case checks. '
+            'Unchanged checks and original source reads remain reusable; no financial finding is automatically closed. '
+            + json.dumps({'changed_papers': sorted(changed), 'current_versions': new,
+                          'revision_confirmation': context}, ensure_ascii=False)))]
+        row.update(status='incomplete_no_submission', review=None, recovery_state=saved,
+                   recorded_findings=deepcopy(saved['recorded_findings']))
+    return result
+
+
 def public_confirmation(record):
     """Project review handoff; recovery journals belong only to their author.
 
@@ -62,4 +112,7 @@ def review_recovery_handoff(review, artifacts, question):
         'notice': 'Current public artifacts and tool failures only. Saved reviewer private histories stay with their original owners. '
                   'No author edits have occurred: the current candidate is unchanged. Proposed repairs are pending, never performed. '
                   'Do not assign checking a newly added paragraph that does not exist. Copy the exact namespaced IDs from required_dispositions. '
-                  'Do not call incomplete work clean. Choose one bounded continuation of missing review checks or stop; no synthesis or author edits here.'}
+                  'Do not call incomplete work clean. Choose resume_review for missing checks on this candidate, '
+                  'repair to send confirmed local issues to their authors before completing independent review, or stop. '
+                  'Repair does not accept the case or permit synthesis: changed papers require new checks and '
+                  'unfinished checks on unchanged papers remain pending.'}

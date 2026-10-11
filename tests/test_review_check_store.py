@@ -29,8 +29,7 @@ def test_known_limitations_do_not_hide_unfinished_required_checks():
         InspectedCaseReview.model_validate(payload)
     payload['unresolved_data_requests']=[]
     payload['inspection_checks']=[]
-    with pytest.raises(ValueError,match='inspection_incomplete'):
-        validate_inspection_checks(CaseReview.model_validate(payload),a,reads(a),complete=True)
+    validate_inspection_checks(CaseReview.model_validate(payload),a,reads(a),complete=True)
 
 
 def test_restore_successful_legacy_batches_only_and_replace_same_location():
@@ -48,30 +47,20 @@ def test_restore_successful_legacy_batches_only_and_replace_same_location():
     assert inspection_progress(merge_checks({},[stale]),a)['P01']['saved_checks']==0
 
 
-def test_native_batch_records_survive_and_close_without_recopied_checks():
+def test_legacy_records_survive_focused_handoff_without_recopied_checks():
     async def exercise():
         a=artifact_fixture(); payload=inspected(a); checks=payload.pop('inspection_checks')
-        bad=deepcopy(checks[0]);bad['paper_digest']='stale'
-        missing=deepcopy(checks[0]);missing.pop('result')
         model=ScriptedNativeChat(marker='batch',replies=[
             [call('read_research_artifact',{'paper_id':p['paper_id']},p['paper_id']) for p in a.catalog()['papers']],
-            [call('record_review_checks',{'checks':checks[:2]},'batch1')],
-            [call('record_review_checks',{'checks':[bad,checks[2],missing]},'bad')],
-            [call('record_review_checks',{'checks':checks[3:]},'batch2')],
-            [call('submit_case_review',{'review':{**payload,'inspection_checks':[]}},'submit')]])
+            [call('submit_case_review',{'review':payload},'submit')]])
         async with Client(_build_server(case_artifacts=a),raise_exceptions=False) as client:
             graph=build_case_reviewer(role='verifier',model=model,tools=await case_mcp_tools(client),artifacts=a,
                 max_model_calls=7,require_inspection=True)
-            result=await graph.ainvoke({'messages':[HumanMessage(content='Inspect the synthetic paper in batches.')]})
+            result=await graph.ainvoke({'messages':[HumanMessage(content='Finish the remaining substantive checks.')],
+                'recorded_inspections':merge_checks({}, checks)})
         assert result['review']['completion']=='complete'
         assert len(result['review']['inspection_checks'])==len(merge_checks({},checks))
-        assert any(isinstance(m,ToolMessage) and m.status=='error' and 'stale' in m.content for m in result['messages'])
-        assert not any(c['paper_digest']=='stale' for c in result['recorded_inspections'].values())
-        response=next(m for m in result['messages'] if isinstance(m,ToolMessage) and m.tool_call_id=='bad')
-        import json
-        assert json.loads(response.content)['accepted_check_indices']==[1]
-        assert json.loads(response.content)['errors'][0]['check_index']==0
-        assert json.loads(response.content)['errors'][1]['check_index']==2
+        assert not any(isinstance(m,ToolMessage) and m.status=='error' for m in result['messages'])
     asyncio.run(exercise())
 
 

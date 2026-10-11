@@ -57,10 +57,9 @@ def inspected(artifacts):
     return review
 
 
-def test_full_read_does_not_allow_uncovered_or_stale_clean_inspection():
+def test_legacy_records_are_optional_but_stale_records_still_invalid():
     artifacts = artifact_fixture()
-    with pytest.raises(ValueError, match='inspection_incomplete'):
-        validate_inspection_checks(CaseReview.model_validate(review_fixture(artifacts)), artifacts, reads(artifacts), complete=True)
+    validate_inspection_checks(CaseReview.model_validate(review_fixture(artifacts)), artifacts, reads(artifacts), complete=True)
     good = inspected(artifacts)
     validate_inspection_checks(CaseReview.model_validate(good), artifacts, reads(artifacts), complete=True)
     bad = deepcopy(good)
@@ -69,8 +68,7 @@ def test_full_read_does_not_allow_uncovered_or_stale_clean_inspection():
         validate_inspection_checks(CaseReview.model_validate(bad), artifacts, reads(artifacts), complete=True)
     bad = deepcopy(good)
     bad['inspection_checks'][0]['claim_ids'] = []
-    with pytest.raises(ValueError, match='inspection_incomplete'):
-        validate_inspection_checks(CaseReview.model_validate(bad), artifacts, reads(artifacts), complete=True)
+    validate_inspection_checks(CaseReview.model_validate(bad), artifacts, reads(artifacts), complete=True)
 
 
 @pytest.mark.parametrize('mutation,error', [
@@ -130,11 +128,11 @@ def test_strict_native_reviewer_consumes_manifest_and_can_submit_truthful_incomp
         submitted = inspected(artifacts)
         submitted['completion'] = 'incomplete'
         submitted['unresolved_data_requests'] = ['A required original-source relation remains unverified.']
-        submitted['inspection_checks'] = [submitted['inspection_checks'][0]]
-        submitted['inspection_checks'][0].update(status='unresolved', source_checks=[])
+        submitted.pop('inspection_checks')
         class InspectedChat(ScriptedNativeChat):
             def _generate(self, messages, stop=None, run_manager=None, **kwargs):
-                assert 'inspection_manifest=' in messages[0].content
+                assert 'inspection_manifest=' not in messages[0].content
+                assert 'mandatory' in messages[0].content
                 return super()._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
         model = InspectedChat(marker='inspection', replies=[
             [call('read_research_artifact',{'paper_id':p['paper_id']},p['paper_id']) for p in artifacts.catalog()['papers']],
@@ -230,14 +228,16 @@ def test_advisory_findings_keep_same_namespaced_id_in_lead_packet_and_feedback()
     assert 'counter:F1' in str(errors) and 'unexpected_pairs' in str(errors)
 
 
-def test_new_inspection_cannot_silently_reuse_legacy_clean_review():
+def test_completed_same_scope_review_does_not_need_new_paragraph_forms():
     from sec_agent.agent_runtime.case_review_agent import build_case_review_graph
     artifacts=artifact_fixture()
     prior=incomplete_review(artifacts,'Same question')
-    with pytest.raises(ValueError,match='legacy_complete_review_requires_new_inspection'):
-        build_case_review_graph(reviewers={'counter':RunnableLambda(lambda x:x),'verifier':RunnableLambda(lambda x:x)},
-            artifacts=artifacts,question='Same question',run_id='same',run_invocation_id='next',
-            previous_review=prior,require_inspection=True)
+    build_case_review_graph(reviewers={'counter':RunnableLambda(lambda x:x),'verifier':RunnableLambda(lambda x:x)},
+        artifacts=artifacts,question='Same question',run_id='same',run_invocation_id='next',
+        previous_review=prior,require_inspection=True)
+    with pytest.raises(ValueError,match='same_question_and_artifacts'):
+        build_case_review_graph(reviewers={}, artifacts=artifacts,question='Changed question',run_id='same',
+            run_invocation_id='next',previous_review=prior,require_inspection=True)
 
 
 @pytest.mark.parametrize('still_incomplete',[False,True])

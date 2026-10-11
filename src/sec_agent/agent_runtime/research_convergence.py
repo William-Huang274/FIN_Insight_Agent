@@ -132,7 +132,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                                      make_agent, max_parallel_authors=2, existing_state=None, human_feedback=None,
                                      execution_plan=None, hierarchical=False, max_correction_rounds=1,
                                      run_author=None, review_revisions=None, authoring_stages=False,
-                                     initial_lead_decision=None):
+                                     initial_lead_decision=None, initial_revisions=None):
     """A current-task graph: authors -> Lead -> research review -> report review.
 
     make_agent reuses native create_agent and current read-only MCP tools. It is
@@ -176,8 +176,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             "recorded_at": datetime.now(timezone.utc).isoformat(), **details})
 
     def initialize(_):
-        previous = {key: deepcopy(existing_state[key]) for key in
-            ("revisions", "synthesis", "synthesis_review", "report", "report_review") if existing_state and key in existing_state}
+        previous = {'revisions': deepcopy(initial_revisions or {}), **{key: deepcopy(existing_state[key]) for key in
+            ("revisions", "synthesis", "synthesis_review", "report", "report_review") if existing_state and key in existing_state}}
         return {**previous, **({'lead_decision': deepcopy(initial_lead_decision)} if initial_lead_decision else {}), "pending_feedback": deepcopy(feedback), "correction_round": 0,
                 "stop_reason": None, "active_review": "report_review"}
 

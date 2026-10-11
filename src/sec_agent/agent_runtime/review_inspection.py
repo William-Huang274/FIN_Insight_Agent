@@ -62,8 +62,25 @@ def read_location(artifacts, paper_id, path, offset=0, max_characters=2000):
     text = fields[path]
     end = min(len(text), offset + max_characters)
     return {'paper_id': paper_id, 'paper_digest': canonical_sha256(paper), 'field_path': path,
+            'location_id': 'RL:' + canonical_sha256([canonical_sha256(paper), path, offset, end]),
             'offset': offset, 'text': text[offset:end], 'next_offset': end if end < len(text) else None,
             'total_characters': len(text), 'notice': 'Exact current text; not a verified financial statement.'}
+
+
+def bind_location(artifacts, messages, paper_id, location_id):
+    """Only a successful, current-version tool read can supply a finding quote."""
+    from langchain_core.messages import ToolMessage
+    for message in reversed(messages):
+        value = message.artifact if isinstance(message, ToolMessage) and message.status == 'success' else None
+        if not isinstance(value, dict) or value.get('location_id') != location_id:
+            continue
+        if value.get('paper_id') != paper_id or value.get('paper_digest') != canonical_sha256(artifacts.read_paper(paper_id)):
+            raise ValueError('review_location_is_stale_or_wrong_paper')
+        current = read_location(artifacts, paper_id, value['field_path'], value['offset'], len(value['text']))
+        if current['location_id'] != location_id or current['text'] != value['text']:
+            raise ValueError('review_location_content_changed')
+        return value['text']
+    raise ValueError('review_location_not_observed_read_current_location')
 
 
 def quote_recovery(artifacts, finding):
@@ -136,39 +153,25 @@ source still requires repair of an unresolvable identifier in the delivered draf
 """
 
 
-INSPECTION_GUIDANCE = """
-Before reading, organize review around the supplied inspection_manifest, not a fresh full research assignment.
-Copy field_path from text_targets, for example /claims/0/statement, /narrative_markdown or /counterevidence/0. Exact claim-ID selectors such as claims/C1/statement also resolve when C1 is an actual claim ID. A container such as claims returns a field directory. Do not invent a missing source from a locator error.
-Use compact inspection_checks in the final submission. Cover each material claim and four dimensions for every paper:
-claim_support (source, period, unit and actual/forecast); citation_trace (literal references in prose AND structured claim/source bindings);
-prose_consistency (numeric bridges, signed contributions versus levels, headings and conclusions read together);
-scope_and_counterevidence (original user question versus author wording, strongest competing explanation and limits).
-For each check cite an exact current field_path and target_quote, current paper_digest, and concise public result grounded in original source_checks.
-Several claim IDs may share one genuinely common check. Arithmetic/literal presence alone cannot certify causal or prose correctness.
-For a bridge explain positive and negative contributions to the CHANGE, not merely two correct totals. For cash/segment comparisons keep periods and denominators explicit.
-For citation_trace, resolve prose identifiers and ensure new material explanations have matching claim/source bindings; archived sources existing somewhere is insufficient.
-Do not accept model prior knowledge or an author's hypothetical caveat as source evidence. Counter must distinguish a qualification of broad author wording from refutation of the actual user question.
-Each dimension must say checked, issue (link recorded/current finding IDs), unresolved (also list unfinished work), or not_applicable with a concrete scope reason.
-Not-applicable is only allowed for prose_consistency when there are no required semantic_targets; it cannot replace checking a listed paragraph, claims, citation trace or scope. A check is a reviewer assertion, not runtime semantic proof.
-Read every full workpaper once and relevant original source windows. Avoid repeating reads already available. Never fill inspection checks from an author note alone.
-For prose_consistency, cover each semantic_targets entry separately with semantic_target_id, expressed_relationship,
-supported_relationship, financial_verdict (supported/contradicted/insufficient), clarity_verdict
-(clear/needs_clarification/unassessed), and clarity_reason. If clarification is needed, supply clarification as a
-precise local requested change. Runtime generates the version-bound clarification finding and links it; do not
-duplicate that finding manually. Its material severity means delivery requires resolution, not that numbers are false.
-Legacy semantic_verdict alone is not a new completed check. Copy an exact quote
-inside that paragraph; do not use one correct equation to mark unrelated paragraphs checked. Reuse existing evidence.
-For EVERY inspection check declare calculation_check: none_added, bound, or unresolved. If adding a derived number,
-ratio, bridge or numeric attribution to your explanation, reuse saved case calculations or calculate_research_metric,
-then provide calculation_ids. Runtime expands nested operands and adds their original source_checks with labeled
-runtime_compatibility_parse records; do not recopy all sources. Do not attach an unrelated calculation just to fill
-the field. If a required calculation cannot be bound, mark the check unresolved and list the unfinished work.
-Record all necessary original-source and assumed operands; an assumption remains an assumption, not disclosed fact.
-Use read_review_references for runtime citation parsing. Exact means identifier identity only, not semantic support.
-For a nonexact candidate, confirm_review_reference requires a prior actual source read and your concise mapping reason.
-Suffix/content resemblance is never confirmation. Runtime automatically attaches delivery-reference repair findings;
-do not rewrite them as model findings. Unconfirmed nonexact references require incomplete and unresolved work.
-read_review_source_span returns a digest-bound quote_span that can replace copied quote text in source_checks.
-Runtime table-layout compatibility may restore a unique literal span with identical nonempty cells; its
-runtime_compatibility_parse record is not model output or proof of column/period meaning.
-""" + SEMANTIC_SELF_CHECK
+REVIEW_GUIDANCE = """
+Review completion is a reasoned handoff, not exhaustive paragraph certification.
+Read the current workpapers, reuse prior source reads and valid findings, and focus source checks on
+claims that could change the answer, magnitude, timing or confidence. Counter challenges mechanisms and
+alternative explanations; Verifier checks material facts, units, periods, calculations and source support.
+Neither duplicates the other's entire assignment. State what you checked and any necessary unfinished work.
+
+The runtime preserves read receipts, versions and legacy checks. Do NOT recreate inspection tables,
+paragraph coverage, hashes or previously saved checks. Automatic paragraph/keyword candidates are navigation
+only and do not create mandatory work. Assess each assigned paper concisely; no per-paragraph pass records.
+Use read_review_location to get a location_id for an actionable finding instead of retyping its quote.
+Use read_review_source_span's quote_span when quoting original evidence. Ambiguous identities require a
+local clarification, not invented mappings. Record specific source-grounded findings as they emerge.
+
+Ordinary editorial suggestions are advisory. A material issue changes the answer or leaves a significant
+statement misleading; identify the affected claim and explain its impact. Necessary checks you could not
+complete belong in unresolved_data_requests. Known limits of the answer belong in research_limitations.
+Do not label a review incomplete merely because legacy inspection slots are empty; do not label genuinely
+unfinished critical verification complete. No quota of findings, calculations or positive conclusions.
+Submit findings and your assessment once the question is adequately reviewed. Other reviewers and Lead
+evaluate these judgments; runtime identifier validation never certifies financial truth.
+"""

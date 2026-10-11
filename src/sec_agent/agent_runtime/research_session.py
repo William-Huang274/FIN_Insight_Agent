@@ -246,10 +246,16 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
 
     async def review_node(state, config: RunnableConfig):
         _stage("case_review", "started")
+        from .review_recovery import pending_confirmation_review
+        resumed = pending_confirmation_review(state, current_task_artifacts(state)) if state.get('continue_remaining_research') else None
         result = await review.ainvoke({"question": state["question"], "case_papers": state["case_papers"],
+            "revisions": state.get('revisions', {}), "human_edits": state.get('human_edits', []),
             "research_handoff": state.get("research_handoff"),
             "review_recovery_instructions": state.get('review_recovery_instructions'),
-            "previous_review": state.get("case_review") if state.get("continue_remaining_research") else None}, config)
+            "review_confirmation": resumed['context'] if resumed else None,
+            "previous_review": resumed['review'] if resumed else state.get("case_review") if state.get("continue_remaining_research") else None}, config)
+        if resumed:
+            result = {**result, 'confirmation_context': resumed['context']}
         retained = {"continue_remaining_research": False,
                     "research_review_history": [*deepcopy(state.get("research_review_history", [])),
                         {"run_id": config.get("configurable", {}).get("run_id"), "result": deepcopy(result)}]}
@@ -263,7 +269,8 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         artifacts = current_task_artifacts(state)
         feedback = responsible_author_feedback(result, artifacts)
         _stage("case_review", "outcome", status="handoff", responsible_author_count=len(feedback))
-        return {**retained, "case_review": deepcopy(result), "author_feedback": feedback, "phase": "research_writing"}
+        return {**retained, "case_review": deepcopy(result), "author_feedback": feedback,
+                "review_repair_decision": {}, "phase": "research_writing", "research_stop_reason": None}
 
     async def triage_node(state, config: RunnableConfig):
         from .review_recovery import review_recovery_handoff
@@ -294,12 +301,13 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     async def converge_node(state, config: RunnableConfig):
         _stage("convergence", "started")
         result = await converge.ainvoke({"question": state["question"], "case_papers": state["case_papers"],
+            "revisions": state.get('revisions', {}),
             "human_edits": state.get("human_edits", []),
             "feedback": state.get("author_feedback", {}), "case_review": state.get("case_review", {}),
             "review_repair_decision": state.get('review_repair_decision'),
             "research_handoff": state["research_handoff"]}, config)
         retained = {key: deepcopy(result.get(key, {})) for key in ("synthesis", "synthesis_review", "authoring_context")}
-        retained.update(convergence_history=deepcopy(result.get("artifact_history", [])),
+        retained.update(convergence_history=[*deepcopy(state.get('convergence_history', [])), *deepcopy(result.get("artifact_history", []))],
                         revisions=deepcopy(result.get("revisions", {})))
         if result.get("phase") == "research_convergence_needs_attention":
             return {**retained, "phase": "research_needs_attention", "research_stop_reason": result["stop_reason"]}

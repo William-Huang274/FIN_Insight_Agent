@@ -98,8 +98,9 @@ def test_overall_equation_cannot_cover_other_paragraphs_or_ambiguous_wording():
     validate_inspection_checks(good,a,reads(a),complete=True)
     checks=[c for c in good.inspection_checks if c.dimension=='prose_consistency']
     good.inspection_checks.remove(checks[-1])
-    with pytest.raises(ValueError,match='semantic_paragraphs_unchecked'):
-        validate_inspection_checks(good,a,reads(a),complete=True)
+    # Legacy record completeness is not a submission gate. An explicit
+    # contradictory check is still invalid independently of record count.
+    validate_inspection_checks(good,a,reads(a),complete=True)
     good=CaseReview.model_validate(inspected(a));check=next(c for c in good.inspection_checks if c.dimension=='prose_consistency')
     check.financial_verdict='contradicted'
     with pytest.raises(ValueError,match='semantic_verdict_status_mismatch'):

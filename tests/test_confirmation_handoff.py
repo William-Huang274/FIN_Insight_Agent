@@ -24,7 +24,8 @@ def test_incomplete_confirmation_handoff_excludes_private_recovery_journal():
     assert view['context'] == record['context']
     assert view['review']['phase'] == 'case_review_incomplete'
     row = view['review']['counter']
-    assert row['review'] == record['review']['counter']['review']
+    assert row['review'] == {k:v for k,v in record['review']['counter']['review'].items() if k!='inspection_checks'}
+    assert 'inspection_checks' not in row['review']
     assert row['recorded_findings'] == record['review']['counter']['recorded_findings']
     assert row['tool_feedback'] == ['invalid field path'] and row['resumable']
     assert record == original

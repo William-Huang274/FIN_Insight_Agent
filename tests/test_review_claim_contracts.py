@@ -147,9 +147,11 @@ def test_nested_calculation_lineage_keeps_all_leaf_sources_and_explicit_assumpti
         calculation_lineage(a,[],second['calculation_id'])
 
 
-def test_native_submit_preserves_raw_output_and_returns_generated_clarification():
+def test_native_submit_preserves_explicit_clarification_without_paragraph_forms():
     async def run():
-        a=artifact_fixture();review,check=clarity_review(a);payload=review.model_dump()
+        a=artifact_fixture();review,check=clarity_review(a)
+        validate_inspection_checks(review,a,reads(a),complete=True)
+        payload=review.model_dump(exclude={'inspection_checks'});payload['completion']='complete'
         model=ScriptedNativeChat(marker='synthetic',replies=[
             [call('read_research_artifact',{'paper_id':pid,'section':'workpaper'},'read-'+pid) for pid in ('P01','P02')],
             [call('submit_case_review',{'review':payload},'submit')]])
@@ -157,8 +159,7 @@ def test_native_submit_preserves_raw_output_and_returns_generated_clarification(
             agent=build_case_reviewer(role='counter',model=model,tools=await case_mcp_tools(client),artifacts=a,max_model_calls=3,require_inspection=True)
             result=await agent.ainvoke({'messages':[HumanMessage(content='Synthetic plumbing qualification only.')]})
         assert result['review']['findings'][0]['finding_type']=='clarification'
-        assert result['runtime_parsing'][-1]['method']=='review_clarification_handoff_v1'
         original=next(m for m in result['messages'] if getattr(m,'tool_calls',[]) and m.tool_calls[0]['id']=='submit')
-        assert original.tool_calls[0]['args']['review']['findings']==[]
-        assert original.tool_calls[0]['args']['review']['inspection_checks'][1]['status']=='checked'
+        assert original.tool_calls[0]['args']['review']['findings']==payload['findings']
+        assert 'inspection_checks' not in original.tool_calls[0]['args']['review']
     asyncio.run(run())

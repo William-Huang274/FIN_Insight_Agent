@@ -499,12 +499,15 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         async with tools_for(state) as (artifacts, tools):
             from .review_execution import ReviewExecutionControl
             control = ReviewExecutionControl()
-            reviewers = {role: native_agent(role, tools, artifacts, review_execution_control=control) for role in ("counter", "verifier")}
+            confirmation = state.get('review_confirmation')
+            if confirmation:
+                confirmation = {**confirmation, 'complete_pending_case_review': True}
+            reviewers = {role: native_agent(role, tools, artifacts, confirmation=confirmation, review_execution_control=control) for role in ("counter", "verifier")}
             graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question=state["question"],
                 run_id=research_id, run_invocation_id=invocation,
                 review_order=studio.review_order if studio else "parallel",
                 research_handoff=state.get("research_handoff"), previous_review=state.get("previous_review"),
-                recovery_instructions=state.get('review_recovery_instructions'), require_inspection=True).compile()
+                confirmation=confirmation, recovery_instructions=state.get('review_recovery_instructions'), require_inspection=True).compile()
             return await graph.ainvoke({"run_id": research_id, "run_invocation_id": invocation}, config)
 
     async def triage_review(state, config: RunnableConfig):
@@ -527,6 +530,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             return output
 
     async def execute_convergence(state, config, existing=None):
+        from .review_recovery import public_review
         state = await with_guidance(state, "convergence")
         async with tools_for(state) as (artifacts, tools):
             async def run_author(paper_id, convergence_state, child_config):
@@ -598,11 +602,12 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 return native_agent(role, tools, current, feedback=feedback, paper_id=paper_id,
                     revising=role == "writer" and revising_report)
             graph = build_research_convergence_graph(artifacts=artifacts, question=state["question"], feedback=state["feedback"],
+                initial_revisions=state.get('revisions', {}),
                 hierarchical=True, max_correction_rounds=2, authoring_stages=profile.get('authoring', {}).get('enabled', False),
                 run_author=run_author, review_revisions=review_revisions,
                 initial_lead_decision=state.get('review_repair_decision'),
                 make_agent=make_agent, max_parallel_authors=profile["max_parallel_tasks"],
-                research_review_context={**{r: state.get("case_review", {})[r].get("review") or {} for r in ("counter", "verifier") if r in state.get("case_review", {})},
+                research_review_context={**{r: public_review(state.get("case_review", {})[r].get("review") or {}) for r in ("counter", "verifier") if r in state.get("case_review", {})},
                     "lead_handoff": state.get("research_handoff"),
                     "incomplete_review_records": {r: {k: state['case_review'][r].get(k) for k in ('status', 'recorded_findings', 'incomplete_output')}
                         for r in ('counter', 'verifier') if state.get('case_review', {}).get(r, {}).get('status') not in (None, 'review_submitted')}}, existing_state=existing,

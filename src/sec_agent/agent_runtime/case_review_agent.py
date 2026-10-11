@@ -56,7 +56,8 @@ class CaseReviewFinding(BaseModel):
     claim_ids: list[str] = Field(default_factory=list)
     severity: Literal["material", "advisory"]
     finding_type: Literal['financial_error','clarification','traceability','other'] = 'other'
-    problematic_quote: str = Field(min_length=1, max_length=6000,
+    location_id: str | None = Field(default=None, description='Opaque ID returned by read_review_location. Runtime binds the current version and exact quote; no manual recopy.')
+    problematic_quote: str = Field(default='', max_length=6000,
         description="One contiguous exact substring of ONE current claim or prose field. Never join passages with ellipses, paraphrase, or combine several fields.")
     diagnosis: str = Field(min_length=10, max_length=8000)
     requested_change: str = Field(min_length=10, max_length=8000)
@@ -147,6 +148,25 @@ class SubmittedCaseReview(CaseReview):
         return self
 
 
+class ReviewHandoff(BaseModel):
+    """Active model interface: judgments and issues, not a paragraph checklist."""
+    model_config = ConfigDict(extra='forbid')
+    completion: Literal['complete', 'incomplete']
+    summary: str = Field(min_length=20, max_length=12000)
+    assessments: list[PaperAssessment] = Field(min_length=1, max_length=12)
+    findings: list[CaseReviewFinding] = Field(default_factory=list, max_length=80)
+    finding_checks: list[FindingConfirmation] = Field(default_factory=list, max_length=80)
+    unresolved_data_requests: list[str] = Field(default_factory=list, max_length=30)
+    research_limitations: list[str] = Field(default_factory=list)
+    withdrawn_finding_reasons: dict[str, Annotated[str, Field(min_length=20, max_length=2000)]] = Field(default_factory=dict)
+
+    @model_validator(mode='after')
+    def explicit_scope(self):
+        if (self.completion == 'incomplete') != bool(self.unresolved_data_requests):
+            raise ValueError('completion_must_match_unfinished_necessary_review')
+        return self
+
+
 class RevisionCaseReview(SubmittedCaseReview):
     """Same explicit submission boundary for a mechanically scoped revision."""
 
@@ -158,7 +178,7 @@ class SubmittedReviewInspectionCheck(ReviewInspectionCheck):
 
 class InspectedCaseReview(SubmittedCaseReview):
     inspection_checks: list[SubmittedReviewInspectionCheck] = Field(default_factory=list,
-        description="New or corrected version-bound checks, merged with previously saved checks. Can be empty when all checks were saved using record_review_checks. Unchecked required dimensions remain incomplete.")
+        description="Legacy version-bound review records for archive compatibility; not the active submission schema or a completion quota.")
 
 
 class CaseReviewerState(AgentState):
@@ -208,7 +228,10 @@ def validate_case_review(review: CaseReview, artifacts: CaseArtifacts, messages,
         if (message.name == "read_research_artifact" and result.get("section") in (
                 {"workpaper"} if require_full_workpaper else {"workpaper", "claims"})
                 and not result.get("claim_ids")):
-            read.add(result.get("paper_id"))
+            pid = result.get('paper_id')
+            # A prior read of a changed draft is not a read of its replacement.
+            if pid in expected and (result.get('section') != 'workpaper' or result.get('content') == artifacts.read_paper(pid)):
+                read.add(pid)
         # Exact new source windows live in native ToolMessage artifacts, not a
         # mutable application-owned source/lineage store.
         for ref, source in source_items_from_tool(message.name, result).items():
@@ -224,6 +247,19 @@ def validate_case_review(review: CaseReview, artifacts: CaseArtifacts, messages,
             errors.append(f"unknown_paper_id:{finding.finding_id}:{finding.paper_id}")
             continue
         paper = artifacts.read_paper(finding.paper_id)
+        if finding.location_id:
+            from .review_inspection import bind_location
+            try:
+                quote = bind_location(artifacts, messages, finding.paper_id, finding.location_id)
+                if finding.problematic_quote and finding.problematic_quote not in quote:
+                    raise ValueError('review_location_quote_conflict')
+                finding.problematic_quote = finding.problematic_quote or quote
+            except ValueError as exc:
+                errors.append(str(exc) + ':' + finding.finding_id)
+                continue
+        if not finding.problematic_quote:
+            errors.append('finding_requires_quote_or_observed_location:' + finding.finding_id)
+            continue
         if revision_target:
             allowed = set(revision_target["changed_claim_ids"])
             if not set(finding.claim_ids).issubset(allowed):
@@ -361,15 +397,8 @@ def validate_inspection_checks(review, artifacts, messages, *, complete, parsing
         covered[pid].add(check.dimension)
         if check.dimension == 'claim_support':
             claims[pid].update(check.claim_ids)
-    if complete:
-        for pid, scope in manifest.items():
-            missing = set(scope['required_dimensions']) - covered[pid]
-            absent = set(scope['material_claim_ids']) - claims[pid]
-            if missing or absent:
-                errors.append(f'inspection_incomplete:{pid}:dimensions={sorted(missing)}:claims={sorted(absent)}')
-            missing_targets = {row['target_id'] for row in scope['semantic_targets']} - semantic_covered[pid]
-            if missing_targets:
-                errors.append('semantic_paragraphs_unchecked:' + pid + ':' + ','.join(sorted(missing_targets)))
+    # Legacy optional records can be validated on read/import. Their absence is
+    # not evidence of an unchecked financial question and never gates completion.
     if errors:
         raise ValueError(json.dumps({'errors': errors, 'remedy': 'Complete missing source-bound checks or submit incomplete with explicit unfinished scope; no wholesale paper rewrite.'}, ensure_ascii=False))
 
@@ -899,12 +928,12 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
 
     @tool(response_format="content_and_artifact")
     def read_review_location(paper_id: str, field_path: str, offset: int = 0, max_characters: int = 2000) -> tuple[str, dict]:
-        """Read exact current field text for review quote recovery. Use the JSON pointer returned in quote_recovery; copy literal markdown without normalization."""
+        """Read a current field and receive a location_id that binds its version and quote automatically when recording a finding."""
         from .review_inspection import read_location
         try:
             value = read_location(artifacts, paper_id, field_path, offset, max_characters)
         except ValueError as exc:
-            raise ToolException(str(exc) + '; use a field_path from the current quote_recovery window or inspection manifest.') from exc
+            raise ToolException(str(exc) + '; use a field_path from the current paper or quote_recovery window.') from exc
         return json.dumps(value, ensure_ascii=False), value
 
     read_review_location.handle_tool_error = True
@@ -940,6 +969,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
 
     def save_review(review: CaseReview, runtime: ToolRuntime, *, completion=None) -> Command:
         parsing = []
+        proposed = list(review.findings)
         try:
             if audit and audit.source_access_check:
                 audit.source_access_check()
@@ -977,17 +1007,31 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
                 revision_target=revision_target, parsing_records=parsing)
             if confirmation:
                 validate_finding_confirmation(review, confirmation, artifacts)
-            if require_inspection and not revision_target:
-                validate_inspection_checks(review, artifacts, runtime.state['messages'], complete=completion == 'complete',parsing_records=parsing)
+            # Legacy checks remain readable, but their count is not completion.
         except ValueError as exc:
-            return Command(update={"runtime_parsing":[{**r,'operation_status':'rejected'} for r in parsing],
-                "messages": [ToolMessage(content=str(exc), status="error",
+            # A bad sibling does not discard already valid substantive work.
+            # The handoff stays open; this only checkpoints independent findings.
+            retained = {}
+            for finding in proposed:
+                if sum(f.finding_id == finding.finding_id for f in proposed) != 1:
+                    continue
+                partial = CaseReview(summary='Partial finding saved; review handoff is still open.',
+                    assessments=[PaperAssessment(paper_id=finding.paper_id, assessment='Only this finding is checkpointed.')],
+                    findings=[finding])
+                try:
+                    validate_case_review(partial, artifacts, runtime.state['messages'],
+                        paper_ids=[finding.paper_id], require_full_workpaper=False, revision_target=revision_target)
+                except ValueError:
+                    continue
+                retained[finding.finding_id] = partial.findings[0].model_dump(mode='json')
+            return Command(update={"recorded_findings":retained,
+                "runtime_parsing":[{**r,'operation_status':'rejected'} for r in parsing],
+                "messages": [ToolMessage(content=str(exc) + ('\nSaved valid findings: ' + ', '.join(retained) + '. Correct only the reported errors; omit saved findings on resubmission.' if retained else ''), status="error",
                 name="submit_case_review", tool_call_id=runtime.tool_call_id,
                 artifact={'runtime_parsing':[{**r,'operation_status':'rejected'} for r in parsing]})]})
         value = review.model_dump(mode="json")
         runtime_parsing = [{**r,'operation_status':'review_recorded'} for r in parsing]
-        if require_inspection:
-            value['completion'] = completion
+        value['completion'] = completion
         if revision_target:
             value["review_scope"] = {k: revision_target[k] for k in ("kind", "paper_id", "baseline_digest", "current_digest", "changed_claim_ids")}
             value["completion"] = completion
@@ -1001,72 +1045,41 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
     @tool
     def submit_case_review(review: SubmittedCaseReview, runtime: ToolRuntime) -> Command:
         """Submit a complete case review; exact quote/ID/read errors are returned for correction, not accepted."""
-        return save_review(CaseReview.model_validate(review.model_dump(exclude={"completion"})), runtime)
+        return save_review(CaseReview.model_validate(review.model_dump(exclude={"completion"})), runtime, completion=review.completion)
 
     emphasis = ("Your role is Counter: challenge the thesis, demand/competition/supply mechanisms and cross-paper contradictions."
                 if role == "counter" else "Your role is Verifier: inspect material factual/numeric/citation/period consistency and whether conclusions are warranted by actual sources.")
     prompt = REVIEW_PROMPT + emphasis
     if require_inspection and not revision_target:
-        from .review_inspection import INSPECTION_GUIDANCE, inspection_manifest
-        prompt += INSPECTION_GUIDANCE + '\ninspection_manifest=' + json.dumps(inspection_manifest(artifacts), ensure_ascii=False)
-
+        from .review_inspection import REVIEW_GUIDANCE
+        prompt += REVIEW_GUIDANCE
         @tool('submit_case_review')
-        def submit_inspected_review(review: InspectedCaseReview, runtime: ToolRuntime) -> Command:
-            """Submit current-version inspection, saved findings and explicit unfinished work. On the last call include new/corrected findings directly here; no separate save is needed."""
+        def submit_inspected_review(review: ReviewHandoff, runtime: ToolRuntime) -> Command:
+            """Hand back judgments, actionable findings and necessary unfinished checks. No paragraph forms or coverage hashes are required."""
             return save_review(CaseReview.model_validate(review.model_dump(exclude={'completion'})), runtime, completion=review.completion)
 
         submit_case_review = submit_inspected_review
         @tool
-        def record_review_checks(checks: list[SubmittedReviewInspectionCheck | dict[str, Any]], runtime: ToolRuntime) -> Command:
-            """Save a batch of checked locations without closing review. Corrected locations replace older checks of the same paper version. Returns exact remaining coverage; submission still validates all checks."""
-            from .review_check_store import merge_checks, inspection_progress
-            if audit and audit.source_access_check:
-                audit.source_access_check()
-            records=deepcopy(runtime.state.get('recorded_inspections', {}))
-            findings=deepcopy(runtime.state.get('recorded_findings', {}))
-            errors=[];accepted=[]
-            for index,check in enumerate(checks):
-                try:
-                    check=SubmittedReviewInspectionCheck.model_validate(check)
-                    probe = CaseReview(summary='Incremental inspection batch, not final review acceptance.',
-                        assessments=[PaperAssessment(paper_id=p['paper_id'], assessment='Incremental check persistence only; no overall verdict.') for p in artifacts.catalog()['papers']],
-                        findings=[CaseReviewFinding.model_validate(f) for f in findings.values()],
-                        inspection_checks=[check], unresolved_data_requests=['Batch recording is not final review completion.'])
-                    validate_inspection_checks(probe, artifacts, runtime.state['messages'], complete=False)
-                except ValueError as exc:
-                    errors.append({'check_index':index,'error':str(exc)});continue
-                records=merge_checks(records,probe.inspection_checks)
-                findings.update({f.finding_id:f.model_dump(mode='json') for f in probe.findings})
-                accepted.append(index)
-            return Command(update={'recorded_inspections':records,
-                'recorded_findings':findings,
-                'messages':[ToolMessage(
-                content=json.dumps({'saved':len(records),'accepted_check_indices':accepted,'errors':errors,
-                    'remaining':inspection_progress(records, artifacts),
-                    'notice':'Valid entries saved independently. Resend only corrected rejected entries. Saved checks are not final acceptance.'}, ensure_ascii=False),
-                status='error' if errors else 'success',name='record_review_checks', tool_call_id=runtime.tool_call_id)]})
-        @tool
         def read_saved_review_checks(paper_id: str, runtime: ToolRuntime, offset: int=0):
-            """Read up to five exact saved checks of one paper; offset pages through own saved state."""
-            if offset<0:raise ToolException('offset_must_be_nonnegative')
+            """Read legacy reviewer records for reference. They are fallible assessments, never a mandatory checklist or approval."""
+            if offset<0: raise ToolException('offset_must_be_nonnegative')
             rows=[r for r in runtime.state.get('recorded_inspections',{}).values() if r['paper_id']==paper_id]
             return json.dumps({'checks':rows[offset:offset+5],'next_offset':offset+5 if offset+5<len(rows) else None,'total':len(rows)},ensure_ascii=False)
         @tool
         def read_review_history(runtime: ToolRuntime, index: int|None=None, offset: int=0):
-            """List own original public message journal, or read one indexed message in6000character windows. Source tools remain the citation readers; history includes failed attempts, never sibling/private reasoning."""
+            """Read the original public journal on demand. Old workflow instructions and failed checks are historical, not current requirements."""
             from .review_context import history_page
             return json.dumps(history_page(runtime.state['messages'],index=index,offset=offset),ensure_ascii=False)
-        tools = [*tools, read_review_location, record_review_checks, read_saved_review_checks, read_review_history]
+        tools = [*tools, read_review_location, read_saved_review_checks, read_review_history]
         if audit:
             from .review_context import ReviewWorkingContext
-            # One current working view replaces accumulated histories in requests.
-            # Existing successful summary is reused; no new summarizer spend.
             audit.context_summary=None
-            audit.extra_middlewares.append(ReviewWorkingContext(artifacts))
-        prompt += '\nSave inspection_checks incrementally with record_review_checks; unchanged saved checks survive continuation and need not be recopied. Final submit merges them and validates full current-version coverage. research_limitations describes known boundaries of the answer; unresolved_data_requests describes necessary review work still undone. Review can finish with proved findings or clearly scoped research limitations, but never with unchecked required claims.'
+            audit.extra_middlewares.append(ReviewWorkingContext(artifacts, confirmation))
     if confirmation:
-        tools = [*tools, read_review_location]
-        prompt += "\nAssessment scope: assess every paper in findings_to_confirm, plus any other paper for which you choose to submit a new assessment or finding. Each assessed paper needs an actual full-workpaper read. Unchanged unassigned papers need not be reread or assessed."
+        if not any(t.name == 'read_review_location' for t in tools):
+            tools = [*tools, read_review_location]
+        prompt += ("\nFinish the pending whole-case review of every paper; current-version reads remain reusable."
+            if require_inspection else "\nAssessment scope: assess every paper in findings_to_confirm, plus any other paper you assess. Unchanged unassigned papers need not be reread.")
         prompt += " Use read_review_location for bounded exact current wording when an older full-paper result has been archived; a navigation label is not the full text."
         prompt += "\nThis is independent confirmation before Lead's final judgment. Read current papers, all changed locations and related explanations/claims; use original sources for necessary checks. Return finding_checks for EVERY ID in findings_to_confirm, with source-grounded reasons. still_open must reference a current finding ID; unresolved must also be recorded in unresolved_data_requests. Inspect newly introduced issues together. Do not re-run unrelated unchanged research, or accept an author's completed note as proof."
         prompt += "\nA finding_type=clarification is a delivery wording issue, not automatically a wrong financial conclusion. To mark it resolved, supply current_quote and clarity_verdict=clear based on the actual corrected wording. Repeating that the central thesis or arithmetic is supported does not close the clarification. Leave remaining ambiguity still_open with a current actionable finding."
@@ -1129,7 +1142,7 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                 raise ValueError("case_review_run_identity_mismatch")
             saved = (previous_review or {}).get(_role, {}).get("recovery_state")
             if saved:
-                from .review_check_store import restore_checks, restore_findings, inspection_progress
+                from .review_check_store import restore_checks, restore_findings
                 inspections = restore_checks(saved)
                 prior_review = (previous_review or {}).get(_role, {}).get('review') or {}
                 findings = restore_findings(saved, prior_review)
@@ -1137,7 +1150,7 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                     "recorded_findings": findings,
                     "recorded_inspections": inspections,
                     "messages": [*messages_from_dict(saved["messages"]),
-                    HumanMessage(content="Continue this same review using saved reads, findings and version-bound checks. Save new checks in batches; unchanged checks need not be recopied. Known limits of the research answer belong in research_limitations; unfinished necessary verification belongs in unresolved_data_requests. This is a new configured run allowance, not a reset of lifetime usage. Remaining coverage: " + json.dumps(inspection_progress(inspections, artifacts), ensure_ascii=False) + ". Lead assignment (fallible, not source evidence): " + json.dumps((recovery_instructions or {}).get(_role), ensure_ascii=False))],
+                    HumanMessage(content="review_handoff_contract_v2: Continue the same review with saved reads and findings. Legacy paragraph forms and missing-slot lists are historical, not active requirements. Assess the papers, verify significant issues, and hand back findings with genuine unfinished work. No approval is inferred from old records. This allowance preserves lifetime usage. Lead assignment (fallible, not source evidence): " + json.dumps((recovery_instructions or {}).get(_role), ensure_ascii=False))],
                     "review": None}
             return {"messages": [HumanMessage(content=json.dumps({"role": _role, "question": question,
                 "catalog": artifacts.catalog(), "research_handoff": research_handoff, "revision_confirmation": confirmation,
@@ -1173,8 +1186,8 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
         # each reviewer receives its own messages, not sibling reasoning.
         prior = (previous_review or {}).get(role)
         if prior and prior.get("status") == "review_submitted":
-            if require_inspection and not (prior.get('review') or {}).get('inspection_checks'):
-                raise ValueError('legacy_complete_review_requires_new_inspection_no_silent_reuse:' + role)
+            # A same-scope completed review does not become incomplete merely
+            # because it predates optional paragraph records.
             graph.add_node(role, RunnableLambda(lambda state, _role=role, _prior=deepcopy(prior): {_role: _prior}))
         else:
             if prior and not prior.get("recovery_state"):

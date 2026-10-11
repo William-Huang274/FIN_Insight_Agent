@@ -3,6 +3,30 @@ from copy import deepcopy
 from .case_review_agent import case_review_scope_digest
 
 
+def public_review(review):
+    """Lead receives judgments/findings; archived paragraph forms stay local."""
+    return {key: deepcopy(value) for key, value in review.items() if key != 'inspection_checks'}
+
+
+def pending_confirmation_review(state, artifacts):
+    """Recover the newest stopped confirmation, never the pre-repair review."""
+    candidate = state.get('case_review', {})
+    if candidate.get('confirmation_context'):
+        record = {'review': candidate, 'context': candidate['confirmation_context']}
+    elif state.get('research_stop_reason') == 'independent_confirmation_incomplete':
+        record = next((row['output'] for row in reversed(state.get('convergence_history', []))
+            if row.get('actor') == 'independent_workpaper_confirmation'), None)
+        if not record:
+            raise ValueError('pending_confirmation_record_missing')
+    else:
+        return None
+    from .workpaper_changes import paper_versions
+    if (record['review'].get('scope_digest') != case_review_scope_digest(artifacts, state['question'])
+            or record['context']['paper_version_digests'] != paper_versions(artifacts)):
+        raise ValueError('pending_confirmation_requires_current_versions')
+    return deepcopy(record)
+
+
 def review_after_author_changes(review, before, current, question, context):
     """Retain unchanged checks; an edited paper is never approved by old checks.
 
@@ -44,7 +68,7 @@ def review_after_author_changes(review, before, current, question, context):
         saved.pop('request_summary_failure', None)
         saved['messages'] = [*saved.get('messages', []), message_to_dict(HumanMessage(content=
             'Authors revised the current candidate. Historical paper text and findings are NOT the current version. '
-            'Read the changed papers; independently confirm each pending finding and complete all missing case checks. '
+            'Read the changed papers; independently confirm pending findings and finish necessary substantive checks. '
             'Unchanged checks and original source reads remain reusable; no financial finding is automatically closed. '
             + json.dumps({'changed_papers': sorted(changed), 'current_versions': new,
                           'revision_confirmation': context}, ensure_ascii=False)))]
@@ -71,6 +95,8 @@ def public_confirmation(record):
         row = review[role]
         public[role] = {key: deepcopy(row[key]) for key in (
             'status', 'review', 'recorded_findings', 'model_calls', 'tool_calls') if key in row}
+        if public[role].get('review'):
+            public[role]['review'] = public_review(public[role]['review'])
         public[role]['tool_feedback'] = deepcopy(row.get('tool_feedback', [])[-4:])
         public[role]['resumable'] = bool(row.get('recovery_state'))
     return {**{key: deepcopy(record[key]) for key in ('context', 'correction_round') if key in record},
@@ -96,7 +122,6 @@ def review_recovery_handoff(review, artifacts, question):
             feedback.setdefault(f['paper_id'], []).append(item)
         records[role] = {'status': row.get('status'), 'summary': submitted.get('summary'),
             'findings': [deepcopy(item) for items in feedback.values() for item in items if item['reviewer']==role],
-            'inspection_checks': submitted.get('inspection_checks', []),
             'unresolved_data_requests': submitted.get('unresolved_data_requests', []),
             'research_limitations': submitted.get('research_limitations', []),
             'model_calls': row.get('model_calls'), 'tool_calls': row.get('tool_calls'),

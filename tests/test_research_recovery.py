@@ -169,8 +169,8 @@ def test_lead_restores_original_task_before_planning_and_can_supplement_submitte
     def supplement(request):
         calls.append(request)
         return _call(request, "DelegateResearchTasksAction", tasks=[same_branch]) if len(calls) == 1 else _stop(request, ready=True)
-    # A new explicit research request can supplement a submitted branch;
-    # bounded recovery authority cannot create any new task.
+    # Ordinary recovery can supplement a submitted branch using its results;
+    # only an explicitly bounded continuation cannot create new tasks.
     graph, value = _graph(supplement, worker, seed=seed, unfinished_only=False, require_all_branches=False)
     result = graph.invoke(value.model_dump(mode="json"))
     assert result["phase"] == "research_ready_for_review"

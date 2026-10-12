@@ -358,7 +358,7 @@ def build_lead_research_graph(
                          "max_lead_turns": max_lead_turns, "max_lead_tool_actions": tool_limit},
             "workpapers": [workpaper_view(key, value) for key, value in completed(state).items()],
             "allowed_planning_tools": [name for name in planning_tools if not unfinished_only or name != "DelegateResearchTasksAction"],
-            "continuation_policy": ("This is an explicitly bounded continuation. Only original unfinished tasks may run. Do not create any new task, even with a different branch or dependency. Review saved workpapers, then submit a handoff with truthful question coverage; unresolved material scope goes to human attention, not automatic expansion." if unfinished_only else "Preserve submitted work. New tasks must address actual unanswered requirements without repeating completed work."),
+            "continuation_policy": ("The user explicitly restricted this continuation to the original plan. Only original unfinished tasks may run. Do not create any new task, even with a different branch or dependency. Review saved workpapers, then submit a handoff with truthful question coverage; unresolved material scope goes to human attention, not automatic expansion." if unfinished_only else "Preserve submitted work and reuse its evidence. Technical recovery does not freeze the research plan. You may add tasks within the original question and authorized branches to address actual unanswered requirements; explain the gap and reuse relevant completed work rather than repeat it. Existing source permissions, cutoff and execution budgets still apply."),
             "tasks": state["tasks"], "tool_results": state["tool_results"],
             "progress": {"turn_index": len(state["lead_turns"]) + 1,
                          "lead_tool_actions_used": state.get('lead_tool_actions_used', 0),
@@ -519,14 +519,11 @@ def build_lead_research_graph(
                     known = set(seeds) | {task["task_id"] for task in state["tasks"]}
                     if len(ids) != len(set(ids)) or known.intersection(ids):
                         raise ValueError("task_ids_must_be_new_and_unique")
-                    if len(state["tasks"]) + len(ids) > max_tasks:
+                    if len(known) + len(ids) > max_tasks:
                         raise ValueError("delegated_task_capacity_exceeded")
                     for task in action.tasks:
                         if len(task.coverage_obligation_ids) != 1 or not set(task.coverage_obligation_ids).issubset(allowed):
                             raise ValueError("task_requires_one_disclosed_coverage_obligation")
-                        branch_seeds = {key for key, seed in seeds.items() if seed["task"]["branch_id"] in task.coverage_obligation_ids}
-                        if unfinished_only and branch_seeds and not branch_seeds.intersection(task.dependency_ids):
-                            raise ValueError("supplemental_research_must_depend_on_submitted_workpaper")
                         if (task.status not in {"planned", "ready"} or task.required_authority_refs
                                 or not {canonical_capability(ref) for ref in task.requested_capability_refs}.issubset({canonical_capability(ref) for ref in available})
                                 or not set(task.expected_output_kinds).issubset({"branch_notebook", "claim_ledger", "narrative_artifact"})):

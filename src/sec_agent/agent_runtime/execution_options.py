@@ -9,6 +9,10 @@ class ExecutionOptions(BaseModel):
     mode: Literal["standard", "auto", "selected", "single"] = "standard"
     model: Literal["default", "deepseek-v4-flash", "deepseek-v4-pro"] = "default"
     branch_ids: list[str] = Field(default_factory=list, max_length=24)
+    continuation_scope: Literal["original_question", "original_plan"] = Field(
+        default="original_question",
+        description="User-owned continuation scope. Reuse completed work and allow Lead to fill gaps in the original question by default. Set original_plan only when the user explicitly forbids adding tasks to an existing plan; not inferred from saved workpapers or technical recovery.",
+    )
 
     @model_validator(mode="after")
     def scope_shape(self):

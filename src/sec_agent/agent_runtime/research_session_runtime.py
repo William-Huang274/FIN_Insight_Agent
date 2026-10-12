@@ -217,6 +217,10 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         seeds = {paper["task"]["task_id"]: paper for paper in request.get("completed_workpapers", [])}
         recoveries = {row["task_id"]: row["agent_state"] for row in request.get("failed_workpapers", [])
                       if row["task_id"] not in seeds}
+        # Saved progress does not revoke the original research authority.
+        # Only an explicit user run option can freeze an existing plan.
+        unfinished_only = execution.continuation_scope == "original_plan" and bool(
+            seeds or request.get("unfinished_tasks"))
         if environment.get("FINSIGHT_TASK_ATTACHMENTS_ROOT"):
             from sec_agent.research_foundation.task_attachments import task_material_catalog
             from sec_agent.research_foundation.task_asset_updates import task_asset_view
@@ -294,7 +298,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 # Native checkpoints can retain a child queued by an older
                 # planner. Recheck current continuation authority before any
                 # adapter/provider call, not just when creating a new task.
-                if seeds and not helper and task['task_id'] not in {t['task_id'] for t in request.get('unfinished_tasks', [])}:
+                if unfinished_only and not helper and task['task_id'] not in {t['task_id'] for t in request.get('unfinished_tasks', [])}:
                     raise ValueError('continuation_queued_task_outside_original_scope')
                 task_event = {"kind": "task", "task_id": task["task_id"], "actor": task["owner_role"],
                     "objective": task["objective"], "dependency_ids": task["dependency_ids"],
@@ -383,7 +387,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 role_method=studio.method(studio.bindings["lead"]) if studio else None,
                 max_lead_turns=profile["nodes"]["lead"]["limits"]["model_calls"], max_tasks=profile["max_tasks"],
                 max_lead_tool_actions=profile["nodes"]["lead"]["limits"]["tool_calls"],
-                max_parallel_tasks=profile["max_parallel_tasks"], turn_source="provider_model", unfinished_only=bool(seeds)).compile()
+                max_parallel_tasks=profile["max_parallel_tasks"], turn_source="provider_model", unfinished_only=unfinished_only).compile()
             return await graph.ainvoke(bootstrap.graph_input.model_dump(mode="json"), {**config, "recursion_limit": 240})
 
     @asynccontextmanager

@@ -164,7 +164,10 @@ def _coalesce_observation_rows(messages):
     recovery route and reference binding, including authority and revision.
     """
     seen = {}
-    for index, message in enumerate(messages):
+    # New reads remain at their newest location. Older copies become pointers
+    # within the SAME request, never a requirement to reread the source.
+    for index in range(len(messages) - 1, -1, -1):
+        message = messages[index]
         if not isinstance(message, (HumanMessage, ToolMessage)) or getattr(message, "status", None) == "error":
             continue
         try:
@@ -188,13 +191,14 @@ def _coalesce_observation_rows(messages):
             observations = [(key, offset, observation)
                 for key in ("observations", "source_observations")
                 for offset, observation in enumerate(container.get(key, []) if isinstance(container.get(key, []), list) else [])]
-            for key, offset, observation in observations:
-                if not isinstance(observation, dict) or observation.get("kind") != "evidence" or observation.get("status") != "success" or observation.get("failure"):
+            for key, offset, observation in reversed(observations):
+                if not isinstance(observation, dict) or observation.get("kind") not in {"evidence", "finance"} or observation.get("status") != "success" or observation.get("failure"):
                     continue
                 rows = observation.get("content")
                 if not isinstance(rows, list):
                     continue
-                for row_index, row in enumerate(rows):
+                for row_index in range(len(rows) - 1, -1, -1):
+                    row = rows[row_index]
                     if not isinstance(row, dict) or "identical_source_row_at" in row or row.get("result_state") == "typed_gap":
                         continue
                     row_ids = set(_literal_reference_ids(row, include_navigation=True))
@@ -458,6 +462,8 @@ def coalesce_context_snapshots(messages):
         if isinstance(message, HumanMessage) and isinstance(body, dict):
             for key in snapshot_keys:
                 if key in body:
+                    if isinstance(body[key], dict) and 'identical_snapshot_retained_at' in body[key]:
+                        continue
                     identity = (key, json.dumps(body[key], ensure_ascii=False, sort_keys=True))
                     snapshots.setdefault(identity, {"message_index": index, "field": key})
         elif isinstance(body, dict) and isinstance(body.get("current_context"), dict):
@@ -468,6 +474,8 @@ def coalesce_context_snapshots(messages):
         changed = False
         for key in snapshot_keys:
             if key not in context:
+                continue
+            if isinstance(context[key], dict) and 'identical_snapshot_retained_at' in context[key]:
                 continue
             if key not in {"task_context", "submission_to_repair", "progress"} and len(json.dumps(context[key])) < 500:
                 continue
@@ -731,6 +739,8 @@ def _project_restored_context(messages, projected, boundary, retained, *, checkp
         for offset, observation in enumerate(observations):
             if not isinstance(observation, dict):
                 continue
+            if 'content' not in observation and 'observed_reference_ids' in observation:
+                continue  # Already archived: preserve its exact recovery IDs.
             recovery = observation.get("recovery") or {}
             if (observation.get("status") != "success" or observation.get("failure")
                     or observation.get("kind") != "evidence"
@@ -1175,7 +1185,11 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
     pressure = research_input_pressure(encoded, messages, model)
     estimate = pressure["estimated_input_tokens"]
     reserve_chars = pressure["growth_reserve_characters"]
-    if len(encoded) >= max_input_characters - reserve_chars:
+    # Use the normal working-window threshold, not only the hard transport
+    # ceiling. Already consumed, recoverable reads can leave the request even
+    # when the author has not yet saved a valid note. Latest reads, pins, actual
+    # errors and current state remain; no semantic summary or task completion.
+    if estimate >= trigger or len(encoded) >= max_input_characters - reserve_chars:
         projected = pressure_read_history(messages)
         candidate = model._get_request_payload(projected, tools=[schema(t, runtime_context_binding=runtime_context_binding)
             for t in native_tools.values()], tool_choice="auto")

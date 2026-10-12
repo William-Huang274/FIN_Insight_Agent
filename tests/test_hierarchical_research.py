@@ -13,7 +13,7 @@ from test_research_convergence import exercise_case
 def test_domain_helper_has_separate_input_and_source_read_preserves_original_observation():
     child = _seed()
     child['private_history'] = 'PRIVATE_HELPER_HISTORY'
-    inputs, model_inputs = [], []
+    inputs, model_inputs, registered = [], [], []
     spec = {'subtask_id': 'numbers', 'objective': 'Check only the reported metric and its original period, not the entire domain thesis.',
         'success_criteria': ['Preserve the original period and source identity.'],
         'relieved_work': 'Parent will not repeat the initial metric extraction and calculation.',
@@ -43,11 +43,13 @@ def test_domain_helper_has_separate_input_and_source_read_preserves_original_obs
                 'reason_summary': 'Perform only the bounded task or read the exact saved artifact.'}}]}
     ports = _ToolPorts()
     graph = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
-        model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance, subtask_runner=helper)).compile()
+        model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance, subtask_runner=helper,
+        restore_source_observations=registered.extend)).compile()
     result = graph.invoke(_input(), {'recursion_limit': 25})
     assert len(inputs) == 1 and not ports.calls
     assert result['delegated_work']['numbers']['result']['private_history'] == 'PRIVATE_HELPER_HISTORY'
     assert result['notebook']['model_turn_count'] == 4
+    assert registered == [child['notebook']['observations'][0]]
 
 
 def test_integrated_route_now_includes_lead_decision_and_final_judgment_when_enabled():
@@ -62,7 +64,7 @@ def test_helper_default_overview_and_paged_originals_allow_local_read_correction
     from test_research_session import _new_worker_fixture
     child = _new_worker_fixture()
     child['private_history'] = 'PRIVATE_HELPER_HISTORY'
-    requests, selected = [], []
+    requests, selected, registered = [], [], []
     spec = {'subtask_id': 'numbers', 'objective': 'Read the reported metric and original period.',
         'success_criteria': ['Explain the assigned metric with its source.'],
         'relieved_work': 'Parent reuses this extraction.',
@@ -89,6 +91,7 @@ def test_helper_default_overview_and_paged_originals_allow_local_read_correction
                 assert not request['notebook']['observations']
                 args.update(section='sources', limit=1)
             elif n == 5:
+                assert not registered  # Catalog/overview are not original evidence.
                 body = json.loads(request['tool_results'][0]['content'])
                 assert len(body['sources']) == 1 and not body['source_observations']
                 selected.extend(body['read_page']['arguments']['source_ids'])
@@ -99,6 +102,7 @@ def test_helper_default_overview_and_paged_originals_allow_local_read_correction
                 originals = body['source_observations']
                 assert originals and all(obs in child['notebook']['observations'] for obs in originals)
                 assert request['notebook']['observations'] == originals
+                assert registered == originals
                 return {'action': 'request_human_review', 'context_digest': request['context_digest'],
                     'reason_summary': 'Paged source restoration and local correction checked.', 'blocker_code': 'fixture_done'}
         return {'action': 'native_tool_batch', 'context_digest': request['context_digest'], 'tool_calls': [{
@@ -107,7 +111,7 @@ def test_helper_default_overview_and_paged_originals_allow_local_read_correction
     ports = _ToolPorts()
     graph = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
         model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance,
-        subtask_runner=lambda *args: deepcopy(child))).compile()
+        subtask_runner=lambda *args: deepcopy(child), restore_source_observations=registered.extend)).compile()
     result = graph.invoke({**_input(), 'max_model_turns': 8}, {'recursion_limit': 40})
     assert result['notebook']['model_turn_count'] == 6 and not ports.calls
 

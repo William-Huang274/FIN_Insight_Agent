@@ -1631,17 +1631,10 @@ class DeepSeekStructuredAgentAdapter:
             if isinstance(current_model, ReasoningPreservingChatDeepSeek):
                 from .model_context import research_checkpoint_request
                 budget_role = "specialist" if model_purpose in {"verifier", "repair"} else model_purpose
-                try:
-                    messages, native_tools, checkpoint_notice = research_checkpoint_request(messages,
-                        model=current_model, native_tools=native_tools, runtime_context_binding=runtime_context_binding,
-                        schema=_native_function_schema,
-                        max_input_characters=self._config.token_budget_basis[budget_role].max_input_characters)
-                except ValueError as exc:
-                    if str(exc) not in {"research_context_checkpoint_insufficient", "research_context_checkpoint_not_resolved"}:
-                        raise
-                    audit({"event": "outcome", "status": "blocked_before_transport_context_checkpoint",
-                        "reason": str(exc), "actor": actor, "call_id": call_id, "provider_call_attempted": False})
-                    raise DeepSeekStructuredAgentError(str(exc)) from None
+                messages, native_tools, checkpoint_notice = research_checkpoint_request(messages,
+                    model=current_model, native_tools=native_tools, runtime_context_binding=runtime_context_binding,
+                    schema=_native_function_schema,
+                    max_input_characters=self._config.token_budget_basis[budget_role].max_input_characters)
             semantic_json = json.dumps([_audit_value(m) for m in messages], ensure_ascii=False)
         input_characters = len(semantic_json)
         input_utf8_bytes = len(semantic_json.encode("utf-8"))

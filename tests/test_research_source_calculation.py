@@ -63,6 +63,28 @@ def test_native_saved_observations_restore_calculator_without_rereading_or_promo
     asyncio.run(run())
 
 
+def test_live_handoff_registers_sources_in_existing_calculator_session():
+    from sec_agent.research_foundation.source_bound_calculator import ObservedSourceRegistry
+    async def run():
+        registry = ObservedSourceRegistry()
+        async with Client(_build_server(source_registry=registry), raise_exceptions=False) as client:
+            assert (await client.call_tool('calculate_research_metric', {'request': CALCULATION})).is_error
+            body = source_reader(request=SourceDocumentRequest(operation='read', document_id=NODE['parent_document_id'])).model_dump(mode='json')
+            observations = [{'kind': 'evidence', 'status': 'success', 'content': body['items']}]
+            registry.restore([{**observations[0], 'status': 'tool_failure'}])
+            assert (await client.call_tool('calculate_research_metric', {'request': CALCULATION})).is_error
+            registry.restore(observations)
+            result = await client.call_tool('calculate_research_metric', {'request': CALCULATION})
+            assert not result.is_error, result.content
+            assert result.structured_content['value_decimal'] == '617.25'
+            assert result.structured_content['numeric_fact_authority'] is False
+            # Returned copies cannot mutate the host registry or another actor.
+            registry.get(PASSAGE_ID)['passage'] = 'changed'
+            assert registry.get(PASSAGE_ID)['passage'] == TEXT
+            assert ObservedSourceRegistry().get(PASSAGE_ID) is None
+    asyncio.run(run())
+
+
 def test_read_passage_calculate_native_report_and_preserved_revision(artifacts):
     async def run():
         server = _build_server(case_artifacts=artifacts, source_document_reader=source_reader)

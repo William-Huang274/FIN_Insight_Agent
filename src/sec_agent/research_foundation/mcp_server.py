@@ -166,13 +166,14 @@ class ResearchDataMCPDependencies:
     case_artifacts: Any | None = None
     # Host-restored native task observations; never accepted from model input.
     restored_observations: Sequence[Mapping[str, Any]] = ()
+    source_registry: Any | None = None
 
 
 def build_research_data_mcp_server(
     dependencies: ResearchDataMCPDependencies,
     *, role_method_reader=None, source_access_check=None,
 ) -> Any:
-    """Build the thin MCP v2 surface used by the DELL reference vertical.
+    """Build the thin MCP v2 surface for the active research composition.
 
     Evidence admission, NumericFact authority and local knowledge ranking remain in
     the injected FIN services. External discovery and capture return candidates,
@@ -217,13 +218,13 @@ def build_research_data_mcp_server(
     # already persisted in the agent's native ToolMessages. A new composition
     # must re-query or receive its case archive; never accept a model-supplied
     # number as an observed fact.
-    from .source_bound_calculator import source_items_from_tool, register_source_calculator_tool
-    from .source_bound_calculator import source_items_from_observations
-    observed_sources = source_items_from_observations(dependencies.restored_observations)
+    from .source_bound_calculator import ObservedSourceRegistry, register_source_calculator_tool
+    source_registry = dependencies.source_registry or ObservedSourceRegistry()
+    source_registry.restore(dependencies.restored_observations)
 
     def remember_sources(tool_name, result):
         body = result if isinstance(result, dict) else result.model_dump(mode="json")
-        observed_sources.update(source_items_from_tool(tool_name, body))
+        source_registry.remember(tool_name, body)
         return result
 
     @server.tool(name="get_research_method",
@@ -578,8 +579,9 @@ def build_research_data_mcp_server(
         return await dependencies.external_capture.capture(request)
 
     def calculation_source(source_id):
-        if source_id in observed_sources:
-            return dict(observed_sources[source_id])
+        item = source_registry.get(source_id)
+        if item is not None:
+            return item
         if dependencies.case_artifacts is not None:
             return dependencies.case_artifacts.source_item(source_id)
         raise ValueError("source_id_not_observed_in_this_tool_session")

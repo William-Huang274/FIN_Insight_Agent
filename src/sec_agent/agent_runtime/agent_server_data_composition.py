@@ -160,6 +160,7 @@ class ApprovedDataComposition:
     network_calls_authorized: bool = False
     paid_calls_authorized: bool = False
     method_reader: Any = None
+    restore_source_observations: Any = None
 
 
 @contextmanager
@@ -408,6 +409,8 @@ def open_approved_data_composition(
                 import inspect
                 return await value if inspect.isawaitable(value) else value
 
+        from sec_agent.research_foundation.source_bound_calculator import ObservedSourceRegistry
+        source_registry = ObservedSourceRegistry(restored_observations)
         server = build_research_data_mcp_server(
             ResearchDataMCPDependencies(
                 method_reader=FoundationMethodReader(runtime_foundation),
@@ -419,7 +422,7 @@ def open_approved_data_composition(
                 external_capture=capture,  # type: ignore[arg-type]
                 source_document_reader=source_reader,
                 case_artifacts=case_artifacts,
-                restored_observations=restored_observations,
+                source_registry=source_registry,
             ), role_method_reader=role_method_reader, source_access_check=source_access_check,
         )
     except ApprovedDataCompositionError:
@@ -465,6 +468,7 @@ def open_approved_data_composition(
                 local_candidate_count=inventory.local_candidate_count,
                 mcp_server=server,
                 method_reader=opened_adapter.read_research_method,
+                restore_source_observations=source_registry.restore,
                 network_calls_authorized=live_web_read_enabled,
                 reviewed_topic_refs_by_branch={
                     branch_id: tuple(

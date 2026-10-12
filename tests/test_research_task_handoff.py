@@ -91,12 +91,15 @@ def test_native_dependency_read_is_citable_without_inheriting_author_interpretat
         return {'action': 'request_human_review', 'context_digest': request['context_digest'],
                 'reason_summary': '离线接口验证结束', 'blocker_code': 'offline_complete'}
     ports = _ToolPorts()
+    restored_sources = []
     graph = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
         model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
+        restore_source_observations=lambda rows: restored_sources.extend(deepcopy(rows)),
         dependency_reader=DependencyReader({dep: seed}))).compile()
     result = graph.invoke(initial.model_dump(mode='json'))
     assert len(calls) == (3 if repeat_read else 2) and not ports.calls
     assert result['notebook']['observations'] == seed['notebook']['observations']
+    assert restored_sources[:len(seed['notebook']['observations'])] == seed['notebook']['observations']
     assert result['notebook']['tool_action_count'] == 1
     wire = _project_agentic_specialist_request(calls[0])
     assert wire['task_context']['dependency_workpapers'][0]['read']['arguments']['task_id'] == dep

@@ -31,7 +31,7 @@ from .research_contracts import ProviderEvidenceIntent
 from .task_outcome import AuthorTaskNote, TaskCoverage
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
 from .authoring_context import PrepareWorkpaperAction, bind_authoring, validate_authoring, specialist_basis, stage_methods
-from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools, merge_research_subtasks, accepted_context_checkpoint
+from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools, apply_working_state, accepted_context_checkpoint
 from .source_check_scope import RequiredSourceCheck, SOURCE_CHECK_GUIDANCE, source_check_progress, source_check_errors
 from .workpaper_revision_state import revision_state, revision_progress, revision_submission_issues
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
@@ -1119,6 +1119,7 @@ class SpecialistAgenticDependencies:
     authoring_domain: str = 'finance'
     lead_assistance: Callable | None = None
     dependency_reader: Callable | None = None
+    restore_source_observations: Callable | None = None
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
@@ -1970,14 +1971,6 @@ def build_specialist_agentic_state_graph(
             # no partial model response is promoted; native state is retained.
             from .deepseek_structured_agents import DeepSeekStructuredAgentError
             if isinstance(exc, DeepSeekStructuredAgentError) and str(exc) in {
-                "research_context_checkpoint_insufficient", "research_context_checkpoint_not_resolved",
-                "research_context_checkpoint_input_limit_exceeded"}:
-                signal = {"status": "blocked", "notice": str(exc), "consecutive_no_new_observations": 0}
-                if dependencies.lead_assistance and not any(h.get("context_checkpoint_blockage") for h in state.get("lead_assistance_history", [])):
-                    return {"pending_action": None, "phase": "lead_assistance_required", "runtime_progress": signal}
-                return {"pending_action": None, "phase": "human_review_required", "review_trigger": "model_request",
-                    "review_reason": "research_context_checkpoint_unresolved", "runtime_progress": signal}
-            if isinstance(exc, DeepSeekStructuredAgentError) and str(exc) in {
                 "deepseek_specialist_input_character_limit_exceeded",
                 "deepseek_specialist_single_call_failed",
                 "provider_output_truncated_no_partial_promotion",
@@ -2682,16 +2675,8 @@ def build_specialist_agentic_state_graph(
                         action = action.model_copy(update={"checkpoint": pending.get("checkpoint", False)})
                     except (ValueError, TypeError, jsonpatch.JsonPatchException, jsonpatch.JsonPointerException) as error:
                         return reject("working_state_repair_invalid", str(error), agent_error=True)
-                note = proposal.model_dump(mode="json")
                 prior_note = working.get("research_working_state") or {}
-                try:
-                    note["subtasks"] = merge_research_subtasks(prior_note,
-                        [t.model_dump(mode="json", exclude_unset=True) for t in proposal.subtasks])
-                except ValueError as error:
-                    return reject("working_state_subtask_update_invalid", str(error), agent_error=True)
-                if note["phase_status"] == "completed" and any(
-                        t["status"] not in {"completed", "split"} for t in note["subtasks"]):
-                    return reject("working_state_subtasks_unfinished", "Subtasks remain unfinished; keep phase_status working.", agent_error=True)
+                note, update_issues = apply_working_state(proposal, prior_note)
                 note, reference_repairs, reference_issues = repair_working_references(note, observed)
                 # These are the author's CURRENT lists, not append-only ledgers.
                 # Complete previous versions remain in native model/tool history.
@@ -2701,7 +2686,10 @@ def build_specialist_agentic_state_graph(
                 working['lead_assistance_acknowledged'] = len(working.get('lead_assistance_history', []))
                 if release:
                     working["context_releases"] = [*working.get("context_releases", []), release]
-                working["pending_working_state_update"] = None
+                draft = proposal.model_dump(mode='json', exclude_unset=True)
+                working["pending_working_state_update"] = ({"working_state": draft,
+                    "digest": canonical_sha256(draft), "checkpoint": action.checkpoint,
+                    "issues": update_issues} if update_issues else None)
                 working["research_context_checkpoint_accepted"] = action.checkpoint
                 digest = _semantic_action_digest(action)
                 if digest not in before.dispatched_action_digests:
@@ -2710,6 +2698,13 @@ def build_specialist_agentic_state_graph(
                 working["notebook"] = before.model_dump(mode="json")
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({"accepted": True,
                     "working_state": note, "checkpoint": action.checkpoint,
+                    "update_issues": update_issues,
+                    "pending_update_digest": canonical_sha256(draft) if update_issues else None,
+                    "subtask_batch_applied": not any(issue['location'][0] == 'subtasks' for issue in update_issues),
+                    "working_state_update": {"accepted": True, "state_unchanged": False,
+                        "pending_update_digest": canonical_sha256(draft) if update_issues else None,
+                        "issues": update_issues,
+                        "next_action": "Narrative saved. Correct only pending task fields with edits if needed; research and context organization can continue."},
                     "reference_repairs": reference_repairs, "reference_issues": reference_issues,
                     "context_release": release,
                     "notice": "Current author state replaced; older versions remain archived. This is not evidence or independent verification. Continue the research; budgets unchanged."}, ensure_ascii=False))
@@ -2722,6 +2717,8 @@ def build_specialist_agentic_state_graph(
                 except (ValueError, KeyError) as exc:
                     return reject('specialist_dependency_read_invalid', str(exc), agent_error=True)
                 known = {obs.observation_digest for obs in before.observations}
+                if dependencies.restore_source_observations:
+                    dependencies.restore_source_observations([obs.model_dump(mode='json') for obs in restored])
                 working['dependency_readbacks'] = {**working.get('dependency_readbacks', {}),
                     **{obs.observation_digest: {'read_tool': 'ReadDependencyWorkAction',
                         'arguments': action.model_dump(mode='json', exclude={'context_digest'}),
@@ -2785,6 +2782,8 @@ def build_specialist_agentic_state_graph(
                             known = {o.observation_digest for o in before.observations}
                             added = tuple(SpecialistToolObservation.model_validate_json(json.dumps(obs))
                                 for obs in restored if obs['observation_digest'] not in known)
+                            if dependencies.restore_source_observations:
+                                dependencies.restore_source_observations([obs.model_dump(mode='json') for obs in added])
                             if added:
                                 before = _replace_notebook(before, observations=(*before.observations, *added))
                             payload['source_observations'] = restored
@@ -2799,6 +2798,8 @@ def build_specialist_agentic_state_graph(
                             if observation is None:
                                 return reject("specialist_subtask_source_unknown", "Copy a source_observation_ref from that helper's source catalog.")
                             source = SpecialistToolObservation.model_validate_json(json.dumps(observation))
+                            if dependencies.restore_source_observations:
+                                dependencies.restore_source_observations([source.model_dump(mode='json')])
                             if source.observation_digest not in {o.observation_digest for o in before.observations}:
                                 before = _replace_notebook(before, observations=(*before.observations, source))
                             payload = {"references": observation["references"], "content": observation["content"],
@@ -3084,8 +3085,6 @@ def build_specialist_agentic_state_graph(
     def consult_lead(state, config: RunnableConfig):
         from .research_assistance import ResearchGuidance
         guidance = ResearchGuidance.model_validate(dependencies.lead_assistance(state, config)).model_dump(mode="json")
-        if state.get("runtime_progress", {}).get("notice", "").startswith("research_context_checkpoint_"):
-            guidance["context_checkpoint_blockage"] = True
         updates = {"lead_assistance_history": [*state.get("lead_assistance_history", []), guidance],
             "runtime_progress": {"consecutive_no_new_observations": 0, "status": "lead_guidance_received",
                 "notice": "Lead advice is not evidence; follow its scoped recovery plan with original sources. Counts and budget were not reset."},

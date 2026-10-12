@@ -102,6 +102,27 @@ def source_items_from_observations(observations) -> dict[str, dict]:
     return deepcopy(sources)
 
 
+class ObservedSourceRegistry:
+    """One composition's sources, shared by readers and trusted task handoffs.
+
+    This is a projection of original receipts, not a new evidence store. Only
+    host code restores observations; no model-facing registration tool exists.
+    """
+
+    def __init__(self, observations=()):
+        self._sources = source_items_from_observations(observations)
+
+    def restore(self, observations):
+        self._sources.update(source_items_from_observations(observations))
+
+    def remember(self, tool_name, body):
+        self._sources.update(source_items_from_tool(tool_name, body))
+
+    def get(self, source_id):
+        item = self._sources.get(source_id)
+        return deepcopy(item) if item is not None else None
+
+
 def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Callable[[str], dict]) -> dict:
     values, bindings = {}, {}
     for name, operand in request.operands.items():

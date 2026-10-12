@@ -102,6 +102,7 @@ def _build_server(
     case_artifacts=None,
     source_document_reader=None,
     restored_observations=(),
+    source_registry=None,
 ):
     guard = PublicURLGuard(resolver=lambda _host: ("93.184.216.34",))
     discovery = ExternalSourceDiscovery(
@@ -252,7 +253,7 @@ def _build_server(
             external_capture=capture,
             case_artifacts=case_artifacts,
             source_document_reader=source_document_reader,
-            restored_observations=restored_observations,
+            restored_observations=restored_observations, source_registry=source_registry,
             legacy_reviewed_evidence_cell_reader=(
                 legacy_evidence_reader if include_legacy else None
             ),

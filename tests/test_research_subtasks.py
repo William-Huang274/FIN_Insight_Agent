@@ -183,8 +183,8 @@ def test_native_flags_unknown_subtask_sources_but_rejects_premature_phase_comple
         return
     assert result["research_working_state"]["subtasks"] == [task("remaining")]
     receipt = json.loads(requests[-1]['tool_results'][0]['content'])['working_state_update']
-    assert receipt['accepted'] is False and receipt['batch_applied'] is False
-    assert receipt['state_unchanged'] is True
+    assert receipt['accepted'] is True and receipt['state_unchanged'] is False
+    assert result['research_working_state']['phase_status'] == 'working'
     assert receipt['pending_update_digest']
     assert 'edits' in receipt['next_action']
 
@@ -219,11 +219,15 @@ def test_rejected_parent_update_keeps_migrations_atomic_before_followup_read():
         if len(requests) == 2: return update(request, rejected)
         if len(requests) == 3:
             receipt = json.loads(request['tool_results'][0]['content'])
-            assert receipt['working_state_update']['batch_applied'] is False
-            assert "'parent'" in receipt['feedback'][0]['message']
-            assert "'child'" in receipt['feedback'][0]['message']
+            assert receipt['accepted'] is True and receipt['subtask_batch_applied'] is False
+            assert "'parent'" in receipt['update_issues'][0]['message']
+            assert "'child'" in receipt['update_issues'][0]['message']
             current = request['task_context']['research_working_state']
-            assert current['subtasks'] == [] and current['open_questions'] == [question]
+            assert current['subtasks'] == [] and current['open_questions'] == []
+            # The author's current narrative replaces stale text. The rejected
+            # migration remains exact and repairable, never marked complete.
+            pending = request['task_context']['pending_working_state_update']
+            assert pending['working_state']['subtasks'][0]['migrated_questions'] == [question]
             return update(request, corrected)
         if len(requests) == 4:
             current = request['task_context']['research_working_state']

@@ -82,6 +82,18 @@ def test_pressure_keeps_failed_and_unrecoverable_results():
     assert pressure_read_history(rows) == rows
 
 
+def test_normal_working_window_releases_consumed_reads_before_hard_ceiling():
+    rows = [HumanMessage(content='Original assignment'), *source_messages('OLD'), *source_messages('LATEST')]
+    rows[2].content = json.dumps({'passage_id': 'OLD', 'passage': 'old read ' * 14000})
+    original = deepcopy(rows)
+    projected, tools, _ = research_checkpoint_request(rows, model=model(research_checkpoint_tokens=10000),
+        native_tools={'UpdateResearchStateAction': UpdateResearchStateAction}, runtime_context_binding=True,
+        schema=_native_function_schema, max_input_characters=2000000)
+    assert 'Older read result omitted' in projected[2].content
+    assert projected[4] == rows[4] and projected[0] == rows[0]
+    assert set(tools) == {'UpdateResearchStateAction'} and rows == original
+
+
 def test_pressure_restored_reads_keep_current_errors_actions_and_exact_recovery():
     from sec_agent.agent_runtime.model_context import pressure_read_history
     observation = {'kind': 'evidence', 'status': 'success', 'content': [{'passage': 'Saved original', 'ref_id': 'OLD'}],
@@ -317,13 +329,14 @@ def test_actual_sdk_checkpoint_then_continuation_preserves_readers_and_originals
     with httpx.Client(transport=httpx.MockTransport(serve)) as client:
         chat=model(http_client=client,research_checkpoint_tokens=140000)
         initial,tools,pressure=request_checkpoint(rows,chat)
-        assert pressure
+        assert pressure is None  # Recoverable history leaves at the normal window threshold.
         chat.bind_tools([_native_function_schema(t,runtime_context_binding=True) for t in tools.values()]).invoke(initial)
         rows += checkpoint_message(working_note(phase_status="working",findings=[],retain_source_ids=[]))
         continuation,tools,pressure=request_checkpoint(rows,chat)
         assert pressure is None
         chat.bind_tools([_native_function_schema(t,runtime_context_binding=True) for t in tools.values()]).invoke(continuation)
-    assert "Original recoverable historical source." in json.dumps(captured[0])
+    assert "Original recoverable historical source." not in json.dumps(captured[0])
+    assert "SOURCE-C" in json.dumps(captured[0]) and "read_tool" in json.dumps(captured[0])
     assert "Original recoverable historical source." not in json.dumps(captured[1])
     assert "SOURCE-C" in json.dumps(captured[1]) and "read_tool" in json.dumps(captured[1])
     assert "Annual composition remains unknown" in json.dumps(captured[1])
@@ -372,8 +385,8 @@ def test_checkpoint_archive_never_splits_pending_calls_and_keeps_error_text():
     assert json.loads(projected[1].content)['original_content'] == rows[1].content
 
 
-@pytest.mark.parametrize("reason", ["research_context_checkpoint_insufficient", "research_context_checkpoint_input_limit_exceeded"])
-def test_context_blockage_notifies_lead_once_and_never_restarts_the_expert_allowance(reason):
+@pytest.mark.parametrize("reason", ["deepseek_specialist_input_character_limit_exceeded", "deepseek_specialist_single_call_failed"])
+def test_actual_execution_failure_preserves_state_without_automatic_lead_or_paid_retry(reason):
     ports=_ToolPorts();helps=[];calls=[]
     def turn(request):
         calls.append(request)
@@ -386,8 +399,8 @@ def test_context_blockage_notifies_lead_once_and_never_restarts_the_expert_allow
     graph=build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(model_turn=turn,
         evidence_tool=ports.evidence,finance_tool=ports.finance,working_state_enabled=True,lead_assistance=help)).compile()
     result=graph.invoke(_input(),{"recursion_limit":20})
-    assert len(helps)==1 and len(calls)==2
-    assert result["review_reason"]=="research_context_checkpoint_unresolved"
+    assert len(helps)==0 and len(calls)==1
+    assert result["review_reason"]==reason
     assert result["notebook"]["model_turn_count"]==0  # both blocks were pre-transport
 
 

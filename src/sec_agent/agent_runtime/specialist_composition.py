@@ -1178,6 +1178,7 @@ def _open_specialist_composition(
                 return approved.dependencies.evidence_tool(ToolLaneTask(lane="evidence", task=bound).model_dump(mode="json"))
 
             dependencies = SpecialistAgenticDependencies(
+                restore_source_observations=approved.restore_source_observations,
                 dependency_reader=dependency_reader,
                 subtask_runner=subtask_runner,
                 working_state_enabled=working_state_enabled,

@@ -49,8 +49,9 @@ class ResearchWorkingState(BaseModel):
     open_questions: list[str] = Field(default_factory=list,
         description="Current unresolved questions; replaces the prior list. Preserve meaningful remaining work, not stale unread wording.")
     resolved_questions: list[ResolvedResearchQuestion] = Field(default_factory=list)
-    subtasks: list[ResearchSubtaskUpdate] = Field(default_factory=list,
-        description="Changed/new subtask records only; host upserts by task_id and returns the full current list. Omitted tasks stay unchanged. Split progressively using parent_id and status=split; update progress yourself after meaningful research. No new worker, scope or budget.")
+    subtasks: list[dict[str, Any]] = Field(default_factory=list,
+        json_schema_extra={"items": ResearchSubtaskUpdate.model_json_schema()},
+        description="Changed/new subtask records only; host validates and upserts by task_id. If task records fail, the current narrative still saves; the task batch stays pending with precise issues. Omitted tasks stay unchanged. No new worker, scope or budget.")
     next_step: str = Field(min_length=1, max_length=2000)
     last_task_detail: str = Field(min_length=1, max_length=4000,
         description="What was just investigated, actual outcome, unresolved issues and the precise continuation; not hidden reasoning.")
@@ -125,6 +126,7 @@ WORKING_STATE_GUIDANCE = (
     "At a useful research boundary or a context-size reminder, set checkpoint=true "
     "to archive completed history, keeping phase_status=working if unfinished. A rejected update returns a "
     "pending_update_digest: repair only affected fields with edits or submit a replacement draft. "
+    "Invalid subtask updates stay pending without blocking the valid narrative or its context checkpoint. "
     "Saving a note does not complete research or reset budget. Continue investigating what can change the answer."
 )
 
@@ -152,6 +154,7 @@ def merge_research_subtasks(prior, updates):
     if len({t["task_id"] for t in updates}) != len(updates):
         raise ValueError("Duplicate subtask IDs in one update; submit each changed task once.")
     for update in updates:
+        update = ResearchSubtaskUpdate.model_validate(update).model_dump(mode='json', exclude_unset=True)
         old = tasks.get(update["task_id"], {})
         task = {**deepcopy(old), **deepcopy(update)}
         task = ResearchSubtask.model_validate(task).model_dump(mode="json")
@@ -168,10 +171,49 @@ def merge_research_subtasks(prior, updates):
         if bool(children) != (task["status"] == "split"):
             raise ValueError(f"Subtask {task['task_id']!r} has status {task['status']!r} and children "
                 f"{[t['task_id'] for t in children]!r}. A split task needs children; "
-                "a task with children must be marked split. The entire update was rejected.")
+                "a task with children must be marked split. The subtask batch was not applied.")
         if task["status"] == "completed" and (not task["result"].strip() or not task["source_ids"]):
             raise ValueError(f"Completed subtask {task['task_id']!r} needs a nonempty result and source_ids supporting that result; copy the observed IDs even if already in findings. Status is not verification.")
     return list(tasks.values())
+
+
+def apply_working_state(proposal, prior):
+    """Save a valid author's narrative independently of task-table validation.
+
+    The hierarchy is atomic; an invalid task batch never corrupts earlier task
+    records. Preserve the exact pending proposal for local repair. Neither a
+    saved note nor a completed subtask is financial verification.
+    """
+    from copy import deepcopy
+    from pydantic import ValidationError
+    note = proposal.model_dump(mode='json')
+    issues = []
+    updates = []
+    existing = {task['task_id']: task for task in prior.get('subtasks', [])}
+    for index, task in enumerate(proposal.subtasks):
+        try:
+            update = ResearchSubtaskUpdate.model_validate(task).model_dump(mode='json', exclude_unset=True)
+            ResearchSubtask.model_validate({**existing.get(update['task_id'], {}), **update})
+            updates.append(update)
+        except ValidationError as exc:
+            issues.extend({'location': ['subtasks', index, *row['loc']], 'type': row['type'], 'message': row['msg']}
+                          for row in exc.errors(include_input=False, include_context=False, include_url=False))
+    try:
+        if not issues:
+            note['subtasks'] = merge_research_subtasks(prior, updates)
+    except ValidationError as exc:
+        issues = [{'location': ['subtasks', *row['loc']], 'type': row['type'], 'message': row['msg']}
+                  for row in exc.errors(include_input=False, include_context=False, include_url=False)]
+    except ValueError as exc:
+        issues = [{'location': ['subtasks'], 'type': 'subtask_hierarchy_invalid', 'message': str(exc)}]
+    if issues:
+        note['subtasks'] = deepcopy(prior.get('subtasks', []))
+    if note['phase_status'] == 'completed' and (issues or any(
+            t['status'] not in {'completed', 'split'} for t in note['subtasks'])):
+        note['phase_status'] = 'working'
+        issues.append({'location': ['phase_status'], 'type': 'working_state_subtasks_unfinished',
+                       'message': 'Narrative saved; completion not accepted while task updates are invalid or tasks unfinished.'})
+    return note, issues
 
 
 def observed_sources(notebook):

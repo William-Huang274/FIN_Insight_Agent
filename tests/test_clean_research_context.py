@@ -36,7 +36,9 @@ def test_saved_source_rows_dedupe_without_merging_changed_authority_or_period():
     original = deepcopy(messages)
     result = project_tool_history(messages, policy='task_boundary')
     rows = json.loads(result[-1].content)['result']['source_observations']
-    assert rows[0]['content'][0]['identical_source_row_at']['field'] == 'result.source_observations[0].content[0]'
+    assert rows[0] == source
+    older = json.loads(result[1].content)['result']['source_observations'][0]
+    assert older['content'][0]['identical_source_row_at']['field'] == 'result.source_observations[0].content[0]'
     assert rows[1] == changed and rows[2] == revised
     assert rows[0]['content'][1] == source['content'][1]
     assert messages == original
@@ -58,6 +60,30 @@ def test_source_pin_does_not_pin_unrelated_originals_and_latest_read_stays_compl
     assert 'ReadDependencyWorkAction' in packet['context_recovery']
     assert json.loads(result[3].content)['result']['source_observations'] == [latest]
     assert messages == original
+
+
+def test_snapshot_pointers_do_not_become_new_deduplication_targets():
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    snapshot = {'observations': ['same source and scope ' * 100]}
+    rows = [ToolMessage(name='read', tool_call_id=str(n), content=json.dumps({
+        'current_context': {'progress': snapshot}})) for n in range(5)]
+    first = coalesce_context_snapshots(rows)
+    assert coalesce_context_snapshots(first) == first
+    for row in first[1:-1]:
+        assert json.loads(row.content)['current_context']['progress'][
+            'identical_snapshot_retained_at']['tool_call_id'] == '0'
+
+
+def test_saved_recovery_ids_survive_repeated_projection():
+    saved = {'kind': 'evidence', 'status': 'success', 'observed_reference_ids': ['OLD'],
+        'recovery': {'read_tool': 'ReadSavedResearchAction', 'arguments': {'section': 'observation'},
+                     'saved_observation_id': 'digest', 'batch_turn': 1}}
+    rows = [HumanMessage(content=json.dumps({'progress': {'observations': [saved]}})),
+        *read('new', [observation('NEW', 'Current original ' * 100)]),
+        *checkpoint_message(working_note(phase_status='working', findings=[], retain_source_ids=[]))]
+    projected = project_tool_history(rows, policy='task_boundary')
+    assert json.loads(projected[0].content)['progress']['observations'][0] == saved
+    assert project_tool_history(projected, policy='task_boundary') == projected
 
 
 def test_flat_note_is_normalized_but_conflicting_or_unknown_fields_are_not_discarded():

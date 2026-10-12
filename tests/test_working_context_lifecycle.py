@@ -85,3 +85,34 @@ def test_schema_failure_can_be_fixed_without_resending_note():
     assert result['research_working_state']['phase_status'] == 'working'
     assert result['pending_working_state_update'] is None
     assert not ports.calls
+
+
+def test_task_field_error_saves_narrative_allows_read_and_accepts_local_repair():
+    ports = _ToolPorts(); requests = []
+    note = working_note(phase_status='working', findings=[], retain_source_ids=[],
+        last_task_detail='New research understanding retained despite a task field typo.',
+        subtasks=[{'task_id': 'x', 'status': 'in_progress', 'result_note': 'Exact pending draft'}])
+    def turn(req):
+        requests.append(req)
+        if len(requests) == 1:
+            return update(req, note)
+        if len(requests) == 2:
+            receipt = json.loads(req['tool_results'][0]['content'])
+            assert receipt['accepted'] and receipt['checkpoint'] and not receipt['subtask_batch_applied']
+            assert receipt['update_issues'][0]['location'] == ['subtasks', 0, 'result_note']
+            assert req['task_context']['research_working_state']['last_task_detail'] == note['last_task_detail']
+            assert req['task_context']['pending_working_state_update']['working_state'] == note
+            return _batch(req, [_evidence_action()(req)])
+        if len(requests) == 3:
+            pending = req['task_context']['pending_working_state_update']
+            return repair(req, {'action': 'update_research_state', 'context_digest': req['context_digest'],
+                'pending_update_digest': pending['digest'], 'edits': [{'path': '/subtasks/0', 'value': {
+                    'task_id': 'x', 'objective': 'Read the remaining original clause.', 'status': 'in_progress',
+                    'result': 'Exact pending draft'}}]})
+        return _handoff(req)
+    result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(model_turn=turn,
+        evidence_tool=ports.evidence, finance_tool=ports.finance, working_state_enabled=True)).compile().invoke(
+            {**_input(), 'max_model_turns': 6, 'max_tool_actions': 8})
+    assert len(ports.calls) == 1 and result['pending_working_state_update'] is None
+    assert result['research_working_state']['subtasks'][0]['result'] == 'Exact pending draft'
+    assert result['final_submission'] is None

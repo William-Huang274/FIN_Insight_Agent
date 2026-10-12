@@ -275,7 +275,9 @@ def test_exact_rows_share_one_original_across_restore_live_with_distinct_receipt
     original = deepcopy(rows)
     projected = coalesce_context_snapshots(rows)
     second = json.loads(projected[1].content)["result"]["observations"][0]
-    assert second["content"][0]["identical_source_row_at"]["message_index"] == 0
+    first = json.loads(projected[0].content)['progress']['observations'][0]
+    assert first["content"][0]["identical_source_row_at"]["message_index"] == 1
+    assert second['content'] == item['content']
     assert second["references"] == item["references"]
     assert second["recovery"]["saved_observation_id"] == "different-call"
     assert rows == original
@@ -395,7 +397,9 @@ def test_repeated_restored_and_live_checkpoints_release_space_and_supersede_note
             rows[-1].content = json.dumps({"ref_id": f"BULK-{cycle}", "text": "old search " * 65000})
             rows += source_messages(f"RECENT-{cycle}")
         if cycle:
-            assert request_checkpoint(rows, chat)[2] is not None
+            reduced, _, notice = request_checkpoint(rows, chat)
+            assert notice is None  # Automatic recoverable-read release needs no extra note call.
+            assert 'old search ' not in json.dumps(chat._get_request_payload(reduced))
         note = working_note(phase_status="working", findings=[], retain_source_ids=[],
             last_task_detail=f"Current unfinished comparison {cycle}")
         pair = checkpoint_message(note)

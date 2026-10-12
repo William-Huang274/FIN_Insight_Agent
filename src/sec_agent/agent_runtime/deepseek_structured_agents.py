@@ -357,6 +357,12 @@ def _native_function_schema(schema: type[BaseModel], *, runtime_context_binding:
     return result
 
 
+def specialist_tools_for_actions(native_tools, allowed_actions):
+    """One stage menu for both real SDK requests and offline accounting."""
+    return {name: model for name, model in native_tools.items()
+            if set(get_args(model.model_fields['action'].annotation)) & set(allowed_actions)}
+
+
 def _bind_native_call_context(call: Mapping[str, Any], context_digest: str) -> dict[str, Any]:
     """Build a host-bound view, preserving the raw provider message unchanged.
 
@@ -1470,8 +1476,7 @@ class DeepSeekStructuredAgentAdapter:
         if specialist_mode == "agentic_turn":
             # Advertise the same action capability the native graph enforces.
             # Disabled experiments must not become attractive dead-end tools.
-            native_tools = {name: model for name, model in native_tools.items()
-                            if set(get_args(model.model_fields["action"].annotation)) & set(semantic_input["allowed_actions"])}
+            native_tools = specialist_tools_for_actions(native_tools, semantic_input['allowed_actions'])
         if is_lead:
             from .lead_research_graph import lead_tool_models, LEAD_RESEARCH_SYSTEM_PROMPT
             native_tools = lead_tool_models(require_execution_plan=request_value.get("require_execution_plan", False),

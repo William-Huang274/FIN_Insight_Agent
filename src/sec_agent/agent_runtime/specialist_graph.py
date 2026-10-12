@@ -207,7 +207,7 @@ class ReadResearchHistoryAction(_StrictModel):
     context_digest: str
     section: Literal['turn', 'lead_assistance', 'operation']
     index: int | None = Field(default=None, ge=1)
-    tool_call_id: str | None = Field(default=None, description='For operation: copy an exact ID from operation_catalog, including runtime:initial-context for restored history. Reads saved parameters and result; never reruns the original tool.')
+    tool_call_id: str | None = Field(default=None, description='For operation: copy the exact ID from operation_catalog or a supplied context-field readback. Reads saved data without re-execution; runtime:context: locators return run-bound current metadata.')
     reason_summary: str
 
     @model_validator(mode='after')
@@ -231,6 +231,8 @@ class ReadDependencyWorkAction(_StrictModel):
     analysis_fields: tuple[str, ...] | None = None
     offset: int = Field(default=0, ge=0)
     limit: int = Field(default=4, ge=1, le=12)
+    max_characters: int = Field(default=16000, ge=1000, le=128000,
+        description='Handoff page target; follow next_read. Originals are never cut mid-record.')
     reason_summary: str
 
 
@@ -2750,9 +2752,9 @@ def build_specialist_agentic_state_graph(
                 working.update(notebook=before.model_dump(mode='json'), pending_action=None, phase='tool_observation_ready')
                 # Return canonical sources in full; the compact view alone must not
                 # hide required qualifiers or make Pxx aliases citable identities.
-                payload['source_observations'] = [{k: obs.model_dump(mode='json')[k]
+                payload.setdefault('source_observations', [{k: obs.model_dump(mode='json')[k]
                     for k in ('kind', 'status', 'references', 'content')} for obs in
-                    [SpecialistToolObservation.model_validate_json(json.dumps(obs)) for obs in originals]]
+                    [SpecialistToolObservation.model_validate_json(json.dumps(obs)) for obs in originals]])
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps(payload, ensure_ascii=False))
             if isinstance(action, (DelegateSubtasksAction, ReadDelegatedWorkAction)):
                 saved = dict(working.get("delegated_work", {}))
@@ -2802,7 +2804,7 @@ def build_specialist_agentic_state_graph(
                                 dependencies.restore_source_observations([obs.model_dump(mode='json') for obs in added])
                             if added:
                                 before = _replace_notebook(before, observations=(*before.observations, *added))
-                            payload['source_observations'] = restored
+                            payload.setdefault('source_observations', restored)
                         elif action.section == "workpaper":
                             payload = {"workpaper": child["final_submission"],
                                 "sources": [{"source_observation_ref": obs["observation_digest"], "references": obs["references"]}

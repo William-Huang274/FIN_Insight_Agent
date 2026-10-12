@@ -49,11 +49,13 @@ class ReadDelegatedWorkAction(BaseModel):
     analysis_fields: list[str] | None = None
     offset: int = Field(default=0, ge=0)
     limit: int = Field(default=4, ge=1, le=12)
+    max_characters: int = Field(default=16000, ge=1000, le=128000,
+        description='Handoff page target for complete originals. Follow next_read; one oversized source is returned intact.')
 
     @model_serializer(mode='wrap')
     def preserve_explicit_legacy_reads(self, handler):
         body = handler(self)
-        for key in ('source_ids', 'claim_ids', 'analysis_fields', 'offset', 'limit'):
+        for key in ('source_ids', 'claim_ids', 'analysis_fields', 'offset', 'limit', 'max_characters'):
             if key not in self.model_fields_set:
                 body.pop(key, None)
         return body

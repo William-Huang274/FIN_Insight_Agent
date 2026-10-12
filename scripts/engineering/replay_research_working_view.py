@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 from replay_source_context import digest, encoded, load_requests, messages
 from replay_context_retirement import source_inventory, walk
-from sec_agent.agent_runtime.research_context_view import decode
+from sec_agent.agent_runtime.research_context_view import decode, compact_current_context, current_context
 from sec_agent.agent_runtime.research_context_view import INITIAL_CONTEXT_ID
 from sec_agent.agent_runtime.source_result_view import source_message_views, source_result_view
 from langchain_core.messages import ToolMessage
@@ -40,15 +40,13 @@ def run(baseline_path, payload_dir, output_dir):
     from pydantic import SecretStr
     from sec_agent.agent_runtime.deepseek_structured_agents import (
         DeepSeekStructuredAgentAdapter, ReasoningPreservingChatDeepSeek,
-        _NATIVE_SPECIALIST_TOOLS, _native_function_schema)
+        _NATIVE_SPECIALIST_TOOLS, _native_function_schema, specialist_tools_for_actions)
     from sec_agent.agent_runtime.research_working_state import UpdateResearchStateAction
     baseline = json.loads(baseline_path.read_text('utf-8'))
     records = load_requests([dict(request_file=b['file'], request_line=b['line'], call_id=b['call_id'])
                              for b in baseline['basis']])
     chat = ReasoningPreservingChatDeepSeek(model='deepseek-v4-flash', api_key=SecretStr('offline-fixture'),
         tool_context_policy='task_boundary', research_checkpoint_tokens=48000, max_retries=0, use_responses_api=False)
-    native = {**_NATIVE_SPECIALIST_TOOLS, 'UpdateResearchStateAction': UpdateResearchStateAction}
-    schemas = [_native_function_schema(t, runtime_context_binding=True) for t in native.values()]
     adapter = object.__new__(DeepSeekStructuredAgentAdapter)
     results = []
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -56,6 +54,9 @@ def run(baseline_path, payload_dir, output_dir):
         n = basis['round']; record = records[basis['call_id']]
         assert digest(record) == basis['record_digest']
         original = messages(record); saved = deepcopy(original)
+        native = specialist_tools_for_actions({**_NATIVE_SPECIALIST_TOOLS, 'UpdateResearchStateAction': UpdateResearchStateAction},
+                                               current_context(original)['allowed_actions'])
+        schemas = [_native_function_schema(t, runtime_context_binding=True) for t in native.values()]
         adapter._agentic_history = {record['actor']: original}
         final = project_tool_history(original, policy='task_boundary')
         assert original == saved and project_tool_history(final, policy='task_boundary') == final
@@ -74,7 +75,7 @@ def run(baseline_path, payload_dir, output_dir):
         latest = next(c for c in reversed(contexts) if isinstance(c, dict) and 'task_context' in c)
         for key in ('research_question', 'assignment', 'dependency_workpapers', 'delegated_work', 'pending_working_state_update'):
             if key in latest['task_context']:
-                assert view['current_context']['task_context'][key] == latest['task_context'][key], key
+                assert view['current_context']['task_context'][key] == compact_current_context(latest)['task_context'][key], key
         note = latest['task_context'].get('research_working_state')
         if isinstance(note, dict):
             assert view['current_context']['task_context']['research_working_state'] == {k:v for k,v in note.items() if k != 'reference_issues'}
@@ -100,6 +101,7 @@ def run(baseline_path, payload_dir, output_dir):
         payload = chat._get_request_payload(prepared, tools=schemas, tool_choice='auto')
         assert set(tools) == set(native)
         old = json.loads((payload_dir / f'r{n}.payload.private.json').read_text('utf-8'))
+        old['tools'] = [t for t in old['tools'] if t.get('name', t.get('function', {}).get('name')) in native]
         old_p, old_f = source_inventory(old); hot_p, hot_f = source_inventory(payload)
         # Saved originals remain exact. Also compare the maintained source
         # metadata view used by the previous replay, which removes only repeats.

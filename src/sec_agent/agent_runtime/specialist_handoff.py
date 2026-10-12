@@ -4,9 +4,34 @@ Original papers and observations stay in the host archive. Only requested source
 observations enter the receiving notebook; author prose never grants authority.
 """
 from copy import deepcopy
+import json
 
 from .case_artifacts import CaseArtifacts
 from .report_authoring import author_analysis, author_overview, historical_assignment, research_handoff
+
+
+SOURCE_ID_FIELDS = ('passage_id', 'evidence_id', 'numeric_fact_id', 'calculation_id', 'fact_id')
+
+
+def selected_source_observations(observations, identities):
+    """Display selected complete rows once, without modifying canonical receipts."""
+    from .source_result_view import source_result_view
+    result, seen = [], set()
+    for obs in observations:
+        content = []
+        for row in obs.get('content', []):
+            if not identities.intersection(str(row.get(k, '')) for k in SOURCE_ID_FIELDS):
+                continue
+            row = source_result_view(row)
+            key = json.dumps(row, ensure_ascii=False, sort_keys=True)
+            if key not in seen:
+                content.append(deepcopy(row)); seen.add(key)
+        if content:
+            result.append({**{k: deepcopy(v) for k, v in obs.items() if k not in {'content', 'references', 'observation_digest'}},
+                'original_observation_digest': obs.get('observation_digest'),
+                'view': 'selected_complete_source_rows',
+                'references': [deepcopy(r) for r in obs['references'] if r['ref_id'] in identities], 'content': content})
+    return result
 
 
 def dependency_navigation(task_id, paper):
@@ -143,13 +168,53 @@ class DependencyReader:
                 for key in ('reading_context', 'quotes'):
                     row.pop(key, None)
         observations = []
+        # Page on complete requested originals, not only the small catalog rows.
+        # One oversized original remains complete and explicitly marked; the
+        # budget is a target, never a silent evidence truncation.
+        selected_rows, displayed, used, selected_ids = [], [], 0, set()
+        budget = request.get('max_characters', 16000)
         for ref in refs:
             item = self.artifacts.source_item(ref)
             identity = item.get('passage_id') or item.get('evidence_id') or item.get('numeric_fact_id') or item.get('calculation_id') or item.get('fact_id')
+            matches = []
             for obs in self.papers[task_id]['notebook']['observations']:
                 if obs['status'] == 'success' and any(r['ref_id'] == identity for r in obs['references']):
-                    if obs not in observations:
-                        observations.append(deepcopy(obs))
+                    if obs not in matches:
+                        matches.append(obs)
+            visible = selected_source_observations(matches, {identity})
+            if not visible:
+                raise ValueError('saved_source_original_unavailable:' + ref)
+            row = deepcopy(payload['source_materials'][len(selected_rows)])
+            row['canonical_source_id'] = identity
+            # Avoid printing the same period/unit/value/metadata twice. Any
+            # distinct summary metadata stays; originals below remain complete.
+            originals = [r for o in visible for r in o['content']]
+            if originals and isinstance(row.get('source'), dict):
+                row['source'] = {k: v for k,v in row['source'].items()
+                                 if not all(r.get(k) == v for r in originals)}
+                if not row['source']:
+                    row.pop('source')
+            cost = len(json.dumps([row, visible], ensure_ascii=False)) if identity not in selected_ids else len(json.dumps(row, ensure_ascii=False))
+            if selected_rows and used + cost > budget:
+                break
+            used += cost; selected_rows.append(row); selected_ids.add(identity)
+            for obs in matches:
+                if obs not in observations:
+                    observations.append(deepcopy(obs))
+        if section == 'handoff':
+            payload['source_materials'] = selected_rows
+            displayed = selected_source_observations(observations, selected_ids)
+            payload['source_observations'] = displayed
+            payload['display_characters'] = used
+            payload['oversized_single_source'] = used > budget
+            if len(selected_rows) < len(refs):
+                next_offset = request.get('offset', 0) + len(selected_rows)
+                args = {k: v for k, v in request.items() if k in {'task_id', 'source_ids', 'limit', 'max_characters'}}
+                args.update(section='handoff', offset=next_offset)
+                payload['next_offset'] = next_offset
+                payload['next_read'] = {'tool': 'ReadDependencyWorkAction', 'arguments': args}
+            if payload.get('next_read'):
+                payload['next_read']['arguments']['max_characters'] = budget
         payload.update(task_id=task_id, notice=(
             'Source views include previously read but uncited materials. Analysis is the prior author’s interpretation, '
             'not this task’s instruction. Restored observations preserve canonical citation IDs, periods, units and receipts; '

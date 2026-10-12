@@ -87,8 +87,8 @@ def can_continue_remaining_research(state):
     return bool(state.get("case_papers") or state.get("research_failed_workpapers"))
 
 
-def responsible_author_feedback(case_review, artifacts):
-    """Route actual material findings; advisory points go to the Writer.
+def responsible_author_feedback(case_review, artifacts, *, include_advisory=False):
+    """Route material findings; Lead may also receive advisory dispositions.
 
     Reviewer IDs are namespaced to avoid Counter and Verifier both using F1.
     The original finding remains unchanged in the persisted review artifact.
@@ -105,7 +105,7 @@ def responsible_author_feedback(case_review, artifacts):
         for finding in review.findings:
             if finding.paper_id not in papers:
                 raise ValueError("research_finding_unknown_responsible_paper")
-            if finding.severity == "material":
+            if finding.severity == "material" or include_advisory:
                 item = finding.model_dump(mode="json")
                 item.update(finding_id=f"{role}:{finding.finding_id}", reviewer=role,
                             original_finding_id=finding.finding_id)

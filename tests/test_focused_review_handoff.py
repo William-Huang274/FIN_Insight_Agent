@@ -67,6 +67,26 @@ def finding(identity, quote):
         diagnosis='Synthetic local wording finding, not a financial judgment.', requested_change='Clarify this exact current wording only.')
 
 
+def test_lead_disposition_binds_the_advisory_it_can_see_without_forcing_author_repair():
+    from sec_agent.agent_runtime.research_session import responsible_author_feedback
+    from sec_agent.agent_runtime.lead_issue_decision import LeadIssueDecision,decision_errors
+    a=artifact_fixture()
+    review={r:{'status':'review_submitted','review':{**review_fixture(a),
+        'findings':[finding('same-id',a.read_paper('P01')['thesis'])]}} for r in ('counter','verifier')}
+    assert responsible_author_feedback(review,a)=={}  # Legacy automatic-author path.
+    feedback=responsible_author_feedback(review,a,include_advisory=True)
+    assert {f['finding_id'] for f in feedback['P01']}=={'counter:same-id','verifier:same-id'}
+    decision=LeadIssueDecision.model_validate({'action':'synthesize','summary':'Synthetic local advisory handling, not financial acceptance.',
+        'dispositions':[{'paper_id':'P01','finding_id':f['finding_id'],'disposition':'carry_advisory',
+            'rationale':'Synthetic advice does not alter the answer; preserve it visibly.',
+            'expected_progress':'Specify the basis in the report.',
+            'report_handling':'Label the affected metric basis in the final report.'} for f in feedback['P01']]})
+    assert decision_errors(decision,feedback,{'P01','P02'})==[]
+    material=deepcopy(feedback);material['P01'][0]['severity']='material'
+    assert any('explicitly advisory' in error for error in decision_errors(decision,material,{'P01','P02'}))
+    assert review['counter']['review']['findings'][0]['finding_id']=='same-id'
+
+
 def test_lead_receives_findings_without_legacy_paragraph_forms():
     from sec_agent.agent_runtime.review_recovery import public_review, public_confirmation
     saved={'summary':'Current findings','findings':[{'finding_id':'F'}],'inspection_checks':[{'result':'OLD_FORM'}]}

@@ -425,7 +425,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             return {**update, "stop_reason": "independent_confirmation_incomplete"}
         for role in ("counter", "verifier"):
             validate_finding_confirmation(CaseReview.model_validate(result[role]["review"]), context, current)
-        pending = responsible_author_feedback(result, current)
+        pending = responsible_author_feedback(result, current, include_advisory=hierarchical)
         for rows in pending.values():
             for finding in rows:
                 finding["finding_id"] = f"confirmation:{state['correction_round']}:" + finding["finding_id"]

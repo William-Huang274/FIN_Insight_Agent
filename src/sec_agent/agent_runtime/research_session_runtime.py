@@ -601,7 +601,16 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             def make_agent(role, current, *, feedback=None, paper_id=None, correction_round=0, revising_report=False):
                 return native_agent(role, tools, current, feedback=feedback, paper_id=paper_id,
                     revising=role == "writer" and revising_report)
-            graph = build_research_convergence_graph(artifacts=artifacts, question=state["question"], feedback=state["feedback"],
+            feedback = state['feedback']
+            if (not existing and not state.get('review_repair_decision') and all(
+                    state.get('case_review', {}).get(role, {}).get('status') == 'review_submitted'
+                    for role in ('counter', 'verifier'))):
+                from .research_session import responsible_author_feedback
+                # Lead sees advisory findings in the review context. Its
+                # disposition tool must bind the same findings, not just the
+                # legacy list of material items automatically sent to authors.
+                feedback = responsible_author_feedback(state['case_review'], artifacts, include_advisory=True)
+            graph = build_research_convergence_graph(artifacts=artifacts, question=state["question"], feedback=feedback,
                 initial_revisions=state.get('revisions', {}),
                 hierarchical=True, max_correction_rounds=2, authoring_stages=profile.get('authoring', {}).get('enabled', False),
                 run_author=run_author, review_revisions=review_revisions,

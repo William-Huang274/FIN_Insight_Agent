@@ -1,4 +1,21 @@
 import { test, expect } from "./identity-fixture";
+test('late old-run task events cannot replace the current revision task or start on refresh',async({page})=>{
+  const id='00000000-0000-4000-8000-000000000071',old='00000000-0000-4000-8000-000000000072',current='00000000-0000-4000-8000-000000000073';
+  let writes=0;
+  const session={thread_id:id,title:'运行版本隔离',status:'interrupted',phase:'research_needs_attention',question:'静态版本案例',
+    runs:[{run_id:current,status:'interrupted',created_at:'2026-10-12T02:00:00Z'},{run_id:old,status:'success',created_at:'2026-10-12T01:00:00Z'}],
+    research_tasks:[{task_id:'task:same',owner_role:'finance',objective:'新修订等待执行',status:'ready',dependency_ids:[]}],
+    model_events:[{run_id:old,kind:'task',task_id:'task:same',actor:'finance',event:'completed',status:'completed',objective:'旧运行完成内容',recorded_at:'2026-10-12T03:00:00Z'},
+      {run_id:old,kind:'task',task_id:'task:retired',actor:'finance',event:'completed',objective:'旧运行独有任务',recorded_at:'2026-10-12T03:00:01Z'}]};
+  await page.route('**/api/v1/**',async route=>{if(route.request().method()!=='GET')writes++;const path=new URL(route.request().url()).pathname;await route.fulfill({json:path.endsWith('/projects')?{revision:0,projects:[],assignments:{},pinned:[]}:path.endsWith('research-sessions')?[session]:path.endsWith('research-session-config')?{fresh_research_enabled:true}:session});});
+  await page.goto(`/workspace/session?thread=${id}&view=activity`);
+  const tasks=page.locator('.rs-task-grid');
+  await page.getByRole('button',{name:'任务说明与资料',exact:true}).click();
+  await expect(tasks).toBeVisible();
+  await expect(tasks).toContainText('新修订等待执行');
+  await expect(tasks).not.toContainText('旧运行完成内容');await expect(tasks).not.toContainText('旧运行独有任务');
+  await page.reload();await expect(tasks).toContainText('新修订等待执行');expect(writes).toBe(0);
+});
 test('task outcome separates author assessment from failure and retains attempt history', async ({page}) => {
   await page.setViewportSize({width:390,height:950});
   const id='00000000-0000-4000-8000-000000000091', run='00000000-0000-4000-8000-000000000092';

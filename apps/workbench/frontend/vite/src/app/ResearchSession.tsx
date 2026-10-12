@@ -369,6 +369,7 @@ export function ResearchSession() {
               old.some(
                 (x) =>
                   x.kind === e.kind &&
+                  x.run_id === e.run_id &&
                   x.call_id === e.call_id &&
                   x.task_id === e.task_id &&
                   x.actor === e.actor &&
@@ -409,7 +410,9 @@ export function ResearchSession() {
   }, [session?.model_events, events]);
   const researchTasks = useMemo(() => {
     const map = new Map((session?.research_tasks || []).map((task) => [task.task_id, task]));
-    for (const e of allEvents) if (e.kind === "task" && e.task_id) {
+    const latestRunId = session?.runs?.[0]?.run_id;
+    // Retain historical events for the timeline, but never project them onto current tasks.
+    for (const e of allEvents) if (latestRunId && e.run_id === latestRunId && e.kind === "task" && e.task_id) {
       map.set(e.task_id, { task_id: e.task_id, owner_role: e.actor, objective: e.objective || "",
         dependency_ids: e.dependency_ids || [], status: e.status || e.event });
     }
@@ -417,7 +420,7 @@ export function ResearchSession() {
     for (const task of session?.research_tasks || [])
       if (!["planned", "ready"].includes(task.status)) map.set(task.task_id, task);
     return [...map.values()];
-  }, [session?.research_tasks, allEvents]);
+  }, [session?.research_tasks, session?.runs?.[0]?.run_id, allEvents]);
   const models = useMemo(() => {
     const map = new Map<string, Event>();
     for (const e of allEvents)

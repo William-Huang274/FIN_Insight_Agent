@@ -133,7 +133,7 @@ def test_failed_reader_does_not_pin_all_successful_results_from_same_tool():
     assert project_tool_history(rows) is rows
 
 
-def test_cleared_source_has_exact_recovery_arguments_and_complete_ids_without_raw_body():
+def test_cleared_source_has_exact_recovery_arguments_without_repeated_id_catalog():
     selection = {'operation': 'read', 'source_space': 'uploads', 'document_id': 'UPLOAD::fixture', 'node_id': 'CHUNK::fixture:1:4'}
     rows = [HumanMessage(content='Overall task: compare periods, retaining units and source identity.'),
         HumanMessage(content='Current task: repair C2 only; retain C1 and all correct calculations.'),
@@ -151,9 +151,10 @@ def test_cleared_source_has_exact_recovery_arguments_and_complete_ids_without_ra
         assert sent[:2] == rows[:2] and sent[-2:] == rows[-2:]
         text = sent[3].content
         recovery = json.loads(text.split('\n', 1)[1])
-        assert recovery['observed_reference_ids'] == ['PASSAGE::CHUNK::fixture:1:4::abcdef1234567890']
+        assert 'observed_reference_ids' not in recovery
+        assert recovery['original_tool_call_id'] == 'source-read'
         assert 'Original private source body' not in text
-        assert 'Before using this result' in text and 'NOT evidence' in text
+        assert 'before using' in text and 'not evidence' in text
         if saved_reader:
             assert recovery['read_tool'] == 'read_saved_result'
             assert recovery['arguments'] == {'tool_call_id': 'source-read'}

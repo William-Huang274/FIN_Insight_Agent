@@ -69,9 +69,9 @@ def test_snapshot_pointers_do_not_become_new_deduplication_targets():
         'current_context': {'progress': snapshot}})) for n in range(5)]
     first = coalesce_context_snapshots(rows)
     assert coalesce_context_snapshots(first) == first
-    for row in first[1:-1]:
+    for row in first[1:]:
         assert json.loads(row.content)['current_context']['progress'][
-            'identical_snapshot_retained_at']['tool_call_id'] == '0'
+            'identical_snapshot_retained_at'] == {'message_index': 0, 'field': 'current_context.progress'}
 
 
 def test_saved_recovery_ids_survive_repeated_projection():

@@ -200,9 +200,13 @@ def test_checkpoint_deduplicates_identical_runtime_snapshots_without_losing_revi
     assert first['current_context'] == context
     second = json.loads(projected[2].content)
     assert second['result'] == {'error': 'field_mismatch', 'edit_index': 1}
-    assert second['current_context']['submission_to_repair']['identical_snapshot_retained_at_tool_call_id'] == 'edit-0'
+    assert second['current_context']['submission_to_repair']['identical_snapshot_retained_at'] == {
+        'message_index': 1, 'field': 'current_context.submission_to_repair'}
     assert json.loads(projected[4].content)['current_context']['submission_to_repair'] == different['submission_to_repair']
-    assert json.loads(projected[-1].content)['current_context'] == context
+    latest = json.loads(projected[-1].content)['current_context']
+    assert latest['task_context'] == context['task_context']
+    assert latest['submission_to_repair']['identical_snapshot_retained_at'] == {
+        'message_index': 1, 'field': 'current_context.submission_to_repair'}
 
 
 def test_lead_also_enforces_adapter_turn_scope_before_scheduling():

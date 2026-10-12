@@ -179,7 +179,7 @@ def test_growth_reserve_does_not_count_host_handoff_as_future_source_output():
         assert research_input_pressure('x', rows, chat)['recent_tool_batch_characters'] == len(rows[-1].content)
 
 
-def test_exact_assignment_copy_reuses_original_human_message_but_keeps_latest_handoff():
+def test_small_assignment_is_cheaper_than_a_snapshot_pointer():
     from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
     context = {"assignment": {"objective": "Compare two quarters", "units": "USD/share"}}
     rows = [HumanMessage(content=json.dumps({"task_context":context})),
@@ -190,7 +190,7 @@ def test_exact_assignment_copy_reuses_original_human_message_but_keeps_latest_ha
     assert result[0] == rows[0] and result[-1] == rows[-1] and rows == original
     body = json.loads(result[1].content)
     assert body["result"] == {"text":"original source"}
-    assert body["current_context"]["task_context"]["identical_snapshot_retained_at"] == {"message_index":0,"field":"task_context"}
+    assert body["current_context"]["task_context"] == context
     # A future user message cannot be described as an earlier retained copy.
     reordered = [rows[1], rows[0], rows[2]]
     assert coalesce_context_snapshots(reordered)[0] == rows[1]
@@ -235,14 +235,18 @@ def test_orientation_compaction_keeps_latest_index_and_provider_reasoning_withou
     rows = [initial, ai, first, middle, last]
     saved = deepcopy(rows)
     projected = coalesce_context_snapshots(rows)
-    assert rows == saved and projected[0] == initial and projected[1] == ai and projected[-1] == last
+    assert rows == saved and projected[0] == initial and projected[1] == ai
+    latest = json.loads(projected[-1].content)
+    assert latest['result'] == {'error': 'not fetched'}
+    assert latest['current_context']['role_method']['identical_snapshot_retained_at']['message_index'] == 0
+    assert latest['current_context']['orientation_context']['observation_index'][1] == {'read_ref': 'O2'}
     body = json.loads(projected[2].content)
     assert body['result'] == result
     assert body['current_context']['role_method']['identical_snapshot_retained_at']['message_index'] == 0
     assert body['current_context']['orientation_context']['observation_index'] == [observed]
     pointer = json.loads(projected[3].content)['current_context']['orientation_context']['observation_index'][0]
     assert pointer['identical_snapshot_retained_at'] == {
-        'tool_call_id': 'read1', 'field': 'current_context.orientation_context.observation_index[0]'}
+        'message_index': 2, 'field': 'current_context.orientation_context.observation_index[0]'}
     assert len(projected[2].content) < len(first.content) / 3
     wire = model()._get_request_payload(rows)
     assert wire['messages'][1]['reasoning_content'] == 'private provider state'
@@ -362,9 +366,10 @@ def test_accepted_checkpoint_archives_completed_reasoning_without_losing_exact_r
     operation = json.loads(projected[1].content)
     result = json.loads(projected[2].content)
     assert operation['tool_calls'] == rows[1].tool_calls
-    assert result['original_content'] == rows[2].content
+    assert all(result[k] == v for k, v in json.loads(rows[2].content).items())
+    assert 'original_content' not in result
     assert result['tool_call_id'] == rows[2].tool_call_id
-    assert 'NOT a user instruction' in result['notice']
+    assert 'not an instruction' in result['notice']
     assert 'private old analysis' not in json.dumps([m.model_dump() for m in projected])
     # No accepted checkpoint, or an ordinary completed phase, retires reasoning.
     assert task_boundary_history(rows[:3])[1] == rows[1]

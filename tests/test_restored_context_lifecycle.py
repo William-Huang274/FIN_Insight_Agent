@@ -209,13 +209,13 @@ def test_dependency_papers_reuse_exact_values_across_changing_task_progress():
             'current_context': {'task_context': {**task, 'runtime_progress': {'n': i}}}})))
     original = deepcopy(rows)
     projected = coalesce_context_snapshots(rows)
-    for i in (1, 2):
+    for i in (1, 2, 3):
         body = json.loads(projected[i].content)
         for key in ('dependency_workpapers', 'future_runtime_handoff'):
             assert body['current_context']['task_context'][key]['identical_snapshot_retained_at'] == {
                 'message_index': 0, 'field': f'task_context.{key}'}
         assert body['result'] == json.loads(rows[i].content)['result']
-    assert json.loads(projected[-1].content)['current_context']['task_context']['dependency_workpapers'] == [paper]
+    assert json.loads(projected[0].content)['task_context']['dependency_workpapers'] == [paper]
     assert coalesce_context_snapshots(projected) == projected
     changed = deepcopy(rows)
     body = json.loads(changed[1].content)
@@ -555,7 +555,7 @@ def test_accepted_note_is_not_duplicated_by_real_next_turn_envelope():
         task = body["current_context"]["task_context"]
         assert task["assignment"] == "Original five-company task" and task["runtime_progress"] == {"turn": cycle}
         assert task["research_working_state"]["identical_snapshot_retained_at"] == {
-            "tool_call_id": f"cp-{cycle}", "field": "result.working_state"}
+            "message_index": 0, "field": "result.working_state"}
         assert len(projected[0].content) < len(message.content) * .6
         assert coalesce_context_snapshots(projected) == projected
         for changed in ("different_note", "rejected", "error"):

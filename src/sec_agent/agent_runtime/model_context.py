@@ -63,8 +63,7 @@ def _read_recovery_notice(message, call, *, saved_result_reader):
         value = json.loads(message.content) if isinstance(message.content, str) else {}
     except json.JSONDecodeError:
         value = {}
-    recovery = {"original_tool_call_id": message.tool_call_id,
-                "observed_reference_ids": _literal_reference_ids(value)}
+    recovery = {"original_tool_call_id": message.tool_call_id}
     if saved_result_reader:
         recovery["read_tool"] = "read_saved_result"
         recovery["arguments"] = {"tool_call_id": message.tool_call_id}
@@ -82,12 +81,8 @@ def _read_recovery_notice(message, call, *, saved_result_reader):
     else:
         recovery["read_tool"] = None
         recovery["recovery_unavailable"] = "Locate this original call through an offered context index; do not guess a reader."
-    return ("[Older read result omitted from this request; original records are retained. "
-            "This is navigation, NOT evidence. Before using this result to cite, calculate, compare, or repair a claim, "
-            "use the same original if already present in another retained result; otherwise retrieve it with the "
-            "exact read_tool/arguments below and inspect the returned context. "
-            "Copy complete returned reference IDs and exact quotes; never reconstruct IDs or infer non-disclosure "
-            "from omitted text. Recover only needed records, then continue the unfinished task, not all prior research.]\n"
+    return ("[Older read result omitted; not evidence or non-disclosure. Original records remain saved. "
+            "Read the original before using it; copy IDs and quotes from that result.]\n"
             + json.dumps(recovery, ensure_ascii=False, separators=(",", ":")))
 
 
@@ -177,7 +172,7 @@ def _coalesce_observation_rows(messages):
         if not isinstance(body, dict):
             continue
         containers = []
-        if isinstance(message, HumanMessage):
+        if isinstance(message, HumanMessage) and not message.additional_kwargs.get('fin_checkpoint_archive'):
             containers.append((body.get("progress", {}), "progress"))
         else:
             containers.append((body.get("result", body), "result" if "result" in body else ""))
@@ -256,12 +251,98 @@ def _normalize_terminal_feedback(messages):
     return projected
 
 
+def _host_context(message, body):
+    """Host envelopes keep the same paths before and after protocol retirement."""
+    if isinstance(message, ToolMessage) or message.additional_kwargs.get('fin_checkpoint_archive'):
+        return body.get('current_context', {}), 'current_context.'
+    return body, ''
+
+
+def _reuse_host_fields(messages):
+    """Keep one exact runtime value, including in the newest handoff.
+
+    Only visit named host state containers, never source prose. Locations are
+    stable within this request; mutable values with different content remain
+    distinct. Repeated feedback items share originals without losing errors.
+    """
+    seen = {}
+    markers = {'identical_snapshot_retained_at', 'superseded_working_state', 'current_state_at', 'superseded_candidate'}
+    for index, message in enumerate(messages):
+        if not isinstance(message, (HumanMessage, ToolMessage)):
+            continue
+        try:
+            body = json.loads(message.content)
+        except (TypeError, ValueError):
+            continue
+        if not isinstance(body, dict):
+            continue
+        context, prefix = _host_context(message, body)
+        changed = False
+
+        def reuse(container, key, field, identity_key=None):
+            nonlocal changed
+            value = container[key]
+            if isinstance(value, dict) and markers.intersection(value):
+                return
+            encoded = json.dumps(value, ensure_ascii=False, sort_keys=True)
+            if len(encoded) <= 240:
+                return
+            identity = (identity_key or key, encoded)
+            if identity in seen:
+                container[key] = {'identical_snapshot_retained_at': seen[identity]}
+                changed = True
+            else:
+                seen[identity] = {'message_index': index, 'field': field}
+
+        # Accepted receipts and task handoffs are two representations of the
+        # same working state. Do not inspect arbitrary tool result objects.
+        name = message.name if isinstance(message, ToolMessage) else body.get('name')
+        result = body.get('result', {})
+        status = message.status if isinstance(message, ToolMessage) else body.get('status')
+        if name == 'UpdateResearchStateAction' and status != 'error' and isinstance(result, dict) and result.get('accepted') is True:
+            if isinstance(result.get('working_state'), dict):
+                reuse(result, 'working_state', 'result.working_state', 'research_working_state')
+            if 'reference_issues' in result:
+                state = result.get('working_state', {})
+                if isinstance(state, dict) and state.get('reference_issues') == result['reference_issues']:
+                    result['reference_issues'] = {'identical_snapshot_retained_at': {
+                        'message_index': index, 'field': 'result.working_state.reference_issues'}}
+                    changed = True
+        if isinstance(context, dict):
+            task = context.get('task_context')
+            if isinstance(task, dict):
+                for key in list(task):
+                    reuse(task, key, prefix + 'task_context.' + key)
+            for key in ('role_method', 'scope_policy', 'execution_policy', 'continuation_policy', 'planning_source_policy',
+                        'submission_to_repair', 'progress'):
+                if key in context:
+                    reuse(context, key, prefix + key)
+            orientation = context.get('orientation_context')
+            if isinstance(orientation, dict):
+                for key in list(orientation):
+                    if key == 'observation_index' and isinstance(orientation[key], list):
+                        for offset in range(len(orientation[key])):
+                            reuse(orientation[key], offset, prefix + f'orientation_context.{key}[{offset}]', key)
+                    else:
+                        reuse(orientation, key, prefix + 'orientation_context.' + key)
+            progress = context.get('progress')
+            if isinstance(progress, dict):
+                if 'feedback_notice' in progress:
+                    reuse(progress, 'feedback_notice', prefix + 'progress.feedback_notice')
+                if isinstance(progress.get('feedback'), list):
+                    for offset in range(len(progress['feedback'])):
+                        reuse(progress['feedback'], offset, prefix + f'progress.feedback[{offset}]', 'feedback_item')
+        if changed:
+            message.content = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
+    return messages
+
+
 def coalesce_context_snapshots(messages):
     """Normalize byte-equivalent runtime copies, without summarizing research.
 
     Each omitted copy refers to a full identical value retained in this request.
-    First occurrences and the latest handoff remain full; tool results, including
-    errors and freshly read sources, are untouched. Stored history is immutable.
+    First occurrences remain full; latest handoffs reuse those same values.
+    Changed errors and freshly read sources stay intact. Storage is immutable.
     """
     projected = _normalize_terminal_feedback(messages)
     # Candidate versions are mutable host state, unlike source observations.
@@ -279,7 +360,7 @@ def coalesce_context_snapshots(messages):
             continue
         if not isinstance(body, dict):
             continue
-        context = body if isinstance(message, HumanMessage) else body.get('current_context', {})
+        context = _host_context(message, body)[0]
         repair = context.get('submission_to_repair') if isinstance(context, dict) else None
         if (isinstance(repair, dict) and isinstance(repair.get('candidate'), dict)
                 and isinstance(repair.get('current_candidate_digest'), str)
@@ -288,9 +369,9 @@ def coalesce_context_snapshots(messages):
     if len(candidates) > 1:
         latest = candidates[-1][0]
         target = {'message_index': latest, 'field': (
-            '' if isinstance(projected[latest], HumanMessage) else 'current_context.') + 'submission_to_repair'}
+            _host_context(projected[latest], json.loads(projected[latest].content))[1]) + 'submission_to_repair'}
         for index, body, repair in candidates[:-1]:
-            context = body if isinstance(projected[index], HumanMessage) else body['current_context']
+            context = _host_context(projected[index], body)[0]
             context['submission_to_repair'] = {
                 'superseded_candidate': True,
                 'base_submission_digest': repair.get('base_submission_digest'),
@@ -309,12 +390,24 @@ def coalesce_context_snapshots(messages):
         # it. These are completed public operations, not original evidence.
         latest, _, repair = candidates[-1]
         target = {'message_index': latest, 'field': (
-            '' if isinstance(projected[latest], HumanMessage) else 'current_context.') + 'submission_to_repair.candidate'}
+            _host_context(projected[latest], json.loads(projected[latest].content))[1]) + 'submission_to_repair.candidate'}
         completed = {m.tool_call_id for m in projected[:latest + 1] if isinstance(m, ToolMessage)}
+        for message in projected[:latest + 1]:
+            if message.additional_kwargs.get('fin_checkpoint_archive'):
+                archived = json.loads(message.content)
+                if archived.get('tool_call_id'):
+                    completed.add(archived['tool_call_id'])
         for message in projected[:latest]:
-            if not isinstance(message, AIMessage):
+            archived = None
+            if isinstance(message, AIMessage):
+                calls = message.tool_calls
+            elif message.additional_kwargs.get('fin_checkpoint_archive'):
+                archived = json.loads(message.content)
+                calls = archived.get('tool_calls', [])
+            else:
                 continue
-            for call in message.tool_calls:
+            changed = False
+            for call in calls:
                 if (call['id'] in completed and call['name'] in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}
                         and not call['args'].get('archived_workpaper_operation')):
                     call['args'] = {'archived_workpaper_operation': True,
@@ -322,6 +415,9 @@ def coalesce_context_snapshots(messages):
                         'current_candidate_digest': repair['current_candidate_digest'],
                         'notice': 'Completed historical draft operation. Its original arguments remain in the native journal. '
                             'Use the complete current host candidate and its validation feedback below; this is not acceptance or evidence.'}
+                    changed = True
+            if changed and archived is not None:
+                message.content = json.dumps(archived, ensure_ascii=False, separators=(',', ':'))
     # A rejected submission is already present in the preceding native tool
     # call. Its repair envelope must retain errors/digests, but need not resend
     # that entire identical draft. Never rewrite the call or a changed draft.
@@ -343,7 +439,7 @@ def coalesce_context_snapshots(messages):
             continue
         if not isinstance(body, dict):
             continue
-        context = body if isinstance(message, HumanMessage) else body.get('current_context', {})
+        context = _host_context(message, body)[0]
         repair = context.get('submission_to_repair') if isinstance(context, dict) else None
         candidate = repair.get('candidate') if isinstance(repair, dict) else None
         if not isinstance(candidate, dict) or 'identical_snapshot_retained_at' in candidate:
@@ -370,11 +466,11 @@ def coalesce_context_snapshots(messages):
             continue
         if not isinstance(body, dict):
             continue
-        context = body if isinstance(message, HumanMessage) else body.get('current_context', {})
+        context = _host_context(message, body)[0]
         task = context.get('task_context', {}) if isinstance(context, dict) else {}
         if not isinstance(task, dict):
             continue
-        if 'working_state_guidance' in task:
+        if isinstance(task.get('working_state_guidance'), str):
             from .research_working_state import WORKING_STATE_GUIDANCE
             # Owned runtime policy is current, even when resuming a saved old
             # request. User instructions and source content are never rewritten.
@@ -384,35 +480,11 @@ def coalesce_context_snapshots(messages):
         basis = authoring.get('basis') if isinstance(authoring, dict) else None
         current = task.get('research_working_state')
         if isinstance(basis, dict) and isinstance(current, dict) and basis.get('working_state') == current:
-            prefix = '' if isinstance(message, HumanMessage) else 'current_context.'
+            prefix = _host_context(message, body)[1]
             basis['working_state'] = {'identical_snapshot_retained_at': {
                 'message_index': index, 'field': prefix + 'task_context.research_working_state'},
                 'notice': 'Exact authoring-basis copy; host validates the unchanged saved binding.'}
             message.content = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
-    # The native checkpoint receipt and its next-turn handoff carry the same
-    # accepted note. Keep the authoritative receipt once, including at the
-    # newest boundary; otherwise a successful compression immediately grows
-    # again when the real SDK feedback envelope is attached.
-    for message in projected:
-        if not isinstance(message, ToolMessage) or message.name != "UpdateResearchStateAction" or message.status == "error":
-            continue
-        try:
-            body = json.loads(message.content)
-        except (ValueError, TypeError):
-            continue
-        if not isinstance(body, dict):
-            continue
-        result = body.get("result", {})
-        context = body.get("current_context", {})
-        task = context.get("task_context", {}) if isinstance(context, dict) else {}
-        if (isinstance(result, dict) and result.get("accepted") is True
-                and isinstance(result.get("working_state"), dict) and isinstance(task, dict)
-                and task.get("research_working_state") == result["working_state"]):
-            task["research_working_state"] = {
-                "identical_snapshot_retained_at": {"tool_call_id": message.tool_call_id, "field": "result.working_state"},
-                "notice": "The current accepted working state is retained verbatim in this same receipt. "
-                    "This pointer replaces only its exact duplicate in the handoff; working memory is not evidence."}
-            message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
     # A resumed specialist has its saved observations in the initial semantic
     # snapshot, not in native ToolMessages. Repeated identical catalog/search
     # results must not be permanently exempt from request-copy coalescing.
@@ -448,126 +520,8 @@ def coalesce_context_snapshots(messages):
             changed = True
         if changed:
             message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
-    snapshots = {}
-    contexts = []
-    snapshot_keys = ("task_context", "submission_to_repair", "progress", "role_method",
-        "scope_policy", "execution_policy", "continuation_policy", "planning_source_policy")
-    for index, message in enumerate(projected):
-        if not isinstance(message, (HumanMessage, ToolMessage)):
-            continue
-        try:
-            body = json.loads(message.content)
-        except (TypeError, json.JSONDecodeError):
-            continue
-        if isinstance(message, HumanMessage) and isinstance(body, dict):
-            for key in snapshot_keys:
-                if key in body:
-                    if isinstance(body[key], dict) and 'identical_snapshot_retained_at' in body[key]:
-                        continue
-                    identity = (key, json.dumps(body[key], ensure_ascii=False, sort_keys=True))
-                    snapshots.setdefault(identity, {"message_index": index, "field": key})
-        elif isinstance(body, dict) and isinstance(body.get("current_context"), dict):
-            contexts.append((index, body))
-    for index, body in contexts[:-1]:
-        message = projected[index]
-        context = body["current_context"]
-        changed = False
-        for key in snapshot_keys:
-            if key not in context:
-                continue
-            if isinstance(context[key], dict) and 'identical_snapshot_retained_at' in context[key]:
-                continue
-            if key not in {"task_context", "submission_to_repair", "progress"} and len(json.dumps(context[key])) < 500:
-                continue
-            identity = (key, json.dumps(context[key], ensure_ascii=False, sort_keys=True))
-            if identity not in snapshots or snapshots[identity].get("message_index", -1) >= index:
-                snapshots[identity] = {"tool_call_id": message.tool_call_id, "field": "current_context." + key}
-                continue
-            context[key] = {"identical_snapshot_retained_at": snapshots[identity],
-                **({"identical_snapshot_retained_at_tool_call_id": snapshots[identity]["tool_call_id"]}
-                   if "tool_call_id" in snapshots[identity] else {}),
-                "field": "current_context." + key,
-                "notice": "Exact duplicate runtime snapshot. Full identical value remains earlier in this request; "
-                    "use the latest current_context for current task and candidate status. Original storage is unchanged."}
-            changed = True
-        if changed:
-            message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
-    # A changed progress counter/note must not force identical assignment and
-    # method instructions to be repeated inside every historical handoff.
-    # Keep first occurrences and the newest handoff complete, including errors.
-    task_fields = {}
-    newest_context = contexts[-1][0] if contexts else -1
-    for index, message in enumerate(projected):
-        if not isinstance(message, (HumanMessage, ToolMessage)):
-            continue
-        try:
-            body = json.loads(message.content)
-        except (ValueError, TypeError):
-            continue
-        if not isinstance(body, dict):
-            continue
-        context = body if isinstance(message, HumanMessage) else body.get('current_context', {})
-        task = context.get('task_context') if isinstance(context, dict) else None
-        if not isinstance(task, dict):
-            continue
-        changed = False
-        # Task envelopes grow with new runtime capabilities (for example,
-        # dependency papers). Exact-value reuse must not depend on a whitelist
-        # of field names, or each changing progress counter resends those papers.
-        # Keep the first original and newest handoff; changed values stay full.
-        for key in task:
-            encoded = json.dumps(task[key], ensure_ascii=False, sort_keys=True)
-            if len(encoded) <= 240 or isinstance(task[key], dict) and 'identical_snapshot_retained_at' in task[key]:
-                continue
-            identity = (key, encoded)
-            field = ('task_context.' if isinstance(message, HumanMessage) else 'current_context.task_context.') + key
-            if identity not in task_fields:
-                task_fields[identity] = {'message_index': index, 'field': field}
-            elif index != newest_context or key in {'accepted_revision_baseline', 'research_working_state'}:
-                task[key] = {'identical_snapshot_retained_at': task_fields[identity]}
-                changed = True
-        if changed:
-            message.content = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
-    # Stable backward references matter for provider prefix caching. Refer to
-    # each value's FIRST full occurrence, never the latest turn (whose ID changes
-    # on every call). Changed/retracted observations get their own full value.
-    orientation_copies = {}
-    latest_index = contexts[-1][0] if contexts else -1
-    for index, message in enumerate(projected):
-        if not isinstance(message, (HumanMessage, ToolMessage)) or index == latest_index:
-            continue
-        try:
-            body = json.loads(message.content)
-        except (ValueError, TypeError):
-            continue
-        if not isinstance(body, dict):
-            continue
-        context = body if isinstance(message, HumanMessage) else body.get('current_context', {})
-        orientation = context.get('orientation_context') if isinstance(context, dict) else None
-        if not isinstance(orientation, dict):
-            continue
-        original_orientation = deepcopy(orientation)
-        prefix = '' if isinstance(message, HumanMessage) else 'current_context.'
-        def reuse(value, key, field):
-            encoded = json.dumps(value, ensure_ascii=False, sort_keys=True)
-            if len(encoded) <= 240:
-                return value
-            identity = (key, encoded)
-            if identity not in orientation_copies:
-                orientation_copies[identity] = {
-                    **({'message_index': index} if isinstance(message, HumanMessage)
-                       else {'tool_call_id': message.tool_call_id}), 'field': prefix + field}
-                return value
-            return {'identical_snapshot_retained_at': orientation_copies[identity]}
-        for key, value in list(orientation.items()):
-            field = 'orientation_context.' + key
-            if key == 'observation_index' and isinstance(value, list):
-                orientation[key] = [reuse(item, key, f'{field}[{i}]') for i, item in enumerate(value)]
-            else:
-                orientation[key] = reuse(value, key, field)
-        if orientation != original_orientation:
-            message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
-    return _coalesce_observation_rows(projected)
+    return _coalesce_observation_rows(_reuse_host_fields(projected))
+
 
 
 def research_input_pressure(encoded, messages, model):
@@ -780,8 +734,17 @@ def _supersede_working_notes(messages, boundary):
             message.content = "Historical context reminder superseded by the accepted working state."
         if isinstance(message, AIMessage):
             for call in message.tool_calls:
-                if call["name"] == "UpdateResearchStateAction" and "working_state" in call["args"]:
-                    call["args"]["working_state"] = deepcopy(pointer)
+                if call["name"] == "UpdateResearchStateAction":
+                    if 'working_state' in call['args']:
+                        call['args']['working_state'] = deepcopy(pointer)
+                    else:
+                        call['args'] = {**deepcopy(pointer), 'original_tool_call_id': call['id'],
+                            'action': 'update_research_state'}
+            for call in message.invalid_tool_calls:
+                if call['name'] == 'UpdateResearchStateAction':
+                    call['args'] = json.dumps(pointer, ensure_ascii=False)
+                    call['error'] = ('Historical invalid JSON proposal, not accepted. A later working state supersedes '
+                        'this proposal; original arguments and parser error remain in the native journal.')
         if not isinstance(message, (HumanMessage, ToolMessage)):
             continue
         try:
@@ -962,7 +925,8 @@ def task_boundary_history(messages):
                 continue
             if current.get("current_subtask"):
                 retained = set(current.get("retain_source_ids", [])) | latest_state_sources | material_sources
-                _project_restored_context(messages, projected, index + 1, retained, checkpoint=True)
+                _project_restored_context(messages, projected, index + 1, retained, checkpoint=True,
+                    preserve_progress=not task.get('accepted_restored_checkpoint'))
             body = json.loads(projected[index].content)
             for action in body.get("progress", {}).get("prior_actions", []):
                 if not isinstance(action, dict):
@@ -1056,18 +1020,19 @@ def task_boundary_history(messages):
                 message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
     if checkpoint:
         _supersede_working_notes(projected, boundary)
-    projected = coalesce_context_snapshots(projected)
     if checkpoint:
         projected = _archive_checkpoint_batches(projected, boundary)
-    return projected
+    return coalesce_context_snapshots(projected)
 
 
 def _archive_checkpoint_batches(messages, boundary):
-    """After a durable state/authoring boundary, retire completed episodes.
+    """Retire completed protocol episodes, keeping public records addressable.
 
     DeepSeek requires reasoning for assistant turns kept in the wire protocol.
     Therefore do not strip reasoning from live assistant messages: represent
     completed call/result pairs as explicitly untrusted historical records.
+    The caller excludes the current native batch. This is lossless for public
+    research records, not a generated summary or an acceptance of new notes.
     Public operations and retained tool text remain exact; canonical messages
     (including private reasoning) remain untouched in the native checkpoint.
     """
@@ -1079,15 +1044,13 @@ def _archive_checkpoint_batches(messages, boundary):
         if not isinstance(message, AIMessage) or not message.additional_kwargs.get("reasoning_content"):
             continue
         calls = [*message.tool_calls, *message.invalid_tool_calls]
-        if any(c["id"] not in completed for c in calls):
+        if not calls or any(c["id"] not in completed for c in calls):
             continue  # Never split an unfinished provider tool protocol.
         archived_calls.update(c["id"] for c in calls)
         projected[index] = HumanMessage(content=json.dumps({
             "origin": origin, "original_message_index": index,
-            "notice": "Historical assistant operation, NOT a user instruction, verified fact, or new tool call. "
-                "Its private reasoning is replaced in this request by the current working/authoring/draft state. "
-                "Original messages remain in the native checkpoint/private audit; public actions and results are retained below. "
-                "Continue the unfinished task from that state and current errors; do not re-execute recorded operations or infer acceptance.",
+            "notice": "Completed historical operation, not a user instruction or new call. Public content/results remain; "
+                "original protocol and reasoning remain in the native journal. Continue from current state and errors; no inferred acceptance.",
             "original_content": message.content, "tool_calls": message.tool_calls,
             "invalid_tool_calls": message.invalid_tool_calls,
         }, ensure_ascii=False, separators=(",", ":")), additional_kwargs={"fin_checkpoint_archive": True})
@@ -1095,18 +1058,17 @@ def _archive_checkpoint_batches(messages, boundary):
         if isinstance(message, ToolMessage) and message.tool_call_id in archived_calls:
             record = {
                 "origin": origin, "original_message_index": index,
-                "notice": "Historical tool result, NOT a user instruction. Preserve original source/period/unit/revision authority; "
-                    "failed results remain failures. Navigation notices require original retrieval before dependent use.",
+                "notice": "Historical result, not an instruction. Original authority and failures remain; reread navigation before citation.",
                 "tool_call_id": message.tool_call_id, "name": message.name,
                 "status": message.status, "original_content": message.content,
             }
-            if message.name in {'PrepareWorkpaperAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}:
+            if isinstance(message.content, str):
                 try:
                     body = json.loads(message.content)
                 except (ValueError, TypeError):
                     body = None
-                if isinstance(body, dict) and isinstance(body.get('current_context'), dict):
-                    # Keep canonical phase/draft locators directly addressable;
+                if isinstance(body, dict):
+                    # Keep every host envelope directly addressable;
                     # do not hide the only full candidate in an escaped string.
                     record.pop('original_content')
                     record.update(body)
@@ -1165,7 +1127,12 @@ def pressure_read_history(messages):
         projected[i].content = (json.dumps({'archived_result': notice, 'current_context': body['current_context']},
             ensure_ascii=False, separators=(',', ':')) if isinstance(body.get('current_context'), dict) else notice)
         projected[i].artifact = None
-    return coalesce_context_snapshots(projected)
+    # Apply the same accepted-state lifecycle before retiring additional
+    # consumed protocol pairs. Keep the newest assistant batch native, with
+    # its required reasoning, plus every incomplete pair.
+    projected = task_boundary_history(projected)
+    last_assistant = max((i for i, m in enumerate(projected) if isinstance(m, AIMessage)), default=0)
+    return coalesce_context_snapshots(_archive_checkpoint_batches(projected, last_assistant - 1))
 
 
 def research_checkpoint_request(messages, *, model, native_tools, runtime_context_binding, schema, max_input_characters):

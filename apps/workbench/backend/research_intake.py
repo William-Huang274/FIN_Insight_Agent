@@ -1,6 +1,7 @@
 """Versioned Java adapter over existing research drafts/runs, not an executor."""
 from datetime import datetime, timezone
 import json
+import logging
 from pathlib import Path
 from typing import Literal
 from uuid import UUID
@@ -11,6 +12,8 @@ from starlette.concurrency import run_in_threadpool
 
 from .authentication import service_owner
 from .api.v1.report_sessions import NewSession
+
+log = logging.getLogger(__name__)
 
 
 class IntakeBinding(BaseModel):
@@ -109,6 +112,8 @@ def install_intake_routes(router, service, create, start):
         result = await create(body.session, request)
         await run_in_threadpool(library.assign_new_thread, service_owner(), body.project_id, result['thread_id'])
         await service.sdk.threads.update(result['thread_id'], metadata={'business_prepared': True})
+        log.info('intake task_id=%s project_id=%s phase=prepare operation_id=%s thread_id=%s',
+                 body.task_id, body.project_id, request.scope['finsight_intake_context']['prepare_operation_id'], body.task_id)
         return {**result, 'task_id': str(body.task_id), 'project_id': str(body.project_id), 'binding': body.binding.model_dump()}
 
     @router.post(prefix + '/start')
@@ -119,6 +124,12 @@ def install_intake_routes(router, service, create, start):
         await require_binding(service, thread['metadata']['business_intake']['binding'])
         request.scope['finsight_intake_start'] = str(UUID(request.headers['idempotency-key']))
         result = await start(body.thread_id, request)
+        try:
+            logged_run_id = UUID(str(result.get('run_id')))
+        except (ValueError, TypeError, AttributeError):
+            logged_run_id = None
+        log.info('intake task_id=%s phase=start operation_id=%s thread_id=%s run_id=%s',
+                 body.task_id, request.scope['finsight_intake_start'], body.thread_id, logged_run_id)
         return {**result, 'thread_id': str(body.thread_id), 'task_id': str(body.task_id), 'project_id': str(body.project_id)}
 
     @router.get(prefix + '/tasks/{task_id}/state')

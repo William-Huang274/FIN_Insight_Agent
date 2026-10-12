@@ -81,7 +81,8 @@ def payload(s):
         'binding': deepcopy(s.binding), 'session': {'title': 'Synthetic', 'question': 'A deterministic synthetic question', 'mode': 'research', 'defer_start': True}}
 
 
-def test_prepare_start_reopen_receipt_and_exact_native_association(intake):
+def test_prepare_start_reopen_receipt_and_exact_native_association(intake, caplog):
+    caplog.set_level('INFO', logger='apps.workbench.backend.research_intake')
     body = payload(intake); operation = str(uuid4()); tid = body['task_id']
     with TestClient(intake.app()) as c:
         prepared = request(c, 'prepare', body, operation)
@@ -103,6 +104,12 @@ def test_prepare_start_reopen_receipt_and_exact_native_association(intake):
         assert state['runs'][0]['operation_id'] == start_op
         receipt = request(c, f'receipts/{start_op}?project_id={intake.project}&task_id={tid}').json()
         assert receipt['body']['run_id'] == started.json()['run_id']
+    intake_logs = '\n'.join(record.getMessage() for record in caplog.records
+                            if record.name == 'apps.workbench.backend.research_intake')
+    assert f'task_id={tid}' in intake_logs
+    assert f'operation_id={operation}' in intake_logs and f'operation_id={start_op}' in intake_logs
+    assert f"run_id={started.json()['run_id']}" in intake_logs
+    assert body['session']['question'] not in intake_logs and 'Bearer' not in intake_logs
 
 
 def test_current_project_acl_runs_before_receipt_replay_and_wrong_identity(intake, monkeypatch):

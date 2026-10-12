@@ -6,9 +6,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Repository
 class TaskStore {
+    private static final Logger LOG = LoggerFactory.getLogger(TaskStore.class);
     record Task(UUID id, String owner, UUID project, UUID key, String fingerprint, String title, String question, JsonNode binding, String created) {}
     record Command(UUID task, String phase, UUID operation, String request, String status, JsonNode response) {}
     private final JdbcTemplate db;
@@ -35,7 +38,7 @@ class TaskStore {
     }
     Task insert(Task task, String prepare, String start) {
         // Short database transaction only; never keep locks across a remote call.
-        return transaction.execute(status -> {
+        Task saved = transaction.execute(status -> {
             int inserted = db.update("INSERT INTO research_task(id,owner_id,project_id,submission_key,fingerprint,title,question,binding) VALUES(?,?,?,?,?,?,?,?::jsonb) ON CONFLICT(owner_id,submission_key) DO NOTHING",
                 task.id(), task.owner(), task.project(), task.key(), task.fingerprint(), task.title(), task.question(), task.binding().toString());
             if (inserted == 1) {
@@ -44,16 +47,26 @@ class TaskStore {
             }
             return byKey(task.owner(), task.key());
         });
+        LOG.info("intake task_id={} project_id={} submission_key={} state=persisted", saved.id(), saved.project(), saved.key());
+        return saved;
     }
     Command command(UUID task, String phase) {
         return db.queryForObject("SELECT * FROM research_command WHERE task_id=? AND phase=?", (r, n) -> new Command(task, phase,
             r.getObject("operation_id", UUID.class), r.getString("request_body"), r.getString("status"), parse(r.getString("response_body"))), task, phase);
     }
     boolean claim(Command c) {
-        return db.update("UPDATE research_command SET status='dispatching', updated_at=now() WHERE task_id=? AND phase=? AND status='ready'", c.task(), c.phase()) == 1;
+        boolean claimed = db.update("UPDATE research_command SET status='dispatching', updated_at=now() WHERE task_id=? AND phase=? AND status='ready'", c.task(), c.phase()) == 1;
+        if (claimed) LOG.info("intake task_id={} phase={} operation_id={} state=dispatching", c.task(), c.phase(), c.operation());
+        return claimed;
     }
     void complete(Command c, String status, JsonNode response) {
-        db.update("UPDATE research_command SET status=?,response_body=?::jsonb,updated_at=now() WHERE task_id=? AND phase=? AND status IN ('dispatching','unknown')",
+        int changed = db.update("UPDATE research_command SET status=?,response_body=?::jsonb,updated_at=now() WHERE task_id=? AND phase=? AND status IN ('dispatching','unknown')",
             status, response == null ? null : response.toString(), c.task(), c.phase());
+        if (changed == 1) {
+            UUID run = null;
+            try { if (response != null && response.hasNonNull("run_id")) run = UUID.fromString(response.path("run_id").asText()); }
+            catch (IllegalArgumentException ignored) { /* Never log untrusted response text. */ }
+            LOG.info("intake task_id={} phase={} operation_id={} state={} run_id={}", c.task(), c.phase(), c.operation(), status, run);
+        }
     }
 }

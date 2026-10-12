@@ -7,6 +7,7 @@ The browser selects a case/question, never file paths, budgets or credentials.
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from functools import wraps
 import asyncio
 from threading import Event
 from datetime import datetime, timezone
@@ -42,6 +43,7 @@ from .execution_options import ExecutionOptions, execution_from_config
 
 def cancellable_model_turn(turn, cancelled):
     """Retain an in-flight receipt but stop cancelled synchronous workers."""
+    @wraps(turn)
     def invoke(request):
         if cancelled.is_set():
             raise RuntimeError('research_cancelled_before_model_call')
@@ -55,6 +57,7 @@ def cancellable_model_turn(turn, cancelled):
 def block_unknown_model_inputs(turn, blocked_digests):
     """An operator continuation cannot resend an unresolved semantic input."""
     from .deepseek_structured_agents import _project_request, canonical_sha256
+    @wraps(turn)
     def invoke(request):
         semantic = _project_request('specialist', request, specialist_mode='agentic_turn')
         if canonical_sha256(semantic) in blocked_digests:
@@ -162,6 +165,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         if blocked_model_inputs:
             turn = block_unknown_model_inputs(turn, blocked_model_inputs)
         turn = cancellable_model_turn(turn, cancelled)
+        @wraps(turn)
         def invoke(request):
             progress = (request.get("task_context") or {}).get("runtime_progress", {})
             if progress.get("status") == "warn":

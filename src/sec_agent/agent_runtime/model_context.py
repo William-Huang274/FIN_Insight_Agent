@@ -1087,6 +1087,9 @@ def pressure_read_history(messages):
     calls = {c['id']: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
     latest_read = max((i for i, m in enumerate(messages) if isinstance(m, AIMessage)
         and any(c['name'] in REREADABLE_TOOLS for c in m.tool_calls)), default=len(messages))
+    from .research_context_view import working_view
+    if (current := working_view(messages)) is not None:
+        return current
     retained = set()
     for message in messages:
         if not isinstance(message, (HumanMessage, ToolMessage)):
@@ -1198,7 +1201,7 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
         "Context size reminder: organize the current findings, interpretation, remaining work and next action "
         "with UpdateResearchStateAction at the next useful boundary (checkpoint=true). "
         "Replace stale wording instead of copying history. Pin only sources needed together now. "
-        "The runtime archives older recoverable results after acceptance. All research tools remain available; "
+        "Older consumed results leave the working view when they can be read back; note acceptance is not required. All research tools remain available; "
         "a note validation error is repairable, not a reason to stop research. If distinct necessary evidence "
         "keeps exceeding the working window, consider the available subtask delegation tools. "
         "The configured hard input and execution budgets still apply."))
@@ -1282,6 +1285,12 @@ def deduplicate_read_results(messages):
 
 def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False, workpaper_navigation=False, policy="legacy_window"):
     from .source_result_view import source_message_views
+    # Native specialists have a journal reader. Build their current view from
+    # canonical records, before legacy retention/release rules can rewrite it.
+    if policy == "task_boundary":
+        from .research_context_view import working_view
+        if (current := working_view(messages)) is not None:
+            return source_message_views(current)
     from .context_release import release_history
     messages = current_review_candidate(messages)
     messages = source_message_views(messages)

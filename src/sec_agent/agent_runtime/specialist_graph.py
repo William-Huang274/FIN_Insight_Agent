@@ -202,12 +202,22 @@ class RequestFinanceAction(_StrictModel):
 
 
 class ReadResearchHistoryAction(_StrictModel):
-    """Read this expert's archived public action or Lead assistance, without executing it."""
+    """Read public actions, exact operation receipts or Lead assistance; never re-execute."""
     action: Literal['read_research_history'] = 'read_research_history'
     context_digest: str
-    section: Literal['turn', 'lead_assistance']
-    index: int = Field(ge=1)
+    section: Literal['turn', 'lead_assistance', 'operation']
+    index: int | None = Field(default=None, ge=1)
+    tool_call_id: str | None = Field(default=None, description='For operation: copy an exact ID from operation_catalog, including runtime:initial-context for restored history. Reads saved parameters and result; never reruns the original tool.')
     reason_summary: str
+
+    @model_validator(mode='after')
+    def history_selector(self):
+        if self.section == 'operation':
+            if not self.tool_call_id or self.index is not None:
+                raise ValueError('operation_requires_tool_call_id_without_index')
+        elif self.index is None or self.tool_call_id is not None:
+            raise ValueError('history_section_requires_index_without_tool_call_id')
+        return self
 
 
 class ReadDependencyWorkAction(_StrictModel):
@@ -2617,14 +2627,20 @@ def build_specialist_agentic_state_graph(
             if isinstance(action, ReadResearchHistoryAction):
                 if before.tool_action_count >= working['max_tool_actions']:
                     return reject('specialist_history_tool_limit', 'No additional history read executed.')
-                if action.section == 'turn':
+                if action.section == 'operation':
+                    from .research_context_view import history_reader
+                    reader = history_reader(dependencies.model_turn)
+                    if reader is None:
+                        return reject('public_history_reader_unavailable', 'Native journal reader is not wired to this runtime; this is an execution problem, not missing source evidence.')
+                    payload = reader(state['agent_id'], action.tool_call_id)
+                elif action.section == 'turn':
                     record = next((r for r in before.model_turn_records if r.turn_index == action.index), None)
                     payload = record.action.model_dump(mode='json') if record else None
                 else:
                     history = working.get('lead_assistance_history', [])
                     payload = history[action.index - 1] if action.index <= len(history) else None
                 if payload is None:
-                    return reject('unknown_public_history_record', 'Use the exact archived record index.')
+                    return reject('unknown_public_history_record', 'Use the exact operation_catalog tool_call_id, or the indexed turn/lead_assistance entry. No original tool was rerun.')
                 digest = _semantic_action_digest(action)
                 working['notebook'] = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,
                     dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode='json')

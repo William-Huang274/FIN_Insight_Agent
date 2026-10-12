@@ -132,7 +132,8 @@ def source_message_views(messages):
             except (ValueError, TypeError):
                 body = None
             # User prose and unknown JSON contracts are not a tool result.
-            if isinstance(body, dict) and ("progress" in body or (isinstance(message, ToolMessage) and "result" in body)):
+            if isinstance(body, dict) and ("progress" in body or message.additional_kwargs.get('fin_research_working_view')
+                                         or (isinstance(message, ToolMessage) and "result" in body)):
                 projected = source_result_view(body)
                 if projected != body:
                     view = message.model_copy(update={"content": json.dumps(projected, ensure_ascii=False, separators=(",", ":"))})

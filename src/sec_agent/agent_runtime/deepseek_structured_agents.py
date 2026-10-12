@@ -1350,6 +1350,11 @@ class DeepSeekStructuredAgentAdapter:
         self._dispatch_guards = dispatch_guards
         self._source_access_check = source_access_check
 
+    def read_public_operation(self, actor, tool_call_id):
+        """Read the actor-bound native journal without model or source dispatch."""
+        from .research_context_view import public_operation
+        return public_operation(self._agentic_history.get(actor, []), tool_call_id)
+
     @classmethod
     def from_config(
         cls,
@@ -1624,6 +1629,8 @@ class DeepSeekStructuredAgentAdapter:
                 # The host system message is refreshed above on every turn;
                 # current revision locators never accumulate in prior history.
                 messages[0] = SystemMessage(content=messages[0].content + guidance)
+        # Persist the native journal, never the request-only working view.
+        canonical_messages = list(messages)
         checkpoint_notice = None
         if persistent_history:
             messages = [m for m in messages if not m.additional_kwargs.get("fin_context_checkpoint_instruction")]
@@ -1765,7 +1772,7 @@ class DeepSeekStructuredAgentAdapter:
             # erase the only record of what was attempted. Never expose it to UI.
             if self._private_audit_sink is not None:
                 self._private_audit_sink({"event": "request", "call_id": call_id,
-                    "actor": actor, "messages": [_audit_value(m) for m in messages],
+                    "actor": actor, "messages": [_audit_value(m) for m in canonical_messages],
                     "messages_basis": "original_history_before_sdk_request_projection"})
             try:
                 def transport(identity):
@@ -1875,7 +1882,7 @@ class DeepSeekStructuredAgentAdapter:
         if self._private_audit_sink is not None:
             self._private_audit_sink({
                 "call_id": call_id, "actor": actor, "request_digest": request_digest,
-                "semantic_input": semantic_input, "messages": [_audit_value(m) for m in messages],
+                "semantic_input": semantic_input, "messages": [_audit_value(m) for m in canonical_messages],
                 "messages_basis": "original_history_before_sdk_request_projection",
                 "raw_response": _audit_value(envelope.get("raw")),
                 "thinking": model_profile.thinking,
@@ -2037,7 +2044,7 @@ class DeepSeekStructuredAgentAdapter:
             }
         )
         if persistent_history and saved_envelope is None:
-            self._agentic_history[actor] = [*messages, envelope["raw"]]
+            self._agentic_history[actor] = [*canonical_messages, envelope["raw"]]
         return (
             parsed,
             envelope.get("raw"),

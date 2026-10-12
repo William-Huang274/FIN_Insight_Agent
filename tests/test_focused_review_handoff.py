@@ -111,6 +111,52 @@ def test_handoff_has_no_paragraph_form_and_still_requires_honest_completion():
         ReviewHandoff.model_validate({**review_fixture(artifact_fixture()),'completion':'complete','unresolved_data_requests':['Critical original not read']})
 
 
+@pytest.mark.parametrize('encoding',['string','object','extra_brace'])
+@pytest.mark.parametrize('invalid_source',[False,True])
+def test_submission_envelope_uses_native_validation_once(encoding,invalid_source):
+    import httpx
+    from pydantic import SecretStr
+    from sec_agent.agent_runtime.deepseek_structured_agents import ReasoningPreservingChatDeepSeek
+    a=artifact_fixture()
+    review={**review_fixture(a),'completion':'complete'}
+    if invalid_source:
+        review['findings']=[finding('bad','NOT_IN_CURRENT_PAPER')]
+    fields={'review':review}
+    args=(json.dumps(fields)+'}' if encoding=='extra_brace' else
+          json.dumps({'arguments':json.dumps(fields) if encoding=='string' else fields}))
+    requests=[]
+    def serve(request):
+        requests.append(request)
+        return httpx.Response(200,json={'id':'fixture','object':'chat.completion','created':1,
+            'model':'deepseek-v4-flash','choices':[{'index':0,'finish_reason':'tool_calls','message':{
+                'role':'assistant','content':'','tool_calls':[{'id':'submit','type':'function',
+                'function':{'name':'submit_case_review','arguments':args}}]}}],
+            'usage':{'prompt_tokens':100,'completion_tokens':50,'total_tokens':150}})
+    async def exercise():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(serve)) as http:
+            model=ReasoningPreservingChatDeepSeek(model='deepseek-v4-flash',api_key=SecretStr('fixture'),
+                http_async_client=http,max_retries=0,streaming=False)
+            graph=build_case_reviewer(role='counter',model=model,tools=[],artifacts=a,
+                require_inspection=True,max_model_calls=1)
+            result=await graph.ainvoke({'messages':[HumanMessage(content='Synthetic only'),*reads(a)]})
+        assert len(requests)==1
+        messages=[m for m in result['messages'] if isinstance(m,ToolMessage) and m.tool_call_id=='submit']
+        assert len(messages)==1
+        assert bool(result.get('review')) is not invalid_source
+        assert (messages[0].status=='error') is invalid_source
+        recovered=next(m for m in result['messages'] if isinstance(m,AIMessage) and m.tool_calls)
+        assert recovered.response_metadata['tool_argument_recovery'][0]['original_arguments']
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize('inner',['{"review":', '{"review":{},"review":{}}', '{"review":{"x":NaN}}'])
+def test_incomplete_or_ambiguous_envelopes_are_not_executed(inner):
+    from sec_agent.agent_runtime.case_review_agent import InvalidToolCallFeedback
+    message=AIMessage(content='',tool_calls=[call('submit_case_review',{'arguments':inner},'bad')])
+    assert InvalidToolCallFeedback().after_model({'messages':[message]},None) is None
+    assert message.tool_calls[0]['args']=={'arguments':inner}
+
+
 def test_contract_transition_preserves_task_and_user_correction_without_old_queue():
     a=artifact_fixture()
     state={'messages':[HumanMessage(content=json.dumps({'question':'The original question','inspection_manifest':'OLD_QUEUE'})),

@@ -61,6 +61,9 @@ personal-space takeover are not included in this slice.
 
 ## Failure semantics
 
+See [request lifecycle and fault qualification](../../docs/engineering/java_intake_recovery.zh-CN.md)
+for operation ownership, recovery limits and reproducible synthetic fault cases.
+
 Preparing and starting have separate, permanent operation IDs and saved JSON
 bytes. A database compare-and-set claims one dispatch attempt. Timeouts, dropped
 responses and process death keep the operation unknown. Reconcile only reads

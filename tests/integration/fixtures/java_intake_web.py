@@ -3,6 +3,8 @@
 This module cannot contact an Agent Server or model provider. Never deploy it.
 """
 import json
+import asyncio
+import logging
 import os
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,7 +24,27 @@ from apps.workbench.backend import research_intake
 from apps.workbench.backend.app import create_report_session_app
 state_path = root/'synthetic-native.json'
 state = json.loads(state_path.read_text()) if state_path.exists() else {'threads': {}, 'runs': {}}
-def save(): state_path.write_text(json.dumps(state), encoding='utf-8')
+logging.getLogger('apps.workbench.backend.research_intake').setLevel(logging.INFO)
+logging.getLogger('apps.workbench.backend.research_intake').addHandler(logging.StreamHandler())
+
+def save():
+    temporary = state_path.with_suffix('.tmp')
+    temporary.write_text(json.dumps(state), encoding='utf-8')
+    temporary.replace(state_path)
+
+async def barrier(point):
+    """Fault controls exist only in this explicitly guarded test module."""
+    control = root/'fault-control.json'
+    if not control.exists(): return
+    setting = json.loads(control.read_text())
+    marker = root/('entered-'+setting['case'])
+    release = root/('release-'+setting['case'])
+    if setting['point'] != point or marker.exists(): return
+    marker.write_text(point)
+    for _ in range(600):
+        if release.exists(): return
+        await asyncio.sleep(.1)
+    raise RuntimeError('synthetic_fault_barrier_timeout')
 
 class Threads:
     async def search(self, **kwargs): return list(state['threads'].values())
@@ -42,9 +64,11 @@ class Threads:
 class Runs:
     async def list(self, tid, **kwargs): return state['runs'].get(str(tid), [])[kwargs.get('offset', 0):][:kwargs.get('limit', 100)]
     async def create(self, tid, graph, **kwargs):
+        await barrier('before_native_start')
         tid = str(tid)
         row = {'run_id': str(uuid4()), 'status': 'success', 'metadata': kwargs['metadata']}
         state['runs'].setdefault(tid, []).append(row); save()
+        await barrier('after_native_start')
         if state['threads'][tid]['metadata']['title'] == 'Synthetic lost response':
             raise httpx.ReadTimeout('synthetic response lost after persistence')
         return row
@@ -56,6 +80,14 @@ class SyntheticService(original):
         super().__init__(*args, **kwargs, sdk=SimpleNamespace(threads=Threads(), runs=Runs()))
 report_sessions.ReportSessionService = SyntheticService
 async def synthetic_binding(service):
+    await barrier('before_binding_reply')
     return {'snapshot_ref': 'sha256:'+'a'*64, 'research_as_of': service.research_profile['research_as_of']}
 research_intake.current_binding = synthetic_binding
-app = create_report_session_app()
+application = create_report_session_app()
+
+async def app(scope, receive, send):
+    async def after_receipt(message):
+        if scope.get('path') == '/api/v1/internal-research/start' and message['type'] == 'http.response.start':
+            await barrier('after_receipt_save')
+        await send(message)
+    await application(scope, receive, after_receipt)

@@ -18,6 +18,10 @@ access and every selected source are required to read a preparation; researchers
 can explicitly verify frozen originals through the BFF. This creates no native
 thread/run and does not enable shared execution. See
 [organization input preparation](../../docs/engineering/organization_research_inputs.zh-CN.md).
+Flyway V6 adds internal execution authorization bindings. A separate workload
+credential can request current all-input access for a bound principal, but cannot
+manage projects or impersonate a browser user. This does not create a native run.
+See [scoped organization evidence tools](../../docs/engineering/organization_execution_access.zh-CN.md).
 See [project resource links](../../docs/engineering/project_resource_links.zh-CN.md)
 and [organization project scope and static
 acceptance cases](../../docs/engineering/organization_projects.zh-CN.md).
@@ -47,6 +51,8 @@ Supply these environment variables outside Git:
 - `FINSIGHT_BUSINESS_JDBC_URL`: JDBC URL for a **dedicated business database**.
 - `FINSIGHT_BUSINESS_DB_USER` and `FINSIGHT_BUSINESS_DB_PASSWORD`: that database's credentials.
 - `FINSIGHT_BUSINESS_SHARED_SECRET`: at least 32 UTF-8 bytes, shared with the BFF.
+- `FINSIGHT_ORGANIZATION_RUNTIME_SECRET`: optional separate secret, at least 32 UTF-8 bytes;
+  enables the internal runtime authorization endpoint. Must differ from the BFF secret.
 - `FINSIGHT_PYTHON_INTAKE_URL`: loopback BFF URL, defaults to `http://127.0.0.1:8765`.
 - `FINSIGHT_BUSINESS_PORT`: defaults to `8095`, listening on `127.0.0.1`.
 

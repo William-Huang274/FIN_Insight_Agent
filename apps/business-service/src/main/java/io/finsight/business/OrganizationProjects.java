@@ -67,6 +67,11 @@ class OrganizationProjects {
         return row;
     }
     Map<String,Object> researchPreparation(String actor,UUID id,boolean lock) {
+        var row=researchMember(actor,id,lock);
+        if(Boolean.TRUE.equals(row.get("archived")))throw new ApiFailure(409,"归档项目不能准备研究，请先恢复项目");
+        return row;
+    }
+    Map<String,Object> researchMember(String actor,UUID id,boolean lock) {
         if(lock) {
             UUID org=(UUID)one("SELECT organization_id FROM organization_project WHERE id=?",id).get("organization_id");
             organizationLock(org);
@@ -74,7 +79,6 @@ class OrganizationProjects {
         }
         var row=project(actor,id,false);
         if(row.get("role").equals("viewer"))throw new ApiFailure(403,"需要项目研究或管理权限");
-        if(Boolean.TRUE.equals(row.get("archived")))throw new ApiFailure(409,"归档项目不能准备研究，请先恢复项目");
         return row;
     }
     private void audit(UUID id,String actor,String action,String target,int revision) {

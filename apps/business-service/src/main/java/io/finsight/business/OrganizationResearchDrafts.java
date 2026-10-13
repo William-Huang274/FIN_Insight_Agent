@@ -113,7 +113,9 @@ class OrganizationResearchDrafts {
     // This response is NOT a bearer capability and must not authorize a future run.
     @PostMapping("/{id}/material-access")
     Object materialAccess(HttpServletRequest request,@PathVariable UUID projectId,@PathVariable UUID id) {
-        String actor=actor(request);
+        return materialAccess(actor(request),projectId,id);
+    }
+    Map<String,Object> materialAccess(String actor,UUID projectId,UUID id) {
         return tx.execute(status->{
             projects.researchPreparation(actor,projectId,true);
             var row=draft(actor,projectId,id);

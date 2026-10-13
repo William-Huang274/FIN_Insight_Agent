@@ -3,6 +3,7 @@
 Login principals are synthetic. Requires explicit built JAR and Docker; no models.
 """
 import os
+import asyncio
 from pathlib import Path
 import secrets
 import shutil
@@ -18,6 +19,12 @@ from apps.workbench.backend.business_transport import build_business_gateway
 from test_project_library import app_at, WRITE
 from test_resource_spaces import source_at
 from tests.integration.test_java_intake_stack import port, ready
+from apps.workbench.backend.business_transport import space_business_request
+from sec_agent.research_foundation.organization_execution_access import (
+    OrganizationExecutionAuthority, OrganizationExecutionReader, OrganizationExecutionUnavailable,
+    build_organization_evidence_server,
+)
+from sec_agent.research_foundation.asset_workspace import AssetWorkspace
 
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.skipif(not os.environ.get('FINSIGHT_INTAKE_TEST_JAR'), reason='explicit built Java intake JAR required')
@@ -41,6 +48,7 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
         java_port = port()
         for key,value in {'FINSIGHT_RESOURCE_SPACES_ENABLED':'1','FINSIGHT_AUTH_MODE':'oidc_product',
             'FINSIGHT_BUSINESS_SHARED_SECRET':secrets.token_urlsafe(48),
+            'FINSIGHT_ORGANIZATION_RUNTIME_SECRET':secrets.token_urlsafe(48),
             'FINSIGHT_BUSINESS_API_URL':f'http://127.0.0.1:{java_port}'}.items(): monkeypatch.setenv(key,value)
         env = {**os.environ,'FINSIGHT_BUSINESS_PORT':str(java_port),
             'FINSIGHT_BUSINESS_JDBC_URL':f'jdbc:postgresql://127.0.0.1:{pg_port}/postgres',
@@ -130,6 +138,28 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert checked.json()['manifest_digest'] == prepared['manifest_digest']
             assert checked.json()['status'] == 'inputs_verified'
             api('POST',drafts+f'/{draft}/material-access',{},status=404)
+            # Internal server binding only. Browser cannot register a native identity.
+            execution_id, admin_execution = str(uuid4()), str(uuid4())
+            binding_path=f'projects/{project}/research-drafts/{draft}/execution-bindings'
+            binding_body={'id':execution_id,'manifest_digest':prepared['manifest_digest']}
+            api('POST','/'+binding_path,binding_body,headers=bob,status=404)
+            bound=asyncio.run(space_business_request('bob','POST',binding_path,binding_body))
+            assert bound['thread_id']==execution_id and bound['native_execution_enabled'] is False
+            assert asyncio.run(space_business_request('bob','POST',binding_path,binding_body))==bound
+            asyncio.run(space_business_request('alice','POST',binding_path,{**binding_body,'id':admin_execution}))
+            def runtime(identifier):
+                authority=OrganizationExecutionAuthority(base_url=f'http://127.0.0.1:{java_port}',
+                    secret=os.environ['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'],execution_id=identifier,
+                    manifest_digest=prepared['manifest_digest'])
+                return OrganizationExecutionReader(AssetWorkspace(tmp_path/'project-library'/'organization-assets'),authority)
+            bob_reader,admin_reader=runtime(execution_id),runtime(admin_execution)
+            async def read_mcp(reader):
+                from mcp import Client
+                async with Client(build_organization_evidence_server(reader),raise_exceptions=False) as tools:
+                    return await tools.call_tool('read_organization_evidence',{'resource_id':resource})
+            tool_result=asyncio.run(read_mcp(bob_reader))
+            assert not tool_result.is_error,tool_result
+            assert tool_result.structured_content['text']=='Organization keeps this after author departure.'
             # Original private file withdrawal does not retract explicit publication.
             source.library.set_access('bob',bob_ref['project_id'],'document',bob_ref['version_id'],True)
             api('POST',f'/organizations/{org}/remove-member',{'subject':'bob'})
@@ -141,8 +171,13 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert api('GET','/projects',headers=bob)['items']==[]
             assert client.get(read,headers=bob).status_code==404
             assert client.get(read,headers=WRITE).status_code==200
+            assert asyncio.run(read_mcp(bob_reader)).is_error
+            assert not asyncio.run(read_mcp(admin_reader)).is_error
             api('POST','/resources',{},status=404) # binding registration is BFF-only
         business.terminate();business.wait(timeout=20);business=start()
+        # The same reader object obtains fresh Java authority after process restart.
+        assert admin_reader.read_text(resource)['text']=='Organization keeps this after author departure.'
+        with pytest.raises(OrganizationExecutionUnavailable): bob_reader.check()
         with TestClient(app()) as client:
             saved=client.get(f'/api/v1/business/workspaces/projects/{project}',headers=WRITE)
             assert saved.status_code==200 and saved.json()['revision']==3
@@ -167,6 +202,9 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert client.get(project_read,headers=WRITE).status_code==404
             assert client.get('/api/v1/business/workspaces'+drafts+f'/{draft}',headers=WRITE).status_code == 404
             assert client.post(verify,headers=WRITE,json={}).status_code == 404
+            with pytest.raises(OrganizationExecutionUnavailable): admin_reader.read_text(resource)
+            closed=asyncio.run(space_business_request('alice','POST',f'projects/{project}/execution-bindings/{admin_execution}/close'))
+            assert closed['status']=='closed'
             assert client.get(f'/api/v1/business/workspaces/projects/{project}/resources',headers=WRITE).json()['items']==[]
             assert client.get(f'/api/v1/business/workspaces/spaces/{team}/resources',headers=WRITE).json()['items']==[]
     finally:

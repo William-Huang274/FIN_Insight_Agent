@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.*;
 @Testcontainers
 class ResearchIntakeTest {
     static final String SECRET = "synthetic-test-only-delegation-key-32-bytes";
+    static final String RUNTIME_SECRET = "synthetic-test-only-separate-runtime-key-32-bytes";
     static final ObjectMapper JSON = new ObjectMapper();
     @Container static final PostgreSQLContainer<?> PG = new PostgreSQLContainer<>("postgres:16.15-alpine");
     static final Map<String, ObjectNode> drafts = new ConcurrentHashMap<>();
@@ -40,6 +41,7 @@ class ResearchIntakeTest {
     @DynamicPropertySource static void properties(DynamicPropertyRegistry r) {
         r.add("spring.datasource.url", PG::getJdbcUrl); r.add("spring.datasource.username", PG::getUsername); r.add("spring.datasource.password", PG::getPassword);
         r.add("finsight.shared-secret", () -> SECRET); r.add("finsight.python-url", () -> "http://127.0.0.1:"+PYTHON.getAddress().getPort());
+        r.add("finsight.runtime-secret", () -> RUNTIME_SECRET);
     }
     @LocalServerPort int port;
     @Autowired TaskStore store;
@@ -246,6 +248,8 @@ class ResearchIntakeTest {
         assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".flyway_schema_history WHERE version='4' AND success",Integer.class)).isEqualTo(1);
         assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".flyway_schema_history WHERE version='5' AND success",Integer.class)).isEqualTo(1);
         assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".organization_research_draft",Integer.class)).isZero();
+        assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".flyway_schema_history WHERE version='6' AND success",Integer.class)).isEqualTo(1);
+        assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".organization_execution_binding",Integer.class)).isZero();
         // The isolated Testcontainers database is discarded at test completion.
     }
     @Test void project_roles_live_org_membership_and_space_permissions_are_independent() throws Exception {
@@ -478,6 +482,91 @@ class ResearchIntakeTest {
         workspace(admin,"GET",base+"/"+draft,null,200);workspace(admin,"POST",base,body,409);
         workspace(admin,"POST",base+"/"+draft+"/material-access",null,409);
         workspace(admin,"GET","/projects/"+UUID.randomUUID()+"/research-drafts/"+draft,null,404);
+    }
+    record ExecutionFixture(String admin,String researcher,UUID org,UUID project,UUID space,UUID resource,UUID draft,String digest) {
+        String createPath() {return "/projects/"+project+"/research-drafts/"+draft+"/execution-bindings";}
+    }
+    ExecutionFixture executionFixture() throws Exception {
+        String admin="execution-admin-"+UUID.randomUUID(),researcher="execution-user-"+UUID.randomUUID();
+        UUID org=UUID.randomUUID(),project=UUID.randomUUID(),space=UUID.randomUUID(),resource=UUID.randomUUID(),draft=UUID.randomUUID();
+        workspace(admin,"POST","/organizations",Map.of("id",org,"name","执行组织","display_name","管理员"),200);
+        joinProjectOrganization(admin,researcher,org);
+        workspace(admin,"POST","/projects",Map.of("id",project,"organization_id",org,"name","研究项目","description",""),200);
+        workspace(admin,"POST","/projects/"+project+"/members",Map.of("revision",1,"subject",researcher,"role","researcher"),200);
+        workspace(admin,"POST","/spaces",Map.of("id",space,"organization_id",org,"name","团队"),200);
+        workspace(admin,"POST","/spaces/"+space+"/members",Map.of("subject",researcher,"role","reader"),200);
+        workspace(admin,"POST","/resources",Map.of("id",resource,"space_id",space,"title","固定原件","resource_type","files",
+            "binding",Map.of("organization_id",org,"space_id",space,"ref",Map.of("project_id",space,"kind","document","asset_id","UPLOAD::fixed","version_id","UPLOAD::v1","digest","a".repeat(64)))),200);
+        workspace(admin,"POST","/projects/"+project+"/resources/"+resource,Map.of("revision",2,"linked",true),200);
+        var prepared=workspace(researcher,"POST","/projects/"+project+"/research-drafts",Map.of("id",draft,"title","执行准备","question","核对组织固定输入中的财务期间和单位。","research_as_of","2026-10-12","resource_ids",List.of(resource)),200);
+        return new ExecutionFixture(admin,researcher,org,project,space,resource,draft,prepared.path("manifest_digest").asText());
+    }
+    HttpResponse<String> runtimeRequest(String path,String body,String signedPath,String signingKey) throws Exception {
+        var now=Instant.now();
+        var claims=new JWTClaimsSet.Builder().issuer("finsight-agent-runtime").audience("finsight-java-organization-runtime").subject("finsight-agent-runtime")
+            .issueTime(Date.from(now)).expirationTime(Date.from(now.plusSeconds(60))).claim("method","POST").claim("path",signedPath)
+            .claim("body_sha256",Delegation.digest(body.getBytes(StandardCharsets.UTF_8))).build();
+        var token=new SignedJWT(new JWSHeader(JWSAlgorithm.HS256),claims);token.sign(new MACSigner(signingKey));
+        return client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+port+path)).header("Authorization","Bearer "+token.serialize())
+            .header("Content-Type","application/json").POST(HttpRequest.BodyPublishers.ofString(body)).build(),HttpResponse.BodyHandlers.ofString());
+    }
+    JsonNode runtimeAccess(UUID id,String digest,int status) throws Exception {
+        String path="/v1/runtime/organization-executions/"+id+"/access";
+        var reply=runtimeRequest(path,JSON.writeValueAsString(Map.of("thread_id",id,"manifest_digest",digest)),path,RUNTIME_SECRET);
+        assertThat(reply.statusCode()).withFailMessage(reply.body()).isEqualTo(status);return JSON.readTree(reply.body());
+    }
+    @Test void execution_binding_is_idempotent_current_and_never_dispatches() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();var body=Map.of("id",id,"manifest_digest",f.digest());
+        int tasks=db.queryForObject("SELECT count(*) FROM research_task",Integer.class);
+        try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
+            var calls=new ArrayList<Future<JsonNode>>();
+            for(int i=0;i<5;i++)calls.add(pool.submit(()->workspace(f.researcher(),"POST",f.createPath(),body,200)));
+            var first=calls.getFirst().get();for(var call:calls)assertThat(call.get()).isEqualTo(first);
+            assertThat(first.path("thread_id").asText()).isEqualTo(id.toString());assertThat(first.path("native_execution_enabled").asBoolean()).isFalse();
+        }
+        assertThat(db.queryForObject("SELECT count(*) FROM organization_execution_binding WHERE id=?",Integer.class,id)).isEqualTo(1);
+        assertThat(db.queryForObject("SELECT count(*) FROM organization_project_audit WHERE project_id=? AND action='execution_bind'",Integer.class,f.project())).isEqualTo(1);
+        workspace(f.admin(),"POST",f.createPath(),body,409); // An administrator cannot replay as another principal.
+        var grant=runtimeAccess(id,f.digest(),200);
+        assertThat("sha256:"+Delegation.digest(grant.path("manifest_text").asText().getBytes(StandardCharsets.UTF_8))).isEqualTo(f.digest());
+        assertThat(grant.path("inputs")).hasSize(1);
+        runtimeAccess(id,"sha256:"+"0".repeat(64),404);
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",f.researcher(),"role","remove"),200);
+        runtimeAccess(id,f.digest(),404);
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",f.researcher(),"role","reader"),200);
+        runtimeAccess(id,f.digest(),200); // Restores reads only, never resumes a run.
+        workspace(f.admin(),"POST","/projects/"+f.project()+"/members",Map.of("revision",3,"subject",f.researcher(),"role","viewer"),200);
+        runtimeAccess(id,f.digest(),404);
+        assertThat(db.queryForObject("SELECT count(*) FROM research_task",Integer.class)).isEqualTo(tasks);
+    }
+    @Test void execution_close_survives_replay_and_permission_restoration() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();var body=Map.of("id",id,"manifest_digest",f.digest());
+        workspace(f.researcher(),"POST",f.createPath(),body,200);
+        workspace(f.admin(),"POST","/projects/"+f.project(),Map.of("revision",3,"name","项目","description","","archived",true),200);
+        runtimeAccess(id,f.digest(),404);
+        String close="/projects/"+f.project()+"/execution-bindings/"+id+"/close";
+        var closed=workspace(f.researcher(),"POST",close,null,200);assertThat(closed.path("status").asText()).isEqualTo("closed");
+        assertThat(workspace(f.researcher(),"POST",close,null,200)).isEqualTo(closed);
+        workspace(f.admin(),"POST","/projects/"+f.project(),Map.of("revision",4,"name","项目","description","","archived",false),200);
+        assertThat(workspace(f.researcher(),"POST",f.createPath(),body,200)).isEqualTo(closed);
+        runtimeAccess(id,f.digest(),404);
+        assertThat(db.queryForObject("SELECT count(*) FROM organization_project_audit WHERE project_id=? AND action='execution_close'",Integer.class,f.project())).isEqualTo(1);
+    }
+    @Test void workload_credentials_cannot_impersonate_users_or_change_request_scope() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
+        String path="/v1/runtime/organization-executions/"+id+"/access",body=JSON.writeValueAsString(Map.of("thread_id",id,"manifest_digest",f.digest()));
+        assertThat(request(f.researcher(),"POST",path,body,null).statusCode()).isEqualTo(401);
+        // Servlet path normalization must not move a business credential into the workload namespace.
+        for(String alias:List.of(path.replace("runtime","%72untime"),path.replace("runtime/","runtime;alias/"),path.replace("/v1/","/v1//"),path.replace("runtime/","runtime/../runtime/")))
+            assertThat(request(f.researcher(),"POST",alias,body,null).statusCode()).isBetween(400,499);
+        assertThat(runtimeRequest(path,body,path,SECRET).statusCode()).isEqualTo(401);
+        assertThat(runtimeRequest(path,body,path+"?unbound=true",RUNTIME_SECRET).statusCode()).isEqualTo(401);
+        assertThat(runtimeRequest("/v1/workspaces/organizations","{}","/v1/workspaces/organizations",RUNTIME_SECRET).statusCode()).isEqualTo(401);
+        String impersonation=JSON.writeValueAsString(Map.of("thread_id",id,"manifest_digest",f.digest(),"owner_id",f.admin()));
+        assertThat(runtimeRequest(path,impersonation,path,RUNTIME_SECRET).statusCode()).isEqualTo(400);
+        workspace(f.admin(),"POST","/organizations/"+f.org()+"/remove-member",Map.of("subject",f.researcher()),200);
+        runtimeAccess(id,f.digest(),404);
+        assertThatThrownBy(()->new RuntimeDelegation(SECRET,SECRET)).isInstanceOf(IllegalArgumentException.class);
     }
     @Test void lost_prepare_response_recovers_only_deterministic_thread() throws Exception {
         var task=create("drop-prepare");String path="/v1/tasks/"+task.path("id").asText();int before=prepares.get();

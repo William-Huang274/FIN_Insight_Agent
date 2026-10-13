@@ -85,3 +85,25 @@ uv run --no-sync python -m pytest -q tests/integration/test_resource_spaces_stac
 导航前后、每份原件读取前后、引用与计算工具调用前后均核验当前权限。扫描多个来源后再次核权，避免前一份来源已撤权、后续扫描仍返回合并结果。已读缓存不是权限租约；观察记录仅存当前工具会话，不从模型参数导入别人的引用或个人记忆。跨运行恢复的观察记录校验和全图记忆隔离仍待接入。
 
 2026-10-13 工程验证：新增15项组织协议测试（含真实LangGraph工具循环、脚本模型、MCP2与共享schema桥）通过；相关回归首次131通过、2项未授权外网探针跳过，额外53通过；最终共享窗口调整后73项重验通过（这些重验不重复计作新增测试）。真实签名BFF/Java/PostgreSQL/SQLite/MCP、成员退出/源撤权及Java重启1项22.85秒通过。没有模型、embedding、rerank调用。这证明协议与组件可消费，不证明FinSight完整团队图、原生运行接续、成果授权或金融质量已经完成。
+
+## 3B 第四片：组织执行底稿的当前权限
+
+底稿可能包含原文摘录和衍生判断，不能只保护原文件。`organization_memory_scope(reader)` 从 Java 已校验的固定授权推导 `organization:<organization_id>` 与执行 ID，不接受模型指定的 owner 或 workspace；复用现有 SQLite 工作底稿，不新增成员表或另一套存储。当前采用准备单同一规则：项目研究资格和全部所选来源都仍可用，才允许继续读写本次执行的底稿。底稿归组织保存，但同组织不同执行不会自动共享；研究内不同 Agent 可以协作。这里不实现人员交接或管理员跨研究阅读。
+
+保护作用域内的 `memory_for` 不允许显式参数改成另一位用户或另一项研究，嵌套旧 scope 也不能降低原保护。存储连接在 I/O 前后检查授权，覆盖正文、历史版本、搜索摘要、人工修订目录、版本清单、导出及写入。已获取对象不缓存授权；离开作用域后，旧对象和复制的异步上下文不能继续读取。`asyncio.to_thread` 与实际 LangGraph 工具循环已纳入静态测试。
+
+授权失败使用 `WorkingMemoryAccessDenied` 停止工具执行，不落入原先“底稿存储暂不可用，可以继续研究”的可选错误分支；同样不能降级成空目录或关键词兜底。普通个人底稿的非授权存储错误仍沿用原行为。组织底稿搜索固定使用本地关键词，即使宿主开启语义检索也不创建 embedding/rerank 请求；直接调用语义搜索实现也会被拒绝。
+
+前后核权仍不是 Java 与 SQLite 的分布式事务：写入提交后若撤权，调用拒绝返回成功，但记录可能已经保存。不得自动重放写请求；恢复权限后读取当前版本再处理。已经返回的内容无法撤回，最后一次检查与输出之间也不是零时间窗口。
+
+复现新增测试：
+
+```powershell
+uv run --no-sync python -m pytest -q tests/test_organization_working_memory.py tests/test_working_memory.py tests/test_working_memory_search.py
+# 同上方真实服务用例；现在还覆盖已取得的底稿对象撤权、同组织执行隔离和重启回读。
+uv run --no-sync python -m pytest -q tests/integration/test_resource_spaces_stack.py
+```
+
+本片是可供运行工厂使用的受控存取组件，**未解除 `research_session_graph` 对组织运行的拒绝**。完整工厂的 Lead、专家、审查、修订仍须共同接入组织资料组合和模型前核权，观察记录恢复、原生启动/接续及事件/成果/导出对外接口也须闭合。这里的底稿导出保护不等于产品报告导出已完成组织适配。
+
+2026-10-13 工程验证：包含32项新增组织底稿用例的相关 Python 回归168项通过；实际签名BFF/Java/PostgreSQL/SQLite/MCP、成员退出、源撤权与Java重启1项36.61秒通过。活跃基线、960文件密钥扫描及diff检查通过。没有模型、embedding、rerank调用；没有部署共同分支。脚本Agent循环证明框架能消费这一作用域并在撤权后停止，不能代表完整投研流程或金融结论质量。

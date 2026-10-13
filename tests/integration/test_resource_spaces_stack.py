@@ -25,6 +25,9 @@ from sec_agent.research_foundation.organization_execution_access import (
     build_organization_evidence_server,
 )
 from sec_agent.research_foundation.asset_workspace import AssetWorkspace
+from sec_agent.agent_runtime.organization_memory_scope import organization_memory_scope
+from sec_agent.agent_runtime.working_memory import WorkingMemoryAccessDenied
+from sec_agent.agent_runtime.working_memory_tools import memory_for
 
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.skipif(not os.environ.get('FINSIGHT_INTAKE_TEST_JAR'), reason='explicit built Java intake JAR required')
@@ -66,6 +69,7 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             application.include_router(build_business_gateway(),prefix='/api/v1')
             return application
         org, team, invite, resource = [str(uuid4()) for _ in range(4)]
+        monkeypatch.setenv('FINSIGHT_WORKING_MEMORY_PATH', str(tmp_path / 'organization-papers.sqlite'))
         bob={**WRITE,'Authorization':'Bearer bob'}
         with TestClient(app()) as client:
             def api(method,path,body=None,headers=WRITE,status=200):
@@ -176,7 +180,17 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert citation['organization_source']['ref']==prepared['manifest']['inputs'][0]['ref']
             # Original private file withdrawal does not retract explicit publication.
             source.library.set_access('bob',bob_ref['project_id'],'document',bob_ref['version_id'],True)
-            api('POST',f'/organizations/{org}/remove-member',{'subject':'bob'})
+            with organization_memory_scope(bob_reader):
+                bob_memory = memory_for({'configurable':{'thread_id':execution_id}}, 'lead')
+                bob_note = bob_memory.save('Synthetic derived note', citation['passage'])
+                assert bob_memory.read(bob_note['note_id'])['found']
+                api('POST',f'/organizations/{org}/remove-member',{'subject':'bob'})
+                with pytest.raises(WorkingMemoryAccessDenied): bob_memory.read(bob_note['note_id'])
+                with pytest.raises(WorkingMemoryAccessDenied): bob_memory.search()
+            with organization_memory_scope(admin_reader):
+                admin_memory = memory_for({'configurable':{'thread_id':admin_execution}}, 'lead')
+                assert not admin_memory.read(bob_note['note_id'])['found']
+                admin_note = admin_memory.save('Independent authorized note', citation['passage'])
             api('GET',f'/projects/{project}',headers=bob,status=404)
             api('GET',f'/projects/{project}/members',headers=bob,status=404)
             api('GET',drafts+f'/{draft}',headers=bob,status=404)
@@ -192,6 +206,9 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
         business.terminate();business.wait(timeout=20);business=start()
         # The same reader object obtains fresh Java authority after process restart.
         assert admin_reader.read_text(resource)['text']=='Organization keeps this after author departure.'
+        with organization_memory_scope(admin_reader):
+            restored_memory = memory_for({'configurable':{'thread_id':admin_execution}}, 'reviewer')
+            assert restored_memory.read(admin_note['note_id'])['body'] == citation['passage']
         admin_navigation = OrganizationSourceNavigation(admin_reader, workbench_url='http://testserver')
         admin_citation = asyncio.run(read_original(admin_navigation))
         with pytest.raises(OrganizationExecutionUnavailable): bob_reader.check()
@@ -212,7 +229,11 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert result.headers['cache-control']=='no-store'
             denied=client.post('/api/v1/asset-workspace/read',headers=WRITE,json=result.json()['version']['ref'])
             assert denied.status_code==404 # cannot bypass Java with ordinary owner APIs
-            response=client.post(f'/api/v1/business/workspaces/resources/{resource}/revoke',headers=WRITE,json={'revision':result.json()['permission_revision']})
+            with organization_memory_scope(admin_reader):
+                admin_memory = memory_for({'configurable':{'thread_id':admin_execution}}, 'lead')
+                response=client.post(f'/api/v1/business/workspaces/resources/{resource}/revoke',headers=WRITE,json={'revision':result.json()['permission_revision']})
+                with pytest.raises(WorkingMemoryAccessDenied): admin_memory.export_markdown(admin_note['note_id'])
+                with pytest.raises(WorkingMemoryAccessDenied): admin_memory.save('Blocked note', 'No new derived text')
             assert response.status_code==200,response.text
             assert client.get(read,headers=WRITE).status_code==404
             assert client.get(read,headers=bob).status_code==404

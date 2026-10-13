@@ -11,6 +11,7 @@ from dataclasses import asdict
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from retrieval.qwen_api import QwenRetrieval
+from .working_memory import WorkingMemoryAccessDenied
 
 
 def enabled():
@@ -41,6 +42,7 @@ class WorkingPaperSearch:
         db.commit()
 
     def call(self, db, operation, payload):
+        self.memory.check_remote_search()
         # Include model, dimensions and tenant/workspace. Never share private caches across tenants.
         scope = json.dumps([self.memory.owner, self.memory.workspace])
         key = hashlib.sha256(json.dumps([operation, payload, self.api.embedding_model,
@@ -80,13 +82,15 @@ class WorkingPaperSearch:
             db.execute("UPDATE working_retrieval_calls SET status='completed',usage=?,request_id=? WHERE id=?",
                 (json.dumps(result['usage']),result['request_id'],call_id))
             db.commit()
-            return result
         except Exception:
             db.execute("UPDATE working_retrieval_calls SET status='failed_usage_unknown' WHERE id=?", (call_id,))
             db.commit()
             raise
+        self.memory.check_access()
+        return result
 
     def search(self, query, actor=None):
+        self.memory.check_remote_search()
         import sqlite_vec
         query = query.strip()[:500]
         own_api = self.api is None
@@ -142,10 +146,12 @@ class WorkingPaperSearch:
 
 
 def search_working_papers(memory, query='', *, actor=None, offset=0):
-    if not enabled() or not query.strip() or offset:
+    if not memory.allow_remote_search or not enabled() or not query.strip() or offset:
         return memory.search(query,actor=actor,offset=offset)
     try:
         return WorkingPaperSearch(memory).search(query,actor)
+    except WorkingMemoryAccessDenied:
+        raise
     except Exception:
         return {**memory.search(query,actor=actor,offset=offset), 'semantic_available':False,
                 'notice':'语义检索暂不可用，当前为关键词结果；已保存正文可继续读取。'}

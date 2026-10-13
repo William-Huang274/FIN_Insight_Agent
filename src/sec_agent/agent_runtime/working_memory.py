@@ -13,15 +13,31 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+class WorkingMemoryAccessDenied(RuntimeError):
+    """Authorization failure must stop execution, not become an optional-note error."""
+
+
 class WorkingMemory:
-    def __init__(self, path, *, owner, workspace, actor):
+    def __init__(self, path, *, owner, workspace, actor, access_check=None, allow_remote_search=True):
         if not all(isinstance(x, str) and x for x in (owner, workspace, actor)):
             raise ValueError("working_memory_scope_required")
         self.path = Path(path)
         self.owner, self.workspace, self.actor = owner, workspace, actor
+        self._access_check = access_check
+        self.allow_remote_search = allow_remote_search
+
+    def check_access(self):
+        if self._access_check is not None:
+            self._access_check()
+
+    def check_remote_search(self):
+        self.check_access()
+        if not self.allow_remote_search:
+            raise WorkingMemoryAccessDenied('working_memory_remote_search_not_authorized')
 
     @contextmanager
     def connection(self):
+        self.check_access()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         db = sqlite3.connect(self.path, timeout=10)
         db.row_factory = sqlite3.Row
@@ -39,6 +55,9 @@ class WorkingMemory:
                 id TEXT NOT NULL,version INTEGER NOT NULL,updated_at TEXT NOT NULL,PRIMARY KEY(id,version))''')
             db.commit()
             yield db
+            # Includes direct SQL readers (revision catalogs, manifests and search).
+            # A write may already be committed; failure here never implies rollback.
+            self.check_access()
         finally:
             db.close()
 

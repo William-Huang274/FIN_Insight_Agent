@@ -9,20 +9,56 @@ from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel
 
-from .working_memory import WorkingMemory
+from .working_memory import WorkingMemory, WorkingMemoryAccessDenied
 
 _native_memory_scope = ContextVar('native_memory_scope', default=None)
+_protected_memory_scope = ContextVar('protected_memory_scope', default=None)
+
+
+class _ProtectedMemoryScope:
+    def __init__(self, owner, workspace, access_check, allow_remote_search):
+        self.identity = (owner, workspace)
+        self.access_check = access_check
+        self.allow_remote_search = allow_remote_search
+        self.active = True
+
+    def check(self):
+        if (not self.active or _protected_memory_scope.get() is not self
+                or _native_memory_scope.get() != self.identity):
+            raise WorkingMemoryAccessDenied('working_memory_scope_not_active')
+        if self.access_check is not None:
+            try:
+                self.access_check()
+            except Exception as exc:
+                raise WorkingMemoryAccessDenied('working_memory_authority_unavailable') from exc
 
 
 @contextmanager
-def native_memory_scope(owner, workspace):
+def native_memory_scope(owner, workspace, *, access_check=None, allow_remote_search=True):
     """Composition binds native thread metadata, never model/tool arguments."""
     if not isinstance(owner, str) or not owner or not workspace:
         raise ValueError('verified_memory_scope_required')
-    token = _native_memory_scope.set((owner, str(workspace)))
+    identity = (owner, str(workspace))
+    inherited = _protected_memory_scope.get()
+    if inherited is not None:
+        inherited.check()
+        if identity != inherited.identity:
+            raise WorkingMemoryAccessDenied('working_memory_scope_override_denied')
+        # A nested legacy scope cannot weaken the protected parent's policy.
+        yield
+        return
+    protected = (_ProtectedMemoryScope(*identity, access_check, allow_remote_search)
+                 if access_check is not None or not allow_remote_search else None)
+    token = _native_memory_scope.set(identity)
+    guard_token = _protected_memory_scope.set(protected)
     try:
+        if protected is not None:
+            protected.check()
         yield
     finally:
+        if protected is not None:
+            protected.active = False
+        _protected_memory_scope.reset(guard_token)
         _native_memory_scope.reset(token)
 
 
@@ -87,14 +123,18 @@ def memory_for(config, actor, *, owner=None, workspace=None):
         raise ValueError("working_memory_not_configured")
     thread = workspace or str(config.get("configurable", {}).get("thread_id") or "")
     scope = _native_memory_scope.get()
-    if owner is None and scope:
-        if thread != scope[1]:
-            raise ValueError('working_memory_thread_scope_mismatch')
+    protected = _protected_memory_scope.get()
+    if scope:
+        if thread != scope[1] or owner is not None and owner != scope[0]:
+            error = WorkingMemoryAccessDenied if protected is not None else ValueError
+            raise error('working_memory_identity_scope_mismatch')
         owner = scope[0]
     if owner is None and os.environ.get("FINSIGHT_AUTH_MODE", "local") != "local":
         raise ValueError("working_memory_requires_verified_owner")
     return WorkingMemory(os.environ["FINSIGHT_WORKING_MEMORY_PATH"], owner=owner or "local-pilot",
-                         workspace=thread, actor=actor)
+                         workspace=thread, actor=actor,
+                         access_check=protected.check if protected is not None else None,
+                         allow_remote_search=protected.allow_remote_search if protected is not None else True)
 
 
 def execute_memory_tool(name, arguments, config, actor, *, owner=None, workspace=None):

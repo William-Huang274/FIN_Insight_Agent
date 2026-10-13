@@ -16,6 +16,7 @@ for(const width of [1440,390]) test(`项目保存上传与新浏览器重查 ${w
   if(width<760)await page.getByRole('button',{name:'打开导航',exact:true}).click();
   await nav.getByRole('button',{name:`打开项目 ${name}`,exact:true}).click();
   await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();
+  await page.getByRole('link',{name:'上传与管理资料',exact:true}).click();
   await page.getByLabel('添加项目资料',{exact:true}).setInputFiles({name:'合成资料.md',mimeType:'text/markdown',buffer:Buffer.from('# 留存率线索\n\n合成文本：留存率需要交叉核对。<script>window.projectInjected=true</script>')});
   await expect(page.getByRole('status')).toContainText('已保存到项目');
   await page.getByRole('textbox',{name:'查找项目资料'}).fill('留存率');
@@ -25,6 +26,14 @@ for(const width of [1440,390]) test(`项目保存上传与新浏览器重查 ${w
   await expect(page.getByLabel('项目资料正文')).toContainText('留存率需要交叉核对');
   expect(await page.evaluate(()=>(window as any).projectInjected)).toBeUndefined();
   const url=page.url();
+  const projectId=new URL(url).searchParams.get('project')!;
+  await page.goto(`/workspace/assets?view=files&scope=${projectId}&q=${encodeURIComponent('合成资料')}`);
+  await expect(page.getByRole('combobox',{name:'按项目筛选资料'})).toHaveValue(projectId);
+  await page.getByRole('link').filter({hasText:'合成资料.md'}).click();
+  await expect(page.getByLabel('资产正文')).toContainText('留存率需要交叉核对');
+  await page.getByRole('button',{name:'返回资料库',exact:true}).click();
+  await expect(page.getByLabel('搜索资料名称')).toHaveValue('合成资料');
+  await page.goto(url);
   await page.locator('.rs-main').evaluate(el=>{el.scrollTop=0;});
   await page.screenshot({path:testInfo.outputPath(`project-${width}.png`),fullPage:true});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

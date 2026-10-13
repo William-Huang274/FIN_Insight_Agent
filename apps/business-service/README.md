@@ -1,0 +1,77 @@
+# FinSight research intake
+
+Optional Spring Boot 3.5 / Java 21 business service. PostgreSQL owns project
+research requests and submission receipts; the existing Python BFF owns login,
+current project authorization and native research access. Agent Server remains
+the executor. This service has no model SDK, retrieval implementation or billing
+ledger. Research intake supports personal projects on one BFF host. Flyway V2 also
+adds organization resource spaces, membership, publication access and audit records;
+it does not turn existing personal research projects into shared projects.
+
+Flyway V3 adds new organization project metadata, project members and revisioned
+management. Java is their sole authority; Python still owns legacy personal
+projects. Project membership does not grant space access. Shared research and
+resource associations remain disabled. See [organization project scope and static
+acceptance cases](../../docs/engineering/organization_projects.zh-CN.md).
+
+See [deployment, protocol and qualification](../../docs/engineering/java_research_intake.zh-CN.md).
+See [the common Java/Python version and continuation contract](../../docs/engineering/java_python_integration.zh-CN.md)
+for execution snapshots, legacy replay limits and static integration coverage.
+See [resource spaces and explicit publication](../../docs/engineering/resource_spaces.zh-CN.md)
+for organization-owned personal workspaces, team access and custody boundaries.
+
+## Build and qualify
+
+Install JDK 21 and start Docker. Maven Wrapper downloads Maven 3.9.11 with a
+checked SHA-256. Testcontainers creates its own disposable PostgreSQL instance.
+
+```bash
+./mvnw verify
+```
+
+On Windows use `./mvnw.cmd verify`. No repository-private data or paid API calls
+are needed. `target/business-service-0.1.0.jar` is the executable artifact.
+
+## Configure
+
+Supply these environment variables outside Git:
+
+- `FINSIGHT_BUSINESS_JDBC_URL`: JDBC URL for a **dedicated business database**.
+- `FINSIGHT_BUSINESS_DB_USER` and `FINSIGHT_BUSINESS_DB_PASSWORD`: that database's credentials.
+- `FINSIGHT_BUSINESS_SHARED_SECRET`: at least 32 UTF-8 bytes, shared with the BFF.
+- `FINSIGHT_PYTHON_INTAKE_URL`: loopback BFF URL, defaults to `http://127.0.0.1:8765`.
+- `FINSIGHT_BUSINESS_PORT`: defaults to `8095`, listening on `127.0.0.1`.
+
+On the BFF set the same shared secret and `FINSIGHT_BUSINESS_API_URL` to the
+loopback business URL. Coordinate a BFF restart after configuring its existing
+research profile, published library and attachment store.
+
+```bash
+java -jar target/business-service-0.1.0.jar
+```
+
+Open `/workspace/projects` through the BFF. Flyway applies the business schema;
+it does not alter Agent Server tables. Keep both service ports private. Login and
+browser sessions stay at the BFF. Do not use local identity mode for shared access.
+
+To enable resource spaces, the BFF additionally requires
+`FINSIGHT_AUTH_MODE=oidc_product` and `FINSIGHT_RESOURCE_SPACES_ENABLED=1`.
+Existing private project assets are not automatically shared. Publications are
+independent fixed copies in the Python `organization-assets` store; back up this
+store alongside business PostgreSQL. Live database ACLs, shared Agent inputs and
+personal-space takeover are not included in this slice.
+
+## Failure semantics
+
+See [request lifecycle and fault qualification](../../docs/engineering/java_intake_recovery.zh-CN.md)
+for operation ownership, recovery limits and reproducible synthetic fault cases.
+
+Preparing and starting have separate, permanent operation IDs and saved JSON
+bytes. A database compare-and-set claims one dispatch attempt. Timeouts, dropped
+responses and process death keep the operation unknown. Reconcile only reads
+the existing BFF receipt or the deterministic native thread and exact operation
+tag; it never dispatches research. This is not a distributed exactly-once claim.
+
+Do not edit command state back to `ready`, clear receipt stores or reconstruct a
+task by choosing its newest run. Back up business PostgreSQL alongside Python
+receipts/project assets and the native runtime. Retain failed and unknown records.

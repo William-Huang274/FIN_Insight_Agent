@@ -21,6 +21,8 @@ class Project(BaseModel):
     model_config=ConfigDict(extra='forbid')
     id: UUID
     name: str=Field(min_length=1,max_length=60)
+    description: str=Field(default='',max_length=500)
+    archived: bool=Field(default=False,strict=True)
 
 
 class SecRefresh(BaseModel):
@@ -86,7 +88,7 @@ def build_projects_router(root, service):
     async def save_index(body: ProjectIndex, request: Request):
         identity=owner(request,True)
         prior=await run_in_threadpool(library.index,identity)
-        data=body.model_dump(mode='json'); data.pop('revision')
+        data=body.model_dump(mode='json',exclude_unset=True); data.pop('revision')
         prior_refs=set(prior['assignments'])|set(prior['pinned'])
         for thread in (set(data['assignments'])|set(data['pinned']))-prior_refs:
             await service.owned_thread(thread)

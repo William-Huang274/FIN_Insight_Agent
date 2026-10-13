@@ -63,12 +63,15 @@ def test_native_target_checks_precede_revision_and_old_checkpoint_survives(inval
     asyncio.run(run())
 
 
-def test_bff_rejects_stale_and_unknown_target_and_recovers_duplicate_request():
+@pytest.mark.parametrize("explicit_execution", [False, True])
+@pytest.mark.parametrize("legacy", [False, True])
+def test_bff_rejects_stale_and_unknown_target_and_recovers_duplicate_request(explicit_execution, legacy):
     values = {**material(), "report_version": 1}
     state = {"values": values, "tasks": [{"name": "human_review", "interrupts": [{"value": {"kind": "dell_report_review"}}]}], "next": ["human_review"]}
     checkpoint = str(uuid4()); data = target(values, checkpoint)
     stored, calls = [], []
-    async def owned(_): return {"metadata": {"surface": 'research_workbench'}}
+    execution = {"mode": "auto", "model": "default", "branch_ids": [], "continuation_scope": "original_plan"}
+    async def owned(_): return {"metadata": {"surface": 'research_workbench', "graph": "research_session", "execution": execution}}
     async def get_state(_): return state
     async def report_state(*_): return {"values": values}
     async def all_runs(_): return stored
@@ -76,22 +79,35 @@ def test_bff_rejects_stale_and_unknown_target_and_recovers_duplicate_request():
         calls.append(kwargs)
         row = {"run_id": str(uuid4()), "status": "pending", "metadata": kwargs["metadata"]}
         stored.append(row); return row
-    service = SimpleNamespace(attachment_store=None, owned_thread=owned, state=get_state, report_state=report_state, all_runs=all_runs,
+    service = SimpleNamespace(attachment_store=None, research_profile={"branch_topics": []}, owned_thread=owned, state=get_state, report_state=report_state, all_runs=all_runs,
                              sdk=SimpleNamespace(runs=SimpleNamespace(create=create)))
     app = FastAPI(); app.include_router(build_report_sessions_router(service), prefix="/api/v1")
     with TestClient(app) as client:
         path = f"/api/v1/research-sessions/{uuid4()}/actions"; headers = {"x-workbench-request": "1"}
         body = {"action": "revise", "message": "Check the original source", "target": data}
+        if explicit_execution:
+            body["execution"] = execution.copy()
         assert client.post(path, json=body).status_code == 403
         assert client.post(path, json={**body, "target": {**data, "base_digest": "0" * 64}}, headers=headers).status_code == 409
         assert client.post(path, json={**body, "target": {**data, "citation_id": "missing"}}, headers=headers).status_code == 409
         first = client.post(path, json=body, headers=headers)
         assert first.status_code == 200, first.text
+        if legacy:
+            stored[0]["metadata"] = {k: v for k, v in stored[0]["metadata"].items() if k != "request_execution"}
         second = client.post(path, json=body, headers=headers)
-        assert second.json()["run_id"] == first.json()["run_id"] and second.json()["existing_request"]
+        if legacy and not explicit_execution:
+            assert second.status_code == 409 and "旧请求" in second.json()["detail"]
+        else:
+            assert second.json()["run_id"] == first.json()["run_id"] and second.json()["existing_request"]
         assert client.post(path, json={**body, "message": "Different"}, headers=headers).status_code == 409
         assert len(calls) == 1 and calls[0]["multitask_strategy"] == "reject"
         assert calls[0]["command"]["resume"]["target"] == data
+        assert calls[0]["config"]["configurable"]["finsight_execution"] == execution
+        assert calls[0]["metadata"]["execution"] == execution
+        assert calls[0]["metadata"]["request_execution"] == (execution if explicit_execution else None)
+        changed = {**execution, "continuation_scope": "original_question"}
+        assert client.post(path, json={**body, "execution": changed}, headers=headers).status_code == 409
+        assert len(calls) == 1
 
 
 def test_target_cannot_change_action_or_inject_runtime_nodes():

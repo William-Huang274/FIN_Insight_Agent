@@ -1,0 +1,20 @@
+server:
+  address: 127.0.0.1
+  port: ${FINSIGHT_BUSINESS_PORT:8095}
+  error:
+    include-message: never
+spring:
+  datasource:
+    url: ${FINSIGHT_BUSINESS_JDBC_URL}
+    username: ${FINSIGHT_BUSINESS_DB_USER}
+    password: ${FINSIGHT_BUSINESS_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 8
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  mvc:
+    log-request-details: false
+finsight:
+  shared-secret: ${FINSIGHT_BUSINESS_SHARED_SECRET}
+  python-url: ${FINSIGHT_PYTHON_INTAKE_URL:http://127.0.0.1:8765}

@@ -27,14 +27,15 @@ for (const width of [1440,1024,390]) test(`research start, organization, panel a
     else if(path.endsWith(id))body=session;
     await route.fulfill({json:body});
   });
-  const nav=async(name:string)=>{if(width<=760){await page.getByRole("button",{name:"打开导航",exact:true}).click();await page.locator(".fs-nav-dialog").getByRole("button",{name,exact:true}).click();}else await page.locator(".fs-sidebar").getByRole("button",{name,exact:true}).click();};
-  await page.goto("/workspace");await expect(page.getByRole("heading",{name:"这次，你想弄清楚什么？"})).toBeVisible();
+  const nav=async(name:string)=>{if(await page.locator('.pw-sidebar').count()){await page.getByRole('link',{name,exact:true}).click();}else if(width<=760){await page.getByRole("button",{name:"打开导航",exact:true}).click();await page.locator(".fs-nav-dialog").getByRole("button",{name,exact:true}).click();}else await page.locator(".fs-sidebar").getByRole("button",{name,exact:true}).click();};
+  await page.goto("/workspace/session");await expect(page.getByRole("heading",{name:"这次，你想弄清楚什么？"})).toBeVisible();
   await page.getByRole("button",{name:"解读最新财报"}).click();await expect(page.getByLabel("输入研究问题")).toHaveValue(/季度/);
   await page.getByLabel("输入研究问题").fill("核对 Atlas 本季度收入与经营现金流的期间口径。");await page.getByRole("button",{name:"准备研究",exact:true}).click();await expect(page.getByLabel("这次你想研究什么？")).toHaveValue("核对 Atlas 本季度收入与经营现金流的期间口径。");
   await nav("管理项目");const dialog=page.getByRole("dialog",{name:"管理项目"});await dialog.getByLabel("新项目名称").fill("财报跟踪");await dialog.getByRole("button",{name:"创建项目"}).click();
   await dialog.getByLabel("归类 Atlas · 盈利质量").selectOption({label:"财报跟踪"});await dialog.getByLabel("置顶 Atlas · 盈利质量").click();await dialog.getByLabel("关闭项目管理").click();await page.reload();
   await nav("管理项目");await expect(dialog.getByLabel("归类 Atlas · 盈利质量").locator("option:checked")).toHaveText("财报跟踪");await expect(dialog.getByLabel("置顶 Atlas · 盈利质量")).toHaveAttribute("aria-pressed","true");await dialog.getByLabel("关闭项目管理").click();
   await page.goto(`/workspace/session?thread=${id}&view=report`);
+  await expect(page.getByRole('navigation',{name:'项目导航'})).toBeVisible();
   const toggle=page.getByRole("button",{name:"任务说明与资料",exact:true});const panel=page.locator("#task-details-panel");
   for(let i=0;i<3;i++){await toggle.click();await expect(panel).toBeVisible();await toggle.click();await expect(panel).toBeHidden();}
   await toggle.click();await panel.evaluate(el=>el.scrollTop=el.scrollHeight);await page.getByRole("button",{name:"收起资料面板"}).click();await expect(panel).toBeHidden();await expect(toggle).toBeFocused();

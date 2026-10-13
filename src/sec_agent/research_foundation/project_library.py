@@ -68,6 +68,9 @@ class ProjectLibrary:
             if (row['revision'] if row else 0) != revision:
                 raise ProjectConflict('项目已在其他窗口更新，请重新载入后再整理。')
             old=json.loads(row['body']) if row else {'projects':[]}
+            # Older clients only send id/name. Preserve additive project settings.
+            previous={p['id']:p for p in old['projects']}
+            body={**body,'projects':[{**previous.get(p['id'],{}),**p} for p in body['projects']]}
             if {p['id'] for p in old['projects']} - {p['id'] for p in body['projects']}:
                 raise ProjectConflict('本切片保留已有项目及资料，不支持移除项目。')
             db.execute('INSERT INTO project_indexes VALUES(?,?,?) ON CONFLICT(owner) DO UPDATE SET revision=excluded.revision,body=excluded.body',

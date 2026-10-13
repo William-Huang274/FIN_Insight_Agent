@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
+from copy import deepcopy
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -62,7 +63,9 @@ def test_new_task_date_is_frozen_in_native_metadata_and_run_config():
     run = next(c[2] for c in calls if c[0] == 'run')
     assert run['config']['configurable']['finsight_research_as_of'] == metadata['research_as_of']
     from apps.workbench.backend.api.v1.research_studio import run_configuration
-    assert asyncio.run(run_configuration(service, {'metadata': {}})) == {}
+    from sec_agent.agent_runtime.execution_options import ExecutionOptions
+    assert asyncio.run(run_configuration(service, {'metadata': {}})) == {
+        "configurable": {"finsight_execution": ExecutionOptions().model_dump()}}
     continued = asyncio.run(run_configuration(service, {'metadata':metadata}))
     assert continued == run['config']
     snapshot = TestClient(app).get('/api/v1/research-sessions/'+tid)
@@ -387,6 +390,103 @@ def test_attention_continuation_rejects_unknown_usage_without_creating_run(tmp_p
     asyncio.run(service.http.aclose())
 
 
+@pytest.mark.parametrize("entrypoint", ["create", "start", "revise", "continue"])
+@pytest.mark.parametrize("scope", [None, "original_question", "original_plan"])
+def test_new_runs_capture_one_normalized_execution_snapshot(entrypoint, scope):
+    from sec_agent.agent_runtime.execution_options import ExecutionOptions
+    app, service, calls, thread_id = _app()
+    thread = asyncio.run(service.sdk.threads.get(thread_id))
+    selection = {"mode": "auto", "model": "default", "branch_ids": []}
+    if scope is not None:
+        selection["continuation_scope"] = scope
+    thread["metadata"]["execution"] = deepcopy(selection)
+    expected = ExecutionOptions.model_validate(selection).model_dump()
+    body = {}
+    if entrypoint == "create":
+        path = "/api/v1/research-sessions"
+        body = {"mode": "research", "question": "Synthetic execution snapshot qualification.", "execution": selection}
+    else:
+        path = f"/api/v1/research-sessions/{thread_id}/"
+        if entrypoint == "start":
+            thread["metadata"]["pending_question"] = "Synthetic prepared question."
+            path += "start"
+        elif entrypoint == "revise":
+            path += "actions"
+            body = {"action": "revise", "message": "Keep the authorized scope."}
+        else:
+            path += "continue-remaining"
+            async def state(_):
+                return {"values": {"phase": "research_needs_attention", "case_papers": [{}]},
+                        "interrupts": [{"value": {"kind": "research_needs_attention"}}]}
+            service.sdk.threads.get_state = state
+    with TestClient(app) as client:
+        result = client.post(path, json=body, headers={"x-workbench-request": "1"})
+        assert result.status_code == 200, result.text
+    run = next(c[2] for c in calls if c[0] == "run")
+    assert run["config"]["configurable"]["finsight_execution"] == expected
+    assert run["metadata"]["execution"] == expected
+    thread["metadata"]["execution"]["continuation_scope"] = "original_plan" if scope != "original_plan" else "original_question"
+    assert run["config"]["configurable"]["finsight_execution"] == expected
+    assert run["metadata"]["execution"] == expected
+    asyncio.run(service.http.aclose())
+
+
+def test_continuation_snapshot_legacy_fallback_and_invalid_record():
+    from apps.workbench.backend.api.v1.report_sessions import continuation_execution
+    from fastapi import HTTPException
+    from sec_agent.agent_runtime.execution_options import ExecutionOptions
+    legacy = {"mode": "auto", "model": "deepseek-v4-flash", "branch_ids": []}
+    expected = ExecutionOptions.model_validate(legacy).model_dump()
+    assert continuation_execution({"metadata": {"execution": legacy}}, None) == expected
+    assert continuation_execution({"metadata": {"execution": legacy}}, {"metadata": None, "config": None}) == expected
+    assert continuation_execution({}, {"metadata": {"execution": legacy}}) == expected
+    assert continuation_execution({}, {"config": {"configurable": {"finsight_execution": legacy}}}) == expected
+    with pytest.raises(HTTPException) as exc:
+        continuation_execution({}, {"metadata": {"execution": {**legacy, "continuation_scope": "invalid"}}})
+    assert exc.value.status_code == 409
+
+
+@pytest.mark.parametrize("scope", ["original_question", "original_plan"])
+@pytest.mark.parametrize("entrypoint", ["continue-remaining", "recover-workpaper"])
+def test_resume_inherits_the_run_override_not_the_thread_default(monkeypatch, tmp_path, scope, entrypoint):
+    app, service, calls, thread_id = _app()
+    thread = asyncio.run(service.sdk.threads.get(thread_id))
+    thread["metadata"]["execution"] = {"mode": "auto", "model": "default", "branch_ids": [],
+        "continuation_scope": "original_plan" if scope == "original_question" else "original_question"}
+    execution = {"mode": "auto", "model": "deepseek-v4-flash", "branch_ids": [], "continuation_scope": scope}
+    headers = {"x-workbench-request": "1"}
+    service.audit_root = tmp_path
+    with TestClient(app) as client:
+        result = client.post(f"/api/v1/research-sessions/{thread_id}/actions", headers=headers,
+            json={"action": "revise", "message": "Apply this run's explicit scope.", "execution": execution})
+        assert result.status_code == 200, result.text
+        original = deepcopy(calls[-1][2])
+        run_id = result.json()["run_id"]
+        folder = tmp_path / thread_id / run_id
+        folder.mkdir(parents=True)
+        (folder / "model-call-events.jsonl").write_text(json.dumps({"call_id": "fixture", "event": "outcome",
+            "provider_call_attempted": False, "status": "blocked_before_transport_input_limit"}), encoding="utf-8")
+        async def runs(*args, **kwargs):
+            return [{"run_id": run_id, "status": "success", "metadata": original["metadata"]}]
+        async def state(_):
+            return {"values": {"phase": "research_needs_attention", "case_papers": [{}]},
+                "interrupts": [{"value": {"kind": "research_needs_attention"}}]}
+        service.sdk.runs.list, service.sdk.threads.get_state = runs, state
+        body = {}
+        if entrypoint == "recover-workpaper":
+            # This test isolates the BFF configuration; workpaper content validation has separate tests.
+            monkeypatch.setattr("sec_agent.agent_runtime.workpaper_intervention.recover_workpaper", lambda *a, **kw: {})
+            body = {"task_id": "synthetic", "base_agent_digest": "a" * 64, "submission": {},
+                "reason": "Static configuration handoff", "confirmed": True}
+        resumed = client.post(f"/api/v1/research-sessions/{thread_id}/{entrypoint}", json=body, headers=headers)
+        assert resumed.status_code == 200, resumed.text
+        assert calls[-1][2]["config"]["configurable"]["finsight_execution"] == execution
+        assert calls[-1][2]["metadata"]["execution"] == execution
+        assert calls[-1][2]["metadata"]["continued_from_run_id"] == run_id
+        assert calls[0][2] == original
+    asyncio.run(service.http.aclose())
+
+
 def test_continue_remaining_uses_native_interrupt_and_no_browser_seed_or_checkpoint_update():
     app, service, calls, thread_id = _app()
     async def get_state(_):
@@ -401,6 +501,9 @@ def test_continue_remaining_uses_native_interrupt_and_no_browser_seed_or_checkpo
         assert calls[-1][2]["command"] == {"resume": {"action": "continue_remaining"}}
         assert "input" not in calls[-1][2] and "checkpoint" not in calls[-1][2]
         assert calls[-1][2]["metadata"]["human_action"] == "continue_remaining"
+        from sec_agent.agent_runtime.execution_options import ExecutionOptions
+        assert calls[-1][2]["metadata"]["execution"] == ExecutionOptions().model_dump()
+        assert calls[-1][2]["config"]["configurable"]["finsight_execution"] == ExecutionOptions().model_dump()
         async def after_review(_):
             return {"values": {"phase": "research_needs_attention", "case_papers": [1], "case_review": {"counter": {}}},
                     "interrupts": [{"value": {"kind": "research_needs_attention"}}]}
@@ -414,6 +517,7 @@ def test_known_remaining_failure_restarts_native_pending_node_but_unknown_usage_
     app, service, calls, thread_id = _app()
     run_id = str(uuid4())
     service.audit_root = tmp_path
+    execution = {"mode": "auto", "model": "deepseek-v4-flash", "branch_ids": [], "continuation_scope": "original_plan"}
     async def thread(_):
         return {"status": "error", "metadata": {"surface": 'research_workbench', "graph": RESEARCH_GRAPH}}
     async def state(_):
@@ -423,7 +527,7 @@ def test_known_remaining_failure_restarts_native_pending_node_but_unknown_usage_
         return {"values": values,
                 "tasks": [{"name": node, "error": "known_local_submission_failure"}]}
     async def runs(*args, **kwargs):
-        return [{"run_id": run_id, "status": "error", "metadata": {"human_action": "continue_remaining"}}]
+        return [{"run_id": run_id, "status": "error", "metadata": {"human_action": "continue_remaining", "execution": execution}}]
     service.sdk.threads.get, service.sdk.threads.get_state, service.sdk.runs.list = thread, state, runs
     folder = tmp_path / thread_id / run_id
     folder.mkdir(parents=True)
@@ -435,6 +539,8 @@ def test_known_remaining_failure_restarts_native_pending_node_but_unknown_usage_
         route = f"/api/v1/research-sessions/{thread_id}/continue-remaining"
         assert client.post(route, headers={"x-workbench-request": "1"}).status_code == 200
         assert calls[-1][2]["input"] is None and "command" not in calls[-1][2] and "checkpoint" not in calls[-1][2]
+        assert calls[-1][2]["config"]["configurable"]["finsight_execution"] == execution
+        assert calls[-1][2]["metadata"]["execution"] == execution
         path.write_text(json.dumps(events[0]), encoding="utf-8")
         assert client.post(route, headers={"x-workbench-request": "1"}).status_code == 409
     asyncio.run(service.http.aclose())

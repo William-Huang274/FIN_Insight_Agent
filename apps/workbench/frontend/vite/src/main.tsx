@@ -7,6 +7,7 @@ import { ResearchSession } from "./app/ResearchSession";
 import { IdentityBoundary } from './app/IdentityBoundary';
 const ConversationWorkspace = React.lazy(() => import("./app/ConversationWorkspace"));
 const AssetWorkspace = React.lazy(() => import("./app/AssetWorkspace"));
+const ProjectWorkspace = React.lazy(() => import("./app/ProjectWorkspace"));
 const EvidencePackWorkspace = React.lazy(() => import("./app/ResearchWorkspace")
   .then(module => ({ default: module.ResearchWorkspace })));
 
@@ -44,6 +45,9 @@ if(['/workspace','/workspace/session'].includes(window.location.pathname)&&['lib
   window.history.replaceState({},'',`/workspace/assets?view=${oldView}`);
 }
 const entry = canonicalEntry(window.location.pathname);
+if(window.location.pathname==='/workspace'&&!window.location.search){
+  window.history.replaceState({},'','/workspace/projects');
+}
 createRoot(root).render(
   <React.StrictMode>
     <IdentityBoundary>
@@ -51,6 +55,8 @@ createRoot(root).render(
       <OperationsConsole />
     ) : window.location.pathname === "/workspace/evidence-packs" ? (
       <React.Suspense fallback={<p role="status">正在读取历史证据工作台…</p>}><EvidencePackWorkspace /></React.Suspense>
+    ) : window.location.pathname === "/workspace/projects" ? (
+      <BrowserRouter><React.Suspense fallback={<p role="status">正在打开项目…</p>}><ProjectWorkspace /></React.Suspense></BrowserRouter>
     ) : window.location.pathname === "/workspace/assets" ? (
       <BrowserRouter><React.Suspense fallback={<p role="status">正在打开资产工作区…</p>}><AssetWorkspace /></React.Suspense></BrowserRouter>
     ) : window.location.pathname === "/workspace/assistant" ? (

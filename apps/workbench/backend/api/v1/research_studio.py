@@ -26,7 +26,7 @@ async def owned_configuration(service, assistant_id):
 async def run_configuration(service, thread, execution=None):
     from sec_agent.agent_runtime.execution_options import ExecutionOptions
     selection = execution or thread.get("metadata", {}).get("execution")
-    values = {"finsight_execution": ExecutionOptions.model_validate(selection).model_dump()} if selection else {}
+    values = {"finsight_execution": ExecutionOptions.model_validate(selection or {}).model_dump()}
     if getattr(service, 'attachment_store', None):
         from sec_agent.research_foundation.task_asset_updates import TaskAssetUpdates
         latest = TaskAssetUpdates(service.attachment_store.root).latest(thread['thread_id'])

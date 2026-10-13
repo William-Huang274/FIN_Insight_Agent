@@ -1,4 +1,44 @@
 import { test, expect } from "./identity-fixture";
+test('action options inherit the thread scope without polling or cross-thread leakage', async ({page}) => {
+  await page.clock.install();
+  const a='00000000-0000-4000-8000-000000000081', b='00000000-0000-4000-8000-000000000082';
+  const execution={mode:'auto',model:'deepseek-v4-pro',branch_ids:[],continuation_scope:'original_plan'};
+  const tasks=[{thread_id:a,title:'限定已有计划',execution},{thread_id:b,title:'旧版默认研究'}].map(t=>({
+    ...t,status:'interrupted',phase:'ready_for_human_review',can_respond:true,runs:[],model_events:[],conversation:[]}));
+  const writes:any[]=[]; let snapshots=0;
+  await page.route('**/api/v1/**', async route=>{
+    const request=route.request(), path=new URL(request.url()).pathname;
+    if(request.method()!=='GET') writes.push(request.postDataJSON());
+    let body:any={};
+    if(path.endsWith('/projects'))body={revision:0,projects:[],assignments:{},pinned:[]};
+    else if(path.endsWith('/research-sessions'))body=tasks;
+    else if(path.endsWith('/research-session-config'))body={fresh_research_enabled:true,branch_topics:[]};
+    else if(path.endsWith('/report-versions'))body={versions:[]};
+    else if(path.endsWith('/actions'))body={run_id:'synthetic-run',status:'pending'};
+    else {body=tasks.find(t=>path.endsWith(t.thread_id))||{};if(body.thread_id)snapshots++;}
+    await route.fulfill({json:body});
+  });
+  await page.goto(`/workspace/session?thread=${a}&view=conversation`);
+  const model=page.getByRole('combobox',{name:'研究模型'});
+  await expect(model).toHaveValue('deepseek-v4-pro');
+  await model.selectOption('deepseek-v4-flash');
+  const before=snapshots;
+  await page.clock.fastForward(16000);
+  await expect.poll(()=>snapshots).toBeGreaterThan(before);
+  await expect(model).toHaveValue('deepseek-v4-flash');
+  await page.getByLabel('问题或修订意见').fill('静态接续范围验证。');
+  await page.getByRole('button',{name:'发送',exact:true}).click();
+  await expect.poll(()=>writes.length).toBe(1);
+  expect(writes[0].execution).toEqual({...execution,model:'deepseek-v4-flash'});
+  // Navigate within the mounted application, not a new page/component lifetime.
+  await page.evaluate(next=>{history.pushState({},'',next);dispatchEvent(new PopStateEvent('popstate'));},
+    `/workspace/session?thread=${b}&view=conversation`);
+  await expect(model).toHaveValue('default');
+  await page.getByLabel('问题或修订意见').fill('旧记录采用默认范围。');
+  await page.getByRole('button',{name:'发送',exact:true}).click();
+  await expect.poll(()=>writes.length).toBe(2);
+  expect(writes[1].execution).toEqual({mode:'auto',model:'default',branch_ids:[]});
+});
 for (const width of [1440,390]) test(`research feedback is nonblocking and source-bound at ${width}`, async({page})=>{
   await page.setViewportSize({width,height:950});
   const id='00000000-0000-4000-8000-000000000093',run='00000000-0000-4000-8000-000000000094'; let writes=0;
@@ -21,6 +61,23 @@ for (const width of [1440,390]) test(`research feedback is nonblocking and sourc
   await expect(page.getByRole('status')).toContainText('意见已保存');
   expect(writes).toBe(1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});
+test('late old-run task events cannot replace the current revision task or start on refresh',async({page})=>{
+  const id='00000000-0000-4000-8000-000000000071',old='00000000-0000-4000-8000-000000000072',current='00000000-0000-4000-8000-000000000073';
+  let writes=0;
+  const session={thread_id:id,title:'运行版本隔离',status:'interrupted',phase:'research_needs_attention',question:'静态版本案例',
+    runs:[{run_id:current,status:'interrupted',created_at:'2026-10-12T02:00:00Z'},{run_id:old,status:'success',created_at:'2026-10-12T01:00:00Z'}],
+    research_tasks:[{task_id:'task:same',owner_role:'finance',objective:'新修订等待执行',status:'ready',dependency_ids:[]}],
+    model_events:[{run_id:old,kind:'task',task_id:'task:same',actor:'finance',event:'completed',status:'completed',objective:'旧运行完成内容',recorded_at:'2026-10-12T03:00:00Z'},
+      {run_id:old,kind:'task',task_id:'task:retired',actor:'finance',event:'completed',objective:'旧运行独有任务',recorded_at:'2026-10-12T03:00:01Z'}]};
+  await page.route('**/api/v1/**',async route=>{if(route.request().method()!=='GET')writes++;const path=new URL(route.request().url()).pathname;await route.fulfill({json:path.endsWith('/projects')?{revision:0,projects:[],assignments:{},pinned:[]}:path.endsWith('research-sessions')?[session]:path.endsWith('research-session-config')?{fresh_research_enabled:true}:session});});
+  await page.goto(`/workspace/session?thread=${id}&view=activity`);
+  const tasks=page.locator('.rs-task-grid');
+  await page.getByRole('button',{name:'任务说明与资料',exact:true}).click();
+  await expect(tasks).toBeVisible();
+  await expect(tasks).toContainText('新修订等待执行');
+  await expect(tasks).not.toContainText('旧运行完成内容');await expect(tasks).not.toContainText('旧运行独有任务');
+  await page.reload();await expect(tasks).toContainText('新修订等待执行');expect(writes).toBe(0);
 });
 test('task outcome separates author assessment from failure and retains attempt history', async ({page}) => {
   await page.setViewportSize({width:390,height:950});

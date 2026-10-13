@@ -8,17 +8,14 @@ from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
 from sec_agent.agent_runtime.execution_options import ExecutionOptions
-from sec_agent.agent_runtime.studio_configuration import StudioConfiguration, default_configuration
+from sec_agent.agent_runtime.studio_configuration import default_configuration
+from sec_agent.agent_runtime.organization_native_contract import context, digest
 from sec_agent.research_foundation.organization_execution_access import validate_execution_grant, OrganizationExecutionUnavailable
 from sec_agent.research_foundation.asset_workspace import AssetWorkspace
 from .authentication import service_owner
 from .organization_research_inputs import verify_storage
 
 SURFACE = 'organization_research_workbench'
-
-
-def digest(value):
-    return 'sha256:' + sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
 async def preparation_authority(service, project_id, execution_id, *, raw_body=None, operation_id=None):
@@ -50,11 +47,6 @@ async def preparation_authority(service, project_id, execution_id, *, raw_body=N
     return grant
 
 
-def context(grant):
-    return {key: grant[key] for key in ('execution_id', 'thread_id', 'project_id', 'draft_id', 'organization_id',
-                                       'manifest_digest', 'prepare_operation_id', 'prepare_request_digest')}
-
-
 def metadata_for(grant, service):
     manifest = json.loads(grant['manifest_text'])
     options = ExecutionOptions.model_validate(grant['prepare_request']['execution']).validate_catalog(service.research_profile.get('branch_topics', []))
@@ -70,29 +62,11 @@ def metadata_for(grant, service):
 
 
 def validate_thread(thread, grant):
+    from sec_agent.agent_runtime.organization_native_contract import validate_thread as validate
     try:
-        meta = thread['metadata']
-        config = meta['organization_run_configuration']
-        values = config['configurable']
-        if (thread['thread_id'] != grant['execution_id'] or meta['surface'] != SURFACE
-                or meta['owner_id'] != 'organization:' + grant['organization_id']
-                or meta['graph'] != 'research_session' or meta['organization_prepared'] is not True
-                or meta['native_execution_enabled'] is not False or meta['organization_execution'] != context(grant)
-                or meta['title'] != grant['title'] or meta['pending_question'] != grant['question']
-                or set(config) != {'configurable'} or set(values) != {'finsight_execution', 'finsight_studio', 'finsight_research_as_of', 'finsight_organization_execution'}
-                or values['finsight_execution'] != grant['prepare_request']['execution']
-                or values['finsight_organization_execution'] != context(grant)
-                or meta['research_as_of'] != json.loads(grant['manifest_text'])['research_as_of']
-                or values['finsight_research_as_of'] != meta['research_as_of']
-                or meta['configuration_digest'] != digest(config)
-                or any(key in meta for key in ('asset_context', 'business_intake', 'studio_assistant_id', 'project_materials_status'))):
-            raise ValueError('native_binding')
-        StudioConfiguration.model_validate(values['finsight_studio'])
-        return {**context(grant), 'status': 'draft', 'configuration_digest': meta['configuration_digest'],
-                'native_execution_enabled': False}
-    except (ValueError, KeyError, TypeError):
+        return validate(thread, grant)
+    except ValueError:
         raise HTTPException(409, '原生草稿身份或固定配置不匹配；不会覆盖或重新创建') from None
-
 
 async def reauthorize(service, grant):
     current = await preparation_authority(service, grant['project_id'], grant['execution_id'])
@@ -101,6 +75,8 @@ async def reauthorize(service, grant):
 
 
 def install_organization_native_routes(router, service):
+    from .organization_native_runs import install_organization_start_routes
+    install_organization_start_routes(router, service)
     prefix = '/internal-research/organization'
 
     @router.post(prefix + '/prepare')

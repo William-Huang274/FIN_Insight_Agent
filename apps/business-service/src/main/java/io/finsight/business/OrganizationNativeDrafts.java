@@ -32,6 +32,13 @@ class OrganizationNativeDrafts {
         try {return value==null?null:json.readTree(value.toString());}catch(java.io.IOException e){throw new IllegalStateException(e);}
     }
     private String hash(Object value) {return "sha256:"+Delegation.digest(value.toString().getBytes(StandardCharsets.UTF_8));}
+    Map<String,Object> prepared(String actor,UUID project,UUID id) {
+        var grant=bindings.preparation(actor,project,id);var c=command(id);
+        if(!"received".equals(c.get("status")))throw new ApiFailure(409,"原生草稿尚未确认，不能启动");
+        grant.put("prepare_operation_id",c.get("operation_id"));grant.put("prepare_request",parse(c.get("request_body")));
+        grant.put("prepare_request_digest",hash(c.get("request_body")));
+        grant.put("configuration_digest",parse(c.get("result")).path("configuration_digest").asText());return grant;
+    }
     private Object view(UUID id) {
         var c=command(id);var result=new HashMap<String,Object>();result.put("execution_id",id);
         result.put("status",c.get("status").equals("dispatching")?"unknown":c.get("status"));

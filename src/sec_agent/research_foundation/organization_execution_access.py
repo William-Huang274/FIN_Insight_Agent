@@ -42,9 +42,15 @@ class OrganizationExecutionAuthority:
         self.manifest_digest, self._transport = manifest_digest, transport
 
     def __call__(self):
-        import jwt
         path = f'/v1/runtime/organization-executions/{self.execution_id}/access'
-        body = json.dumps({'thread_id': self.execution_id, 'manifest_digest': self.manifest_digest}, separators=(',', ':')).encode()
+        result = self.request(path, {'thread_id': self.execution_id, 'manifest_digest': self.manifest_digest})
+        validate_execution_grant(result, self.execution_id, self.manifest_digest)
+        return result
+
+    def request(self, path, payload):
+        """Signed internal workload request; no user principal or retry authority."""
+        import jwt
+        body = json.dumps(payload, separators=(',', ':')).encode()
         now = int(time.time())
         token = jwt.encode({'iss': 'finsight-agent-runtime', 'aud': 'finsight-java-organization-runtime',
                             'sub': 'finsight-agent-runtime', 'iat': now, 'exp': now + 60,
@@ -57,7 +63,6 @@ class OrganizationExecutionAuthority:
                 if response.status_code != 200:
                     raise _unavailable()
                 result = response.json()
-            validate_execution_grant(result, self.execution_id, self.manifest_digest)
             return result
         except (httpx.HTTPError, ValueError, KeyError, TypeError):
             raise _unavailable() from None

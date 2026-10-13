@@ -59,6 +59,16 @@ class QualificationService(original):
                     raise httpx.ReadTimeout('qualification: native persisted before reply loss')
                 return result
             self.sdk.threads.create = create_with_lost_reply
+            run_create = self.sdk.runs.create
+            async def run_with_lost_reply(thread_id, assistant_id, **options):
+                result = await run_create(thread_id, assistant_id, **options)
+                with (Path(os.environ['FINSIGHT_LOCAL_STATE_ROOT']) / 'native-start-observations.jsonl').open('a', encoding='utf-8') as out:
+                    out.write(json.dumps({'thread_id':thread_id,'run_id':result['run_id']})+'\n')
+                thread = await self.sdk.threads.get(thread_id)
+                if thread['metadata']['title'] == 'Synthetic lost organization reply':
+                    raise httpx.ReadTimeout('qualification: native run persisted before reply loss')
+                return result
+            self.sdk.runs.create = run_with_lost_reply
 
 
 report_sessions.ReportSessionService = QualificationService

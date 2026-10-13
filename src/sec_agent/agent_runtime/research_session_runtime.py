@@ -121,7 +121,7 @@ def load_research_runtime_profile(root):
 def create_research_phase_runnables(*, root, settings, profile, case, run_id, thread_id, api_key,
                                     environment=None, public_sink, private_sink, read_guidance=None, studio=None, execution=None,
                                     blocked_model_inputs=(), plan_invocation_id=None, budget_scope=None, author_audit_paths=(), feedback_owner=None,
-                                    contract_version='research_session.v2', organization_data_factory=None):
+                                    contract_version='research_session.v2', organization_data_factory=None, run_access_check=None):
     if studio:
         profile = studio.apply_profile(profile)
         case = studio.apply_case(case)
@@ -481,7 +481,12 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 yield artifacts, tools
 
     from sec_agent.research_foundation.project_asset_access import task_access_check
-    source_access_check = (lambda: organization.reader._after(organization.grant)) if organization is not None else task_access_check(environment)
+    source_check = (lambda: organization.reader._after(organization.grant)) if organization is not None else task_access_check(environment)
+    def source_access_check():
+        if run_access_check:
+            run_access_check()
+        if source_check:
+            source_check()
 
     def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False, actor_override=None, confirmation=None, incomplete_reviewers=None, review_execution_control=None):
         if role == "repair" and execution.mode == "selected":
@@ -793,9 +798,8 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
         raise ValueError("fresh_research_deployment_not_enabled")
     ids = config["configurable"]
     thread_id, run_id = str(UUID(str(ids["thread_id"]))), str(UUID(str(ids["run_id"])))
-    # Organization drafts are persisted, but their complete tool/result runtime
-    # is not wired yet. Reject even direct native submissions before host secrets,
-    # personal memory, budgets, models or broad data composition are touched.
+    # Organization runs have a separate opt-in admission before host secrets,
+    # budgets or models. They never fall through to the personal composition.
     from langgraph_sdk import get_client
     native = get_client()
     initial_thread = await native.threads.get(thread_id)
@@ -803,7 +807,15 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
     if (initial_metadata.get('organization_execution') is not None
             or initial_metadata.get('surface') == 'organization_research_workbench'
             or str(initial_metadata.get('owner_id', '')).startswith('organization:')):
-        raise ValueError('organization_research_runtime_not_enabled')
+        if os.environ.get('FINSIGHT_ORGANIZATION_START_ENABLED') != '1':
+            raise ValueError('organization_research_runtime_not_enabled')
+        from .organization_native_runtime import organization_graph
+        try:
+            async with organization_graph(config, native, initial_thread) as graph:
+                yield graph
+        finally:
+            await native.http.client.aclose()
+        return
     root = Path(os.environ["FIN_REPO_ROOT"])
     settings = json.loads(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).read_text(encoding="utf-8"))
     profile, case = load_research_runtime_profile(root)

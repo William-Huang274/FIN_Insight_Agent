@@ -1,6 +1,7 @@
-"""Real organization draft persistence; synthetic identity and reply loss, zero runs."""
+"""Real organization commands and queue; synthetic identity/graph, zero providers."""
 import json
 import os
+import secrets
 from uuid import uuid4
 
 import httpx
@@ -9,6 +10,8 @@ import pytest
 
 from apps.workbench.backend.business_transport import delegate
 from sec_agent.research_foundation.asset_workspace import AssetWorkspace
+from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionAuthority, OrganizationExecutionUnavailable
+from sec_agent.agent_runtime.organization_native_runtime import OrganizationStartAuthority
 from tests.integration.test_java_intake_native import Stack
 
 pytestmark = pytest.mark.skipif(
@@ -20,6 +23,10 @@ pytestmark = pytest.mark.skipif(
 def test_organization_native_draft_reply_loss_restart_and_revocation(monkeypatch):
     s = Stack()
     s.env['FIN_ORGANIZATION_NATIVE_QUALIFICATION'] = '1'
+    s.env['FINSIGHT_ORGANIZATION_START_ENABLED'] = '1'
+    runtime_secret = secrets.token_urlsafe(48)
+    s.env['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'] = runtime_secret
+    s.redactions.append(runtime_secret)
     s.bff.headers['Authorization'] = 'Bearer qualification-alice'
     monkeypatch.setenv('FINSIGHT_BUSINESS_SHARED_SECRET', s.shared)
     java = httpx.Client(base_url=f'http://127.0.0.1:{s.java_port}', timeout=60, trust_env=False)
@@ -82,8 +89,7 @@ def test_organization_native_draft_reply_loss_restart_and_revocation(monkeypatch
         s.compose('stop', '-t', '5', 'api', 'redis', 'postgres')
         s.compose('up', '-d', '--pull', 'never', 'api')
         s.healthy()
-        s.boot('java')
-        s.boot('bff')
+        business, web = s.boot('java'), s.boot('bff')
         for item in drafts:
             result = internal('POST', item['path'] + '/reconcile', {})
             assert result['status'] == 'received'
@@ -94,15 +100,57 @@ def test_organization_native_draft_reply_loss_restart_and_revocation(monkeypatch
             assert not s.runs(item['thread_id'])
             item['after_restart'] = result
         assert len(observations.read_text().splitlines()) == 2
+        for ordinal,item in enumerate(drafts):
+            started = internal('POST',item['path']+'/start',{'research_as_of':'2026-10-12T12:00:00+08:00'})
+            assert started['status'] == ('received' if ordinal==0 else 'unknown'), started
+            runs = s.runs(item['thread_id'])
+            assert len(runs)==1
+            authority = OrganizationStartAuthority(OrganizationExecutionAuthority(base_url=f'http://127.0.0.1:{s.java_port}',
+                secret=runtime_secret, execution_id=item['thread_id'],manifest_digest=item['metadata']['organization_execution']['manifest_digest']),
+                run_id=runs[0]['run_id'],context=runs[0]['metadata']['organization_start'])
+            assert authority()['authorized_run_id']==runs[0]['run_id']
+            other = OrganizationStartAuthority(authority.resources,run_id=str(uuid4()),context=authority.context)
+            with pytest.raises(OrganizationExecutionUnavailable):other()
+            item['admission_run_id']=runs[0]['run_id']
+            s.terminal(item['thread_id'],runs[0]['run_id'])
+            assert s.state_of(item['thread_id'])['values']['phase']=='research_needs_attention'
+            replayed = internal('POST',item['path']+'/start',{'research_as_of':'2026-10-12T12:00:00+08:00'})
+            # A worker can attach run_id while delivery remains unknown; immutable
+            # command identity/status stay fixed and there is no second dispatch.
+            assert all(replayed[key]==started[key] for key in ('execution_id','operation_id','status'))
+            assert replayed['run_id']==runs[0]['run_id'] and len(s.runs(item['thread_id']))==1
+            item['start_before_restart'] = started
+            assert s.bff.post(f"/api/v1/research-sessions/{item['thread_id']}/start").status_code == 404
+        for process in (business,web):
+            process.terminate();process.wait(timeout=20)
+        s.compose('stop','-t','5','api','redis','postgres')
+        s.compose('up','-d','--pull','never','api');s.healthy()
+        s.boot('java');s.boot('bff')
+        for item in drafts:
+            receipt = internal('POST',item['path']+'/start-reconcile',{})
+            assert receipt['status']=='received'
+            assert receipt['operation_id']==item['start_before_restart']['operation_id']
+            assert len(s.runs(item['thread_id']))==1
+            assert receipt['run_id']==s.runs(item['thread_id'])[0]['run_id']
+            item['start_after_restart']=receipt
+        assert len((s.state/'native-start-observations.jsonl').read_text().splitlines())==2
         visible = s.request(s.bff, 'GET', f'/api/v1/asset-workspace/spaces/resources/{resource}')
         api('POST', f'/resources/{resource}/revoke', {'revision': visible['permission_revision']})
         for item in drafts:
             internal('GET', item['path'] + '/preparation', status=404)
             internal('POST', item['path'] + '/reconcile', {}, status=404)
-            assert not s.runs(item['thread_id'])
+            internal('GET',item['path']+'/start',status=404)
+            internal('POST',item['path']+'/start-reconcile',{},status=404)
+            internal('POST',item['path']+'/start',{'research_as_of':'2026-10-12T12:00:00+08:00'},status=404)
+            assert len(s.runs(item['thread_id']))==1
+            denied = OrganizationStartAuthority(OrganizationExecutionAuthority(base_url=f'http://127.0.0.1:{s.java_port}',
+                secret=runtime_secret,execution_id=item['thread_id'],manifest_digest=item['metadata']['organization_execution']['manifest_digest']),
+                run_id=item['admission_run_id'],context=s.runs(item['thread_id'])[0]['metadata']['organization_start'])
+            with pytest.raises(OrganizationExecutionUnavailable):denied()
         s.save('organization-native-drafts', {'real_services': ['Spring Boot', 'BFF', 'PostgreSQL', 'Redis', 'Agent Server'],
             'synthetic': ['OIDC principal', 'evidence', 'post-persistence reply loss'],
-            'native_create_count': 2, 'native_run_count': 0, 'provider_calls': 0,
+            'native_create_count': 2, 'native_run_count': 2, 'provider_calls': 0,
+            'execution_graph':'deterministic queue probe; production admission/graph verified separately',
             'current_acl_after_revocation': '404', 'all_services_restart': True, 'drafts': drafts})
     finally:
         for process in s.processes:

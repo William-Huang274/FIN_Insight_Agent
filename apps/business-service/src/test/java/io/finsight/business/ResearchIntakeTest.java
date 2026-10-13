@@ -40,11 +40,15 @@ class ResearchIntakeTest {
     static final Map<String,ObjectNode> organizationNative = new ConcurrentHashMap<>();
     static final Set<String> dropOrganizationPrepare = ConcurrentHashMap.newKeySet();
     static final AtomicInteger organizationCreates = new AtomicInteger();
+    static final Map<String,ObjectNode> organizationRuns = new ConcurrentHashMap<>();
+    static final Set<String> dropOrganizationStart = ConcurrentHashMap.newKeySet();
+    static final AtomicInteger organizationStarts = new AtomicInteger();
     static final HttpServer PYTHON = fakePython();
     @DynamicPropertySource static void properties(DynamicPropertyRegistry r) {
         r.add("spring.datasource.url", PG::getJdbcUrl); r.add("spring.datasource.username", PG::getUsername); r.add("spring.datasource.password", PG::getPassword);
         r.add("finsight.shared-secret", () -> SECRET); r.add("finsight.python-url", () -> "http://127.0.0.1:"+PYTHON.getAddress().getPort());
         r.add("finsight.runtime-secret", () -> RUNTIME_SECRET);
+        r.add("finsight.organization-start-enabled", () -> true);
     }
     @LocalServerPort int port;
     @Autowired TaskStore store;
@@ -79,6 +83,18 @@ class ResearchIntakeTest {
                         organizationNative.put(id,result);
                         if(dropOrganizationPrepare.contains(id)){exchange.close();return;}
                         send(exchange,200,result);return;
+                    }
+                    if(path.equals("organization/start")) {
+                        var payload=JSON.readTree(bytes);String id=payload.path("execution_id").asText();organizationStarts.incrementAndGet();
+                        var result=JSON.createObjectNode().put("execution_id",id).put("thread_id",id)
+                            .put("project_id",payload.path("project_id").asText()).put("configuration_digest",payload.path("configuration_digest").asText())
+                            .put("start_operation_id",exchange.getRequestHeaders().getFirst("Idempotency-Key"))
+                            .put("start_request_digest","sha256:"+Delegation.digest(bytes)).put("run_id",UUID.randomUUID().toString()).put("status","pending");
+                        organizationRuns.put(id,result);if(dropOrganizationStart.contains(id)){exchange.close();return;}
+                        send(exchange,200,result);return;
+                    }
+                    if(path.startsWith("organization/executions/")&&path.endsWith("/start-state")){
+                        var result=organizationRuns.get(path.split("/")[2]);send(exchange,result==null?404:200,result==null?JSON.createObjectNode():result);return;
                     }
                     if(path.startsWith("organization/executions/")) {
                         var result=organizationNative.get(path.split("/")[2]);send(exchange,result==null?404:200,result==null?JSON.createObjectNode():result);return;
@@ -627,6 +643,59 @@ class ResearchIntakeTest {
         assertThat(organizationCreates.get()-before).isEqualTo(1);
         workspace(f.researcher(),"POST",base+"/close",null,200);
         workspace(f.researcher(),"GET",base+"/preparation",null,409);
+    }
+    @Test void organization_start_concurrent_command_and_exact_runtime_admission() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
+        String base="/projects/"+f.project()+"/execution-bindings/"+id;
+        var body=Map.of("research_as_of","2026-10-12T12:00:00+08:00");
+        workspace(f.researcher(),"POST",base+"/start",body,404); // No preparation record: sources alone cannot authorize a run.
+        workspace(f.researcher(),"POST",base+"/prepare",Map.of("execution",Map.of("mode","auto","model","default","branch_ids",List.of())),200);
+        workspace(f.researcher(),"POST",base+"/start",Map.of("research_as_of","2026-10-12"),422);
+        workspace(f.researcher(),"POST",base+"/start",Map.of("research_as_of","2026-10-13T00:00:00Z"),409);
+        int before=organizationStarts.get();
+        try(var pool=Executors.newVirtualThreadPerTaskExecutor()){
+            var calls=new ArrayList<Future<JsonNode>>();for(int i=0;i<5;i++)calls.add(pool.submit(()->workspace(f.researcher(),"POST",base+"/start",body,200)));
+            for(var call:calls)call.get();
+        }
+        var started=workspace(f.researcher(),"GET",base+"/start",null,200);
+        assertThat(started.path("status").asText()).isEqualTo("received");assertThat(organizationStarts.get()-before).isEqualTo(1);
+        assertThat(workspace(f.researcher(),"POST",base+"/start",body,200)).isEqualTo(started);
+        workspace(f.researcher(),"POST",base+"/start",Map.of("research_as_of","2026-10-12T13:00:00+08:00"),409);
+        var grant=workspace(f.researcher(),"GET",base+"/start-access",null,200);
+        String runtime="/v1/runtime/organization-executions/"+id+"/admit-start";
+        var admission=JSON.createObjectNode().put("thread_id",id.toString()).put("run_id",started.path("run_id").asText())
+            .put("operation_id",grant.path("start_operation_id").asText()).put("manifest_digest",f.digest())
+            .put("configuration_digest",grant.path("configuration_digest").asText()).put("start_request_digest",grant.path("start_request_digest").asText());
+        for(int i=0;i<2;i++)assertThat(runtimeRequest(runtime,admission.toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(200);
+        var wrong=admission.deepCopy().put("run_id",UUID.randomUUID().toString());
+        assertThat(runtimeRequest(runtime,wrong.toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(409);
+        wrong=admission.deepCopy().put("operation_id",UUID.randomUUID().toString());
+        assertThat(runtimeRequest(runtime,wrong.toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(409);
+        assertThat(request(f.researcher(),"POST",runtime,admission.toString(),null).statusCode()).isEqualTo(401);
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",f.researcher(),"role","remove"),200);
+        assertThat(runtimeRequest(runtime,admission.toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(404);
+        workspace(f.researcher(),"POST",base+"/start",body,404);
+        assertThat(organizationStarts.get()-before).isEqualTo(1);
+    }
+    @Test void organization_lost_start_can_be_admitted_once_then_reconciled() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
+        String base="/projects/"+f.project()+"/execution-bindings/"+id;
+        workspace(f.researcher(),"POST",base+"/prepare",Map.of("execution",Map.of("mode","auto","model","default","branch_ids",List.of())),200);
+        var body=Map.of("research_as_of","2026-10-12T12:00:00Z");dropOrganizationStart.add(id.toString());int before=organizationStarts.get();
+        assertThat(workspace(f.researcher(),"POST",base+"/start",body,200).path("status").asText()).isEqualTo("unknown");
+        var original=organizationRuns.get(id.toString()).deepCopy();
+        var grant=workspace(f.researcher(),"GET",base+"/start-access",null,200);
+        String runtime="/v1/runtime/organization-executions/"+id+"/admit-start";
+        var admission=Map.of("thread_id",id,"run_id",original.path("run_id").asText(),"operation_id",grant.path("start_operation_id").asText(),
+            "manifest_digest",f.digest(),"configuration_digest",grant.path("configuration_digest").asText(),"start_request_digest",grant.path("start_request_digest").asText());
+        assertThat(runtimeRequest(runtime,JSON.writeValueAsString(admission),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(200);
+        organizationRuns.get(id.toString()).put("run_id",UUID.randomUUID().toString());
+        assertThat(workspace(f.researcher(),"POST",base+"/start-reconcile",null,200).path("status").asText()).isEqualTo("unknown");
+        organizationRuns.put(id.toString(),original);
+        var recovered=workspace(f.researcher(),"POST",base+"/start-reconcile",null,200);
+        assertThat(recovered.path("status").asText()).isEqualTo("received");
+        assertThat(workspace(f.researcher(),"POST",base+"/start",body,200)).isEqualTo(recovered);
+        assertThat(organizationStarts.get()-before).isEqualTo(1);
     }
     @Test void lost_prepare_response_recovers_only_deterministic_thread() throws Exception {
         var task=create("drop-prepare");String path="/v1/tasks/"+task.path("id").asText();int before=prepares.get();

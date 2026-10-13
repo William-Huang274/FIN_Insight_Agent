@@ -122,7 +122,16 @@ class InternalResearchIdentity:
                 except (ValueError, KeyError, TypeError):
                     return await JSONResponse({'detail': '缺少有效项目或操作凭证'}, status_code=422)(scope, replay, send)
                 try:
-                    await require_project(self.service, project_id)
+                    if scope['path'] == INTERNAL + 'organization/prepare':
+                        from .organization_native_drafts import preparation_authority
+                        try:
+                            execution_id = UUID(json.loads(body)['execution_id'])
+                        except (ValueError, KeyError, TypeError):
+                            return await JSONResponse({'detail': '缺少组织执行标识'}, status_code=422)(scope, replay, send)
+                        scope['finsight_organization_preparation'] = await preparation_authority(self.service,
+                            project_id, execution_id, raw_body=bytes(body), operation_id=request.headers['idempotency-key'])
+                    else:
+                        await require_project(self.service, project_id)
                 except HTTPException as exc:
                     return await JSONResponse({'detail': exc.detail}, status_code=exc.status_code)(scope, replay, send)
             await self.app(scope, replay, send)

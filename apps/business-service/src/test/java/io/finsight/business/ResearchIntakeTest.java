@@ -37,6 +37,9 @@ class ResearchIntakeTest {
     static final Map<String, ObjectNode> states = new ConcurrentHashMap<>();
     static final Set<String> revoked = ConcurrentHashMap.newKeySet();
     static final AtomicInteger prepares = new AtomicInteger(), starts = new AtomicInteger();
+    static final Map<String,ObjectNode> organizationNative = new ConcurrentHashMap<>();
+    static final Set<String> dropOrganizationPrepare = ConcurrentHashMap.newKeySet();
+    static final AtomicInteger organizationCreates = new AtomicInteger();
     static final HttpServer PYTHON = fakePython();
     @DynamicPropertySource static void properties(DynamicPropertyRegistry r) {
         r.add("spring.datasource.url", PG::getJdbcUrl); r.add("spring.datasource.username", PG::getUsername); r.add("spring.datasource.password", PG::getPassword);
@@ -65,6 +68,21 @@ class ResearchIntakeTest {
                     assertThat(claims.getStringClaim("body_sha256")).isEqualTo(Delegation.digest(bytes));
                     assertThat(claims.getStringClaim("operation_id")).isEqualTo(Objects.requireNonNullElse(exchange.getRequestHeaders().getFirst("Idempotency-Key"), ""));
                     String project = path.startsWith("projects/") ? path.split("/")[1] : "";
+                    if(path.equals("organization/prepare")) {
+                        var payload=(ObjectNode)JSON.readTree(bytes);String id=payload.path("execution_id").asText();
+                        organizationCreates.incrementAndGet();
+                        var result=JSON.createObjectNode().put("execution_id",id).put("thread_id",id)
+                            .put("project_id",payload.path("project_id").asText()).put("manifest_digest",payload.path("manifest_digest").asText())
+                            .put("prepare_operation_id",exchange.getRequestHeaders().getFirst("Idempotency-Key"))
+                            .put("prepare_request_digest","sha256:"+Delegation.digest(bytes)).put("configuration_digest","sha256:"+"a".repeat(64))
+                            .put("status","draft").put("native_execution_enabled",false);
+                        organizationNative.put(id,result);
+                        if(dropOrganizationPrepare.contains(id)){exchange.close();return;}
+                        send(exchange,200,result);return;
+                    }
+                    if(path.startsWith("organization/executions/")) {
+                        var result=organizationNative.get(path.split("/")[2]);send(exchange,result==null?404:200,result==null?JSON.createObjectNode():result);return;
+                    }
                     if (revoked.contains(project)) { send(exchange,404,JSON.createObjectNode()); return; }
                     if (path.endsWith("/binding")) { send(exchange,200,binding()); return; }
                     if (path.startsWith("projects/")) { send(exchange,200,JSON.createObjectNode().put("project_id",project)); return; }
@@ -250,6 +268,8 @@ class ResearchIntakeTest {
         assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".organization_research_draft",Integer.class)).isZero();
         assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".flyway_schema_history WHERE version='6' AND success",Integer.class)).isEqualTo(1);
         assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".organization_execution_binding",Integer.class)).isZero();
+        assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".flyway_schema_history WHERE version='7' AND success",Integer.class)).isEqualTo(1);
+        assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".organization_native_preparation",Integer.class)).isZero();
         // The isolated Testcontainers database is discarded at test completion.
     }
     @Test void project_roles_live_org_membership_and_space_permissions_are_independent() throws Exception {
@@ -567,6 +587,46 @@ class ResearchIntakeTest {
         workspace(f.admin(),"POST","/organizations/"+f.org()+"/remove-member",Map.of("subject",f.researcher()),200);
         runtimeAccess(id,f.digest(),404);
         assertThatThrownBy(()->new RuntimeDelegation(SECRET,SECRET)).isInstanceOf(IllegalArgumentException.class);
+    }
+    @Test void organization_native_prepare_concurrency_pins_options_and_reauthorizes_receipts() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
+        String base="/projects/"+f.project()+"/execution-bindings/"+id;
+        var options=Map.of("mode","auto","model","default","branch_ids",List.of(),"continuation_scope","original_plan");
+        var input=Map.of("execution",options);int before=organizationCreates.get();
+        try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
+            var calls=new ArrayList<Future<JsonNode>>();for(int i=0;i<5;i++)calls.add(pool.submit(()->workspace(f.researcher(),"POST",base+"/prepare",input,200)));
+            for(var call:calls)assertThat(call.get().path("execution")).isEqualTo(JSON.valueToTree(options));
+        }
+        var saved=workspace(f.researcher(),"GET",base+"/preparation",null,200);
+        assertThat(saved.path("status").asText()).isEqualTo("received");assertThat(organizationCreates.get()-before).isEqualTo(1);
+        assertThat(workspace(f.researcher(),"POST",base+"/prepare",input,200)).isEqualTo(saved);
+        var changed=new HashMap<String,Object>(options);changed.put("model","deepseek-v4-pro");
+        workspace(f.researcher(),"POST",base+"/prepare",Map.of("execution",changed),409);
+        var grant=workspace(f.researcher(),"GET",base+"/preparation-access",null,200);
+        assertThat(grant.path("prepare_operation_id")).isEqualTo(saved.path("operation_id"));
+        assertThat(grant.path("prepare_request").path("execution")).isEqualTo(JSON.valueToTree(options));
+        workspace(f.admin(),"GET",base+"/preparation-access",null,404);
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",f.researcher(),"role","remove"),200);
+        workspace(f.researcher(),"GET",base+"/preparation",null,404);
+        assertThat(organizationCreates.get()-before).isEqualTo(1);
+    }
+    @Test void organization_native_unknown_reconciles_exact_operation_without_redispatch() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
+        String base="/projects/"+f.project()+"/execution-bindings/"+id;
+        var input=Map.of("execution",Map.of("mode","auto","model","default","branch_ids",List.of()));
+        dropOrganizationPrepare.add(id.toString());int before=organizationCreates.get();
+        assertThat(workspace(f.researcher(),"POST",base+"/prepare",input,200).path("status").asText()).isEqualTo("unknown");
+        var original=organizationNative.get(id.toString()).deepCopy();
+        organizationNative.get(id.toString()).put("prepare_operation_id",UUID.randomUUID().toString());
+        assertThat(workspace(f.researcher(),"POST",base+"/reconcile",null,200).path("status").asText()).isEqualTo("unknown");
+        assertThat(workspace(f.researcher(),"POST",base+"/prepare",input,200).path("status").asText()).isEqualTo("unknown");
+        organizationNative.put(id.toString(),original);
+        var recovered=workspace(f.researcher(),"POST",base+"/reconcile",null,200);
+        assertThat(recovered.path("status").asText()).isEqualTo("received");
+        assertThat(recovered.path("result").path("thread_id").asText()).isEqualTo(id.toString());
+        assertThat(organizationCreates.get()-before).isEqualTo(1);
+        workspace(f.researcher(),"POST",base+"/close",null,200);
+        workspace(f.researcher(),"GET",base+"/preparation",null,409);
     }
     @Test void lost_prepare_response_recovers_only_deterministic_thread() throws Exception {
         var task=create("drop-prepare");String path="/v1/tasks/"+task.path("id").asText();int before=prepares.get();

@@ -712,6 +712,17 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
         raise ValueError("fresh_research_deployment_not_enabled")
     ids = config["configurable"]
     thread_id, run_id = str(UUID(str(ids["thread_id"]))), str(UUID(str(ids["run_id"])))
+    # Organization drafts are persisted, but their complete tool/result runtime
+    # is not wired yet. Reject even direct native submissions before host secrets,
+    # personal memory, budgets, models or broad data composition are touched.
+    from langgraph_sdk import get_client
+    native = get_client()
+    initial_thread = await native.threads.get(thread_id)
+    initial_metadata = initial_thread.get('metadata', {})
+    if (initial_metadata.get('organization_execution') is not None
+            or initial_metadata.get('surface') == 'organization_research_workbench'
+            or str(initial_metadata.get('owner_id', '')).startswith('organization:')):
+        raise ValueError('organization_research_runtime_not_enabled')
     root = Path(os.environ["FIN_REPO_ROOT"])
     settings = json.loads(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).read_text(encoding="utf-8"))
     profile, case = load_research_runtime_profile(root)
@@ -727,7 +738,6 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
         public({"kind": "stage", "actor": "research_configuration", "event": "applied", "status": "loaded",
             "objective": f"已固定配置：{studio.title} · {studio.digest[:12]} · 专家并行 {studio.max_parallel_tasks} · 审查 {studio.review_order}",
             "recorded_at": datetime.now(timezone.utc).isoformat(), "run_id": run_id})
-    from langgraph_sdk import get_client
     asset_view = None
     if os.environ.get('FINSIGHT_TASK_ATTACHMENTS_ROOT'):
         from sec_agent.research_foundation.task_asset_updates import TaskAssetUpdates, TaskAssetView, asset_update_prompt
@@ -738,7 +748,6 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
             public({'kind': 'stage', 'actor': 'asset_inputs', 'event': 'applied', 'status': 'requires_reassessment',
                 'objective': f"本次运行采用资料输入 r{asset_view.binding['revision']}；已有研究结果仍须核查影响，未自动更新。",
                 'recorded_at': datetime.now(timezone.utc).isoformat(), 'run_id': run_id})
-    native = get_client()  # official in-process Agent Server connection
     async def read_guidance():
         thread = await native.threads.get(thread_id)
         from .user_context import user_context_prompt

@@ -14,6 +14,25 @@ os.environ['FINSIGHT_AUTH_MODE'] = 'local'
 os.environ.pop('FINSIGHT_REPORT_SESSION_SETTINGS', None)
 os.environ.pop('FINSIGHT_RESEARCH_SESSION_ENABLED', None)
 
+organization_probe = os.environ.get('FIN_ORGANIZATION_NATIVE_QUALIFICATION') == '1'
+if organization_probe:
+    from apps.workbench.backend import authentication
+    from starlette.authentication import AuthenticationError
+    os.environ['FINSIGHT_AUTH_MODE'] = 'oidc_product'
+    os.environ['FINSIGHT_RESOURCE_SPACES_ENABLED'] = '1'
+    os.environ.pop('FINSIGHT_OIDC_CLIENT_ID', None)
+    class SyntheticIdentity(authentication.OIDCBackend):
+        def verify(self, token):
+            if token != 'qualification-alice':
+                raise AuthenticationError('qualification_identity_required')
+            return 'oidc:alice'
+    install_auth = authentication.install_conversation_auth
+    def install_qualification_auth(app):
+        install_auth(app, backend=SyntheticIdentity(authentication.OIDCSettings(
+            issuer='https://qualification.invalid', audience='qualification',
+            jwks_url='https://qualification.invalid/keys')))
+    authentication.install_conversation_auth = install_qualification_auth
+
 from apps.workbench.backend.api.v1 import report_sessions
 from apps.workbench.backend import research_intake
 from apps.workbench.backend.app import create_report_session_app
@@ -25,7 +44,21 @@ class QualificationService(original):
     def __init__(self, *args, **kwargs):
         kwargs['research_profile'] = {'title': 'Synthetic native lifecycle', 'default_question': 'Synthetic only',
             'branch_topics': [], 'research_as_of': '2025-12-31T00:00:00+00:00'}
-        super().__init__(*args, **kwargs)  # Real LangGraphClient; no SDK method replaced.
+        super().__init__(*args, **kwargs)  # Real LangGraphClient and native persistence.
+        if organization_probe:
+            import json
+            from pathlib import Path
+            import httpx
+            create = self.sdk.threads.create
+            async def create_with_lost_reply(**options):
+                # Persist through the real SDK, then inject loss of its response.
+                result = await create(**options)
+                with (Path(os.environ['FINSIGHT_LOCAL_STATE_ROOT']) / 'native-create-observations.jsonl').open('a', encoding='utf-8') as out:
+                    out.write(json.dumps({'thread_id': result['thread_id']}) + '\n')
+                if options['metadata']['title'] == 'Synthetic lost organization reply':
+                    raise httpx.ReadTimeout('qualification: native persisted before reply loss')
+                return result
+            self.sdk.threads.create = create_with_lost_reply
 
 
 report_sessions.ReportSessionService = QualificationService

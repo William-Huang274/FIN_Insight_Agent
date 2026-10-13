@@ -22,7 +22,7 @@ class OrganizationExecutionBindings {
         this.db=db;this.drafts=drafts;this.projects=projects;this.tx=new TransactionTemplate(manager);
     }
     private Map<String,Object> binding(UUID id) {
-        return db.queryForList("SELECT b.*,d.project_id,d.organization_id,d.manifest_text FROM organization_execution_binding b JOIN organization_research_draft d ON d.id=b.draft_id WHERE b.id=?",id)
+        return db.queryForList("SELECT b.*,d.project_id,d.organization_id,d.manifest_text,d.title,d.question FROM organization_execution_binding b JOIN organization_research_draft d ON d.id=b.draft_id WHERE b.id=?",id)
             .stream().findFirst().orElseThrow(()->new ApiFailure(404,"执行绑定不可访问"));
     }
     private Map<String,Object> view(Map<String,Object> row) {
@@ -30,6 +30,17 @@ class OrganizationExecutionBindings {
             "thread_id",row.get("id"),"draft_id",row.get("draft_id"),"project_id",row.get("project_id"),
             "organization_id",row.get("organization_id"),"manifest_digest","sha256:"+row.get("manifest_digest"),
             "status",Boolean.TRUE.equals(row.get("closed"))?"closed":"bound","native_execution_enabled",false);
+    }
+    Map<String,Object> preparation(String actor,UUID project,UUID id) {
+        return tx.execute(status->{
+            var saved=binding(id);
+            if(!project.equals(saved.get("project_id"))||!actor.equals(saved.get("principal")))throw new ApiFailure(404,"执行绑定不可访问");
+            var grant=drafts.materialAccess(actor,project,(UUID)saved.get("draft_id"));
+            if(Boolean.TRUE.equals(binding(id).get("closed")))throw new ApiFailure(409,"执行绑定已关闭");
+            var result=new HashMap<String,Object>(view(saved));
+            result.put("manifest_text",saved.get("manifest_text"));result.put("inputs",grant.get("inputs"));
+            result.put("title",saved.get("title"));result.put("question",saved.get("question"));return result;
+        });
     }
     @PostMapping("/v1/workspaces/projects/{project}/research-drafts/{draft}/execution-bindings")
     Object create(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID draft,@Valid @RequestBody Create body) {

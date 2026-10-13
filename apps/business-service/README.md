@@ -22,6 +22,11 @@ Flyway V6 adds internal execution authorization bindings. A separate workload
 credential can request current all-input access for a bound principal, but cannot
 manage projects or impersonate a browser user. This does not create a native run.
 See [scoped organization evidence tools](../../docs/engineering/organization_execution_access.zh-CN.md).
+Flyway V7 adds one durable native draft preparation command per binding, with
+frozen configuration, one dispatch attempt and read-only reconciliation. Native
+threads use organization ownership; personal research entry points cannot read
+or start them. Shared runs remain disabled. See
+[organization native drafts](../../docs/engineering/organization_native_drafts.zh-CN.md).
 See [project resource links](../../docs/engineering/project_resource_links.zh-CN.md)
 and [organization project scope and static
 acceptance cases](../../docs/engineering/organization_projects.zh-CN.md).

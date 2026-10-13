@@ -1179,4 +1179,6 @@ def build_report_sessions_router(service):
     if getattr(service, 'intake_enabled', False):
         from ...research_intake import install_intake_routes
         install_intake_routes(router, service, create, start_draft)
+        from ...organization_native_drafts import install_organization_native_routes
+        install_organization_native_routes(router, service)
     return router

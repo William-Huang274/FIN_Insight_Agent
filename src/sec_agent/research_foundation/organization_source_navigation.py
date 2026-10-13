@@ -95,8 +95,20 @@ class OrganizationSourceNavigation:
                 raise OrganizationExecutionUnavailable('原文回读与已记录引用不一致。')
         return item
 
-    def calculate(self, request):
+    def calculate(self, request, *, source_lookup=None):
         before, _, _ = self.reader._grant()
+        if source_lookup is not None:
+            # Paper aliases are local navigation, not stable calculation IDs.
+            operands = {}
+            for name, operand in request.operands.items():
+                if operand.source_id is not None:
+                    source = source_lookup(operand.source_id)
+                    canonical = source.get('passage_id') or source.get('calculation_id')
+                    if not canonical:
+                        raise ValueError('organization_calculation_source_identity_missing')
+                    operand = operand.model_copy(update={'source_id':canonical})
+                operands[name] = operand
+            request = request.model_copy(update={'operands':operands})
         result = calculate_from_sources(request, self.source)
         result['organization_execution'] = self.execution_scope
         self.reader._after(before)
@@ -188,7 +200,7 @@ class OrganizationSourceNavigation:
         return deepcopy(verified)
 
 
-def build_organization_source_server(navigation, *, binding_reader=None, role_method_reader=None):
+def build_organization_source_server(navigation, *, binding_reader=None, role_method_reader=None, case_artifacts=None):
     """Existing MCP2 schema bridge consumes the maintained source tool names."""
     import asyncio
     from typing import Annotated, Any
@@ -230,7 +242,6 @@ def build_organization_source_server(navigation, *, binding_reader=None, role_me
             """Read this execution's fixed originals using the original narrow tool schema."""
             return await asyncio.to_thread(navigation.navigate, request)
 
-    @server.tool(name='read_research_source', structured_output=True)
     async def read(source_id: str, offset: Annotated[int, Field(ge=0)] = 0,
                    max_characters: Annotated[int, Field(ge=100, le=50000)] = 4000) -> dict[str, Any]:
         """Recheck and read an observed citation; only IDs produced in this tool session, no global lookup."""
@@ -238,10 +249,21 @@ def build_organization_source_server(navigation, *, binding_reader=None, role_me
         from sec_agent.agent_runtime.case_artifacts import read_source_window
         return read_source_window(source_id, item, offset, max_characters)
 
+    source_lookup = None
+    if case_artifacts is None:
+        server.tool(name='read_research_source', structured_output=True)(read)
+    else:
+        from sec_agent.agent_runtime.case_artifacts import register_case_artifact_tools
+        aliases = {alias:item.get('passage_id') or item.get('calculation_id')
+                   for alias, item in case_artifacts.source_snapshot().items()}
+        def source_lookup(source_id):
+            return navigation.source(aliases.get(source_id, source_id))
+        register_case_artifact_tools(server, case_artifacts, source_lookup=source_lookup, register_calculator=False)
+
     @server.tool(name='calculate_research_metric', structured_output=True)
     async def calculate(request: SourceBoundCalculation) -> dict[str, Any]:
         """Arithmetic over observed source quotes or calculations; preserves units, never certifies financial semantics."""
-        return await asyncio.to_thread(navigation.calculate, request)
+        return await asyncio.to_thread(navigation.calculate, request, source_lookup=source_lookup)
 
     if binding_reader is not None:
         from datetime import datetime

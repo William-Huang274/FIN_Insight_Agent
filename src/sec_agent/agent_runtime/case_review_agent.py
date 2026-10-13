@@ -520,6 +520,15 @@ class CaseModelAudit(AgentMiddleware):
         return RunnableLambda(invoke)
 
     async def awrap_tool_call(self, request, handler):
+        import asyncio
+        if self.source_access_check:
+            await asyncio.to_thread(self.source_access_check)
+        result = await self._execute_tool_call(request, handler)
+        if self.source_access_check:
+            await asyncio.to_thread(self.source_access_check)
+        return result
+
+    async def _execute_tool_call(self, request, handler):
         if not self.stream_public:
             return await handler(request)
         from langgraph.config import get_stream_writer
@@ -649,6 +658,17 @@ class CaseModelAudit(AgentMiddleware):
         incomplete = finish in {'content_filter', 'insufficient_system_resource', 'aborted'} or (
             getattr(request.model, 'streaming', False) and finish not in {'stop', 'tool_calls', 'length'})
         private({"event": "response", "call_id": call_id, "actor": self.actor, "raw_response": raw.model_dump(mode="json")})
+        if self.source_access_check:
+            import asyncio
+            from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
+            try:
+                await asyncio.to_thread(self.source_access_check)
+            except ProjectAssetUnavailable:
+                # Keep the response/usage audit, but do not publish candidate
+                # prose or dispatch tools after rights changed during a call.
+                public({**common, 'event':'outcome', 'status':'blocked_after_response_source_access',
+                    'elapsed_ms':round((perf_counter()-start)*1000, 3), **_usage_audit_fields(raw)})
+                raise
         if self.stream_public and not request.state.get("request_summary") and not truncated and not incomplete:
             from .public_research_output import submitted_prose
             from langgraph.config import get_stream_writer

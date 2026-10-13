@@ -37,7 +37,7 @@ def organization(tmp_path):
 
 def specialist(factory, model=_handoff, **extra):
     def replay(request):
-        action = TypeAdapter(SpecialistAction).validate_python(model(request)).model_dump(mode='json')
+        action = TypeAdapter(SpecialistAction).validate_json(json.dumps(model(request))).model_dump(mode='json')
         return {'action':action, 'runtime_receipt':_model_turn_receipt(request, action,
             receipt_id='host:organization-static-replay',
             kind='host', actor='dell_specialist_saved_response_replay', input_tokens=0, output_tokens=0,
@@ -114,8 +114,8 @@ def test_permission_loss_blocks_next_tool_and_model_at_actual_specialist_entry(o
     assert calls == []
 
 
-@pytest.mark.parametrize('option', ['web','artifacts'])
-def test_unfinished_lanes_fail_explicitly_before_old_data_is_opened(organization, option):
+@pytest.mark.parametrize('option', ['web','invalid_artifact'])
+def test_invalid_lane_configuration_fails_before_old_data_is_opened(organization, option):
     factory, _ = organization
     extra = {'live_web_read_enabled':True} if option == 'web' else {'case_artifacts':object()}
     with pytest.raises(ValueError):

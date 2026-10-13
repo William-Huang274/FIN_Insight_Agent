@@ -34,6 +34,8 @@ from sec_agent.agent_runtime.current_research_contract import current_foundation
 from sec_agent.agent_runtime.specialist_composition import open_specialist_receipted_composition
 from sec_agent.research_foundation.contracts import load_research_graph_foundation
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
+from sec_agent.agent_runtime.case_artifacts import CaseArtifacts
+from test_organization_case_artifacts import submitted_paper
 
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.skipif(not os.environ.get('FINSIGHT_INTAKE_TEST_JAR'), reason='explicit built Java intake JAR required')
@@ -45,14 +47,24 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
     assert docker and java
     jar = Path(os.environ['FINSIGHT_INTAKE_TEST_JAR']).resolve(); assert jar.is_file()
     processes, logs, container = [], [], None
-    def run(args): return subprocess.check_output([docker,*args],text=True,stderr=subprocess.STDOUT).strip()
+    def run(args):
+        # Do not hang on a stalled Docker API or print password-bearing argv.
+        try:
+            result = subprocess.run([docker,*args],text=True,capture_output=True,timeout=45)
+        except subprocess.TimeoutExpired:
+            raise RuntimeError('qualification_docker_timeout:' + args[0]) from None
+        if result.returncode:
+            raise RuntimeError('qualification_docker_failed:' + args[0])
+        return result.stdout.strip()
     try:
         password = secrets.token_urlsafe(24)
-        container = run(['run','--rm','-d','--label','finsight.qualification=resource-spaces',
+        container = 'finsight-resource-spaces-' + uuid4().hex
+        (tmp_path/'qualification-container.txt').write_text(container, encoding='utf-8')
+        run(['run','--rm','-d','--name',container,'--label','finsight.qualification=resource-spaces',
             '-e','POSTGRES_PASSWORD='+password,'-p','127.0.0.1::5432','postgres:16.15-alpine'])
         pg_port = run(['port',container,'5432/tcp']).rsplit(':',1)[1]
         deadline = time.monotonic()+30
-        while subprocess.run([docker,'exec',container,'pg_isready','-U','postgres'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode:
+        while subprocess.run([docker,'exec',container,'pg_isready','-U','postgres'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=10).returncode:
             assert time.monotonic()<deadline; time.sleep(.3)
         java_port = port()
         for key,value in {'FINSIGHT_RESOURCE_SPACES_ENABLED':'1','FINSIGHT_AUTH_MODE':'oidc_product',
@@ -198,6 +210,17 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
                 research_as_of=cutoff)
             organization_factory = OrganizationDataFactory(bob_reader, foundation=foundation,
                 research_as_of=cutoff, workbench_url='http://testserver')
+            review_artifacts = CaseArtifacts([submitted_paper(organization_factory)])
+            admin_foundation = current_foundation(load_research_graph_foundation(), thread_id=admin_execution,
+                profile=json.loads((ROOT/'configs/research/cases/growth_quality.json').read_text(encoding='utf-8')),
+                research_as_of=cutoff)
+            admin_factory = OrganizationDataFactory(admin_reader, foundation=admin_foundation,
+                research_as_of=cutoff, workbench_url='http://testserver')
+            admin_review_artifacts = CaseArtifacts([submitted_paper(admin_factory)])
+            async def read_case(data):
+                from mcp import Client
+                async with Client(data.mcp_server, raise_exceptions=False) as tools:
+                    return await tools.call_tool('read_research_artifact', {'paper_id':'P01'})
             # Original private file withdrawal does not retract explicit publication.
             source.library.set_access('bob',bob_ref['project_id'],'document',bob_ref['version_id'],True)
             with organization_memory_scope(bob_reader):
@@ -211,7 +234,12 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
                         data_composition_factory=organization_factory) as specialist:
                     selection = SourceDocumentRequest(source_space='organization',operation='catalog')
                     assert specialist.source_reader(selection)['status'] == 'success'
-                    api('POST',f'/organizations/{org}/remove-member',{'subject':'bob'})
+                    with organization_factory(run_invocation_id='review-stack', source_read_enabled=True,
+                                              case_artifacts=review_artifacts) as review_data:
+                        assert not asyncio.run(read_case(review_data)).is_error
+                        api('POST',f'/organizations/{org}/remove-member',{'subject':'bob'})
+                        rejected = asyncio.run(read_case(review_data))
+                        assert rejected.is_error and citation['passage'] not in str(rejected)
                     with pytest.raises(OrganizationExecutionUnavailable): specialist.source_reader(selection)
                 with pytest.raises(WorkingMemoryAccessDenied): bob_memory.read(bob_note['note_id'])
                 with pytest.raises(WorkingMemoryAccessDenied): bob_memory.search()
@@ -242,6 +270,9 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
         admin_navigation.restore([{'status':'success','content':[saved_admin_citation]}])
         assert admin_navigation.source(saved_admin_citation['passage_id']) == saved_admin_citation
         admin_citation = asyncio.run(read_original(admin_navigation))
+        with admin_factory(run_invocation_id='review-after-restart', source_read_enabled=True,
+                           case_artifacts=admin_review_artifacts) as review_data:
+            assert not asyncio.run(read_case(review_data)).is_error
         with pytest.raises(OrganizationExecutionUnavailable): bob_reader.check()
         with TestClient(app()) as client:
             saved=client.get(f'/api/v1/business/workspaces/projects/{project}',headers=WRITE)
@@ -275,6 +306,9 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             with pytest.raises(OrganizationExecutionUnavailable): admin_navigation.source(admin_citation['passage_id'])
             with pytest.raises(OrganizationExecutionUnavailable):
                 admin_navigation.restore([{'status':'success','content':[saved_admin_citation]}])
+            with pytest.raises(OrganizationExecutionUnavailable):
+                with admin_factory(run_invocation_id='revoked-review', source_read_enabled=True,
+                                   case_artifacts=admin_review_artifacts): pass
             closed=asyncio.run(space_business_request('alice','POST',f'projects/{project}/execution-bindings/{admin_execution}/close'))
             assert closed['status']=='closed'
             assert client.get(f'/api/v1/business/workspaces/projects/{project}/resources',headers=WRITE).json()['items']==[]

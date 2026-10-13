@@ -137,7 +137,25 @@ class CaseArtifacts:
             "causal_attribution_authorized", "truncated", "excerpt_truncated", "source_document_completeness_verified",
             "source_locator", "parser_page_start", "parser_page_end", "page_semantics", "section_path",
             "document_id", "node_id", "company", "issuer_id", "content_sha256", "calculation_id", "result_unit",
-            "arithmetic_verified", "financial_semantics_verified", "project_origin", "organization_source", "raw_body_sha256") if key in item}}
+            "arithmetic_verified", "financial_semantics_verified", "project_origin", "organization_source", "organization_execution", "raw_body_sha256") if key in item}}
+
+    def source_snapshot(self):
+        """Host-only copy for source validation; not a model admission endpoint."""
+        return deepcopy(self._sources)
+
+    def with_source_snapshot(self, sources):
+        """Replace a view's source payloads after caller validation, retaining aliases.
+
+        This method grants no authority; the caller owns validation and access.
+        Original author states remain unchanged for audit/revision.
+        """
+        if set(sources) != set(self._sources):
+            raise ValueError('case_source_snapshot_identity_mismatch')
+        result = deepcopy(self)
+        result._sources = deepcopy(sources)
+        for paper in result._papers.values():
+            paper['sources'] = {ref:self._source_summary(ref, result._sources[ref]) for ref in paper['sources']}
+        return result
 
     def catalog(self):
         return {"case_id": self.case_id, "research_as_of": self.research_as_of,
@@ -316,10 +334,12 @@ def read_source_window(source_id, item, offset=0, max_characters=16000):
                    "Exact archived observation window. End of this capture is not proof of full document coverage or truth; no new Evidence admission.")}
 
 
-def register_case_artifact_tools(server, artifacts: CaseArtifacts, *, source_lookup=None, calculation_observer=None):
+def register_case_artifact_tools(server, artifacts: CaseArtifacts, *, source_lookup=None, calculation_observer=None,
+                                 register_calculator=True):
     """Use the existing official MCP server, not another transport or tool bus."""
     from sec_agent.research_foundation.source_bound_calculator import register_source_calculator_tool
-    register_source_calculator_tool(server, source_lookup or artifacts.source_item, on_result=calculation_observer)
+    if register_calculator:
+        register_source_calculator_tool(server, source_lookup or artifacts.source_item, on_result=calculation_observer)
 
     @server.tool(name="search_research_sources", structured_output=True)
     def search_sources(query: Annotated[str, Field(min_length=1, max_length=500)],

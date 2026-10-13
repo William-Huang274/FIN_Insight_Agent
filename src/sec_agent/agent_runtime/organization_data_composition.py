@@ -6,6 +6,7 @@ not enable native organization runs or claim reviewed/numeric-fact authority.
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
+from copy import deepcopy
 
 from sec_agent.research_foundation.contracts import bind_research_method, canonical_sha256
 from sec_agent.research_foundation.organization_source_navigation import (
@@ -59,6 +60,7 @@ class OrganizationDataComposition:
     restore_source_observations: object
     reviewed_topic_refs_by_branch: dict
     access_check: object
+    case_artifacts: object = None
     source_spaces: tuple = ('organization',)
     baseline_source_plan: None = None
 
@@ -86,21 +88,44 @@ class OrganizationDataFactory:
                  live_web_read_enabled=False, role_method_reader=None, restored_observations=(), case_artifacts=None):
         if not source_read_enabled or live_web_read_enabled:
             raise ValueError('organization_requires_source_read_without_live_web')
-        if case_artifacts is not None:
-            raise ValueError('organization_case_artifact_restore_not_enabled')
         self.reader._after(self.grant)
         graph_run = compose_mcp_graph_run(self.foundation,
             branch_ids=[row.branch_id for row in self.foundation.question_branches],
             research_as_of=self.research_as_of, snapshot_id=self.reader.authority.manifest_digest,
             execution_attempt_id=run_invocation_id, source_policy=POLICY)
-        navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url)
-        navigation.restore(restored_observations)
-        server = build_organization_source_server(navigation,
-            binding_reader=_MethodBinding(self.foundation, graph_run, self.reader), role_method_reader=role_method_reader)
         inventory = self.reader.authority.manifest_digest[7:]
         catalog = {'schema_version':'organization_source_routes.v1', 'source_spaces':['organization'],
                    'manifest_digest':self.reader.authority.manifest_digest, 'routes':[]}
         catalog['catalog_digest'] = canonical_sha256(catalog)
+        navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url)
+        artifact_sources = {}
+        if case_artifacts is not None:
+            from .case_artifacts import CaseArtifacts
+            if not isinstance(case_artifacts, CaseArtifacts):
+                raise ValueError('organization_case_artifacts_required')
+            case_artifacts = deepcopy(case_artifacts)
+            expected = {key:getattr(graph_run.foundation_binding, key) for key in (
+                'case_id','snapshot_id','research_as_of','foundation_digest')}
+            expected.update(owner_data_gate_decision_digest=canonical_sha256(self.grant),
+                source_route_catalog_digest=catalog['catalog_digest'], inventory_snapshot_digest=inventory)
+            if any(getattr(case_artifacts, key, None) != value for key, value in expected.items()):
+                raise ValueError('organization_case_artifacts_scope_mismatch')
+            artifact_sources = case_artifacts.source_snapshot()
+        validated = navigation.restore([*restored_observations,
+            {'status':'success', 'content':list(artifact_sources.values())}])
+        if case_artifacts is not None:
+            # Only regenerated originals/calculations enter review tools. Keep
+            # paper aliases; retain untouched author checkpoints separately.
+            sources = {}
+            for alias, item in artifact_sources.items():
+                canonical = item.get('passage_id') or item.get('calculation_id')
+                if canonical not in validated:
+                    raise ValueError('organization_case_source_not_validated')
+                sources[alias] = validated[canonical]
+            case_artifacts = case_artifacts.with_source_snapshot(sources)
+        server = build_organization_source_server(navigation,
+            binding_reader=_MethodBinding(self.foundation, graph_run, self.reader), role_method_reader=role_method_reader,
+            case_artifacts=case_artifacts)
         with organization_memory_scope(self.reader), MCPToolLaneAdapter(server,
                 run_binding=graph_run.mcp_run_binding, source_read_enabled=True,
                 organization_sources_only=True) as adapter:
@@ -121,4 +146,4 @@ class OrganizationDataFactory:
                 inventory_snapshot_digest=inventory, source_route_catalog_digest=catalog['catalog_digest'],
                 mcp_server=server, method_reader=adapter.read_research_method,
                 restore_source_observations=navigation.restore, reviewed_topic_refs_by_branch={},
-                access_check=lambda: self.reader._after(self.grant))
+                access_check=lambda: self.reader._after(self.grant), case_artifacts=case_artifacts)

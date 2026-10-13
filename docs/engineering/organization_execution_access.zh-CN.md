@@ -118,7 +118,7 @@ uv run --no-sync python -m pytest -q tests/integration/test_resource_spaces_stac
 
 组织模式的 evidence lane 仅接受组织原文请求，finance lane 仅承载已有来源绑定计算；直接 SQL 查询和其他资料空间返回明确工具失败。计算仍区分来源数字、显式情景假设与金融口径核验。沿用现有方法/工具回执、任务摘要和专家观察记录，未引入新的执行或回执系统。授权在工具和模型调用边界重新检查；静态验收证明撤权后不会进入下一次模型端口。
 
-**恢复与跨阶段仍有明确限制。** 第五片交付时拒绝非空 `restored_observations` 和 `case_artifacts`；第六片已接入前者的原件校验与计算复算。`case_artifacts` 仍明确拒绝，依赖专题与审查、修订工具需下一片校验接入；随后统一完整阶段工厂与事件/成果/报告导出。不能把实际专家节点消费当作整个团队研究已经启动。
+**恢复与跨阶段仍有明确限制。** 第五片交付时拒绝非空 `restored_observations` 和 `case_artifacts`；第六片接入前者的原件校验与计算复算，第七片接入后者的底稿范围/来源校验和审查工具。完整阶段工厂与事件/成果/报告导出仍待统一；不能把实际专家或审查节点消费当作整个团队研究已经启动。
 
 复现：`uv run --no-sync python -m pytest -q tests/test_organization_data_composition.py`。15项组织组合用例通过，包括实际专家图读取原文并保留引用/回执、越界能力拒绝、方法作用域篡改、时区与任务身份、计算及模型前撤权。相关回归202项通过（包含这15项；加强原文断言后15项另行重验通过，不累加为新增），真实Java/PG/SQLite/MCP与重启联调1项28.31秒通过；实际Java退出成员时，已打开专家入口立即拒绝新读取。全部使用静态模型回执或禁止调用模型的端口，没有付费调用，也未部署。
 
@@ -133,6 +133,20 @@ uv run --no-sync python -m pytest -q tests/integration/test_resource_spaces_stac
 
 兼容性：新增组织来源记录保存 `execution_id`，组织 CALC 保存执行范围，并将组织来源身份传入操作数的 provenance。缺少这些字段的早期组件试验记录不被自动补身份或升级，需在当前授权下重新读取；组织 CALC 内容摘要可能因此改变。此路径尚未部署或开放产品团队运行，既有个人/公共来源协议及其默认行为保持不变。
 
-复现：`uv run --no-sync python -m pytest -q tests/test_organization_source_restore.py`。静态验收涵盖实际专家保存→关闭组合→恢复专家图、旧引用经 MCP 回读、篡改/跨执行/撤权/原件损坏及恢复原子性。真实 `tests/integration/test_resource_spaces_stack.py` 同时验证 Spring/PostgreSQL 的成员退出、服务重启后合法恢复、源撤权后拒绝恢复。仍未接入审查底稿 `CaseArtifacts`、完整阶段工厂、团队启动/接续产品入口、事件/成果/报告导出授权；不新增付费研究质量证据。
+复现：`uv run --no-sync python -m pytest -q tests/test_organization_source_restore.py`。静态验收涵盖实际专家保存→关闭组合→恢复专家图、旧引用经 MCP 回读、篡改/跨执行/撤权/原件损坏及恢复原子性。真实 `tests/integration/test_resource_spaces_stack.py` 同时验证 Spring/PostgreSQL 的成员退出、服务重启后合法恢复、源撤权后拒绝恢复。审查底稿由第七片接续；完整阶段工厂、团队启动/接续产品入口、事件/成果/报告导出授权仍待完成，不新增付费研究质量证据。
 
 2026-10-13 本片验证：相关回归342项通过（包含当时21项恢复用例），最后补充数值边界后恢复用例25项全部复验通过，重复用例不累加。真实Java/PG/SQLite/MCP联调1项44.51秒通过；活跃基线、963文件密钥扫描和diff检查通过。零模型、embedding、rerank调用；现有原生与BFF健康检查均200，原3个容器健康，未部署共同分支。
+
+## 3B 第七片：审查底稿、短引用与修订消费
+
+`OrganizationDataFactory` 现在接受服务端 `CaseArtifacts`，先检查七项绑定：case、snapshot、research_as_of、foundation、授权决策摘要、来源目录摘要、输入清单摘要。缺少这些绑定的仅来源视图、其他研究的底稿和伪造资料权威明确拒绝。核验整批底稿来源与待恢复观察记录后，`data.case_artifacts` 返回独立副本：正文、标题及修订视图保持原样，来源区使用重新生成的 PASSAGE/CALC；原作者 checkpoint 和审计回执不被覆写。该对象是宿主内存视图，不能脱离授权边界直接作为用户读取接口。
+
+审查仍使用现有 `research_artifact_catalog`、`read_research_artifact`、`search_research_sources`、`read_research_source` 和 `calculate_research_metric`，没有另一套底稿库或权限表。MCP 中间件覆盖目录、标题、FTS 摘要及全文，调用前后检查当前全部来源权限。`P01:S001` 等短引用只在本底稿副本内解析；计算请求中的短引用转成完整 PASSAGE/CALC ID 后执行，因此保存的操作数不会因下一轮底稿编号变化而失去身份。组织结果继续带执行范围，不获得 NumericFact 或金融语义权威。
+
+现有 `CaseModelAudit(source_access_check=data.access_check)` 补齐异步工具调用前后及模型返回后的检查，覆盖审查 Agent 的本地底稿/意见工具。返回后失权时保留私有响应与已知/未知用量记录，再阻止候选正文投影和后续工具派发；不把已经成功返回的模型请求记为未调用，也不重试。此检查不能撤回已发送给 provider 的输入、先前已发送的内容，也不是写操作的跨库回滚。原生事件/SSE及最终成果访问仍需后续产品入口验收。
+
+复现：`uv run --no-sync python -m pytest -q tests/test_organization_case_artifacts.py`。用实际专家图生成带原文和 CALC 的底稿，经现有审查 Agent 的静态 LangGraph/MCP 循环消费；原作者通过 `recovery_state` 与修订意见提交新稿，保留原观察，再进入校验后的底稿视图。修订限定审查也复用现有入口。测试审查明确标记金融质量未完成，避免把运行成功当作研究通过。
+
+本片提供组合能力与节点消费证据，未替换 `create_research_phase_runnables` 的默认宿主组合，也未启用组织原生研究。下一片必须统一 Lead/专家/审查/修订的工厂选择，并始终向本地 Agent 注入 `data.access_check`、使用校验后的 `data.case_artifacts`；然后验收团队启动、接续、事件、成果及导出。前端与现有部署未修改。
+
+2026-10-13 本片验证：相关回归425项通过，包含25项新增组织底稿测试；真实Java/PostgreSQL/SQLite/MCP联调1项69.34秒通过，覆盖成员退出、服务重启后底稿恢复及源撤权。首次真实栈因Docker管理API无响应中断，恢复原服务后补验通过；验收命令新增超时、独立容器名和身份记录，避免无限等待或不明对象清理。活跃基线、964文件密钥扫描及diff检查通过。零模型、embedding、rerank调用；原部署三个容器健康，两处健康检查200，共同分支未部署。静态Agent提交、审查与修订证明节点消费，不能代表完整组织产品流程或金融结论质量。

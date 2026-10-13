@@ -2729,9 +2729,14 @@ def build_specialist_agentic_state_graph(
             if isinstance(action, ReadDependencyWorkAction):
                 if before.tool_action_count >= working['max_tool_actions']:
                     return reject('specialist_dependency_tool_limit', 'No additional read executed; preserve saved results.')
+                from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
                 try:
                     payload, originals = dependencies.dependency_reader(action.model_dump(mode='json'))
                     restored = [SpecialistToolObservation.model_validate_json(json.dumps(obs)) for obs in originals]
+                except ProjectAssetUnavailable:
+                    # Revoked authority is not a malformed tool request for
+                    # the model to repair on its next turn.
+                    raise
                 except (ValueError, KeyError) as exc:
                     return reject('specialist_dependency_read_invalid', str(exc), agent_error=True)
                 known = {obs.observation_digest for obs in before.observations}

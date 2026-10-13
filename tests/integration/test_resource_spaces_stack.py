@@ -273,6 +273,22 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
         with admin_factory(run_invocation_id='review-after-restart', source_read_enabled=True,
                            case_artifacts=admin_review_artifacts) as review_data:
             assert not asyncio.run(read_case(review_data)).is_error
+        # Actual phase factory and native chat loop, with scripted model replies.
+        # It must keep using Java's current grant after restart and later revoke.
+        from test_organization_phase_factory import phases_for, invoke as invoke_phase
+        from test_report_synthesis_agent import NativeFixtureModel
+        from test_case_review_agent import call
+        from sec_agent.agent_runtime import research_session_runtime as phase_runtime
+        admin_phases = phases_for(admin_factory, tmp_path)
+        with monkeypatch.context() as phase_patch:
+            phase_patch.setattr(phase_runtime, 'case_chat_model', lambda *a, **k: NativeFixtureModel(
+                marker='real-java-phase', replies=[
+                    [call('read_research_source', {'source_id':'P01:S001'}, 'read')],
+                    [call('submit_case_answer', {'answer_markdown':'This static check used the authorized original [P01:S001].'}, 'answer')]]))
+            phase_result = invoke_phase(admin_phases, 'quick_writer', {'question':'Static source access',
+                'case_papers':list(admin_review_artifacts._author_states.values()), 'messages':[],
+                'request_action':'ask','report':{},'revisions':{},'conversation':[]})
+            assert phase_result['output']['kind'] == 'answer' and phase_result['output']['citations']
         with pytest.raises(OrganizationExecutionUnavailable): bob_reader.check()
         with TestClient(app()) as client:
             saved=client.get(f'/api/v1/business/workspaces/projects/{project}',headers=WRITE)
@@ -309,6 +325,8 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             with pytest.raises(OrganizationExecutionUnavailable):
                 with admin_factory(run_invocation_id='revoked-review', source_read_enabled=True,
                                    case_artifacts=admin_review_artifacts): pass
+            with pytest.raises(OrganizationExecutionUnavailable):
+                invoke_phase(admin_phases, 'quick_writer', {})
             closed=asyncio.run(space_business_request('alice','POST',f'projects/{project}/execution-bindings/{admin_execution}/close'))
             assert closed['status']=='closed'
             assert client.get(f'/api/v1/business/workspaces/projects/{project}/resources',headers=WRITE).json()['items']==[]

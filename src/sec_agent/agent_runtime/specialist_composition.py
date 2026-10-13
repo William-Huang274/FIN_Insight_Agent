@@ -1117,6 +1117,17 @@ def _open_specialist_composition(
             restored_observations=(recovery_state or {}).get("notebook", {}).get("observations", ()),
             case_artifacts=dependency_reader.artifacts if dependency_reader else None,
         ) as approved:
+            if dependency_reader is not None and getattr(approved, 'case_artifacts', None) is not None:
+                # Organization dependencies must use regenerated sources, not
+                # the pre-validation copy kept by the host handoff reader.
+                dependency_reader.artifacts = approved.case_artifacts
+                reader_port = dependency_reader
+                def checked_dependency(request):
+                    approved.access_check()
+                    result = reader_port(request)
+                    approved.access_check()
+                    return result
+                dependency_reader = checked_dependency
             graph_input = _build_graph_input(
                 run_id=run_id,
                 run_invocation_id=run_invocation_id,

@@ -114,11 +114,10 @@ def test_permission_loss_blocks_next_tool_and_model_at_actual_specialist_entry(o
     assert calls == []
 
 
-@pytest.mark.parametrize('option', ['web','restore','artifacts'])
+@pytest.mark.parametrize('option', ['web','artifacts'])
 def test_unfinished_lanes_fail_explicitly_before_old_data_is_opened(organization, option):
     factory, _ = organization
-    extra = {'live_web_read_enabled':True} if option == 'web' else (
-        {'restored_observations':[{'status':'success'}]} if option == 'restore' else {'case_artifacts':object()})
+    extra = {'live_web_read_enabled':True} if option == 'web' else {'case_artifacts':object()}
     with pytest.raises(ValueError):
         with factory(run_invocation_id='attempt', source_read_enabled=True, **extra): pass
 

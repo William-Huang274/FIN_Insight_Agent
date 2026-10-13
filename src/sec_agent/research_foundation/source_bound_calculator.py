@@ -213,7 +213,8 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                 "source_url", "citation_urls", "source_locator", "title", "ticker", "company", "issuer_id",
                 "publication_date", "publication_date_status", "period_start", "period_end", "fiscal_period",
                 "source_reporting_period_end", "unit", "numeric_fact_authority", "authority_note",
-                "source_type", "source_tier", "source_role", "source_observation_ids", "content_sha256") if key in item}
+                "source_type", "source_tier", "source_role", "source_observation_ids", "content_sha256",
+                "organization_source", "organization_execution") if key in item}
         values[name] = value
         bindings[name] = {**binding, "value_decimal": str(value)}
 

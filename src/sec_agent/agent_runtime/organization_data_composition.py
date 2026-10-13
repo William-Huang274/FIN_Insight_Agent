@@ -67,11 +67,6 @@ def _unavailable(*args, **kwargs):
     raise ValueError('organization_capability_not_authorized')
 
 
-def _no_restore(observations):
-    if observations:
-        raise ValueError('organization_observation_restore_not_enabled')
-
-
 class OrganizationDataFactory:
     """Host injects a method-only foundation and an explicit timezone-aware cutoff."""
     def __init__(self, reader, *, foundation, research_as_of, workbench_url):
@@ -91,7 +86,6 @@ class OrganizationDataFactory:
                  live_web_read_enabled=False, role_method_reader=None, restored_observations=(), case_artifacts=None):
         if not source_read_enabled or live_web_read_enabled:
             raise ValueError('organization_requires_source_read_without_live_web')
-        _no_restore(restored_observations)
         if case_artifacts is not None:
             raise ValueError('organization_case_artifact_restore_not_enabled')
         self.reader._after(self.grant)
@@ -100,6 +94,7 @@ class OrganizationDataFactory:
             research_as_of=self.research_as_of, snapshot_id=self.reader.authority.manifest_digest,
             execution_attempt_id=run_invocation_id, source_policy=POLICY)
         navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url)
+        navigation.restore(restored_observations)
         server = build_organization_source_server(navigation,
             binding_reader=_MethodBinding(self.foundation, graph_run, self.reader), role_method_reader=role_method_reader)
         inventory = self.reader.authority.manifest_digest[7:]
@@ -125,5 +120,5 @@ class OrganizationDataFactory:
                 source_route_catalog=catalog, decision_digest=canonical_sha256(self.grant),
                 inventory_snapshot_digest=inventory, source_route_catalog_digest=catalog['catalog_digest'],
                 mcp_server=server, method_reader=adapter.read_research_method,
-                restore_source_observations=_no_restore, reviewed_topic_refs_by_branch={},
+                restore_source_observations=navigation.restore, reviewed_topic_refs_by_branch={},
                 access_check=lambda: self.reader._after(self.grant))

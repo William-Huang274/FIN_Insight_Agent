@@ -14,10 +14,10 @@ from test_project_library import app_at, index, PROJECT, WRITE
 from test_project_source_captures import setup, selections, save, reference, source_library
 
 
-def source_at(root):
+def source_at(root, *, body=b'Pinned original evidence.'):
     source = AssetWorkspace(root)
     source.library.save('alice', 0, {k:v for k,v in index().items() if k != 'revision'})
-    source.library.documents.add(source.library.scope('alice', PROJECT), 'Original.md', b'Pinned original evidence.')
+    source.library.documents.add(source.library.scope('alice', PROJECT), 'Original.md', body)
     return source, source.catalog('alice', PROJECT)['items'][0]['current']['ref']
 
 

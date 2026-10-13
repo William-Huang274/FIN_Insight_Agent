@@ -184,6 +184,14 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             citation = asyncio.run(read_original(bob_navigation))
             assert citation['passage']=='Organization keeps this after author departure.'
             assert citation['organization_source']['ref']==prepared['manifest']['inputs'][0]['ref']
+            saved_observations = [{'status':'success','content':[citation]}]
+            restored_navigation = OrganizationSourceNavigation(bob_reader, workbench_url='http://testserver')
+            restored_navigation.restore(saved_observations)
+            assert restored_navigation.source(citation['passage_id']) == citation
+            admin_before_restart = OrganizationSourceNavigation(admin_reader, workbench_url='http://testserver')
+            with pytest.raises(ValueError, match='scope_mismatch'):
+                admin_before_restart.restore(saved_observations)
+            saved_admin_citation = asyncio.run(read_original(admin_before_restart))
             cutoff = prepared['manifest']['research_as_of'] + 'T12:00:00+08:00'
             foundation = current_foundation(load_research_graph_foundation(), thread_id=execution_id,
                 profile=json.loads((ROOT/'configs/research/cases/growth_quality.json').read_text(encoding='utf-8')),
@@ -221,6 +229,7 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert client.get(read,headers=WRITE).status_code==200
             assert asyncio.run(read_mcp(bob_reader)).is_error
             with pytest.raises(OrganizationExecutionUnavailable): bob_navigation.source(citation['passage_id'])
+            with pytest.raises(OrganizationExecutionUnavailable): restored_navigation.restore(saved_observations)
             assert not asyncio.run(read_mcp(admin_reader)).is_error
             api('POST','/resources',{},status=404) # binding registration is BFF-only
         business.terminate();business.wait(timeout=20);business=start()
@@ -230,6 +239,8 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             restored_memory = memory_for({'configurable':{'thread_id':admin_execution}}, 'reviewer')
             assert restored_memory.read(admin_note['note_id'])['body'] == citation['passage']
         admin_navigation = OrganizationSourceNavigation(admin_reader, workbench_url='http://testserver')
+        admin_navigation.restore([{'status':'success','content':[saved_admin_citation]}])
+        assert admin_navigation.source(saved_admin_citation['passage_id']) == saved_admin_citation
         admin_citation = asyncio.run(read_original(admin_navigation))
         with pytest.raises(OrganizationExecutionUnavailable): bob_reader.check()
         with TestClient(app()) as client:
@@ -262,6 +273,8 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert client.post(verify,headers=WRITE,json={}).status_code == 404
             with pytest.raises(OrganizationExecutionUnavailable): admin_reader.read_text(resource)
             with pytest.raises(OrganizationExecutionUnavailable): admin_navigation.source(admin_citation['passage_id'])
+            with pytest.raises(OrganizationExecutionUnavailable):
+                admin_navigation.restore([{'status':'success','content':[saved_admin_citation]}])
             closed=asyncio.run(space_business_request('alice','POST',f'projects/{project}/execution-bindings/{admin_execution}/close'))
             assert closed['status']=='closed'
             assert client.get(f'/api/v1/business/workspaces/projects/{project}/resources',headers=WRITE).json()['items']==[]

@@ -14,8 +14,8 @@ from test_project_library import app_at, WRITE
 from test_resource_spaces import source_at
 
 
-def fixture(root):
-    source, ref = source_at(root)
+def fixture(root, *, body=b'Pinned original evidence.'):
+    source, ref = source_at(root, body=body)
     org, project, draft, space, resource = [str(uuid4()) for _ in range(5)]
     shared = SpaceAssets(root / 'organization-assets')
     binding = shared.publish(source, 'alice', resource, org, space, ref)

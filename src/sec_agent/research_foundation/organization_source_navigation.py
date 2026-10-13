@@ -4,12 +4,13 @@ No host library, personal uploads, embedding, reranking, web or model calls.
 This adapter does not grant native-run admission or financial fact authority.
 """
 from copy import deepcopy
+from decimal import Decimal
 from hashlib import sha256
 import json
 from urllib.parse import urlsplit
 
 from .source_document_navigation import SourceDocumentRequest, navigate_source_nodes
-from .source_bound_calculator import ObservedSourceRegistry, calculate_from_sources
+from .source_bound_calculator import ObservedSourceRegistry, SourceBoundCalculation, calculate_from_sources
 from .organization_execution_access import OrganizationExecutionUnavailable
 
 
@@ -50,6 +51,7 @@ class OrganizationSourceNavigation:
             if not text.strip():
                 raise ValueError('organization_original_text_unavailable')
             origin = {'resource_id': item['resource_id'], 'ref': deepcopy(item['ref']),
+                'execution_id': self.reader.authority.execution_id,
                 'manifest_digest': self.reader.authority.manifest_digest,
                 'source_truncated': result['truncated'],
                 'capture': {k: deepcopy(v) for k, v in (result.get('capture') or {}).items() if k != 'rows'}}
@@ -96,9 +98,94 @@ class OrganizationSourceNavigation:
     def calculate(self, request):
         before, _, _ = self.reader._grant()
         result = calculate_from_sources(request, self.source)
+        result['organization_execution'] = self.execution_scope
         self.reader._after(before)
         self.observed.remember('calculate_research_metric', result)
         return result
+
+    @property
+    def execution_scope(self):
+        return {'execution_id': self.reader.authority.execution_id,
+                'manifest_digest': self.reader.authority.manifest_digest}
+
+    def restore(self, observations):
+        """Revalidate host-saved originals and calculations; publish only a complete batch.
+
+        This is not a model-facing registration API or checkpoint authenticity proof.
+        Transport annotations are not restored as source authority.
+        """
+        before, _, _ = self.reader._grant()
+        pending = {}
+        for observation in observations:
+            if observation.get('status') != 'success' or observation.get('failure'):
+                continue
+            for item in observation.get('content', ()):
+                kind = item.get('result_state')
+                if kind in {'numeric_fact', 'reviewed_evidence'}:
+                    raise ValueError('organization_restore_source_authority_not_supported')
+                if kind not in {'source_bound_passage', 'non_authoritative_metric'}:
+                    continue  # Navigation/previews never acquire citation authority.
+                source_id = item.get('passage_id') if kind == 'source_bound_passage' else item.get('calculation_id')
+                if not source_id:
+                    raise ValueError('organization_restore_source_identity_missing')
+                pending.setdefault(source_id, []).append(item)
+        staged = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url)
+        verified, visiting = {}, set()
+
+        def verify(source_id):
+            if source_id in verified:
+                return verified[source_id]
+            if source_id in visiting:
+                raise ValueError('organization_restore_calculation_cycle')
+            if source_id not in pending:
+                # A dependency already observed during this same tool session is valid.
+                return self.source(source_id)
+            visiting.add(source_id)
+            candidates = pending[source_id]
+            saved = candidates[0]
+            if saved['result_state'] == 'source_bound_passage':
+                origin = saved.get('organization_source', {})
+                if any(origin.get(key) != value for key, value in self.execution_scope.items()):
+                    raise ValueError('organization_restore_execution_scope_mismatch')
+                result = staged.navigate(saved['readback'])
+                fresh = next((row for row in result.items if row.get('passage_id') == source_id), None)
+                if fresh is None:
+                    raise ValueError('organization_restore_original_not_found')
+            else:
+                if saved.get('organization_execution') != self.execution_scope:
+                    raise ValueError('organization_restore_execution_scope_mismatch')
+                operands = {}
+                for name, operand in saved['operands'].items():
+                    authority = operand.get('authority')
+                    if authority == 'assumption':
+                        # Stored Decimal values may use exponent notation even
+                        # though input literals must be plain decimal strings.
+                        value = Decimal(operand['value_decimal'])
+                        if not value.is_finite() or not -64 <= value.as_tuple().exponent <= 0 or abs(value) > Decimal('1e36'):
+                            raise ValueError('organization_restore_assumption_out_of_range')
+                        operands[name] = {'literal':format(value, 'f'),
+                                          'assumption_note':operand['assumption_note']}
+                    elif authority == 'non_authoritative_source_reported':
+                        operands[name] = {key:operand[key] for key in ('source_id','quote','literal')}
+                    elif authority == 'non_authoritative_calculation':
+                        operands[name] = {'source_id':operand['source_id']}
+                    else:
+                        raise ValueError('organization_restore_operand_authority_not_supported')
+                request = SourceBoundCalculation(expression=saved['expression'], operands=operands,
+                    result_unit=saved['result_unit'], rationale=saved['rationale'])
+                fresh = calculate_from_sources(request, verify)
+                fresh['organization_execution'] = self.execution_scope
+            if any(any(candidate.get(key) != value for key, value in fresh.items()) for candidate in candidates):
+                raise ValueError('organization_restore_original_or_calculation_mismatch')
+            verified[source_id] = fresh
+            visiting.remove(source_id)
+            return fresh
+
+        for source_id in pending:
+            verify(source_id)
+        self.reader._after(before)
+        self.observed.restore([{'status':'success', 'content':list(verified.values())}])
+        return deepcopy(verified)
 
 
 def build_organization_source_server(navigation, *, binding_reader=None, role_method_reader=None):

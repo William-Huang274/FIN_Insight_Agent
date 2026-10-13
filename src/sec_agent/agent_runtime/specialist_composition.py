@@ -6,6 +6,7 @@ import json
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
+from functools import wraps
 from typing import Any, Literal
 
 from .agent_server_data_composition import (
@@ -1206,6 +1207,7 @@ def _open_specialist_composition(
                 body["required_source_checks"] = list(required_source_checks)
                 graph_input = _model_json(SpecialistAgenticInput, body, code="specialist_required_source_scope_invalid")
             task = graph_input.task
+            @wraps(model_turn)
             def authorized_model_turn(request):
                 access_check = getattr(approved, 'access_check', None)
                 if access_check:

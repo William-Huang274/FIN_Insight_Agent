@@ -6,6 +6,8 @@
 
 ## 身份、状态与权威
 
+2026-10-13 后续状态：共同版本已完成[真实原生服务的确定性图验收](java_native_lifecycle.zh-CN.md)，覆盖原生持久队列、强杀恢复与晚到停止。实际 Agent Server 对已结束 run 的 cancel 返回 404；BFF 现仅在 cancel 404/409 后读取原 thread/run，确认终态则返回 `cancel_requested=false`，不存在则 404，状态未明则 409，其他服务错误不吞掉、不自动重发。下文旧矩阵保留其当时模拟执行器的边界，不改写成原生证据。
+
 | 标识或状态 | 权威/存储 | 含义 |
 | --- | --- | --- |
 | submission_key | Java research_task，按owner+key唯一 | 用户一次创建意图；正文摘要不同则409 |

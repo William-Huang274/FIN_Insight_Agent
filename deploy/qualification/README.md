@@ -1,5 +1,7 @@
 # 原生运行服务资格
 
+Java 业务受理到真实原生队列使用独立的 `intake_native.compose.yaml` 与 `tests/integration/test_java_intake_native.py`。它使用随机回环端口、独立数据库和无模型研究图，不复用下文固定端口；复现及资格边界见[Java 到原生队列生命周期](../../docs/engineering/java_native_lifecycle.zh-CN.md)。
+
 2026-09-14增加宿主单次真实流式资格入口 `tests/integration/test_deepseek_stream_budget.py`，须同时设置 `FIN_PAID_STREAM_PROBE=1` 和下述隔离环境，并关闭宿主 `LANGSMITH_TRACING` / `LANGCHAIN_TRACING_V2`。仅读取既有DS key到宿主，Docker仍无模型key。入口按日期拒绝过期价表，运行前保存TokenBudgetBasis/单价/预留：根预算0.10元、输出1000tokens、HTTP最多1次、SDK重试0。日期变化需重新核实价格与任务依据。缺失或未知响应不自动重发，测试断言失败先检查保存证据，不直接重跑付费测试。
 
 `environment.json`中的`fixture_graph_model_calls=0`仅指Docker合成图；宿主真实调用以`paid_http_dispatches.json`、`paid_events.jsonl`和PG snapshot为准。008样本已知保存/结算及回放完成，最后算术字符串断言失败保持原JUnit；后续数值等价复核只读取保存结果。详见内部记录 008。

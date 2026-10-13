@@ -13,6 +13,7 @@ FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工�
 | 文档 | 内容 |
 | --- | --- |
 | [Java / Python 共同版本](engineering/java_python_integration.zh-CN.md) | 业务受理与新版研究配置整合、修订到接续的配置继承、旧请求兼容及分层静态验收 |
+| [Java 到原生队列生命周期](engineering/java_native_lifecycle.zh-CN.md) | 真实BFF/Java/持久队列的无模型资格、重启回读、停止竞态与确定性研究图边界 |
 | [产品导览](public/demo-and-engineering.zh-CN.md) · [English](public/demo-and-engineering.en.md) | 从研究问题到报告交付的界面与操作 |
 | [快速开始](public/quickstart.zh-CN.md) · [English](public/quickstart.en.md) | 环境准备、运行命令、测试和升级 |
 | [系统架构](public/architecture.zh-CN.md) · [English](public/architecture.en.md) | 执行、资料检索、计算和存储的职责 |

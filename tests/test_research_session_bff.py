@@ -29,6 +29,52 @@ def test_native_failure_shows_reason_but_never_raw_error_payload():
     assert provider[0]["error_type"] == "NativeNodeError" and "SECRET" not in json.dumps(provider)
 
 
+@pytest.mark.parametrize("status", ["success", "error", "interrupted", "timeout", "running", "missing"])
+@pytest.mark.parametrize("cancel_status", [404, 409])
+def test_late_cancel_checks_the_same_run_and_preserves_terminal_state(status, cancel_status):
+    import httpx
+    app, service, calls, tid = _app()
+    rid = str(uuid4())
+    async def cancel(thread_id, run_id, **kwargs):
+        assert (thread_id, run_id) == (tid, rid)
+        calls.append(('cancel', thread_id, run_id))
+        raise httpx.HTTPStatusError('not cancelable', request=httpx.Request('POST', 'http://unused/cancel'), response=httpx.Response(cancel_status))
+    async def get(thread_id, run_id):
+        assert (thread_id, run_id) == (tid, rid)
+        if status == 'missing':
+            raise httpx.HTTPStatusError('missing', request=httpx.Request('GET', 'http://unused/run'), response=httpx.Response(404))
+        return {'run_id': rid, 'status': status}
+    service.sdk.runs.cancel, service.sdk.runs.get = cancel, get
+    with TestClient(app) as client:
+        result = client.post(f'/api/v1/research-sessions/{tid}/runs/{rid}/cancel', headers={'x-workbench-request': '1'})
+        if status == 'missing':
+            assert result.status_code == 404
+        elif status == 'running':
+            assert result.status_code == 409
+        else:
+            assert result.status_code == 200 and result.json()['cancel_requested'] is False
+            assert result.json()['run_status'] == status
+        assert len(calls) == 1 and calls[0][0] == 'cancel'
+    asyncio.run(service.http.aclose())
+
+
+@pytest.mark.parametrize('failure', ['cancel_unavailable', 'lookup_timeout'])
+def test_cancel_does_not_mask_unknown_upstream_results(failure):
+    import httpx
+    app, service, calls, tid = _app()
+    async def cancel(*args, **kwargs):
+        raise httpx.HTTPStatusError('upstream failure', request=httpx.Request('POST', 'http://unused/cancel'),
+            response=httpx.Response(503 if failure == 'cancel_unavailable' else 404))
+    async def lookup(*args):
+        calls.append('lookup')
+        raise httpx.ReadTimeout('unknown read result')
+    service.sdk.runs.cancel, service.sdk.runs.get = cancel, lookup
+    with TestClient(app) as client, pytest.raises(httpx.HTTPError):
+        client.post(f'/api/v1/research-sessions/{tid}/runs/{uuid4()}/cancel', headers={'x-workbench-request': '1'})
+    assert calls == ([] if failure == 'cancel_unavailable' else ['lookup'])
+    asyncio.run(service.http.aclose())
+
+
 def _app(*, enabled=True, graph_id=RESEARCH_GRAPH):
     calls = []
     thread_id, run_id = str(uuid4()), str(uuid4())

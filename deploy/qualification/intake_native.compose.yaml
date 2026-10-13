@@ -1,0 +1,55 @@
+# Isolated qualification only: one deterministic graph, no provider SDK or keys.
+services:
+  postgres:
+    image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
+    environment:
+      POSTGRES_DB: probe
+      POSTGRES_USER: probe
+      POSTGRES_PASSWORD: ${FIN_PROBE_PASSWORD:?ephemeral password required}
+    ports: ['127.0.0.1:${FIN_PROBE_PG_PORT:?unused port}:5432']
+    volumes: [database:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U probe -d probe']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  redis:
+    image: redis:6@sha256:143f7bfc2358911d6b36138eabfbfffea46273c5d4b5696d90e5cbf23d633cf8
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  api:
+    image: ${FIN_PROBE_IMAGE:?existing exact image required}
+    ports: ['127.0.0.1:${FIN_PROBE_API_PORT:?unused port}:8000']
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    environment:
+      POSTGRES_URI: postgres://probe:${FIN_PROBE_PASSWORD}@postgres:5432/probe?sslmode=disable
+      REDIS_URI: redis://redis:6379
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:?existing development license required}
+      LANGSMITH_TRACING: 'false'
+      LANGSMITH_HIDE_INPUTS: 'true'
+      LANGSMITH_HIDE_OUTPUTS: 'true'
+      LANGSERVE_GRAPHS: '{"research_session":"/probe/intake_native_graph.py:graph"}'
+      FIN_INTAKE_NATIVE_QUALIFICATION: '1'
+      FIN_PROBE_EVIDENCE: /probe-evidence
+      FIN_PROBE_AUDIT: /probe-audit
+      N_JOBS_PER_WORKER: '1'
+      BG_JOB_SHUTDOWN_GRACE_PERIOD_SECS: '1'
+      LOG_JSON: 'true'
+      OPENAI_API_KEY: ''
+      DEEPSEEK_API_KEY: ''
+    volumes:
+      - ../../tests/integration/fixtures/intake_native_graph.py:/probe/intake_native_graph.py:ro
+      - ${FIN_PROBE_EVIDENCE:?new attempt directory}:/probe-evidence
+      - ${FIN_PROBE_AUDIT:?new audit directory}:/probe-audit
+volumes:
+  database:
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${FIN_PROBE_SUBNET:?explicit inspected unused subnet}

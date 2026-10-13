@@ -1042,7 +1042,23 @@ def build_report_sessions_router(service):
     async def cancel(thread_id: UUID, run_id: UUID, request: Request):
         browser_write(request)
         await service.owned_thread(thread_id)
-        await service.sdk.runs.cancel(str(thread_id), str(run_id), action="interrupt", wait=True)
+        try:
+            await service.sdk.runs.cancel(str(thread_id), str(run_id), action="interrupt", wait=True)
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code not in (404, 409):
+                raise
+            # The native API also returns 404 when a known run has already ended.
+            # Resolve the exact run; never infer completion from a failed cancel.
+            try:
+                run = await service.sdk.runs.get(str(thread_id), str(run_id))
+            except httpx.HTTPStatusError as lookup:
+                if lookup.response.status_code == 404:
+                    raise HTTPException(404, "此研究下不存在该运行") from lookup
+                raise
+            if run.get('status') in {'success', 'error', 'interrupted', 'timeout'}:
+                return {'cancel_requested': False, 'run_status': run['status'],
+                    'notice': '该运行已结束，保留实际结果与用量；无需再次停止。'}
+            raise HTTPException(409, "停止结果尚未确认，请刷新该运行核对；不会自动重发") from exc
         return {"cancel_requested": True, "notice": "保留已完成内容；未知供应商用量不记零。不会自动重发。"}
 
     @router.get("/research-sessions/{thread_id}/source")

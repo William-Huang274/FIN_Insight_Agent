@@ -77,4 +77,4 @@ Java 测试使用真实 Spring HTTP、Flyway、Testcontainers PostgreSQL；跨�
 
 部署仍遵循 Java 接入原配置，仅增量迁移并重新构建前端；不自动部署。回退页面/BFF后保留 V3 表和数据，不执行破坏性 down migration。联合备份需包含业务 PG 和既有 Python 存储；本批不宣称完整灾备或生产容量验收。
 
-项目与空间资源关联的后续实现见[第二包](project_resource_links.zh-CN.md)，沿用 project 权限与 source 权限分别核验；第三批再做 Agent 使用和结果范围，审批在后。
+项目与空间资源关联的后续实现见[第二包](project_resource_links.zh-CN.md)，沿用 project 权限与 source 权限分别核验；[第三批第一小包](organization_research_inputs.zh-CN.md)已接入不可变输入准备和原件校验，尚未开放 Agent 使用和结果范围，审批在后。

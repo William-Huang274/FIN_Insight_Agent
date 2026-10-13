@@ -66,6 +66,17 @@ class OrganizationProjects {
         if(((Number)row.get("revision")).intValue()!=revision)throw new ApiFailure(409,"项目已更新，请重新读取后再修改；未自动重试");
         return row;
     }
+    Map<String,Object> researchPreparation(String actor,UUID id,boolean lock) {
+        if(lock) {
+            UUID org=(UUID)one("SELECT organization_id FROM organization_project WHERE id=?",id).get("organization_id");
+            organizationLock(org);
+            one("SELECT id FROM organization_project WHERE id=? FOR UPDATE",id);
+        }
+        var row=project(actor,id,false);
+        if(row.get("role").equals("viewer"))throw new ApiFailure(403,"需要项目研究或管理权限");
+        if(Boolean.TRUE.equals(row.get("archived")))throw new ApiFailure(409,"归档项目不能准备研究，请先恢复项目");
+        return row;
+    }
     private void audit(UUID id,String actor,String action,String target,int revision) {
         db.update("INSERT INTO organization_project_audit(project_id,actor,action,target,revision) VALUES(?,?,?,?,?)",id,actor,action,target,revision);
     }

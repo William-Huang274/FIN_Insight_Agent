@@ -1,0 +1,23 @@
+.org-inputs fieldset {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.org-inputs .pw-settings label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.org-inputs .pw-settings input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  margin: 0;
+}
+.org-inputs .pw-card > .pw-row {
+  width: 100%;
+  text-align: left;
+}

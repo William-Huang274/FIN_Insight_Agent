@@ -94,6 +94,11 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None)
         result = await run_in_threadpool(call, shared.read, grant['binding'])
         return {**result, 'resource_id': str(resource_id), 'permission_revision': grant['revision']}
 
+    @router.post('/organization-projects/{project_id}/research-drafts/{draft_id}/verify')
+    async def verify_research_inputs(project_id: UUID, draft_id: UUID, request: Request, response: Response):
+        from ...organization_research_inputs import verify_inputs
+        return await verify_inputs(shared, space_business_request, identity(request, response, True), project_id, draft_id)
+
     @router.get('/catalog')
     def catalog_page(request: Request, response: Response, project_id: UUID | None = None,
                      query: str = Query('', max_length=200), role: str = Query('', pattern='^(document|report|database)?$'),

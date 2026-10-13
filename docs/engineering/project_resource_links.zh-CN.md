@@ -1,6 +1,6 @@
 # 组织项目关联空间资料
 
-2026-10-13。接续[组织项目与成员](organization_projects.zh-CN.md)和[资料空间](resource_spaces.zh-CN.md)，为项目资料页与资料库项目筛选提供同一套授权关系。研究准备、Agent 工具、报告及审批尚未接入，`research_enabled=false` 保持。
+2026-10-13。接续[组织项目与成员](organization_projects.zh-CN.md)和[资料空间](resource_spaces.zh-CN.md)，为项目资料页与资料库项目筛选提供同一套授权关系。后续已接入[组织研究输入准备](organization_research_inputs.zh-CN.md)；Agent 工具、报告及审批尚未接入，`research_enabled=false` 保持。
 
 ## 用户行为
 

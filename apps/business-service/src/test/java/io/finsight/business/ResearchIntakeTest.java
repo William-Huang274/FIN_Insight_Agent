@@ -244,6 +244,8 @@ class ResearchIntakeTest {
         assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".organization_project",Integer.class)).isZero();
         assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".flyway_schema_history WHERE version='3' AND success",Integer.class)).isEqualTo(1);
         assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".flyway_schema_history WHERE version='4' AND success",Integer.class)).isEqualTo(1);
+        assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".flyway_schema_history WHERE version='5' AND success",Integer.class)).isEqualTo(1);
+        assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".organization_research_draft",Integer.class)).isZero();
         // The isolated Testcontainers database is discarded at test completion.
     }
     @Test void project_roles_live_org_membership_and_space_permissions_are_independent() throws Exception {
@@ -407,6 +409,75 @@ class ResearchIntakeTest {
         assertThat(workspace(bob,"GET",path+"&query=%25",null,200).path("items")).isEmpty();
         workspace(admin,"POST","/organizations/"+org+"/remove-member",Map.of("subject",bob),200);
         workspace(bob,"GET",path,null,404);
+    }
+    @Test void organization_preparation_freezes_all_inputs_and_hides_entire_draft_after_revocation() throws Exception {
+        String admin="draft-admin",bob="draft-bob";UUID org=UUID.randomUUID(),project=UUID.randomUUID(),team=UUID.randomUUID(),restricted=UUID.randomUUID();
+        UUID first=UUID.randomUUID(),second=UUID.randomUUID(),draft=UUID.randomUUID();
+        workspace(admin,"POST","/organizations",Map.of("id",org,"name","准备组织","display_name","管理员"),200);joinProjectOrganization(admin,bob,org);
+        workspace(admin,"POST","/projects",Map.of("id",project,"organization_id",org,"name","研究项目","description",""),200);
+        workspace(admin,"POST","/projects/"+project+"/members",Map.of("revision",1,"subject",bob,"role","viewer"),200);
+        int revision=2;
+        for(UUID s:List.of(team,restricted)) {
+            UUID resource=s.equals(team)?first:second;
+            workspace(admin,"POST","/spaces",Map.of("id",s,"organization_id",org,"name","资料组"),200);
+            workspace(admin,"POST","/resources",Map.of("id",resource,"space_id",s,"title","固定原件","resource_type","files",
+                "binding",Map.of("organization_id",org,"space_id",s,"ref",Map.of("project_id",s,"kind","document","asset_id","UPLOAD::fixed","version_id","UPLOAD::v1","digest","a".repeat(64)))),200);
+            workspace(admin,"POST","/projects/"+project+"/resources/"+resource,Map.of("revision",revision++,"linked",true),200);
+            workspace(admin,"POST","/spaces/"+s+"/members",Map.of("subject",bob,"role","reader"),200);
+        }
+        String base="/projects/"+project+"/research-drafts";
+        var body=Map.of("id",draft,"title","不可泄露的问题摘要","question","根据这些固定资料核对资本开支与现金流。","research_as_of","2026-09-30","resource_ids",List.of(first,second));
+        int nativeTasks=db.queryForObject("SELECT count(*) FROM research_task",Integer.class);
+        workspace(bob,"POST",base,body,403);
+        workspace(admin,"POST","/projects/"+project+"/members",Map.of("revision",4,"subject",bob,"role","researcher"),200);
+        JsonNode saved=workspace(bob,"POST",base,body,200);
+        assertThat(saved.path("execution_enabled").asBoolean()).isFalse();assertThat(saved.path("status").asText()).isEqualTo("inputs_saved");
+        assertThat(saved.path("manifest").path("inputs")).hasSize(2);assertThat(saved.toString()).doesNotContain("binding","thread_id","run_id");
+        assertThat(workspace(bob,"POST",base,body,200)).isEqualTo(saved);
+        assertThat(db.queryForObject("SELECT count(*) FROM research_task",Integer.class)).isEqualTo(nativeTasks);
+        assertThat(db.queryForObject("SELECT count(*) FROM organization_project_audit WHERE project_id=? AND action='research_inputs_save'",Integer.class,project)).isEqualTo(1);
+        var changed=new HashMap<String,Object>(body);changed.put("question","另外一项问题不可以占用相同的准备凭证。");
+        workspace(bob,"POST",base,changed,409);
+        changed=new HashMap<>(body);changed.put("id",UUID.randomUUID());changed.put("resource_ids",List.of(first,first));workspace(bob,"POST",base,changed,422);
+        workspace(bob,"POST",base+"/"+draft+"/material-access",null,200);
+        workspace(admin,"POST","/spaces/"+restricted+"/members",Map.of("subject",bob,"role","remove"),200);
+        var hidden=workspace(bob,"GET",base,null,200);assertThat(hidden.path("items")).isEmpty();assertThat(hidden.toString()).doesNotContain("不可泄露",draft.toString());
+        workspace(bob,"GET",base+"/"+draft,null,404);workspace(bob,"POST",base,body,404);
+        workspace(bob,"POST",base+"/"+draft+"/material-access",null,404);
+        assertThat(workspace(admin,"GET",base+"/"+draft,null,200).path("manifest_digest")).isEqualTo(saved.path("manifest_digest"));
+        workspace(admin,"POST","/spaces/"+restricted+"/members",Map.of("subject",bob,"role","reader"),200);
+        workspace(admin,"POST","/projects/"+project+"/members",Map.of("revision",5,"subject",bob,"role","viewer"),200);
+        workspace(bob,"GET",base+"/"+draft,null,200);workspace(bob,"POST",base+"/"+draft+"/material-access",null,403);
+        workspace(admin,"POST","/projects/"+project+"/resources/"+first,Map.of("revision",6,"linked",false),200);
+        workspace(admin,"GET",base+"/"+draft,null,404);
+        assertThat(db.queryForObject("SELECT count(*) FROM organization_research_input WHERE draft_id=?",Integer.class,draft)).isEqualTo(2);
+        workspace(admin,"POST","/projects/"+project+"/resources/"+first,Map.of("revision",7,"linked",true),200);
+        assertThat(workspace(admin,"GET",base+"/"+draft,null,200).path("manifest_digest")).isEqualTo(saved.path("manifest_digest"));
+        workspace(admin,"POST","/resources/"+second+"/revoke",Map.of("revision",1),200);
+        workspace(admin,"GET",base+"/"+draft,null,404);
+    }
+    @Test void preparation_replay_concurrency_archive_and_invalid_input_fail_without_execution() throws Exception {
+        String admin="draft-replay";UUID org=UUID.randomUUID(),project=UUID.randomUUID(),team=UUID.randomUUID(),resource=UUID.randomUUID(),draft=UUID.randomUUID();
+        workspace(admin,"POST","/organizations",Map.of("id",org,"name","组织","display_name","管理员"),200);
+        workspace(admin,"POST","/projects",Map.of("id",project,"organization_id",org,"name","项目","description",""),200);
+        workspace(admin,"POST","/spaces",Map.of("id",team,"organization_id",org,"name","团队"),200);
+        workspace(admin,"POST","/resources",Map.of("id",resource,"space_id",team,"title","固定版本","resource_type","database",
+            "binding",Map.of("organization_id",org,"space_id",team,"ref",Map.of("project_id",team,"kind","document","asset_id","UPLOAD::db","version_id","UPLOAD::db-v1","digest","b".repeat(64)))),200);
+        String base="/projects/"+project+"/research-drafts";
+        var body=Map.of("id",draft,"title","并发准备","question","请核对所选资料中的期间及财务单位。","research_as_of","2026-09-30","resource_ids",List.of(resource));
+        workspace(admin,"POST",base,body,404); // A source permission alone does not supply a project link.
+        workspace(admin,"POST","/projects/"+project+"/resources/"+resource,Map.of("revision",1,"linked",true),200);
+        try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
+            var calls=new ArrayList<Future<JsonNode>>();
+            for(int i=0;i<5;i++)calls.add(pool.submit(()->workspace(admin,"POST",base,body,200)));
+            var first=calls.getFirst().get();for(var call:calls)assertThat(call.get()).isEqualTo(first);
+        }
+        assertThat(db.queryForObject("SELECT count(*) FROM organization_research_draft WHERE project_id=?",Integer.class,project)).isEqualTo(1);
+        var extra=new HashMap<String,Object>(body);extra.put("owner_id","arbitrary");workspace(admin,"POST",base,extra,400);
+        workspace(admin,"POST","/projects/"+project,Map.of("revision",2,"name","项目","description","","archived",true),200);
+        workspace(admin,"GET",base+"/"+draft,null,200);workspace(admin,"POST",base,body,409);
+        workspace(admin,"POST",base+"/"+draft+"/material-access",null,409);
+        workspace(admin,"GET","/projects/"+UUID.randomUUID()+"/research-drafts/"+draft,null,404);
     }
     @Test void lost_prepare_response_recovers_only_deterministic_thread() throws Exception {
         var task=create("drop-prepare");String path="/v1/tasks/"+task.path("id").asText();int before=prepares.get();

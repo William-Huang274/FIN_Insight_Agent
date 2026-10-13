@@ -10,6 +10,7 @@ async function fixture(page:Page,manager=true){
     if(u.pathname==='/api/v1/business/config')result={enabled:true,organization_projects:true,resource_spaces:true,team_collaboration:false};
     else if(u.pathname==='/api/v1/projects')result={revision:0,projects:[],assignments:{},pinned:[]};
     else if(u.pathname==='/api/v1/research-sessions')result=[];
+    else if(u.pathname.endsWith('/research-drafts'))result={items:[],next_offset:null};
     else if(u.pathname==='/api/v1/business/workspaces')result={spaces:[],organizations:[{id:org,name:p.organization_name,role:manager?'admin':'member'}]};
     else if(u.pathname===`/api/v1/business/workspaces/organizations/${org}/members`)result=[{subject:'alice',display_name:'小王',role:'admin',active:true},{subject:'bob',display_name:'小李',role:'member',active:true}];
     else if(u.pathname==='/api/v1/business/workspaces/projects'){
@@ -56,7 +57,7 @@ for(const width of [1440,390])test(`organization project member management and c
 test('viewer cannot edit and revoked access clears project data; no research dispatch',async({page})=>{
   const state=await fixture(page,false);await page.goto(`/workspace/projects?scope=organization&project=${project}&view=settings`);
   await expect(page.getByText('项目信息和成员由项目管理员维护。')).toBeVisible();await expect(page.getByRole('button',{name:'保存修改'})).toHaveCount(0);
-  await page.getByRole('navigation',{name:'项目导航'}).getByRole('link',{name:'研究',exact:true}).click();await expect(page.getByText(/此组织项目尚未开放这项功能/)).toBeVisible();
+  await page.getByRole('navigation',{name:'项目导航'}).getByRole('link',{name:'研究',exact:true}).click();await expect(page.getByText(/只读成员可以查看有权读取的准备单/)).toBeVisible();
   state.denied=true;await page.getByRole('button',{name:'刷新项目'}).click();await expect(page.getByRole('alert')).toContainText('项目不可访问');await expect(page.getByRole('heading',{name:'AI 基础设施',exact:true})).toHaveCount(0);expect(state.writes).toHaveLength(0);
 });
 test('create retries reuse identity after unknown response',async({page})=>{

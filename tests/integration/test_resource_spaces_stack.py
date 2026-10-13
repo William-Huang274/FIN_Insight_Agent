@@ -115,11 +115,29 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             api('POST',f'/spaces/{team}/members',{'subject':'bob','role':'manager'})
             read=f'/api/v1/asset-workspace/spaces/resources/{resource}'
             assert client.get(read,headers=WRITE).json()['text']=='Organization keeps this after author departure.'
+            draft = str(uuid4())
+            preparation = {'id':draft,'title':'Synthetic immutable preparation',
+                'question':'Verify the stored evidence version without creating an Agent run.',
+                'research_as_of':'2026-10-12','resource_ids':[resource]}
+            drafts = f'/projects/{project}/research-drafts'
+            prepared = api('POST',drafts,preparation,headers=bob)
+            assert api('POST',drafts,preparation,headers=bob) == prepared
+            assert prepared['execution_enabled'] is False
+            assert not {'thread_id','run_id','binding'} & prepared.keys()
+            verify = f'/api/v1/asset-workspace/organization-projects/{project}/research-drafts/{draft}/verify'
+            checked = client.post(verify,headers=bob,json={})
+            assert checked.status_code == 200,checked.text
+            assert checked.json()['manifest_digest'] == prepared['manifest_digest']
+            assert checked.json()['status'] == 'inputs_verified'
+            api('POST',drafts+f'/{draft}/material-access',{},status=404)
             # Original private file withdrawal does not retract explicit publication.
             source.library.set_access('bob',bob_ref['project_id'],'document',bob_ref['version_id'],True)
             api('POST',f'/organizations/{org}/remove-member',{'subject':'bob'})
             api('GET',f'/projects/{project}',headers=bob,status=404)
             api('GET',f'/projects/{project}/members',headers=bob,status=404)
+            api('GET',drafts+f'/{draft}',headers=bob,status=404)
+            assert client.post(verify,headers=bob,json={}).status_code == 404
+            assert api('GET',drafts+f'/{draft}') == prepared
             assert api('GET','/projects',headers=bob)['items']==[]
             assert client.get(read,headers=bob).status_code==404
             assert client.get(read,headers=WRITE).status_code==200
@@ -132,6 +150,10 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert client.post('/api/v1/business/workspaces/projects',headers=WRITE,json=create_project).json()['revision']==3
             assert client.get(project_read,headers=WRITE).status_code==200
             assert client.get(project_read,headers=bob).status_code==404
+            assert client.get('/api/v1/business/workspaces'+drafts+f'/{draft}',headers=WRITE).json() == prepared
+            checked = client.post(verify,headers=WRITE,json={})
+            assert checked.status_code == 200,checked.text
+            assert checked.json()['manifest_digest'] == prepared['manifest_digest']
             result=client.get(read,headers=WRITE)
             assert result.status_code==200,result.text
             assert result.json()['text']=='Organization keeps this after author departure.'
@@ -143,6 +165,8 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert client.get(read,headers=WRITE).status_code==404
             assert client.get(read,headers=bob).status_code==404
             assert client.get(project_read,headers=WRITE).status_code==404
+            assert client.get('/api/v1/business/workspaces'+drafts+f'/{draft}',headers=WRITE).status_code == 404
+            assert client.post(verify,headers=WRITE,json={}).status_code == 404
             assert client.get(f'/api/v1/business/workspaces/projects/{project}/resources',headers=WRITE).json()['items']==[]
             assert client.get(f'/api/v1/business/workspaces/spaces/{team}/resources',headers=WRITE).json()['items']==[]
     finally:

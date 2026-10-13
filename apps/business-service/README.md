@@ -13,6 +13,11 @@ management. Java is their sole authority; Python still owns legacy personal
 projects. Project membership does not grant space access. Flyway V4 adds project
 references to same-organization team publications with current project AND source
 authorization, revisioned changes and audit. Shared research remains disabled.
+Flyway V5 adds immutable organization research input preparations. Current project
+access and every selected source are required to read a preparation; researchers
+can explicitly verify frozen originals through the BFF. This creates no native
+thread/run and does not enable shared execution. See
+[organization input preparation](../../docs/engineering/organization_research_inputs.zh-CN.md).
 See [project resource links](../../docs/engineering/project_resource_links.zh-CN.md)
 and [organization project scope and static
 acceptance cases](../../docs/engineering/organization_projects.zh-CN.md).

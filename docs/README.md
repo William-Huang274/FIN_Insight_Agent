@@ -24,6 +24,7 @@ FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工�
 | [组织资料空间](engineering/resource_spaces.zh-CN.md) | 统一空间/类型入口、组织内个人区、团队成员、固定版本发布及授权阅读；实时团队数据库和共享研究待接入 |
 | [组织项目与成员](engineering/organization_projects.zh-CN.md) | Java 项目归属、角色、版本冲突与静态验收案例；团队研究仍待接入 |
 | [项目关联空间资料](engineering/project_resource_links.zh-CN.md) | 项目资料入口、按组织项目筛选、项目与源权限分别核验、固定版本和撤权 |
+| [组织研究输入准备](engineering/organization_research_inputs.zh-CN.md) | 不可变问题/版本清单、全部依赖当前权限、原件校验及未知提交恢复；尚不创建团队运行 |
 | [Java 请求生命周期与故障恢复](engineering/java_intake_recovery.zh-CN.md) | 幂等、未知回执、进程故障与旧运行事件隔离；合成执行验证及未验收边界 |
 | [v0.1.4 PRD](product/fin_0_1_4_prd.zh-CN.md) · [技术方案](architecture/fin_0_1_4_technical_design.zh-CN.md) · [执行路线](engineering/fin_0_1_4_execution_roadmap.zh-CN.md) | 开发中；局部功能已实现，整版未验收或发布 |
 | [项目资料版本与更新](engineering/project_asset_versions.zh-CN.md) | 0.1.4 开发分支的版本差异、直接依赖提示、明确选版与适用范围 |

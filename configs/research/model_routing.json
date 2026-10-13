@@ -85,7 +85,7 @@
         "reflection on actual workpapers and missing coverage",
         "handoff for independent review or actionable attention"
       ],
-      "schema_burden": "Three native planning tools, at most twelve semantic tasks. coverage_obligation_ids uses exactly one required_branch_id, never a route ID. One tool per turn; no raw source corpus or specialist hidden reasoning is transferred.",
+      "schema_burden": "Native planning tools and semantic tasks within the disclosed capacity. coverage_obligation_ids contains optional catalog tags, zero or multiple for general research; explicit selected/qualification scope may restrict them. Never use route IDs. One tool per turn; no raw source corpus or specialist hidden reasoning is transferred.",
       "materiality_quality_risk": "All nine obligations must be represented before ready_for_review; task completion alone is not semantic, final-report, UI or product acceptance. Do not hide incomplete source routes or spend calls solely to fill a round count.",
       "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
       "reasoning_profile": "agentic_message_history_thinking_disabled",

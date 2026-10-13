@@ -1,5 +1,6 @@
 """Native thread preparation for a fixed organization binding; no run dispatch."""
 from hashlib import sha256
+from copy import deepcopy
 import json
 from uuid import UUID
 
@@ -49,8 +50,10 @@ async def preparation_authority(service, project_id, execution_id, *, raw_body=N
 
 def metadata_for(grant, service):
     manifest = json.loads(grant['manifest_text'])
-    options = ExecutionOptions.model_validate(grant['prepare_request']['execution']).validate_catalog(service.research_profile.get('branch_topics', []))
-    config = {'configurable': {'finsight_execution': options.model_dump(),
+    ExecutionOptions.model_validate(grant['prepare_request']['execution']).validate_catalog(service.research_profile.get('branch_topics', []))
+    # Validate with current defaults, but freeze exactly the Java command's
+    # representation. Re-serializing a model would add new defaults to old commands.
+    config = {'configurable': {'finsight_execution': deepcopy(grant['prepare_request']['execution']),
                               'finsight_studio': default_configuration().model_dump(mode='json'),
                               'finsight_research_as_of': manifest['research_as_of'],
                               'finsight_organization_execution': context(grant)}}

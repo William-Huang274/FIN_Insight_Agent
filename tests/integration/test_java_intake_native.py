@@ -214,6 +214,7 @@ def test_business_to_native_persistence_cancel_continue_and_crash_recovery(stack
     project = str(uuid4())
     s.request(s.bff, 'PUT', '/api/v1/projects', json={'revision': 0, 'projects': [{'id': project, 'name': 'Native fixture project'}], 'assignments': {}, 'pinned': []})
     execution = {'mode': 'auto', 'model': 'default', 'branch_ids': [], 'continuation_scope': 'original_plan'}
+    effective_execution = {**execution, 'require_all_branches': False}
 
     def create(label):
         key = str(uuid4())
@@ -234,8 +235,8 @@ def test_business_to_native_persistence_cancel_continue_and_crash_recovery(stack
     s.terminal(tid, rid)
     assert s.state_of(tid)['next'] == ['handoff']
     row = s.runs(tid)[0]
-    assert row['metadata']['execution'] == execution
-    assert all(event['execution'] == execution for event in s.events_for(tid, 'prepared'))
+    assert row['metadata']['execution'] == effective_execution
+    assert all(event['execution'] == effective_execution for event in s.events_for(tid, 'prepared'))
     route = f'/api/v1/research-sessions/{tid}'
     audit = s.state / 'calls' / tid / rid / 'model-call-events.jsonl'
     saved = audit.read_bytes()
@@ -250,7 +251,7 @@ def test_business_to_native_persistence_cancel_continue_and_crash_recovery(stack
     snapshot = s.request(s.bff, 'GET', route)
     assert snapshot['report_version'] == 1
     current = next(r for r in s.runs(tid) if r['run_id'] == continued['run_id'])
-    assert current['metadata']['execution'] == execution
+    assert current['metadata']['execution'] == effective_execution
     assert current['metadata']['continued_from_run_id'] == rid
     versions = s.request(s.bff, 'GET', route + '/report-versions')['versions']
     checkpoint = versions[0]['checkpoint_id']
@@ -297,7 +298,7 @@ def test_business_to_native_persistence_cancel_continue_and_crash_recovery(stack
     assert len(s.runs(crashed)) == 1
     restarted = s.request(s.bff, 'POST', f'/api/v1/research-sessions/{crashed}/continue-remaining')
     s.terminal(crashed, restarted['run_id'])
-    assert s.state_of(crashed)['values']['execution_seen'] == execution
+    assert s.state_of(crashed)['values']['execution_seen'] == effective_execution
     s.record('native-hard-kill-same-run-recovery', task_id=crashed, original_run=crash_run,
         continued_run=restarted['run_id'], seconds_after_health=time.monotonic() - began,
         completed_prepare_attempts=1, work_attempts=len(s.events_for(crashed, 'work_started')))

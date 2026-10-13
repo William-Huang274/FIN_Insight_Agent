@@ -72,7 +72,7 @@ export type Source = {
       quote?: string; literal?: string; source_provenance?: { ticker?: string; fiscal_period?: string; unit?: string } }>;
   };
 };
-export type ExecutionOptions = { mode: "standard" | "auto" | "selected" | "single"; model: "default" | "deepseek-v4-flash" | "deepseek-v4-pro"; branch_ids: string[]; continuation_scope?: "original_question" | "original_plan" };
+export type ExecutionOptions = { mode: "standard" | "auto" | "selected" | "single"; model: "default" | "deepseek-v4-flash" | "deepseek-v4-pro"; branch_ids: string[]; continuation_scope?: "original_question" | "original_plan"; require_all_branches?: boolean };
 export const defaultExecution: ExecutionOptions = { mode: "auto", model: "default", branch_ids: [] };
 export type Citation = {
   claim: {

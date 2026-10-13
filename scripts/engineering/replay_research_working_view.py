@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 from replay_source_context import digest, encoded, load_requests, messages
 from replay_context_retirement import source_inventory, walk
+from replay_current_context_cache import expand
 from sec_agent.agent_runtime.research_context_view import decode, compact_current_context, current_context
 from sec_agent.agent_runtime.research_context_view import INITIAL_CONTEXT_ID
 from sec_agent.agent_runtime.source_result_view import source_message_views, source_result_view
@@ -68,7 +69,17 @@ def run(baseline_path, payload_dir, output_dir):
         for m in expected:
             if m.type == 'tool' and isinstance(b := decode(m.content), dict) and 'current_context' in b:
                 del b['current_context']; m.content = json.dumps(b, ensure_ascii=False, separators=(',', ':'))
-        assert final[-len(expected):] == expected
+        resolved = deepcopy(final[-len(expected):])
+        for m in resolved:
+            if isinstance(b := decode(m.content), dict):
+                m.content = json.dumps(expand(b, view, []), ensure_ascii=False, separators=(',', ':'))
+            if m.type == 'ai':
+                for call in m.tool_calls:
+                    call['args'] = expand(call['args'], view, [])
+        for m in expected:
+            if isinstance(b := decode(m.content), dict):
+                m.content = json.dumps(b, ensure_ascii=False, separators=(',', ':'))
+        assert resolved == expected
         # Exact task/assignment semantics, independent of changed message positions.
         contexts = [b.get('current_context', b if m.type == 'human' else {}) for m in original
                     if isinstance(b := decode(m.content), dict)]

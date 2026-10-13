@@ -21,6 +21,16 @@ class ResearchTasks {
         // Missing on an old client means the default; explicit null remains invalid.
         @NotNull @Pattern(regexp="original_question|original_plan")
         public String continuation_scope = "original_question";
+        @NotNull public Boolean require_all_branches = false;
+        @com.fasterxml.jackson.annotation.JsonSetter("require_all_branches")
+        public void setRequireAllBranches(JsonNode value) {
+            if (!value.isBoolean()) throw new IllegalArgumentException("require_all_branches_must_be_boolean");
+            require_all_branches = value.booleanValue();
+        }
+        @AssertTrue @com.fasterxml.jackson.annotation.JsonIgnore
+        public boolean isCoverageScopeValid() {
+            return !Boolean.TRUE.equals(require_all_branches) || "standard".equals(mode);
+        }
     }
     record CreateTask(@NotNull UUID project_id, @NotBlank @Size(max=120) String title,
         @NotBlank @Size(min=10,max=16000) String question, @Size(max=12) List<@NotBlank @Size(max=160) String> document_ids,

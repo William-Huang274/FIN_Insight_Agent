@@ -7,6 +7,7 @@ from uuid import UUID
 
 from .research_session import ResearchRequest
 from .studio_configuration import StudioConfiguration
+from .execution_options import ExecutionOptions
 
 
 SURFACE = 'organization_research_workbench'
@@ -36,6 +37,7 @@ def validate_thread(thread, grant):
                 or any(key in meta for key in ('asset_context', 'business_intake', 'studio_assistant_id', 'project_materials_status'))):
             raise ValueError('native_binding')
         StudioConfiguration.model_validate(values['finsight_studio'])
+        ExecutionOptions.model_validate(values['finsight_execution'])
         return {**context(grant), 'status': 'draft', 'configuration_digest': meta['configuration_digest'],
                 'native_execution_enabled': False}
     except (ValueError, KeyError, TypeError):

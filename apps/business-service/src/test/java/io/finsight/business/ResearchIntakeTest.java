@@ -192,6 +192,68 @@ class ResearchIntakeTest {
         assertThat(request("alice", "POST", "/v1/tasks", invalid.toString(), UUID.randomUUID().toString()).statusCode()).isIn(400, 422);
         assertThat(prepares.get()).isEqualTo(before);
     }
+    @Test void full_catalog_option_is_explicit_typed_and_persisted() throws Exception {
+        for (String selection : List.of("omitted", "false", "true")) {
+            var body=input(UUID.randomUUID(),"catalog-"+selection);
+            var options=body.putObject("execution").put("mode","standard").put("model","default");options.putArray("branch_ids");
+            if(!selection.equals("omitted"))options.put("require_all_branches",selection.equals("true"));
+            String key=UUID.randomUUID().toString();
+            var response=request("alice","POST","/v1/tasks",body.toString(),key);
+            assertThat(response.statusCode()).isEqualTo(200);
+            UUID id=UUID.fromString(JSON.readTree(response.body()).path("id").asText());
+            var saved=JSON.readTree(store.command(id,"prepare").request()).path("session").path("execution");
+            assertThat(saved.path("require_all_branches").isBoolean()).isTrue();
+            assertThat(saved.path("require_all_branches").asBoolean()).isEqualTo(selection.equals("true"));
+            assertThat(drafts.get(id.toString()).path("session").path("execution")).isEqualTo(saved);
+            int before=prepares.get();
+            assertThat(request("alice","POST","/v1/tasks",body.toString(),key).statusCode()).isEqualTo(200);
+            assertThat(prepares.get()).isEqualTo(before);
+            options.put("require_all_branches",!selection.equals("true"));
+            assertThat(request("alice","POST","/v1/tasks",body.toString(),key).statusCode()).isEqualTo(409);
+        }
+        for(String invalid:List.of("null","\"false\"","\"true\"","0","1","[]","{}")) {
+            var body=input(UUID.randomUUID(),"invalid-catalog");
+            var options=body.putObject("execution").put("mode","standard").put("model","default");options.putArray("branch_ids");
+            options.set("require_all_branches",JSON.readTree(invalid));int before=prepares.get();
+            assertThat(request("alice","POST","/v1/tasks",body.toString(),UUID.randomUUID().toString()).statusCode()).isIn(400,422);
+            assertThat(prepares.get()).isEqualTo(before);
+        }
+        for(String mode:List.of("auto","selected","single")) {
+            var body=input(UUID.randomUUID(),"invalid-catalog-mode");
+            var options=body.putObject("execution").put("mode",mode).put("model","default").put("require_all_branches",true);
+            options.putArray("branch_ids");int before=prepares.get();
+            assertThat(request("alice","POST","/v1/tasks",body.toString(),UUID.randomUUID().toString()).statusCode()).isIn(400,422);
+            assertThat(prepares.get()).isEqualTo(before);
+        }
+    }
+    @Test void organization_old_prepare_bytes_and_digest_survive_new_option_support() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();
+        workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
+        String base="/projects/"+f.project()+"/execution-bindings/"+id;
+        var body=Map.of("execution",Map.of("mode","standard","model","default","branch_ids",List.of()));
+        var saved=workspace(f.researcher(),"POST",base+"/prepare",body,200);
+        assertThat(saved.path("execution").path("require_all_branches").isBoolean()).isTrue();
+        // Reconstruct the pre-upgrade persisted representation, not a rewritten
+        // API request. No new field existed in this durable command/receipt.
+        var command=(ObjectNode)JSON.readTree(db.queryForObject("SELECT request_body FROM organization_native_preparation WHERE execution_id=?",String.class,id));
+        ((ObjectNode)command.path("execution")).remove("require_all_branches");String oldBytes=command.toString();
+        var receipt=(ObjectNode)saved.path("result").deepCopy();
+        receipt.put("prepare_request_digest","sha256:"+Delegation.digest(oldBytes.getBytes(StandardCharsets.UTF_8)));
+        db.update("UPDATE organization_native_preparation SET request_body=?,response=?::jsonb WHERE execution_id=?",oldBytes,receipt.toString(),id);
+        int before=organizationCreates.get();
+        var replay=workspace(f.researcher(),"POST",base+"/prepare",body,200);
+        assertThat(replay.path("execution").has("require_all_branches")).isFalse();
+        var grant=workspace(f.researcher(),"GET",base+"/preparation-access",null,200);
+        assertThat(grant.path("prepare_request")).isEqualTo(command);
+        assertThat(grant.path("prepare_request_digest")).isEqualTo(receipt.path("prepare_request_digest"));
+        assertThat(replay.path("result").path("configuration_digest")).isEqualTo(saved.path("result").path("configuration_digest"));
+        assertThat(db.queryForObject("SELECT request_body FROM organization_native_preparation WHERE execution_id=?",String.class,id)).isEqualTo(oldBytes);
+        assertThat(organizationCreates.get()).isEqualTo(before);
+        UUID next=UUID.randomUUID();workspace(f.researcher(),"POST",f.createPath(),Map.of("id",next,"manifest_digest",f.digest()),200);
+        String other="/projects/"+f.project()+"/execution-bindings/"+next;
+        var explicit=Map.of("execution",Map.of("mode","standard","model","default","branch_ids",List.of(),"require_all_branches",true));
+        assertThat(workspace(f.researcher(),"POST",other+"/prepare",explicit,200).path("execution").path("require_all_branches").asBoolean()).isTrue();
+    }
     @Test void concurrent_duplicate_submission_and_start_dispatch_once() throws Exception {
         UUID project=UUID.randomUUID();String key=UUID.randomUUID().toString(),body=input(project,"concurrent").toString();int before=prepares.get();
         List<Future<HttpResponse<String>>> futures=new ArrayList<>();
@@ -607,7 +669,7 @@ class ResearchIntakeTest {
     @Test void organization_native_prepare_concurrency_pins_options_and_reauthorizes_receipts() throws Exception {
         var f=executionFixture();UUID id=UUID.randomUUID();workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
         String base="/projects/"+f.project()+"/execution-bindings/"+id;
-        var options=Map.of("mode","auto","model","default","branch_ids",List.of(),"continuation_scope","original_plan");
+        var options=Map.of("mode","auto","model","default","branch_ids",List.of(),"continuation_scope","original_plan","require_all_branches",false);
         var input=Map.of("execution",options);int before=organizationCreates.get();
         try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
             var calls=new ArrayList<Future<JsonNode>>();for(int i=0;i<5;i++)calls.add(pool.submit(()->workspace(f.researcher(),"POST",base+"/prepare",input,200)));

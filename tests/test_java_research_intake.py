@@ -119,7 +119,7 @@ def test_execution_scope_survives_prepare_reopen_and_native_snapshot(intake, sco
     if scope is not None:
         execution["continuation_scope"] = scope
     body["session"]["execution"] = execution
-    expected = {**execution, "continuation_scope": scope or "original_question"}
+    expected = {**execution, "continuation_scope": scope or "original_question", "require_all_branches": False}
     tid, operation = body["task_id"], str(uuid4())
     with TestClient(intake.app()) as client:
         assert request(client, "prepare", body, operation).status_code == 200

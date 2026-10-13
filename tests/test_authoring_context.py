@@ -191,9 +191,11 @@ def test_provider_stage_changes_preserve_same_research_session_and_tool_pairing(
         adapter=DeepSeekStructuredAgentAdapter(config=_config().model_copy(update={'agentic_message_history':True}),chat_models=models)
         adapter.specialist_model_turn(request)
         request['task_context']={'authoring_context':bind_authoring(BRIEF,owner='expert',stage='workpaper',
-            basis={'source':'retained original period and denominator'}),'stage_methods':stage_methods('workpaper')}
+            basis={'source':'retained original period and denominator'}),'stage_methods':stage_methods('workpaper'),
+            'authoring_instruction':'Preparation accepted; write the scoped workpaper.'}
         adapter.specialist_model_turn(request)
-        request['task_context']={'research_question':'ORIGINAL_RESEARCH_QUESTION', 'authoring_context':None}
+        request['task_context']={'research_question':'ORIGINAL_RESEARCH_QUESTION', 'authoring_context':None,
+            'authoring_instruction':'Research changed; prepare again.'}
         adapter.specialist_model_turn(request)
     assert len(seen[1]['messages']) > 2
     assert 'ORIGINAL_RESEARCH_QUESTION' in json.dumps(seen[1])
@@ -201,6 +203,11 @@ def test_provider_stage_changes_preserve_same_research_session_and_tool_pairing(
     assert 'retained original period and denominator' in json.dumps(seen[1])
     assert 'Same population' in json.dumps(seen[1])
     assert 'Exact definition previously read' in json.dumps(seen[2])
+    assert seen[0]['messages'][0] == seen[1]['messages'][0] == seen[2]['messages'][0]
+    latest = json.loads(seen[1]['messages'][-1]['content'])['current_context']
+    assert latest['task_context']['authoring_instruction'] == 'Preparation accepted; write the scoped workpaper.'
+    latest = json.loads(seen[2]['messages'][-1]['content'])['current_context']
+    assert latest['task_context']['authoring_instruction'] == 'Research changed; prepare again.'
     for wire in seen[1:]:
         messages = wire['messages']
         for index, message in enumerate(messages):

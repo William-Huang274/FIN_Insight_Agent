@@ -279,7 +279,8 @@ def _build_graph_input(
         branch_id=branch_id,
         revision=0,
         priority=method.priority,
-        objective=(f"{research_question}\n当前分工主题：{branch_id}。自行确定该主题对总问题的实质影响，给出有来源的判断与必要局限。"
+        objective=(research_question if current_task and research_question else
+                   f"{research_question}\n当前分工主题：{branch_id}。自行确定该主题对总问题的实质影响，给出有来源的判断与必要局限。"
                    if research_question else method.objective),
         evidence_requests=seeds,
         fact_requests=(),
@@ -301,6 +302,8 @@ def _build_graph_input(
         "answer_free": True,
         "grants_authority": False,
     }
+    if current_task:
+        l0_body['tool_binding_id'] = l0_body.pop('branch_id')
     reviewed_capability = {
         "capability_ref": "capability:research:reviewed-evidence-query",
         "assigned_route_obligation_ids": required_route_ids,
@@ -392,7 +395,8 @@ def _build_graph_input(
                 {
                     "skill_ref": f"skill:research:{branch_id.lower()}",
                     "purpose": (
-                        "Answer-free branch research method supplied for this "
+                        "Research the assigned question using the disclosed tools and role methods; this binding does not prescribe a topic."
+                        if current_task else "Answer-free branch research method supplied for this "
                         "bounded Specialist shadow."
                     ),
                     # Historical research methodology is still bound to its original
@@ -430,7 +434,7 @@ def _current_question_method_view(context: Mapping[str, Any], question: str) -> 
     return {
         "research_question": question,
         **{key: context[key] for key in (
-            "selected_branch_ids", "source_classes", "source_families", "formulas", "freshness_contract"
+            "source_classes", "source_families", "formulas", "freshness_contract"
         ) if key in context},
         "usage": "Source/formula metadata from the existing data baseline. Read get_research_method through request_method for role guidance. "
                  "Answer the current user question and delegated objective; historical audit questions, fixed output templates and old search counters are not the active task. "
@@ -448,9 +452,9 @@ def _bind_research_task(
 ) -> SpecialistAgenticInput:
     """Thin semantic task handoff; it grants no tool, source or model authority.
 
-    The existing data compiler is branch-scoped. First support dynamically
-    selected tasks within one obligation, not pretend multi-obligation routing
-    already works. Dependencies guide research but are not source observations.
+    The compiler's branch identity binds tools/provenance. Current semantic tasks
+    may be untagged or span topics; this does not change data access. Historical
+    qualification tasks retain their exact single-branch binding.
     """
     from .workpaper_review_graph import validate_workpaper_state
 
@@ -465,7 +469,11 @@ def _bind_research_task(
         if space and space not in disclosed:
             raise SpecialistAgenticCompositionError('professional_source_space_not_disclosed')
     task = _model_json(ResearchTaskSpec, {k: v for k, v in assignment.items() if k != 'professional'}, code="delegated_research_task_invalid")
-    if task.coverage_obligation_ids != (graph_input.task.branch_id,) or task.status not in {"planned", "ready"}:
+    current_task = graph_input.task.case_id.startswith('research:')
+    from .research_contracts import task_binding_branch
+    if (task.status not in {"planned", "ready"}
+            or (task_binding_branch(task.model_dump(mode='json'), graph_input.task.branch_id) != graph_input.task.branch_id
+                if current_task else task.coverage_obligation_ids != (graph_input.task.branch_id,))):
         raise SpecialistAgenticCompositionError("delegated_task_branch_or_status_mismatch")
     if set(task.dependency_ids) != set(dependency_workpapers):
         raise SpecialistAgenticCompositionError("delegated_task_dependencies_not_complete")
@@ -502,6 +510,7 @@ def _bind_research_task(
     body["task_context"] = {
         **(body.get("task_context") or {}),
         "assignment": task.model_dump(mode="json"), "dependency_workpapers": handoffs,
+        **({'task_scope': 'The assigned objective defines the question and subjects. coverage_obligation_ids are optional topic tags; task.branch_id is a compatible tool-binding identity, not a mandatory theme, issuer or output structure.'} if current_task else {}),
         "usage_rule": "ReadDependencyWorkAction reads saved source materials (sources/handoff) separately from author "
             "viewpoints (overview/analysis). All previously read sources are available, including uncited counterevidence. "
             "Evaluate prior interpretations against originals and this assignment; adopt, revise or disagree as warranted. "

@@ -167,8 +167,9 @@ LEAD_RESEARCH_SYSTEM_PROMPT = (
     "Research workers produce branch_notebook, narrative_artifact and claim_ledger only; independent verifier "
     "findings belong to downstream review, not a research task output. Ready specialists use their "
     "own multi-turn source/finance tool loops; do not dictate physical paths or tool queries for them. "
-    "One task covers one disclosed obligation for this qualification: coverage_obligation_ids must "
-    "contain exactly one branch_id from branch_catalog (e.g. [\"Q2_DEMAND_QUALITY\"]). "
+    "Derive tasks from the user's question and discoveries. Combine or split research as needed. "
+    "coverage_obligation_ids contains optional topic tags, not a task template: omit them for questions "
+    "outside the catalog, or select multiple tags for cross-topic work. Follow explicit scope_policy restrictions. "
     "Do not copy a route:...:required-reviewed identifier from a workpaper into that field. "
     "You may add follow-up tasks "
     "after observing results, but cannot rewrite completed tasks or grant permissions. Use actual "
@@ -255,15 +256,21 @@ def build_lead_research_graph(
     allowed_branch_ids: tuple[str, ...], seed_workpapers: Mapping[str, Mapping[str, Any]],
     model_turn: Callable, run_child: Callable, max_lead_turns: int = 8,
     max_tasks: int = 4, max_parallel_tasks: int = 2, turn_source: str = "scripted_qualification", unfinished_only: bool = False,
-    role_method=None, require_all_branches=True, public_progress=None, require_execution_plan=False,
+    role_method=None, require_all_branches=False, public_progress=None, require_execution_plan=False,
     recovery_tasks=(), source_reader=None, hierarchical=False, orientation_only=False, orientation_context=None,
     feedback_sink=None, feedback_reader=None, feedback_run_id=None, max_lead_tool_actions: int | None = None,
+    open_task_scope: bool | None = None,
 ) -> StateGraph:
     tool_limit = max_lead_tool_actions if max_lead_tool_actions is not None else 4 * max_lead_turns
     if not 1 <= tool_limit <= 96:
         raise LeadResearchError('lead_tool_capacity_invalid')
     allowed = set(allowed_branch_ids)
     orientation_space = (orientation_context or {}).get('source_space', 'library')
+    if open_task_scope is None:
+        open_task_scope = bool(expected_input and expected_input.task.case_id.startswith('research:'))
+    from .research_contracts import task_binding_branch
+    def valid_tags(tags):
+        return set(tags).issubset(allowed) and (open_task_scope or len(tags) == 1)
     planning_tools = lead_tool_models(require_execution_plan=require_execution_plan,
         source_read_enabled=source_reader is not None, orientation_only=orientation_only,
         orientation_source_space=orientation_space)
@@ -280,8 +287,7 @@ def build_lead_research_graph(
     seeds = {key: validate_workpaper_state(value) for key, value in seed_workpapers.items()}
     resumed = [DelegatedResearchTask.model_validate_json(json.dumps(t)).model_dump(mode="json") for t in recovery_tasks]
     if (len({t["task_id"] for t in resumed}) != len(resumed)
-            or any(t["task_id"] in seeds or len(t["coverage_obligation_ids"]) != 1
-                   or not set(t["coverage_obligation_ids"]).issubset(allowed) for t in resumed)):
+            or any(t["task_id"] in seeds or not valid_tags(t["coverage_obligation_ids"]) for t in resumed)):
         raise LeadResearchError("recovery_tasks_must_be_original_unfinished_tasks")
     recovery_ids = set(seeds) | {t["task_id"] for t in resumed}
     if any(not set(t["dependency_ids"]).issubset(recovery_ids) for t in resumed):
@@ -350,8 +356,10 @@ def build_lead_research_graph(
             "research_as_of": expected_input.task.research_as_of,
             "branch_catalog": [row for row in branch_catalog if row["branch_id"] in allowed],
             "required_branch_ids": list(allowed_branch_ids) if require_all_branches else [],
-            "scope_policy": ("All listed branches require submitted research." if require_all_branches else
+            "scope_policy": ("All listed branches require submitted research by explicit host coverage selection; this is not a default research template." if require_all_branches else
+                "The catalog is optional topic guidance, NOT a checklist or exhaustive research scope. Create tasks around the user's question, including unlisted subjects and cross-topic questions; tags may be empty or multiple. No topic count or issuer is prescribed. At least one source-grounded workpaper is required." if open_task_scope else
                 "The catalog is available scope, NOT a checklist. Select only branches material to this question; explain your selection and omitted scope in public handoff notes. At least one source-grounded workpaper is required.")
+                + (" This call has a restricted legacy/selected scope: each task must use exactly one allowed tag." if not open_task_scope else "")
                 + (" This is a current-user task, not the historical foundation case. Uncompleted Reviewed route IDs in saved papers are historical coverage receipts, NOT mandatory delivery gates for this question. "
                    "Do not mark a user requirement unresolved solely because that historical index has no matching entry. Assess whether the actual cited SQL facts/passages support the requested result; retain unavailable corroboration in limitations. "
                    "Missing required facts, unsupported claims or unresolved material source conflicts still require attention. Independent review remains required; never mark an uncompleted route satisfied."
@@ -531,8 +539,8 @@ def build_lead_research_graph(
                     if len(known) + len(ids) > max_tasks:
                         raise ValueError("delegated_task_capacity_exceeded")
                     for task in action.tasks:
-                        if len(task.coverage_obligation_ids) != 1 or not set(task.coverage_obligation_ids).issubset(allowed):
-                            raise ValueError("task_requires_one_disclosed_coverage_obligation")
+                        if not valid_tags(task.coverage_obligation_ids):
+                            raise ValueError("task_topic_tags_not_in_catalog" if open_task_scope else "task_requires_one_disclosed_coverage_obligation")
                         if (task.status not in {"planned", "ready"} or task.required_authority_refs
                                 or not {canonical_capability(ref) for ref in task.requested_capability_refs}.issubset({canonical_capability(ref) for ref in available})
                                 or not set(task.expected_output_kinds).issubset({"branch_notebook", "claim_ledger", "narrative_artifact"})):
@@ -570,7 +578,12 @@ def build_lead_research_graph(
                     if action.disposition == "ready_for_review":
                         if action.execution_plan and action.execution_plan.depth == "focused" and len(done) != 1:
                             raise ValueError("focused_requires_one_self_contained_paper_choose_integrated_for_multiple_deliverables")
-                        coverage = {row["task"]["branch_id"] for row in done.values()}
+                        coverage = set()
+                        assignments = {t['task_id']: t for t in state['tasks']}
+                        for key, row in done.items():
+                            assignment = assignments.get(key) or (row.get('task_context') or {}).get('assignment')
+                            coverage.update(assignment.get('coverage_obligation_ids', ()) if assignment is not None
+                                            else (row['task']['branch_id'],))
                         failed_attempts = {row["task_id"] for row in state["task_results"] if row["status"] == "needs_attention"}
                         # A failed attempt remains failed, but an explicitly
                         # acknowledged attempt must not veto successful replacement
@@ -607,9 +620,9 @@ def build_lead_research_graph(
                         'or omit it and retain needed disclosed finance capabilities. Only actual questionnaire/survey '
                         'methodology uses survey_analysis with source-read/calculator/methods. Do not reclassify '
                         'financial research as a survey merely to satisfy capability validation.')
-                if str(exc) == "task_requires_one_disclosed_coverage_obligation":
+                if str(exc) in {"task_requires_one_disclosed_coverage_obligation", "task_topic_tags_not_in_catalog"}:
                     detail.update(field="tasks[].coverage_obligation_ids",
-                                  expected="An array containing exactly one allowed branch ID, not a route ID.",
+                                  expected=("Zero or more optional catalog tags; unlisted questions use an empty array, not invented tags." if open_task_scope else "An array containing exactly one allowed branch ID, not a route ID."),
                                   allowed_values=list(allowed_branch_ids))
                 if str(exc) == "handoff_must_acknowledge_exact_incomplete_task_ids":
                     detail.update(expected_incomplete_task_ids=sorted(incomplete),
@@ -640,7 +653,7 @@ def build_lead_research_graph(
         task = state["assignment"]
         result = dict(run_child(task, state["dependency_workpapers"], config))
         if (result["task"]["task_id"] != task["task_id"]
-                or result["task"]["branch_id"] != task["coverage_obligation_ids"][0]):
+                or result["task"]["branch_id"] != task_binding_branch(task, expected_input.task.branch_id)):
             raise LeadResearchError("delegated_result_task_identity_mismatch")
         for field in ("case_id", "snapshot_id", "research_as_of", "foundation_digest"):
             if result["task"][field] != getattr(expected_input.task, field):

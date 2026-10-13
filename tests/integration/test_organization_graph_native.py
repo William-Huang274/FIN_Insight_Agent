@@ -111,18 +111,22 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
         ref=source.catalog('oidc:alice',private)['items'][0]['current']['ref']
         s.request(s.bff,'POST','/api/v1/asset-workspace/spaces/publish',json={'id':resource,'space_id':space,'ref':ref})
         api('POST',f'/projects/{project}/resources/{resource}',{'revision':1,'linked':True})
-        def start(question):
+        def start(question,execution=None):
             draft,tid=str(uuid4()),str(uuid4())
             prepared=api('POST',f'/projects/{project}/research-drafts',{'id':draft,'title':question,'question':question,
                 'research_as_of':'2026-10-12','resource_ids':[resource]})
             internal('POST',f'/projects/{project}/research-drafts/{draft}/execution-bindings',{'id':tid,'manifest_digest':prepared['manifest_digest']})
             path=f'/projects/{project}/execution-bindings/{tid}'
-            receipt=internal('POST',path+'/prepare',{'execution':{'mode':'auto','model':'default','branch_ids':[],'continuation_scope':'original_plan'}})
+            options=execution or {'mode':'auto','model':'default','branch_ids':[],'continuation_scope':'original_plan'}
+            receipt=internal('POST',path+'/prepare',{'execution':options})
             assert receipt['status']=='received'
+            frozen=s.request(s.native,'GET',f'/threads/{tid}')['metadata']['organization_run_configuration']['configurable']['finsight_execution']
+            assert frozen==receipt['execution'] and frozen['require_all_branches'] is options.get('require_all_branches',False)
             started=internal('POST',path+'/start',{'research_as_of':'2026-10-12T12:00:00+08:00'})
             assert started['status']=='received',started
             return tid,started['run_id'],path
-        tid,rid,path=start('Read the fixed original, without making a financial conclusion.')
+        tid,rid,path=start('Read the fixed original, without making a financial conclusion.',
+            {'mode':'standard','model':'default','branch_ids':[],'continuation_scope':'original_plan','require_all_branches':True})
         s.terminal(tid,rid,seconds=90)
         values=s.state_of(tid)['values']
         assert values['phase']=='research_orientation_submitted',values.get('phase')

@@ -22,6 +22,18 @@ Java 与 Python 均在新输入省略该字段时采用 `original_question`；�
 - 前端首次加载研究时继承该研究的配置；轮询不覆盖用户正在编辑的选择，切换研究不携带上一研究的配置。
 - 零模型确认/返回审阅等管理动作没有统一补写执行快照，不能把本批描述成“所有历史 run 均有配置快照”。已有历史 run 保持原样。
 
+## 研究范围与延迟初始化的后续整合
+
+共同分支已接入 `65aaf83c` 的当前上下文去重与 `3104bf77` 的开放研究范围。`execution.require_all_branches` 在 Java、Python 和前端合同中保持一致：省略表示 `false`，只接受 JSON 布尔值；仅 `standard` 模式可显式设为 `true`。`false` 允许按问题确定任务，`true` 明确要求覆盖目录。可选的主题标签及内部工具绑定 ID 都不授予资料权限。
+
+阶段工厂等实际运行配置到达后再构造，显式工厂配置必须与实际运行配置相符；同一次运行中不允许切换配置。延迟构造保留组织资料工厂、底稿作用域和运行检查，组织任务不能回退宿主公共资料、SQL 或联网检索。模型调用前后及资料读取仍检查当前权限。
+
+新个人研究的有效配置包含默认值；组织冻结记录则保存 Java 准备命令的原字段集合。校验时可将缺省字段理解为 `false`，但不能将其写回旧命令、重算旧摘要或改变已有 thread 的冻结配置。缺省和显式 `false` 在运行语义上相同，在已保存的命令表示上仍须精确匹配。旧提交键也继续比较原请求指纹，不能因为新旧请求语义相同就绕过冲突检查。
+
+定向回归见 `tests/test_organization_execution_compatibility.py`：缺省/显式 false/合法 true 的准备和回读、摘要不变、拒绝类型强制转换、工厂构造后撤权、无标签及跨主题任务仍只能读授权组织原件。Java `ResearchIntakeTest` 使用真实 PostgreSQL 验证新请求持久化及旧命令原字节回读；真实组织图容器用例分别覆盖显式完整目录和旧客户端缺省输入。该整合不开放组织研究的产品结果读取或接续入口。
+
+本轮工程验证：Python 相关回归共296项通过（287项首轮通过，旧字段断言修正后相关67项复验通过，重叠不重复计数）；Java真实PostgreSQL测试28项通过；TypeScript/Vite构建及12项浏览器静态用例通过。真实组织图容器用例1项199.13秒通过；个人研究原生生命周期用例1项284.19秒通过，包含强杀worker后恢复同一原run。组织图使用脚本provider，个人生命周期使用确定性队列图，均未调用付费模型。这些用例使用临时隔离服务，现有部署未更新；不能将其地址作为新共同版本常驻入口。
+
 ## 技术接续为什么取上一次 run
 
 会话默认值和本次运行的覆盖值可能不同。例如会话默认允许围绕原问题继续，但一次修订明确选择只完成原计划。该修订暂停后，继续入口如果重新读取会话默认值，就会丢掉用户对这次修订的限制；模型选择也可能回退。
@@ -65,6 +77,8 @@ uv run --no-sync python -m pytest -q tests/test_execution_options.py tests/test_
 
 # 仓库根目录；动态端口、独立临时 PostgreSQL；执行器仍为磁盘 fixture
 $env:FINSIGHT_INTAKE_TEST_JAR=(Resolve-Path apps/business-service/target/business-service-0.1.0.jar).Path
+# 如本机临时客户端端口可能抢占测试服务端口，可选用确认空闲且在该范围外的区间：
+# $env:FIN_QUALIFICATION_PORT_RANGE='30000-40000'
 uv run --no-sync python -m pytest -q tests/integration/test_java_intake_stack.py tests/integration/test_java_intake_faults.py --basetemp .local/common-integration-r1 --junitxml .local/common-integration-r1.xml
 
 # apps/workbench/frontend；指定空闲端口

@@ -22,6 +22,22 @@ pytestmark = pytest.mark.skipif(not os.environ.get('FINSIGHT_INTAKE_TEST_JAR'), 
 
 
 def port():
+    # A caller may select a range outside the host's ephemeral client ports.
+    # bind(0) otherwise risks losing the port to a health-check connection before
+    # the child server starts. This is a probe, not an OS-level reservation.
+    configured = os.getenv('FIN_QUALIFICATION_PORT_RANGE')
+    if configured:
+        low, high = map(int, configured.split('-'))
+        assert 1024 <= low <= high <= 65535
+        for _ in range(100):
+            candidate = low + secrets.randbelow(high - low + 1)
+            with socket.socket() as s:
+                try:
+                    s.bind(('127.0.0.1', candidate))
+                except OSError:
+                    continue
+                return candidate
+        raise AssertionError('no_available_qualification_port_in_configured_range')
     with socket.socket() as s:
         s.bind(('127.0.0.1', 0)); return s.getsockname()[1]
 
@@ -77,10 +93,11 @@ def test_real_cross_language_stack_recovers_after_both_processes_restart(tmp_pat
             key=str(uuid4())
             body={'project_id':project,'title':'Synthetic lost response','question':'Read the synthetic document for engineering qualification only.',
                 'document_ids':[upload['document_id']],'execution':{'mode':'auto','model':'default','branch_ids':[], 'continuation_scope':'original_plan'}}
+            effective_execution = {**body['execution'], 'require_all_branches': False}
             created=client.post('/api/v1/business/tasks',headers={'Idempotency-Key':key},json=body)
             assert created.status_code==200,created.text
             task=created.json();tid=task['id'];assert task['prepare']['status']=='received' and task['thread_id']==tid
-            assert task['research_options']['execution'] == body['execution']
+            assert task['research_options']['execution'] == effective_execution
             assert client.post('/api/v1/business/tasks',headers={'Idempotency-Key':key},json=body).json()['id']==tid
             assert client.get('/api/v1/business/tasks',params={'project_id':other}).json()['items']==[]
             native=json.loads((tmp_path/'state/synthetic-native.json').read_text())
@@ -100,10 +117,10 @@ def test_real_cross_language_stack_recovers_after_both_processes_restart(tmp_pat
             assert len(native['threads'])==1 and len(native['runs'][tid])==1
             assert task['start']['result']['run_id']==native['runs'][tid][0]['run_id']
             assert native['threads'][tid]['metadata']['research_as_of']==task['binding']['research_as_of']
-            assert task['research_options']['execution'] == body['execution']
-            assert native['threads'][tid]['metadata']['execution'] == body['execution']
-            assert native['runs'][tid][0]['config']['configurable']['finsight_execution'] == body['execution']
-            assert native['runs'][tid][0]['metadata']['execution'] == body['execution']
+            assert task['research_options']['execution'] == effective_execution
+            assert native['threads'][tid]['metadata']['execution'] == effective_execution
+            assert native['runs'][tid][0]['config']['configurable']['finsight_execution'] == effective_execution
+            assert native['runs'][tid][0]['metadata']['execution'] == effective_execution
             assert client.get('/api/v1/projects').json()['assignments'][tid]==project
     finally:
         for process in processes:

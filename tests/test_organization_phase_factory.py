@@ -76,7 +76,8 @@ def test_factory_scope_rejected_before_host_paths_or_models(organization, tmp_pa
         case['branch_topics'][0]['objective'] = 'Foreign branch objective'
         options = {'case':case}
     with pytest.raises(ValueError, match='organization_phase_scope_mismatch'):
-        phases_for(factory, tmp_path, **options)
+        # Binding is deferred until actual run options arrive, still before data/model work.
+        invoke(phases_for(factory, tmp_path, **options), 'research', {'question':'Scope validation'})
 
 
 @pytest.mark.parametrize('stage', ['research','review','triage_review','converge','revise_research','writer','verifier','quick_writer'])

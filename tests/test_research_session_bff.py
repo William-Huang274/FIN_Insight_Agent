@@ -526,8 +526,9 @@ def test_resume_inherits_the_run_override_not_the_thread_default(monkeypatch, tm
                 "reason": "Static configuration handoff", "confirmed": True}
         resumed = client.post(f"/api/v1/research-sessions/{thread_id}/{entrypoint}", json=body, headers=headers)
         assert resumed.status_code == 200, resumed.text
-        assert calls[-1][2]["config"]["configurable"]["finsight_execution"] == execution
-        assert calls[-1][2]["metadata"]["execution"] == execution
+        expected = {**execution, "require_all_branches": False}
+        assert calls[-1][2]["config"]["configurable"]["finsight_execution"] == expected
+        assert calls[-1][2]["metadata"]["execution"] == expected
         assert calls[-1][2]["metadata"]["continued_from_run_id"] == run_id
         assert calls[0][2] == original
     asyncio.run(service.http.aclose())
@@ -585,8 +586,9 @@ def test_known_remaining_failure_restarts_native_pending_node_but_unknown_usage_
         route = f"/api/v1/research-sessions/{thread_id}/continue-remaining"
         assert client.post(route, headers={"x-workbench-request": "1"}).status_code == 200
         assert calls[-1][2]["input"] is None and "command" not in calls[-1][2] and "checkpoint" not in calls[-1][2]
-        assert calls[-1][2]["config"]["configurable"]["finsight_execution"] == execution
-        assert calls[-1][2]["metadata"]["execution"] == execution
+        expected = {**execution, "require_all_branches": False}
+        assert calls[-1][2]["config"]["configurable"]["finsight_execution"] == expected
+        assert calls[-1][2]["metadata"]["execution"] == expected
         path.write_text(json.dumps(events[0]), encoding="utf-8")
         assert client.post(route, headers={"x-workbench-request": "1"}).status_code == 409
     asyncio.run(service.http.aclose())

@@ -80,6 +80,17 @@ independent fixed copies in the Python `organization-assets` store; back up this
 store alongside business PostgreSQL. Live database ACLs, shared Agent inputs and
 personal-space takeover are not included in this slice.
 
+## Execution scope compatibility
+
+`execution.require_all_branches` defaults to `false` when omitted. It accepts
+only JSON booleans, and `true` requires `mode: standard`. Java persists the
+validated selection in new preparation commands. Historical saved command JSON,
+request fingerprints and frozen thread configuration digests are not rewritten
+to add this default. The organization BFF validates the effective options while
+freezing the exact saved command representation. See the
+[shared execution contract](../../docs/engineering/java_python_integration.zh-CN.md)
+for delayed phase construction and scope compatibility checks.
+
 ## Failure semantics
 
 See [request lifecycle and fault qualification](../../docs/engineering/java_intake_recovery.zh-CN.md)

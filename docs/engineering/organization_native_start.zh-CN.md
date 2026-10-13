@@ -33,6 +33,12 @@ BFF 在 SQLite 回执重放前重新检查当前启动权限。实际派发前�
 
 原生宿主先完成 Java 准入、thread 冻结配置、原生 `runs.get` 身份、实际配置及空初始状态检查，再打开宿主设置、预算、组织原件与模型配置。它使用 `OrganizationDataFactory` 和组织底稿作用域，不进入个人 guidance/附件/记忆或公共 SQL/library。非空 checkpoint 拒绝本次首次启动命令；其他研究阶段和人工修订入口仍关闭，不能用首次命令隐式接续。
 
+## 执行配置升级兼容
+
+`require_all_branches` 省略时按 `false` 校验，显式 `true` 仅适用于 `standard`，非布尔值拒绝。BFF 冻结 Java 准备命令中的原始 execution 对象，不用新版模型序列化结果替换旧字段集合。已有 thread、准备回执、配置摘要与幂等指纹不迁移；即使缺省和 false 语义相同，也不能擅自互换已冻结的表示。
+
+阶段工厂延迟到收到实际运行配置才初始化，仍接收组织资料工厂和运行检查。组织准入先于阶段执行，逐次资料和模型前后授权仍保留。开放任务主题只调整问题分工，不改变资料范围、底稿归属或首次启动凭证的权限。静态回归入口为 `tests/test_organization_execution_compatibility.py`，包含工厂构造与调用之间撤权的拒绝用例。
+
 ## 配置和验收边界
 
 Java 的 `FINSIGHT_ORGANIZATION_START_ENABLED` 默认为 `false`，BFF 与原生宿主仅在值为 `1` 时启用。共同启用可设为 `1`，Spring 支持此布尔形式。还需独立的 `FINSIGHT_ORGANIZATION_RUNTIME_SECRET`、`FINSIGHT_BUSINESS_API_URL`、显式组织原件挂载 `FINSIGHT_ORGANIZATION_ASSETS_ROOT`，以及宿主设置中的 `workbench_url`。现有研究启用、宿主模型预算和密钥设置照常适用。

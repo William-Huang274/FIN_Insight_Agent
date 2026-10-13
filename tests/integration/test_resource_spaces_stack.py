@@ -4,6 +4,7 @@ Login principals are synthetic. Requires explicit built JAR and Docker; no model
 """
 import os
 import asyncio
+import json
 from pathlib import Path
 import secrets
 import shutil
@@ -28,6 +29,11 @@ from sec_agent.research_foundation.asset_workspace import AssetWorkspace
 from sec_agent.agent_runtime.organization_memory_scope import organization_memory_scope
 from sec_agent.agent_runtime.working_memory import WorkingMemoryAccessDenied
 from sec_agent.agent_runtime.working_memory_tools import memory_for
+from sec_agent.agent_runtime.organization_data_composition import OrganizationDataFactory
+from sec_agent.agent_runtime.current_research_contract import current_foundation
+from sec_agent.agent_runtime.specialist_composition import open_specialist_receipted_composition
+from sec_agent.research_foundation.contracts import load_research_graph_foundation
+from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.skipif(not os.environ.get('FINSIGHT_INTAKE_TEST_JAR'), reason='explicit built Java intake JAR required')
@@ -178,13 +184,27 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             citation = asyncio.run(read_original(bob_navigation))
             assert citation['passage']=='Organization keeps this after author departure.'
             assert citation['organization_source']['ref']==prepared['manifest']['inputs'][0]['ref']
+            cutoff = prepared['manifest']['research_as_of'] + 'T12:00:00+08:00'
+            foundation = current_foundation(load_research_graph_foundation(), thread_id=execution_id,
+                profile=json.loads((ROOT/'configs/research/cases/growth_quality.json').read_text(encoding='utf-8')),
+                research_as_of=cutoff)
+            organization_factory = OrganizationDataFactory(bob_reader, foundation=foundation,
+                research_as_of=cutoff, workbench_url='http://testserver')
             # Original private file withdrawal does not retract explicit publication.
             source.library.set_access('bob',bob_ref['project_id'],'document',bob_ref['version_id'],True)
             with organization_memory_scope(bob_reader):
                 bob_memory = memory_for({'configurable':{'thread_id':execution_id}}, 'lead')
                 bob_note = bob_memory.save('Synthetic derived note', citation['passage'])
                 assert bob_memory.read(bob_note['note_id'])['found']
-                api('POST',f'/organizations/{org}/remove-member',{'subject':'bob'})
+                with open_specialist_receipted_composition(run_id='static-integration', run_invocation_id='static-attempt',
+                        branch_id='Q1_ISSUER_TRUTH', turn_source='saved_response_replay',
+                        model_turn=lambda value: pytest.fail('no model turn in service test'), source_read_enabled=True,
+                        research_question='Read selected organization originals only.',
+                        data_composition_factory=organization_factory) as specialist:
+                    selection = SourceDocumentRequest(source_space='organization',operation='catalog')
+                    assert specialist.source_reader(selection)['status'] == 'success'
+                    api('POST',f'/organizations/{org}/remove-member',{'subject':'bob'})
+                    with pytest.raises(OrganizationExecutionUnavailable): specialist.source_reader(selection)
                 with pytest.raises(WorkingMemoryAccessDenied): bob_memory.read(bob_note['note_id'])
                 with pytest.raises(WorkingMemoryAccessDenied): bob_memory.search()
             with organization_memory_scope(admin_reader):

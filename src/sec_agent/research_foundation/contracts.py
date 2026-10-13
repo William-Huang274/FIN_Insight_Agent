@@ -368,7 +368,7 @@ class ResearchRunScope(_StrictFrozenModel):
     selected_branch_ids: tuple[str, ...] = Field(min_length=1)
     execution_attempt_id: str = Field(min_length=1, max_length=160)
     source_policy: Literal[
-        "frozen_local_reviewed_plus_public_web_locator_only"
+        "frozen_local_reviewed_plus_public_web_locator_only", "organization_fixed_inputs_only"
     ]
     run_scope_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
 
@@ -523,7 +523,7 @@ def bind_research_method(
     data_snapshot_id: str,
     execution_attempt_id: str,
     source_policy: Literal[
-        "frozen_local_reviewed_plus_public_web_locator_only"
+        "frozen_local_reviewed_plus_public_web_locator_only", "organization_fixed_inputs_only"
     ] = "frozen_local_reviewed_plus_public_web_locator_only",
 ) -> ResearchMethodBinding:
     """Project the answer-free method and seal the only valid tool-call scope."""

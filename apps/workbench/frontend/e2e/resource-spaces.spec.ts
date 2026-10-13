@@ -13,6 +13,7 @@ async function fixture(page:Page,manager=true){
     if(u.pathname==='/api/v1/projects')result={revision:1,projects:[{id:org,name:'AI 基础设施',archived:false}],assignments:{},pinned:[]};
     else if(u.pathname==='/api/v1/business/config')result={enabled:true,resource_spaces:true};
     else if(u.pathname==='/api/v1/business/workspaces')result={spaces,organizations};
+    else if(u.pathname==='/api/v1/business/workspaces/projects')result={items:[],next_offset:null};
     else if(u.pathname==='/api/v1/business/workspaces/organizations'){
       organizations.push({id:body.id,name:body.name,role:'admin'});
       spaces.push({id:body.id,name:'我的工作区',organization_id:body.id,organization_name:body.name,kind:'personal',can_manage:true,organization_admin:true});

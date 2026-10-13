@@ -37,7 +37,7 @@ class OrganizationProjects {
         return db.queryForList(sql,args).stream().findFirst().orElseThrow(()->new ApiFailure(404,"项目或成员不可访问"));
     }
     // One query authorizes the current membership and returns only project metadata.
-    private static final String VISIBLE="""
+    static final String VISIBLE="""
         SELECT p.id,p.organization_id,p.name,p.description,p.archived,p.revision,p.created_at,p.updated_at,
           o.name AS organization_name,
           CASE WHEN om.role='admin' THEN 'manager' ELSE pm.role END AS role,
@@ -47,7 +47,7 @@ class OrganizationProjects {
         LEFT JOIN organization_project_member pm ON pm.project_id=p.id AND pm.subject=om.subject
         WHERE (om.role='admin' OR pm.subject IS NOT NULL)
         """;
-    private Map<String,Object> project(String actor,UUID id,boolean manage) {
+    Map<String,Object> project(String actor,UUID id,boolean manage) {
         var row=one(VISIBLE+" AND p.id=?",actor,id);
         if(manage&&!Boolean.TRUE.equals(row.get("can_manage")))throw new ApiFailure(403,"需要项目管理权限");
         // Roles define the intended business policy; shared research is not enabled yet.
@@ -58,7 +58,7 @@ class OrganizationProjects {
         // Same lock as organization removal; mutations cannot authorize against a departing member.
         one("SELECT id FROM resource_organization WHERE id=? FOR UPDATE",id);
     }
-    private Map<String,Object> locked(String actor,UUID id,int revision) {
+    Map<String,Object> locked(String actor,UUID id,int revision) {
         UUID org=(UUID)one("SELECT organization_id FROM organization_project WHERE id=?",id).get("organization_id");
         organizationLock(org);
         one("SELECT id FROM organization_project WHERE id=? FOR UPDATE",id);

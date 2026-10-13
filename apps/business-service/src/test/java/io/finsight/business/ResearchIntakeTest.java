@@ -243,6 +243,7 @@ class ResearchIntakeTest {
         assertThat(db.queryForObject("SELECT name FROM "+schema+".resource_space WHERE id=?",String.class,space)).isEqualTo("原个人区");
         assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".organization_project",Integer.class)).isZero();
         assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".flyway_schema_history WHERE version='3' AND success",Integer.class)).isEqualTo(1);
+        assertThat(db.queryForObject("SELECT count(*) FROM "+schema+".flyway_schema_history WHERE version='4' AND success",Integer.class)).isEqualTo(1);
         // The isolated Testcontainers database is discarded at test completion.
     }
     @Test void project_roles_live_org_membership_and_space_permissions_are_independent() throws Exception {
@@ -312,6 +313,100 @@ class ResearchIntakeTest {
         Set<String> ids=new HashSet<>();for(var p:first.path("items"))ids.add(p.path("id").asText());for(var p:second.path("items"))ids.add(p.path("id").asText());assertThat(ids).hasSize(31);
         assertThat(workspace(outsider,"GET","/projects?organization_id="+org,null,200).path("items")).isEmpty();
         assertThat(workspace(admin,"GET","/projects?query=%25",null,200).path("items")).isEmpty();
+    }
+    @Test void project_resource_links_require_both_permissions_and_do_not_publish_personal_data() throws Exception {
+        String admin="link-admin",bob="link-bob",outsider="link-outsider";
+        UUID org=UUID.randomUUID(),project=UUID.randomUUID(),team=UUID.randomUUID(),resource=UUID.randomUUID();
+        var created=workspace(admin,"POST","/organizations",Map.of("id",org,"name","关联组织","display_name","管理员"),200);
+        UUID personal=UUID.fromString(created.path("spaces").get(0).path("id").asText());
+        joinProjectOrganization(admin,bob,org);
+        workspace(admin,"POST","/projects",Map.of("id",project,"organization_id",org,"name","项目","description","合成验收"),200);
+        workspace(admin,"POST","/projects/"+project+"/members",Map.of("revision",1,"subject",bob,"role","viewer"),200);
+        workspace(admin,"POST","/spaces",Map.of("id",team,"organization_id",org,"name","内部资料"),200);
+        UUID privateResource=UUID.randomUUID();
+        for(UUID space:List.of(team,personal))workspace(admin,"POST","/resources",Map.of("id",space.equals(team)?resource:privateResource,"space_id",space,"title","机密固定版本","resource_type","files",
+            "binding",Map.of("organization_id",org,"space_id",space,"ref",Map.of("version_id","fixed-v1"))),200);
+        String base="/projects/"+project+"/resources",link=base+"/"+resource;
+        workspace(admin,"POST",base+"/"+privateResource,Map.of("revision",2,"linked",true),409);
+        workspace(bob,"POST",link,Map.of("revision",2,"linked",true),403);
+        workspace(admin,"POST",link,Map.of("revision",2,"linked",true),200);
+        assertThat(workspace(bob,"GET",base,null,200).toString()).doesNotContain("机密","fixed-v1",resource.toString());
+        workspace(bob,"POST",link+"/access",null,404);
+        workspace(outsider,"GET",base,null,404);
+        workspace(admin,"POST","/spaces/"+team+"/members",Map.of("subject",bob,"role","reader"),200);
+        var visible=workspace(bob,"GET",base,null,200).path("items");
+        assertThat(visible).hasSize(1);assertThat(visible.get(0).path("version_id").asText()).isEqualTo("fixed-v1");
+        assertThat(visible.toString()).doesNotContain("binding");
+        workspace(bob,"POST",link+"/access",null,200);
+        assertThat(workspace(bob,"GET","/spaces/"+team+"/resources?project_id="+project,null,200).path("items")).hasSize(1);
+        workspace(admin,"POST","/spaces/"+team+"/members",Map.of("subject",bob,"role","remove"),200);
+        assertThat(workspace(bob,"GET",base,null,200).path("items")).isEmpty();
+        workspace(bob,"POST",link+"/access",null,404);
+        workspace(admin,"POST","/spaces/"+team+"/members",Map.of("subject",bob,"role","reader"),200);
+        workspace(admin,"POST","/projects/"+project+"/members",Map.of("revision",3,"subject",bob,"role","remove"),200);
+        workspace(bob,"GET","/spaces/"+team+"/resources?project_id="+project,null,404);
+        workspace(bob,"POST",link+"/access",null,404);
+        // Losing the project cannot remove a separately granted source permission.
+        workspace(bob,"POST","/resources/"+resource+"/access",null,200);
+        workspace(admin,"POST","/resources/"+resource+"/revoke",Map.of("revision",1),200);
+        assertThat(workspace(admin,"GET",base,null,200).path("items")).isEmpty();
+        workspace(admin,"POST",link+"/access",null,404);
+        assertThat(db.queryForObject("SELECT count(*) FROM organization_project_resource WHERE project_id=?",Integer.class,project)).isEqualTo(1);
+        workspace(admin,"POST",link,Map.of("revision",4,"linked",false),200);
+        workspace(admin,"POST",link,Map.of("revision",5,"linked",true),404);
+    }
+    @Test void project_resource_concurrent_changes_and_cross_organization_are_safe() throws Exception {
+        String admin="link-conflict";UUID org=UUID.randomUUID(),other=UUID.randomUUID(),project=UUID.randomUUID(),team=UUID.randomUUID(),foreign=UUID.randomUUID();
+        for(UUID o:List.of(org,other))workspace(admin,"POST","/organizations",Map.of("id",o,"name","组织","display_name","管理者"),200);
+        workspace(admin,"POST","/projects",Map.of("id",project,"organization_id",org,"name","项目","description",""),200);
+        workspace(admin,"POST","/spaces",Map.of("id",team,"organization_id",org,"name","团队"),200);
+        workspace(admin,"POST","/spaces",Map.of("id",foreign,"organization_id",other,"name","另一组织团队"),200);
+        UUID resource=UUID.randomUUID(),foreignResource=UUID.randomUUID();
+        for(UUID s:List.of(team,foreign))workspace(admin,"POST","/resources",Map.of("id",s.equals(team)?resource:foreignResource,"space_id",s,"title","发布版本","resource_type","database",
+            "binding",Map.of("organization_id",s.equals(team)?org:other,"space_id",s)),200);
+        String base="/projects/"+project+"/resources";
+        workspace(admin,"POST",base+"/"+foreignResource,Map.of("revision",1,"linked",true),404);
+        workspace(admin,"GET","/spaces/"+foreign+"/resources?project_id="+project,null,404);
+        UUID secondProject=UUID.randomUUID();
+        workspace(admin,"POST","/projects",Map.of("id",secondProject,"organization_id",org,"name","第二项目","description",""),200);
+        workspace(admin,"POST","/projects/"+secondProject+"/resources/"+resource,Map.of("revision",1,"linked",true),200);
+        try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
+            String body=JSON.writeValueAsString(Map.of("revision",1,"linked",true));
+            var first=pool.submit(()->request(admin,"POST","/v1/workspaces"+base+"/"+resource,body,null));
+            var second=pool.submit(()->request(admin,"POST","/v1/workspaces"+base+"/"+resource,body,null));
+            assertThat(List.of(first.get().statusCode(),second.get().statusCode())).containsExactlyInAnyOrder(200,409);
+        }
+        assertThat(db.queryForObject("SELECT count(*) FROM organization_project_resource WHERE project_id=?",Integer.class,project)).isEqualTo(1);
+        workspace(admin,"POST",base+"/"+resource,Map.of("revision",2,"linked",false),200);
+        workspace(admin,"POST",base+"/"+resource,Map.of("revision",1,"linked",true),409); // Late retry cannot restore an old link.
+        assertThat(workspace(admin,"GET",base,null,200).path("items")).isEmpty();
+        workspace(admin,"POST","/resources/"+resource+"/access",null,200); // Unlink is not revoke.
+        workspace(admin,"POST","/projects/"+secondProject+"/resources/"+resource+"/access",null,200);
+        workspace(admin,"POST","/projects/"+project,Map.of("revision",3,"name","项目","description","","archived",true),200);
+        workspace(admin,"POST",base+"/"+resource,Map.of("revision",4,"linked",true),409);
+    }
+    @Test void project_resource_pagination_filters_hidden_sources_before_limit() throws Exception {
+        String admin="link-pages",bob="link-pages-reader";UUID org=UUID.randomUUID(),project=UUID.randomUUID(),team=UUID.randomUUID(),hidden=UUID.randomUUID();
+        workspace(admin,"POST","/organizations",Map.of("id",org,"name","分页组织","display_name","管理员"),200);joinProjectOrganization(admin,bob,org);
+        workspace(admin,"POST","/projects",Map.of("id",project,"organization_id",org,"name","项目","description",""),200);
+        workspace(admin,"POST","/projects/"+project+"/members",Map.of("revision",1,"subject",bob,"role","viewer"),200);
+        for(UUID s:List.of(team,hidden))workspace(admin,"POST","/spaces",Map.of("id",s,"organization_id",org,"name","空间"),200);
+        workspace(admin,"POST","/spaces/"+team+"/members",Map.of("subject",bob,"role","reader"),200);
+        int revision=2;
+        for(int i=0;i<34;i++) {
+            UUID id=UUID.randomUUID(),s=i<31?team:hidden;
+            workspace(admin,"POST","/resources",Map.of("id",id,"space_id",s,"title",i<31?"Visible "+i:"Secret "+i,"resource_type","knowledge","binding",Map.of("organization_id",org,"space_id",s)),200);
+            workspace(admin,"POST","/projects/"+project+"/resources/"+id,Map.of("revision",revision++,"linked",true),200);
+        }
+        String path="/projects/"+project+"/resources?type=knowledge";
+        var first=workspace(bob,"GET",path,null,200);var second=workspace(bob,"GET",path+"&offset=30",null,200);
+        assertThat(first.path("items")).hasSize(30);assertThat(second.path("items")).hasSize(1);
+        assertThat(second.path("next_offset").isNull()).isTrue();assertThat(first.toString()+second).doesNotContain("Secret");
+        Set<String> ids=new HashSet<>();for(var r:first.path("items"))ids.add(r.path("id").asText());for(var r:second.path("items"))ids.add(r.path("id").asText());assertThat(ids).hasSize(31);
+        assertThat(workspace(bob,"GET",path+"&query=Secret",null,200).path("items")).isEmpty();
+        assertThat(workspace(bob,"GET",path+"&query=%25",null,200).path("items")).isEmpty();
+        workspace(admin,"POST","/organizations/"+org+"/remove-member",Map.of("subject",bob),200);
+        workspace(bob,"GET",path,null,404);
     }
     @Test void lost_prepare_response_recovers_only_deterministic_thread() throws Exception {
         var task=create("drop-prepare");String path="/v1/tasks/"+task.path("id").asText();int before=prepares.get();

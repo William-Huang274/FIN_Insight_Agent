@@ -136,6 +136,45 @@ def test_bff_checks_current_authority_and_hides_internal_bindings(tmp_path, monk
         assert state['reads'] == 3
 
 
+def test_project_read_rechecks_combined_grant_and_rejects_mismatched_identity(tmp_path, monkeypatch):
+    import apps.workbench.backend.business_transport as transport
+    source, ref = source_at(tmp_path)
+    org, space, resource, project = [str(uuid4()) for _ in range(4)]
+    shared = SpaceAssets(tmp_path/'organization-assets')
+    binding = shared.publish(source, 'alice', resource, org, space, ref)
+    state = {'active': True, 'wrong': '', 'calls': 0}
+    async def authority(actor, method, path, body=None):
+        assert actor == 'alice' and method == 'POST'
+        assert path == f'projects/{project}/resources/{resource}/access'
+        state['calls'] += 1
+        if not state['active']: raise HTTPException(404, 'project or source revoked')
+        grant = {'id': resource, 'project_id': project, 'organization_id': org, 'revision': 1, 'binding': binding}
+        if state['wrong']: grant[state['wrong']] = str(uuid4())
+        return grant
+    monkeypatch.setattr(transport, 'space_business_request', authority)
+    monkeypatch.setenv('FINSIGHT_RESOURCE_SPACES_ENABLED', '1')
+    monkeypatch.setenv('FINSIGHT_BUSINESS_API_URL', 'http://127.0.0.1:9')
+    monkeypatch.setenv('FINSIGHT_BUSINESS_SHARED_SECRET', 'synthetic-test-secret-with-at-least-32-bytes')
+    app = app_at(tmp_path, monkeypatch)
+    app.include_router(build_asset_workspace_router(tmp_path), prefix='/api/v1')
+    app.include_router(build_business_gateway(), prefix='/api/v1')
+    with TestClient(app) as client:
+        url = f'/api/v1/asset-workspace/organization-projects/{project}/resources/{resource}'
+        result = client.get(url, headers=WRITE)
+        assert result.status_code == 200 and result.json()['text'] == 'Pinned original evidence.'
+        assert result.headers['cache-control'] == 'no-store'
+        for field in ('id', 'project_id', 'organization_id'):
+            state['wrong'] = field
+            assert client.get(url, headers=WRITE).status_code == 502
+        state['wrong'] = ''
+        state['active'] = False
+        denied = client.get(url, headers=WRITE)
+        assert denied.status_code == 404 and 'Pinned original' not in denied.text
+        assert state['calls'] == 5
+        for suffix in (f'projects/{project}/resources/{resource}/access', f'projects/{project}/start', f'projects/{project}/prepare'):
+            assert client.post('/api/v1/business/workspaces/'+suffix, headers=WRITE, json={}).status_code == 404
+
+
 def test_resource_spaces_fail_closed_without_individual_login(monkeypatch):
     import asyncio
     from apps.workbench.backend.business_transport import resource_spaces_enabled, space_business_request

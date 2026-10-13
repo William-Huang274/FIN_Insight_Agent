@@ -84,6 +84,16 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None)
         result = await run_in_threadpool(call, shared.read, grant['binding'])
         return {**result, 'resource_id': str(resource_id), 'permission_revision': grant['revision']}
 
+    @router.get('/organization-projects/{project_id}/resources/{resource_id}')
+    async def project_shared_read(project_id: UUID, resource_id: UUID, request: Request, response: Response):
+        actor = identity(request, response)
+        grant = await space_business_request(actor, 'POST', f'projects/{project_id}/resources/{resource_id}/access')
+        if (str(grant.get('id')) != str(resource_id) or str(grant.get('project_id')) != str(project_id)
+                or str(grant.get('organization_id')) != str(grant.get('binding', {}).get('organization_id'))):
+            raise HTTPException(502, '项目资料授权结果不匹配')
+        result = await run_in_threadpool(call, shared.read, grant['binding'])
+        return {**result, 'resource_id': str(resource_id), 'permission_revision': grant['revision']}
+
     @router.get('/catalog')
     def catalog_page(request: Request, response: Response, project_id: UUID | None = None,
                      query: str = Query('', max_length=200), role: str = Query('', pattern='^(document|report|database)?$'),

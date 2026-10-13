@@ -30,7 +30,8 @@ class ResourceSpaces {
     private final JdbcTemplate db;
     private final ObjectMapper json;
     private final TransactionTemplate tx;
-    ResourceSpaces(JdbcTemplate db,ObjectMapper json,PlatformTransactionManager manager) {this.db=db;this.json=json;tx=new TransactionTemplate(manager);}
+    private final OrganizationProjects projects;
+    ResourceSpaces(JdbcTemplate db,ObjectMapper json,PlatformTransactionManager manager,OrganizationProjects projects) {this.db=db;this.json=json;tx=new TransactionTemplate(manager);this.projects=projects;}
     private String owner(HttpServletRequest r) {
         String subject=(String)r.getAttribute("owner");
         if(subject==null||subject.equals("local-pilot"))throw new ApiFailure(403,"组织空间需要独立登录身份");
@@ -149,9 +150,16 @@ class ResourceSpaces {
     }
     @GetMapping("/spaces/{id}/resources")
     Object resources(HttpServletRequest r,@PathVariable UUID id,@RequestParam(defaultValue="") @Size(max=200) String query,
-                     @RequestParam(defaultValue="") @Pattern(regexp="|files|knowledge|database") String type,@RequestParam(defaultValue="0") @Min(0) @Max(100000) int offset) {
-        space(owner(r),id,false);
-        var rows=db.queryForList("SELECT id,space_id,title,resource_type,revision,created_at FROM space_resource WHERE space_id=? AND active AND position(lower(?) in lower(title))>0 AND (?='' OR resource_type=?) ORDER BY created_at DESC,id LIMIT 31 OFFSET ?",id,query,type,type,offset);
+                     @RequestParam(defaultValue="") @Pattern(regexp="|files|knowledge|database") String type,@RequestParam(defaultValue="0") @Min(0) @Max(100000) int offset,
+                     @RequestParam(required=false) UUID project_id) {
+        String actor=owner(r);var scope=space(actor,id,false);
+        if(project_id!=null&&!scope.get("organization_id").equals(projects.project(actor,project_id,false).get("organization_id")))throw new ApiFailure(404,"项目与空间不属于同一组织");
+        String sql="SELECT r.id,r.space_id,r.title,r.resource_type,r.revision,r.created_at FROM space_resource r JOIN resource_space s ON s.id=r.space_id WHERE r.space_id=? AND r.active AND "+ProjectResources.SOURCE_ACCESS;
+        var args=new ArrayList<Object>(List.of(id,actor));
+        if(project_id!=null){sql+=" AND "+ProjectResources.LINK_ACCESS;args.add(project_id);args.add(actor);}
+        sql+=" AND position(lower(?) in lower(r.title))>0 AND (?='' OR r.resource_type=?) ORDER BY r.created_at DESC,r.id LIMIT 31 OFFSET ?";
+        args.addAll(List.of(query,type,type,offset));
+        var rows=db.queryForList(sql,args.toArray());
         var result=new HashMap<String,Object>();result.put("items",rows.stream().limit(30).toList());result.put("next_offset",rows.size()>30?offset+30:null);return result;
     }
     @PostMapping("/resources/{id}/access")

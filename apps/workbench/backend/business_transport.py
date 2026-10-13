@@ -17,7 +17,7 @@ from starlette.responses import JSONResponse, Response
 INTERNAL = '/api/v1/internal-research/'
 _PUBLIC = re.compile(r'(tasks|tasks/[0-9a-f-]{36}(?:/(?:prepare|start|reconcile))?)$')
 _SPACES = re.compile(r'workspaces(?:/(?:organizations|spaces|join)|/organizations/[0-9a-f-]{36}/(?:members|invites|remove-member)|/spaces/[0-9a-f-]{36}/(?:members|resources)|/resources/[0-9a-f-]{36}/revoke)?$')
-_ORG_PROJECTS = re.compile(r'workspaces/projects(?:/[0-9a-f-]{36}(?:/members)?)?$')
+_ORG_PROJECTS = re.compile(r'workspaces/projects(?:/[0-9a-f-]{36}(?:/members|/resources(?:/[0-9a-f-]{36})?)?)?$')
 
 
 def resource_spaces_enabled():

@@ -8,7 +8,7 @@ if (!Number.isInteger(port) || port < 1024 || port > 65535) {
 export default defineConfig({
   testDir: "./e2e",
   testMatch: ["project-research.spec.ts", "run-workspace.spec.ts", "workspace-navigation.spec.ts",
-    "organization-projects.spec.ts", "resource-spaces.spec.ts", "project-workspace.spec.ts"],
+    "organization-projects.spec.ts", "project-resource-links.spec.ts", "resource-spaces.spec.ts", "project-workspace.spec.ts"],
   retries: 0,
   workers: 1,
   reporter: "list",

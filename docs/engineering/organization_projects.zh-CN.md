@@ -1,5 +1,7 @@
 # 组织项目与成员：第一阶段
 
+2026-10-13 后续：第二包[项目关联空间资料](project_resource_links.zh-CN.md)已实现项目资料入口、团队固定发布引用及资料库按组织项目筛选。下文为第一包原始范围；团队研究与结果授权仍未开放。
+
 2026-09-24，接续 [Java 接入产品范围](../product/java_research_intake.zh-CN.md) 和 [组织资料空间](resource_spaces.zh-CN.md)。本批只交付新组织项目元数据、成员和前端入口；共享资料、Agent 输入、结果授权、审批与历史迁移未完成。工程测试使用静态数据，不调用模型；用户手工静态案例验收另行记录。
 
 ## 权限与兼容
@@ -34,7 +36,7 @@ BFF 仅在现有资料空间配置条件全部满足时开放：`FINSIGHT_RESOUR
 | GET `/projects/{id}/members` | 可访问项目的有效成员及组织管理员 |
 | POST `/projects/{id}/members` | 管理者提交 `revision, subject, role`；role=manager/researcher/viewer/remove |
 
-没有该前缀下的 prepare/start/resources/access 路由。Python 白名单明确拒绝这些路径。创建失败或响应未知不自动重试；浏览器保存当前身份与内容对应的 UUID，相同内容手动重试使用原 ID。服务端保存初始语义请求摘要，与当前可变项目字段分离：重试只回读，不能覆盖后续编辑/归档。不同创建内容复用 ID 返回 409。
+第一包没有该前缀下的 prepare/start/resources/access 路由；第二包仅按关联合同开放 resources 列表和精确资源关联写入，内部 access 仍不暴露，prepare/start 仍拒绝。创建失败或响应未知不自动重试；浏览器保存当前身份与内容对应的 UUID，相同内容手动重试使用原 ID。服务端保存初始语义请求摘要，与当前可变项目字段分离：重试只回读，不能覆盖后续编辑/归档。不同创建内容复用 ID 返回 409。
 
 项目写入使用 `TransactionTemplate`。先锁所属组织行，再锁项目行，核验当前成员/角色/revision，再修改并写审计，事务内没有远程 HTTP。组织移出已有同一组织行锁，因此移出与项目授权变更串行，不能在移出已经提交之后靠旧检查完成授权。所有项目内容/成员修改提升同一个 revision，避免交叉覆盖；一个修改成功，另一个需重新读取。首阶段组织级写锁较粗，未宣称高并发吞吐；后续量测有必要时再细化锁粒度。常规读取无需该写锁。
 
@@ -75,4 +77,4 @@ Java 测试使用真实 Spring HTTP、Flyway、Testcontainers PostgreSQL；跨�
 
 部署仍遵循 Java 接入原配置，仅增量迁移并重新构建前端；不自动部署。回退页面/BFF后保留 V3 表和数据，不执行破坏性 down migration。联合备份需包含业务 PG 和既有 Python 存储；本批不宣称完整灾备或生产容量验收。
 
-下一批先做项目与空间资源关联，沿用 project 权限与 source 权限分别核验；第三批再做 Agent 使用和结果范围，审批在后。
+项目与空间资源关联的后续实现见[第二包](project_resource_links.zh-CN.md)，沿用 project 权限与 source 权限分别核验；第三批再做 Agent 使用和结果范围，审批在后。

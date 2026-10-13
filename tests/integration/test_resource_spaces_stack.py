@@ -81,7 +81,7 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert all(p['id']!=project for p in client.get('/api/v1/projects',headers=WRITE).json()['projects'])
             # Ordinary private project routes do not turn organization membership into asset access.
             assert client.get(f'/api/v1/asset-workspace/projects/{project}',headers=bob).status_code==404
-            for action in ('start','prepare','access','resources'):
+            for action in ('start','prepare','access'):
                 api('POST',f'/projects/{project}/{action}',{},status=404)
             assert client.post('/api/v1/business/workspaces/projects',headers={**WRITE,'Origin':'https://foreign.invalid'},json=create_project).status_code==403
             api('POST','/spaces',{'id':team,'organization_id':org,'name':'Research team'})
@@ -100,6 +100,19 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert len(rows)==1 and 'binding' not in rows[0]
             assert api('GET',f'/spaces/{team}/resources?type=database')['items']==[]
             assert api('GET',f'/spaces/{team}/resources?query=%25')['items']==[]
+            # Real BFF signatures and Java membership checks govern both project catalog and content.
+            project_read=f'/api/v1/asset-workspace/organization-projects/{project}/resources/{resource}'
+            assert client.get(project_read,headers=bob).status_code==404
+            api('POST',f'/projects/{project}/resources/{resource}',{'revision':2,'linked':True},headers=bob,status=403)
+            api('POST',f'/projects/{project}/resources/{resource}',{'revision':2,'linked':True})
+            assert api('GET',f'/projects/{project}/resources',headers=bob)['items'][0]['id']==resource
+            assert api('GET',f'/spaces/{team}/resources?project_id={project}',headers=bob)['items'][0]['id']==resource
+            assert client.get(project_read,headers=bob).json()['text']=='Organization keeps this after author departure.'
+            api('POST',f'/projects/{project}/resources/{resource}/access',{},status=404)
+            api('POST',f'/spaces/{team}/members',{'subject':'bob','role':'remove'})
+            assert api('GET',f'/projects/{project}/resources',headers=bob)['items']==[]
+            assert client.get(project_read,headers=bob).status_code==404
+            api('POST',f'/spaces/{team}/members',{'subject':'bob','role':'manager'})
             read=f'/api/v1/asset-workspace/spaces/resources/{resource}'
             assert client.get(read,headers=WRITE).json()['text']=='Organization keeps this after author departure.'
             # Original private file withdrawal does not retract explicit publication.
@@ -114,9 +127,11 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
         business.terminate();business.wait(timeout=20);business=start()
         with TestClient(app()) as client:
             saved=client.get(f'/api/v1/business/workspaces/projects/{project}',headers=WRITE)
-            assert saved.status_code==200 and saved.json()['revision']==2
+            assert saved.status_code==200 and saved.json()['revision']==3
             assert client.get(f'/api/v1/business/workspaces/projects/{project}',headers=bob).status_code==404
-            assert client.post('/api/v1/business/workspaces/projects',headers=WRITE,json=create_project).json()['revision']==2
+            assert client.post('/api/v1/business/workspaces/projects',headers=WRITE,json=create_project).json()['revision']==3
+            assert client.get(project_read,headers=WRITE).status_code==200
+            assert client.get(project_read,headers=bob).status_code==404
             result=client.get(read,headers=WRITE)
             assert result.status_code==200,result.text
             assert result.json()['text']=='Organization keeps this after author departure.'
@@ -127,6 +142,8 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert response.status_code==200,response.text
             assert client.get(read,headers=WRITE).status_code==404
             assert client.get(read,headers=bob).status_code==404
+            assert client.get(project_read,headers=WRITE).status_code==404
+            assert client.get(f'/api/v1/business/workspaces/projects/{project}/resources',headers=WRITE).json()['items']==[]
             assert client.get(f'/api/v1/business/workspaces/spaces/{team}/resources',headers=WRITE).json()['items']==[]
     finally:
         for process in processes:

@@ -10,8 +10,11 @@ it does not turn existing personal research projects into shared projects.
 
 Flyway V3 adds new organization project metadata, project members and revisioned
 management. Java is their sole authority; Python still owns legacy personal
-projects. Project membership does not grant space access. Shared research and
-resource associations remain disabled. See [organization project scope and static
+projects. Project membership does not grant space access. Flyway V4 adds project
+references to same-organization team publications with current project AND source
+authorization, revisioned changes and audit. Shared research remains disabled.
+See [project resource links](../../docs/engineering/project_resource_links.zh-CN.md)
+and [organization project scope and static
 acceptance cases](../../docs/engineering/organization_projects.zh-CN.md).
 
 See [deployment, protocol and qualification](../../docs/engineering/java_research_intake.zh-CN.md).

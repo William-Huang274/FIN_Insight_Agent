@@ -33,10 +33,11 @@ LIBRARY_SOURCE_ROUTING_GUIDANCE = (
 
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    source_space: Literal["local", "web", "uploads", "library"] = Field(default="local", description=(
+    source_space: Literal["local", "web", "uploads", "library", "organization"] = Field(default="local", description=(
         'library is the shared company/industry knowledge database, when authorized. local is only the '
         'frozen document tree attached to this case, not the whole database. company/data/related require '
-        'library. Choose the space explicitly and keep IDs in their originating space.'))
+        'library. organization contains only the execution-bound team publications, when enabled. '
+        'Choose the space explicitly and keep IDs in their originating space.'))
     operation: Literal["catalog", "outline", "search", "read", "inspect_image", "related", "observations", "company", "data"] = Field(description=REPORT_PROCESSING_TOOL_GUIDANCE.strip())
     company_section: Literal['sources', 'accounts', 'periods', 'coverage', 'relationships', 'gaps', 'macro_series'] = Field(default='sources', description='company returns a compact identity/menu and one paginated section. sources lists original documents; accounts lists financial account paths; periods lists fiscal periods; coverage lists processing records; relationships lists stored relationship navigation; gaps lists known missing work. Copy section requests from company.section_navigation.')
     data_kind: Literal['financial', 'prices', 'positions', 'holders', 'filings', 'derived', 'disclosures', 'relationships','metrics'] = Field(default='financial',description='metrics: shared frontend/Agent catalog, observation series and data cards. Use metric_section=catalog to discover exact metric IDs; query=<metric ID> for series/compare; metric_record_id for one source-linked card. Valuation uses trade dates, not denominator fiscal year. relationships returns reviewed assertions; disclosures returns extracted counterparties and concentration facts. Unprocessed is not undisclosed.')
@@ -100,7 +101,7 @@ class SourceDocumentRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
-        if self.character_offset is not None and (self.source_space not in {'local', 'uploads'}
+        if self.character_offset is not None and (self.source_space not in {'local', 'uploads', 'organization'}
                 or self.operation != 'read' or not self.node_id or self.offset):
             raise ValueError('character_window_requires_local_or_upload_node_read_without_row_offset')
         if {'graph_predicates','graph_direction','graph_review'} & self.model_fields_set:
@@ -203,6 +204,7 @@ class SourceDocumentResult(BaseModel):
 
 def navigate_source_nodes(
     nodes: Sequence[Mapping[str, Any]], request: SourceDocumentRequest, *, snapshot: str, allowed_space: str = "local",
+    hybrid_enabled: bool | None = None,
 ) -> SourceDocumentResult:
     if request.source_space != allowed_space:
         raise ValueError("live_web_source_read_not_enabled_use_local_or_request_live_capability")
@@ -253,7 +255,8 @@ def navigate_source_nodes(
         ranked = sorted(range(len(rows)), key=lambda i: (-float(scores[i]), str(rows[i]["node_id"])))
         rows = [rows[i] for i in ranked if set(tokens).intersection(corpus[i])]
         import os
-        if os.environ.get('FINSIGHT_SOURCE_HYBRID') == '1':
+        use_hybrid = hybrid_enabled if hybrid_enabled is not None else os.environ.get('FINSIGHT_SOURCE_HYBRID') == '1'
+        if use_hybrid:
             from retrieval.source_hybrid import cache_path, rank_sources
             path = cache_path()
             try:

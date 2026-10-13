@@ -160,6 +160,20 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             tool_result=asyncio.run(read_mcp(bob_reader))
             assert not tool_result.is_error,tool_result
             assert tool_result.structured_content['text']=='Organization keeps this after author departure.'
+            from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation, build_organization_source_server
+            bob_navigation = OrganizationSourceNavigation(bob_reader, workbench_url='http://testserver')
+            async def read_original(navigation):
+                from mcp import Client
+                async with Client(build_organization_source_server(navigation), raise_exceptions=False) as tools:
+                    catalog = await tools.call_tool('read_source_document', {'request': {'source_space':'organization','operation':'catalog'}})
+                    assert not catalog.is_error, catalog
+                    result = await tools.call_tool('read_source_document', {'request': {'source_space':'organization','operation':'read',
+                        'document_id':catalog.structured_content['items'][0]['document_id']}})
+                    assert not result.is_error, result
+                    return result.structured_content['items'][0]
+            citation = asyncio.run(read_original(bob_navigation))
+            assert citation['passage']=='Organization keeps this after author departure.'
+            assert citation['organization_source']['ref']==prepared['manifest']['inputs'][0]['ref']
             # Original private file withdrawal does not retract explicit publication.
             source.library.set_access('bob',bob_ref['project_id'],'document',bob_ref['version_id'],True)
             api('POST',f'/organizations/{org}/remove-member',{'subject':'bob'})
@@ -172,11 +186,14 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert client.get(read,headers=bob).status_code==404
             assert client.get(read,headers=WRITE).status_code==200
             assert asyncio.run(read_mcp(bob_reader)).is_error
+            with pytest.raises(OrganizationExecutionUnavailable): bob_navigation.source(citation['passage_id'])
             assert not asyncio.run(read_mcp(admin_reader)).is_error
             api('POST','/resources',{},status=404) # binding registration is BFF-only
         business.terminate();business.wait(timeout=20);business=start()
         # The same reader object obtains fresh Java authority after process restart.
         assert admin_reader.read_text(resource)['text']=='Organization keeps this after author departure.'
+        admin_navigation = OrganizationSourceNavigation(admin_reader, workbench_url='http://testserver')
+        admin_citation = asyncio.run(read_original(admin_navigation))
         with pytest.raises(OrganizationExecutionUnavailable): bob_reader.check()
         with TestClient(app()) as client:
             saved=client.get(f'/api/v1/business/workspaces/projects/{project}',headers=WRITE)
@@ -203,6 +220,7 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
             assert client.get('/api/v1/business/workspaces'+drafts+f'/{draft}',headers=WRITE).status_code == 404
             assert client.post(verify,headers=WRITE,json={}).status_code == 404
             with pytest.raises(OrganizationExecutionUnavailable): admin_reader.read_text(resource)
+            with pytest.raises(OrganizationExecutionUnavailable): admin_navigation.source(admin_citation['passage_id'])
             closed=asyncio.run(space_business_request('alice','POST',f'projects/{project}/execution-bindings/{admin_execution}/close'))
             assert closed['status']=='closed'
             assert client.get(f'/api/v1/business/workspaces/projects/{project}/resources',headers=WRITE).json()['items']==[]

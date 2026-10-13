@@ -65,3 +65,23 @@ uv run --no-sync python -m pytest -q tests/integration/test_resource_spaces_stac
 2026-10-13 本地工程结果：Java 全套 22 项通过，含 V2→V6 升级、并发幂等、撤权、关闭与路径身份域测试；Python 41 项通过、1 项因缺少独立本地研究资源配置而跳过（该项为既有通用财务 MCP 测试，新增组织用例没有跳过）；真实签名/PG/SQLite/MCP 与 Java 重启链路 1 项通过，25.71 秒。活跃基线、950 文件密钥扫描及 diff 检查通过。首轮 MCP 返回声明错误和编码路径绕过的失败记录保留，修复后结果不累加为额外用例。
 
 3B 第二片已接[原生草稿受理](organization_native_drafts.zh-CN.md)：服务器验证完整执行绑定，创建或核对精确 thread，固定准备配置；不复制个人资料或记忆。V6 绑定本身仍不创建 thread，必须显式提交 V7 准备操作。在完整工具组合、事件、成果与导出权限闭合之前，团队启动仍保持关闭。
+
+## 3B 第三片：接入现有原文、引用与计算协议
+
+`OrganizationSourceNavigation` 将固定组织原件适配为现有 `SourceDocumentResult`，新增显式 `source_space=organization`；旧空间与旧请求序列化保持兼容。没有直接把独立原件工具当作完整研究图：当前研究图还依赖来源绑定、专家能力目录、已批准数据基座和底稿存取，需要后续逐项接入。
+
+本片由现有 MCP2 schema 桥消费以下窄工具组合。`organization_source_tools` 只允许且要求这三项，原 `case_mcp_tools` 仍要求原有底稿工具，不放松审查入口。
+
+| 工具 | 规则 |
+| --- | --- |
+| `read_source_document` | 仅组织 catalog/outline/search/read；文档 ID 绑定资源与 AssetRef 摘要，节点 ID 绑定该版本的文字块；返回原件摘要、manifest、明确窗口及下一次读取参数 |
+| `read_research_source` | 仅本工具会话已实际读出的 PASSAGE/CALC；原文引用按原 readback 再读，检查原件与身份；复用现有来源窗口格式 |
+| `calculate_research_metric` | 复用 Decimal 来源绑定计算；检索预览不能作为操作数，引用必须带原句和原数字；计算不授予金融口径或事实权威 |
+
+目录、搜索和大块的 `window_required` 都不是可引用证据。正式读取才生成 `PASSAGE::`。组织来源身份随引用进入现有来源摘要，保存 `organization_source.ref`、资源 ID、manifest 摘要、源投影截断与来源捕获信息。字符块由组织原件的现有文本投影生成，不伪造 PDF 页码；大块用 `character_offset/next_readback` 读取。当前投影仍受原件阅读器 100,000 字符上限限制，需视觉读取或空正文明确失败，不将其视为未披露。
+
+组织搜索强制使用本地关键词/BM25，不继承宿主 `FINSIGHT_SOURCE_HYBRID` 开关，避免把组织正文隐式送给 embedding/rerank。未开放宿主 SQL、个人 uploads、公共 library 或 web；不允许失败后落回这些空间。公开引用 URL 指向配置的工作台组织项目资源入口，浏览器仍需当前权限。
+
+导航前后、每份原件读取前后、引用与计算工具调用前后均核验当前权限。扫描多个来源后再次核权，避免前一份来源已撤权、后续扫描仍返回合并结果。已读缓存不是权限租约；观察记录仅存当前工具会话，不从模型参数导入别人的引用或个人记忆。跨运行恢复的观察记录校验和全图记忆隔离仍待接入。
+
+2026-10-13 工程验证：新增15项组织协议测试（含真实LangGraph工具循环、脚本模型、MCP2与共享schema桥）通过；相关回归首次131通过、2项未授权外网探针跳过，额外53通过；最终共享窗口调整后73项重验通过（这些重验不重复计作新增测试）。真实签名BFF/Java/PostgreSQL/SQLite/MCP、成员退出/源撤权及Java重启1项22.85秒通过。没有模型、embedding、rerank调用。这证明协议与组件可消费，不证明FinSight完整团队图、原生运行接续、成果授权或金融质量已经完成。

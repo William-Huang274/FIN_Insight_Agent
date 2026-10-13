@@ -137,7 +137,7 @@ class CaseArtifacts:
             "causal_attribution_authorized", "truncated", "excerpt_truncated", "source_document_completeness_verified",
             "source_locator", "parser_page_start", "parser_page_end", "page_semantics", "section_path",
             "document_id", "node_id", "company", "issuer_id", "content_sha256", "calculation_id", "result_unit",
-            "arithmetic_verified", "financial_semantics_verified", "project_origin", "raw_body_sha256") if key in item}}
+            "arithmetic_verified", "financial_semantics_verified", "project_origin", "organization_source", "raw_body_sha256") if key in item}}
 
     def catalog(self):
         return {"case_id": self.case_id, "research_as_of": self.research_as_of,
@@ -297,20 +297,23 @@ class CaseArtifacts:
                 "notice": "Navigation only across this task's archived observations. Read matches with read_research_source before verification. No matches does not prove non-disclosure or absence from the full document. FTS5 lexical search is not semantic retrieval."}
 
     def read_source(self, source_id, offset=0, max_characters=16000):
-        if type(offset) is not int or offset < 0 or type(max_characters) is not int or not 100 <= max_characters <= 50000:
-            raise ValueError("source_window_invalid")
-        item = self.source_item(source_id)
-        # Finance retains exactly the numeric value and its period/units/formula.
-        if item["result_state"] == "numeric_fact":
-            return {**self._source_summary(source_id, item), "formula_trace": item.get("formula_trace"),
-                    "source_observation_ids": item.get("source_observation_ids"), "next_offset": None}
-        text = self._source_text(item)
-        end = min(len(text), offset + max_characters)
-        return {**self._source_summary(source_id, item), "text": text[offset:end], "offset": offset,
-            "next_offset": end if end < len(text) else None, "captured_characters": len(text),
-            "notice": ("来源绑定计算，非发行人直接披露或 S2 权威事实。算术验证不证明期间、单位、口径或研究推断正确。"
-                       if item["result_state"] == "non_authoritative_metric" else
-                       "Exact archived observation window. End of this capture is not proof of full document coverage or truth; no new Evidence admission.")}
+        return read_source_window(source_id, self.source_item(source_id), offset, max_characters)
+
+
+def read_source_window(source_id, item, offset=0, max_characters=16000):
+    """Shared window projection; caller must authorize and resolve the exact source."""
+    if type(offset) is not int or offset < 0 or type(max_characters) is not int or not 100 <= max_characters <= 50000:
+        raise ValueError("source_window_invalid")
+    if item["result_state"] == "numeric_fact":
+        return {**CaseArtifacts._source_summary(source_id, item), "formula_trace": item.get("formula_trace"),
+                "source_observation_ids": item.get("source_observation_ids"), "next_offset": None}
+    text = CaseArtifacts._source_text(item)
+    end = min(len(text), offset + max_characters)
+    return {**CaseArtifacts._source_summary(source_id, item), "text": text[offset:end], "offset": offset,
+        "next_offset": end if end < len(text) else None, "captured_characters": len(text),
+        "notice": ("来源绑定计算，非发行人直接披露或 S2 权威事实。算术验证不证明期间、单位、口径或研究推断正确。"
+                   if item["result_state"] == "non_authoritative_metric" else
+                   "Exact archived observation window. End of this capture is not proof of full document coverage or truth; no new Evidence admission.")}
 
 
 def register_case_artifact_tools(server, artifacts: CaseArtifacts, *, source_lookup=None, calculation_observer=None):

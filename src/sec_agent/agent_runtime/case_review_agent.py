@@ -407,6 +407,18 @@ def validate_inspection_checks(review, artifacts, messages, *, complete, parsing
 
 
 async def case_mcp_tools(client, *, run_scope=None, method_arguments=None):
+    required = {"research_artifact_catalog", "read_research_artifact", "read_research_source", "calculate_research_metric"}
+    return await _scoped_mcp_tools(client, allowed=CASE_TOOLS, required=required,
+        run_scope=run_scope, method_arguments=method_arguments)
+
+
+async def organization_source_tools(client):
+    """Fixed source-only surface; does not grant access to case papers or host data."""
+    names = {"read_source_document", "read_research_source", "calculate_research_metric"}
+    return await _scoped_mcp_tools(client, allowed=names, required=names)
+
+
+async def _scoped_mcp_tools(client, *, allowed, required, run_scope=None, method_arguments=None):
     """MCP2 schema -> StructuredTool only; no transport or dispatcher rewrite.
 
     langchain-mcp-adapters 0.3.2 requires MCP<2 and cannot use this repo's 2.1.1.
@@ -415,7 +427,7 @@ async def case_mcp_tools(client, *, run_scope=None, method_arguments=None):
     listed = await client.list_tools()
     tools = []
     for spec in listed.tools:
-        if spec.name not in CASE_TOOLS:
+        if spec.name not in allowed:
             continue
         schema = deepcopy(spec.input_schema)
         if spec.name == "read_research_source":
@@ -461,7 +473,6 @@ async def case_mcp_tools(client, *, run_scope=None, method_arguments=None):
         tools.append(StructuredTool(name=spec.name, description=spec.description or spec.name,
             args_schema=schema, coroutine=bind_call(spec.name, injected),
             response_format="content_and_artifact", handle_tool_error=True))
-    required = {"research_artifact_catalog", "read_research_artifact", "read_research_source", "calculate_research_metric"}
     if not required.issubset({t.name for t in tools}):
         raise ValueError("case_artifact_MCP_tools_missing")
     return tools

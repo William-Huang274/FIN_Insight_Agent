@@ -88,12 +88,6 @@ def test_every_phase_denies_revocation_before_reading_state(organization, tmp_pa
         invoke(phases, stage, {})
 
 
-def test_orientation_never_falls_back_to_host_library(organization, tmp_path):
-    factory, _ = organization
-    with pytest.raises(ValueError, match='organization_orientation_requires_scoped_navigation'):
-        invoke(phases_for(factory, tmp_path), 'research', {'question':'Static question', 'research_stage':'orientation'})
-
-
 @pytest.mark.parametrize('revoke', [False, True])
 def test_single_expert_phase_reads_originals_and_checks_response(organization, tmp_path, monkeypatch, revoke):
     factory, authority = organization

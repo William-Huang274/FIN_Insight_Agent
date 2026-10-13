@@ -289,6 +289,13 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
                 'case_papers':list(admin_review_artifacts._author_states.values()), 'messages':[],
                 'request_action':'ask','report':{},'revisions':{},'conversation':[]})
             assert phase_result['output']['kind'] == 'answer' and phase_result['output']['citations']
+            from test_organization_orientation import orientation_phase, static_orientation, run as run_orientation
+            orientation_requests = []
+            orientation_phases = orientation_phase(admin_factory, tmp_path, phase_patch,
+                lambda request: static_orientation(request, orientation_requests))
+            orientation_result = run_orientation(orientation_phases)
+            assert orientation_result['phase'] == 'research_orientation_submitted'
+            assert len(orientation_requests) == 4
         with pytest.raises(OrganizationExecutionUnavailable): bob_reader.check()
         with TestClient(app()) as client:
             saved=client.get(f'/api/v1/business/workspaces/projects/{project}',headers=WRITE)
@@ -327,6 +334,8 @@ def test_real_space_publication_grants_revocation_and_restart(tmp_path, monkeypa
                                    case_artifacts=admin_review_artifacts): pass
             with pytest.raises(OrganizationExecutionUnavailable):
                 invoke_phase(admin_phases, 'quick_writer', {})
+            with pytest.raises(OrganizationExecutionUnavailable):
+                run_orientation(orientation_phases)
             closed=asyncio.run(space_business_request('alice','POST',f'projects/{project}/execution-bindings/{admin_execution}/close'))
             assert closed['status']=='closed'
             assert client.get(f'/api/v1/business/workspaces/projects/{project}/resources',headers=WRITE).json()['items']==[]

@@ -1482,7 +1482,8 @@ class DeepSeekStructuredAgentAdapter:
             native_tools = lead_tool_models(require_execution_plan=request_value.get("require_execution_plan", False),
                                            source_read_enabled=request_value.get("source_read_enabled", False),
                                            assistance=request_value.get("lead_assistance", False),
-                                           orientation_only=request_value.get("orientation_only", False))
+                                           orientation_only=request_value.get("orientation_only", False),
+                                           orientation_source_space=(request_value.get('orientation_context') or {}).get('source_space', 'library'))
             if semantic_input.get("allowed_planning_tools") is not None:
                 native_tools = {name: model for name, model in native_tools.items()
                                 if name in semantic_input["allowed_planning_tools"]}
@@ -1502,8 +1503,8 @@ class DeepSeekStructuredAgentAdapter:
             if is_lead:
                 prompt = LEAD_RESEARCH_SYSTEM_PROMPT
                 if request_value.get('orientation_only'):
-                    from .research_orientation import ORIENTATION_SYSTEM_PROMPT
-                    prompt = ORIENTATION_SYSTEM_PROMPT
+                    from .research_orientation import orientation_system_prompt
+                    prompt = orientation_system_prompt((request_value.get('orientation_context') or {}).get('source_space', 'library'))
                 if request_value.get("lead_assistance"):
                     prompt = ("You are the Research Lead helping an existing expert that has stopped making observable progress. "
                         "Read the original assignment, current working state and actual source navigation; use scoped source tools when needed. "

@@ -241,8 +241,6 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
 
     async def research(request, config: RunnableConfig):
         if organization is not None:
-            if request.get('research_stage') == 'orientation':
-                raise ValueError('organization_orientation_requires_scoped_navigation')
             # Validate saved inputs before the Lead sees their text, even if it
             # decides not to schedule a particular recovered expert.
             from .case_artifacts import CaseArtifacts
@@ -291,6 +289,12 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 'schema_burden': 'Source selection, small feedback records, and one orientation submission; no specialist tasks or final report.',
                 'materiality_quality_risk': 'Graph clues may be incomplete or overly broad; do not equate edge presence with truth or absence with no relationship. Check entity, period and transaction scope. Tool failures are execution problems, not proof of missing public disclosure.',
             })
+            if organization is not None:
+                basis = basis.model_copy(update={
+                    'node_purpose':'Preliminary research from authorized fixed organization originals; organize grounded topics and unresolved scope, stop before delegation or report writing.',
+                    'input_scale':'Current question, fixed manifest scope, lexical navigation and focused original windows in native history. No host public graph or personal material.',
+                    'materiality_quality_risk':'Selected originals may be incomplete, outdated or truncated. Selection and cutoff do not prove historical availability or financial correctness. Preserve exact quotations, dates, units and uncertainty; source failures are execution problems.',
+                })
             configured = configured.model_copy(update={'token_budget_basis': {**configured.token_budget_basis, 'lead': basis}})
         lead_adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
             audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"),
@@ -309,22 +313,35 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 recovery_state=next(iter(recoveries.values()), None) if execution.mode == "single" else None) as bootstrap:
             if request.get('research_stage') == 'orientation':
                 from .research_feedback import ResearchFeedbackStore
-                from sec_agent.research_foundation.research_library import open_library
-                if not feedback_owner:
-                    raise ValueError('orientation_feedback_requires_verified_owner')
-                library = open_library(environment['FINSIGHT_RESEARCH_LIBRARY_PATH'])
-                from .research_orientation import orientation_library_context
+                from .research_orientation import orientation_library_context, orientation_organization_context
+                if organization is not None:
+                    owner = 'organization:' + organization.grant['organization_id']
+                    orientation_context = orientation_organization_context(organization)
+                else:
+                    from sec_agent.research_foundation.research_library import open_library
+                    if not feedback_owner:
+                        raise ValueError('orientation_feedback_requires_verified_owner')
+                    owner = feedback_owner
+                    library = open_library(environment['FINSIGHT_RESEARCH_LIBRARY_PATH'])
+                    orientation_context = orientation_library_context(library, bootstrap.graph_input.task.research_as_of)
                 store = ResearchFeedbackStore(Path(settings['audit_root']) / 'research-feedback.sqlite')
+                def feedback_call(operation, *args):
+                    if source_access_check:
+                        source_access_check()
+                    result = operation(owner, thread_id, *args)
+                    if source_access_check:
+                        source_access_check()
+                    return result
                 graph = build_lead_research_graph(expected_input=bootstrap.graph_input,
                     research_question=request['question'], branch_catalog=branches,
                     allowed_branch_ids=tuple(b['branch_id'] for b in branches), seed_workpapers={},
                     model_turn=cancellable_model_turn(scoped_model_turn(lead_adapter.lead_research_turn), cancelled),
                     run_child=lambda *_: (_ for _ in ()).throw(ValueError('orientation_must_not_delegate')),
                     source_reader=bootstrap.source_reader, orientation_only=True,
-                    orientation_context=orientation_library_context(library, bootstrap.graph_input.task.research_as_of),
+                    orientation_context=orientation_context,
                     feedback_run_id=run_id,
-                    feedback_sink=lambda records: store.save(feedback_owner, thread_id, records),
-                    feedback_reader=lambda: store.list(feedback_owner, thread_id, run_id),
+                    feedback_sink=lambda records: feedback_call(store.save, records),
+                    feedback_reader=lambda: feedback_call(store.list, run_id),
                     public_progress=emit, require_all_branches=False,
                     max_lead_turns=profile['nodes']['lead']['limits']['model_calls'],
                     max_lead_tool_actions=profile['nodes']['lead']['limits']['tool_calls'],

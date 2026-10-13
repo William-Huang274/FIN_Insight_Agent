@@ -161,8 +161,22 @@ uv run --no-sync python -m pytest -q tests/integration/test_resource_spaces_stac
 
 修订后审查和成文重新打开当前底稿对应的组织工具视图，本地验证器与 MCP 工具读取同一稿。原作者修订保留作者身份、原任务计划、来源观察和服务端模型历史恢复规则，不能用一份新会话冒充原作者接续。
 
-**尚未开放产品团队运行。** 当前 `orientation` 预研究仍依赖公共 library 导航契约，组织阶段遇到该请求时以 `organization_orientation_requires_scoped_navigation` 明确拒绝；后续须适配组织导航，不能借用宿主库。原生 `research_session_graph` 的组织启动拦截继续保留，直到服务端构造工厂、预研究、启动/接续及事件/成果/导出访问全部接通并验收。
+**尚未开放产品团队运行。** 第八片交付时组织 `orientation` 预研究仍因缺少导航适配而拒绝；第九片接通此阶段。原生 `research_session_graph` 的组织启动拦截继续保留，直到服务端构造工厂、启动/接续及事件/成果/导出访问全部接通并验收。
 
 复现：`uv run --no-sync python -m pytest -q tests/test_organization_phase_factory.py`；真实 Java 联调仍使用 `tests/integration/test_resource_spaces_stack.py`。新增静态用例经过实际阶段工厂、Lead/专家图和审查/追问 Agent，覆盖来源读取、委派、失权和旧状态越界。修订与成文版本一致性测试使用受控收敛驱动来调用生产回调，因此不宣称一次完整的真实模型收敛已通过；原作者历史来自合成审计记录。金融质量明确未验收。
 
 2026-10-13 本片验证：相关回归529项通过（包含26项新增阶段工厂用例），真实Java/PostgreSQL/SQLite/MCP联调1项79.47秒通过；其中已保存的阶段工厂在Java撤权后拒绝再次调用。定向86项与广泛回归重叠，不累加。Docker管理接口故障在本轮测试容器创建前发生，保存现场并恢复后联调一次通过；原三个服务健康、健康端点200。零模型、embedding、rerank请求，未部署共同分支。
+
+## 3B 第九片：组织预研究导航与反馈
+
+现有预研究阶段根据宿主已验证的资料工厂选择导航合同。公共资料库仍使用 `OrientationLibraryReadAction`；组织使用 `OrientationOrganizationReadAction`，二者沿用 `RequestSourceAction` wire ID，不更改旧空间和身份。组织仅披露 `catalog/outline/search/read`，能力投影、工具 JSON schema 和 provider 系统提示同步选择该范围；不是只修改一行提示词。执行端仍校验能力和固定原件，模型参数不能授予资料访问权。
+
+组织预研究没有公共关系图、公司最新资料菜单、实时 SQL 或 web。提示和 `TokenBudgetBasis` 明确采用固定原件，要求按问题说明图谱/时效核查的限制，不伪造导航调用。输入清单、截止时点与组织发布不能证明历史可知日或当前资料完整性。共用原有逐字摘录、窗口身份、数值/期间一致性检查、问题覆盖和专题依赖规则；预研究只保存初步结果和拟议专题，不派发专家，也不产出最终报告。
+
+`orientation_public_handoff` 保留引用原有的 `organization_source` 身份，后续规划仍需在本次授权下重新读原件，不能把上游 O 引用当作本轮读取回执。资料疑点/补查反馈复用 `ResearchFeedbackStore`，owner 从工厂推导为组织、thread 为执行绑定，读写前后核验当前权限。撤权立即终止 Lead 工具路径，不再作为 ValueError 参数错误交给模型重试。写入提交后发生撤权仍可能保留历史记录；拒绝返回不意味着跨库回滚，不能自动重放。
+
+复现：`uv run --no-sync python -m pytest -q tests/test_organization_orientation.py tests/test_research_orientation.py tests/test_research_feedback.py`。实际阶段工厂和Lead图经过静态模型读取固定原件、保存反馈、提交带逐字引用的预研究；独立测试经过真实模型SDK和内存HTTP传输验证schema/提示选择，无外部模型请求。篡改摘录不能提交，资料读取/反馈读取/反馈保存期间撤权阻止后续模型调用。真实Java集成测试同时覆盖重启后的预研究与源撤权拒绝。
+
+原生宿主启动仍待接入。当前 runtime access 证明执行绑定及资料权限，不包含已持久化的原生准备命令/配置回执；这些在 BFF preparation-access 中核验。下一步必须让原生宿主核对Java可信准备/启动记录、thread冻结配置和本次运行身份，使用已保存的时点及明确时区策略，构造组织工厂与底稿作用域，避免复用个人 guidance/资产/记忆入口。不得仅信任 thread metadata 或客户端 configurable 后解除启动拦截。容器到Java的受控地址、产品启动/接续、事件、成果和导出授权须继续验收，不能将本片阶段验证宣称为完整原生产品运行。
+
+2026-10-13 本片工程验证：231项相关回归通过（含10项新增组织预研究用例），真实Java/PostgreSQL/SQLite/MCP联调1项80.20秒通过。公共library默认系统提示与上一提交逐字一致；原schema与旧测试保持通过。真实模型SDK仅使用内存HTTP替身，零外部模型、embedding和rerank请求。原生组织run未创建，现有部署未更换；前端、Java源码未修改，未重跑其构建或Java单元全集。

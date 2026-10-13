@@ -1,6 +1,8 @@
 """Delegate research tasks and assemble a reviewed working-paper handoff."""
 from __future__ import annotations
 
+from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
+
 from collections.abc import Callable, Mapping
 from graphlib import TopologicalSorter
 import json
@@ -115,13 +117,17 @@ _PLANNED_LEAD_TOOLS = {
 }
 
 
-def lead_tool_models(*, require_execution_plan=False, source_read_enabled=False, assistance=False, orientation_only=False):
+def lead_tool_models(*, require_execution_plan=False, source_read_enabled=False, assistance=False, orientation_only=False,
+                     orientation_source_space='library'):
     if orientation_only:
-        from .research_orientation import SubmitResearchOrientationAction, OrientationLibraryReadAction
+        from .research_orientation import SubmitResearchOrientationAction, OrientationLibraryReadAction, OrientationOrganizationReadAction
         from .research_feedback import ReportResearchIssuesAction
+        if orientation_source_space not in {'library','organization'}:
+            raise ValueError('orientation_source_space_not_supported')
+        reader = OrientationOrganizationReadAction if orientation_source_space == 'organization' else OrientationLibraryReadAction
         return {"SubmitResearchOrientationAction": SubmitResearchOrientationAction,
                 "ReportResearchIssuesAction": ReportResearchIssuesAction,
-                **({"RequestSourceAction": OrientationLibraryReadAction} if source_read_enabled else {})}
+                **({"RequestSourceAction": reader} if source_read_enabled else {})}
     from .research_assistance import ProvideResearchGuidanceAction
     models = dict(_PLANNED_LEAD_TOOLS if require_execution_plan else LEAD_RESEARCH_TOOLS)
     if assistance:
@@ -257,13 +263,15 @@ def build_lead_research_graph(
     if not 1 <= tool_limit <= 96:
         raise LeadResearchError('lead_tool_capacity_invalid')
     allowed = set(allowed_branch_ids)
+    orientation_space = (orientation_context or {}).get('source_space', 'library')
     planning_tools = lead_tool_models(require_execution_plan=require_execution_plan,
-                                     source_read_enabled=source_reader is not None, orientation_only=orientation_only)
+        source_read_enabled=source_reader is not None, orientation_only=orientation_only,
+        orientation_source_space=orientation_space)
     if orientation_only and (source_reader is None or seed_workpapers or recovery_tasks or unfinished_only):
         raise LeadResearchError("orientation_requires_fresh_read_only_research_scope")
     if orientation_only and expected_input is not None and not any(
-            'library' in row.get('source_spaces', []) for row in expected_input.l0_context.capability_summaries):
-        raise LeadResearchError('orientation_requires_authorized_library_source_space')
+            orientation_space in row.get('source_spaces', []) for row in expected_input.l0_context.capability_summaries):
+        raise LeadResearchError('orientation_requires_authorized_' + orientation_space + '_source_space')
     if expected_input is not None and (not allowed or len(allowed) != len(allowed_branch_ids)
             or not allowed.issubset({row["branch_id"] for row in branch_catalog})
             or not 1 <= max_parallel_tasks <= max_tasks <= 24 or not 2 <= max_lead_turns <= 24
@@ -398,9 +406,10 @@ def build_lead_research_graph(
                 request['orientation_context'] = {**request['orientation_context'],
                     'feedback_updates': feedback_reader(),
                     'feedback_policy': 'User opinions guide this task, not source evidence or permission to change the library. A request_check choice alone does not enable web tools.'}
-            request['capabilities'] = [{**row, 'source_spaces': ['library'],
-                'actions': ['catalog', 'search', 'read', 'related', 'observations', 'company', 'data']}
-                for row in request['capabilities'] if 'library' in row.get('source_spaces', [])]
+            operations = (['catalog', 'outline', 'search', 'read'] if orientation_space == 'organization'
+                else ['catalog', 'search', 'read', 'related', 'observations', 'company', 'data'])
+            request['capabilities'] = [{**row, 'source_spaces': [orientation_space], 'actions': operations}
+                for row in request['capabilities'] if orientation_space in row.get('source_spaces', [])]
         request["context_digest"] = canonical_sha256(request)
         response = model_turn(request)
         batch = SpecialistNativeToolBatch.model_validate_json(json.dumps(response["action"]))
@@ -579,6 +588,8 @@ def build_lead_research_graph(
                         "objective": action.reason_summary + ("\n\n" + action.execution_plan.public_summary() if action.execution_plan else "")
                         + ("\n\n" + coverage_text if coverage_text else "")})
                 return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
+            except ProjectAssetUnavailable:
+                raise
             except (ValueError, KeyError) as exc:
                 detail = ({"schema_errors": [{"loc": list(e["loc"]), "type": e["type"], "msg": e["msg"]}
                                              for e in exc.errors(include_url=False, include_input=False)]}

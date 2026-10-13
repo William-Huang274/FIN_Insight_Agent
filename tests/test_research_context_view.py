@@ -188,7 +188,8 @@ def test_wrappers_preserve_reader_and_actor_scope():
     assert reader('actor-b','old') is None
 
 
-def test_operation_tool_uses_native_handler_without_external_dispatch():
+@pytest.mark.parametrize('reads', [1, 3])
+def test_operation_tool_uses_native_handler_without_external_dispatch(reads):
     from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticDependencies, build_specialist_agentic_state_graph
     from test_specialist_graph import _input, _ToolPorts
     from test_research_working_state import _handoff
@@ -199,14 +200,17 @@ def test_operation_tool_uses_native_handler_without_external_dispatch():
             return public_operation(fixture(),cid)
         def turn(self, req):
             self.requests.append(req)
-            if len(self.requests)>1:return _handoff(req)
+            if len(self.requests)>reads:return _handoff(req)
             return {'action':'native_tool_batch','context_digest':req['context_digest'],'tool_calls':[{
-                'id':'recover','name':'ReadResearchHistoryAction','args':{'action':'read_research_history',
+                'id':'recover-'+str(len(self.requests)),'name':'ReadResearchHistoryAction','args':{'action':'read_research_history',
                 'context_digest':req['context_digest'],'section':'operation','tool_call_id':'new','reason_summary':'Read the saved original.'}}]}
     adapter=Adapter();ports=_ToolPorts()
     graph=build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(model_turn=adapter.turn,
         evidence_tool=ports.evidence,finance_tool=ports.finance,working_state_enabled=True)).compile()
-    graph.invoke(_input(),{'recursion_limit':20})
-    receipt=json.loads(adapter.requests[1]['tool_results'][0]['content'])['historical_record']['receipt']
-    assert receipt['result']['observations'][0]['content'][0]['passage_id']=='NEW'
+    state=graph.invoke({**_input(), 'max_tool_actions':1},{'recursion_limit':20})
+    for request in adapter.requests[1:]:
+        receipt=json.loads(request['tool_results'][0]['content'])['historical_record']['receipt']
+        assert receipt['result']['observations'][0]['content'][0]['passage_id']=='NEW'
+    assert state['notebook']['tool_action_count']==1
+    assert len(state['notebook']['dispatched_action_digests'])==1
     assert not ports.calls

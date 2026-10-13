@@ -27,12 +27,19 @@ def _unavailable():
 
 
 class OrganizationExecutionAuthority:
-    def __init__(self, *, base_url, secret, execution_id, manifest_digest, transport=None):
+    def __init__(self, *, base_url, secret, execution_id, manifest_digest, transport=None,
+                 network_profile='loopback'):
         parsed = urlsplit(base_url)
-        if (parsed.scheme != 'http' or parsed.hostname not in {'localhost', '127.0.0.1'}
+        hosts = {'loopback': {'localhost', '127.0.0.1'},
+                 'docker-desktop-host': {'host.docker.internal'}}
+        if (network_profile not in hosts or parsed.scheme != 'http' or parsed.hostname not in hosts[network_profile]
                 or parsed.username or parsed.password or parsed.path not in ('', '/')
                 or parsed.query or parsed.fragment):
-            raise ValueError('organization_authority_requires_loopback_url')
+            raise ValueError('organization_authority_network_profile_mismatch')
+        # Validate the port before a signed request is constructed. Container host
+        # access is an explicit deployment choice, never a URL from run config.
+        if parsed.port is None or not 1 <= parsed.port <= 65535:
+            raise ValueError('organization_authority_requires_explicit_port')
         if len(secret.encode()) < 32:
             raise ValueError('organization_runtime_secret_requires_32_bytes')
         self.base_url, self._secret = base_url.rstrip('/'), secret

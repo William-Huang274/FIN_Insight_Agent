@@ -1,0 +1,23 @@
+# Add to intake_native.compose.yaml only for the explicit static organization case.
+# Production graph/SDK/authority are real; the provider adapter is scripted.
+services:
+  api:
+    environment:
+      LANGSERVE_GRAPHS: '{"research_session":"/probe/organization_native_graph.py:graph"}'
+      PYTHONPATH: /qualification/src
+      PYTHONDONTWRITEBYTECODE: '1'
+      FIN_REPO_ROOT: /qualification
+      FIN_ORGANIZATION_GRAPH_QUALIFICATION: '1'
+      FINSIGHT_RESEARCH_SESSION_ENABLED: '1'
+      FINSIGHT_ORGANIZATION_START_ENABLED: '1'
+      FINSIGHT_ORGANIZATION_AUTHORITY_NETWORK: docker-desktop-host
+      FINSIGHT_BUSINESS_API_URL: http://host.docker.internal:${FINSIGHT_BUSINESS_PORT}
+      FINSIGHT_ORGANIZATION_RUNTIME_SECRET: ${FINSIGHT_ORGANIZATION_RUNTIME_SECRET}
+      FINSIGHT_ORGANIZATION_ASSETS_ROOT: /organization-assets
+      FINSIGHT_REPORT_SESSION_SETTINGS: /probe-settings/settings.json
+    volumes:
+      - ../../src:/qualification/src:ro
+      - ../../configs:/qualification/configs:ro
+      - ../../tests/integration/fixtures/organization_native_graph.py:/probe/organization_native_graph.py:ro
+      - ${FIN_PROBE_ORGANIZATION_ASSETS:?isolated published originals}:/organization-assets
+      - ${FIN_PROBE_SETTINGS:?isolated settings directory}:/probe-settings:ro

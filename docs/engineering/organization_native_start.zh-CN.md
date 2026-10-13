@@ -35,7 +35,9 @@ BFF 在 SQLite 回执重放前重新检查当前启动权限。实际派发前�
 
 ## 配置和验收边界
 
-Java 的 `FINSIGHT_ORGANIZATION_START_ENABLED` 默认为 `false`，BFF 与原生宿主仅在值为 `1` 时启用。共同启用可设为 `1`，Spring 支持此布尔形式。还需独立的 `FINSIGHT_ORGANIZATION_RUNTIME_SECRET`、`FINSIGHT_BUSINESS_API_URL`、显式组织原件挂载 `FINSIGHT_ORGANIZATION_ASSETS_ROOT`，以及宿主设置中的 `workbench_url`。现有研究启用、宿主模型预算和密钥设置照常适用。资料授权客户端当前只允许本机 loopback Java 地址；容器到宿主 Java 的受控网络部署尚待适配，不能直接把此阶段配置当成生产部署指南。
+Java 的 `FINSIGHT_ORGANIZATION_START_ENABLED` 默认为 `false`，BFF 与原生宿主仅在值为 `1` 时启用。共同启用可设为 `1`，Spring 支持此布尔形式。还需独立的 `FINSIGHT_ORGANIZATION_RUNTIME_SECRET`、`FINSIGHT_BUSINESS_API_URL`、显式组织原件挂载 `FINSIGHT_ORGANIZATION_ASSETS_ROOT`，以及宿主设置中的 `workbench_url`。现有研究启用、宿主模型预算和密钥设置照常适用。
+
+`FINSIGHT_ORGANIZATION_AUTHORITY_NETWORK` 默认 `loopback`，只接受 `localhost` 或 `127.0.0.1` 的 HTTP 地址。在 Docker Desktop 中，显式设为 `docker-desktop-host` 后只接受 `http://host.docker.internal:<port>`，用于容器访问宿主 Java；Java 仍监听 `127.0.0.1`。两种配置均拒绝用户信息、子路径、查询、片段和其他主机，不跟随重定向、不重试。地址与网络配置只由部署环境提供，不从研究配置或请求中接收。这个本机开发拓扑不等于多机部署方案；跨机器部署仍需独立的服务发现、TLS 与网络边界设计。
 
 可复现检查：
 
@@ -43,6 +45,12 @@ Java 的 `FINSIGHT_ORGANIZATION_START_ENABLED` 默认为 `false`，BFF 与原生
 - `uv run --no-sync python -m pytest -q tests/test_organization_native_start.py tests/test_organization_native_drafts.py tests/test_organization_execution_access.py tests/test_organization_phase_factory.py`：真实 BFF 回执与签名、SDK 故障注入，以及实际原生工厂/研究父图/Lead/MCP 的静态组织原件读取、引用与预研究提交。模型为脚本替身，未请求真实 provider。
 - 既有 `tests/integration/test_organization_native_stack.py` 扩展为真实 Spring/BFF/PostgreSQL/Redis/Agent Server 的准备、正常和丢响应启动、全部测试服务重启、原 run 回读与撤权验证。Python 工作负载客户端真实调用 Java 准入接口。原生容器仍运行确定性队列测试图，实际产品工厂在另一静态测试中验证，两类证据不得混称为完整生产图容器验收。
 
-这些检查不证明金融研究质量、真实 OIDC、成员交接、审批、生产容量或企业上线完成。下一阶段优先验证原生组织图的容器部署及权限完整的产品读取，再接明确的接续命令；不能把首次启动凭证复用于下一阶段或另一 run。
+新增 `tests/integration/test_organization_graph_native.py` 与 `deploy/qualification/organization_graph.compose.yaml`，将本分支 `src`、`configs` 只读挂载到隔离 Agent Server，运行实际原生工厂、研究父图、Lead、组织 MCP 和 checkpoint。原件由真实 BFF 发布，容器通过真实签名 HTTP 向 Java 核对首次准入及逐次资料权限。验收仅在 provider 边界注入脚本模型，并在测试夹具禁用 trace 外送；不替换 SDK、权限或持久化实现。容器内不得配置真实模型密钥。既有队列测试保留，默认图和挂载不受影响。
+
+本用例需要现有精确镜像、构建好的 Java JAR、单独的输出目录/端口/已检查子网、既有原生服务开发许可，并显式设置 `FIN_ORGANIZATION_GRAPH_QUALIFICATION=1`。不纳入默认 CI，不依赖开发者机器路径。测试后只停止自己的服务，保留日志和数据库卷。测试操作员直读隔离原生 API 的结果用于工程断言，不代表浏览器已经获得组织结果读取能力。
+
+这些检查不证明金融研究质量、真实 OIDC、成员交接、审批、生产容量或企业上线完成。产品事件、成果、引用及导出仍需单独的当前读取授权：项目只读成员不能被强制要求具备发起研究的资格，但仍须具备全部固定来源的当前访问权。此后再接明确的接续命令；不能把首次启动凭证复用于下一阶段或另一 run。
 
 2026-10-13 工程复验：167 项相关 Python 回归通过（含21项首次启动/原生工厂用例），Java 26 项真实 PostgreSQL 测试通过；五服务集成1项175.81秒通过。最终集成案例保存两份草稿、显式创建两个原生测试运行，两轮服务重启与核对未新增运行；工作负载准入拒绝另一 run 和撤权后的原 run。先前失败保留为本地证据：一次许可网络超时发生在业务创建前；一次暴露 SDK 回执无配置的错误假设，已在实现及替身中修正；一次断言忽略 worker 可在未知回执状态下补登记 run ID，按实际状态语义修正。全部使用静态模型或确定性队列图，零真实模型、embedding、rerank请求，现有部署未更换。
+
+2026-10-13 真实组织图容器补验：182 项相关 Python 回归通过（包含15项网络边界新用例）；五服务实际组织图用例1项155.13秒通过。正常 run 用3次脚本回答完成组织原件导航和带引用预研究，所有测试服务重启后回读一致且未重发。向原生 API 直接提交另一个 run 被 Java 唯一运行准入拒绝，新增模型调用为0；另一研究在第二次脚本响应等待期间由 Java 撤源，返回后停止，未读取下一份原文或提交预研究。两条拒绝路径均核验具体授权异常，不能以任意 worker 报错代替。合计3个原生运行记录（正常、未经授权的额外运行、撤权运行），5次脚本模型响应，真实 provider 请求为0。失败尝试保留：测试夹具误拦组织记忆、脚本动作未按JSON模式验证严格tuple schema，以及Windows日志默认GBK解码问题；均已修正，不改生产权限规则。Java源码与JAR未变，本轮未重复Java单元全集；真实容器使用已验证的V8服务。原部署与Docker引擎未重启或替换。

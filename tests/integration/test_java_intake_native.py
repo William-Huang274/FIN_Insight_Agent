@@ -36,6 +36,9 @@ def wait_for(check, seconds=60):
 
 
 class Stack:
+    compose_files = (COMPOSE,)
+    graph_fixture = ROOT / 'tests/integration/fixtures/intake_native_graph.py'
+    synthetic_components = ['research graph', 'library binding', 'local identity']
     def __init__(self):
         from dotenv import dotenv_values
         self.output = Path(os.environ['FIN_NATIVE_ATTEMPT_DIR']).resolve()
@@ -87,8 +90,8 @@ class Stack:
         self.native = httpx.Client(base_url=f'http://127.0.0.1:{self.native_port}', timeout=15, trust_env=False)
         self.bff = httpx.Client(base_url=f'http://127.0.0.1:{self.bff_port}', timeout=50, trust_env=False,
             headers={'X-Workbench-Request': '1'})
-        graph = ROOT / 'tests/integration/fixtures/intake_native_graph.py'
-        sources = ['tests/integration/test_java_intake_native.py', 'tests/integration/fixtures/intake_native_graph.py',
+        graph = self.graph_fixture
+        sources = ['tests/integration/test_java_intake_native.py', graph.relative_to(ROOT).as_posix(),
             'tests/integration/fixtures/intake_native_web.py', 'deploy/qualification/intake_native.compose.yaml',
             'apps/workbench/backend/api/v1/report_sessions.py']
         self.save('environment', {'project': self.project, 'git_head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
@@ -98,15 +101,16 @@ class Stack:
             'image': image, 'versions': versions, 'graph_sha256': hashlib.sha256(graph.read_bytes()).hexdigest(),
             'jar_sha256': hashlib.sha256(self.jar.read_bytes()).hexdigest(), 'fixture': str(graph.relative_to(ROOT)),
             'real_services': ['BFF', 'Spring Boot', 'PostgreSQL', 'Redis', 'Agent Server'],
-            'synthetic': ['research graph', 'library binding', 'local identity'], 'provider_calls': 0})
+            'synthetic': self.synthetic_components, 'provider_calls': 0})
 
     def save(self, name, value):
         (self.output / (name + '.json')).write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding='utf-8')
 
     def compose(self, *args):
         self.ordinal += 1
-        result = subprocess.run([self.docker, 'compose', '-f', str(COMPOSE), '-p', self.project, *args],
-            env=self.env, capture_output=True, text=True, timeout=180)
+        files = [arg for path in self.compose_files for arg in ('-f', str(path))]
+        result = subprocess.run([self.docker, 'compose', *files, '-p', self.project, *args],
+            env=self.env, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=180)
         output = result.stdout + result.stderr
         for value in self.redactions:
             output = output.replace(value, '[REDACTED]')

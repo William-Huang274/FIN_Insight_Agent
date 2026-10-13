@@ -188,3 +188,7 @@ uv run --no-sync python -m pytest -q tests/integration/test_resource_spaces_stac
 实际 `research_session_graph` 通过显式宿主开关进入组织工厂，先核验命令、冻结 thread、原生运行身份及实际配置，后打开宿主设置、预算和组织数据。首次只允许预研究；实际输入必须匹配授权问题/阶段，旧状态或第二 run 不可复用首次命令。资料 grant 保持不含 run 身份，阶段与模型前后另检查启动权限，避免改变既有原件/底稿恢复摘要。
 
 官方 SDK 的运行回执不包含配置：回执按 metadata 中的派发摘要和操作关联，真实 `RunnableConfig` 与输入在原生执行前验证。详见[启动与准入](organization_native_start.zh-CN.md)。浏览器组织研究仍关闭，后续接续、事件、成果、引用、导出及容器到 Java 的网络部署仍待验收；分层静态测试与队列替身图不等同于完整生产容器研究或金融质量通过。
+
+## 第十一片：实际组织图容器验收
+
+容器到宿主 Java 已增加显式 Docker Desktop 网络配置，默认仍为 loopback。实际原生工厂、研究父图、Lead 和组织 MCP 在隔离 Agent Server 中，经过真实 Java 当前权限检查，完成静态原件导航/逐字引用、全测试服务重启回读、另一个run拒绝及模型返回期间撤权停止。182项Python回归与1项155.13秒的真实图五服务测试通过；模型为脚本替身，未调用外部provider。此结果补齐上一片的容器网络与实际图组合缺口，产品事件/成果/引用/导出读取授权及明确接续仍待接入，浏览器未开放。具体部署边界和复现入口见[启动与准入](organization_native_start.zh-CN.md)。

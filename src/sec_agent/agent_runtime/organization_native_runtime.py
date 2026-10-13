@@ -67,6 +67,7 @@ async def organization_graph(config, native, thread):
     ids = config['configurable']
     thread_id, run_id = str(UUID(str(ids['thread_id']))), str(UUID(str(ids['run_id'])))
     resources = OrganizationExecutionAuthority(base_url=os.environ['FINSIGHT_BUSINESS_API_URL'],
+        network_profile=os.getenv('FINSIGHT_ORGANIZATION_AUTHORITY_NETWORK', 'loopback'),
         secret=os.environ['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'], execution_id=thread_id,
         manifest_digest=thread['metadata']['organization_execution']['manifest_digest'])
     authority = OrganizationStartAuthority(resources, run_id=run_id, context=ids['finsight_organization_start'])

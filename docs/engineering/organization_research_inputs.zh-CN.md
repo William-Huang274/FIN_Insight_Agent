@@ -66,6 +66,8 @@ npx playwright test --config playwright.recovery.config.ts
 
 补充迁移复验有一项环境阻塞：19项首轮已实际应用V5并跑通新表读写；之后在既有V2升级案例中追加“V5历史记录存在、准备单表初始为空”两条断言，定向复验停在Docker连接，独立只读docker ps也无响应。等待约4分钟后只停止本次测试JVM，Maven退出1、执行0项；这次不能记为通过，两条新增断言需Docker恢复后补验。未重启引擎或操作现有容器。日志中的fork terminated由主动终止等待造成，不据此判定业务JVM崩溃。
 
+2026-10-13 补验完成：Docker 恢复后，在同一代码版本上重新运行 `upgrading_v2_keeps_existing_organization_space_records`、`organization_preparation_freezes_all_inputs_and_hides_entire_draft_after_revocation` 和 `preparation_replay_concurrency_archive_and_invalid_input_fail_without_execution`，3 项通过、0 失败、0 错误、0 跳过，测试用时 20.75 秒。V2 升级到 V5 的新增历史记录和初始空表断言已执行通过，关闭上述环境阻塞。3 项是原有用例的定向复验，不与首轮 19 项累加；原先执行 0 项的失败尝试仍保留。此次复验使用独立临时 PostgreSQL，不代表组织研究运行、生产部署或金融质量验收完成。
+
 ## 后续和部署
 
 原生 `ReportSessionService.owned_thread` 仍按个人 owner 限制，旧研究准备也以个人项目为前提；直接把组织 ID 填入旧入口会破坏职责边界。因此下一包须将组织准备单绑定受控执行身份和输入范围，并在启动、每次工具读取、接续、事件与报告读取处执行一致授权，再开放团队运行。报告正文、引用、导出和缓存不能仅保护原文件。审批和交接在这之后。

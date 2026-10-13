@@ -4,6 +4,22 @@
 
 ## 运行接口
 
+### 按问题形成任务，目录不再限定拆题
+
+普通 `standard`（完整研究）和 `auto`（自由调度）均由 Lead 根据用户问题和研究发现形成任务。完整研究表示完成研究与复核流程，不表示遍历全部目录。`branch_catalog` 是可选方向提示，既不是必做清单，也不是全部可研究问题的枚举；不规定公司、任务数量或报告章节。
+
+`ResearchTaskSpec.objective`、`topic_title` 和 `success_criteria` 表达实际分工。保留原字段名 `coverage_obligation_ids` 兼容旧记录，但在普通研究中它是可选标签，可为空或包含多个目录标签。未归类问题不必编造新标签或挤进一个旧分支。依赖仍通过实际 task ID 绑定，已提交任务不可重复执行。研究提交与语义质量复核继续分开。
+
+底层 `BoundBranchTask.branch_id` 保留工具/来源绑定身份，不作为研究问题边界；旧单标签任务沿用原绑定，未归类/跨方向任务复用宿主已授权的资料绑定。财务主体仍由查询明确指定，来源空间、截止日、快照、权威和能力校验保持。模型视图标示 `tool_binding_id`，依赖导航和下游底稿目录使用实际分工及可选标签，不把兼容绑定当作研究标题。无数据身份、来源哈希或旧底稿迁移。
+
+用户显式选择的 `selected`/`single` 方向仍受限制。只有显式设置 `ExecutionOptions.require_all_branches=true` 的 standard 任务，或独立的历史资格验证入口，才要求完整目录覆盖；此选项不能从“完整报告”等自然语言隐式推断。新建研究界面提供默认关闭的“逐项覆盖目录中的全部方向”选项，切换模式清除该选项。旧客户端缺省值为 false。固定覆盖按已提交任务的语义标签统计，不按内部工具绑定推定完成。
+
+通用研究初始化不再把第一个内部工具绑定方向注入为“用户选择的研究问题”。配置中的专题方法仅作参考，不替代当前任务的问题和验收条件；显式选择单研究者或指定专家模式的范围仍保留。
+
+`create_research_phase_runnables` 在实际调用时绑定 `RunnableConfig.configurable.finsight_execution`，再创建各阶段；直接脚本和正式入口遵守相同规则。显式传入的工厂配置必须与实际运行配置一致，冲突在模型和资料访问之前报错，不能静默回落。恢复配置继续保留用户的 `continuation_scope` 和模型选择。旧成功结果、来源及失败费用不重写，升级代码不等于重发请求授权。
+
+离线回放可运行 `python scripts/engineering/replay_research_continuation_scope.py --open-topics --saved-input <旧接续输入> --output <本地报告>`。它禁止网络与专家执行，检查旧成果保留、新任务注册和真实来源绑定；这是确定性反事实探针，不是模型自主规划或最终研报质量验收。
+
 - 方法基础、投影、方法包、运行范围与绑定分别使用 `fin_ia_research_*_v2_0` schema；宿主传入研究截止时间，禁止退回参考案例的固定日期。
 - MCP `get_research_source_binding` 返回本任务的方法及数据版本绑定。`get_research_method` 仍是角色方法目录，两者用途不同。旧 `get_dell_research_method` 工具名已退役，代码内调用端同步迁移。
 - 新能力引用为 `capability:research:*`，新方法引用为 `skill:research:*`。旧来源读取、财务查询和已审核证据三个能力 ID 仅在输入边界作显式兼容映射；未知 ID 不会被自动授权。

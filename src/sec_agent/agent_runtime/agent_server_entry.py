@@ -661,6 +661,7 @@ async def _open_q1_paid_shadow_graph(
                     model_turn=lead_adapter.lead_research_turn, run_child=run_research_child,
                     max_lead_turns=scope.max_lead_model_turns, max_tasks=scope.max_tasks,
                     max_parallel_tasks=scope.max_parallel_tasks, turn_source="provider_model",
+                    require_all_branches=True,
                 ).compile(name=AGENT_SERVER_GRAPH_ID).with_config({"recursion_limit": 128})
             elif authority.workflow == "workpaper_review_repair":
                 scope = authority.review_scope

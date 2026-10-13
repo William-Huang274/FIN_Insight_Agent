@@ -67,6 +67,7 @@ def _worker_result(task, seed):
 
 
 def _graph(model, worker, *, seed=None, **kwargs):
+    kwargs.setdefault('require_all_branches', True)  # Explicit historical qualification fixture.
     seed = seed or _seed()
     value = SpecialistAgenticInput.model_validate_json(json.dumps(_input()))
     return build_lead_research_graph(expected_input=value, research_question="Dell 供给价格与行业需求的关联是什么？",
@@ -115,7 +116,8 @@ def test_wrong_survey_profile_feedback_keeps_normal_finance_route_available():
 def test_available_branch_catalog_does_not_imply_mandatory_research(require_all):
     from sec_agent.agent_runtime import lead_research_graph as lead_module
     instructions = '\n'.join(v for k, v in vars(lead_module).items() if k.isupper() and isinstance(v, str))
-    assert 'one branch_id from branch_catalog' in instructions
+    assert 'optional topic tags' in instructions
+    assert 'contain exactly one branch_id' not in instructions
     assert 'one branch_id from required_branch_ids' not in instructions
     seen = []
     def model(request):
@@ -450,7 +452,7 @@ def test_full_scope_requires_eight_new_obligations_and_reuses_q1_without_rebilli
     graph = build_lead_research_graph(expected_input=value, research_question="Full-scope plumbing fixture, not research.",
         branch_catalog=[{"branch_id": b} for b in COVERAGE_OBLIGATION_IDS],
         allowed_branch_ids=COVERAGE_OBLIGATION_IDS, seed_workpapers={seed["task"]["task_id"]: seed},
-        model_turn=model, run_child=worker, max_tasks=12).compile()
+        model_turn=model, run_child=worker, max_tasks=12, require_all_branches=True).compile()
     result = graph.invoke(value.model_dump(mode="json"), config={"recursion_limit": 64})
     assert result["phase"] == "research_ready_for_review" and len(result["task_results"]) == 8
     assert set(ran) == set(COVERAGE_OBLIGATION_IDS[1:])

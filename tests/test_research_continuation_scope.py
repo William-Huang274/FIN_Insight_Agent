@@ -29,7 +29,8 @@ def test_explicit_scope_survives_native_run_configuration():
 
 @pytest.mark.parametrize('bounded', [False, True])
 @pytest.mark.parametrize('has_seed', [False, True])
-def test_native_phase_recovery_scope_controls_both_planner_and_worker(monkeypatch, tmp_path, bounded, has_seed):
+@pytest.mark.parametrize('binding', ['factory', 'config-auto', 'config-standard'])
+def test_native_phase_recovery_scope_controls_both_planner_and_worker(monkeypatch, tmp_path, bounded, has_seed, binding):
     from sec_agent.agent_runtime import research_session_runtime as runtime
     seed = _worker_result(_task('saved'), _seed())
     original = deepcopy(seed)
@@ -43,6 +44,8 @@ def test_native_phase_recovery_scope_controls_both_planner_and_worker(monkeypatc
     def model(request):
         requests.append(deepcopy(request))
         assert request['research_question'] == 'Original industry research question'
+        assert request['required_branch_ids'] == []
+        assert 'unlisted subjects' in request['scope_policy']
         assert ('DelegateResearchTasksAction' in request['allowed_planning_tools']) is not bounded
         assert ('user explicitly restricted' in request['continuation_policy']) is bounded
         if len(requests) == 1:
@@ -75,6 +78,7 @@ def test_native_phase_recovery_scope_controls_both_planner_and_worker(monkeypatc
             child = SimpleNamespace(invoke=lambda *a, **k: _worker_result(task, seed))
             yield SimpleNamespace(graph_input=value, graph=child, source_reader=None)
         else:
+            assert '目录问题示例' not in kwargs['role_method']['content']
             yield SimpleNamespace(graph_input=value, source_reader=None)
 
     def no_provider(*args, **kwargs):
@@ -83,13 +87,18 @@ def test_native_phase_recovery_scope_controls_both_planner_and_worker(monkeypatc
     monkeypatch.setattr(runtime.DeepSeekStructuredAgentAdapter, 'from_config', lambda **k:
         SimpleNamespace(lead_research_turn=model, specialist_model_turn=no_provider))
     profile, case = runtime.load_research_runtime_profile(Path(__file__).parents[1])
+    from sec_agent.agent_runtime.studio_configuration import default_configuration
+    selection = ExecutionOptions(mode='standard' if binding == 'config-standard' else 'auto',
+        continuation_scope='original_plan' if bounded else 'original_question')
     phases = runtime.create_research_phase_runnables(root=Path(__file__).parents[1],
         settings={'audit_root': str(tmp_path)}, profile=profile, case=case, run_id='offline-scope', thread_id='offline-thread',
         api_key=SecretStr('offline-not-a-key'), environment={}, public_sink=lambda _: None, private_sink=lambda _: None,
-        execution=ExecutionOptions(mode='auto', continuation_scope='original_plan' if bounded else 'original_question'))
+        studio=default_configuration(),
+        execution=selection if binding == 'factory' else None)
     graph = StateGraph(dict).add_node('research', phases['research']).add_edge(START, 'research').add_edge('research', END).compile()
     result = asyncio.run(graph.ainvoke({'question': 'Original industry research question',
-        'completed_workpapers': [seed] if has_seed else [], 'unfinished_tasks': [unfinished]}))
+        'completed_workpapers': [seed] if has_seed else [], 'unfinished_tasks': [unfinished]},
+        {'configurable': {'finsight_execution': selection.model_dump()}}))
     assert workers == [unfinished['task_id']] + ([] if bounded else [extra['task_id']])
     assert result['phase'] == 'research_ready_for_review', (result['stop_reason'], result['tool_results'][-1])
     assert seed == original

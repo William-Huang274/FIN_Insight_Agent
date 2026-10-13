@@ -997,6 +997,10 @@ def _project_agentic_specialist_request(
     if request.get("task_context") is not None:
         task_context = request["task_context"]
         projected["task_context"] = _agentic_semantic_value(task_context)
+        if task_context.get('task_scope'):
+            # Retain the wire binding on the host; do not present it as the
+            # semantic category of an untagged/cross-topic research question.
+            projected['branch']['tool_binding_id'] = projected['branch'].pop('branch_id')
         baseline = projected['task_context'].get('accepted_revision_baseline')
         if isinstance(baseline, dict) and isinstance(baseline.get('submission'), dict):
             # Research needs the author's actual answer, not an extra copy of

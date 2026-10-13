@@ -42,7 +42,7 @@ def dependency_navigation(task_id, paper):
     return {
         'task_id': task_id, 'agent_id': paper['agent_id'], 'branch_id': paper['task']['branch_id'],
         'revision': paper['task']['revision'],
-        'topic': paper.get('task_context', {}).get('assignment', {}).get('topic_title') or paper['task']['branch_id'],
+        'topic': paper.get('task_context', {}).get('assignment', {}).get('topic_title') or paper['task']['objective'],
         'source_count': len({item.get('passage_id') or item.get('evidence_id') or item.get('numeric_fact_id')
                              or item.get('calculation_id') or item.get('fact_id') for item in items}),
         'coverage': {key: sorted({str(item[key]) for item in items if item.get(key) is not None})

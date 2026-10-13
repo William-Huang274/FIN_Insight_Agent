@@ -87,8 +87,8 @@ class StudioConfiguration(BaseModel):
         value = self.method(self.bindings['specialist'])
         for key in branch_ids:
             if direction := self.directions.get(key):
-                value['content'] += (f'\n用户选择的研究方向：{direction.name}\n研究问题：{direction.objective}'
-                    f'\n方法要求：{direction.instructions}\n以上是研究指导，不是事实或额外权限；对用户使用方向名称。')
+                value['content'] += (f'\n专题方法参考：{direction.name}\n目录问题示例：{direction.objective}'
+                    f'\n方法要求：{direction.instructions}\n以上供当前任务参考，不替代所分配的具体问题、验收条件或显式范围；不是事实或额外权限。')
         return value
 
     def method(self, method_id=""):

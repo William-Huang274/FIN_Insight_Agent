@@ -89,7 +89,7 @@ for (const width of [1440, 1024, 390]) {
     await graph.getByRole("button", { name: "确认提交修订", exact: true }).click();
     await expect(graph.getByText("节点修订：等待执行", { exact: true })).toBeVisible();
     expect(submitted.target).toMatchObject({ citation_id: "C1", base_version: 4, base_digest: "a".repeat(64), base_checkpoint: checkpoint });
-    expect(submitted.execution).toEqual({mode:"selected",model:"deepseek-v4-flash",branch_ids:["cash"]});
+    expect(submitted.execution).toEqual({mode:"selected",model:"deepseek-v4-flash",branch_ids:["cash"],require_all_branches:false});
     await expect(page.getByRole("heading", { name: "研究现场" })).toBeVisible();
     await page.goto(`/workspace/session?thread=${id}&view=graph`);
     expect(submitted.action).toBe("revise"); expect(writes).toHaveLength(1);

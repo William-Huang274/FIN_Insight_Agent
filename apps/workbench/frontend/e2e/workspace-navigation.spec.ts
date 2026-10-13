@@ -54,6 +54,14 @@ for (const width of [1440, 1024, 390]) test(`formal navigation, generic tasks an
   await nav("外观与偏好"); await page.getByRole("combobox",{name:"界面外观"}).selectOption("dark"); await expect(page.locator(".fs-workspace")).toHaveAttribute("data-theme","dark");
   await page.getByRole("checkbox",{name:"减少动态效果"}).check();
   await nav("新建研究"); await page.getByLabel("这次你想研究什么？").fill("研究 Orion 的订阅续费质量，核查最新季度收入与现金。"); expect(writes).toEqual([]);
+  await page.getByLabel("协作模式").selectOption("standard");
+  await expect(page.getByText("由负责人围绕问题组织研究与多方审查，可跨方向拆分任务，不要求遍历目录。", {exact:true})).toBeVisible();
+  const fullCoverage = page.getByRole("checkbox", {name:"逐项覆盖目录中的全部方向（可能增加研究时间与费用）",exact:true});
+  await expect(fullCoverage).not.toBeChecked(); await fullCoverage.check();
+  await page.getByLabel("协作模式").selectOption("auto"); await expect(fullCoverage).toHaveCount(0);
+  await page.getByLabel("协作模式").selectOption("standard"); await expect(fullCoverage).not.toBeChecked();
+  await fullCoverage.check();
   await page.getByRole("button",{name:"保存为资料准备草稿",exact:true}).click(); await expect.poll(()=>writes.length).toBe(1); expect(writes[0]).toMatchObject({mode:"research",defer_start:true}); expect(writes[0].title).toContain("Orion");
+  expect(writes[0].execution).toMatchObject({mode:"standard",require_all_branches:true});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });

@@ -9,6 +9,8 @@ class ExecutionOptions(BaseModel):
     mode: Literal["standard", "auto", "selected", "single"] = "standard"
     model: Literal["default", "deepseek-v4-flash", "deepseek-v4-pro"] = "default"
     branch_ids: list[str] = Field(default_factory=list, max_length=24)
+    require_all_branches: bool = Field(default=False,
+        description="Explicit fixed-catalog coverage for a user-requested study or qualification only. Standard full research does not imply all catalog topics.")
     continuation_scope: Literal["original_question", "original_plan"] = Field(
         default="original_question",
         description="User-owned continuation scope. Reuse completed work and allow Lead to fill gaps in the original question by default. Set original_plan only when the user explicitly forbids adding tasks to an existing plan; not inferred from saved workpapers or technical recovery.",
@@ -16,6 +18,8 @@ class ExecutionOptions(BaseModel):
 
     @model_validator(mode="after")
     def scope_shape(self):
+        if self.require_all_branches and self.mode != "standard":
+            raise ValueError("完整目录覆盖须显式使用standard模式；不能隐含限制自主研究")
         if len(set(self.branch_ids)) != len(self.branch_ids):
             raise ValueError("研究范围不能重复")
         if self.mode == "selected" and not self.branch_ids:

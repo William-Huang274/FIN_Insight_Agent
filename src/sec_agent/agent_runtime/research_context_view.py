@@ -11,6 +11,10 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 
 INITIAL_CONTEXT_ID = 'runtime:initial-context'
 CONTEXT_FIELD_PREFIX = 'runtime:context:'
+# An implicit cohort is a one-turn handoff between adjacent source reads.  It
+# is deliberately not a substitute for the author's explicit retained set:
+# longer comparisons still belong in ``retain_source_ids`` or the native
+# archive.
 
 
 def current_context(messages):
@@ -207,6 +211,42 @@ def history_reader(turn):
     return getattr(getattr(turn, '__self__', None), 'read_public_operation', None)
 
 
+def material_ids(value):
+    """Return IDs of complete source/numeric objects in one tool result.
+
+    A source catalog, search candidate, method receipt or a history/navigation
+    envelope is useful for discovery but is not itself working material.  This
+    distinction prevents a navigation-only action from evicting originals that
+    are still needed for the next comparison.
+    """
+    found = set()
+
+    def visit(item):
+        if isinstance(item, dict):
+            ref = item.get('passage_id') or item.get('numeric_fact_id') or item.get('calculation_id')
+            if ref and (isinstance(item.get('passage'), str) or 'value_decimal' in item):
+                found.add(ref)
+                return
+            for child in item.values():
+                visit(child)
+        elif isinstance(item, list):
+            for child in item:
+                visit(child)
+
+    visit(value)
+    return found
+
+
+def contains_released_material(value):
+    """Whether an otherwise material-producing receipt was explicitly released."""
+    if isinstance(value, dict):
+        return (value.get('result_state') == 'released_navigation'
+                or any(contains_released_material(child) for child in value.values()))
+    if isinstance(value, list):
+        return any(contains_released_material(child) for child in value)
+    return False
+
+
 def working_view(messages):
     """Return None for other runtimes; one replacement path for native experts."""
     if any(m.additional_kwargs.get('fin_research_working_view') for m in messages):
@@ -286,34 +326,69 @@ def working_view(messages):
                 pins = set(selected); focus = 'latest_explicit_material_selection_not_state_acceptance'
             break
     material, material_keys, catalog = [], set(), []
-    def collect(value, all_sources=False):
+    def collect(value, source_ids=None):
         if isinstance(value, dict):
             ref = value.get('passage_id') or value.get('numeric_fact_id') or value.get('calculation_id')
-            if (ref and (all_sources or ref in pins)
+            if (ref and (source_ids is None or ref in source_ids)
                     and (isinstance(value.get('passage'), str) or 'value_decimal' in value)):
                 key = json.dumps(value, ensure_ascii=False, sort_keys=True)
                 if key not in material_keys:
                     material.append(deepcopy(value)); material_keys.add(key)
                 return
             for child in value.values():
-                collect(child, all_sources)
+                collect(child, source_ids)
         elif isinstance(value, list):
             for child in value:
-                collect(child, all_sources)
+                collect(child, source_ids)
     # A first request has no consumed operation boundary. Its restored source
     # originals must remain visible; only metadata catalogs are made lazy.
-    collect(restored, all_sources=last_ai < 0)
-    from .model_context import REREADABLE_TOOLS
-    readers = REREADABLE_TOOLS | {'RequestCalculationAction'}
-    last_read = max((i for i, m in enumerate(messages) if isinstance(m, AIMessage)
-                    and any(c['name'] in readers for c in m.tool_calls)), default=-1)
-    latest_read_ids = {c['id'] for c in messages[last_read].tool_calls} if last_read >= 0 else set()
+    collect(restored, source_ids=None if last_ai < 0 else set())
+    # Keep a short handoff when an author has not named a working set.  A
+    # material batch is defined by what the tool actually returned, rather
+    # than the tool's name: a search/catalog/method call cannot retire prior
+    # source text.  When a fresh source batch is still in the native active
+    # receipt, surface the immediately preceding batch alongside it.  Once the
+    # next model action has consumed that pair, retain only the newest batch.
+    # This gives one full comparison turn without accumulating whole long
+    # transcripts across the journal.
+    batches = []
+    for ai in (m for m in messages if isinstance(m, AIMessage)):
+        call_ids = {call['id'] for call in [*ai.tool_calls, *ai.invalid_tool_calls]}
+        batch_ids = set()
+        released = False
+        for receipt_index, receipt in enumerate(messages):
+            if (not isinstance(receipt, ToolMessage) or receipt.status != 'success'
+                    or receipt.tool_call_id not in call_ids):
+                continue
+            body = bodies[receipt_index]
+            result = body.get('result', body) if isinstance(body, dict) else None
+            batch_ids.update(material_ids(result))
+            released = released or contains_released_material(result)
+        # A release is an intentional empty latest material batch.  Preserve
+        # that boundary instead of reviving an older source merely because it
+        # was in the preceding implicit cohort.
+        if batch_ids or released:
+            batches.append(batch_ids)
+    active_material_ids = set()
+    for body in bodies[boundary:]:
+        active_material_ids.update(material_ids(body))
+    if pins:
+        selected_material_ids = set(pins)
+        if batches:
+            selected_material_ids.update(batches[-1])
+    else:
+        if batches and not batches[-1]:
+            selected_material_ids = set()
+        elif active_material_ids:
+            selected_material_ids = set(batches[-2]) if len(batches) > 1 else set()
+        else:
+            selected_material_ids = set(batches[-1]) if batches else set()
+        if batches:
+            focus = 'implicit_recent_material_cohort'
     for i, m in enumerate(messages):
         if isinstance(m, ToolMessage):
             b = bodies[i]; r = b.get('result', b) if isinstance(b, dict) else None
-            # An unread/recent batch must not disappear merely because a note
-            # failed to parse or the accepted note still names older materials.
-            collect(r, all_sources=m.tool_call_id in latest_read_ids)
+            collect(r, selected_material_ids)
     def objects(value):
         if isinstance(value, dict):
             yield value

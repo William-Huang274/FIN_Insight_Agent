@@ -42,6 +42,49 @@ def test_replacement_view_advances_materials_without_accepting_failed_note():
     assert public_operation(rows,'old')['receipt']['result']['observations'][0]['content'][0]['passage_id']=='OLD'
 
 
+def test_navigation_only_source_action_does_not_retire_current_originals():
+    rows = [HumanMessage(content=json.dumps({'allowed_actions': ['read_research_history'],
+        'task_context': {'research_question': 'Compare current source text'}, 'progress': {'observations': []}}))]
+    source = {'observations': [{'status': 'success', 'content': [{'result_state': 'source_bound_passage',
+        'passage_id': 'SOURCE-A', 'passage': 'The complete first source passage.'}]}]}
+    rows.extend(batch('read-a', 'RequestSourceAction', {'selection': {'operation': 'read'}}, source))
+    rows.extend(batch('search-b', 'RequestSourceAction', {'selection': {'operation': 'search'}}, {
+        'observations': [{'status': 'success', 'content': [{'result_state': 'retrieval_candidate',
+            'node_id': 'NODE-B', 'preview': 'Navigation only, not readable source text.'}]}]}))
+
+    out = working_view(rows)
+    rendered = json.dumps([message.model_dump(mode='json') for message in out], ensure_ascii=False)
+    assert 'The complete first source passage.' in rendered
+    assert [row['passage_id'] for row in json.loads(out[0].content)['current_materials']] == ['SOURCE-A']
+
+
+def test_implicit_material_cohort_keeps_two_adjacent_reads_for_comparison():
+    rows = [HumanMessage(content=json.dumps({'allowed_actions': ['read_research_history'],
+        'task_context': {'research_question': 'Compare adjacent reported periods'}, 'progress': {'observations': []}}))]
+    def result(ref):
+        return {'observations': [{'status': 'success', 'content': [{'result_state': 'source_bound_passage',
+            'passage_id': ref, 'passage': 'Complete original for ' + ref}]}]}
+    rows.extend(batch('read-a', 'RequestSourceAction', {}, result('SOURCE-A')))
+    rows.extend(batch('read-b', 'RequestSourceAction', {}, result('SOURCE-B')))
+    rows.extend(batch('read-c', 'RequestSourceAction', {}, result('SOURCE-C')))
+
+    out = working_view(rows)
+    rendered = json.dumps([message.model_dump(mode='json') for message in out], ensure_ascii=False)
+    assert 'Complete original for SOURCE-A' not in rendered
+    assert 'Complete original for SOURCE-B' in rendered
+    assert 'Complete original for SOURCE-C' in rendered
+    view = json.loads(out[0].content)
+    assert view['material_focus'] == 'implicit_recent_material_cohort'
+
+    rows.extend(batch('consume-c', 'RequestSourceAction', {'selection': {'operation': 'search'}}, {
+        'observations': [{'status': 'success', 'content': [{'result_state': 'retrieval_candidate',
+            'node_id': 'NODE-D', 'preview': 'Navigation after the comparison turn.'}]}]}))
+    out = working_view(rows)
+    rendered = json.dumps([message.model_dump(mode='json') for message in out], ensure_ascii=False)
+    assert 'Complete original for SOURCE-B' not in rendered
+    assert 'Complete original for SOURCE-C' in rendered
+
+
 def test_history_reads_failures_without_rerunning_and_excludes_private_reasoning_and_context():
     rows=fixture()
     r=public_operation(rows,'draft')

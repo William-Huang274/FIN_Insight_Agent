@@ -1634,8 +1634,16 @@ class DeepSeekStructuredAgentAdapter:
                     raise DeepSeekStructuredAgentError("specialist_native_tool_results_missing")
                 # A rejected terminal creates feedback, not a new source read.
                 # All observations already arrived in exact earlier messages.
-                messages = [*history, ToolMessage(content=json.dumps({"current_context": delta}, ensure_ascii=False),
-                    tool_call_id=prior_raw.tool_calls[0]["id"], name=prior_raw.tool_calls[0]["name"])]
+                reply = {"current_context": delta}
+                # Compatibility with checkpoints whose single terminal bypassed
+                # ToolNode. The graph supplies the actual validation outcome;
+                # do not infer acceptance from an author's completion prose.
+                terminal_result = request_value.get("terminal_result")
+                if terminal_result is not None:
+                    reply["result"] = terminal_result
+                messages = [*history, ToolMessage(content=json.dumps(reply, ensure_ascii=False),
+                    tool_call_id=prior_raw.tool_calls[0]["id"], name=prior_raw.tool_calls[0]["name"],
+                    status="error" if terminal_result is not None and terminal_result.get("accepted") is False else "success")]
         if notes_enabled and saved_envelope is None:
             from .user_workpaper_context import current_scope_revision_prompt
             guidance = current_scope_revision_prompt(actor)
@@ -1815,18 +1823,11 @@ class DeepSeekStructuredAgentAdapter:
                     decision = {"action": "native_tool_batch", "context_digest": request_value["context_digest"],
                                 "tool_calls": tool_calls, "runtime_tool_scope": list(native_tools),
                                 "context_checkpoint_required": False}
-                    if not is_lead and len(tool_calls) == 1 and tool_calls[0].get("type") == "tool_call" and tool_calls[0].get("name") in native_tools and tool_calls[0].get("name") in {
-                        "SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
-                    }:
-                        chosen = {**_NATIVE_SPECIALIST_TOOLS, **_NATIVE_REVIEW_TOOLS}[tool_calls[0]["name"]]
-                        # Keep the existing route for a valid terminal action.
-                        # A complete JSON call with invalid fields must reach
-                        # ToolNode for model-visible validation feedback, not
-                        # abort the provider turn or silently repair its claims.
-                        try:
-                            decision = chosen.model_validate_json(json.dumps(tool_calls[0]["args"])).model_dump(mode="json")
-                        except (ValidationError, TypeError, ValueError):
-                            pass
+                    # Single terminal calls use the same ToolNode path as every
+                    # other native call. It owns validation and emits an explicit
+                    # ID-bound outcome, including accepted=False. Unwrapping a
+                    # terminal here bypassed that receipt and left only a state
+                    # snapshot, which the working-view projection could empty.
                     envelope = {"raw": raw_message, "parsed": {"action": decision} if valid else None,
                                 "parsing_error": None if valid else ValueError("native_action_tool_calls_invalid")}
             except Exception as exc:

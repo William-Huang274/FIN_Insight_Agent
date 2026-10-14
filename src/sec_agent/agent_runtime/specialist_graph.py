@@ -1350,6 +1350,14 @@ def _model_request(
             'Complete the assigned research, then call PrepareWorkpaperAction with your public effective state before final submission. No final submission until prepared.')
         body['task_context'] = context
     last = state.get("last_submission_attempt") or {}
+    if (last.get("accepted") is False and notebook.model_turn_records
+            and isinstance(notebook.model_turn_records[-1].action, (SubmitWorkpaperAction, SubmitReviewAction))):
+        # Old checkpoints may contain a direct terminal action, without a native
+        # ToolNode receipt. Preserve its real rejection at the tool-call boundary
+        # during recovery; source reads and human-review handoffs do not qualify.
+        body["terminal_result"] = {"accepted": False,
+            "feedback": last.get("feedback", []),
+            "validation_issues": last.get("validation_issues", [])}
     candidate = last.get("arguments")
     if "submit_workpaper" in allowed_actions and isinstance(candidate, dict) and candidate.get("action") == "submit_workpaper" and not last.get("accepted"):
         if allow_workpaper_field_edits:

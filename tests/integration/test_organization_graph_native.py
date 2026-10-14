@@ -136,11 +136,32 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
         assert orientation_public_handoff(orientation)['source_readbacks']['O2']['passages'][0]['organization_source']['execution_id']==tid
         assert internal('POST',path+'/start',{'research_as_of':'2026-10-12T12:00:00+08:00'})['run_id']==rid
         assert len(s.runs(tid))==1
+        # Product read authorization is distinct from run admission. This viewer
+        # has no creator/researcher role and gains no source access by joining.
+        invite=str(uuid4())
+        api('POST',f'/organizations/{org}/invites',{'token':invite})
+        viewer_headers={'Authorization':'Bearer qualification-viewer'}
+        joined=s.bff.post('/api/v1/business/workspaces/join',json={'token':invite,'display_name':'Static viewer'},headers=viewer_headers)
+        assert joined.status_code==200,joined.text
+        revision=api('GET',f'/projects/{project}')['revision']
+        api('POST',f'/projects/{project}/members',{'revision':revision,'subject':'oidc:viewer','role':'viewer'})
+        read_path=f'/api/v1/organization-projects/{project}/research/{tid}'
+        assert s.bff.get(read_path,headers=viewer_headers).status_code==404
+        api('POST',f'/spaces/{space}/members',{'subject':'oidc:viewer','role':'reader'})
+        visible=s.bff.get(read_path,headers=viewer_headers)
+        assert visible.status_code==200,visible.text
+        assert visible.json()['read_only'] is True and visible.json()['run_id']==rid
+        assert visible.headers['cache-control']=='no-store'
+        assert not any(v for k,v in visible.json().items() if k.startswith('can_'))
+        assert s.bff.get(f'/api/v1/research-sessions/{tid}',headers=viewer_headers).status_code==404
+        assert s.bff.get(read_path+f'/runs/{uuid4()}/events',headers=viewer_headers).status_code==404
+        assert s.bff.get(read_path+'/report/export/md',headers=viewer_headers).status_code==409
         for p in (business,web):p.terminate();p.wait(timeout=20)
         s.compose('stop','-t','5','api','redis','postgres');s.compose('up','-d','--pull','never','api');s.healthy()
         s.boot('java');s.boot('bff')
         assert internal('POST',path+'/start-reconcile',{})['run_id']==rid
         assert s.state_of(tid)['values']['research_orientation']==orientation and len(s.turns(tid))==3
+        assert s.bff.get(read_path,headers=viewer_headers).status_code==200
         # Even direct access to the test native API cannot reuse a Java command
         # for another run. Product users never receive this native credential.
         grant=internal('GET',path+'/start-access')
@@ -154,6 +175,8 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
         wait_for(lambda:(s.events/(revoked_tid+'.ready')).exists(),seconds=60)
         current=s.request(s.bff,'GET',f'/api/v1/asset-workspace/spaces/resources/{resource}')
         api('POST',f'/resources/{resource}/revoke',{'revision':current['permission_revision']})
+        for suffix in ('','/report','/source?source_id=ORG:S1','/report/export/md',f'/runs/{rid}/events'):
+            assert s.bff.get(read_path+suffix,headers=viewer_headers).status_code==404
         (s.events/(revoked_tid+'.release')).write_text('release scripted response after committed Java revocation')
         s.denied_run(revoked_tid,revoked_rid)
         assert len(s.turns(revoked_tid))==2
@@ -165,7 +188,7 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
             'revoked':{'thread_id':revoked_tid,'run_id':revoked_rid,'status':'error','scripted_turns':2},
             'unauthorized_extra_run':{'run_id':extra['run_id'],'status':'error','additional_model_turns':0},
             'all_services_restart':True,'native_runs':3,'provider_calls':0,'semantic_acceptance':'not_assessed',
-            'product_read_authorization':'not covered; test operator reads isolated native SDK directly'})
+            'product_read_authorization':'real viewer BFF snapshot and denial for every read route after source revocation; actual report export covered by static report renderer tests'})
     finally:
         for p in s.processes:
             if p.poll() is None:p.terminate();p.wait(timeout=20)

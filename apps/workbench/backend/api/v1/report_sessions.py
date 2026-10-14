@@ -1181,4 +1181,6 @@ def build_report_sessions_router(service):
         install_intake_routes(router, service, create, start_draft)
         from ...organization_native_drafts import install_organization_native_routes
         install_organization_native_routes(router, service)
+        from ...organization_research_reads import install_organization_read_routes
+        install_organization_read_routes(router, service)
     return router

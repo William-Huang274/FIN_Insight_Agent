@@ -706,6 +706,33 @@ class ResearchIntakeTest {
         workspace(f.researcher(),"POST",base+"/close",null,200);
         workspace(f.researcher(),"GET",base+"/preparation",null,409);
     }
+    @Test void organization_viewer_reads_require_current_project_and_sources_not_creator_role() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();
+        workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
+        String base="/projects/"+f.project()+"/execution-bindings/"+id;
+        workspace(f.researcher(),"POST",base+"/prepare",Map.of("execution",Map.of("mode","auto","model","default","branch_ids",List.of())),200);
+        var started=workspace(f.researcher(),"POST",base+"/start",Map.of("research_as_of","2026-10-12T12:00:00Z"),200);
+        String viewer="read-viewer-"+UUID.randomUUID();joinProjectOrganization(f.admin(),viewer,f.org());
+        workspace(f.admin(),"POST","/projects/"+f.project()+"/members",Map.of("revision",3,"subject",viewer,"role","viewer"),200);
+        workspace(viewer,"GET",base+"/read-access",null,404); // Project visibility alone cannot expose even the title.
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",viewer,"role","reader"),200);
+        var grant=workspace(viewer,"GET",base+"/read-access",null,200);
+        assertThat(grant.path("reader").asText()).isEqualTo(viewer);
+        assertThat(grant.path("read_contract").asText()).isEqualTo("organization_research_read.v1");
+        assertThat(grant.path("run_id")).isEqualTo(started.path("run_id"));
+        workspace(viewer,"GET",base+"/start-access",null,404);
+        workspace(viewer,"POST",base+"/start",Map.of("research_as_of","2026-10-12T12:00:00Z"),404);
+        workspace(viewer,"GET","/projects/"+UUID.randomUUID()+"/execution-bindings/"+id+"/read-access",null,404);
+        workspace(f.researcher(),"POST",base+"/close",null,200);
+        workspace(viewer,"GET",base+"/read-access",null,200); // Closing execution does not erase authorized history.
+        workspace(f.admin(),"POST","/projects/"+f.project()+"/members",Map.of("revision",4,"subject",f.researcher(),"role","remove"),200);
+        workspace(viewer,"GET",base+"/read-access",null,200); // No creator impersonation.
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",viewer,"role","remove"),200);
+        workspace(viewer,"GET",base+"/read-access",null,404);
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",viewer,"role","reader"),200);
+        workspace(f.admin(),"POST","/projects/"+f.project()+"/members",Map.of("revision",5,"subject",viewer,"role","remove"),200);
+        workspace(viewer,"GET",base+"/read-access",null,404);
+    }
     @Test void organization_start_concurrent_command_and_exact_runtime_admission() throws Exception {
         var f=executionFixture();UUID id=UUID.randomUUID();workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
         String base="/projects/"+f.project()+"/execution-bindings/"+id;

@@ -82,6 +82,13 @@ personal-space takeover are not included in this slice.
 
 ## Execution scope compatibility
 
+Organization research has a separate current-reader authorization endpoint.
+Project viewers with access to every frozen input can read prepared research
+without impersonating its creator or obtaining permission to execute it.
+The BFF rechecks this authority around state/export I/O and event delivery;
+personal research routes remain closed to organization threads. See
+[organization research reads](../../docs/engineering/organization_research_reads.zh-CN.md).
+
 `execution.require_all_branches` defaults to `false` when omitted. It accepts
 only JSON booleans, and `true` requires `mode: standard`. Java persists the
 validated selection in new preparation commands. Historical saved command JSON,

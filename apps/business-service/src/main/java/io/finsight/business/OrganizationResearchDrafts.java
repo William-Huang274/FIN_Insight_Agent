@@ -118,6 +118,11 @@ class OrganizationResearchDrafts {
     Map<String,Object> materialAccess(String actor,UUID projectId,UUID id) {
         return tx.execute(status->{
             projects.researchPreparation(actor,projectId,true);
+            return readAccess(actor,projectId,id);
+        });
+    }
+    Map<String,Object> readAccess(String actor,UUID projectId,UUID id) {
+        return tx.execute(status->{
             var row=draft(actor,projectId,id);
             var inputs=db.queryForList("SELECT resource_id,binding::text AS encoded FROM organization_research_input WHERE draft_id=? ORDER BY resource_id",id);
             return Map.of("id",id,"project_id",projectId,"organization_id",row.get("organization_id"),

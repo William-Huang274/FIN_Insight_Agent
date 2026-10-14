@@ -23,9 +23,9 @@ if organization_probe:
     os.environ.pop('FINSIGHT_OIDC_CLIENT_ID', None)
     class SyntheticIdentity(authentication.OIDCBackend):
         def verify(self, token):
-            if token != 'qualification-alice':
+            if token not in ('qualification-alice', 'qualification-viewer'):
                 raise AuthenticationError('qualification_identity_required')
-            return 'oidc:alice'
+            return 'oidc:alice' if token == 'qualification-alice' else 'oidc:viewer'
     install_auth = authentication.install_conversation_auth
     def install_qualification_auth(app):
         install_auth(app, backend=SyntheticIdentity(authentication.OIDCSettings(

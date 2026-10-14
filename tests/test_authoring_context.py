@@ -147,6 +147,79 @@ def test_specialist_preparation_preserves_sources_and_replaces_static_role_metho
     assert result['authoring_context'] == saved['authoring_context']
 
 
+def test_specialist_can_prepare_and_submit_after_external_tool_ceiling():
+    """A local authoring transition must not consume or be blocked by source-read budget."""
+    from test_specialist_graph import _input, _ScriptedModel, _ToolPorts, _evidence_action, _finance_action, _submission, _action
+    from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticDependencies, SpecialistNotebook, build_specialist_agentic_state_graph
+
+    model = _ScriptedModel([
+        _evidence_action(),
+        _finance_action(),
+        _action('prepare_workpaper', brief=BRIEF),
+        _submission(),
+    ])
+    initial = {**_input(), 'max_tool_actions': 2}
+    result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=model, evidence_tool=_ToolPorts().evidence, finance_tool=_ToolPorts().finance,
+        authoring_enabled=True,
+    )).compile().invoke(initial, {'recursion_limit': 50})
+
+    notebook = SpecialistNotebook.model_validate_json(json.dumps(result['notebook']))
+    assert result['phase'] == 'specialist_submission_accepted'
+    assert notebook.tool_action_count == 2
+    assert [record.action.action for record in notebook.model_turn_records] == [
+        'request_evidence', 'request_finance', 'prepare_workpaper', 'submit_workpaper',
+    ]
+
+
+def test_recovery_from_legacy_tool_ceiling_handoff_can_prepare_and_submit():
+    """A legacy handoff at the read ceiling becomes a normal local authoring recovery."""
+    from test_specialist_graph import _input, _ScriptedModel, _ToolPorts, _evidence_action, _finance_action, _submission, _action
+    from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticDependencies, SpecialistNotebook, build_specialist_agentic_state_graph
+
+    tools = _ToolPorts()
+    first = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=_ScriptedModel([_evidence_action(), _finance_action()]),
+        evidence_tool=tools.evidence, finance_tool=tools.finance, authoring_enabled=True,
+    )).compile().invoke({**_input(), 'max_tool_actions': 2, 'max_model_turns': 2})
+    assert first['phase'] == 'specialist_human_review_handoff_emitted'
+    assert SpecialistNotebook.model_validate_json(json.dumps(first['notebook'])).tool_action_count == 2
+
+    resumed_model = _ScriptedModel([_action('prepare_workpaper', brief=BRIEF), _submission()])
+    result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=resumed_model, evidence_tool=tools.evidence, finance_tool=tools.finance,
+        authoring_enabled=True,
+    ), recovery_state=first).compile().invoke({
+        **_input(), 'run_invocation_id': 'resume-after-legacy-read-ceiling',
+        'max_tool_actions': 2, 'max_model_turns': 4,
+    })
+
+    notebook = SpecialistNotebook.model_validate_json(json.dumps(result['notebook']))
+    assert result['phase'] == 'specialist_submission_accepted'
+    assert notebook.tool_action_count == 2
+    assert [record.action.action for record in notebook.model_turn_records] == [
+        'request_evidence', 'request_finance', 'prepare_workpaper', 'submit_workpaper',
+    ]
+
+
+def test_specialist_web_read_is_bounded_but_keeps_offset_for_follow_up():
+    from sec_agent.agent_runtime.specialist_composition import _bounded_source_selection
+    from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
+
+    selected = SourceDocumentRequest(
+        source_space='web', operation='read', document_id='WEB::call',
+        offset=48_000, max_characters=60_000,
+    )
+    bounded = _bounded_source_selection(selected)
+    assert bounded.max_characters == 24_000
+    assert bounded.offset == 48_000
+    assert bounded.document_id == selected.document_id
+    assert _bounded_source_selection(SourceDocumentRequest(
+        source_space='library', operation='read', document_id='DOC::annual',
+        max_characters=60_000,
+    )).max_characters == 60_000
+
+
 def test_native_recovery_preserves_accepted_preparation_and_submits_without_preparing_again():
     from test_specialist_graph import _input, _ScriptedModel, _ToolPorts, _evidence_action, _finance_action, _submission, _action
     from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticDependencies, build_specialist_agentic_state_graph

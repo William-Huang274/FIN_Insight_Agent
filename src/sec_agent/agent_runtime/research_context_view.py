@@ -204,6 +204,61 @@ def public_operation(messages, call_id):
             'notice': 'Saved public record; not a new execution or acceptance. Source authority and failure status are unchanged.'}
 
 
+def history_operation_page(record, *, offset=0, max_characters=12_000, source_ids=()):
+    """Project a saved operation for one model turn without altering its archive.
+
+    Current source reads are normally bounded, but older journals can contain a
+    whole web page.  Returning that entire envelope again would reintroduce
+    the same request-size cost that the working view removed.  An author can
+    either page the public JSON record or ask for exact observed material IDs;
+    the native record remains the complete, authoritative readback object.
+    """
+    if offset < 0 or not 1_000 <= max_characters <= 24_000:
+        raise ValueError('history_operation_page_window_invalid')
+    selected = {str(value) for value in source_ids}
+
+    def rows(value):
+        if isinstance(value, dict):
+            identity = value.get('passage_id') or value.get('numeric_fact_id') or value.get('calculation_id')
+            if identity and str(identity) in selected:
+                yield deepcopy(value)
+            for child in value.values():
+                yield from rows(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from rows(child)
+
+    receipt = record.get('receipt', {}) if isinstance(record, dict) else {}
+    result = receipt.get('result') if isinstance(receipt, dict) else None
+    available_ids = sorted(material_ids(result)) if result is not None else []
+    if selected:
+        found = list(rows(result)) if result is not None else []
+        return {
+            'operation': deepcopy(record.get('operation')),
+            'receipt': {'status': receipt.get('status'), 'result': {'selected_materials': found}},
+            'requested_source_ids': sorted(selected),
+            'available_source_ids': available_ids,
+            'next_offset': None,
+            'notice': ('Exact source/numeric/calculation objects selected from the saved public operation; '
+                       'not a new execution. Missing selected IDs were not guessed.'),
+        }
+    encoded = json.dumps(record, ensure_ascii=False, separators=(',', ':'))
+    if len(encoded) <= max_characters:
+        return deepcopy(record)
+    end = min(len(encoded), offset + max_characters)
+    return {
+        'operation': deepcopy(record.get('operation')),
+        'receipt': {'status': receipt.get('status')},
+        'available_source_ids': available_ids,
+        'serialized_record_window': encoded[offset:end],
+        'offset': offset,
+        'next_offset': end if end < len(encoded) else None,
+        'total_characters': len(encoded),
+        'notice': ('Partial public historical-record window. It is navigation, not a complete source passage; '
+                   'use an exact available_source_id to recover a material object, or next_offset to continue the record.'),
+    }
+
+
 def history_reader(turn):
     """Find the explicitly wrapped native adapter without inspecting closures."""
     while hasattr(turn, '__wrapped__'):

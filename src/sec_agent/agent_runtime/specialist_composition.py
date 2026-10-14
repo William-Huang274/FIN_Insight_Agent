@@ -961,8 +961,9 @@ def _bound_task_for_action(
     if lane == "evidence":
         action = request.action
         if isinstance(action, RequestSourceAction):
+            selection = _bounded_source_selection(action.selection)
             rebound_body = task.model_dump(mode="json")
-            rebound_body.update(evidence_requests=({"source_document": action.selection.model_dump(mode="json")},), fact_requests=())
+            rebound_body.update(evidence_requests=({"source_document": selection.model_dump(mode="json")},), fact_requests=())
             rebound = _model_json(BoundBranchTask, rebound_body, code="specialist_source_task_invalid")
             return ToolLaneTask(lane=lane, task=rebound)
         if not isinstance(action, RequestEvidenceAction):
@@ -997,6 +998,22 @@ def _bound_task_for_action(
         code="specialist_rebound_branch_task_invalid",
     )
     return ToolLaneTask(lane=lane, task=rebound)
+
+
+def _bounded_source_selection(selection):
+    """Keep a live-web reading turn small without changing its archive.
+
+    Web captures remain complete in the scoped source cache and the returned
+    passage carries exact offsets plus ``next_offset``.  A specialist request
+    that asks for a whole earnings-call page therefore receives the first
+    24,000-character window and can deliberately continue at that locator,
+    instead of placing 60,000+ characters into the immediate and historical
+    model context.  Local/library source readers retain their native window
+    policies because their parsed node boundaries are the relevant unit there.
+    """
+    if selection.source_space == "web" and selection.operation == "read" and selection.max_characters > 24_000:
+        return selection.model_copy(update={"max_characters": 24_000})
+    return selection
 
 
 def _mcp_port(

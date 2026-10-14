@@ -5,7 +5,7 @@ import json
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
-from sec_agent.agent_runtime.research_context_view import working_view, public_operation, history_reader
+from sec_agent.agent_runtime.research_context_view import history_operation_page, working_view, public_operation, history_reader
 from sec_agent.agent_runtime.model_context import project_tool_history
 from sec_agent.agent_runtime.specialist_graph import ReadResearchHistoryAction
 from test_context_retirement import batch
@@ -92,6 +92,25 @@ def test_history_reads_failures_without_rerunning_and_excludes_private_reasoning
     assert 'old private episode' not in json.dumps(r)
     assert 'current_context' not in json.dumps(public_operation(rows,'new'))
     assert public_operation(rows,'unknown') is None
+
+
+def test_large_history_operation_pages_or_returns_exact_selected_material_without_mutation():
+    record = {
+        'operation': {'id': 'large-read', 'name': 'RequestSourceAction', 'args': {'selection': {'document_id': 'WEB::call'}}},
+        'receipt': {'status': 'success', 'result': {'observations': [{'content': [
+            {'passage_id': 'PASSAGE::A', 'passage': 'A' * 15_000},
+            {'passage_id': 'PASSAGE::B', 'passage': 'B' * 15_000},
+        ]}]}},
+    }
+    saved = deepcopy(record)
+    page = history_operation_page(record, max_characters=12_000)
+    assert page['total_characters'] > 12_000
+    assert len(page['serialized_record_window']) == 12_000
+    assert page['next_offset'] == 12_000
+    selected = history_operation_page(record, source_ids=('PASSAGE::B',))
+    assert [row['passage_id'] for row in selected['receipt']['result']['selected_materials']] == ['PASSAGE::B']
+    assert selected['available_source_ids'] == ['PASSAGE::A', 'PASSAGE::B']
+    assert record == saved
 
 
 def test_unmatched_native_call_is_not_retired():

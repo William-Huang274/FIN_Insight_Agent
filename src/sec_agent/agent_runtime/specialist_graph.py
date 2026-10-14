@@ -208,6 +208,9 @@ class ReadResearchHistoryAction(_StrictModel):
     section: Literal['turn', 'lead_assistance', 'operation']
     index: int | None = Field(default=None, ge=1)
     tool_call_id: str | None = Field(default=None, description='For operation: copy the exact ID from operation_catalog or a supplied context-field readback. Reads saved data without re-execution; runtime:context: locators return run-bound current metadata.')
+    offset: int = Field(default=0, ge=0, description='Character offset for a large saved operation record. Copy next_offset from the prior historical receipt.')
+    max_characters: int = Field(default=12_000, ge=1_000, le=24_000, description='Largest serialized historical-record window. This does not reread, truncate or alter the archived original.')
+    source_ids: tuple[str, ...] = Field(default=(), max_length=12, description='For operation only, optional exact observed passage/numeric/calculation IDs. Returns those original objects instead of a generic serialized page.')
     reason_summary: str
 
     @model_validator(mode='after')
@@ -215,7 +218,7 @@ class ReadResearchHistoryAction(_StrictModel):
         if self.section == 'operation':
             if not self.tool_call_id or self.index is not None:
                 raise ValueError('operation_requires_tool_call_id_without_index')
-        elif self.index is None or self.tool_call_id is not None:
+        elif self.index is None or self.tool_call_id is not None or self.source_ids:
             raise ValueError('history_section_requires_index_without_tool_call_id')
         return self
 
@@ -2614,29 +2617,33 @@ def build_specialist_agentic_state_graph(
                     return reject("specialist_workpaper_edit_invalid", str(exc), agent_error=True)
             working["pending_action"] = action.model_dump(mode="json")
             if isinstance(action, PrepareWorkpaperAction):
-                if before.tool_action_count >= state['max_tool_actions']:
-                    return reject('authoring_preparation_tool_limit', 'No preparation accepted; preserve incomplete work.')
+                # Preparation is a local transition that binds the author's
+                # current public evidence state before writing.  It neither
+                # reads a source nor dispatches an MCP/finance operation, so
+                # exhausting the external-research allowance must not strand
+                # an otherwise ready specialist before SubmitWorkpaperAction.
+                # Keep the binding/ready validation below; only its accounting
+                # is deliberately separate from external tool actions.
                 if not action.brief.ready:
                     return reject('authoring_research_not_ready', 'Continue the scoped research or request explicit attention; do not claim finished.')
                 working['authoring_context'] = bind_authoring(action.brief, owner=state['agent_id'],
                     stage='workpaper', basis=specialist_basis(working))
-                digest = _semantic_action_digest(action)
-                if digest not in before.dispatched_action_digests:
-                    working['notebook'] = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,
-                        dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode='json')
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({
-                    'status': 'prepared', 'notice': 'Next request restores your public preparation in a writing context; budget and source scope unchanged.'}))
+                    'status': 'prepared', 'notice': 'Next request restores your public preparation in a writing context; external research budget and source scope are unchanged.'}))
             if isinstance(action, ReadResearchHistoryAction):
                 digest = _semantic_action_digest(action)
                 already_read = digest in before.dispatched_action_digests
                 if not already_read and before.tool_action_count >= working['max_tool_actions']:
                     return reject('specialist_history_tool_limit', 'No additional history read executed.')
                 if action.section == 'operation':
-                    from .research_context_view import history_reader
+                    from .research_context_view import history_operation_page, history_reader
                     reader = history_reader(dependencies.model_turn)
                     if reader is None:
                         return reject('public_history_reader_unavailable', 'Native journal reader is not wired to this runtime; this is an execution problem, not missing source evidence.')
-                    payload = reader(state['agent_id'], action.tool_call_id)
+                    record = reader(state['agent_id'], action.tool_call_id)
+                    payload = (history_operation_page(record, offset=action.offset,
+                        max_characters=action.max_characters, source_ids=action.source_ids)
+                        if record is not None else None)
                 elif action.section == 'turn':
                     record = next((r for r in before.model_turn_records if r.turn_index == action.index), None)
                     payload = record.action.model_dump(mode='json') if record else None

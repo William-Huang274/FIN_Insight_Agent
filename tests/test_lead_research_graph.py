@@ -281,7 +281,12 @@ def test_lead_parallel_workers_then_dynamic_dependent_task_without_rewriting_see
                 _task(dependencies=(seed["task"]["task_id"],)), _task("compute", BRANCHES[1])])
         if len(seen) == 2:
             assert len(json.loads(request["tool_results"][0]["content"])["task_results"]) == 2
+            assert set(request['completed_wave_context']['returned_task_ids']) == {'task:price', 'task:compute'}
+            assert len(request['completed_wave_context']['public_planning_actions']) == 1
             return _call(request, "DelegateResearchTasksAction", tasks=[_task("followup", dependencies=("task:price", "task:compute"))])
+        assert request['completed_wave_context']['returned_task_ids'] == ['task:followup']
+        assert len(request['workpapers']) == 4  # Seed plus both waves, no loss.
+        assert request['progress']['turn_index'] == 3
         return _stop(request, ready=True)
 
     def worker(task, dependencies, config):
@@ -434,6 +439,65 @@ def test_native_sdk_lead_history_keeps_own_reasoning_and_exact_tool_feedback(bou
     assert ("native_tool_not_allowed_this_turn" if bounded else "Expecting value") in wires[1]["messages"][3]["content"]
     assert "workpapers" not in json.loads(wires[1]["messages"][3]["content"])["current_context"]
     assert all("semantic_input" not in event and "raw_response" not in event for event in events)
+
+
+def test_native_lead_completed_waves_use_current_papers_without_prior_reasoning():
+    from test_deepseek_structured_agents import _config
+    seen, wires, journal = [], [], []
+    seed = _seed()
+
+    def transport(request):
+        wire = json.loads(request.content)
+        wires.append(wire)
+        current = seen[-1]
+        # Completed calls form a new conversation boundary, not a malformed
+        # tool reply without its required preceding assistant reasoning.
+        assert [m['role'] for m in wire['messages']] == ['system', 'user']
+        visible = json.loads(wire['messages'][1]['content'])
+        assert visible['workpapers'] == current['workpapers']
+        assert visible['progress']['turn_index'] == len(wires)
+        if len(wires) > 1:
+            assert visible['completed_wave_context']['planning_observations'][0]['result']['text'] == 'Exact source, necessary condition retained.'
+            assert len(visible['completed_wave_context']['public_planning_actions']) == len(wires) - 1
+        if len(wires) < 3:
+            call = _call(current, 'DelegateResearchTasksAction', tasks=[
+                _task('first' if len(wires) == 1 else 'second',
+                      BRANCHES[0] if len(wires) == 1 else BRANCHES[1])])['action']['tool_calls'][0]
+        else:
+            assert len(visible['workpapers']) == 3
+            call = _stop(current, ready=True)['action']['tool_calls'][0]
+        return httpx.Response(200, json={'id': 'wave-test', 'object': 'chat.completion', 'created': 1,
+            'model': 'deepseek-v4-pro', 'choices': [{'index': 0, 'finish_reason': 'tool_calls', 'message': {
+                'role': 'assistant', 'content': '', 'reasoning_content': 'prior private reasoning ' * 3000,
+                'tool_calls': [{'id': f'wave-{len(wires)}', 'type': 'function', 'function': {
+                    'name': call['name'], 'arguments': json.dumps(call['args'])}}]}}],
+            'usage': {'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0}})
+
+    client = httpx.Client(transport=httpx.MockTransport(transport))
+    model = ReasoningPreservingChatDeepSeek(model='deepseek-v4-pro', api_key=SecretStr('offline-no-network'),
+        http_client=client, max_retries=0, use_responses_api=False)
+    adapter = DeepSeekStructuredAgentAdapter(
+        config=_config().model_copy(update={'agentic_message_history': True, 'thinking': 'enabled'}),
+        chat_models={role: model for role in ('planner', 'specialist', 'counter', 'lead')},
+        private_audit_sink=journal.append)
+
+    def turn(request):
+        seen.append(request)
+        if request.get('completed_wave_context'):
+            request['completed_wave_context']['planning_observations'] = [
+                {'selection': {'source_space': 'library', 'operation': 'read'},
+                 'result': {'text': 'Exact source, necessary condition retained.'}}]
+            request['context_digest'] = canonical_sha256({k: v for k, v in request.items() if k != 'context_digest'})
+        return adapter.lead_research_turn(request)
+
+    graph, value = _graph(turn, lambda task, *_: _worker_result(task, seed), seed=seed, turn_source='provider_model')
+    try:
+        result = graph.invoke(value.model_dump(mode='json'))
+    finally:
+        client.close()
+    assert result['phase'] == 'research_ready_for_review'
+    assert len(result['lead_turns']) == 3 and len(result['task_results']) == 2
+    assert any('prior private reasoning' in json.dumps(row) for row in journal)
 
 
 def test_full_scope_requires_eight_new_obligations_and_reuses_q1_without_rebilling():

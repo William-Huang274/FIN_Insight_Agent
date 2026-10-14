@@ -1054,6 +1054,10 @@ def _project_request(
             'continuation_policy', 'allowed_planning_tools', 'role_method', 'require_execution_plan',
             'source_read_enabled', 'planning_source_policy', 'source_routing_guidance', 'source_navigation',
             'orientation_only', 'orientation_context') if key in request})
+        if request.get('completed_wave_context'):
+            wave = request['completed_wave_context']
+            projected['completed_wave_context'] = {**wave,
+                'planning_observations': _agentic_semantic_value(wave['planning_observations'])}
         return projected
     if role == "planner":
         catalog = request.get("branch_catalog")
@@ -1562,7 +1566,12 @@ class DeepSeekStructuredAgentAdapter:
         # stage_methods in task_context. Keep this author's common system and
         # canonical history; do not introduce a second stage prompt here.
         messages[1] = HumanMessage(content=json.dumps(semantic_input, ensure_ascii=False, separators=(',', ':')))
-        if persistent_history and actor in self._agentic_history:
+        # A completed worker wave starts a new provider conversation from the
+        # graph's complete current state. The previous tool loop is closed:
+        # do not replay its reasoning, stale plans or old workpaper copies.
+        # Source-reading loops inside a wave still preserve native history.
+        completed_lead_wave = is_lead and bool(semantic_input.get('completed_wave_context'))
+        if persistent_history and actor in self._agentic_history and not completed_lead_wave:
             # Refresh host instructions/schema after a code/configured-role
             # revision. Preparation is a stage change in the SAME research task,
             # not a new session: retain tool-call/result pairing and let the

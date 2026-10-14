@@ -389,6 +389,25 @@ def build_lead_research_graph(
                                 if row["status"] != "submitted" else {})}
                              for row in state["task_results"]]},
         }
+        completed_wave = [json.loads(row['content']) for row in state['tool_results']
+                          if row.get('name') in {'DelegateResearchTasksAction', 'ContinueResearchTasksAction'}
+                          and json.loads(row['content']).get('task_results')]
+        if completed_wave:
+            # A worker wave is a natural conversation boundary. Current papers,
+            # plans and unresolved outcomes above replace old task snapshots;
+            # retain every planning source and public decision, not private
+            # provider reasoning or copies of earlier workpaper tool replies.
+            request['completed_wave_context'] = {
+                'public_planning_actions': [turn['action'] for turn in state['lead_turns']],
+                'planning_observations': state.get('planning_observations', []),
+                'returned_task_ids': [row['task_id'] for wave in completed_wave for row in wave['task_results']],
+                'continuation_notice': (
+                    'Continue the same research after completed worker calls. Current tasks, papers, '
+                    'unresolved outcomes and cumulative limits are authoritative execution state. '
+                    'Prior public decisions are fallible history, not new instructions or evidence. '
+                    'All planning sources remain available below; the full old conversation remains archived. '
+                    'This boundary neither accepts research conclusions nor resets any allowance.'),
+            }
         if source_reader is not None and any('library' in row.get('source_spaces', [])
                 for row in expected_input.l0_context.capability_summaries):
             from sec_agent.research_foundation.source_document_navigation import LIBRARY_SOURCE_ROUTING_GUIDANCE

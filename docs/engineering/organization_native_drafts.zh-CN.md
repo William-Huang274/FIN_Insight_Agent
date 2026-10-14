@@ -1,6 +1,6 @@
 # 组织研究原生草稿受理
 
-承接[执行授权绑定](organization_execution_access.zh-CN.md)，准备接口把已核验的组织研究准备单保存为真正的 Agent Server thread。**准备只创建草稿，不创建 run；浏览器团队启动仍关闭。** 后续内部首次运行见[启动与准入](organization_native_start.zh-CN.md)，没有新增浏览器按钮或通用代理路径。
+承接[执行授权绑定](organization_execution_access.zh-CN.md)，准备接口把已核验的组织研究准备单保存为真正的 Agent Server thread。**准备只创建草稿，不创建 run。** 首次运行见[启动与准入](organization_native_start.zh-CN.md)，后续页面通过[专用浏览器命令](organization_research_browser.zh-CN.md)接入准备、启动与接续；内部授权路径不加入通用代理。
 
 ## 持久状态与调用边界
 

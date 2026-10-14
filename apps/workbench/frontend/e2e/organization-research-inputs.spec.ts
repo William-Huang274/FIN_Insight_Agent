@@ -2,7 +2,7 @@ import {test,expect,type Page} from './identity-fixture';
 const org='10000000-0000-4000-8000-000000000001',project='20000000-0000-4000-8000-000000000002',resource='30000000-0000-4000-8000-000000000003';
 const url=`/workspace/projects?scope=organization&project=${project}&view=research`;
 async function fixture(page:Page,role='researcher'){
-  const state={saved:null as any,posts:[] as any[],drop:false,revoked:false,verifies:0,hold:false,release:null as null|(()=>void)};
+  const state={saved:null as any,posts:[] as any[],drop:false,revoked:false,verifies:0,hold:false,release:null as null|(()=>void),execution:null as any,prepares:[] as any[],reconciles:0};
   await page.route('**/api/v1/**',async route=>{
     const r=route.request(),u=new URL(r.url()),b=r.postData()?r.postDataJSON():null;let result:any={};
     if(u.pathname==='/api/v1/business/config')result={enabled:true,organization_projects:true,resource_spaces:true,team_collaboration:false};
@@ -27,6 +27,12 @@ async function fixture(page:Page,role='researcher'){
       if(state.revoked){await route.fulfill({status:404,json:{detail:'准备单或所选资料不可访问'}});return;}
       result={manifest_digest:state.saved.manifest_digest,notice:'本次权限与原件校验通过；不是启动许可，未创建研究运行。'};
     }
+    else if(u.pathname.endsWith('/executions'))result=state.execution?[{execution_id:state.execution.execution_id,preparation:'unknown',closed:false}]:[];
+    else if(u.pathname.endsWith('/prepare')){state.prepares.push(b);state.execution=b;result={status:'unknown'};}
+    else if(u.pathname.endsWith('/reconcile/preparation')){state.reconciles++;result={status:'received'};}
+    else if(u.pathname.endsWith('/control'))result={can_operate:true,enabled:true,preparation:'received',start:'absent',continuation:'absent'};
+    else if(u.pathname===`/api/v1/organization-projects/${project}/research`)result={items:[{execution_id:state.execution.execution_id,title:state.saved.title,run_id:null}],next_offset:null};
+    else if(u.pathname===`/api/v1/organization-projects/${project}/research/${state.execution?.execution_id}`)result={title:state.saved.title,run_id:null};
     else if(u.pathname.includes('/research-drafts/')){
       if(state.revoked||!state.saved){await route.fulfill({status:404,json:{detail:'准备单或所选资料不可访问'}});return;}result=state.saved;
     }
@@ -72,7 +78,7 @@ test('reading the original resolves a pending save; viewer has no mutation contr
   await expect(page.getByRole('alert')).toContainText('响应丢失');await page.getByRole('button',{name:'核对原准备单'}).click();
   await expect(page.getByRole('heading',{name:'资本开支与现金流研究',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'新建准备单',exact:true}).click();await expect(page.getByText(/上次提交待核对/)).toHaveCount(0);expect(state.posts).toHaveLength(1);
-  await page.unroute('**/api/v1/**');const viewer=await fixture(page,'viewer');await page.goto(url);
+  await page.goto('about:blank');await page.unroute('**/api/v1/**');const viewer=await fixture(page,'viewer');await page.goto(url);
   await expect(page.getByText(/只读成员可以查看有权读取的准备单/)).toBeVisible();
   await expect(page.getByRole('button',{name:'保存输入准备单'})).toHaveCount(0);expect(viewer.posts).toHaveLength(0);
 });
@@ -82,4 +88,17 @@ test('late verification cannot replace a newly selected preparation form',async(
   await page.getByRole('button',{name:'重新校验权限与原件'}).click();await expect.poll(()=>!!state.release).toBe(true);
   await page.goto(url);await expect(page.getByRole('heading',{name:'准备研究输入',exact:true})).toBeVisible();
   state.release!();await expect(page.getByText('本次权限与原件校验通过；不是启动许可，未创建研究运行。',{exact:true})).toHaveCount(0);
+});
+
+test('execution preparation recovers the same unknown command after reload without starting',async({page})=>{
+  const state=await fixture(page);await page.goto(url);await fill(page);
+  await page.getByRole('button',{name:'准备研究执行',exact:true}).click();
+  await expect(page.getByRole('button',{name:'核对原准备结果',exact:true})).toBeVisible();
+  expect(state.prepares).toHaveLength(1);const id=state.prepares[0].execution_id;
+  await page.reload();await expect(page.getByRole('button',{name:'核对原准备结果',exact:true})).toBeVisible();
+  expect(state.prepares).toHaveLength(1);
+  await page.getByRole('button',{name:'核对原准备结果',exact:true}).click();
+  await expect(page.getByRole('button',{name:'开始预研究',exact:true})).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('execution')).toBe(id);
+  expect(state.reconciles).toBe(1);expect(state.prepares).toHaveLength(1);
 });

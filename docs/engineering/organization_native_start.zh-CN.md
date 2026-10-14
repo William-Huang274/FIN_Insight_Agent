@@ -1,6 +1,6 @@
 # 组织首次运行：启动命令、准入与核对
 
-承接[原生草稿](organization_native_drafts.zh-CN.md)与[组织执行授权](organization_execution_access.zh-CN.md)。本阶段实现内部首次预研究启动，以及原生宿主构造组织工厂。默认关闭，浏览器仍不能启动组织研究；接续、事件、成果、引用及导出权限尚未形成产品闭环。
+承接[原生草稿](organization_native_drafts.zh-CN.md)与[组织执行授权](organization_execution_access.zh-CN.md)。本阶段实现内部首次预研究启动，以及原生宿主构造组织工厂。默认关闭；后续已完成[当前成果读取](organization_research_reads.zh-CN.md)、[独立接续](organization_native_continuation.zh-CN.md)及[专用浏览器操作](organization_research_browser.zh-CN.md)。启用配置、既有部署切换及金融质量验收仍分别处理。
 
 ## 两种授权分别验证
 

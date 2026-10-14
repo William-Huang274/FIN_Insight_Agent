@@ -732,11 +732,16 @@ class ResearchIntakeTest {
         workspace(f.researcher(),"POST",base+"/continue",wrong,409);
         workspace(f.admin(),"POST",base+"/continue",body,404); // Project manager is not the saved execution principal.
         dropOrganizationContinuation.add(id.toString());int before=organizationContinues.get();
+        assertThat(workspace(f.researcher(),"GET",base+"/control",null,200).path("continuation").asText()).isEqualTo("absent");
+        workspace(f.admin(),"GET",base+"/control",null,404);
+        assertThat(workspace(f.researcher(),"GET",f.createPath(),null,200).get(0).path("execution_id").asText()).isEqualTo(id.toString());
+        assertThat(workspace(f.admin(),"GET",f.createPath(),null,200).size()).isZero();
         try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
             var calls=new ArrayList<Future<JsonNode>>();for(int i=0;i<5;i++)calls.add(pool.submit(()->workspace(f.researcher(),"POST",base+"/continue",body,200)));
             for(var call:calls)assertThat(call.get().path("status").asText()).isEqualTo("unknown");
         }
         assertThat(organizationContinues.get()-before).isEqualTo(1);
+        assertThat(workspace(f.researcher(),"GET",base+"/control",null,200).path("continuation").asText()).isEqualTo("unknown");
         var grant=workspace(f.researcher(),"GET",base+"/continuation-access",null,200);
         var original=organizationContinuations.get(id.toString()).deepCopy();
         String runtime="/v1/runtime/organization-executions/"+id+"/admit-continuation";

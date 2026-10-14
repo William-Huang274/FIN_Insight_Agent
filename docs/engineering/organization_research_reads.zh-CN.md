@@ -1,6 +1,6 @@
 # 组织研究的当前读取权限
 
-组织研究使用独立的只读 API。Java 管理当前项目及固定输入的可见性，Python BFF 验证原生 thread 的冻结身份，并复用现有公开投影和报告导出器。原个人研究入口仍拒绝组织 thread；不开放组织启动、修订或接续的浏览器操作。后续已接入项目“成果”页与按权限过滤的研究列表，见[显式接续与成果入口](organization_native_continuation.zh-CN.md)。
+组织研究使用独立的只读 API。Java 管理当前项目及固定输入的可见性，Python BFF 验证原生 thread 的冻结身份，并复用现有公开投影和报告导出器。原个人研究入口仍拒绝组织 thread。项目“成果”页与按权限过滤的研究列表见[显式接续与成果入口](organization_native_continuation.zh-CN.md)；后续启动、接续及事件界面使用[独立浏览器命令](organization_research_browser.zh-CN.md)，没有将本页只读授权当作操作许可。
 
 ## 权限规则
 

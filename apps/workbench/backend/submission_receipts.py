@@ -37,7 +37,7 @@ class SubmissionReceipts:
     async def __call__(self, scope, receive, send):
         # Java owns these business request receipts. Replaying a BFF response
         # here would hide Java's newly reconciled state behind an old snapshot.
-        if scope['type'] == 'http' and scope['path'].startswith('/api/v1/business/'):
+        if scope['type'] == 'http' and scope['path'].startswith(('/api/v1/business/', '/api/v1/organization-projects/')):
             return await self.app(scope, receive, send)
         if scope['type'] != 'http' or scope['method'] not in {'POST', 'PUT', 'PATCH'} or not scope['path'].startswith('/api/v1/'):
             return await self.app(scope, receive, send)

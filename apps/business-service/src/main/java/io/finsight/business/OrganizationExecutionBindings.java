@@ -57,6 +57,29 @@ class OrganizationExecutionBindings {
             return view(saved); // Closed bindings remain closed even after identical replay.
         });
     }
+    @GetMapping("/v1/workspaces/projects/{project}/research-drafts/{draft}/execution-bindings")
+    Object list(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID draft) {
+        String actor=(String)request.getAttribute("owner");
+        return tx.execute(status->{
+            drafts.materialAccess(actor,project,draft);
+            return db.queryForList("SELECT b.id AS execution_id,b.closed,COALESCE(p.status,'absent') AS preparation FROM organization_execution_binding b LEFT JOIN organization_native_preparation p ON p.execution_id=b.id WHERE b.draft_id=? AND b.principal=? ORDER BY b.created_at DESC LIMIT 100",draft,actor);
+        });
+    }
+    @GetMapping("/v1/workspaces/projects/{project}/execution-bindings/{id}/control")
+    Object control(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID id) {
+        return tx.execute(status->{
+            var grant=preparation((String)request.getAttribute("owner"),project,id);
+            var result=new HashMap<String,Object>();
+            result.put("execution_id",id);result.put("manifest_text",grant.get("manifest_text"));
+            for(String name:List.of("preparation","start","continuation")) {
+                // Names are a closed server-owned set, never caller input.
+                var rows=db.queryForList("SELECT status FROM organization_native_"+name+" WHERE execution_id=?",id);
+                String state=rows.isEmpty()?"absent":rows.getFirst().get("status").toString();
+                result.put(name,"dispatching".equals(state)?"unknown":state);
+            }
+            return result;
+        });
+    }
     @PostMapping("/v1/workspaces/projects/{project}/execution-bindings/{id}/close")
     Object close(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID id) {
         String actor=(String)request.getAttribute("owner");

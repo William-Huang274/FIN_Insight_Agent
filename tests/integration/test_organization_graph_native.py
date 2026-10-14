@@ -116,14 +116,14 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
             draft,tid=str(uuid4()),str(uuid4())
             prepared=api('POST',f'/projects/{project}/research-drafts',{'id':draft,'title':question,'question':question,
                 'research_as_of':'2026-10-12','resource_ids':[resource]})
-            internal('POST',f'/projects/{project}/research-drafts/{draft}/execution-bindings',{'id':tid,'manifest_digest':prepared['manifest_digest']})
             path=f'/projects/{project}/execution-bindings/{tid}'
             options=execution or {'mode':'auto','model':'default','branch_ids':[],'continuation_scope':'original_plan'}
-            receipt=internal('POST',path+'/prepare',{'execution':options})
+            receipt=s.request(s.bff,'POST',f'/api/v1/organization-projects/{project}/research-drafts/{draft}/prepare',
+                json={'execution_id':tid,'manifest_digest':prepared['manifest_digest'],'execution':options})
             assert receipt['status']=='received'
             frozen=s.request(s.native,'GET',f'/threads/{tid}')['metadata']['organization_run_configuration']['configurable']['finsight_execution']
             assert frozen==receipt['execution'] and frozen['require_all_branches'] is options.get('require_all_branches',False)
-            started=internal('POST',path+'/start',{'research_as_of':'2026-10-12T12:00:00+08:00'})
+            started=s.request(s.bff,'POST',f'/api/v1/organization-projects/{project}/research/{tid}/start',json={})
             assert started['status']=='received',started
             return tid,started['run_id'],path
         tid,rid,path=start('Read the fixed original, without making a financial conclusion.',
@@ -135,7 +135,7 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
         orientation=values['research_orientation']
         assert orientation['findings'][0]['evidence_spans'][0]['quote']=='Synthetic pinned organization evidence.'
         assert orientation_public_handoff(orientation)['source_readbacks']['O2']['passages'][0]['organization_source']['execution_id']==tid
-        assert internal('POST',path+'/start',{'research_as_of':'2026-10-12T12:00:00+08:00'})['run_id']==rid
+        assert s.request(s.bff,'POST',f'/api/v1/organization-projects/{project}/research/{tid}/start',json={})['run_id']==rid
         assert len(s.runs(tid))==1
         # Product read authorization is distinct from run admission. This viewer
         # has no creator/researcher role and gains no source access by joining.
@@ -153,6 +153,8 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
         assert visible.status_code==200,visible.text
         assert visible.json()['read_only'] is True and visible.json()['run_id']==rid
         assert visible.headers['cache-control']=='no-store'
+        assert s.bff.get(read_path+'/control',headers=viewer_headers).json()=={'can_operate':False}
+        assert s.bff.post(read_path+'/start',json={},headers=viewer_headers).status_code==404
         assert not any(v for k,v in visible.json().items() if k.startswith('can_'))
         assert s.bff.get(f'/api/v1/research-sessions/{tid}',headers=viewer_headers).status_code==404
         assert s.bff.get(read_path+f'/runs/{uuid4()}/events',headers=viewer_headers).status_code==404
@@ -179,7 +181,10 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
         baseline=s.state_of(promoted_tid)
         body={'previous_run_id':initial_rid,'checkpoint_id':baseline['checkpoint']['checkpoint_id'],
               'state_digest':baseline_digest(baseline)}
-        continued=internal('POST',promoted_path+'/continue',body)
+        promoted_read=f'/api/v1/organization-projects/{project}/research/{promoted_tid}'
+        preview=s.request(s.bff,'GET',promoted_read+'/continuation-preview')
+        assert preview==body
+        continued=s.request(s.bff,'POST',promoted_read+'/continue',json=preview)
         assert continued['status']=='received',continued
         continued_rid=continued['run_id']
         # Server run status is success for a persisted graph interrupt; the
@@ -192,8 +197,8 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
         assert promoted_state['phase']=='research_needs_attention' and not promoted_state.get('report')
         assert promoted_state['research_orientation']==baseline['values']['research_orientation']
         assert len(s.turns(promoted_tid))==4
-        assert internal('POST',promoted_path+'/continue',body)['run_id']==continued_rid
-        assert internal('POST',promoted_path+'/continuation-reconcile',{})['run_id']==continued_rid
+        assert s.request(s.bff,'POST',promoted_read+'/continue',json=preview)['run_id']==continued_rid
+        assert s.request(s.bff,'POST',promoted_read+'/reconcile/continuation',json={})['run_id']==continued_rid
         assert len(s.runs(promoted_tid))==2
         promoted_read=f'/api/v1/organization-projects/{project}/research/{promoted_tid}'
         response=s.bff.get(promoted_read,headers=viewer_headers)

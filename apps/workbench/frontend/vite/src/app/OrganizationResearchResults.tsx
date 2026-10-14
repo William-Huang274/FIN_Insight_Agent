@@ -3,10 +3,13 @@ import {useSearchParams} from 'react-router';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {assetRequest} from '../api/assetWorkspace';
+import {RefreshCw,Plus,FileText,ArrowUpRight} from 'lucide-react';
+import {OrganizationResearchActions} from './OrganizationResearchActions';
+import {OrganizationResearchEvents} from './OrganizationResearchEvents';
 
 type Row={execution_id:string;draft_id:string;title:string;run_id:string|null};
 type Source={source_id:string;text?:string;period?:string;unit?:string;next_offset?:number|null};
-type Snapshot={title:string;status?:string;phase?:string;research_stop_reason?:string;report?:{title:string;narrative_markdown:string;citations?:Record<string,{sources?:Source[]}>};research_orientation?:{overview?:string;findings?:{finding_id:string;judgment:string;unresolved?:string}[]}};
+type Snapshot={title:string;run_id?:string|null;status?:string;phase?:string;research_stop_reason?:string;report?:{title:string;narrative_markdown:string;citations?:Record<string,{sources?:Source[]}>};research_orientation?:{overview?:string;findings?:{finding_id:string;judgment:string;unresolved?:string}[]}};
 const phases:Record<string,string>={research_orientation_submitted:'预研究已提交',research_needs_attention:'研究待处理',ready_for_human_review:'报告待审阅',single_agent_unreviewed:'单 Agent 结果 · 未经独立复核',needs_revision:'报告待修订'};
 
 export function OrganizationResearchResults({project}:{project:{id:string}}){
@@ -28,15 +31,15 @@ export function OrganizationResearchResults({project}:{project:{id:string}}){
   }
   const sources=Object.values(snapshot?.report?.citations||{}).flatMap(c=>c.sources||[]);
   const distinct=[...new Map(sources.map(s=>[s.source_id,s])).values()];
-  return <section aria-label="组织研究成果"><header className="pw-title"><div><h2>研究记录与成果</h2><p>按项目查看当前有权读取的研究。预研究、未完成结果与正式报告分别显示。</p></div><button onClick={()=>refresh(n=>n+1)}>刷新研究记录</button></header>
+  return <section className="org-results" aria-label="组织研究成果"><header className="pw-title"><div><h2>研究记录与成果</h2><p>按项目查看当前有权读取的研究。预研究、未完成结果与正式报告分别显示。</p></div><div className="pw-toolbar"><button onClick={()=>refresh(n=>n+1)}><RefreshCw size={15}/>刷新研究记录</button><a className="pw-primary" href={`/workspace/projects?scope=organization&project=${project.id}&view=research`}><Plus size={15}/>新建研究</a></div></header>
     {error&&<p role="alert">{error}</p>}{loading&&<p role="status">正在读取研究记录…</p>}
-    <div className="pw-grid"><section className="pw-card"><h3>项目研究</h3>{rows.map(row=><button className="pw-row" key={row.execution_id} onClick={()=>setParams(p=>{p.set('execution',row.execution_id);return p;})}><span>{row.title}<small>{row.run_id?'已有运行记录':'原生草稿已准备'}</small></span></button>)}
+    <div className="org-research-layout"><section className="pw-card org-records"><h3>项目研究</h3>{rows.map(row=><button className="pw-row" aria-current={id===row.execution_id?'true':undefined} key={row.execution_id} onClick={()=>setParams(p=>{p.set('execution',row.execution_id);return p;})}><FileText size={17}/><span>{row.title}<small>{row.run_id?'已有运行记录':'待确认启动'}</small></span></button>)}
       {!loading&&!error&&!rows.length&&<p>本页没有当前有权读取的研究记录。</p>}<div className="pw-toolbar"><button disabled={loading||offset===0} onClick={()=>setOffset(Math.max(0,offset-30))}>上一页研究</button><button disabled={loading||next===null} onClick={()=>next!==null&&setOffset(next)}>下一页研究</button></div></section>
-      <article className="pw-card" style={{minWidth:0,overflowWrap:'anywhere'}} aria-label="组织研究内容">{snapshot?<><h3>{snapshot.title}</h3><p>{snapshot.status==='busy'?'正在执行研究':snapshot.status==='error'?'运行异常，请核对原记录':phases[snapshot.phase||'']||'研究记录'} · 只读</p>
-        {snapshot.research_orientation&&<section><h4>预研究判断</h4><ReactMarkdown remarkPlugins={[remarkGfm]}>{snapshot.research_orientation.overview||''}</ReactMarkdown>{snapshot.research_orientation.findings?.map(f=><div key={f.finding_id}><p>{f.judgment}</p>{f.unresolved&&<p>待核查：{f.unresolved}</p>}</div>)}<p className="pw-muted">预研究供确定方向，不表示正式研究完成或结论通过审批。</p></section>}
-        {snapshot.report?<><h4>{snapshot.report.title}</h4><ReactMarkdown remarkPlugins={[remarkGfm]}>{snapshot.report.narrative_markdown}</ReactMarkdown><nav className="pw-toolbar" aria-label="组织报告导出">{(['md','pdf','docx','pptx'] as const).map(format=><a key={format} href={`/api/v1/${base}/${id}/report/export/${format}`} download>{({md:'Markdown',pdf:'PDF',docx:'Word',pptx:'PowerPoint'})[format]}</a>)}</nav>
+      <article className="pw-card org-document" aria-label="组织研究内容">{snapshot?<><span className="org-eyebrow">PROJECT RESEARCH</span><h3>{snapshot.title}</h3><p className="org-status">{snapshot.status==='busy'?'正在执行研究':snapshot.status==='error'?'运行异常，请核对原记录':phases[snapshot.phase||'']||'研究记录'}</p><OrganizationResearchActions key={id} base={`${base}/${id}`} phase={snapshot.phase} onChanged={()=>refresh(n=>n+1)}/><OrganizationResearchEvents key={`${id}:${snapshot.run_id}`} base={`${base}/${id}`} run={snapshot.run_id} verifyAccess={async()=>{const current=generation.current;try{await assetRequest(`${base}/${id}`);return current===generation.current;}catch(e){if(current===generation.current){setSnapshot(null);setRows([]);setSource(null);setError((e as Error).message);}return false;}}}/>
+        {snapshot.research_orientation&&<section className="org-orientation"><h4>预研究判断</h4><ReactMarkdown remarkPlugins={[remarkGfm]}>{snapshot.research_orientation.overview||''}</ReactMarkdown>{snapshot.research_orientation.findings?.map(f=><div className="org-finding" key={f.finding_id}><p>{f.judgment}</p>{f.unresolved&&<p>待核查：{f.unresolved}</p>}</div>)}<p className="pw-muted">预研究供确定方向，不表示正式研究完成或结论通过审批。</p></section>}
+        {snapshot.report?<><h4>{snapshot.report.title}</h4><ReactMarkdown remarkPlugins={[remarkGfm]}>{snapshot.report.narrative_markdown}</ReactMarkdown><nav className="pw-toolbar" aria-label="组织报告导出">{(['md','pdf','docx','pptx'] as const).map(format=><a key={format} href={`/api/v1/${base}/${id}/report/export/${format}`} download><ArrowUpRight size={14}/>{({md:'Markdown',pdf:'PDF',docx:'Word',pptx:'PowerPoint'})[format]}</a>)}</nav>
           {distinct.length>0&&<section aria-label="组织报告引用"><h4>引用快照</h4>{distinct.map(s=><button key={s.source_id} onClick={()=>void readSource(s.source_id)}>查看引用 {s.source_id}</button>)}</section>}</>:<p>这项研究尚无报告。已保存的预研究内容不作为报告导出。</p>}
         {source&&<section aria-label="引用快照内容"><h4>{source.source_id}</h4><p>{source.period} {source.unit}</p><p style={{whiteSpace:'pre-wrap'}}>{source.text}</p><p className="pw-muted">这是成果保存的引用片段；完整原件需从项目资料按当前权限阅读。</p>{source.next_offset!=null&&<button onClick={()=>void readSource(source.source_id,source.next_offset!)}>继续读取引用</button>}</section>}
-      </>:!loading&&<p>选择左侧研究查看内容。读取失败时会清空当前内容，请刷新核对权限。</p>}</article></div>
+      </>:!loading&&<div className="org-reading-empty"><FileText size={32}/><h3>把研究放回项目中</h3><p>选择一项研究，查看预研究、运行进展与报告。<br/>新研究从问题和项目资料开始。</p></div>}</article></div>
   </section>;
 }

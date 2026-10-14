@@ -1183,4 +1183,6 @@ def build_report_sessions_router(service):
         install_organization_native_routes(router, service)
         from ...organization_research_reads import install_organization_read_routes
         install_organization_read_routes(router, service)
+        from ...organization_research_commands import install_organization_command_routes
+        install_organization_command_routes(router, service, browser_write)
     return router

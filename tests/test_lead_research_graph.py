@@ -178,6 +178,16 @@ def test_input_guard_returns_to_lead_and_preserves_independent_ready_work():
         if len(requests) == 2:
             assert 'research_context_checkpoint_unresolved' in str(request['tool_results'])
             return _call(request, 'ContinueResearchTasksAction')
+        # A subsequent independent result replaces the immediate tool reply;
+        # restoring a new adapter must not lose the blocked task's reason.
+        outcomes = {row['task_id']: row for row in request['progress']['task_outcomes']}
+        blocked = outcomes['task:blocked']['task_outcome']
+        assert blocked['stop_reason'] == 'research_context_checkpoint_unresolved'
+        assert blocked['execution_status'] == 'needs_attention'
+        assert blocked['artifact_status'] == 'candidate'
+        assert blocked['artifact_digest']
+        assert outcomes['task:independent'] == {'task_id': 'task:independent', 'status': 'submitted'}
+        assert not any(row['task_id'] == 'task:blocked' for row in request['workpapers'])
         return _stop(request, incomplete=['task:blocked'])
     def worker(task, dependencies, config):
         executed.append(task['task_id'])

@@ -381,7 +381,13 @@ def build_lead_research_graph(
                          "lead_tool_actions_remaining": tool_limit - state.get('lead_tool_actions_used', 0),
                          "planning_source_checks": len(state.get("planning_observations", [])),
                          "ready_task_ids": [task["task_id"] for task in ready(state)],
-                         "task_outcomes": [{k: row[k] for k in ("task_id", "status")} for row in state["task_results"]]},
+                         # Unsubmitted work is absent from workpapers. Keep its
+                         # current public handoff here, independently of the
+                         # transient tool reply or restored message history.
+                         "task_outcomes": [{**{k: row[k] for k in ("task_id", "status")},
+                             **({"task_outcome": task_outcome(row["agent_state"])}
+                                if row["status"] != "submitted" else {})}
+                             for row in state["task_results"]]},
         }
         if source_reader is not None and any('library' in row.get('source_spaces', [])
                 for row in expected_input.l0_context.capability_summaries):

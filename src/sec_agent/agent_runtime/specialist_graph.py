@@ -374,7 +374,7 @@ class SubmitWorkpaperAction(_StrictModel):
         "and actual changes. This is an author assessment, never execution or independent-review approval. "
         "Null is retained for older artifacts; it is displayed as missing, not completed."))
     citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict, exclude=True,
-        description="Optional shared quotes keyed by exact evidence ID. Runtime copies them only to claims already citing that ID; no need to repeat the same quote in every claim.")
+        description="Optional default quotes keyed by exact evidence ID. Runtime copies them only to claims already citing that ID without their own quote. Explicit claim-specific quotes take precedence and remain subject to source validation.")
 
     @model_validator(mode="after")
     def validate_submission_shape(self) -> "SubmitWorkpaperAction":
@@ -387,9 +387,13 @@ class SubmitWorkpaperAction(_StrictModel):
             for ref in claim.evidence_ids:
                 if ref not in self.citation_quotes:
                     continue
-                if ref in claim.citation_quotes and claim.citation_quotes[ref] != self.citation_quotes[ref]:
-                    raise ValueError("workpaper_shared_quote_conflict")
-                claim.citation_quotes[ref] = deepcopy(self.citation_quotes[ref])
+                # A claim may select a more precise excerpt from the same
+                # passage. Shared quotes are defaults, not a second assertion
+                # that every claim must quote the whole passage identically.
+                # Do not overwrite even an invalid local quote: the source
+                # validator must still report it to the author.
+                if ref not in claim.citation_quotes:
+                    claim.citation_quotes[ref] = deepcopy(self.citation_quotes[ref])
         claim_ids = tuple(claim.claim_id for claim in self.claims)
         if len(claim_ids) != len(set(claim_ids)):
             raise ValueError("specialist_submission_claim_id_duplicate")

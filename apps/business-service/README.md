@@ -82,6 +82,14 @@ personal-space takeover are not included in this slice.
 
 ## Execution scope compatibility
 
+Flyway V9 adds one explicit orientation-to-research continuation command per
+execution, independent of the initial start receipt. It pins the predecessor run,
+checkpoint and state digest, preserves frozen inputs/configuration, and binds a
+new native run exactly once. Unknown dispatches are reconciled without retries.
+The organization project results page now uses current-viewer read APIs;
+browser start/continuation controls remain unavailable. See
+[organization continuation](../../docs/engineering/organization_native_continuation.zh-CN.md).
+
 Organization research has a separate current-reader authorization endpoint.
 Project viewers with access to every frozen input can read prepared research
 without impersonating its creator or obtaining permission to execute it.

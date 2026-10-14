@@ -43,6 +43,9 @@ class ResearchIntakeTest {
     static final Map<String,ObjectNode> organizationRuns = new ConcurrentHashMap<>();
     static final Set<String> dropOrganizationStart = ConcurrentHashMap.newKeySet();
     static final AtomicInteger organizationStarts = new AtomicInteger();
+    static final Map<String,ObjectNode> organizationContinuations = new ConcurrentHashMap<>();
+    static final Set<String> dropOrganizationContinuation = ConcurrentHashMap.newKeySet();
+    static final AtomicInteger organizationContinues = new AtomicInteger();
     static final HttpServer PYTHON = fakePython();
     @DynamicPropertySource static void properties(DynamicPropertyRegistry r) {
         r.add("spring.datasource.url", PG::getJdbcUrl); r.add("spring.datasource.username", PG::getUsername); r.add("spring.datasource.password", PG::getPassword);
@@ -92,6 +95,18 @@ class ResearchIntakeTest {
                             .put("start_request_digest","sha256:"+Delegation.digest(bytes)).put("run_id",UUID.randomUUID().toString()).put("status","pending");
                         organizationRuns.put(id,result);if(dropOrganizationStart.contains(id)){exchange.close();return;}
                         send(exchange,200,result);return;
+                    }
+                    if(path.equals("organization/continue")) {
+                        var payload=JSON.readTree(bytes);String id=payload.path("execution_id").asText();organizationContinues.incrementAndGet();
+                        var result=JSON.createObjectNode().put("execution_id",id).put("thread_id",id)
+                            .put("project_id",payload.path("project_id").asText()).put("configuration_digest",payload.path("configuration_digest").asText())
+                            .put("continuation_operation_id",exchange.getRequestHeaders().getFirst("Idempotency-Key"))
+                            .put("continuation_request_digest","sha256:"+Delegation.digest(bytes)).put("run_id",UUID.randomUUID().toString()).put("status","pending");
+                        organizationContinuations.put(id,result);if(dropOrganizationContinuation.contains(id)){exchange.close();return;}
+                        send(exchange,200,result);return;
+                    }
+                    if(path.startsWith("organization/executions/")&&path.endsWith("/continuation-state")){
+                        var result=organizationContinuations.get(path.split("/")[2]);send(exchange,result==null?404:200,result==null?JSON.createObjectNode():result);return;
                     }
                     if(path.startsWith("organization/executions/")&&path.endsWith("/start-state")){
                         var result=organizationRuns.get(path.split("/")[2]);send(exchange,result==null?404:200,result==null?JSON.createObjectNode():result);return;
@@ -706,6 +721,46 @@ class ResearchIntakeTest {
         workspace(f.researcher(),"POST",base+"/close",null,200);
         workspace(f.researcher(),"GET",base+"/preparation",null,409);
     }
+    @Test void organization_continuation_lost_receipt_concurrency_and_independent_admission() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();
+        workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
+        String base="/projects/"+f.project()+"/execution-bindings/"+id;
+        workspace(f.researcher(),"POST",base+"/prepare",Map.of("execution",Map.of("mode","auto","model","default","branch_ids",List.of())),200);
+        var started=workspace(f.researcher(),"POST",base+"/start",Map.of("research_as_of","2026-10-12T12:00:00Z"),200);
+        var body=Map.of("previous_run_id",started.path("run_id").asText(),"checkpoint_id",UUID.randomUUID().toString(),"state_digest","sha256:"+"d".repeat(64));
+        var wrong=new HashMap<String,Object>(body);wrong.put("previous_run_id",UUID.randomUUID());
+        workspace(f.researcher(),"POST",base+"/continue",wrong,409);
+        workspace(f.admin(),"POST",base+"/continue",body,404); // Project manager is not the saved execution principal.
+        dropOrganizationContinuation.add(id.toString());int before=organizationContinues.get();
+        try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
+            var calls=new ArrayList<Future<JsonNode>>();for(int i=0;i<5;i++)calls.add(pool.submit(()->workspace(f.researcher(),"POST",base+"/continue",body,200)));
+            for(var call:calls)assertThat(call.get().path("status").asText()).isEqualTo("unknown");
+        }
+        assertThat(organizationContinues.get()-before).isEqualTo(1);
+        var grant=workspace(f.researcher(),"GET",base+"/continuation-access",null,200);
+        var original=organizationContinuations.get(id.toString()).deepCopy();
+        String runtime="/v1/runtime/organization-executions/"+id+"/admit-continuation";
+        var admission=JSON.createObjectNode().put("thread_id",id.toString()).put("run_id",original.path("run_id").asText())
+            .put("operation_id",grant.path("continuation_operation_id").asText()).put("manifest_digest",f.digest())
+            .put("configuration_digest",grant.path("configuration_digest").asText()).put("continuation_request_digest",grant.path("continuation_request_digest").asText());
+        assertThat(runtimeRequest(runtime,admission.toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(200);
+        assertThat(runtimeRequest(runtime,admission.deepCopy().put("run_id",UUID.randomUUID().toString()).toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(409);
+        organizationContinuations.get(id.toString()).put("continuation_operation_id",UUID.randomUUID().toString());
+        assertThat(workspace(f.researcher(),"POST",base+"/continuation-reconcile",null,200).path("status").asText()).isEqualTo("unknown");
+        organizationContinuations.put(id.toString(),original);
+        assertThat(workspace(f.researcher(),"POST",base+"/continuation-reconcile",null,200).path("status").asText()).isEqualTo("received");
+        assertThat(workspace(f.researcher(),"POST",base+"/continue",body,200).path("run_id")).isEqualTo(original.path("run_id"));
+        wrong=new HashMap<String,Object>(body);wrong.put("checkpoint_id",UUID.randomUUID());
+        workspace(f.researcher(),"POST",base+"/continue",wrong,409);
+        var reads=workspace(f.researcher(),"GET",base+"/read-access",null,200);
+        assertThat(reads.path("run_id")).isEqualTo(original.path("run_id"));assertThat(reads.path("run_ids").size()).isEqualTo(2);
+        assertThat(workspace(f.researcher(),"GET","/projects/"+f.project()+"/research-executions",null,200).path("items").size()).isEqualTo(1);
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",f.researcher(),"role","remove"),200);
+        workspace(f.researcher(),"POST",base+"/continue",body,404);
+        assertThat(runtimeRequest(runtime,admission.toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(404);
+        assertThat(workspace(f.researcher(),"GET","/projects/"+f.project()+"/research-executions",null,200).path("items").size()).isZero();
+        assertThat(organizationContinues.get()-before).isEqualTo(1);
+    }
     @Test void organization_viewer_reads_require_current_project_and_sources_not_creator_role() throws Exception {
         var f=executionFixture();UUID id=UUID.randomUUID();
         workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
@@ -715,12 +770,15 @@ class ResearchIntakeTest {
         String viewer="read-viewer-"+UUID.randomUUID();joinProjectOrganization(f.admin(),viewer,f.org());
         workspace(f.admin(),"POST","/projects/"+f.project()+"/members",Map.of("revision",3,"subject",viewer,"role","viewer"),200);
         workspace(viewer,"GET",base+"/read-access",null,404); // Project visibility alone cannot expose even the title.
+        assertThat(workspace(viewer,"GET","/projects/"+f.project()+"/research-executions",null,200).path("items").size()).isZero();
+        workspace("unrelated-reader","GET","/projects/"+f.project()+"/research-executions",null,404);
         workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",viewer,"role","reader"),200);
         var grant=workspace(viewer,"GET",base+"/read-access",null,200);
         assertThat(grant.path("reader").asText()).isEqualTo(viewer);
         assertThat(grant.path("read_contract").asText()).isEqualTo("organization_research_read.v1");
         assertThat(grant.path("run_id")).isEqualTo(started.path("run_id"));
         workspace(viewer,"GET",base+"/start-access",null,404);
+        workspace(viewer,"GET",base+"/continuation-access",null,404);
         workspace(viewer,"POST",base+"/start",Map.of("research_as_of","2026-10-12T12:00:00Z"),404);
         workspace(viewer,"GET","/projects/"+UUID.randomUUID()+"/execution-bindings/"+id+"/read-access",null,404);
         workspace(f.researcher(),"POST",base+"/close",null,200);

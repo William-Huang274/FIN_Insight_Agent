@@ -24,6 +24,8 @@ async def read_authority(project_id, execution_id):
             raise ValueError('scope')
         if grant['run_id'] is not None:
             UUID(grant['run_id'])
+        for run_id in grant.get('run_ids', []):
+            UUID(run_id)
     except (ValueError, KeyError, TypeError):
         raise HTTPException(502, '组织研究读取授权不匹配') from None
     return grant
@@ -68,6 +70,14 @@ def install_organization_read_routes(router, service):
     from .api.v1.report_sessions import public_state, public_event
     prefix = '/organization-projects/{project_id}/research/{execution_id}'
 
+    @router.get('/organization-projects/{project_id}/research')
+    async def listing(project_id: UUID, offset: int = 0):
+        if not 0 <= offset <= 100000:
+            raise HTTPException(422, '分页位置不合法')
+        value = await space_business_request(service_owner(), 'GET',
+            f'projects/{project_id}/research-executions?offset={offset}')
+        return JSONResponse(value, headers={'Cache-Control': 'no-store'})
+
     async def opened(project, execution):
         return await OrganizationReadScope(service, project, execution).open()
 
@@ -81,6 +91,9 @@ def install_organization_read_routes(router, service):
         projected.update(thread_id=str(execution_id), project_id=str(project_id),
                          title=scope.grant['title'], run_id=scope.grant['run_id'],
                          status=scope.thread.get('status'), read_only=True)
+        if state.get('values', {}).get('research_orientation'):
+            from sec_agent.agent_runtime.research_orientation import orientation_public_handoff
+            projected['research_orientation'] = orientation_public_handoff(state['values']['research_orientation'])
         return await scope.response(projected)
 
     @router.get(prefix + '/report')
@@ -135,7 +148,7 @@ def install_organization_read_routes(router, service):
     @router.get(prefix + '/runs/{run_id}/events')
     async def events(project_id: UUID, execution_id: UUID, run_id: UUID, request: Request):
         scope = await opened(project_id, execution_id)
-        if scope.grant['run_id'] != str(run_id):
+        if str(run_id) not in scope.grant.get('run_ids', [scope.grant['run_id']]):
             raise HTTPException(404, '运行不属于已授权研究')
         last_id = request.headers.get('last-event-id') or '0-0'
         if not re.fullmatch(r'[0-9]+-[0-9]+', last_id):

@@ -226,6 +226,32 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
             "writer": RunnableLambda(ask), "quick_writer": RunnableLambda(ask), "verifier": RunnableLambda(ask)}, seen, models
 
 
+@pytest.mark.parametrize('authorized', [False, True])
+def test_orientation_promotion_preserves_preliminary_artifact_and_initializes_first_report(authorized):
+    async def exercise():
+        phases, seen, _ = _phases()
+        saver = InMemorySaver()
+        original = {'overview': 'Static preliminary output, not a final conclusion.'}
+        async def orientation(request):
+            return {'phase': 'research_orientation_submitted', 'research_orientation': original}
+        graph = build_research_session_graph(**{**phases, 'research': RunnableLambda(orientation)}).compile(checkpointer=saver)
+        config = {'configurable': {'thread_id': 'promotion-static', 'run_id': 'orientation'}, 'recursion_limit': 160}
+        question = 'Fixture: evaluate growth quality with original financial evidence.'
+        await graph.ainvoke({'question': question, 'research_stage': 'orientation'}, config)
+        config = {**config, 'configurable': {**config['configurable'], 'run_id': 'full-research'}}
+        graph = build_research_session_graph(**phases, promote_orientation=authorized).compile(checkpointer=saver)
+        if not authorized:
+            with pytest.raises(ValueError, match='fresh_research_cannot_restart'):
+                await graph.ainvoke({'question': question, 'research_stage': 'full'}, config)
+            assert seen['research'] == 0
+        else:
+            result = await graph.ainvoke({'question': question, 'research_stage': 'full'}, config)
+            assert result['research_orientation'] == original
+            assert result['phase'] == 'ready_for_human_review' and result['report_version'] == 1
+            assert result['__interrupt__'] and len(result['case_papers']) == 2
+    asyncio.run(exercise())
+
+
 @pytest.mark.parametrize("material,full_profile", [(False, False), (True, False), (True, True)])
 def test_new_question_native_parent_to_report_human_point_and_followup_without_research_rerun(material, full_profile):
     async def exercise():

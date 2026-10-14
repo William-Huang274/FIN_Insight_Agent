@@ -17,6 +17,7 @@ from apps.workbench.backend.business_transport import delegate
 from sec_agent.research_foundation.asset_workspace import AssetWorkspace
 from sec_agent.agent_runtime.research_orientation import orientation_public_handoff
 from sec_agent.agent_runtime.organization_native_contract import run_request
+from sec_agent.agent_runtime.organization_continuation_contract import baseline_digest, continuation_request
 from tests.integration.test_java_intake_native import Stack, COMPOSE, ROOT, wait_for
 
 pytestmark = pytest.mark.skipif(os.getenv('FIN_ORGANIZATION_GRAPH_QUALIFICATION') != '1',
@@ -171,6 +172,38 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
         s.denied_run(tid,extra['run_id'])
         assert len(s.turns(tid))==3 and internal('GET',path+'/start')['run_id']==rid
         assert s.state_of(tid)['values']['research_orientation']==orientation
+        # A distinct command promotes an exact completed checkpoint; no models
+        # are called when reconciling or replaying the same business request.
+        promoted_tid,initial_rid,promoted_path=start('Qualify explicit continuation without claiming a financial result.')
+        s.terminal(promoted_tid,initial_rid,seconds=90)
+        baseline=s.state_of(promoted_tid)
+        body={'previous_run_id':initial_rid,'checkpoint_id':baseline['checkpoint']['checkpoint_id'],
+              'state_digest':baseline_digest(baseline)}
+        continued=internal('POST',promoted_path+'/continue',body)
+        assert continued['status']=='received',continued
+        continued_rid=continued['run_id']
+        # Server run status is success for a persisted graph interrupt; the
+        # checkpoint, rather than transport status, proves the human handoff.
+        s.terminal(promoted_tid,continued_rid,seconds=90)
+        promoted_snapshot=s.state_of(promoted_tid)
+        assert 'research_attention' in promoted_snapshot['next']
+        assert any(t.get('interrupts') for t in promoted_snapshot['tasks'])
+        promoted_state=promoted_snapshot['values']
+        assert promoted_state['phase']=='research_needs_attention' and not promoted_state.get('report')
+        assert promoted_state['research_orientation']==baseline['values']['research_orientation']
+        assert len(s.turns(promoted_tid))==4
+        assert internal('POST',promoted_path+'/continue',body)['run_id']==continued_rid
+        assert internal('POST',promoted_path+'/continuation-reconcile',{})['run_id']==continued_rid
+        assert len(s.runs(promoted_tid))==2
+        promoted_read=f'/api/v1/organization-projects/{project}/research/{promoted_tid}'
+        response=s.bff.get(promoted_read,headers=viewer_headers)
+        assert response.status_code==200 and response.json()['run_id']==continued_rid,response.text
+        continuation_grant=internal('GET',promoted_path+'/continuation-access')
+        promoted_thread=s.request(s.native,'GET',f'/threads/{promoted_tid}')
+        duplicate=s.request(s.native,'POST',f'/threads/{promoted_tid}/runs',json={
+            'assistant_id':'research_session',**continuation_request(promoted_thread,continuation_grant),'multitask_strategy':'reject'})
+        s.denied_run(promoted_tid,duplicate['run_id'])
+        assert len(s.turns(promoted_tid))==4
         revoked_tid,revoked_rid,revoked_path=start('Revoke during static model response; stop before the next source read.')
         wait_for(lambda:(s.events/(revoked_tid+'.ready')).exists(),seconds=60)
         current=s.request(s.bff,'GET',f'/api/v1/asset-workspace/spaces/resources/{resource}')
@@ -183,11 +216,14 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
         assert not s.state_of(revoked_tid)['values'].get('research_orientation')
         internal('GET',revoked_path+'/start',status=404)
         internal('POST',path+'/start-reconcile',{},status=404)
+        assert s.bff.get(promoted_read,headers=viewer_headers).status_code==404
         assert len(s.runs(tid))==2 and len(s.runs(revoked_tid))==1
         s.save('organization-graph-result',{'normal':{'thread_id':tid,'run_id':rid,'phase':values['phase'],'scripted_turns':3},
             'revoked':{'thread_id':revoked_tid,'run_id':revoked_rid,'status':'error','scripted_turns':2},
             'unauthorized_extra_run':{'run_id':extra['run_id'],'status':'error','additional_model_turns':0},
-            'all_services_restart':True,'native_runs':3,'provider_calls':0,'semantic_acceptance':'not_assessed',
+            'continuation':{'thread_id':promoted_tid,'run_id':continued_rid,'phase':promoted_state['phase'],
+                'scripted_turns':4,'duplicate_run_denied':duplicate['run_id'],'preliminary_artifact_preserved':True},
+            'all_services_restart':True,'native_runs':6,'provider_calls':0,'semantic_acceptance':'not_assessed',
             'product_read_authorization':'real viewer BFF snapshot and denial for every read route after source revocation; actual report export covered by static report renderer tests'})
     finally:
         for p in s.processes:

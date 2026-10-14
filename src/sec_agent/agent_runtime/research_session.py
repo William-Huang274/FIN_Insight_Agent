@@ -118,7 +118,7 @@ def _stage(actor, event, **details):
                         "recorded_at": datetime.now(timezone.utc).isoformat(), **details})
 
 
-def build_research_session_graph(*, research, review, converge, writer, verifier, quick_writer=None, revise_research=None, hierarchical=False, triage_review=None):
+def build_research_session_graph(*, research, review, converge, writer, verifier, quick_writer=None, revise_research=None, hierarchical=False, triage_review=None, promote_orientation=False):
     """One fresh research request -> real artifacts -> review -> report -> HITL.
 
     Existing report session nodes handle subsequent ask/revise/accept actions;
@@ -152,7 +152,10 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         if continuing:
             if not can_continue_remaining_research(state):
                 raise ValueError("only_incomplete_research_can_continue_remaining_tasks")
-        elif state.get("initialized") or state.get("case_papers") or state.get("research_tasks"):
+        elif (state.get("initialized") or state.get("case_papers") or state.get("research_tasks")) and not (
+                promote_orientation and state.get('phase') == 'research_orientation_submitted'
+                and state.get('research_stage') == 'full' and state.get('research_orientation')
+                and not state.get('case_papers') and not state.get('research_tasks') and not state.get('report')):
             raise ValueError("fresh_research_cannot_restart_existing_session")
         request = ResearchRequest.model_validate({key: state[key] for key in ("question", "case_profile", "research_stage") if key in state})
         payload = request.model_dump(mode="json")
@@ -222,6 +225,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
                 "citations": report_citations(prose, artifacts), "charts": []}, "report_review": unreviewed_report_status(),
                 "revisions": {}, "phase": "single_agent_unreviewed"}
         return {"case_profile": request.case_profile, "case_papers": papers,
+            **({'initialized': False} if promote_orientation and not continuing else {}),
             "runtime_contract_version": state.get('runtime_contract_version', 'legacy') if continuing else 'research_session.v2',
             "review_triage_count": state.get('review_triage_count', 0) if continuing else 0,
             "review_triage_history": state.get('review_triage_history', []) if continuing else [],

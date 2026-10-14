@@ -32,10 +32,21 @@ def adapter(**kwargs):
     def turn(request):
         requests.append(request)
         count = len(requests)
-        assert request['orientation_context']['source_space'] == 'organization'
+        # The scripted adapter emits a real audit event explicitly marked as
+        # no provider transport, so the BFF can distinguish known zero from missing.
+        kwargs['audit_sink']({'event':'outcome','call_id':f'static:{tid}:{count}',
+            'provider_call_attempted':False,'status':'qualification_no_provider','origin':'deterministic_fixture'})
         with (evidence/'model-turns.jsonl').open('a') as out:
             out.write(json.dumps({'thread_id':tid,'turn':count,'synthetic':True})+'\n')
-        if count == 1:
+        if not request.get('orientation_context'):
+            assert count == 1
+            note = 'Static continuation qualification stops with unfinished research, without claiming a financial result.'
+            name, args = 'SubmitResearchHandoffAction', {'disposition':'needs_attention','reason_summary':note,
+                'synthesis_notes':note,'acknowledged_incomplete_task_ids':[],
+                'question_coverage':[{'question_quote':request['research_question'],'status':'unresolved','supporting_task_ids':[],'rationale':note}],
+                'execution_plan':{'depth':'integrated','rationale':note,'omitted_steps_reason':note,'escalation_conditions':note}}
+        elif count == 1:
+            assert request['orientation_context']['source_space'] == 'organization'
             name, args = 'RequestSourceAction', {'action':'request_source','reason_summary':'List pinned originals.',
                 'selection':{'source_space':'organization','operation':'catalog'}}
         elif count == 2:

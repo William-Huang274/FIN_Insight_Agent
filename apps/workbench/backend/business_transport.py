@@ -122,16 +122,19 @@ class InternalResearchIdentity:
                 except (ValueError, KeyError, TypeError):
                     return await JSONResponse({'detail': '缺少有效项目或操作凭证'}, status_code=422)(scope, replay, send)
                 try:
-                    if scope['path'] in {INTERNAL + 'organization/prepare', INTERNAL + 'organization/start'}:
+                    if scope['path'] in {INTERNAL + 'organization/prepare', INTERNAL + 'organization/start', INTERNAL + 'organization/continue'}:
                         from .organization_native_drafts import preparation_authority
                         from .organization_native_runs import start_authority
+                        from .organization_native_continuation import continuation_authority
                         try:
                             execution_id = UUID(json.loads(body)['execution_id'])
                         except (ValueError, KeyError, TypeError):
                             return await JSONResponse({'detail': '缺少组织执行标识'}, status_code=422)(scope, replay, send)
                         starting = scope['path'] == INTERNAL + 'organization/start'
-                        authority = start_authority if starting else preparation_authority
-                        scope['finsight_organization_start' if starting else 'finsight_organization_preparation'] = await authority(self.service,
+                        continuing = scope['path'] == INTERNAL + 'organization/continue'
+                        authority = continuation_authority if continuing else start_authority if starting else preparation_authority
+                        key = 'finsight_organization_continuation' if continuing else 'finsight_organization_start' if starting else 'finsight_organization_preparation'
+                        scope[key] = await authority(self.service,
                             project_id, execution_id, raw_body=bytes(body), operation_id=request.headers['idempotency-key'])
                     else:
                         await require_project(self.service, project_id)

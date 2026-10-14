@@ -40,7 +40,7 @@ class OrganizationResearchDrafts {
     }
     // One query checks project membership and EVERY frozen source before exposing even a title.
     // NOT EXISTS over an authorized input set also fails closed for null/absent rows.
-    private static final String VISIBLE="""
+    static final String VISIBLE="""
         SELECT d.* FROM organization_research_draft d WHERE d.project_id=? AND EXISTS (
         """+OrganizationProjects.VISIBLE+" AND p.id=d.project_id) AND EXISTS (SELECT 1 FROM organization_research_input present WHERE present.draft_id=d.id) AND NOT EXISTS ("+
         "SELECT 1 FROM organization_research_input i WHERE i.draft_id=d.id AND NOT EXISTS ("+

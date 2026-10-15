@@ -1,7 +1,12 @@
 """Shared author revision scope; guidance does not decide financial correctness."""
 
 AUTHOR_REVISION_GUIDANCE = (
-    "Continue the original task from the current candidate with precise edits. "
+    "Revise the current candidate to address the active review findings and current validation errors, "
+    "including consequences for affected judgments, prose and source bindings. "
+    "The original assignment, success criteria and source checks retain research context and permissions; "
+    "they do not reopen every old gap as a prerequisite for this revision. "
+    "Read further when needed to resolve these issues or a newly discovered material error; "
+    "otherwise preserve unrelated open gaps with their actual status for Lead. "
     "Evaluate each finding against the actual affected text; reviewer and Lead requests are proposals, not source evidence. "
     "Preserve means retain correct content already in this candidate, not insert figures mentioned only in feedback. "
     "For an identifier-only defect, restore the exact source link while retaining the existing assertion and its status; "

@@ -1118,6 +1118,7 @@ def _open_specialist_composition(
     lead_assistance=None,
     required_source_checks=(),
     data_composition_factory=None,
+    remaining_model_requests=None,
 ) -> Iterator[_OpenedSpecialistComposition]:
     try:
         from .specialist_handoff import DependencyReader, bind_saved_materials
@@ -1242,6 +1243,7 @@ def _open_specialist_composition(
                 return approved.dependencies.evidence_tool(ToolLaneTask(lane="evidence", task=bound).model_dump(mode="json"))
 
             dependencies = SpecialistAgenticDependencies(
+                remaining_model_requests=remaining_model_requests,
                 restore_source_observations=approved.restore_source_observations,
                 dependency_reader=dependency_reader,
                 subtask_runner=subtask_runner,
@@ -1364,6 +1366,7 @@ def open_specialist_receipted_composition(
     lead_assistance=None,
     required_source_checks=(),
     data_composition_factory=None,
+    remaining_model_requests=None,
 ) -> Iterator[SpecialistReceiptedComposition]:
     """Open the same bounded graph for a trusted replay or provider turn port."""
 
@@ -1400,6 +1403,7 @@ def open_specialist_receipted_composition(
         lead_assistance=lead_assistance,
         required_source_checks=required_source_checks,
         data_composition_factory=data_composition_factory,
+        remaining_model_requests=remaining_model_requests,
     ) as opened:
         yield SpecialistReceiptedComposition(
             graph_input=opened.graph_input,

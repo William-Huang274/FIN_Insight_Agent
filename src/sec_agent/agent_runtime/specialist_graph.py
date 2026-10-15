@@ -1149,6 +1149,8 @@ class SpecialistAgenticDependencies:
     lead_assistance: Callable | None = None
     dependency_reader: Callable | None = None
     restore_source_observations: Callable | None = None
+    # Live shared-run allowance supplied by the scheduler, not a fresh node quota.
+    remaining_model_requests: Callable[[], int] | None = None
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
@@ -1228,6 +1230,7 @@ def _model_request(
     authoring_enabled: bool = False,
     authoring_domain: str = 'finance',
     method_reader=None,
+    remaining_model_requests: int | None = None,
 ) -> dict[str, Any]:
     l0 = _validate_model_json(
         SpecialistL0Context,
@@ -1281,6 +1284,15 @@ def _model_request(
             "reason_summary_is_decision_rationale_not_chain_of_thought": True,
         },
     }
+    if remaining_model_requests is not None:
+        if type(remaining_model_requests) is not int or remaining_model_requests < 0:
+            raise SpecialistAgenticGraphError("shared_model_request_budget_invalid")
+        budget = body["execution_budget"]
+        budget["node_remaining_model_turns"] = budget["remaining_model_turns"]
+        budget["shared_remaining_model_requests"] = remaining_model_requests
+        budget["remaining_model_turns"] = min(budget["remaining_model_turns"], remaining_model_requests)
+        budget["allowance_scope"] = "shared_run_including_this_request_not_reserved_for_this_author"
+        budget["stop_behavior"] = "At exhaustion preserve unfinished work; do not claim completion or omit necessary checks. Transport enforces the shared allowance."
     if state.get("tool_results"):
         body["tool_results"] = state["tool_results"]
     if collaboration:
@@ -1387,6 +1399,9 @@ def _model_request(
             body['terminal_result'] = {'accepted': True, 'feedback': [], 'validation_issues': []}
     candidate = last.get("arguments")
     if "submit_workpaper" in allowed_actions and isinstance(candidate, dict) and candidate.get("action") == "submit_workpaper" and not last.get("accepted"):
+        from .revision_guidance import AUTHOR_REVISION_GUIDANCE
+        # Refresh the request view on resume too; do not append to stale guidance.
+        body["task_context"] = {**body.get("task_context", {}), "revision_instruction": AUTHOR_REVISION_GUIDANCE}
         if allow_workpaper_field_edits:
             allowed_actions.append("revise_workpaper")
         body["submission_to_repair"] = {"base_submission_digest": canonical_sha256(candidate), "candidate": candidate}
@@ -1401,8 +1416,8 @@ def _model_request(
                 "origin": "runtime_submission_validation",
                 "notice": "Use precise current-candidate locations for repair. Older notebook feedback is history; "
                     "it does not establish an unresolved error in a later candidate. Unbound feedback requires checking the current value."},
-            revision_guidance="Revision is in progress. Keep the whole assignment, required_source_checks and prior review findings in scope, not only the latest tool error. "
-                "Unchanged requested fields block submission; completion notes do not close them. Changed fields are not semantically verified. "
+            revision_guidance="Use the current revision_instruction for scope. Recorded edit targets are advisory: "
+                "an unchanged proposed edit does not itself block submission or prove an error; explain disagreements in finding responses. Changed fields are not semantically verified. "
                 "Before reporting a correction, inspect the actual current candidate, not an earlier proposed edit. Correct related body, claims, counterevidence and notes consistently. "
                 "For a text fragment use str_replace; for one coverage assessment use upsert_coverage. No need to repeat the whole field or coverage array. "
                 "A previous working_state marked completed describes the prior submission, not completion of this revision.")
@@ -2020,6 +2035,16 @@ def build_specialist_agentic_state_graph(
             state.get("notebook"),
             code="specialist_notebook_invalid",
         )
+        shared_remaining = (dependencies.remaining_model_requests()
+            if dependencies.remaining_model_requests is not None else None)
+        if shared_remaining is not None:
+            if type(shared_remaining) is not int or shared_remaining < 0:
+                raise SpecialistAgenticGraphError("shared_model_request_budget_invalid")
+            if shared_remaining == 0:
+                return {"pending_action": None, "phase": "human_review_required",
+                    "review_trigger": "model_turn_ceiling",
+                    "review_reason": "shared_model_request_ceiling_reached_no_silent_completion",
+                    "notebook": _replace_notebook(notebook, status="human_review_required").model_dump(mode="json")}
         if notebook.model_turn_count >= int(state["max_model_turns"]):
             return {
                 "pending_action": None,
@@ -2037,6 +2062,7 @@ def build_specialist_agentic_state_graph(
             return {"pending_action": None, "phase": "human_review_required", "review_trigger": "model_request",
                 "review_reason": "repeated_no_progress_after_lead_assistance"}
         request = _model_request(state=state, notebook=notebook,
+            remaining_model_requests=shared_remaining,
             authoring_enabled=dependencies.authoring_enabled, authoring_domain=dependencies.authoring_domain, method_reader=dependencies.method_reader,
             working_state_enabled=dependencies.working_state_enabled,
             allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,

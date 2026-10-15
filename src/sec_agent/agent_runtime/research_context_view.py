@@ -27,6 +27,12 @@ def current_context(messages):
         c = b.get('current_context', b if isinstance(m, HumanMessage) else {})
         if not isinstance(c, dict) or not ('task_context' in c or 'allowed_actions' in c):
             continue
+        if 'allowed_actions' in c:
+            # These are current execution controls, not durable task context.
+            # A fresh host snapshot omitting them retires an old phase's menu.
+            for key in ('submission_to_repair', 'terminal_result'):
+                if key not in c:
+                    current.pop(key, None)
         for k, v in c.items():
             current[k] = {**current.get(k, {}), **deepcopy(v)} if k in {'task_context', 'progress'} and isinstance(v, dict) else deepcopy(v)
     return current

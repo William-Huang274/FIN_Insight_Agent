@@ -30,7 +30,7 @@ from pydantic import (
 from .research_contracts import ProviderEvidenceIntent
 from .task_outcome import AuthorTaskNote, TaskCoverage
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
-from .authoring_context import PrepareWorkpaperAction, bind_authoring, validate_authoring, specialist_basis, stage_methods
+from .authoring_context import PrepareWorkpaperAction, bind_authoring, validate_specialist_preparation, specialist_basis, stage_methods
 from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools, apply_working_state, accepted_context_checkpoint
 from .source_check_scope import RequiredSourceCheck, SOURCE_CHECK_GUIDANCE, source_check_progress, source_check_errors
 from .workpaper_revision_state import revision_state, revision_progress, revision_submission_issues
@@ -1326,11 +1326,12 @@ def _model_request(
     if authoring_enabled and not collaboration:
         from sec_agent.research_foundation.research_methods import get_research_method
         try:
-            validate_authoring(state.get('authoring_context') or {},
+            preparation_changes = validate_specialist_preparation(state.get('authoring_context') or {},
                 owner=state['agent_id'], basis=specialist_basis(state))
             drafting = True
         except ValueError:
             drafting = False
+            preparation_changes = []
         selected_methods = [row['role_method'] for row in body['l0_context']['skill_summaries']
                             if isinstance(row.get('role_method'), dict) and row['role_method'].get('method_id')]
         def authoring_method_reader(method_id):
@@ -1349,13 +1350,15 @@ def _model_request(
         for key in ('role_method', 'research_method', 'delegation_guidance'):
             context.pop(key, None)
         context['authoring_context'] = state.get('authoring_context') if drafting else None
+        context['changes_since_preparation'] = preparation_changes
         context['stage_methods'] = stage_methods('workpaper' if drafting else 'prepare_workpaper',
             domain=authoring_domain, reader=authoring_method_reader)
-        context['authoring_instruction'] = ('Preparation is already accepted and bound to the CURRENT evidence and working state. '
+        context['authoring_instruction'] = ('Your preparation for this task is retained with its original basis. '
+            'Evaluate changes_since_preparation against the current sources, working state and review findings; '
+            'update affected judgments in the candidate when needed. Changed inputs do not automatically require another preparation. '
             'Submit the first draft with SubmitWorkpaperAction, or use ReviseWorkpaperAction for local changes when submission_to_repair is present. '
             'ReviseWorkpaperAction also submits for validation; no full resubmission is required. Do not repeat preparation because an older note or continuation '
-            'instruction still says to prepare. Preparation becomes available again only if research/working-state '
-            'changes invalidate this binding. Preserve original evidence and unresolved limits.' if drafting else
+            'instruction still says to prepare. Preserve original evidence and unresolved limits.' if drafting else
             'Complete the assigned research, then call PrepareWorkpaperAction with your public effective state before final submission. No final submission until prepared.')
         body['task_context'] = context
     from .submission_reference_feedback import refresh_reference_feedback, refresh_terminal_receipts
@@ -1972,7 +1975,7 @@ def build_specialist_agentic_state_graph(
                 "context_reopen_turns": _jsonable(recovery_state.get("context_reopen_turns", {})),
                 "pending_working_state_update": _jsonable(recovery_state.get("pending_working_state_update")),
                 "research_context_checkpoint_accepted": accepted_context_checkpoint(recovery_state),
-                "authoring_context": None if revising else _jsonable(recovery_state.get("authoring_context")),
+                "authoring_context": _jsonable(recovery_state.get("authoring_context")),
                 "runtime_progress": _jsonable(recovery_state.get("runtime_progress", {})),
                 "lead_assistance_history": _jsonable(recovery_state.get("lead_assistance_history", [])),
                 "lead_assistance_acknowledged": recovery_state.get('lead_assistance_acknowledged', 0),
@@ -2996,9 +2999,9 @@ def build_specialist_agentic_state_graph(
             errors += tuple(source_check_errors(state.get("required_source_checks", []), notebook.model_dump(mode="json"), action))
             if dependencies.authoring_enabled and not state.get('collaboration_context'):
                 try:
-                    validate_authoring(state.get('authoring_context', {}), owner=state['agent_id'], basis=specialist_basis(state))
+                    validate_specialist_preparation(state.get('authoring_context') or {}, owner=state['agent_id'], basis=specialist_basis(state))
                 except ValueError:
-                    errors += ('authoring_owner_or_basis_changed_prepare_again',)
+                    errors += ('authoring_owner_or_task_changed_prepare_again',)
             findings = (state.get("task_context") or {}).get("revision_feedback", [])
             if findings:
                 expected = {f["finding_id"] for f in findings}

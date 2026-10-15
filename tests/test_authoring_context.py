@@ -22,6 +22,38 @@ def test_bound_public_state_is_lossless_and_rejects_changed_evidence_or_owner():
     assert packet['basis']['sources'][0]['revision']==2
 
 
+def test_specialist_preparation_survives_research_changes_but_not_owner_task_or_tampering():
+    from sec_agent.agent_runtime.authoring_context import validate_specialist_preparation
+    basis = {'task': {'task_id': 'T1', 'objective': 'Original question'},
+             'observations_digest': 'old', 'working_state': {}, 'revision_feedback': []}
+    packet = bind_authoring(BRIEF, owner='expert', stage='workpaper', basis=basis)
+    original = deepcopy(packet)
+    changed = {**basis, 'observations_digest': 'new', 'revision_feedback': [{'finding_id': 'F1'}]}
+    assert validate_specialist_preparation(packet, owner='expert', basis=changed) == ['observations_digest', 'revision_feedback']
+    assert packet == original
+    with pytest.raises(ValueError):
+        validate_specialist_preparation(packet, owner='other', basis=changed)
+    with pytest.raises(ValueError):
+        validate_specialist_preparation(packet, owner='expert', basis={**changed, 'task': {'task_id': 'T2'}})
+    packet['basis']['observations_digest'] = 'tampered'
+    with pytest.raises(ValueError):
+        validate_specialist_preparation(packet, owner='expert', basis=changed)
+
+
+def test_current_execution_snapshot_retires_old_revision_menu_without_erasing_task():
+    from langchain_core.messages import HumanMessage, ToolMessage
+    from sec_agent.agent_runtime.research_context_view import current_context
+    first = HumanMessage(content=json.dumps({'task_context': {'research_question': 'Original'},
+        'allowed_actions': ['revise_workpaper'], 'submission_to_repair': {'candidate': {'old': True}},
+        'terminal_result': {'accepted': False}}))
+    second = ToolMessage(tool_call_id='read1', content=json.dumps({'current_context': {
+        'allowed_actions': ['prepare_workpaper'], 'task_context': {'authoring_context': None}}}))
+    view = current_context([first, second])
+    assert 'submission_to_repair' not in view and 'terminal_result' not in view
+    assert view['task_context']['research_question'] == 'Original'
+    assert 'candidate' in json.loads(first.content)['submission_to_repair']
+
+
 def test_stage_disclosure_replaces_research_method_but_preserves_semantics():
     prep=stage_methods('prepare_report'); final=stage_methods('report')
     assert [m['method_id'] for m in prep['methods']]==['finance','lead','writer']
@@ -132,7 +164,7 @@ def test_specialist_preparation_preserves_sources_and_replaces_static_role_metho
     assert after['task_context']['stage_methods']['stage']=='workpaper'
     assert result['notebook']['model_turn_count']==4
     # A saved valid preparation resumes directly in writing. Changed evidence
-    # invalidates it and restores preparation, without changing the old packet.
+    # is disclosed as a change without forcing another preparation.
     from sec_agent.agent_runtime.specialist_graph import _model_request, SpecialistNotebook
     saved = deepcopy(result)
     resumed = _model_request(state=result, notebook=SpecialistNotebook.model_validate_json(
@@ -141,9 +173,10 @@ def test_specialist_preparation_preserves_sources_and_replaces_static_role_metho
     result['research_working_state'] = {'next_step': 'New material issue'}
     changed = _model_request(state=result, notebook=SpecialistNotebook.model_validate_json(
         json.dumps(result['notebook'])), authoring_enabled=True)
-    assert 'prepare_workpaper' in changed['allowed_actions']
-    assert 'submit_workpaper' not in changed['allowed_actions']
-    assert changed['task_context']['authoring_context'] is None
+    assert 'prepare_workpaper' not in changed['allowed_actions']
+    assert 'submit_workpaper' in changed['allowed_actions']
+    assert changed['task_context']['changes_since_preparation'] == ['working_state']
+    assert changed['task_context']['authoring_context'] == saved['authoring_context']
     assert result['authoring_context'] == saved['authoring_context']
 
 
@@ -231,6 +264,7 @@ def test_native_recovery_preserves_accepted_preparation_and_submits_without_prep
     assert first['phase'] == 'specialist_human_review_handoff_emitted'
     assert first['authoring_context']['brief'] == BRIEF
     original = deepcopy(first)
+    first['research_working_state'] = {'next_step': 'Apply relevant new review feedback to the candidate.'}
     resumed = _ScriptedModel([_submission()])
     result = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
         model_turn=resumed, evidence_tool=tools.evidence, finance_tool=tools.finance, authoring_enabled=True),
@@ -239,7 +273,8 @@ def test_native_recovery_preserves_accepted_preparation_and_submits_without_prep
     assert result['notebook']['model_turn_count'] == 4
     assert resumed.requests[0]['task_context']['authoring_context'] == first['authoring_context']
     assert 'prepare_workpaper' not in resumed.requests[0]['allowed_actions']
-    assert first == original
+    assert first['authoring_context'] == original['authoring_context']
+    assert resumed.requests[0]['task_context']['changes_since_preparation'] == ['working_state']
 
 
 def test_provider_stage_changes_preserve_same_research_session_and_tool_pairing():

@@ -13,7 +13,8 @@ AUTHOR_REVISION_GUIDANCE = (
     "repairing navigation does not require promoting an open gap into a claim or adding analysis. "
     "Use supplied source identities and saved reads; read originals when identity, factual support or a changed inference "
     "still needs checking. If that read is necessary, make the read before drafting changes that depend on its result. "
-    "When evidence changes a claim, update its affected prose and bindings together. Reuse unaffected work. "
+    "Before final submission, reconcile changed claims with affected prose and source bindings. "
+    "This is a final-draft responsibility, not a requirement to prepare all related edits before saving a batch. Reuse unaffected work. "
     "Answer every exact finding_id once in task_note.finding_responses, including disagreement or unresolved work. "
     "A repaired link does not establish financial correctness or completion of an unread source check."
 )

@@ -529,7 +529,11 @@ class ReviseWorkpaperAction(_StrictModel):
 
 
 class SaveWorkpaperEditsAction(ReviseWorkpaperAction):
-    """Save one atomic batch to the author's draft; never submit or finish research."""
+    """Persist ready changes, even one field, without waiting for the whole revision.
+
+    Related prose or dependencies may be completed in later batches before final
+    submission. Saving never submits the paper or finishes research.
+    """
     action: Literal["save_workpaper_edits"]
     operation_id: str = Field(min_length=1, max_length=160,
         description="Unique batch identity. Reuse with identical content only when checking an uncertain save receipt.")
@@ -584,7 +588,7 @@ def workpaper_edit_path(original: dict, edit) -> str:
 
 def workpaper_revision_contract() -> dict[str, str]:
     return {
-        "local_revision": "SaveWorkpaperEditsAction saves an atomic batch to the current draft, without submitting or completing it. Previously saved batches survive a later failure. FinalizeWorkpaperRevisionAction submits the saved draft_digest for complete validation; no full content resubmission.",
+        "local_revision": "SaveWorkpaperEditsAction persists ready changes, even one field or claim, without waiting for all related edits. Related prose and dependencies may be completed in later batches. Previously saved batches survive a later failure. FinalizeWorkpaperRevisionAction submits the saved draft_digest for complete validation; only then must the complete revision be consistent. No full content resubmission.",
         "claim_changes": "Use op=update_claim, exact claim_id, changes containing only new values for affected fields. Omitted fields retain their values; no old_value or array index is needed.",
         "other_changes": "Use set_field with path/value for complete non-claim fields; str_replace for a short text fragment; upsert_coverage for an assessment. Update affected prose and judgments as needed; this does not auto-rewrite them.",
         "review_response_path": "/task_note/finding_responses",

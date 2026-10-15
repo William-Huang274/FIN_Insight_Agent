@@ -96,6 +96,36 @@ def test_wire_has_two_revision_actions_and_no_legacy_one_shot_guidance():
     assert 'applies the patch AND submits' not in _NATIVE_SPECIALIST_SYSTEM_PROMPT
 
 
+def test_revision_guidance_defers_reconciliation_until_final_submission():
+    from sec_agent.agent_runtime.revision_guidance import AUTHOR_REVISION_GUIDANCE
+    from sec_agent.agent_runtime.specialist_graph import workpaper_revision_contract
+    from langchain_core.utils.function_calling import convert_to_openai_tool
+    schema = convert_to_openai_tool(SaveWorkpaperEditsAction)['function']
+    assert 'even one field' in schema['description']
+    assert 'Before final submission' in AUTHOR_REVISION_GUIDANCE
+    assert 'update its affected prose and bindings together' not in AUTHOR_REVISION_GUIDANCE
+    assert 'even one field or claim' in workpaper_revision_contract()['local_revision']
+    assert 'that are needed for that step' in _NATIVE_SPECIALIST_SYSTEM_PROMPT
+
+
+def test_single_ready_field_survives_before_later_related_prose():
+    s = state()
+    original = deepcopy(s['last_submission_attempt'])
+    claim = original['arguments']['claims'][0]['claim_id']
+    s['workpaper_draft'], r = save_draft(s, save_action(s, [
+        {'op': 'update_claim', 'claim_id': claim, 'changes': {'statement': 'Updated fixture claim.'}}
+    ]))
+    assert r['saved'] and not r['accepted']
+    assert s['workpaper_draft']['arguments']['narrative_markdown'] == original['arguments']['narrative_markdown']
+    s = json.loads(json.dumps(s))
+    s['workpaper_draft'], r = save_draft(s, save_action(s, [
+        {'op': 'set_field', 'path': '/narrative_markdown', 'value': 'Related fixture prose updated later.'}
+    ], 'related-prose'))
+    assert s['workpaper_draft']['saved_batches'] == 2
+    assert s['workpaper_draft']['arguments']['claims'][0]['statement'] == 'Updated fixture claim.'
+    assert s['last_submission_attempt'] == original
+
+
 def test_native_checkpoint_resume_save_error_finalize_error_then_local_fix():
     ports=_ToolPorts();requests=[]
     def model(r):

@@ -19,25 +19,41 @@ from test_workpaper_partial_edits import paper, edit_action, text_edit
 from test_research_convergence import artifact_fixture
 
 
-def submitted_original():
+def submitted_original(*, authoring=False):
     ports = _ToolPorts()
     requests = []
     def turn(request):
         requests.append(request)
-        return _batch(request, [_evidence_action()({}), _finance_action()({})] if len(requests) == 1 else [paper()])
+        if len(requests) == 1:
+            return _batch(request, [_evidence_action()({}), _finance_action()({})])
+        if authoring and len(requests) == 2:
+            from test_authoring_context import BRIEF
+            return {'action': 'prepare_workpaper', 'brief': BRIEF,
+                'context_digest': request['context_digest'],
+                'reason_summary': 'Prepare the bounded fixture answer.'}
+        return _batch(request, [paper()])
     return build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
-        model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance)).compile().invoke(_input())
+        model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
+        authoring_enabled=authoring)).compile().invoke(_input())
 
 
-def test_original_author_continues_and_records_actual_change_without_note_claim(tmp_path):
-    original = submitted_original()
+@pytest.mark.parametrize('authoring', [False, True])
+def test_original_author_continues_and_records_actual_change_without_note_claim(tmp_path, authoring):
+    original = submitted_original(authoring=authoring)
     assert original['phase'] == 'specialist_submission_accepted'
     saved = validate_workpaper_state(original)
+    if authoring:
+        assert saved['authoring_context'] == original['authoring_context']
+        assert saved['authoring_context'] is not original['authoring_context']
     seen = []
     feedback = [{'finding_id': 'verifier:F1', 'diagnosis': 'Inspect the actual fixture body.'}]
     def turn(request):
         seen.append(request)
         assert request['task_context']['revision_feedback'] == feedback
+        if authoring:
+            assert request['task_context']['authoring_context'] == original['authoring_context']
+            assert 'prepare_workpaper' not in request['allowed_actions']
+            assert 'revise_workpaper' in request['allowed_actions']
         baseline = request['task_context']['accepted_revision_baseline']
         assert baseline['submission'] == original['final_submission']
         assert 'not research quality' in baseline['notice']
@@ -52,7 +68,7 @@ def test_original_author_continues_and_records_actual_change_without_note_claim(
             {'path': '/task_note/finding_responses', 'old_value': [], 'new_value': answers}]).model_dump(mode='json')])
     builder = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
         model_turn=turn, evidence_tool=_ToolPorts().evidence, finance_tool=_ToolPorts().finance,
-        allow_workpaper_field_edits=True), recovery_state=saved, revision_feedback=feedback)
+        allow_workpaper_field_edits=True, authoring_enabled=authoring), recovery_state=saved, revision_feedback=feedback)
     async def resume():
         from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
         async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'author.sqlite')) as saver:
@@ -71,6 +87,26 @@ def test_original_author_continues_and_records_actual_change_without_note_claim(
     assert '/narrative_markdown' in [r['path'] for r in change['locations']]
     assert change['semantic_status'] == 'not_independently_verified'
     assert original['final_submission']['narrative_markdown'] != result['final_submission']['narrative_markdown']
+
+
+@pytest.mark.parametrize('invalid', ['missing', 'owner', 'task', 'digest'])
+def test_handoff_does_not_authorize_invalid_preparation(invalid):
+    from sec_agent.agent_runtime.specialist_graph import _model_request, SpecialistNotebook
+    original = submitted_original(authoring=True)
+    if invalid == 'missing':
+        original.pop('authoring_context')
+    elif invalid == 'owner':
+        original['authoring_context']['owner'] = 'other-author'
+    elif invalid == 'task':
+        original['task']['objective'] = 'A different assignment'
+    else:
+        original['authoring_context']['basis_digest'] = '0' * 64
+    saved = validate_workpaper_state(original)
+    request = _model_request(state={**original, **saved}, notebook=SpecialistNotebook.model_validate_json(
+        json.dumps(saved['notebook'])), authoring_enabled=True, allow_workpaper_field_edits=True)
+    assert 'prepare_workpaper' in request['allowed_actions']
+    assert 'submit_workpaper' not in request['allowed_actions']
+    assert 'revise_workpaper' not in request['allowed_actions']
 
 
 def review_result(artifacts, feedback, *, stale=False, open_issue=False):

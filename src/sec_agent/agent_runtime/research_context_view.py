@@ -538,10 +538,13 @@ def working_view(messages):
         if batches:
             focus = 'implicit_recent_material_cohort'
     # A host-selected reentry carries visible evidence across exactly this
-    # boundary. Later model actions resume the ordinary material lifecycle.
-    if (messages and isinstance(messages[-1], HumanMessage)
-            and messages[-1].additional_kwargs.get('fin_research_stage_boundary') == 'revision_material_handoff'):
-        selected_material_ids.update(messages[-1].additional_kwargs['fin_revision_material_ids'])
+    # boundary. A runtime pressure notice is not research progress and cannot
+    # consume that boundary. Later model/tool/user activity still retires it.
+    research_tail = next((m for m in reversed(messages)
+        if not (isinstance(m, SystemMessage) and m.additional_kwargs.get('fin_context_checkpoint_instruction'))), None)
+    if (isinstance(research_tail, HumanMessage)
+            and research_tail.additional_kwargs.get('fin_research_stage_boundary') == 'revision_material_handoff'):
+        selected_material_ids.update(research_tail.additional_kwargs['fin_revision_material_ids'])
         focus = 'revision_material_handoff'
         collect(restored, selected_material_ids)
     for i, m in enumerate(messages):

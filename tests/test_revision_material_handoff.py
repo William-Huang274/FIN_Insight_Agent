@@ -3,7 +3,7 @@ from copy import deepcopy
 import json
 
 import pytest
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from sec_agent.agent_runtime.author_revision import revision_material_handoff
 from sec_agent.agent_runtime.research_context_view import working_view, public_operation
@@ -76,7 +76,8 @@ def test_rejected_state_and_submission_stay_current():
         revision_material_handoff(rows, context())
 
 
-def test_adapter_reentry_reaches_actual_sdk_with_only_edit_submission_and_saved_sources():
+@pytest.mark.parametrize('pressure', [False, True])
+def test_adapter_reentry_reaches_actual_sdk_with_only_edit_submission_and_saved_sources(pressure):
     import httpx
     from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekStructuredAgentAdapter
     from test_deepseek_structured_agents import _config, _models
@@ -85,6 +86,7 @@ def test_adapter_reentry_reaches_actual_sdk_with_only_edit_submission_and_saved_
     request = _model_request(state=state, notebook=SpecialistNotebook.model_validate_json(json.dumps(state['notebook'])),
         allow_workpaper_field_edits=True, remaining_model_requests=1)
     request['allowed_actions'].append('read_research_history')
+    request['allowed_actions'].append('update_research_state')
     request['tool_results'] = [{'tool_call_id': 'later', 'name': 'RequestSourceAction', 'status': 'success',
                               'content': json.dumps({'passage_id': 'P2', 'passage': 'Additional fact'})}]
     wires = []
@@ -96,12 +98,14 @@ def test_adapter_reentry_reaches_actual_sdk_with_only_edit_submission_and_saved_
         encoded = json.dumps(wire, ensure_ascii=False)
         assert 'Necessary FY2027 fact' in encoded and 'Additional fact' in encoded
         assert 'OLD BROAD REWRITE PLAN' not in encoded
+        assert ('Context size reminder' in encoded) is pressure
         return httpx.Response(200, json={'id': 'offline', 'object': 'chat.completion', 'created': 1,
             'model': 'deepseek-v4-flash', 'choices': [{'index': 0, 'finish_reason': 'tool_calls', 'message': {
                 'role': 'assistant', 'content': '', 'tool_calls': [{'id': 'read-again', 'type': 'function',
                 'function': {'name': 'ReadResearchHistoryAction', 'arguments': json.dumps({
                     'section': 'operation', 'tool_call_id': 'first', 'reason_summary': 'Read exact original'})}}]}}]})
-    chat = model(http_client=httpx.Client(transport=httpx.MockTransport(serve)))
+    chat = model(http_client=httpx.Client(transport=httpx.MockTransport(serve)),
+                 research_checkpoint_tokens=1 if pressure else None)
     models = _models(); models['specialist'] = chat
     adapter = DeepSeekStructuredAgentAdapter(config=_config().model_copy(update={
         'agentic_message_history': True, 'runtime_context_binding': True}), chat_models=models)
@@ -112,3 +116,19 @@ def test_adapter_reentry_reaches_actual_sdk_with_only_edit_submission_and_saved_
     assert request['agent_id'] not in adapter._revision_material_handoffs
     saved = adapter._agentic_history[request['agent_id']]
     assert public_operation(saved, 'first') == public_operation(history(), 'first')
+
+
+def test_pressure_notice_does_not_consume_handoff_but_next_research_action_does():
+    rows = revision_material_handoff(history(), context())
+    notice = SystemMessage(content='Context size reminder', additional_kwargs={'fin_context_checkpoint_instruction': True})
+    def view(messages):
+        return json.loads(next(m.content for m in working_view(messages)
+                               if m.additional_kwargs.get('fin_research_working_view')))
+    before = deepcopy(rows)
+    carried = view([*rows, notice])
+    assert carried['material_focus'] == 'revision_material_handoff'
+    assert {r['passage_id'] for r in carried['current_materials']} == {'P1', 'P2'}
+    assert rows == before
+    later = [*rows, *batch('next', 'RequestSourceAction', {}, {'passage_id': 'P3', 'passage': 'New original'}), notice]
+    assert view(later)['material_focus'] != 'revision_material_handoff'
+    assert 'P1' not in {r['passage_id'] for r in view(later)['current_materials']}

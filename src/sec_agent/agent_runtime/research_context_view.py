@@ -442,7 +442,7 @@ def working_view(messages):
     # after the new working view as if the author had just submitted again.
     stage_start = max((i + 1 for i, m in enumerate(messages)
                        if isinstance(m, HumanMessage) and m.additional_kwargs.get('fin_research_stage_boundary')
-                       == 'accepted_submission_to_revision'), default=0)
+                       in {'accepted_submission_to_revision', 'revision_material_handoff'}), default=0)
     if stage_start:
         boundary = min([max(boundary, stage_start),
                         *[i for cid, (i, _) in calls.items() if cid not in receipts]])
@@ -537,6 +537,13 @@ def working_view(messages):
             selected_material_ids = set(batches[-1]) if batches else set()
         if batches:
             focus = 'implicit_recent_material_cohort'
+    # A host-selected reentry carries visible evidence across exactly this
+    # boundary. Later model actions resume the ordinary material lifecycle.
+    if (messages and isinstance(messages[-1], HumanMessage)
+            and messages[-1].additional_kwargs.get('fin_research_stage_boundary') == 'revision_material_handoff'):
+        selected_material_ids.update(messages[-1].additional_kwargs['fin_revision_material_ids'])
+        focus = 'revision_material_handoff'
+        collect(restored, selected_material_ids)
     for i, m in enumerate(messages):
         if isinstance(m, ToolMessage):
             b = bodies[i]; r = b.get('result', b) if isinstance(b, dict) else None

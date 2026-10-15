@@ -2,13 +2,13 @@
 from copy import deepcopy
 import json
 
-from langchain_core.messages import messages_from_dict
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage, messages_from_dict
 
 from .case_artifacts import CaseArtifacts
 from .workpaper_review_graph import validate_workpaper_state
 
 
-def restore_author_history(adapter, state, audit_paths):
+def restore_author_history(adapter, state, audit_paths, *, material_handoff=False):
     """Read the existing private audit, bound to the last accepted model receipt.
 
     Paths are host supplied within this task's audit directory. No browser or
@@ -49,8 +49,50 @@ def restore_author_history(adapter, state, audit_paths):
                 messages = messages_from_dict(
                     [{"type": m["type"], "data": m} for m in [*event["messages"], raw]])
                 adapter._agentic_history[state["agent_id"]] = restore_accepted_receipt(messages, state, audit_paths)
+                if material_handoff:
+                    if not hasattr(adapter, '_revision_material_handoffs'):
+                        adapter._revision_material_handoffs = set()
+                    adapter._revision_material_handoffs.add(state['agent_id'])
                 return
     raise ValueError("original_author_private_history_unavailable")
+
+
+def revision_material_handoff(messages, current_context):
+    """Host-selected reentry after tool completion, without rolling back research.
+
+    Keep the canonical journal for exact readback. Retire completed model
+    episodes in the request view, carrying the currently visible originals
+    across the boundary. This never accepts edits or refunds consumed turns.
+    """
+    from .research_context_view import decode, material_ids, working_view
+    if not current_context.get('submission_to_repair'):
+        raise ValueError('revision_material_handoff_requires_candidate')
+    calls = {c['id'] for m in messages if isinstance(m, AIMessage)
+             for c in [*m.tool_calls, *m.invalid_tool_calls]}
+    replies = {m.tool_call_id for m in messages if isinstance(m, ToolMessage)}
+    if calls != replies:
+        raise ValueError('revision_material_handoff_requires_complete_tool_pairs')
+    last_ai = max((i for i, m in enumerate(messages) if isinstance(m, AIMessage)), default=-1)
+    latest = [m for m in messages[last_ai + 1:] if isinstance(m, ToolMessage)]
+    if not latest or any(m.status != 'success' for m in latest):
+        raise ValueError('revision_material_handoff_requires_successful_read_boundary')
+    # Do not hide pending submissions, edit errors or rejected state updates.
+    if any(m.name not in {'RequestSourceAction', 'RequestEvidenceAction', 'RequestFinanceAction',
+                         'RequestCalculationAction', 'ReadResearchHistoryAction'} for m in latest):
+        raise ValueError('revision_material_handoff_requires_read_boundary')
+    view = working_view(messages)
+    if view is None:
+        raise ValueError('revision_material_handoff_view_unavailable')
+    retain = set()
+    for m in view:
+        body = decode(m.content)
+        if m.additional_kwargs.get('fin_research_working_view'):
+            retain.update(material_ids(body.get('current_materials', [])))
+        elif isinstance(m, ToolMessage):
+            retain.update(material_ids(body.get('result', body) if isinstance(body, dict) else body))
+    return [*messages, HumanMessage(content=json.dumps(current_context, ensure_ascii=False),
+        additional_kwargs={'fin_research_stage_boundary': 'revision_material_handoff',
+                           'fin_revision_material_ids': sorted(retain)})]
 
 
 def native_revision_view(state, artifacts, paper_id, feedback):

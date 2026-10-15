@@ -1422,9 +1422,11 @@ def _model_request(
                 "For a text fragment use str_replace; for one coverage assessment use upsert_coverage. No need to repeat the whole field or coverage array. "
                 "A previous working_state marked completed describes the prior submission, not completion of this revision.")
         if allow_workpaper_field_edits:
+            # An existing candidate is edited and assembled by the runtime.
+            # Do not offer two competing submission protocols for this stage.
+            allowed_actions.remove("submit_workpaper")
             body["submission_to_repair"]["submission_contract"] = {
                 "local_revision": "ReviseWorkpaperAction applies edits and submits the complete assembled candidate for normal validation in one call. Runtime reuses unchanged claims, prose and source quotes; do not copy them into the action.",
-                "full_replacement": "SubmitWorkpaperAction remains available for an intentional full rewrite, not required after a revision.",
                 "review_response_path": "/task_note/finding_responses",
                 "change_note_path": "/task_note/changes",
             }
@@ -2558,7 +2560,16 @@ def build_specialist_agentic_state_graph(
                             tool_action_count=before.tool_action_count + 1,
                             dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode="json")
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps(body, ensure_ascii=False))
-            terminal_submission = call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction"}
+            # Check the offered stage before recording a proposal. Recording a
+            # first draft creates a candidate; it must not retroactively revoke
+            # that first submission, nor may an unavailable old tool replace it.
+            stage_actions = _model_request(state=working, notebook=before,
+                authoring_enabled=dependencies.authoring_enabled, authoring_domain=dependencies.authoring_domain,
+                method_reader=dependencies.method_reader, allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
+                allow_delegation=dependencies.subtask_runner is not None,
+                working_state_enabled=dependencies.working_state_enabled)['allowed_actions']
+            unavailable_full_submission = call.name == 'SubmitWorkpaperAction' and 'submit_workpaper' not in stage_actions
+            terminal_submission = call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction"} and not unavailable_full_submission
             if call.name == "ReviseWorkpaperAction":
                 working["last_submission_attempt"] = {**(working.get("last_submission_attempt") or {}),
                     "tool_call_id": call.id, "tool_name": call.name, "feedback": [], "accepted": False}
@@ -2615,6 +2626,10 @@ def build_specialist_agentic_state_graph(
                 return ToolMessage(name=call.name, tool_call_id=call.id, status="error",
                     content=json.dumps(body, ensure_ascii=False))
 
+            if unavailable_full_submission:
+                return reject("specialist_action_not_available_in_current_runtime",
+                    "This stage edits an existing candidate. Use ReviseWorkpaperAction with submission_to_repair.base_submission_digest and changed fields; runtime reuses the unchanged content and validates the complete paper. This full submission was not applied."
+                    if 'revise_workpaper' in stage_actions else "This submission tool is not available for the current role or stage. The candidate was not changed.")
             if terminal_mixed:
                 return reject("specialist_terminal_action_must_be_alone",
                     "No tools in this response were dispatched. Submit or request human review as the sole call, after observing pending data results.")
@@ -2654,11 +2669,7 @@ def build_specialist_agentic_state_graph(
             if action.context_digest != batch.context_digest:
                 return reject("specialist_model_turn_context_binding_invalid",
                     "Copy the current context_digest exactly; this call was not dispatched.")
-            if action.action not in _model_request(state=working, notebook=before,
-                    authoring_enabled=dependencies.authoring_enabled, authoring_domain=dependencies.authoring_domain, method_reader=dependencies.method_reader,
-                    allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
-                    allow_delegation=dependencies.subtask_runner is not None,
-                    working_state_enabled=dependencies.working_state_enabled)["allowed_actions"]:
+            if action.action not in stage_actions:
                 return reject("specialist_action_not_available_in_current_runtime", "This action is not available for your assigned role.")
             if isinstance(action, RequestSourceAction) and not l0.source_read_enabled:
                 return reject("specialist_action_not_available_in_current_runtime", "Source reading is not enabled in this runtime profile.")

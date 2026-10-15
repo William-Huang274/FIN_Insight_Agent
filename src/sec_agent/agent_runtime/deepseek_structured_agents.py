@@ -551,7 +551,7 @@ _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     "Review responses and change notes belong at /task_note/finding_responses and /task_note/changes, never at the action root. "
     "Shared citation_quotes may be supplied once on the workpaper, keyed by exact evidence ID; "
     "each claim still states its own evidence_ids. Do not duplicate source quotes across claims. "
-    "To finish a first draft or intentional full replacement, call SubmitWorkpaperAction; for local revisions finish with ReviseWorkpaperAction. "
+    "Finish using the submission tool supplied for the current stage: SubmitWorkpaperAction for a first draft, ReviseWorkpaperAction for an existing candidate. "
     "do not replace the tool call with a plain-text final answer."
 )
 _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
@@ -1664,6 +1664,9 @@ class DeepSeekStructuredAgentAdapter:
                     messages[-1] = terminal.model_copy(update={'content': json.dumps(content, ensure_ascii=False)})
                     messages.append(HumanMessage(content=json.dumps(delta, ensure_ascii=False),
                         additional_kwargs={'fin_research_stage_boundary': 'accepted_submission_to_revision'}))
+        if actor in getattr(self, '_revision_material_handoffs', set()):
+            from .author_revision import revision_material_handoff
+            messages = revision_material_handoff(messages, semantic_input)
         if notes_enabled and saved_envelope is None:
             from .user_workpaper_context import current_scope_revision_prompt
             guidance = current_scope_revision_prompt(actor)
@@ -2080,6 +2083,7 @@ class DeepSeekStructuredAgentAdapter:
         )
         if persistent_history and saved_envelope is None:
             self._agentic_history[actor] = [*canonical_messages, envelope["raw"]]
+            getattr(self, '_revision_material_handoffs', set()).discard(actor)
         return (
             parsed,
             envelope.get("raw"),

@@ -354,6 +354,42 @@ def contains_released_material(value):
     return False
 
 
+def bind_revision_readbacks(context, messages):
+    """Attach actor-local saved reads to exact identities; never guess a source route."""
+    candidates = [candidate
+        for finding in context.get('task_context', {}).get('revision_feedback', [])
+        for location in finding.get('reference_navigation', {}).get('locations', [])
+        for candidate in location.get('candidates', [])]
+    wanted = {ref for candidate in candidates for ref in candidate.get('canonical_ids', [])}
+    if not wanted:
+        return
+    # Native source operations first, restored context last. Only successful
+    # receipts containing complete objects qualify, not IDs in old arguments.
+    call_ids = list(dict.fromkeys(c['id'] for m in messages if isinstance(m, AIMessage)
+                    for c in m.tool_calls)) + [INITIAL_CONTEXT_ID]
+    routes = {}
+    for cid in call_ids:
+        record = public_operation(messages, cid)
+        if not record or record['receipt'].get('status') not in {'success', 'restored_context'}:
+            continue
+        found = material_ids(record['receipt'].get('result')) & (wanted - routes.keys())
+        for ref in found:
+            routes[ref] = {'tool': 'ReadResearchHistoryAction', 'arguments': {
+                'section': 'operation', 'tool_call_id': cid, 'source_ids': [ref],
+                'reason_summary': 'Read the saved original for this revision reference.'}}
+        if wanted <= routes.keys():
+            break
+    for candidate in candidates:
+        refs = candidate.get('canonical_ids', [])
+        candidate['saved_reads'] = [deepcopy(routes[ref]) for ref in refs if ref in routes]
+        candidate['unlocated_source_ids'] = [ref for ref in refs if ref not in routes]
+        candidate['readback_notice'] = (
+            'saved_reads are executable reads of complete originals in this author journal; '
+            'copy their arguments. They do not re-fetch or confer semantic approval. '
+            'A canonical/document ID is not a library route. Missing saved reads require '
+            'source discovery; do not guess source_space from another document.')
+
+
 def working_view(messages):
     """Return None for other runtimes; one replacement path for native experts."""
     if any(m.additional_kwargs.get('fin_research_working_view') for m in messages):
@@ -585,6 +621,7 @@ def working_view(messages):
                 or isinstance(saved_note['receipt']['result'], dict) and saved_note['receipt']['result'].get('accepted') is False):
             pending_note = saved_note
         break
+    bind_revision_readbacks(current, messages)
     view = {'current_materials': material, 'current_material_bindings': bindings, 'material_focus': focus,
             'current_context': compact_current_context(current),
             'pending_state_proposal': pending_note,

@@ -202,24 +202,24 @@ class RequestFinanceAction(_StrictModel):
 
 
 class ReadResearchHistoryAction(_StrictModel):
-    """Read public actions, exact operation receipts or Lead assistance; never re-execute."""
+    """Read saved history, never re-execute. operation requires tool_call_id and forbids index; turn/lead_assistance require index and forbid tool_call_id/source_ids."""
     action: Literal['read_research_history'] = 'read_research_history'
     context_digest: str
     section: Literal['turn', 'lead_assistance', 'operation']
-    index: int | None = Field(default=None, ge=1)
-    tool_call_id: str | None = Field(default=None, description='For operation: copy the exact ID from operation_catalog or a supplied context-field readback. Reads saved data without re-execution; runtime:context: locators return run-bound current metadata.')
+    index: int | None = Field(default=None, ge=1, description='Required for turn or lead_assistance only. Must be omitted for operation; it cannot replace tool_call_id.')
+    tool_call_id: str | None = Field(default=None, description='Required for operation, with index omitted. Copy the exact ID from saved_reads, operation_catalog or a supplied context-field readback. Source/document IDs are not tool_call_id. Reads saved data without re-execution; runtime:context: locators return run-bound current metadata.')
     view: Literal['receipt', 'record'] | None = Field(default=None, exclude_if=lambda value: value is None,
         description='For operation: receipt reads the actual outcome without resending old arguments; record reads the full public operation including arguments. If omitted, submission calls return receipt, other operations return record. Follow next_read for paging.')
     offset: int = Field(default=0, ge=0, description='Character offset for a large saved operation record. Copy next_offset from the prior historical receipt.')
     max_characters: int = Field(default=12_000, ge=1_000, le=24_000, description='Largest serialized historical-record window. This does not reread, truncate or alter the archived original.')
-    source_ids: tuple[str, ...] = Field(default=(), max_length=12, description='For operation only, optional exact observed passage/numeric/calculation IDs. Returns those original objects instead of a generic serialized page.')
+    source_ids: tuple[str, ...] = Field(default=(), max_length=12, description='For operation only: optional filter within the saved operation identified by required tool_call_id. Cannot be used alone or search across operations. Copy saved_reads arguments to return exact original objects instead of a generic serialized page.')
     reason_summary: str
 
     @model_validator(mode='after')
     def history_selector(self):
         if self.section == 'operation':
             if not self.tool_call_id or self.index is not None:
-                raise ValueError('operation_requires_tool_call_id_without_index')
+                raise ValueError('operation_requires_tool_call_id_without_index: copy section=operation, tool_call_id and source_ids from saved_reads; or copy the operation_catalog tool_call_id. Omit index. source_ids alone cannot locate an operation.')
         elif self.index is None or self.tool_call_id is not None or self.source_ids:
             raise ValueError('history_section_requires_index_without_tool_call_id')
         return self

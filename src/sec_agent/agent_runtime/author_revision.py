@@ -85,10 +85,31 @@ def native_revision_view(state, artifacts, paper_id, feedback):
             "lifetime_tool_actions": state["notebook"]["tool_action_count"]}}
 
 
-def author_feedback(findings, artifacts):
+def author_feedback(findings, artifacts, *, original_findings=()):
     """Review aliases are navigation; restore their actual source identity."""
-    result = deepcopy(findings)
+    from .revision_guidance import restore_review_request
+    result = [restore_review_request(finding, original_findings) for finding in findings]
+    inventories = {}
     for finding in result:
+        # Exact current-text lookup only. This also serves old saved findings
+        # whose type was 'other'; no classification from diagnosis keywords.
+        pid = finding.get('paper_id')
+        if pid and finding.get('problematic_quote'):
+            from .evidence_resolution import citation_inventory
+            if pid not in inventories:
+                inventories[pid] = citation_inventory(artifacts, pid)
+            locations = []
+            for row in inventories[pid]:
+                if row['original_reference'] != finding['problematic_quote']:
+                    continue
+                locations.append({k: deepcopy(row[k]) for k in (
+                    'paper_digest', 'field_path', 'start', 'end', 'original_reference', 'status', 'candidates')})
+            if locations:
+                finding['reference_navigation'] = {
+                    'locations': locations,
+                    'notice': 'Current case-scoped source identities, not new evidence or semantic confirmation. '
+                        'Use canonical_ids, never construct a PASSAGE ID from a document ID. '
+                        'Ambiguous candidates require checking; an identifier fix retains the current text status.'}
         for check in finding.get("source_checks", []):
             ref = check["source_id"]
             try:

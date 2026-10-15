@@ -9,7 +9,8 @@ class IssueDisposition(BaseModel):
     paper_id: str
     disposition: Literal["repair", "disagree_with_sources", "unresolved", "carry_advisory"]
     rationale: str = Field(min_length=20, max_length=3000)
-    requested_change: str = Field(default="", max_length=3000)
+    requested_change: str = Field(default="", max_length=3000,
+        description="Targeted remedy for the actual current defect. Preserve existing correct content; do not label numbers absent from the candidate as content to preserve. Identifier repair alone does not require new claims. New substantive issues belong in new_findings with their own basis.")
     expected_progress: str = Field(min_length=10, max_length=2000)
     citation_ids: list[str] = Field(default_factory=list, max_length=16)
     report_handling: str = Field(default="", max_length=2000,

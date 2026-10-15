@@ -1932,6 +1932,7 @@ def build_specialist_agentic_state_graph(
                     'typed_feedback_ready', 'model_action_selected'}
                 and recovery_state.get('pending_action') is None)
             if revising:
+                from .revision_guidance import AUTHOR_REVISION_GUIDANCE
                 from .workpaper_review_graph import validate_workpaper_state
                 validate_workpaper_state(recovery_state)
                 revision_candidate = _jsonable(recovery_state["final_submission"])
@@ -1961,7 +1962,7 @@ def build_specialist_agentic_state_graph(
                             "history_notice": "Earlier source requests and authoring proposals may be marked historical_operation in this request. Their original arguments remain in native history; exact results, failures and saved-read routes remain in observations. A historical request is not proof that it succeeded. Newer proposals, financial requests and calculations are not replaced.",
                             "submission": _jsonable(recovery_state["final_submission"]),
                             "notice": "This is the last accepted workpaper, supplied after native validation. Acceptance covers the submission contract, not research quality. Older failed submissions and tool errors remain audit history; they do not establish an unresolved defect in this baseline. Continue the assigned research revision and evaluate current evidence; do not repeat historical repairs unless the current candidate actually needs them."},
-                        "revision_instruction": "Continue your original task and current candidate. Use precise edits. Read relevant original sources to evaluate every assigned finding; correct related prose and claim bindings together, or explain disagreement/unresolved work. Return task_note.finding_responses for every exact finding_id once. Runtime changes are not semantic closure; preserve the overall assignment and unfinished details."} if revising else {})},
+                        "revision_instruction": AUTHOR_REVISION_GUIDANCE} if revising else {})},
                 "workpaper_change_history": _jsonable(recovery_state.get("workpaper_change_history", [])),
                 "notebook": _replace_notebook(prior, run_invocation_id=validated.run_invocation_id,
                                              status="researching").model_dump(mode="json"),

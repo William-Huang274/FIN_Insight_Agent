@@ -180,7 +180,7 @@ def delivery_reference_findings(artifacts, messages, *, complete):
                 missing.append({'reference_id':ref,'paper_id':row['paper_id'],'original_reference':row['original_reference']})
             target = confirmed['selected_source_id'] if confirmed else None
             findings.append({'finding_id':'runtime_reference_'+ref, 'paper_id':row['paper_id'], 'claim_ids':[],
-                'severity':'material', 'problematic_quote':row['original_reference'],
+                'severity':'material', 'finding_type':'traceability', 'problematic_quote':row['original_reference'],
                 'diagnosis':'Runtime delivery-reference check: this original identifier is not directly resolvable. '
                     'This is a traceability defect, not a financial semantic verdict.',
                 'requested_change':('Replace this literal reference with confirmed complete source identity '+target

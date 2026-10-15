@@ -454,8 +454,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             for finding in rows:
                 decision = dispositions[(pid, finding["finding_id"])]
                 if decision["disposition"] == "repair":
-                    feedback.setdefault(pid, []).append({**finding, "requested_change": decision["requested_change"],
-                        "lead_rationale": decision["rationale"], "expected_progress": decision["expected_progress"]})
+                    from .revision_guidance import lead_repair_feedback
+                    feedback.setdefault(pid, []).append(lead_repair_feedback(finding, decision))
         for finding in state["lead_decision"].get("new_findings", []):
             if finding["disposition"] == "repair":
                 feedback.setdefault(finding["paper_id"], []).append({

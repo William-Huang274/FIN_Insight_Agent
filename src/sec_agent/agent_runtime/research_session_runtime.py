@@ -663,7 +663,8 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
                 paths = [*author_audit_paths, *(Path(settings["audit_root"]) / thread_id).glob("*/model-context-reasoning.private.jsonl")]
                 restore_author_history(adapter, saved, paths)
                 current = artifacts.with_revisions(convergence_state.get("revisions", {}))
-                findings = author_feedback(convergence_state["pending_feedback"][paper_id], current)
+                findings = author_feedback(convergence_state["pending_feedback"][paper_id], current,
+                    original_findings=state.get('feedback', {}).get(paper_id, []))
                 dependencies = {row["task"]["task_id"]: row for row in current._author_states.values()
                     if row["task"]["task_id"] in assignment.get("dependency_ids", [])}
                 if set(dependencies) != set(assignment.get("dependency_ids", [])):

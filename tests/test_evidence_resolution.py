@@ -50,6 +50,7 @@ def test_candidate_confirmation_requires_read_and_never_repairs_draft_silently()
     messages.append(ToolMessage(name='confirm_review_reference',tool_call_id='confirm',content='confirmed',artifact=confirmed))
     findings,records=delivery_reference_findings(a,messages,complete=True)
     assert len(findings)==1 and records[0]['origin']=='runtime_compatibility_parse'
+    assert findings[0]['finding_type'] == 'traceability'
     assert 'PASSAGE::...2:3' in a.read_paper('P01')['narrative_markdown']
     a._papers['P01']['workpaper']['narrative_markdown']+=' Revision.'
     with pytest.raises(ValueError,match='unconfirmed_references'):

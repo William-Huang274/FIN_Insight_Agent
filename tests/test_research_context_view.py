@@ -294,6 +294,99 @@ def test_real_adapter_keeps_canonical_journal_across_projected_rounds():
         assert restarted.read_public_operation(request['agent_id'],'call-1')==adapter.read_public_operation(request['agent_id'],'call-1')
 
 
+def test_revision_boundary_archives_completed_terminal_but_keeps_readback_and_later_errors():
+    rows=fixture()
+    rows.extend(batch('accepted-draft','SubmitWorkpaperAction',{'thesis':'Saved paper'}, {'accepted':True}))
+    context={'allowed_actions':['read_research_history','revise_workpaper'],
+        'task_context':{'research_question':'Original question','revision_feedback':[{'finding_id':'F1'}]},
+        'submission_to_repair':{'candidate':{'thesis':'Saved paper'},'current_candidate_digest':'current'}}
+    rows.append(HumanMessage(content=json.dumps(context),
+        additional_kwargs={'fin_research_stage_boundary':'accepted_submission_to_revision'}))
+    original=deepcopy(rows)
+    result=working_view(rows); view=json.loads(result[0].content)
+    assert not any(isinstance(m,(AIMessage,ToolMessage)) for m in result)
+    assert view['current_context']['submission_to_repair']['current_candidate_digest']=='current'
+    assert next(r for r in view['operation_catalog'] if r['tool_call_id']=='accepted-draft')['accepted'] is True
+    assert public_operation(rows,'accepted-draft')['receipt']['result']=={'accepted':True}
+    assert rows==original
+    rows.extend(batch('new-read','ReadResearchHistoryAction',{}, {'error':'invalid_locator'}))
+    result=working_view(rows)
+    assert result[-2].tool_calls[0]['id']=='new-read'
+    assert result[-1].tool_call_id=='new-read'
+    assert 'invalid_locator' in result[-1].content
+    assert not any(isinstance(m,AIMessage) and m.tool_calls[0]['id']=='accepted-draft' for m in result)
+    # Even a stage marker must never consume an incomplete tool exchange.
+    unpaired=deepcopy(original);unpaired.insert(-1,AIMessage(content='',tool_calls=[
+        {'id':'unfinished','name':'RequestSourceAction','args':{}}]))
+    result=working_view(unpaired)
+    assert any(isinstance(m,AIMessage) and m.tool_calls[0]['id']=='unfinished' for m in result)
+
+
+@pytest.mark.parametrize('accepted', [True,False])
+def test_adapter_revision_starts_after_old_terminal_and_keeps_real_rejection(accepted):
+    import httpx
+    from langchain_core.messages import SystemMessage
+    from test_deepseek_structured_agents import _config, _models, _agentic_turn_request
+    from test_research_context_checkpoint import model
+    from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekStructuredAgentAdapter
+    captured=[]
+    def serve(request):
+        captured.append(json.loads(request.content))
+        return httpx.Response(200,json={'id':'mock','object':'chat.completion','created':1,'model':'deepseek-v4-pro',
+            'choices':[{'index':0,'finish_reason':'tool_calls','message':{'role':'assistant','content':'',
+                'reasoning_content':'new stage thinking','tool_calls':[{'id':'new-call','type':'function',
+                    'function':{'name':'ReadResearchHistoryAction','arguments':json.dumps({'section':'operation',
+                        'tool_call_id':'old-submit','reason_summary':'Read exact saved receipt.'})}}]}}],
+            'usage':{'prompt_tokens':1,'completion_tokens':1,'total_tokens':2}})
+    with httpx.Client(transport=httpx.MockTransport(serve)) as client:
+        models=_models();models['specialist']=model(http_client=client,research_checkpoint_tokens=48000)
+        adapter=DeepSeekStructuredAgentAdapter(config=_config().model_copy(update={'agentic_message_history':True,
+            'runtime_context_binding':True}),chat_models=models)
+        request=_agentic_turn_request();request.update(turn_index=6,allowed_actions=['read_research_history'],
+            terminal_result={'accepted':accepted,'feedback':[] if accepted else ['real_error']},
+            revision_submission_status={'status':'not_submitted' if accepted else 'rejected',
+                'baseline_accepted':True,'baseline_digest':'version'},
+            task_context={'research_question':'Original assignment','revision_feedback':[{'finding_id':'F1'}],
+                'accepted_revision_baseline':{'through_model_turn':5,'submission_digest':'version'}})
+        request['notebook']['model_turn_count']=5
+        adapter._agentic_history[request['agent_id']]=[SystemMessage(content='Original system'),
+            HumanMessage(content=json.dumps({'allowed_actions':['read_research_history'],
+                'task_context':{'research_question':'Original assignment'}})),
+            AIMessage(content='',tool_calls=[{'id':'old-submit','name':'SubmitWorkpaperAction','args':{'thesis':'Saved'}}],
+                additional_kwargs={'reasoning_content':'old completed reasoning'})]
+        adapter.specialist_model_turn(request)
+        history=adapter._agentic_history[request['agent_id']]
+        receipt=adapter.read_public_operation(request['agent_id'],'old-submit')['receipt']
+        assert receipt['result']['accepted'] is accepted
+        if accepted:
+            assert isinstance(history[-2],HumanMessage)
+            assert history[-2].additional_kwargs['fin_research_stage_boundary']=='accepted_submission_to_revision'
+            assert 'current_context' not in json.loads(history[-3].content)
+            assert [m['role'] for m in captured[0]['messages']]==['system','user']
+            assert 'old completed reasoning' not in json.dumps(captured[0])
+            view=json.loads(captured[0]['messages'][1]['content'])
+            assert next(r for r in view['operation_catalog'] if r['tool_call_id']=='old-submit')['accepted'] is True
+            from langchain_core.messages import messages_from_dict
+            # Restart from the complete journal, then keep the next error live.
+            adapter._agentic_history[request['agent_id']]=messages_from_dict([
+                {'type':m.type,'data':m.model_dump(mode='json')} for m in history])
+            request['turn_index']=7
+            request['notebook']['model_turn_count']=6
+            request.pop('terminal_result')
+            request['tool_results']=[{'name':'ReadResearchHistoryAction','tool_call_id':'new-call',
+                'status':'error','content':json.dumps({'error':'current_locator_error'})}]
+            adapter.specialist_model_turn(request)
+            assert 'current_locator_error' in captured[1]['messages'][-1]['content']
+            assert captured[1]['messages'][-2]['tool_calls'][0]['id']=='new-call'
+            assert adapter.read_public_operation(request['agent_id'],'old-submit')['receipt']['result']['accepted'] is True
+            assert sum(bool(m.additional_kwargs.get('fin_research_stage_boundary'))
+                       for m in adapter._agentic_history[request['agent_id']])==1
+        else:
+            assert receipt['status']=='error'
+            assert captured[0]['messages'][-1]['role']=='tool'
+            assert 'real_error' in captured[0]['messages'][-1]['content']
+
+
 @pytest.mark.parametrize('args',[{'section':'turn','index':2},{'section':'lead_assistance','index':1},
                                {'section':'operation','tool_call_id':'old'}])
 def test_history_wire_compatibility(args):

@@ -5,6 +5,19 @@ import json
 from .research_graph_contracts import canonical_sha256
 
 
+def starts_accepted_revision(request):
+    """Host-validated first revision request, not a retry of a rejected draft."""
+    status = request.get('revision_submission_status') or {}
+    task = request.get('task_context') or {}
+    baseline = task.get('accepted_revision_baseline') or {}
+    turn = baseline.get('through_model_turn')
+    return (status.get('status') == 'not_submitted' and status.get('baseline_accepted') is True
+            and bool(task.get('revision_feedback')) and isinstance(turn, int)
+            and (request.get('notebook') or {}).get('model_turn_count') == turn
+            and bool(baseline.get('submission_digest'))
+            and status.get('baseline_digest') == baseline['submission_digest'])
+
+
 def accepted_baseline(state):
     baseline = (state.get('task_context') or {}).get('accepted_revision_baseline') or {}
     submission = baseline.get('submission')

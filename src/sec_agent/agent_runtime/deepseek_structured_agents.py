@@ -1649,6 +1649,21 @@ class DeepSeekStructuredAgentAdapter:
                 messages = [*history, ToolMessage(content=json.dumps(reply, ensure_ascii=False),
                     tool_call_id=prior_raw.tool_calls[0]["id"], name=prior_raw.tool_calls[0]["name"],
                     status="error" if terminal_result is not None and terminal_result.get("accepted") is False else "success")]
+            # A new revision follows a completed submission. Close the old tool
+            # exchange with its actual receipt, then start the new assignment.
+            # Do not attach a new task to the old submission's tool result.
+            from .revision_submission_state import starts_accepted_revision
+            if starts_accepted_revision(request_value):
+                terminal = messages[-1]
+                content = json.loads(terminal.content) if isinstance(terminal, ToolMessage) else {}
+                if (isinstance(terminal, ToolMessage) and terminal.status == 'success'
+                        and len(prior_raw.tool_calls) == 1
+                        and prior_raw.tool_calls[0]['name'] in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SubmitReviewAction'}
+                        and content.get('result', {}).get('accepted') is True):
+                    content.pop('current_context', None)
+                    messages[-1] = terminal.model_copy(update={'content': json.dumps(content, ensure_ascii=False)})
+                    messages.append(HumanMessage(content=json.dumps(delta, ensure_ascii=False),
+                        additional_kwargs={'fin_research_stage_boundary': 'accepted_submission_to_revision'}))
         if notes_enabled and saved_envelope is None:
             from .user_workpaper_context import current_scope_revision_prompt
             guidance = current_scope_revision_prompt(actor)

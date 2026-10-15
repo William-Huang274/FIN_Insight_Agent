@@ -8,6 +8,19 @@ from sec_agent.agent_runtime.revision_submission_state import revision_attempt_v
 from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
 
 
+@pytest.mark.parametrize('change,expected', [({}, True), ({'notebook': {'model_turn_count':6}}, False),
+    ({'revision_submission_status': {'status': 'rejected'}}, False),
+    ({'task_context': {}}, False)])
+def test_revision_boundary_only_at_first_host_bound_request(change, expected):
+    from sec_agent.agent_runtime.revision_submission_state import starts_accepted_revision
+    request = {'notebook': {'model_turn_count':5}, 'revision_submission_status': {'status': 'not_submitted',
+        'baseline_accepted': True, 'baseline_digest': 'version'},
+        'task_context': {'revision_feedback': [{'finding_id': 'F1'}],
+            'accepted_revision_baseline': {'through_model_turn': 5, 'submission_digest': 'version'}}}
+    request.update(change)
+    assert starts_accepted_revision(request) is expected
+
+
 def fixture():
     submission = {'action': 'submit_workpaper', 'context_digest': 'context', 'thesis': 'Original finding'}
     return {'agent_id': 'author', 'task_context': {'accepted_revision_baseline': {
@@ -71,6 +84,8 @@ def test_initialized_native_revision_retains_accepted_terminal_and_unsubmitted_c
     assert state['last_submission_attempt']['accepted'] is None
     request = _model_request(state=state, notebook=SpecialistNotebook.model_validate_json(json.dumps(state['notebook'])))
     assert request['revision_submission_status']['status'] == 'not_submitted'
+    from sec_agent.agent_runtime.revision_submission_state import starts_accepted_revision
+    assert starts_accepted_revision(request)
     from sec_agent.agent_runtime.deepseek_structured_agents import _project_agentic_specialist_request
     assert _project_agentic_specialist_request(request)['revision_submission_status'] == request['revision_submission_status']
     assert request.get('terminal_result', {}).get('accepted') is not False

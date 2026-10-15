@@ -401,6 +401,15 @@ def working_view(messages):
     last_ai = max((i for i, m in enumerate(messages) if isinstance(m, AIMessage)), default=-1)
     # Never split any incomplete native batch, nor strip its reasoning.
     boundary = min([last_ai if last_ai >= 0 else len(messages), *[i for cid, (i, _) in calls.items() if cid not in receipts]])
+    # A host-created assignment after an accepted terminal is a new stage.
+    # Its completed predecessor belongs in the public journal/catalog, not
+    # after the new working view as if the author had just submitted again.
+    stage_start = max((i + 1 for i, m in enumerate(messages)
+                       if isinstance(m, HumanMessage) and m.additional_kwargs.get('fin_research_stage_boundary')
+                       == 'accepted_submission_to_revision'), default=0)
+    if stage_start:
+        boundary = min([max(boundary, stage_start),
+                        *[i for cid, (i, _) in calls.items() if cid not in receipts]])
     if boundary <= 1 and last_ai >= 0:
         return None
     current = deepcopy(contexts[0][1])

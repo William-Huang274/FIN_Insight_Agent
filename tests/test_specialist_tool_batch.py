@@ -437,6 +437,8 @@ def test_rejected_terminal_keeps_explicit_receipt_after_actual_sdk_context_proje
     assert receipt["accepted"] is False
     assert "unknown_evidence_id:E:invented" in json.dumps(receipt["feedback"])
     assert receipt["validation_issues"]
+    assert receipt["validation_issues"][0]["diagnosis"] == "unobserved_reference"
+    assert receipt["validation_issues"][0]["affected_locations"] == [["claims", 0, "evidence_ids", 0]]
     assert "current_context" not in json.loads(rejected["content"])
     assert requests[3]["submission_to_repair"]["candidate"]["claims"][0]["evidence_ids"] == ["E:invented"]
     assert result["last_submission_attempt"]["accepted"] is True

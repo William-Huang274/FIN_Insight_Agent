@@ -1358,7 +1358,11 @@ def _model_request(
             'changes invalidate this binding. Preserve original evidence and unresolved limits.' if drafting else
             'Complete the assigned research, then call PrepareWorkpaperAction with your public effective state before final submission. No final submission until prepared.')
         body['task_context'] = context
-    last = state.get("last_submission_attempt") or {}
+    from .submission_reference_feedback import refresh_reference_feedback, refresh_terminal_receipts
+    last = refresh_reference_feedback(state.get("last_submission_attempt") or {},
+        notebook.model_dump(mode="json"), state.get("delegated_work"))
+    if body.get("tool_results"):
+        body["tool_results"] = refresh_terminal_receipts(body["tool_results"], last)
     if (last.get("accepted") is False and notebook.model_turn_records
             and isinstance(notebook.model_turn_records[-1].action, (SubmitWorkpaperAction, SubmitReviewAction))):
         # Old checkpoints may contain a direct terminal action, without a native
@@ -3009,6 +3013,13 @@ def build_specialist_agentic_state_graph(
         if errors:
             locations = []
             for error in errors:
+                from .submission_reference_feedback import reference_issue
+                ref_issue = reference_issue(error, action.model_dump(mode="json"),
+                    notebook.model_dump(mode="json"), state.get("delegated_work"))
+                if ref_issue is not None:
+                    if ref_issue not in locations:
+                        locations.append(ref_issue)
+                    continue
                 quote_issue = _quote_issue_location(error, action, notebook)
                 if quote_issue is not None:
                     locations.append(quote_issue)

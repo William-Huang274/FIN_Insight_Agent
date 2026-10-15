@@ -61,8 +61,9 @@ def revision_material_handoff(messages, current_context):
     """Host-selected reentry after tool completion, without rolling back research.
 
     Keep the canonical journal for exact readback. Retire completed model
-    episodes in the request view, carrying the currently visible originals
-    across the boundary. This never accepts edits or refunds consumed turns.
+    episodes in the request view. Currently visible originals form the revision
+    working set until explicit selection/release or stage completion, not just
+    until the next tool call. This never accepts edits or refunds consumed turns.
     """
     from .research_context_view import decode, material_ids, working_view
     if not current_context.get('submission_to_repair'):

@@ -93,11 +93,11 @@ def test_current_error_pending_edits_and_later_material_lifecycle_remain_live():
     research_messages = [m for m in projected if not m.additional_kwargs.get('fin_context_checkpoint_instruction')]
     assert research_messages[-2:] == rows[-2:]
     assert view(rows)['current_context']['submission_to_repair']['edit_progress'] == ['CURRENT EDIT']
-    # Subsequent research consumes the one-off seven-material handoff normally.
+    # Reading alone does not retire materials needed for the pending revision.
     later = [*fixture(), *batch('new', 'RequestSourceAction', {}, {'passage_id': 'P8', 'passage': 'Next original'})]
     later.extend(batch('consumed', 'UpdateResearchStateAction', {}, {'accepted': True}))
-    assert view(later)['material_focus'] != 'revision_material_handoff'
-    assert len(view(later)['current_materials']) < 7
+    assert view(later)['material_focus'] == 'revision_working_set'
+    assert len(view(later)['current_materials']) == 8
 
 
 def test_first_draft_keeps_original_plan_and_preparation():

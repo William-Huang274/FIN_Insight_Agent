@@ -459,6 +459,46 @@ def bind_revision_readbacks(context, messages):
             'source discovery; do not guess source_space from another document.')
 
 
+def revision_material_selection(messages, bodies):
+    """A revision working set ends by selection/release or stage completion.
+
+    Reads, calculations and draft saves are not evidence that the author has
+    finished using the earlier originals. The canonical journal remains the
+    source of truth; release_history has already removed explicitly dismissed
+    bodies from this projection, and a later read can reopen them.
+    """
+    stages = [(i, m) for i, m in enumerate(messages) if isinstance(m, HumanMessage)
+              and m.additional_kwargs.get('fin_research_stage_boundary')]
+    if not stages:
+        return None
+    start, stage = stages[-1]
+    if stage.additional_kwargs['fin_research_stage_boundary'] != 'revision_material_handoff':
+        return None
+    selected = set(stage.additional_kwargs['fin_revision_material_ids'])
+    for m, body in zip(messages[start + 1:], bodies[start + 1:]):
+        if isinstance(m, AIMessage):
+            for call in m.tool_calls:
+                if call['name'] == 'UpdateResearchStateAction':
+                    args = call['args']; state = args.get('working_state', args)
+                    wanted = state.get('retain_source_ids') if isinstance(state, dict) else None
+                    if isinstance(wanted, list) and all(isinstance(v, str) for v in wanted):
+                        # An explicit empty selection is meaningful too. As in
+                        # ordinary research, selecting materials is independent
+                        # of whether the accompanying note passes validation.
+                        selected = set(wanted)
+        elif isinstance(m, ToolMessage) and m.status == 'success' and isinstance(body, dict):
+            result = body.get('result', body)
+            if m.name in {'FinalizeWorkpaperRevisionAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}:
+                if isinstance(result, dict) and result.get('accepted') is True:
+                    return None
+            elif m.name == 'UpdateResearchStateAction' and isinstance(result, dict):
+                selected.difference_update((result.get('context_release') or {}).get('source_ids', []))
+            elif m.name in {'RequestSourceAction', 'RequestEvidenceAction', 'RequestFinanceAction',
+                            'RequestCalculationAction', 'ReadResearchHistoryAction'}:
+                selected.update(material_ids(result))
+    return selected
+
+
 def working_view(messages):
     """Return None for other runtimes; one replacement path for native experts."""
     if any(m.additional_kwargs.get('fin_research_working_view') for m in messages):
@@ -593,7 +633,12 @@ def working_view(messages):
     active_material_ids = set()
     for body in bodies[boundary:]:
         active_material_ids.update(material_ids(body))
-    if pins:
+    revision_selection = revision_material_selection(messages, bodies)
+    if revision_selection is not None:
+        selected_material_ids = revision_selection
+        focus = 'revision_working_set'
+        collect(restored, selected_material_ids)
+    elif pins:
         selected_material_ids = set(pins)
         if batches:
             selected_material_ids.update(batches[-1])
@@ -606,16 +651,6 @@ def working_view(messages):
             selected_material_ids = set(batches[-1]) if batches else set()
         if batches:
             focus = 'implicit_recent_material_cohort'
-    # A host-selected reentry carries visible evidence across exactly this
-    # boundary. A runtime pressure notice is not research progress and cannot
-    # consume that boundary. Later model/tool/user activity still retires it.
-    research_tail = next((m for m in reversed(messages)
-        if not (isinstance(m, SystemMessage) and m.additional_kwargs.get('fin_context_checkpoint_instruction'))), None)
-    if (isinstance(research_tail, HumanMessage)
-            and research_tail.additional_kwargs.get('fin_research_stage_boundary') == 'revision_material_handoff'):
-        selected_material_ids.update(research_tail.additional_kwargs['fin_revision_material_ids'])
-        focus = 'revision_material_handoff'
-        collect(restored, selected_material_ids)
     for i, m in enumerate(messages):
         if isinstance(m, ToolMessage):
             b = bodies[i]; r = b.get('result', b) if isinstance(b, dict) else None

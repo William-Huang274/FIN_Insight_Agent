@@ -43,9 +43,62 @@ def context_readback(path):
         'section': 'operation', 'tool_call_id': CONTEXT_FIELD_PREFIX + path}}
 
 
+def is_review_revision(context):
+    """A revision of accepted work, not an initial draft's validation retry."""
+    task = context.get('task_context') or {}
+    baseline = task.get('accepted_revision_baseline') or {}
+    return (isinstance((context.get('submission_to_repair') or {}).get('candidate'), dict)
+            and isinstance(baseline.get('through_model_turn'), int)
+            and isinstance(baseline.get('submission'), dict))
+
+
+def project_revision_task(context):
+    """Separate the live repair from its original research plan in the view only.
+
+    Native state still owns preparation validity, scope permissions and exact
+    original-field readbacks. No semantic scope classifier or edit allowlist:
+    the author can correct consequences anywhere in the saved workpaper.
+    """
+    if not is_review_revision(context):
+        return context
+    c = deepcopy(context)
+    task = c['task_context']
+    archive = {}
+    for key in ('authoring_context', 'accepted_revision_baseline', 'overall_assignment'):
+        if key in task:
+            archive[key] = context_readback('/task_context/' + key)
+            del task[key]
+    assignment = task.get('assignment')
+    if isinstance(assignment, dict):
+        archive['original_assignment'] = context_readback('/task_context/assignment')
+        task['assignment'] = {k: v for k, v in assignment.items()
+                              if k not in {'objective', 'success_criteria'}}
+    branch = c.get('branch')
+    if isinstance(branch, dict) and 'objective' in branch:
+        archive['original_branch'] = context_readback('/branch')
+        del branch['objective']
+    # These instructions belonged to preparing the full original assignment.
+    # The existing revision_instruction is the sole live author scope guidance.
+    task.pop('authoring_instruction', None)
+    task.pop('changes_since_preparation', None)
+    task.pop('task_scope', None)
+    task['revision_task'] = {
+        'kind': 'accepted_workpaper_revision',
+        'findings_at': '/current_context/task_context/revision_feedback',
+        'candidate_at': '/current_context/submission_to_repair/candidate',
+        'validation_at': '/current_context/submission_to_repair/validation_feedback',
+        'completion_basis': ['active_findings', 'current_validation_errors', 'necessary_consequences'],
+        'related_changes': 'author_assessed_across_candidate_fields',
+        'optional_updates': 'not_required_for_this_revision',
+        'available_materials': 'evidence_not_additional_assignments',
+    }
+    task['research_background'] = {'role': 'historical_context_not_current_plan', 'reads': archive}
+    return c
+
+
 def compact_current_context(context):
     """Catalogs point to exact run-bound fields; author state and constraints stay hot."""
-    c = deepcopy(context)
+    c = project_revision_task(deepcopy(context))
     task = c.get('task_context', {})
     for i, row in enumerate(c.get('l0_context', {}).get('capability_summaries', [])):
         if row.get('capability_ref') != 'capability:research:financial-fact-query':
@@ -600,13 +653,22 @@ def working_view(messages):
             for key in ('accepted', 'error', 'error_code'):
                 if isinstance(receipt.get(key), (str, bool)):
                     row[key] = receipt[key]
-        if isinstance(args, dict) and args.get('reason_summary'):
+        if is_review_revision(current):
+            # Old action intents are not the plan for a new revision. Keep
+            # discoverable evidence identities; full arguments remain readable.
+            source_ids = sorted(material_ids(receipt))
+            if source_ids:
+                row['source_ids'] = source_ids
+        elif isinstance(args, dict) and args.get('reason_summary'):
             row['purpose'] = args['reason_summary']
         catalog.append(row)
     if public_operation(messages, INITIAL_CONTEXT_ID) is None:
         return None
-    catalog.insert(0, {'tool_call_id': INITIAL_CONTEXT_ID, 'tool': 'RestoredResearchContext',
-                      'status': 'historical_context', 'purpose': 'Original restored observations, prior actions and feedback.'})
+    initial_entry = {'tool_call_id': INITIAL_CONTEXT_ID, 'tool': 'RestoredResearchContext',
+                     'status': 'historical_context'}
+    if not is_review_revision(current):
+        initial_entry['purpose'] = 'Original restored observations, prior actions and feedback.'
+    catalog.insert(0, initial_entry)
     # Feedback history is discoverable by exact call ID. Current native errors
     # remain full; historical errors are not falsely declared resolved.
     progress = current.setdefault('progress', {})

@@ -30,7 +30,7 @@ def current_context(messages):
         if 'allowed_actions' in c:
             # These are current execution controls, not durable task context.
             # A fresh host snapshot omitting them retires an old phase's menu.
-            for key in ('submission_to_repair', 'terminal_result'):
+            for key in ('submission_to_repair', 'terminal_result', 'revision_submission_status'):
                 if key not in c:
                     current.pop(key, None)
         for k, v in c.items():

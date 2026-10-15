@@ -1362,7 +1362,8 @@ def _model_request(
             'Complete the assigned research, then call PrepareWorkpaperAction with your public effective state before final submission. No final submission until prepared.')
         body['task_context'] = context
     from .submission_reference_feedback import refresh_reference_feedback, refresh_terminal_receipts
-    last = refresh_reference_feedback(state.get("last_submission_attempt") or {},
+    from .revision_submission_state import revision_attempt_view, accepted_baseline
+    last = refresh_reference_feedback(revision_attempt_view(state),
         notebook.model_dump(mode="json"), state.get("delegated_work"))
     if body.get("tool_results"):
         body["tool_results"] = refresh_terminal_receipts(body["tool_results"], last)
@@ -1374,6 +1375,14 @@ def _model_request(
         body["terminal_result"] = {"accepted": False,
             "feedback": last.get("feedback", []),
             "validation_issues": last.get("validation_issues", [])}
+    baseline = accepted_baseline(state)
+    if last.get('submission_status') == 'not_submitted':
+        body['revision_submission_status'] = {'status': 'not_submitted',
+            'baseline_accepted': True, 'baseline_digest': baseline['submission_digest']}
+        if (notebook.model_turn_records
+                and notebook.model_turn_records[-1].turn_index == baseline['through_model_turn']
+                and isinstance(notebook.model_turn_records[-1].action, (SubmitWorkpaperAction, SubmitReviewAction))):
+            body['terminal_result'] = {'accepted': True, 'feedback': [], 'validation_issues': []}
     candidate = last.get("arguments")
     if "submit_workpaper" in allowed_actions and isinstance(candidate, dict) and candidate.get("action") == "submit_workpaper" and not last.get("accepted"):
         if allow_workpaper_field_edits:
@@ -1961,7 +1970,8 @@ def build_specialist_agentic_state_graph(
                     else prior.model_turn_count + validated.max_model_turns),
                 "max_tool_actions": (recovery_state['max_tool_actions'] if same_invocation
                     else prior.tool_action_count + validated.max_tool_actions),
-                "last_submission_attempt": ({"arguments": revision_candidate, "accepted": False, "feedback": []}
+                "last_submission_attempt": ({"arguments": revision_candidate, "accepted": None,
+                    "submission_status": "not_submitted", "feedback": []}
                     if revising else _jsonable(recovery_state.get("last_submission_attempt"))),
                 **({"revision_targets": {}, "revision_target_origins": {}, "revision_tracking_version": 1}
                    if revising else revision_state(recovery_state)),

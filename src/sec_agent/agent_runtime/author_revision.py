@@ -45,8 +45,10 @@ def restore_author_history(adapter, state, audit_paths):
                         original_args.pop("context_digest", None)
                     if actual.get("name") != recorded.get("name") or args != original_args:
                         raise ValueError("author_history_last_action_content_mismatch")
-                adapter._agentic_history[state["agent_id"]] = messages_from_dict(
+                from .revision_submission_state import restore_accepted_receipt
+                messages = messages_from_dict(
                     [{"type": m["type"], "data": m} for m in [*event["messages"], raw]])
+                adapter._agentic_history[state["agent_id"]] = restore_accepted_receipt(messages, state, audit_paths)
                 return
     raise ValueError("original_author_private_history_unavailable")
 

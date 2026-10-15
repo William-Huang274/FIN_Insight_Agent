@@ -995,6 +995,8 @@ def _project_agentic_specialist_request(
         ),
     }
     collaboration = request.get("collaboration_context")
+    if request.get('revision_submission_status'):
+        projected['revision_submission_status'] = request['revision_submission_status']
     if request.get("submission_to_repair"):
         projected["submission_to_repair"] = request["submission_to_repair"]
     if request.get("task_context") is not None:

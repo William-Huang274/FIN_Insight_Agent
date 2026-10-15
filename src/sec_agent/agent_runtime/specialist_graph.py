@@ -435,6 +435,10 @@ class WorkpaperEditCorrection(_StrictModel):
 
 
 class ReviseWorkpaperAction(_StrictModel):
+    """Apply version-bound local edits and submit the assembled workpaper for validation.
+
+    Reuses unchanged content; no subsequent full SubmitWorkpaperAction is needed.
+    """
     action: Literal["revise_workpaper"]
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
     reason_summary: str = Field(min_length=1, max_length=1000)
@@ -513,7 +517,11 @@ def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperActio
             issue("invalid_path", "Use a valid JSON Pointer into the current candidate.")
             continue
         if not parts or parts[0] not in editable:
-            issue("field_not_editable", "Edit only workpaper content, not action/context/reason metadata.")
+            nested = ("/task_note" + path if parts and parts[0] in (original.get("task_note") or {}) else None)
+            if nested:
+                issue("field_not_editable", f"This field belongs under task_note. Use {nested}; retain the intended edit content. Correct this saved edit only, not the whole workpaper.", suggested_path=nested)
+            else:
+                issue("field_not_editable", "Edit only workpaper content, not action/context/reason metadata.")
             continue
         try:
             current = pointer.resolve(updated)
@@ -1344,7 +1352,8 @@ def _model_request(
         context['stage_methods'] = stage_methods('workpaper' if drafting else 'prepare_workpaper',
             domain=authoring_domain, reader=authoring_method_reader)
         context['authoring_instruction'] = ('Preparation is already accepted and bound to the CURRENT evidence and working state. '
-            'Write and use SubmitWorkpaperAction now; do not repeat preparation because an older note or continuation '
+            'Submit the first draft with SubmitWorkpaperAction, or use ReviseWorkpaperAction for local changes when submission_to_repair is present. '
+            'ReviseWorkpaperAction also submits for validation; no full resubmission is required. Do not repeat preparation because an older note or continuation '
             'instruction still says to prepare. Preparation becomes available again only if research/working-state '
             'changes invalidate this binding. Preserve original evidence and unresolved limits.' if drafting else
             'Complete the assigned research, then call PrepareWorkpaperAction with your public effective state before final submission. No final submission until prepared.')
@@ -1379,6 +1388,29 @@ def _model_request(
                 "Before reporting a correction, inspect the actual current candidate, not an earlier proposed edit. Correct related body, claims, counterevidence and notes consistently. "
                 "For a text fragment use str_replace; for one coverage assessment use upsert_coverage. No need to repeat the whole field or coverage array. "
                 "A previous working_state marked completed describes the prior submission, not completion of this revision.")
+        if allow_workpaper_field_edits:
+            body["submission_to_repair"]["submission_contract"] = {
+                "local_revision": "ReviseWorkpaperAction applies edits and submits the complete assembled candidate for normal validation in one call. Runtime reuses unchanged claims, prose and source quotes; do not copy them into the action.",
+                "full_replacement": "SubmitWorkpaperAction remains available for an intentional full rewrite, not required after a revision.",
+                "review_response_path": "/task_note/finding_responses",
+                "change_note_path": "/task_note/changes",
+            }
+            pending = state.get("pending_workpaper_revision") or {}
+            if pending and pending.get("base_submission_digest") == canonical_sha256(candidate):
+                # Re-evaluate old checkpoint errors with the current validator;
+                # never apply or silently repair the author's proposed content.
+                try:
+                    proposal = ReviseWorkpaperAction.model_validate_json(json.dumps({
+                        "action": "revise_workpaper", "context_digest": "0" * 64,
+                        "reason_summary": "Validate saved edit paths for current feedback.",
+                        "base_submission_digest": pending["base_submission_digest"], "edits": pending["edits"]}))
+                    apply_workpaper_edits(candidate, proposal)
+                except WorkpaperEditError as exc:
+                    body["submission_to_repair"]["pending_edit_validation"] = {
+                        "pending_revision_digest": pending["digest"], "issues": exc.issues,
+                        "next_action": "Send only affected edit_corrections with this pending_revision_digest and the base digest. Other saved edits are reused; the entire assembled paper is validated. No changes have been applied."}
+                except (ValueError, KeyError):
+                    pass  # Existing schema feedback remains authoritative.
     return {**body, "context_digest": canonical_sha256(body)}
 
 

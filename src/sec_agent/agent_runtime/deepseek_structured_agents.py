@@ -545,10 +545,13 @@ _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     "include adjacent text if multiple matches. Use op=upsert_coverage with one assessment to insert/update one criterion, without echoing the old array. "
     "Legacy old_value/new_value replaces a whole field only. Batches are atomic; failed edits leave the candidate unchanged. "
     "Inspect edit_result issues and submission_to_repair.edit_progress; keep all requested repairs in scope after a tool error. "
-    "Unchanged claims and prose remain intact and all submission checks run again. "
+    "ReviseWorkpaperAction applies the patch AND submits the assembled workpaper to all normal checks in one call; "
+    "it is not a preparation step and needs no subsequent full SubmitWorkpaperAction. Unchanged claims, prose and quotes are reused by runtime. "
+    "For a saved rejected batch, send pending_revision_digest and only the affected edit_corrections, not the whole batch. "
+    "Review responses and change notes belong at /task_note/finding_responses and /task_note/changes, never at the action root. "
     "Shared citation_quotes may be supplied once on the workpaper, keyed by exact evidence ID; "
     "each claim still states its own evidence_ids. Do not duplicate source quotes across claims. "
-    "To finish, call SubmitWorkpaperAction; "
+    "To finish a first draft or intentional full replacement, call SubmitWorkpaperAction; for local revisions finish with ReviseWorkpaperAction. "
     "do not replace the tool call with a plain-text final answer."
 )
 _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (

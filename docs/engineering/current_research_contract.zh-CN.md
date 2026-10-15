@@ -1,5 +1,13 @@
 # 当前研究任务与历史数据契约
 
+## 局部修订即提交
+
+已有候选稿的局部修订使用 `ReviseWorkpaperAction`：模型提供版本摘要和修改片段，runtime 复用未变的正文、论断及引文，组装完整候选并执行与全量提交相同的结构、来源和交付校验。此调用本身就是提交，不要求随后再调用 `SubmitWorkpaperAction` 重发整稿。首次写稿或有意全文重写仍可使用全量提交。
+
+复核答复和修改说明位于 `/task_note/finding_responses`、`/task_note/changes`。误放在根级的编辑路径返回确切的嵌套路径建议，不静默修改研究内容。失败批次保留后，可以使用 `pending_revision_digest` 和 `edit_corrections` 只更正出错的编辑；其他修改原样复用。旧检查点恢复时对已保存批次重新生成当前路径反馈，候选及批次本身不因生成反馈而改变。
+
+结构验收不代表研究结论正确。引用、期间、单位、候选版本绑定和独立研究质量复核均保留。
+
 新建研究任务使用 `case_profile=general_research` 和 `runtime_contract_version=research_session.v2`。研究身份为 `research:<thread UUID>`，由宿主生成；实际用户问题、专业委派和逐来源截止日期决定研究范围。任何公司都不能因历史开发案例而成为默认研究主体。
 
 ## 运行接口

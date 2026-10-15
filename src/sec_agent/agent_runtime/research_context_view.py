@@ -210,7 +210,7 @@ def public_operation(messages, call_id):
             'notice': 'Saved public record; not a new execution or acceptance. Source authority and failure status are unchanged.'}
 
 
-def history_operation_page(record, *, offset=0, max_characters=12_000, source_ids=()):
+def history_operation_page(record, *, offset=0, max_characters=12_000, source_ids=(), view=None):
     """Project a saved operation for one model turn without altering its archive.
 
     Current source reads are normally bounded, but older journals can contain a
@@ -221,7 +221,20 @@ def history_operation_page(record, *, offset=0, max_characters=12_000, source_id
     """
     if offset < 0 or not 1_000 <= max_characters <= 24_000:
         raise ValueError('history_operation_page_window_invalid')
+    if view not in (None, 'receipt', 'record'):
+        raise ValueError('history_operation_view_invalid')
     selected = {str(value) for value in source_ids}
+    operation = record.get('operation') or {}
+    header = {k: deepcopy(operation[k]) for k in ('id', 'name', 'error') if k in operation}
+    # Legacy offsets continue to address the full record. New cursors always
+    # declare their view, so a subsequent page cannot switch serialization.
+    selected_view = view or ('receipt' if offset == 0 and operation.get('name') in {
+        'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SubmitReviewAction'} else 'record')
+
+    def read_at(selected_view, offset=0):
+        return {'tool': 'ReadResearchHistoryAction', 'arguments': {
+            'section': 'operation', 'tool_call_id': operation['id'], 'view': selected_view,
+            'offset': offset, 'max_characters': max_characters}}
 
     def rows(value):
         if isinstance(value, dict):
@@ -240,7 +253,7 @@ def history_operation_page(record, *, offset=0, max_characters=12_000, source_id
     if selected:
         found = list(rows(result)) if result is not None else []
         return {
-            'operation': deepcopy(record.get('operation')),
+            'operation': header,
             'receipt': {'status': receipt.get('status'), 'result': {'selected_materials': found}},
             'requested_source_ids': sorted(selected),
             'available_source_ids': available_ids,
@@ -248,21 +261,54 @@ def history_operation_page(record, *, offset=0, max_characters=12_000, source_id
             'notice': ('Exact source/numeric/calculation objects selected from the saved public operation; '
                        'not a new execution. Missing selected IDs were not guessed.'),
         }
-    encoded = json.dumps(record, ensure_ascii=False, separators=(',', ':'))
-    if len(encoded) <= max_characters:
+    payload = record if selected_view == 'record' else receipt
+    encoded = json.dumps(payload, ensure_ascii=False, separators=(',', ':'))
+    if offset == 0 and len(encoded) <= max_characters and selected_view == 'record':
         return deepcopy(record)
+    if offset == 0 and len(encoded) <= max_characters:
+        return {'operation': header, 'receipt': deepcopy(receipt), 'view': 'receipt',
+            'next_offset': None, 'record_read': read_at('record'),
+            'available_source_ids': available_ids,
+            'notice': 'Exact saved outcome. Full submitted arguments remain at record_read; no new execution or validation.'}
     end = min(len(encoded), offset + max_characters)
     return {
-        'operation': deepcopy(record.get('operation')),
+        'operation': header,
         'receipt': {'status': receipt.get('status')},
+        'view': selected_view,
         'available_source_ids': available_ids,
         'serialized_record_window': encoded[offset:end],
         'offset': offset,
         'next_offset': end if end < len(encoded) else None,
+        'next_read': read_at(selected_view, end) if end < len(encoded) else None,
         'total_characters': len(encoded),
         'notice': ('Partial public historical-record window. It is navigation, not a complete source passage; '
                    'use an exact available_source_id to recover a material object, or next_offset to continue the record.'),
     }
+
+
+def refresh_history_read_views(recent, canonical_messages, calls):
+    """Reproject a successful pending readback from its own saved original only.
+
+    Old graph/audit receipts remain intact. Actual errors, private reasoning and
+    missing originals are never replaced with a guessed success.
+    """
+    for message in recent:
+        if not isinstance(message, ToolMessage) or message.status != 'success':
+            continue
+        call = (calls.get(message.tool_call_id) or (None, {}))[1]
+        args = call.get('args')
+        if call.get('name') != 'ReadResearchHistoryAction' or not isinstance(args, dict) or args.get('section') != 'operation':
+            continue
+        body = decode(message.content)
+        result = body.get('result') if isinstance(body, dict) else None
+        if not isinstance(result, dict) or 'historical_record' not in result:
+            continue
+        original = public_operation(canonical_messages, args.get('tool_call_id', ''))
+        if original is None:
+            continue
+        result['historical_record'] = history_operation_page(original, offset=args.get('offset', 0),
+            max_characters=args.get('max_characters', 12_000), source_ids=args.get('source_ids', ()), view=args.get('view'))
+        message.content = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
 
 
 def history_reader(turn):
@@ -549,4 +595,5 @@ def working_view(messages):
             del b['current_context']
             m.content = json.dumps(b, ensure_ascii=False, separators=(',', ':'))
     compact_accepted_operations(recent, view)
+    refresh_history_read_views(recent, messages, calls)
     return [*prefix, *recent, *reminders]

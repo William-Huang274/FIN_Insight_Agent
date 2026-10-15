@@ -208,6 +208,8 @@ class ReadResearchHistoryAction(_StrictModel):
     section: Literal['turn', 'lead_assistance', 'operation']
     index: int | None = Field(default=None, ge=1)
     tool_call_id: str | None = Field(default=None, description='For operation: copy the exact ID from operation_catalog or a supplied context-field readback. Reads saved data without re-execution; runtime:context: locators return run-bound current metadata.')
+    view: Literal['receipt', 'record'] | None = Field(default=None, exclude_if=lambda value: value is None,
+        description='For operation: receipt reads the actual outcome without resending old arguments; record reads the full public operation including arguments. If omitted, submission calls return receipt, other operations return record. Follow next_read for paging.')
     offset: int = Field(default=0, ge=0, description='Character offset for a large saved operation record. Copy next_offset from the prior historical receipt.')
     max_characters: int = Field(default=12_000, ge=1_000, le=24_000, description='Largest serialized historical-record window. This does not reread, truncate or alter the archived original.')
     source_ids: tuple[str, ...] = Field(default=(), max_length=12, description='For operation only, optional exact observed passage/numeric/calculation IDs. Returns those original objects instead of a generic serialized page.')
@@ -2703,7 +2705,7 @@ def build_specialist_agentic_state_graph(
                         return reject('public_history_reader_unavailable', 'Native journal reader is not wired to this runtime; this is an execution problem, not missing source evidence.')
                     record = reader(state['agent_id'], action.tool_call_id)
                     payload = (history_operation_page(record, offset=action.offset,
-                        max_characters=action.max_characters, source_ids=action.source_ids)
+                        max_characters=action.max_characters, source_ids=action.source_ids, view=action.view)
                         if record is not None else None)
                 elif action.section == 'turn':
                     record = next((r for r in before.model_turn_records if r.turn_index == action.index), None)

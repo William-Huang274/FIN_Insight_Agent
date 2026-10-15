@@ -113,6 +113,68 @@ def test_large_history_operation_pages_or_returns_exact_selected_material_withou
     assert record == saved
 
 
+@pytest.mark.parametrize('accepted', [True, False])
+def test_submission_history_returns_exact_receipt_and_explicit_full_record_pages(accepted):
+    record = {'operation': {'id': 'submit', 'name': 'SubmitWorkpaperAction',
+        'args': {'narrative_markdown': 'long financial analysis ' * 2000}},
+        'receipt': {'status': 'success' if accepted else 'error', 'result': {
+            'accepted': accepted, 'feedback': [] if accepted else [{'code': 'quote_error'}]}},
+        'notice': 'Original public operation'}
+    before = deepcopy(record)
+    receipt = history_operation_page(record)
+    assert receipt['receipt'] == record['receipt']
+    assert 'args' not in receipt['operation'] and 'serialized_record_window' not in receipt
+    assert receipt['record_read']['arguments']['view'] == 'record'
+    offset, windows = 0, []
+    while True:
+        page = history_operation_page(record, view='record', offset=offset, max_characters=1000)
+        assert 'args' not in page['operation']
+        windows.append(page['serialized_record_window'])
+        if page['next_read'] is None:
+            break
+        assert page['next_read']['arguments']['view'] == 'record'
+        offset = page['next_read']['arguments']['offset']
+    assert json.loads(''.join(windows)) == record
+    assert record == before
+
+
+def test_large_receipt_has_own_cursor_and_no_duplicate_argument_body():
+    record = {'operation': {'id': 'failed', 'name': 'SubmitWorkpaperAction', 'args': {'large': 'X'*30000}},
+        'receipt': {'status': 'error', 'result': {'accepted': False, 'feedback': ['Q'*30000]}}}
+    first = history_operation_page(record, view='receipt', max_characters=1000)
+    assert first['total_characters'] == len(json.dumps(record['receipt'], ensure_ascii=False, separators=(',', ':')))
+    assert first['next_read']['arguments']['view'] == 'receipt'
+    assert 'X'*100 not in json.dumps(first) and 'args' not in first['operation']
+    # An old cursor without a new view must keep its original full-record scope.
+    legacy = history_operation_page(record, offset=1000, max_characters=1000)
+    assert legacy['view'] == 'record'
+
+
+def test_pending_old_history_read_reprojects_from_canonical_record_without_changing_archive():
+    rows = fixture()
+    rows.extend(batch('submit', 'SubmitWorkpaperAction', {'narrative_markdown': 'old manuscript '*2000},
+                      {'accepted': True, 'feedback': []}))
+    rows.extend(batch('read-submit', 'ReadResearchHistoryAction', {'section': 'operation', 'tool_call_id': 'submit'},
+        {'historical_record': {'operation': {'args': 'duplicate old manuscript'},
+                               'serialized_record_window': 'duplicate old manuscript'}}))
+    saved = deepcopy(rows)
+    out = working_view(rows)
+    result = json.loads(out[-1].content)['result']['historical_record']
+    assert result['receipt']['result']['accepted'] is True
+    assert result['record_read']['arguments']['tool_call_id'] == 'submit'
+    assert 'narrative_markdown' not in json.dumps(result)
+    assert rows == saved
+
+
+def test_history_view_omission_preserves_old_action_wire_identity():
+    old = {'action': 'read_research_history', 'context_digest': 'a'*64,
+        'section': 'operation', 'tool_call_id': 'call', 'index': None,
+        'offset': 0, 'max_characters': 12000, 'source_ids': [], 'reason_summary': 'Read saved data'}
+    assert ReadResearchHistoryAction.model_validate_json(json.dumps(old)).model_dump(mode='json') == old
+    explicit = ReadResearchHistoryAction.model_validate_json(json.dumps({**old, 'view': 'record'}))
+    assert explicit.model_dump(mode='json')['view'] == 'record'
+
+
 def test_unmatched_native_call_is_not_retired():
     rows=fixture();pending=AIMessage(content='',tool_calls=[{'id':'pending','name':'RequestSourceAction','args':{}}],
                                    additional_kwargs={'reasoning_content':'must remain'})

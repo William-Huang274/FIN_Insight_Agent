@@ -39,9 +39,9 @@ def revision_attempt_view(state):
         if record['turn_index'] <= baseline['through_model_turn']:
             continue
         action = record.get('action') or {}
-        if action.get('action') in {'submit_workpaper', 'revise_workpaper', 'submit_review'}:
+        if action.get('action') in {'submit_workpaper', 'revise_workpaper', 'finalize_workpaper_revision', 'submit_review'}:
             return last
-        if any(c.get('name') in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SubmitReviewAction'}
+        if any(c.get('name') in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'FinalizeWorkpaperRevisionAction', 'SubmitReviewAction'}
                for c in action.get('tool_calls', [])):
             return last
     if last.get('arguments'):
@@ -60,7 +60,7 @@ def restore_accepted_receipt(messages, state, audit_paths):
         return messages
     suspects = []
     for i, message in enumerate(messages):
-        if message.type != 'tool' or message.name not in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}:
+        if message.type != 'tool' or message.name not in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'FinalizeWorkpaperRevisionAction'}:
             continue
         try:
             payload = json.loads(message.content)
@@ -89,7 +89,7 @@ def restore_accepted_receipt(messages, state, audit_paths):
                 if event.get('actor') != state['agent_id'] or event.get('request_digest') != receipt['request_digest']:
                     continue
                 calls = (event.get('raw_response') or {}).get('tool_calls') or []
-                if len(calls) != 1 or calls[0].get('name') not in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}:
+                if len(calls) != 1 or calls[0].get('name') not in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'FinalizeWorkpaperRevisionAction'}:
                     continue
                 restored = list(messages)
                 for i, message, payload in suspects:

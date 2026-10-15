@@ -99,6 +99,22 @@ def project_revision_task(context):
 def compact_current_context(context):
     """Catalogs point to exact run-bound fields; author state and constraints stay hot."""
     c = project_revision_task(deepcopy(context))
+    repair = c.get('submission_to_repair') or {}
+    draft = repair.get('draft_state') or {}
+    if draft.get('saved_batches') and isinstance(repair.get('candidate'), dict):
+        import jsonpointer
+        candidate = repair.pop('candidate')
+        repair['candidate_readback'] = context_readback('/submission_to_repair/candidate')
+        repair['candidate_fields'] = list(candidate)
+        repair['claim_ids'] = [row['claim_id'] for row in candidate.get('claims', [])]
+        repair['latest_saved_fields'] = {}
+        for path in draft.get('latest_changed_paths') or []:
+            try:
+                repair['latest_saved_fields'][path] = deepcopy(jsonpointer.resolve_pointer(candidate, path))
+            except jsonpointer.JsonPointerException:
+                pass
+        if 'revision_task' in c.get('task_context', {}):
+            c['task_context']['revision_task']['candidate_at'] = '/current_context/submission_to_repair/candidate_readback'
     task = c.get('task_context', {})
     for i, row in enumerate(c.get('l0_context', {}).get('capability_summaries', [])):
         if row.get('capability_ref') != 'capability:research:financial-fact-query':
@@ -282,7 +298,7 @@ def history_operation_page(record, *, offset=0, max_characters=12_000, source_id
     # Legacy offsets continue to address the full record. New cursors always
     # declare their view, so a subsequent page cannot switch serialization.
     selected_view = view or ('receipt' if offset == 0 and operation.get('name') in {
-        'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SubmitReviewAction'} else 'record')
+        'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SaveWorkpaperEditsAction', 'FinalizeWorkpaperRevisionAction', 'SubmitReviewAction'} else 'record')
 
     def read_at(selected_view, offset=0):
         return {'tool': 'ReadResearchHistoryAction', 'arguments': {

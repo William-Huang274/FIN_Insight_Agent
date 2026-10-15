@@ -16,7 +16,8 @@ def test_revision_has_one_submission_protocol_and_legacy_first_draft_is_unchange
     state = revision_state()
     notebook = SpecialistNotebook.model_validate_json(json.dumps(state['notebook']))
     local = _model_request(state=state, notebook=notebook, allow_workpaper_field_edits=True)
-    assert 'revise_workpaper' in local['allowed_actions']
+    assert {'save_workpaper_edits', 'finalize_workpaper_revision'} <= set(local['allowed_actions'])
+    assert 'revise_workpaper' not in local['allowed_actions']
     assert 'submit_workpaper' not in local['allowed_actions']
     assert 'full_replacement' not in local['submission_to_repair']['submission_contract']
     legacy = _model_request(state=state, notebook=notebook, allow_workpaper_field_edits=False)
@@ -93,7 +94,8 @@ def test_adapter_reentry_reaches_actual_sdk_with_only_edit_submission_and_saved_
     def serve(req):
         wire = json.loads(req.content); wires.append(wire)
         names = {t['function']['name'] for t in wire['tools']}
-        assert 'ReviseWorkpaperAction' in names and 'SubmitWorkpaperAction' not in names
+        assert {'SaveWorkpaperEditsAction', 'FinalizeWorkpaperRevisionAction'} <= names
+        assert not {'ReviseWorkpaperAction', 'SubmitWorkpaperAction'} & names
         assert not any(m['role'] == 'assistant' for m in wire['messages'])
         encoded = json.dumps(wire, ensure_ascii=False)
         assert 'Necessary FY2027 fact' in encoded and 'Additional fact' in encoded

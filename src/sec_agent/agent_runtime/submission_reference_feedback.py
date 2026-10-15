@@ -102,7 +102,7 @@ def refresh_terminal_receipts(receipts, last):
     projected = deepcopy(receipts)
     old_issues = last.get('validation_issues', [])
     for receipt in projected:
-        if receipt.get('name') not in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}:
+        if receipt.get('name') not in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'FinalizeWorkpaperRevisionAction'}:
             continue
         try:
             payload = json.loads(receipt.get('content', ''))

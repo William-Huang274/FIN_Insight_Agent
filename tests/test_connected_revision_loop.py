@@ -53,7 +53,7 @@ def test_original_author_continues_and_records_actual_change_without_note_claim(
         if authoring:
             assert request['task_context']['authoring_context'] == original['authoring_context']
             assert 'prepare_workpaper' not in request['allowed_actions']
-            assert 'revise_workpaper' in request['allowed_actions']
+            assert 'save_workpaper_edits' in request['allowed_actions']
         baseline = request['task_context']['accepted_revision_baseline']
         assert baseline['submission'] == original['final_submission']
         assert 'not research quality' in baseline['notice']
@@ -62,10 +62,14 @@ def test_original_author_continues_and_records_actual_change_without_note_claim(
         assert 'claims' not in semantic['task_context']['accepted_revision_baseline']['submission']
         assert semantic['submission_to_repair']['candidate']['claims'] == request['submission_to_repair']['candidate']['claims']
         candidate = request['submission_to_repair']['candidate']
+        if len(seen) == 2:
+            return _batch(request, [{'action': 'finalize_workpaper_revision', 'reason_summary': 'Submit saved revision.',
+                'draft_digest': request['submission_to_repair']['base_submission_digest']}])
         answers = [{'finding_id': 'verifier:F1', 'disposition': 'corrected',
                     'explanation': 'Changed the precise fixture fragment; independent verification still required.'}]
-        return _batch(request, [edit_action(candidate, [text_edit(),
-            {'path': '/task_note/finding_responses', 'old_value': [], 'new_value': answers}]).model_dump(mode='json')])
+        edit = edit_action(candidate, [text_edit(),
+            {'path': '/task_note/finding_responses', 'old_value': [], 'new_value': answers}]).model_dump(mode='json')
+        return _batch(request, [{**edit, 'action': 'save_workpaper_edits', 'operation_id': 'connected-batch'}])
     builder = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
         model_turn=turn, evidence_tool=_ToolPorts().evidence, finance_tool=_ToolPorts().finance,
         allow_workpaper_field_edits=True, authoring_enabled=authoring), recovery_state=saved, revision_feedback=feedback)
@@ -78,9 +82,9 @@ def test_original_author_continues_and_records_actual_change_without_note_claim(
             assert (await graph.aget_state(config)).values['notebook'] == result['notebook']
             return result
     result = asyncio.run(resume())
-    assert result['phase'] == 'specialist_submission_accepted' and len(seen) == 1
+    assert result['phase'] == 'specialist_submission_accepted' and len(seen) == 2
     assert result['agent_id'] == original['agent_id'] and result['task'] == original['task']
-    assert result['notebook']['model_turn_records'][:-1] == original['notebook']['model_turn_records']
+    assert result['notebook']['model_turn_records'][:-2] == original['notebook']['model_turn_records']
     assert result['notebook']['observations'] == original['notebook']['observations']
     assert result['final_submission']['task_note']['changes'] == original['final_submission']['task_note']['changes']
     change = task_outcome(result)['runtime_changes'][-1]

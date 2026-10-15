@@ -1,4 +1,4 @@
-"""Local revision is a complete submission, including restored path failures."""
+"""Saved path corrections remain drafts until explicitly finalized."""
 from copy import deepcopy
 
 import pytest
@@ -26,7 +26,7 @@ def test_misplaced_nested_field_reports_exact_path_without_mutating(field, value
     assert original == snapshot
 
 
-def test_saved_batch_path_feedback_and_single_revision_finish():
+def test_saved_batch_path_feedback_then_explicit_finalize():
     from sec_agent.agent_runtime.specialist_graph import save_workpaper_revision
     original = submitted_original()
     # Initialize a real review revision before freezing its failed edit batch.
@@ -44,11 +44,15 @@ def test_saved_batch_path_feedback_and_single_revision_finish():
     def turn(request):
         seen.append(request)
         repair = request['submission_to_repair']
+        if len(seen) == 2:
+            assert request['revision_submission_status']['accepted'] is False
+            return _batch(request, [{'action': 'finalize_workpaper_revision', 'reason_summary': 'Submit saved version.',
+                'draft_digest': repair['base_submission_digest']}])
         assert repair['candidate'] == candidate
         check = repair['pending_edit_validation']
         assert check['issues'][0]['suggested_path'] == '/task_note/finding_responses'
-        assert 'one call' in repair['submission_contract']['local_revision']
-        return _batch(request, [{'action': 'revise_workpaper', 'reason_summary': 'Repair only saved path.',
+        assert 'without submitting' in repair['submission_contract']['local_revision']
+        return _batch(request, [{'action': 'save_workpaper_edits', 'operation_id': 'repair-path', 'reason_summary': 'Repair only saved path.',
             'base_submission_digest': repair['base_submission_digest'],
             'pending_revision_digest': check['pending_revision_digest'],
             'edit_corrections': [{'edit_index': 1, 'edit': {**wrong, 'path': '/task_note/finding_responses'}}]}])
@@ -56,9 +60,9 @@ def test_saved_batch_path_feedback_and_single_revision_finish():
         model_turn=turn, evidence_tool=_ToolPorts().evidence, finance_tool=_ToolPorts().finance,
         allow_workpaper_field_edits=True), recovery_state=state).compile()
     result = graph.invoke(_input(), {'recursion_limit': 30})
-    assert len(seen) == 1
+    assert len(seen) == 2
     assert result['phase'] == 'specialist_submission_accepted'
     assert result['final_submission']['claims'] == original['final_submission']['claims']
     assert result['final_submission']['task_note']['finding_responses'] == answer
-    assert 'no subsequent full SubmitWorkpaperAction' in _NATIVE_SPECIALIST_SYSTEM_PROMPT
+    assert 'FinalizeWorkpaperRevisionAction' in _NATIVE_SPECIALIST_SYSTEM_PROMPT
     assert 'To finish, call SubmitWorkpaperAction;' not in _NATIVE_SPECIALIST_SYSTEM_PROMPT

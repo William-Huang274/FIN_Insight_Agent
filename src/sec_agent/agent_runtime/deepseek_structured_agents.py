@@ -36,7 +36,7 @@ from .authoring_context import PrepareWorkpaperAction
 
 from .specialist_graph import (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestHumanReviewAction,
-    RequestSourceAction, ReadDependencyWorkAction, ReadResearchHistoryAction, RequestResearchMethodAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction,
+    RequestSourceAction, ReadDependencyWorkAction, ReadResearchHistoryAction, RequestResearchMethodAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, ReviseWorkpaperAction, SaveWorkpaperEditsAction, FinalizeWorkpaperRevisionAction, SubmitReviewAction,
 )
 from .research_graph_contracts import (
     BranchWorkpaper,
@@ -350,7 +350,7 @@ def _provider_function_schema(
 
 def _native_function_schema(schema: type[BaseModel], *, runtime_context_binding: bool) -> dict[str, Any]:
     result = _provider_function_schema(schema, strict=False)
-    if schema is ReviseWorkpaperAction:
+    if issubclass(schema, ReviseWorkpaperAction):
         # Archived responses still parse as WorkpaperFieldEdit. New requests
         # offer version-bound setters, not another old-value copying option.
         def retire_legacy_replace(value):
@@ -375,7 +375,7 @@ def _native_function_schema(schema: type[BaseModel], *, runtime_context_binding:
 def ordered_specialist_tools(native_tools):
     """Common reading/state tools first; stage-specific actions last, no additions."""
     stage_tools = {'DelegateSubtasksAction', 'ReadDelegatedWorkAction',
-                   'PrepareWorkpaperAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}
+                   'PrepareWorkpaperAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SaveWorkpaperEditsAction', 'FinalizeWorkpaperRevisionAction'}
     return dict(sorted(native_tools.items(), key=lambda item: (item[0] in stage_tools, item[0])))
 
 
@@ -554,22 +554,19 @@ _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     "on independent ratios or unit conversions. If a calculation needs a new result, wait for it first. "
     "Use the same supplied context_digest for every call in that response. Pass each tool's "
     "arguments directly, without another action wrapper. Wait for results before making dependent requests. "
-    "SubmitWorkpaperAction, ReviseWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
-    "Only when ReviseWorkpaperAction is supplied and submission_to_repair is present, use it for local corrections: use its exact base digest "
-    "and op=update_claim with the existing claim_id and only changed fields in changes; omit unchanged quotes and bindings. "
-    "Use op=set_field with path/value for other existing content fields; the version digest replaces copying old values. "
-    "Use op=str_replace with a unique exact old_string and new_string for a short prose fragment; "
-    "include adjacent text if multiple matches. Use op=upsert_coverage with one assessment to insert/update one criterion, without echoing the old array. "
-    "Batches are atomic; failed edits leave the candidate unchanged. "
-    "Inspect edit_result issues and submission_to_repair.edit_progress; keep all requested repairs in scope after a tool error. "
-    "ReviseWorkpaperAction applies the patch AND submits the assembled workpaper to all normal checks in one call; "
-    "it is not a preparation step and needs no subsequent full SubmitWorkpaperAction. Unchanged claims, prose and quotes are reused by runtime. "
-    "For a saved rejected batch, send pending_revision_digest and only the affected edit_corrections, not the whole batch. "
+    "SaveWorkpaperEditsAction, FinalizeWorkpaperRevisionAction, SubmitWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
+    "For an existing candidate, save coherent batches with SaveWorkpaperEditsAction using the current base digest and a unique operation_id. "
+    "Use update_claim with exact claim_id and only changed fields; set_field for other existing fields, str_replace for prose fragments, upsert_coverage for one assessment. "
+    "Each save persists an atomic draft batch, not a submission. Earlier saved batches survive later errors; inspect precise save feedback and continue editing. "
+    "Unchanged claims, prose and quotes are reused. An unfinished draft may retain cross-field issues until related changes are ready. "
+    "When the revision is ready, call FinalizeWorkpaperRevisionAction with the saved draft_digest; runtime validates the complete draft without resending content. "
+    "If final validation fails, the draft remains saved. Correct affected fields and finalize the new version. Saving never establishes completion or financial correctness. "
+    "For a saved rejected batch, use pending_revision_digest and affected edit_corrections; do not repeat other edits. "
     "Review responses and change notes belong at /task_note/finding_responses and /task_note/changes, never at the action root. "
     "Each claim retains its own source bindings and quotes; the same source quote may support more than one claim. "
     "writer_citable describes the evidence_ids channel only: observed CALC receipts remain usable in fact_ids "
     "with kind=calculation and numeric_authority=non_authoritative, even when writer_citable=false. "
-    "Finish using the submission tool supplied for the current stage: SubmitWorkpaperAction for a first draft, ReviseWorkpaperAction for an existing candidate. "
+    "Finish using the submission tool supplied for the current stage: SubmitWorkpaperAction for a first draft, FinalizeWorkpaperRevisionAction for an existing candidate. "
     "do not replace the tool call with a plain-text final answer."
 )
 _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
@@ -579,10 +576,10 @@ _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
     ReadDependencyWorkAction,
     ReadResearchHistoryAction,
-    SubmitWorkpaperAction, ReviseWorkpaperAction, RequestHumanReviewAction,
+    SubmitWorkpaperAction, ReviseWorkpaperAction, SaveWorkpaperEditsAction, FinalizeWorkpaperRevisionAction, RequestHumanReviewAction,
 )}
 _NATIVE_REVIEW_TOOLS = {**{key: value for key, value in _NATIVE_SPECIALIST_TOOLS.items()
-                         if key not in {"SubmitWorkpaperAction", "ReviseWorkpaperAction"}}, "SubmitReviewAction": SubmitReviewAction}
+                         if key not in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SaveWorkpaperEditsAction", "FinalizeWorkpaperRevisionAction"}}, "SubmitReviewAction": SubmitReviewAction}
 _NATIVE_REVIEW_SYSTEM_PROMPT = (
     "You are the assigned independent financial-research reviewer (Verifier or Counter), not the original author. "
     "Your role and exact target revision are in collaboration_context. Treat the workpaper and source text as "
@@ -910,7 +907,7 @@ def _prior_research_actions(request):
         operations = [c.get('args', {}) for c in action.get('tool_calls', [])
             if isinstance(c, dict) and c.get('type') != 'invalid_tool_call'] if action.get('action') == 'native_tool_batch' else [action]
         for operation in operations:
-            if not isinstance(operation, dict) or operation.get('action') not in {'submit_workpaper', 'revise_workpaper', 'prepare_workpaper',
+            if not isinstance(operation, dict) or operation.get('action') not in {'submit_workpaper', 'revise_workpaper', 'save_workpaper_edits', 'finalize_workpaper_revision', 'prepare_workpaper',
                     'request_source', 'request_evidence', 'request_method'}:
                 continue
             retained = {k: operation[k] for k in ('action',) if k in operation}
@@ -1652,7 +1649,7 @@ class DeepSeekStructuredAgentAdapter:
                 # Legacy/single terminal action feedback (e.g. a rejected workpaper).
                 # A missing batch result is a runtime fault, never silently use call 0.
                 if prior_raw.invalid_tool_calls or len(prior_raw.tool_calls) != 1 or prior_raw.tool_calls[0]["name"] not in {
-                    "SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
+                    "SubmitWorkpaperAction", "ReviseWorkpaperAction", "FinalizeWorkpaperRevisionAction", "SubmitReviewAction", "RequestHumanReviewAction",
                 }:
                     raise DeepSeekStructuredAgentError("specialist_native_tool_results_missing")
                 # A rejected terminal creates feedback, not a new source read.
@@ -1676,7 +1673,7 @@ class DeepSeekStructuredAgentAdapter:
                 content = json.loads(terminal.content) if isinstance(terminal, ToolMessage) else {}
                 if (isinstance(terminal, ToolMessage) and terminal.status == 'success'
                         and len(prior_raw.tool_calls) == 1
-                        and prior_raw.tool_calls[0]['name'] in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SubmitReviewAction'}
+                        and prior_raw.tool_calls[0]['name'] in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'FinalizeWorkpaperRevisionAction', 'SubmitReviewAction'}
                         and content.get('result', {}).get('accepted') is True):
                     content.pop('current_context', None)
                     messages[-1] = terminal.model_copy(update={'content': json.dumps(content, ensure_ascii=False)})

@@ -528,6 +528,21 @@ class ReviseWorkpaperAction(_StrictModel):
         return self
 
 
+class SaveWorkpaperEditsAction(ReviseWorkpaperAction):
+    """Save one atomic batch to the author's draft; never submit or finish research."""
+    action: Literal["save_workpaper_edits"]
+    operation_id: str = Field(min_length=1, max_length=160,
+        description="Unique batch identity. Reuse with identical content only when checking an uncertain save receipt.")
+
+
+class FinalizeWorkpaperRevisionAction(_StrictModel):
+    """Submit the saved draft version for complete validation without resending its content."""
+    action: Literal["finalize_workpaper_revision"]
+    context_digest: str = Field(pattern=_DIGEST_PATTERN)
+    reason_summary: str = Field(min_length=1, max_length=1000)
+    draft_digest: str = Field(pattern=_DIGEST_PATTERN)
+
+
 def resolve_workpaper_revision(action: ReviseWorkpaperAction, pending: dict | None) -> ReviseWorkpaperAction:
     """Repair a saved atomic batch without guessing or dropping its other edits."""
     if action.edits:
@@ -544,7 +559,7 @@ def resolve_workpaper_revision(action: ReviseWorkpaperAction, pending: dict | No
             raise ValueError("pending_revision_edit_index_invalid_or_repeated")
         seen.add(index)
         edits[index] = correction.edit.model_dump(mode="json")
-    return ReviseWorkpaperAction.model_validate_json(json.dumps({
+    return type(action).model_validate_json(json.dumps({
         **action.model_dump(mode="json"), "edits": edits,
         "pending_revision_digest": None, "edit_corrections": []}))
 
@@ -569,7 +584,7 @@ def workpaper_edit_path(original: dict, edit) -> str:
 
 def workpaper_revision_contract() -> dict[str, str]:
     return {
-        "local_revision": "ReviseWorkpaperAction applies edits and submits the complete assembled candidate for normal validation in one call. Runtime reuses unchanged claims, prose and source quotes; do not copy them into the action.",
+        "local_revision": "SaveWorkpaperEditsAction saves an atomic batch to the current draft, without submitting or completing it. Previously saved batches survive a later failure. FinalizeWorkpaperRevisionAction submits the saved draft_digest for complete validation; no full content resubmission.",
         "claim_changes": "Use op=update_claim, exact claim_id, changes containing only new values for affected fields. Omitted fields retain their values; no old_value or array index is needed.",
         "other_changes": "Use set_field with path/value for complete non-claim fields; str_replace for a short text fragment; upsert_coverage for an assessment. Update affected prose and judgments as needed; this does not auto-rewrite them.",
         "review_response_path": "/task_note/finding_responses",
@@ -1205,6 +1220,7 @@ class SpecialistAgenticState(TypedDict, total=False):
     revision_tracking_version: int
     last_edit_feedback: dict[str, Any]
     pending_workpaper_revision: dict[str, Any] | None
+    workpaper_draft: dict[str, Any] | None
     notebook: dict[str, Any]
     pending_action: dict[str, Any] | None
     tool_results: list[dict[str, Any]]
@@ -1465,8 +1481,8 @@ def _model_request(
         context['authoring_instruction'] = ('Your preparation for this task is retained with its original basis. '
             'Evaluate changes_since_preparation against the current sources, working state and review findings; '
             'update affected judgments in the candidate when needed. Changed inputs do not automatically require another preparation. '
-            'Submit the first draft with SubmitWorkpaperAction, or use ReviseWorkpaperAction for local changes when submission_to_repair is present. '
-            'ReviseWorkpaperAction also submits for validation; no full resubmission is required. Do not repeat preparation because an older note or continuation '
+            'Submit the first draft with SubmitWorkpaperAction; save revision batches with SaveWorkpaperEditsAction. '
+            'FinalizeWorkpaperRevisionAction validates the saved draft version without full resubmission. Do not repeat preparation because an older note or continuation '
             'instruction still says to prepare. Preserve original evidence and unresolved limits.' if drafting else
             'Complete the assigned research, then call PrepareWorkpaperAction with your public effective state before final submission. No final submission until prepared.')
         body['task_context'] = context
@@ -1493,20 +1509,29 @@ def _model_request(
                 and isinstance(notebook.model_turn_records[-1].action, (SubmitWorkpaperAction, SubmitReviewAction))):
             body['terminal_result'] = {'accepted': True, 'feedback': [], 'validation_issues': []}
     candidate = last.get("arguments")
+    draft = state.get("workpaper_draft")
+    if draft:
+        from .workpaper_drafts import current_draft
+        draft = current_draft(state)
+        candidate = draft["arguments"]
     if "submit_workpaper" in allowed_actions and isinstance(candidate, dict) and candidate.get("action") == "submit_workpaper" and not last.get("accepted"):
         from .revision_guidance import AUTHOR_REVISION_GUIDANCE
         # Refresh the request view on resume too; do not append to stale guidance.
         body["task_context"] = {**body.get("task_context", {}), "revision_instruction": AUTHOR_REVISION_GUIDANCE}
         if allow_workpaper_field_edits:
-            allowed_actions.append("revise_workpaper")
+            allowed_actions.extend(["save_workpaper_edits", "finalize_workpaper_revision"])
         body["submission_to_repair"] = {"base_submission_digest": canonical_sha256(candidate), "candidate": candidate}
+        if draft:
+            body["submission_to_repair"]["draft_state"] = {k: deepcopy(draft.get(k)) for k in ("digest", "baseline_digest", "saved_batches", "latest_changed_paths", "draft_issues")}
+            body["revision_submission_status"] = {"status": "draft_saved_not_submitted", "accepted": False}
         targets = revision_progress(state, candidate)
         body["submission_to_repair"].update(
             edit_progress=targets, last_edit_feedback=state.get("last_edit_feedback"),
             current_candidate_digest=canonical_sha256(candidate),
             validation_feedback={"issues": last.get("validation_issues", []),
                 "validated_candidate_digest": last.get("validated_candidate_digest"),
-                "binding": ("current_candidate" if last.get("validated_candidate_digest") == canonical_sha256(candidate)
+                "binding": ("current_candidate" if (last.get("validated_candidate_digest") == canonical_sha256(candidate)
+                    or last.get("submitted_draft_digest") == canonical_sha256(candidate))
                     else "legacy_or_attempt_feedback_not_confirmed_for_current_candidate"),
                 "origin": "runtime_submission_validation",
                 "notice": "Use precise current-candidate locations for repair. Older notebook feedback is history; "
@@ -1755,7 +1780,7 @@ def _quote_issue_location(error, submission, notebook):
                     "source_line_candidates": get_close_matches(quote, lines, n=3, cutoff=.65),
                     "origin": "runtime_quote_navigation_not_confirmation",
                     "instruction": "Inspect candidate lines in their original source context; candidates may differ "
-                        "in period, value or meaning. Use ReviseWorkpaperAction to replace only this candidate field "
+                        "in period, value or meaning. Use SaveWorkpaperEditsAction to save only this candidate field "
                         "with exact original text after checking support. No quote or claim has been auto-corrected."}
     return None
 
@@ -2037,7 +2062,8 @@ def build_specialist_agentic_state_graph(
                 # return to model_decide without a pending tool dispatch.
                 and recovery_state.get('phase') in {
                     'ready_for_model_decision', 'tool_observation_ready',
-                    'typed_feedback_ready', 'model_action_selected'}
+                    'typed_feedback_ready', 'model_action_selected',
+                    'submission_rejected_with_typed_feedback'}
                 and recovery_state.get('pending_action') is None)
             if revising:
                 from .revision_guidance import AUTHOR_REVISION_GUIDANCE
@@ -2088,6 +2114,7 @@ def build_specialist_agentic_state_graph(
                    if revising else revision_state(recovery_state)),
                 "last_edit_feedback": _jsonable(recovery_state.get("last_edit_feedback", {})),
                 "pending_workpaper_revision": None if revising else _jsonable(recovery_state.get("pending_workpaper_revision")),
+                "workpaper_draft": None if revising else _jsonable(recovery_state.get("workpaper_draft")),
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
                 "dependency_readbacks": _jsonable(recovery_state.get("dependency_readbacks", {})),
@@ -2609,7 +2636,7 @@ def build_specialist_agentic_state_graph(
         calls = {call.id: call for call in batch.tool_calls}
         models = {model.__name__: model for model in (
             RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
-            SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
+            SubmitWorkpaperAction, ReviseWorkpaperAction, SaveWorkpaperEditsAction, FinalizeWorkpaperRevisionAction, SubmitReviewAction, RequestHumanReviewAction,
         )}
         if dependencies.dependency_reader is not None:
             models['ReadDependencyWorkAction'] = ReadDependencyWorkAction
@@ -2624,7 +2651,7 @@ def build_specialist_agentic_state_graph(
         if memory_enabled():
             models.update(WORKING_MEMORY_MODELS)
         terminal_mixed = len(batch.tool_calls) > 1 and any(
-            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction", "UpdateResearchStateAction", 'PrepareWorkpaperAction'}
+            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SaveWorkpaperEditsAction", "FinalizeWorkpaperRevisionAction", "SubmitReviewAction", "RequestHumanReviewAction", "UpdateResearchStateAction", 'PrepareWorkpaperAction'}
             for call in batch.tool_calls)
         l0 = _validate_model_json(SpecialistL0Context, state["l0_context"], code="specialist_l0_context_invalid")
         assigned_routes = {row.get("minimum_route_obligation_id")
@@ -2714,13 +2741,19 @@ def build_specialist_agentic_state_graph(
                             if pending else "Candidate unchanged. No valid edit batch was saved; correct the reported argument fields and submit edits against the current candidate.")}
                     working["last_edit_feedback"] = detail
                     body["edit_result"] = detail
+                if call.name in {"SaveWorkpaperEditsAction", "FinalizeWorkpaperRevisionAction"}:
+                    draft = working.get("workpaper_draft")
+                    body["draft_result"] = {"saved": False, "submitted": False, "accepted": False,
+                        "prior_draft_preserved": True, "draft_digest": draft.get("digest") if draft else None,
+                        "issues": edit_details or [],
+                        "pending_revision_digest": (working.get("pending_workpaper_revision") or {}).get("digest")}
                 return ToolMessage(name=call.name, tool_call_id=call.id, status="error",
                     content=json.dumps(body, ensure_ascii=False))
 
             if unavailable_full_submission:
                 return reject("specialist_action_not_available_in_current_runtime",
-                    "This stage edits an existing candidate. Use ReviseWorkpaperAction with submission_to_repair.base_submission_digest and changed fields; runtime reuses the unchanged content and validates the complete paper. This full submission was not applied."
-                    if 'revise_workpaper' in stage_actions else "This submission tool is not available for the current role or stage. The candidate was not changed.")
+                    "Save changes using SaveWorkpaperEditsAction, then submit the draft version with FinalizeWorkpaperRevisionAction. This full submission was not applied."
+                    if 'save_workpaper_edits' in stage_actions else "This submission tool is not available for the current role or stage. The candidate was not changed.")
             if terminal_mixed:
                 return reject("specialist_terminal_action_must_be_alone",
                     "No tools in this response were dispatched. Submit or request human review as the sole call, after observing pending data results.")
@@ -2760,13 +2793,48 @@ def build_specialist_agentic_state_graph(
             if action.context_digest != batch.context_digest:
                 return reject("specialist_model_turn_context_binding_invalid",
                     "Copy the current context_digest exactly; this call was not dispatched.")
-            if action.action not in stage_actions:
+            if action.action not in stage_actions and not (type(action) is ReviseWorkpaperAction and "save_workpaper_edits" in stage_actions):
                 return reject("specialist_action_not_available_in_current_runtime", "This action is not available for your assigned role.")
             if isinstance(action, RequestSourceAction) and not l0.source_read_enabled:
                 return reject("specialist_action_not_available_in_current_runtime", "Source reading is not enabled in this runtime profile.")
             if isinstance(action, RequestEvidenceAction) and action.minimum_route_obligation_id not in assigned_routes:
                 return reject("specialist_evidence_route_not_assigned", "This evidence route is outside this Specialist task assignment.")
-            if isinstance(action, ReviseWorkpaperAction):
+            if isinstance(action, SaveWorkpaperEditsAction):
+                from .workpaper_drafts import save_draft
+                try:
+                    draft, receipt = save_draft(working, action)
+                except WorkpaperEditError as exc:
+                    # A complete rejected proposal is recoverable; previously saved
+                    # draft batches and the accepted baseline remain untouched.
+                    if action.edits:
+                        working["pending_workpaper_revision"] = save_workpaper_revision(action)
+                    return reject("workpaper_draft_edit_invalid", str(exc), edit_details=exc.issues)
+                except (ValueError, KeyError) as exc:
+                    return reject("workpaper_draft_save_invalid", str(exc))
+                working.update(workpaper_draft=draft, pending_workpaper_revision=None,
+                    last_edit_feedback=receipt, pending_action=None, phase="tool_observation_ready")
+                return ToolMessage(name=call.name, tool_call_id=call.id,
+                    content=json.dumps({"draft_result": receipt}, ensure_ascii=False))
+            if isinstance(action, FinalizeWorkpaperRevisionAction):
+                from .workpaper_drafts import finalize_draft, current_draft
+                try:
+                    draft = current_draft(working)
+                    action = finalize_draft(working, action)
+                except ValidationError as exc:
+                    return reject("workpaper_draft_finalize_shape_invalid", "Saved draft retained; correct these fields before finalizing.",
+                        edit_details=[{"location": list(e['loc']), "type": e['type'], "message": e['msg']}
+                                      for e in exc.errors(include_input=False, include_context=False, include_url=False)])
+                except (ValueError, KeyError) as exc:
+                    return reject("workpaper_draft_finalize_invalid", str(exc))
+                from .workpaper_changes import workpaper_changes
+                previous = (working.get('last_submission_attempt') or {}).get('arguments')
+                working['workpaper_change_history'] = [*working.get('workpaper_change_history', []),
+                    {**workpaper_changes(previous, action.model_dump(mode='json')),
+                        'attempt_id': state['run_invocation_id'], 'submitted_draft_digest': draft['digest']}]
+                working["last_submission_attempt"] = {"arguments": action.model_dump(mode="json"),
+                    "accepted": False, "tool_call_id": call.id, "tool_name": call.name,
+                    "submitted_draft_digest": draft['digest'], "feedback": []}
+            if type(action) is ReviseWorkpaperAction:
                 prior = working.get("last_submission_attempt") or {}
                 try:
                     action = resolve_workpaper_revision(action, working.get("pending_workpaper_revision"))
@@ -3052,6 +3120,9 @@ def build_specialist_agentic_state_graph(
                     "validation_issues": (working.get("last_submission_attempt") or {}).get("validation_issues", [])}
                 if call.name == "ReviseWorkpaperAction":
                     body["edit_result"] = {**working.get("last_edit_feedback", {}), "submission_accepted": accepted}
+                if call.name == "FinalizeWorkpaperRevisionAction":
+                    body['draft_result'] = {'submitted': True, 'accepted': accepted,
+                        'draft_digest': draft['digest'], 'draft_retained': True}
                 return ToolMessage(name=call.name, tool_call_id=call.id,
                     status="success" if accepted else "error", content=json.dumps(body, ensure_ascii=False))
             if isinstance(action, RequestHumanReviewAction):
@@ -3107,6 +3178,9 @@ def build_specialist_agentic_state_graph(
         if dependencies.working_state_enabled:
             working["runtime_progress"] = progress_after_tools(state["notebook"], working["notebook"], state.get("runtime_progress"),
                 has_reads=any(c.name in {"RequestSourceAction", "RequestEvidenceAction", "RequestFinanceAction", "RequestCalculationAction", "ReadDelegatedWorkAction", "ReadDependencyWorkAction"} for c in batch.tool_calls))
+            if (working.get('workpaper_draft') or {}).get('digest') != (state.get('workpaper_draft') or {}).get('digest'):
+                working['runtime_progress'] = {'consecutive_no_new_observations': 0,
+                    'status': 'draft_changed', 'notice': 'Draft changes saved; full validation and submission remain pending.'}
         return {**working, "pending_action": None,
                 "tool_results": [message.model_dump(mode="json") for message in replies]}
 

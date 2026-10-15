@@ -23,7 +23,7 @@ from test_specialist_graph import _input, _evidence_action, _finance_action, _su
 def _batch(request, actions):
     names = {"request_evidence": "RequestEvidenceAction", "request_finance": "RequestFinanceAction",
              "request_source": "RequestSourceAction", "request_human_review": "RequestHumanReviewAction",
-             "submit_workpaper": "SubmitWorkpaperAction", "revise_workpaper": "ReviseWorkpaperAction"}
+             "submit_workpaper": "SubmitWorkpaperAction", "revise_workpaper": "ReviseWorkpaperAction", "save_workpaper_edits": "SaveWorkpaperEditsAction", "finalize_workpaper_revision": "FinalizeWorkpaperRevisionAction"}
     return {"action": "native_tool_batch", "context_digest": request["context_digest"], "tool_calls": [
         {"id": f"call-{n}", "name": names[action["action"]], "type": "tool_call",
          "args": {**action, "context_digest": request["context_digest"]}} for n, action in enumerate(actions)]}
@@ -355,12 +355,15 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=Fals
                 action["claims"][0]["evidence_ids"] = ["E:invented"]
                 if local_edit:
                     target = request["submission_to_repair"]
-                    action = {"action": "revise_workpaper", "reason_summary": "Restore the observed evidence binding.",
+                    action = {"action": "save_workpaper_edits", "operation_id": "restore-evidence", "reason_summary": "Restore the observed evidence binding.",
                         "base_submission_digest": target["base_submission_digest"], "edits": [
-                            {"path": "/claims/0/evidence_ids", "old_value": [], "new_value": ["E:DELL:Q1"]}]}
+                            {"op": "update_claim", "claim_id": target['candidate']['claims'][0]['claim_id'], "changes": {"evidence_ids": ["E:DELL:Q1"]}}]}
                     if partial_edit:
                         action['edits'].append({'op': 'str_replace', 'path': '/narrative_markdown',
                             'old_string': 'The causal interpretation remains bounded.', 'new_string': 'Uncertainty remains explicit.'})
+            if n == 4 and local_edit:
+                action = {'action': 'finalize_workpaper_revision', 'reason_summary': 'Submit saved draft.',
+                    'draft_digest': request['submission_to_repair']['base_submission_digest']}
             calls = _batch(request, [action])["tool_calls"]
         if runtime_context_binding:
             for call in calls:
@@ -452,20 +455,23 @@ def test_rejected_terminal_keeps_explicit_receipt_after_actual_sdk_context_proje
 
 def test_local_edit_survives_real_sdk_tool_binding_and_returns_whole_workpaper():
     result, requests, wires = _terminal_feedback_sdk_graph(runtime_context_binding=True, local_edit=True)
-    assert len(requests) == 3
+    assert len(requests) == 4
     assert result["phase"] == "specialist_submission_accepted"
     assert result["final_submission"]["narrative_markdown"] == _submission()({})["narrative_markdown"]
     assert requests[2]["submission_to_repair"]["base_submission_digest"] in json.dumps(wires[2])
-    assert result["last_submission_attempt"]["tool_name"] == "ReviseWorkpaperAction"
+    assert result["last_submission_attempt"]["tool_name"] == "FinalizeWorkpaperRevisionAction"
 
 
 def test_partial_edit_is_exposed_and_consumed_through_actual_sdk_and_native_graph():
-    result, requests, wires = _terminal_feedback_sdk_graph(runtime_context_binding=True, local_edit=True, partial_edit=True)
+    result, requests, wires = _terminal_feedback_sdk_graph(runtime_context_binding=True, local_edit=True, partial_edit=True, working_view=True)
     assert result['final_submission']['narrative_markdown'] == _submission()({})['narrative_markdown'].replace(
         'The causal interpretation remains bounded.', 'Uncertainty remains explicit.')
-    schema = next(t for t in wires[2]['tools'] if t['function']['name'] == 'ReviseWorkpaperAction')
+    schema = next(t for t in wires[2]['tools'] if t['function']['name'] == 'SaveWorkpaperEditsAction')
     assert 'str_replace' in json.dumps(schema) and 'upsert_coverage' in json.dumps(schema)
     assert 'revision_guidance' in json.dumps(wires[2])
+    assert requests[3]['revision_submission_status']['accepted'] is False
+    saved_receipt = json.loads(wires[3]['messages'][-1]['content'])['result']['draft_result']
+    assert saved_receipt['saved'] and not saved_receipt['submitted']
 
 
 def test_runtime_context_is_not_a_model_argument_and_quote_guards_still_apply():

@@ -694,7 +694,26 @@ def working_view(messages):
             pending_note = saved_note
         break
     bind_revision_readbacks(current, messages)
-    view = {'current_materials': material, 'current_material_bindings': bindings, 'material_focus': focus,
+    # A source's identity/authority flags are immutable. Explain the allowed
+    # citation channel separately instead of overloading writer_citable=False
+    # into an apparent ban on source-bound calculation receipts.
+    reference_usage = {}
+    for binding in bindings:
+        for ref in binding['references']:
+            authority = ref.get('authority_state')
+            if authority in {'source_bound_passage', 'reviewed_evidence'}:
+                use = {'field': 'evidence_ids', 'requirement': 'Cite exact observed quotes for PASSAGE IDs.'}
+            elif authority == 'numeric_fact':
+                use = {'field': 'fact_ids', 'requirement': 'Use numeric_fact with numeric_authority=authoritative for S2 facts.'}
+            elif authority == 'non_authoritative_metric':
+                use = {'field': 'fact_ids', 'requirement': 'Use calculation with numeric_authority=non_authoritative for CALC results; writer_citable=false only forbids evidence_ids. Arithmetic does not establish source meaning.'}
+            elif authority == 'research_scenario':
+                use = {'field': 'fact_ids', 'requirement': 'Hypothesis/boundary only; not an observed fact.'}
+            else:
+                use = {'field': None, 'requirement': 'Navigation or status only; obtain a source passage or fact before citing.'}
+            reference_usage[ref['ref_id']] = use
+    view = {'current_materials': material, 'current_material_bindings': bindings,
+            'current_reference_usage': reference_usage, 'material_focus': focus,
             'current_context': compact_current_context(current),
             'pending_state_proposal': pending_note,
             'operation_catalog': catalog,

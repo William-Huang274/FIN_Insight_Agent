@@ -425,6 +425,66 @@ class WorkpaperCoverageEdit(_StrictModel):
     assessment: TaskCoverage = Field(description="One assessment keyed by the exact assigned criterion. Inserts if absent, replaces if unique; do not echo the old coverage array.")
 
 
+def _claim_changes_schema(schema):
+    # Absence retains a field. Null is a real value only for nullable notes;
+    # do not advertise placeholder nulls that the host would then reject.
+    for name, field in schema.get('properties', {}).items():
+        field.pop('default', None)
+        if name not in {'authority_note', 'reasoning_summary'} and 'anyOf' in field:
+            variants = [v for v in field['anyOf'] if v.get('type') != 'null']
+            if len(variants) == 1:
+                field.pop('anyOf')
+                field.update(variants[0])
+            else:
+                field['anyOf'] = variants
+
+
+class WorkpaperClaimChanges(_StrictModel):
+    """Only supplied fields change; complete claim validation follows assembly."""
+    model_config = ConfigDict(json_schema_extra=_claim_changes_schema)
+    kind: ClaimKind | None = None
+    materiality: Literal["high", "medium", "low"] | None = None
+    statement: str | None = Field(default=None, min_length=1, max_length=4_000)
+    evidence_ids: tuple[str, ...] | None = Field(default=None, max_length=32,
+        description="PASSAGE/evidence IDs only. Omit to retain existing bindings; [] explicitly clears them.")
+    fact_ids: tuple[str, ...] | None = Field(default=None, max_length=48,
+        description="NUMFACT/S2 or CALC IDs. CALC remains usable here even when writer_citable=false.")
+    numeric_authority: Literal["authoritative", "non_authoritative", "not_applicable"] | None = None
+    authority_note: str | None = Field(default=None, min_length=1, max_length=1_000)
+    reasoning_summary: str | None = Field(default=None, max_length=4_000)
+    citation_quotes: dict[str, str | list[str]] | None = Field(default=None,
+        description="Complete replacement of this claim's quote map when supplied. Omit to retain it. Shared source text may support multiple claims.")
+
+    @model_validator(mode="after")
+    def require_actual_fields(self):
+        if not self.model_fields_set:
+            raise ValueError("claim_changes_empty")
+        for key in self.model_fields_set - {"authority_note", "reasoning_summary"}:
+            if getattr(self, key) is None:
+                raise ValueError(f"claim_change_null_not_allowed:{key};omit_to_retain")
+        return self
+
+    @model_serializer(mode="wrap")
+    def only_changed_fields(self, handler):
+        return {key: value for key, value in handler(self).items() if key in self.model_fields_set}
+
+
+class WorkpaperClaimEdit(_StrictModel):
+    op: Literal["update_claim"]
+    claim_id: str = Field(min_length=1, max_length=240,
+        description="Exact existing claim ID, not its array position. Cannot insert or rename claims.")
+    changes: WorkpaperClaimChanges = Field(description="New values for changed fields only. The base_submission_digest guards the whole version; never copy old values or unchanged fields.")
+
+
+class WorkpaperSetField(_StrictModel):
+    op: Literal["set_field"]
+    path: str = Field(min_length=1, description=(
+        "JSON Pointer to an existing non-claim content field, e.g. /thesis, /mechanism, "
+        "/task_note/finding_responses or /open_gaps. Use update_claim for claims. "
+        "Use str_replace for a short prose fragment instead of copying a whole long section."))
+    value: Any = Field(description="New field value only; base_submission_digest protects the version. Omitted fields remain unchanged.")
+
+
 class WorkpaperEditError(ValueError):
     def __init__(self, code, issues):
         super().__init__(code)
@@ -433,7 +493,7 @@ class WorkpaperEditError(ValueError):
 
 class WorkpaperEditCorrection(_StrictModel):
     edit_index: int = Field(ge=0)
-    edit: WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit
+    edit: WorkpaperClaimEdit | WorkpaperSetField | WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit
 
 
 class ReviseWorkpaperAction(_StrictModel):
@@ -445,8 +505,8 @@ class ReviseWorkpaperAction(_StrictModel):
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
     reason_summary: str = Field(min_length=1, max_length=1000)
     base_submission_digest: str = Field(pattern=_DIGEST_PATTERN)
-    edits: tuple[WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit, ...] = Field(default=(),
-        description="One atomic batch. On rejection it is saved; repair only affected edits with pending_revision_digest and edit_corrections. Prefer str_replace for text fragments and upsert_coverage for one assessment.")
+    edits: tuple[WorkpaperClaimEdit | WorkpaperSetField | WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit, ...] = Field(default=(),
+        description="One version-bound batch: update_claim by ID with changed fields, set_field for other complete fields, str_replace for prose fragments, upsert_coverage for assessments. On rejection, repair only affected saved edits with pending_revision_digest and edit_corrections.")
     pending_revision_digest: str | None = Field(default=None, pattern=_DIGEST_PATTERN)
     edit_corrections: tuple[WorkpaperEditCorrection, ...] = ()
 
@@ -495,6 +555,28 @@ def save_workpaper_revision(action: ReviseWorkpaperAction) -> dict:
     return {**batch, "digest": canonical_sha256(batch)}
 
 
+def workpaper_edit_path(original: dict, edit) -> str:
+    if isinstance(edit, WorkpaperCoverageEdit):
+        return "/task_note/coverage"
+    if isinstance(edit, WorkpaperClaimEdit):
+        matches = [i for i, claim in enumerate(original.get("claims", []))
+                   if isinstance(claim, dict) and claim.get("claim_id") == edit.claim_id]
+        if len(matches) != 1:
+            raise ValueError("claim_id_not_found_or_not_unique")
+        return f"/claims/{matches[0]}"
+    return edit.path
+
+
+def workpaper_revision_contract() -> dict[str, str]:
+    return {
+        "local_revision": "ReviseWorkpaperAction applies edits and submits the complete assembled candidate for normal validation in one call. Runtime reuses unchanged claims, prose and source quotes; do not copy them into the action.",
+        "claim_changes": "Use op=update_claim, exact claim_id, changes containing only new values for affected fields. Omitted fields retain their values; no old_value or array index is needed.",
+        "other_changes": "Use set_field with path/value for complete non-claim fields; str_replace for a short text fragment; upsert_coverage for an assessment. Update affected prose and judgments as needed; this does not auto-rewrite them.",
+        "review_response_path": "/task_note/finding_responses",
+        "change_note_path": "/task_note/changes",
+    }
+
+
 def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperAction) -> dict[str, Any]:
     """Standard atomic JSON Patch against a rejected artifact, then normal gates.
 
@@ -508,7 +590,13 @@ def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperActio
     editable = set(SubmitWorkpaperAction.model_fields) - {"action", "context_digest", "reason_summary"}
     updated, issues = deepcopy(original), []
     for index, edit in enumerate(action.edits):
-        path = "/task_note/coverage" if isinstance(edit, WorkpaperCoverageEdit) else edit.path
+        try:
+            path = workpaper_edit_path(updated, edit)
+        except ValueError:
+            issues.append({"location": ["edits", index], "edit_index": index,
+                "claim_id": edit.claim_id, "path": "/claims", "code": "claim_id_not_found_or_not_unique",
+                "remedy": "Copy an exact existing claim_id from the current candidate; IDs are not inferred or created."})
+            continue
         def issue(code, remedy, **details):
             issues.append({"location": ["edits", index], "edit_index": index, "path": path,
                 "code": code, "remedy": remedy, **details})
@@ -530,7 +618,14 @@ def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperActio
         except (jsonpatch.JsonPointerException, TypeError):
             issue("path_not_found", "Locate the existing field in submission_to_repair.candidate; array paths use numeric indices.")
             continue
-        if isinstance(edit, WorkpaperTextEdit):
+        if isinstance(edit, WorkpaperClaimEdit):
+            replacement = {**current, **edit.changes.model_dump(mode="json")}
+        elif isinstance(edit, WorkpaperSetField):
+            if parts[0] == "claims":
+                issue("claim_update_requires_id", "Use update_claim with an existing claim_id and changed fields.")
+                continue
+            replacement = edit.value
+        elif isinstance(edit, WorkpaperTextEdit):
             if not isinstance(current, str):
                 issue("text_field_required", "Use str_replace only on a text field; use upsert_coverage for assessments.")
                 continue
@@ -1425,11 +1520,7 @@ def _model_request(
             # An existing candidate is edited and assembled by the runtime.
             # Do not offer two competing submission protocols for this stage.
             allowed_actions.remove("submit_workpaper")
-            body["submission_to_repair"]["submission_contract"] = {
-                "local_revision": "ReviseWorkpaperAction applies edits and submits the complete assembled candidate for normal validation in one call. Runtime reuses unchanged claims, prose and source quotes; do not copy them into the action.",
-                "review_response_path": "/task_note/finding_responses",
-                "change_note_path": "/task_note/changes",
-            }
+            body["submission_to_repair"]["submission_contract"] = workpaper_revision_contract()
             pending = state.get("pending_workpaper_revision") or {}
             if pending and pending.get("base_submission_digest") == canonical_sha256(candidate):
                 # Re-evaluate old checkpoint errors with the current validator;
@@ -2684,10 +2775,10 @@ def build_specialist_agentic_state_graph(
                     return reject("specialist_workpaper_edit_invalid", str(exc), agent_error=True)
                 targets = dict(working.get("revision_targets", {}))
                 for edit in action.edits:
-                    path = "/task_note/coverage" if isinstance(edit, WorkpaperCoverageEdit) else edit.path
                     try:
+                        path = workpaper_edit_path(prior["arguments"], edit)
                         targets.setdefault(path, canonical_sha256(jsonpatch.JsonPointer(path).resolve(prior["arguments"])))
-                    except (jsonpatch.JsonPointerException, TypeError, KeyError):
+                    except (jsonpatch.JsonPointerException, TypeError, KeyError, ValueError):
                         pass
                 working["revision_targets"] = targets
                 try:

@@ -350,6 +350,21 @@ def _provider_function_schema(
 
 def _native_function_schema(schema: type[BaseModel], *, runtime_context_binding: bool) -> dict[str, Any]:
     result = _provider_function_schema(schema, strict=False)
+    if schema is ReviseWorkpaperAction:
+        # Archived responses still parse as WorkpaperFieldEdit. New requests
+        # offer version-bound setters, not another old-value copying option.
+        def retire_legacy_replace(value):
+            if isinstance(value, dict):
+                if 'anyOf' in value:
+                    value['anyOf'] = [item for item in value['anyOf'] if not (
+                        item.get('properties', {}).get('op', {}).get('const') == 'replace'
+                        and 'old_value' in item.get('properties', {}))]
+                for child in value.values():
+                    retire_legacy_replace(child)
+            elif isinstance(value, list):
+                for child in value:
+                    retire_legacy_replace(child)
+        retire_legacy_replace(result['parameters'])
     if runtime_context_binding:
         parameters = result["parameters"]
         parameters["properties"].pop("context_digest", None)
@@ -541,16 +556,19 @@ _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     "arguments directly, without another action wrapper. Wait for results before making dependent requests. "
     "SubmitWorkpaperAction, ReviseWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
     "Only when ReviseWorkpaperAction is supplied and submission_to_repair is present, use it for local corrections: use its exact base digest "
-    "and JSON Pointer paths. Prefer op=str_replace with a unique exact old_string and new_string for a text fragment; "
+    "and op=update_claim with the existing claim_id and only changed fields in changes; omit unchanged quotes and bindings. "
+    "Use op=set_field with path/value for other existing content fields; the version digest replaces copying old values. "
+    "Use op=str_replace with a unique exact old_string and new_string for a short prose fragment; "
     "include adjacent text if multiple matches. Use op=upsert_coverage with one assessment to insert/update one criterion, without echoing the old array. "
-    "Legacy old_value/new_value replaces a whole field only. Batches are atomic; failed edits leave the candidate unchanged. "
+    "Batches are atomic; failed edits leave the candidate unchanged. "
     "Inspect edit_result issues and submission_to_repair.edit_progress; keep all requested repairs in scope after a tool error. "
     "ReviseWorkpaperAction applies the patch AND submits the assembled workpaper to all normal checks in one call; "
     "it is not a preparation step and needs no subsequent full SubmitWorkpaperAction. Unchanged claims, prose and quotes are reused by runtime. "
     "For a saved rejected batch, send pending_revision_digest and only the affected edit_corrections, not the whole batch. "
     "Review responses and change notes belong at /task_note/finding_responses and /task_note/changes, never at the action root. "
-    "Shared citation_quotes may be supplied once on the workpaper, keyed by exact evidence ID; "
-    "each claim still states its own evidence_ids. Do not duplicate source quotes across claims. "
+    "Each claim retains its own source bindings and quotes; the same source quote may support more than one claim. "
+    "writer_citable describes the evidence_ids channel only: observed CALC receipts remain usable in fact_ids "
+    "with kind=calculation and numeric_authority=non_authoritative, even when writer_citable=false. "
     "Finish using the submission tool supplied for the current stage: SubmitWorkpaperAction for a first draft, ReviseWorkpaperAction for an existing candidate. "
     "do not replace the tool call with a plain-text final answer."
 )

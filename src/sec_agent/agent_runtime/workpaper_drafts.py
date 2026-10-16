@@ -46,10 +46,19 @@ def save_draft(state, action):
     resolved = resolve_workpaper_revision(action, state.get('pending_workpaper_revision'))
     candidate = apply_workpaper_edits(draft['arguments'], resolved)
     warnings = []
+    repairs = []
     try:
         SubmitWorkpaperAction.model_validate_json(json.dumps(candidate))
     except ValidationError as exc:
         issues = exc.errors(include_input=False, include_context=False, include_url=False)
+        from .draft_validation import remove_empty_response_extras
+        candidate, repairs = remove_empty_response_extras(candidate, issues)
+        if repairs:
+            try:
+                SubmitWorkpaperAction.model_validate_json(json.dumps(candidate))
+                issues = []
+            except ValidationError as remaining:
+                issues = remaining.errors(include_input=False, include_context=False, include_url=False)
         # Cross-field completeness can be unfinished between batches. Invalid field
         # types/identities/paths are never accepted as a draft operation.
         structural = [e for e in issues if e['type'] != 'value_error']
@@ -57,14 +66,20 @@ def save_draft(state, action):
             raise ValueError('workpaper_draft_field_invalid:' + json.dumps(structural))
         warnings = [{'location': list(e['loc']), 'type': e['type'], 'message': e['msg']} for e in issues]
     changed = list(dict.fromkeys(workpaper_edit_path(draft['arguments'], e) for e in resolved.edits))
+    from .draft_validation import draft_change_status
+    baseline = ((state.get('task_context') or {}).get('accepted_revision_baseline') or {}).get('submission')
+    baseline = baseline or state['last_submission_attempt']['arguments']
+    change_status = draft_change_status(baseline, candidate)
     receipt = {'saved': True, 'submitted': False, 'accepted': False,
                'operation_id': action.operation_id, 'draft_digest': canonical_sha256(candidate),
                'changed_paths': changed, 'draft_issues': warnings,
+               'automatic_repairs': repairs, 'change_status': change_status,
                'validation_status': 'draft_only_full_validation_on_finalize'}
     result = {**deepcopy(draft), 'arguments': candidate, 'digest': receipt['draft_digest'],
               'saved_batches': draft['saved_batches'] + 1,
               'changed_paths': list(dict.fromkeys([*draft['changed_paths'], *changed])),
               'latest_changed_paths': changed, 'draft_issues': warnings}
+    result['change_status'] = change_status
     result['receipts'][action.operation_id] = {'request_digest': digest, 'receipt': receipt}
     return result, receipt
 

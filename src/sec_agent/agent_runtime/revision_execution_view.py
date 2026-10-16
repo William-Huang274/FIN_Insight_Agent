@@ -71,6 +71,7 @@ def project_revision_execution(context, readback, baseline, manuscript_reads=())
         'latest_changed_paths': (repair.get('draft_state') or {}).get('latest_changed_paths', []),
         'separate_note_required': False,
         'submitted': False,
+        'observed_changes': (repair.get('draft_state') or {}).get('change_status'),
     }
     findings = task.get('revision_feedback') or []
     responses = (candidate.get('task_note') or {}).get('finding_responses') or []

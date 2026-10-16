@@ -588,11 +588,13 @@ def workpaper_edit_path(original: dict, edit) -> str:
 
 
 def workpaper_revision_contract() -> dict[str, str]:
+    from .task_outcome import AuthorFindingResponse
     return {
         "local_revision": "SaveWorkpaperEditsAction persists ready changes, even one field or claim, without waiting for all related edits. Related prose and dependencies may be completed in later batches. Previously saved batches survive a later failure. FinalizeWorkpaperRevisionAction submits the saved draft_digest for complete validation; only then must the complete revision be consistent. No full content resubmission.",
         "claim_changes": "Use op=update_claim, exact claim_id, changes containing only new values for affected fields. Omitted fields retain their values; no old_value or array index is needed.",
         "other_changes": "Use set_field with path/value for complete non-claim fields; str_replace for a short text fragment; upsert_coverage for an assessment. Update affected prose and judgments as needed; this does not auto-rewrite them.",
         "review_response_path": "/task_note/finding_responses",
+        "review_response_item_schema": json.dumps(AuthorFindingResponse.model_json_schema(), ensure_ascii=False),
         "change_note_path": "/task_note/changes",
     }
 
@@ -1527,7 +1529,7 @@ def _model_request(
             allowed_actions.extend(["save_workpaper_edits", "finalize_workpaper_revision"])
         body["submission_to_repair"] = {"base_submission_digest": canonical_sha256(candidate), "candidate": candidate}
         if draft:
-            body["submission_to_repair"]["draft_state"] = {k: deepcopy(draft.get(k)) for k in ("digest", "baseline_digest", "saved_batches", "changed_paths", "latest_changed_paths", "draft_issues")}
+            body["submission_to_repair"]["draft_state"] = {k: deepcopy(draft.get(k)) for k in ("digest", "baseline_digest", "saved_batches", "changed_paths", "latest_changed_paths", "draft_issues", "change_status")}
             body["revision_submission_status"] = {"status": "draft_saved_not_submitted", "accepted": False}
         targets = revision_progress(state, candidate)
         body["submission_to_repair"].update(

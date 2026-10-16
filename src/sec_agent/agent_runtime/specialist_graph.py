@@ -548,13 +548,13 @@ class FinalizeWorkpaperRevisionAction(_StrictModel):
     draft_digest: str = Field(pattern=_DIGEST_PATTERN)
 
 
-def resolve_workpaper_revision(action: ReviseWorkpaperAction, pending: dict | None) -> ReviseWorkpaperAction:
+def resolve_workpaper_revision(action: ReviseWorkpaperAction, pending: dict | None, *, current_base: str | None = None) -> ReviseWorkpaperAction:
     """Repair a saved atomic batch without guessing or dropping its other edits."""
     if action.edits:
         return action
     if not pending or action.pending_revision_digest != pending.get("digest"):
         raise ValueError("pending_revision_digest_mismatch_use_current_edit_feedback")
-    if action.base_submission_digest != pending.get("base_submission_digest"):
+    if action.base_submission_digest not in {pending.get("base_submission_digest"), current_base}:
         raise ValueError("pending_revision_base_mismatch")
     edits = deepcopy(pending["edits"])
     seen = set()
@@ -1549,7 +1549,7 @@ def _model_request(
             allowed_actions.remove("submit_workpaper")
             body["submission_to_repair"]["submission_contract"] = workpaper_revision_contract()
             pending = state.get("pending_workpaper_revision") or {}
-            if pending and pending.get("base_submission_digest") == canonical_sha256(candidate):
+            if pending:
                 # Re-evaluate old checkpoint errors with the current validator;
                 # never apply or silently repair the author's proposed content.
                 try:
@@ -1557,11 +1557,18 @@ def _model_request(
                         "action": "revise_workpaper", "context_digest": "0" * 64,
                         "reason_summary": "Validate saved edit paths for current feedback.",
                         "base_submission_digest": pending["base_submission_digest"], "edits": pending["edits"]}))
+                    if draft and proposal.base_submission_digest != draft['digest']:
+                        from .draft_rebase import assess_draft_rebase
+                        assessment = assess_draft_rebase(draft, proposal)
+                        if assessment['conflicts']:
+                            raise WorkpaperEditError('workpaper_edit_base_conflict', assessment['conflicts'])
+                        proposal = proposal.model_copy(update={'base_submission_digest': draft['digest']})
                     apply_workpaper_edits(candidate, proposal)
                 except WorkpaperEditError as exc:
                     body["submission_to_repair"]["pending_edit_validation"] = {
                         "pending_revision_digest": pending["digest"], "issues": exc.issues,
-                        "next_action": "Send only affected edit_corrections with this pending_revision_digest and the base digest. Other saved edits are reused; the entire assembled paper is validated. No changes have been applied."}
+                        "current_base_submission_digest": canonical_sha256(candidate),
+                        "next_action": "The pending proposal is retained, not applied. Reconcile affected fields against the current candidate, then send only edit_corrections with this pending_revision_digest and current_base_submission_digest. Other pending edits are reused; existing saved batches are preserved."}
                 except (ValueError, KeyError):
                     pass  # Existing schema feedback remains authoritative.
     return {**body, "context_digest": canonical_sha256(body)}

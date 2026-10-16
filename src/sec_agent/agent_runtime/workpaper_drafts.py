@@ -43,7 +43,18 @@ def save_draft(state, action):
             raise ValueError('workpaper_draft_operation_id_conflict')
         return deepcopy(draft), {**prior['receipt'], 'replayed': True,
                                   'current_draft_digest': draft['digest']}
-    resolved = resolve_workpaper_revision(action, state.get('pending_workpaper_revision'))
+    resolved = resolve_workpaper_revision(action, state.get('pending_workpaper_revision'), current_base=draft['digest'])
+    from .draft_rebase import assess_draft_rebase, field_fingerprints
+    rebase = None
+    if resolved.base_submission_digest != draft['digest']:
+        rebase = assess_draft_rebase(draft, resolved)
+        if rebase['conflicts']:
+            from .specialist_graph import WorkpaperEditError
+            raise WorkpaperEditError('workpaper_edit_base_conflict', [
+                {**issue, 'requested_base': rebase['requested_base'], 'current_base': rebase['current_base'],
+                 'safe_edit_indexes': rebase['safe_edit_indexes'], 'batch_applied': False}
+                for issue in rebase['conflicts']])
+        resolved = resolved.model_copy(update={'base_submission_digest': draft['digest']})
     candidate = apply_workpaper_edits(draft['arguments'], resolved)
     warnings = []
     repairs = []
@@ -75,11 +86,14 @@ def save_draft(state, action):
                'changed_paths': changed, 'draft_issues': warnings,
                'automatic_repairs': repairs, 'change_status': change_status,
                'validation_status': 'draft_only_full_validation_on_finalize'}
+    if rebase is not None:
+        receipt['version_reconciliation'] = rebase
     result = {**deepcopy(draft), 'arguments': candidate, 'digest': receipt['draft_digest'],
               'saved_batches': draft['saved_batches'] + 1,
               'changed_paths': list(dict.fromkeys([*draft['changed_paths'], *changed])),
               'latest_changed_paths': changed, 'draft_issues': warnings}
     result['change_status'] = change_status
+    result.setdefault('version_fingerprints', {})[draft['digest']] = field_fingerprints(draft['arguments'])
     result['receipts'][action.operation_id] = {'request_digest': digest, 'receipt': receipt}
     return result, receipt
 

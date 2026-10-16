@@ -43,6 +43,8 @@ class AuthorFindingResponse(NoteModel):
     finding_id: str = Field(min_length=1, max_length=240)
     disposition: Literal["corrected", "disagreed_with_sources", "unresolved"]
     explanation: str = Field(min_length=20, max_length=2500)
+    claim_ids: list[str] = Field(default_factory=list, exclude_if=lambda v: not v,
+        description="Optional exact claim IDs in this manuscript associated with the response. Navigation metadata, not evidence or verified completion. Omit when unused.")
 
 
 AuthorTaskNote.model_rebuild()
@@ -122,9 +124,10 @@ def task_outcome(state, *, assignment=None, error_type=None, cancelled=False):
     if note:
         raw_claims = (artifact or {}).get("claims")
         claims = {c.get("claim_id") for c in raw_claims if isinstance(c, dict) and isinstance(c.get("claim_id"), str)} if isinstance(raw_claims, list) else set()
-        if artifact is None and any(t.fields or t.claim_ids for t in [*note.coverage, *note.issues]):
+        targets = [*note.coverage, *note.issues, *(note.finding_responses or [])]
+        if artifact is None and any(getattr(t, 'fields', []) or t.claim_ids for t in targets):
             navigation.append("target_artifact_missing")
-        for target in [*note.coverage, *note.issues]:
+        for target in targets:
             navigation.extend("unknown_claim_id:" + c for c in target.claim_ids if c not in claims)
         covered = [c.criterion for c in note.coverage]
         navigation.extend("unmatched_criterion:" + c for c in covered if c not in criteria)

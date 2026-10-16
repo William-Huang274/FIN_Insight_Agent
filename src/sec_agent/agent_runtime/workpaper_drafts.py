@@ -51,8 +51,8 @@ def save_draft(state, action):
         SubmitWorkpaperAction.model_validate_json(json.dumps(candidate))
     except ValidationError as exc:
         issues = exc.errors(include_input=False, include_context=False, include_url=False)
-        from .draft_validation import remove_empty_response_extras
-        candidate, repairs = remove_empty_response_extras(candidate, issues)
+        from .draft_validation import normalize_response_metadata
+        candidate, repairs = normalize_response_metadata(candidate, issues)
         if repairs:
             try:
                 SubmitWorkpaperAction.model_validate_json(json.dumps(candidate))

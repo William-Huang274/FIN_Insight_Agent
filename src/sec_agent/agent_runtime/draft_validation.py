@@ -6,22 +6,32 @@ from .research_graph_contracts import canonical_sha256
 from .workpaper_changes import workpaper_changes
 
 
-def remove_empty_response_extras(candidate, issues):
-    """Only discard schema-rejected empty metadata on author finding responses.
+def normalize_response_metadata(candidate, issues):
+    """Repair empty response metadata; never discard populated claim associations.
 
-    Never discard content, repair identities, coerce types, or change known fields.
+    Legacy empty claim metadata becomes an empty list. Populated IDs are supported
+    by the response schema, not guessed or converted into evidence identities.
     The raw proposal remains in the native journal; return an explicit repair log.
     """
     corrected = deepcopy(candidate)
     repairs = []
     for issue in issues:
         loc = issue['loc']
-        if (issue['type'] != 'extra_forbidden' or len(loc) != 4
+        if (len(loc) != 4
                 or tuple(loc[:2]) != ('task_note', 'finding_responses')):
+            continue
+        if issue['type'] != 'extra_forbidden' and not (loc[3] == 'claim_ids' and issue['type'] == 'list_type'):
             continue
         row = corrected['task_note']['finding_responses'][loc[2]]
         value = row[loc[3]]
         if value is not None and value != [] and value != {} and value != '':
+            continue
+        if loc[3] == 'claim_ids' and issue['type'] == 'list_type':
+            repairs.append({'location': list(loc), 'operation': 'normalize_empty_response_claim_ids',
+                            'original_value': deepcopy(value), 'normalized_value': []})
+            row['claim_ids'] = []
+            continue
+        if issue['type'] != 'extra_forbidden':
             continue
         repairs.append({'location': list(loc), 'operation': 'remove_empty_unknown_response_field',
                         'original_value': deepcopy(value)})
@@ -40,7 +50,13 @@ def draft_change_status(baseline, candidate):
     paths = [r['path'] for r in diff['locations']]
     narrative_changed = '/narrative_markdown' in paths
     advisories = []
+    claim_ids = {c.get('claim_id') for c in candidate.get('claims', [])}
     for i, response in enumerate((candidate.get('task_note') or {}).get('finding_responses') or []):
+        unknown = [cid for cid in response.get('claim_ids', []) if cid not in claim_ids]
+        if unknown:
+            advisories.append({'location': ['task_note', 'finding_responses', i, 'claim_ids'],
+                'code': 'unknown_response_claim_ids', 'claim_ids': unknown, 'blocking': False,
+                'message': 'Associations were preserved, but these IDs do not resolve in the current manuscript. They confer no evidence authority or verified completion.'})
         explanation = response.get('explanation', '')
         # Narrow observable mismatch only; no general natural-language verifier.
         affirmed = re.search(r'正文[^。；\n]{0,120}?(?:均已|已经|已)(?:同步)?(?:改写|更新|修改)', explanation)

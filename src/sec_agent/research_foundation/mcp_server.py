@@ -216,8 +216,9 @@ def build_research_data_mcp_server(
     # Source projection of this composition's successful data/calculator responses.
     # No new store/admission: the typed SQL result remains the authority and is
     # already persisted in the agent's native ToolMessages. A new composition
-    # must re-query or receive its case archive; never accept a model-supplied
-    # number as an observed fact.
+    # restores the SAME trusted author notebook as the graph (or its case
+    # archive); previously observed originals need no re-query. Never accept
+    # a model-supplied number as an observed fact.
     from .source_bound_calculator import ObservedSourceRegistry, register_source_calculator_tool
     source_registry = dependencies.source_registry or ObservedSourceRegistry()
     source_registry.restore(dependencies.restored_observations)

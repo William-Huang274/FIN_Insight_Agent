@@ -8,6 +8,35 @@ from .case_artifacts import CaseArtifacts
 from .workpaper_review_graph import validate_workpaper_state
 
 
+def author_continuation_options(options, state):
+    """Bind one trusted author checkpoint BEFORE opening data and graph ports.
+
+    Continuing an interrupted revision is not opening a new revision from its
+    accepted baseline. The normal graph initializer keeps the current candidate,
+    saved draft, observations and lifetime limits. Do not override its checkpoint
+    after composition: the calculator would already have restored older sources.
+    This host helper neither dispatches tools nor grants additional requests.
+    """
+    baseline = options.get('recovery_state') or {}
+    for key in ('run_id', 'agent_id', 'task'):
+        if baseline.get(key) != state.get(key):
+            raise ValueError('author_continuation_scope_mismatch:' + key)
+    if (options.get('research_task') or {}).get('task_id') != state['task']['task_id']:
+        raise ValueError('author_continuation_assignment_mismatch')
+    if (state.get('pending_action') is not None or state.get('final_submission') is not None
+            or state.get('phase') not in {'ready_for_model_decision', 'tool_observation_ready',
+                'typed_feedback_ready', 'submission_rejected_with_typed_feedback'}):
+        raise ValueError('author_continuation_requires_settled_tool_boundary')
+    from .specialist_graph import SpecialistNotebook
+    notebook = SpecialistNotebook.model_validate_json(json.dumps(state['notebook']))
+    if (notebook.agent_id != state['agent_id'] or notebook.run_id != state['run_id']
+            or notebook.task_id != state['task']['task_id']
+            or notebook.run_invocation_id != state['run_invocation_id']):
+        raise ValueError('author_continuation_notebook_binding_mismatch')
+    return {**options, 'recovery_state': deepcopy(state),
+            'run_invocation_id': state['run_invocation_id'], 'revision_feedback': None}
+
+
 def restore_author_history(adapter, state, audit_paths, *, material_handoff=False):
     """Read the existing private audit, bound to the last accepted model receipt.
 

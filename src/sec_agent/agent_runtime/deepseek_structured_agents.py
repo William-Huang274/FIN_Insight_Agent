@@ -849,6 +849,13 @@ _AGENTIC_HOST_ONLY_KEYS = frozenset(
     }
 )
 
+# These are optimistic-concurrency handles used by the public revision tools,
+# not internal evidence/receipt authority hashes.
+_REVISION_VERSION_KEYS = frozenset({
+    'draft_digest', 'base_submission_digest', 'current_candidate_digest',
+    'current_base_submission_digest', 'pending_revision_digest',
+})
+
 
 def _agentic_semantic_value(value: Any) -> Any:
     """Remove host identity/authority internals from model-visible loop state."""
@@ -873,7 +880,7 @@ def _agentic_semantic_value(value: Any) -> Any:
             str(key): _agentic_semantic_value(child)
             for key, child in value.items()
             if str(key) not in _AGENTIC_HOST_ONLY_KEYS
-            and not str(key).endswith("_digest")
+            and (not str(key).endswith("_digest") or str(key) in _REVISION_VERSION_KEYS)
             and str(key) not in _PROVIDER_PHYSICAL_SELECTOR_KEYS
             and (str(key) not in _PROVIDER_EVIDENCE_PHYSICAL_RESULT_KEYS
                  or str(key) in {"issuer_id", "fiscal_period", "source_role"})
@@ -1645,6 +1652,12 @@ class DeepSeekStructuredAgentAdapter:
                     # feedback must retain task IDs for dependency scheduling.
                     if not is_lead or row.get("name") == "RequestSourceAction":
                         content = _agentic_semantic_value(content)
+                    if row.get('name') in {'SaveWorkpaperEditsAction', 'ReviseWorkpaperAction',
+                                          'FinalizeWorkpaperRevisionAction'}:
+                        from .research_context_view import current_revision_version
+                        version = current_revision_version(semantic_input)
+                        if version and isinstance(content, dict):
+                            content['current_version'] = version
                     reply = {"result": content}
                     # One batch has one next-turn context, not a copy per result.
                     # Preserve every source/error and native tool_call_id pairing.

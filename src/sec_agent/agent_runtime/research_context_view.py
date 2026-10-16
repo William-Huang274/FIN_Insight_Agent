@@ -227,6 +227,24 @@ def decode(value):
         return None
 
 
+def current_revision_version(context):
+    """Public edit handle from the latest host snapshot, never from author prose.
+
+    A saved operation's draft_digest remains its historical output version;
+    this separate envelope identifies the candidate available at read time.
+    """
+    repair = context.get('submission_to_repair') or {}
+    digest = repair.get('base_submission_digest')
+    if not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest):
+        return None
+    return {
+        'base_submission_digest': digest,
+        'scope': 'current_actor_candidate_at_read_time',
+        'saved_batches': (repair.get('draft_state') or {}).get('saved_batches', 0),
+        'version_read': context_readback('/submission_to_repair/base_submission_digest'),
+    }
+
+
 def public_operation(messages, call_id):
     """Read only this actor's public operation and receipt; never execute it."""
     if call_id.startswith(CONTEXT_FIELD_PREFIX):
@@ -241,6 +259,9 @@ def public_operation(messages, call_id):
             return None
         role = {}
         root = '/submission_to_repair/candidate'
+        if path == root or path.startswith(root + '/'):
+            if version := current_revision_version(context):
+                role['current_version'] = version
         if is_review_revision(context) and (path == root or path.startswith(root + '/task_note')):
             if path in {root, root + '/task_note'}:
                 role['revision_document'] = {'path': path,
@@ -291,7 +312,10 @@ def public_operation(messages, call_id):
                     receipt = {'status': 'archived_navigation', 'recovery': body.get('archived_result', body.get('original_content'))}
     if call is None or receipt is None:
         return None
+    version = (current_revision_version(current_context(messages)) if call.get('name') in {
+        'SaveWorkpaperEditsAction', 'ReviseWorkpaperAction', 'FinalizeWorkpaperRevisionAction'} else None)
     return {'operation': call, 'receipt': receipt,
+            **({'current_version': version} if version else {}),
             'notice': 'Saved public record; not a new execution or acceptance. Source authority and failure status are unchanged.'}
 
 
@@ -311,6 +335,9 @@ def history_operation_page(record, *, offset=0, max_characters=12_000, source_id
     selected = {str(value) for value in source_ids}
     operation = record.get('operation') or {}
     header = {k: deepcopy(operation[k]) for k in ('id', 'name', 'error') if k in operation}
+    # Version metadata must remain visible even when the manuscript/receipt is
+    # paginated. Do not replace the historical save version with this value.
+    version = {'current_version': deepcopy(record['current_version'])} if record.get('current_version') else {}
     # Legacy offsets continue to address the full record. New cursors always
     # declare their view, so a subsequent page cannot switch serialization.
     selected_view = view or ('receipt' if offset == 0 and (record.get('revision_document') or operation.get('name') in {
@@ -339,6 +366,7 @@ def history_operation_page(record, *, offset=0, max_characters=12_000, source_id
         found = list(rows(result)) if result is not None else []
         return {
             'operation': header,
+            **version,
             'receipt': {'status': receipt.get('status'), 'result': {'selected_materials': found}},
             'requested_source_ids': sorted(selected),
             'available_source_ids': available_ids,
@@ -349,12 +377,14 @@ def history_operation_page(record, *, offset=0, max_characters=12_000, source_id
     if selected_view == 'receipt' and record.get('revision_document'):
         from .revision_execution_view import revision_document_receipt
         receipt = revision_document_receipt(receipt, record['revision_document'])
-    payload = record if selected_view == 'record' else receipt
+    # Keep old full-record cursors addressing the same serialized manuscript;
+    # newly added version metadata lives outside that byte/character stream.
+    payload = {k: v for k, v in record.items() if k != 'current_version'} if selected_view == 'record' else receipt
     encoded = json.dumps(payload, ensure_ascii=False, separators=(',', ':'))
     if offset == 0 and len(encoded) <= max_characters and selected_view == 'record':
         return deepcopy(record)
     if offset == 0 and len(encoded) <= max_characters:
-        return {'operation': header, 'receipt': deepcopy(receipt), 'view': 'receipt',
+        return {'operation': header, **version, 'receipt': deepcopy(receipt), 'view': 'receipt',
             'next_offset': None, 'record_read': read_at('record'),
             'available_source_ids': available_ids,
             'notice': ('Manuscript view; old task records remain at task_record_read and complete original at record_read.'
@@ -363,6 +393,7 @@ def history_operation_page(record, *, offset=0, max_characters=12_000, source_id
     end = min(len(encoded), offset + max_characters)
     return {
         'operation': header,
+        **version,
         'receipt': {'status': receipt.get('status')},
         'view': selected_view,
         'available_source_ids': available_ids,

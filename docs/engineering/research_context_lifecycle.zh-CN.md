@@ -1,5 +1,13 @@
 # 研究上下文：完整档案与当前工作台
 
+## 修订版本与回执回读
+
+`draft_digest`、`base_submission_digest`、`current_candidate_digest`、`current_base_submission_digest` 与 `pending_revision_digest` 是公开修订工具需要的版本参数，语义投影保留这些字段；内部来源/请求/运行凭证的摘要仍不进入模型输入。保存回执中的 `draft_digest` 表示该次保存产生的版本，不能随后续修改改写。
+
+保存、修订与最终提交的反馈，以及这些操作的历史回读，另外提供 `current_version`：由该作者最新宿主状态生成，给出当前可编辑候选的 `base_submission_digest`、已保存批数和版本号直接读取入口。它不将旧失败变成成功，也不代表稿件已提交或研究结论正确；无当前候选时不从历史记录猜测版本。
+
+`runtime:context:/submission_to_repair/candidate` 及其字段回读的每页都在分页内容外返回同一份 `current_version`。`view=record` 仍可读取完整原稿，旧分页偏移不因新增版本元数据改变。`current_version.version_read` 可直接读取当前版本号，不必翻阅正文。已保存的读取记录保持原样；恢复时通过原生回读投影补充当前版本，不要求模型再次调用或改写旧日志。
+
 ## 修订来源的准确回读
 
 修订引用导航中的 `saved_reads` 从该作者原生日志的成功回执生成：仅匹配包含完整原文、数值或计算对象的准确身份，并提供 `ReadResearchHistoryAction` 的完整参数。模型无需从 `WEB::` 等 ID 猜测 `source_space`。找不到完整原件时明确列入 `unlocated_source_ids`，不把候选元数据或失败回执变成原文，也不跨作者读取；引用语义及原稿状态不因此获得批准。

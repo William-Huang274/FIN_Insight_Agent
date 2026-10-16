@@ -43,7 +43,7 @@ def revision_document_receipt(receipt, role):
     return result
 
 
-def project_revision_execution(context, readback, baseline):
+def project_revision_execution(context, readback, baseline, manuscript_reads=()):
     c = context
     task = c['task_context']
     repair = c['submission_to_repair']
@@ -119,6 +119,8 @@ def project_revision_execution(context, readback, baseline):
         fragment['exact_prose_matches'] = [{'path': '/narrative_markdown', 'offset': i,
                                             'text': quote} for i in offsets]
     repair['current_fragment'] = fragment
+    from .revision_manuscript import editing_surface
+    repair['manuscript'] = editing_surface(candidate, fragment, manuscript_reads, readback)
     repair['latest_saved_fields'] = {}
     for path in (repair.get('draft_state') or {}).get('latest_changed_paths') or []:
         try:

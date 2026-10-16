@@ -96,7 +96,7 @@ def project_revision_task(context):
     return c
 
 
-def compact_current_context(context):
+def compact_current_context(context, *, manuscript_reads=()):
     """Catalogs point to exact run-bound fields; author state and constraints stay hot."""
     c = project_revision_task(deepcopy(context))
     repair = c.get('submission_to_repair') or {}
@@ -104,7 +104,7 @@ def compact_current_context(context):
     if is_review_revision(context):
         from .revision_execution_view import project_revision_execution
         c = project_revision_execution(c, context_readback,
-            context['task_context']['accepted_revision_baseline']['submission'])
+            context['task_context']['accepted_revision_baseline']['submission'], manuscript_reads)
     elif draft.get('saved_batches') and isinstance(repair.get('candidate'), dict):
         import jsonpointer
         candidate = repair.pop('candidate')
@@ -784,9 +784,10 @@ def working_view(messages):
             else:
                 use = {'field': None, 'requirement': 'Navigation or status only; obtain a source passage or fact before citing.'}
             reference_usage[ref['ref_id']] = use
+    from .revision_manuscript import manuscript_reads
     view = {'current_materials': material, 'current_material_bindings': bindings,
             'current_reference_usage': reference_usage, 'material_focus': focus,
-            'current_context': compact_current_context(current),
+            'current_context': compact_current_context(current, manuscript_reads=manuscript_reads(messages, bodies, calls, boundary)),
             'pending_state_proposal': pending_note,
             'operation_catalog': catalog,
             'history_readback': {'tool': 'ReadResearchHistoryAction', 'arguments': {'section': 'operation', 'tool_call_id': '<copy from operation_catalog>'},

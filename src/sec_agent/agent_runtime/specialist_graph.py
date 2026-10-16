@@ -1526,7 +1526,7 @@ def _model_request(
             allowed_actions.extend(["save_workpaper_edits", "finalize_workpaper_revision"])
         body["submission_to_repair"] = {"base_submission_digest": canonical_sha256(candidate), "candidate": candidate}
         if draft:
-            body["submission_to_repair"]["draft_state"] = {k: deepcopy(draft.get(k)) for k in ("digest", "baseline_digest", "saved_batches", "latest_changed_paths", "draft_issues")}
+            body["submission_to_repair"]["draft_state"] = {k: deepcopy(draft.get(k)) for k in ("digest", "baseline_digest", "saved_batches", "changed_paths", "latest_changed_paths", "draft_issues")}
             body["revision_submission_status"] = {"status": "draft_saved_not_submitted", "accepted": False}
         targets = revision_progress(state, candidate)
         body["submission_to_repair"].update(
@@ -1539,12 +1539,7 @@ def _model_request(
                     else "legacy_or_attempt_feedback_not_confirmed_for_current_candidate"),
                 "origin": "runtime_submission_validation",
                 "notice": "Use precise current-candidate locations for repair. Older notebook feedback is history; "
-                    "it does not establish an unresolved error in a later candidate. Unbound feedback requires checking the current value."},
-            revision_guidance="Use the current revision_instruction for scope. Recorded edit targets are advisory: "
-                "an unchanged proposed edit does not itself block submission or prove an error; explain disagreements in finding responses. Changed fields are not semantically verified. "
-                "Before reporting a correction, inspect the actual current candidate, not an earlier proposed edit. Correct related body, claims, counterevidence and notes consistently. "
-                "For a text fragment use str_replace; for one coverage assessment use upsert_coverage. No need to repeat the whole field or coverage array. "
-                "A previous working_state marked completed describes the prior submission, not completion of this revision.")
+                    "it does not establish an unresolved error in a later candidate. Unbound feedback requires checking the current value."})
         if allow_workpaper_field_edits:
             # An existing candidate is edited and assembled by the runtime.
             # Do not offer two competing submission protocols for this stage.

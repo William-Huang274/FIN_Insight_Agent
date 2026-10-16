@@ -39,10 +39,8 @@ def test_resume_replaces_old_scope_without_changing_task_candidate_or_sources():
     assert request['submission_to_repair']['candidate'] == state['last_submission_attempt']['arguments']
     assert request['task_context']['revision_feedback'] == [{'finding_id': 'F1'}]
     assert request['task_context']['revision_instruction'] == AUTHOR_REVISION_GUIDANCE
-    guidance = request['submission_to_repair']['revision_guidance']
-    assert 'Keep the whole assignment' not in guidance
-    assert 'Unchanged requested fields block submission' not in guidance
-    assert 'does not itself block submission' in guidance
+    assert 'revision_guidance' not in request['submission_to_repair']
+    assert 'reviewer and Lead requests are proposals' in request['task_context']['revision_instruction']
 
 
 @pytest.mark.parametrize('remaining', [0, 1, 3, 100, None])

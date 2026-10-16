@@ -16,10 +16,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 from langchain_core.messages import AIMessage, ToolMessage, messages_from_dict, messages_to_dict
 from pydantic import SecretStr
 from sec_agent.agent_runtime.deepseek_structured_agents import (
-    ReasoningPreservingChatDeepSeek, _project_agentic_specialist_request,
+    ReasoningPreservingChatDeepSeek, _project_agentic_specialist_request, _native_function_schema,
+    _NATIVE_SPECIALIST_TOOLS,
 )
+from sec_agent.agent_runtime.model_context import research_checkpoint_request
 from sec_agent.agent_runtime.research_context_view import (
-    working_view, public_operation, history_operation_page, INITIAL_CONTEXT_ID,
+    working_view, public_operation, history_operation_page, INITIAL_CONTEXT_ID, current_context,
 )
 from sec_agent.agent_runtime.specialist_graph import (
     SaveWorkpaperEditsAction, FinalizeWorkpaperRevisionAction, WorkpaperEditError,
@@ -59,14 +61,19 @@ def message_objects(messages):
 
 def run(args):
     files = [args.audit, args.state, *sorted(args.wire_dir.glob('*.private.json'))]
+    if args.initial_materials_wire:
+        files.append(args.initial_materials_wire)
     hashes = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
     events = [json.loads(line) for line in args.audit.read_text(encoding='utf8').splitlines()]
     events = [e for e in events if e.get('raw_response')]
     wires = [json.loads(p.read_text(encoding='utf8')) for p in sorted(args.wire_dir.glob('*.private.json'))]
-    assert len(events) == len(wires) == 3, 'Expected the three actual stopped validation requests'
-    originals = next(json.loads(m['content'])['current_materials'] for m in wires[0]['messages']
+    assert len(events) == len(wires) == args.expected_requests, 'Unexpected actual request count'
+    initial_wire = json.loads(args.initial_materials_wire.read_text(encoding='utf8')) if args.initial_materials_wire else wires[0]
+    originals = next(json.loads(m['content'])['current_materials'] for m in initial_wire['messages']
                      if m['role'] == 'user' and 'current_materials' in json.loads(m['content']))
     assert len(originals) == 7
+    current_materials = next(json.loads(m['content'])['current_materials'] for m in wires[-1]['messages']
+                            if m['role'] == 'user' and 'current_materials' in json.loads(m['content']))
     chat = ReasoningPreservingChatDeepSeek(model=wires[0]['model'], api_key=SecretStr('offline'),
         tool_context_policy='task_boundary', research_checkpoint_tokens=48000, max_retries=0,
         use_responses_api=False)
@@ -75,8 +82,14 @@ def run(args):
 
     def check(rows, label, old_wire, expected=originals):
         before = deepcopy(rows)
+        available = {t['function']['name'] for t in old_wire['tools']}
+        native = {k:v for k,v in _NATIVE_SPECIALIST_TOOLS.items() if k in available}
+        cleaned, same_tools, notice = research_checkpoint_request(rows, model=chat, native_tools=native,
+            runtime_context_binding=True, schema=_native_function_schema, max_input_characters=1000000)
+        assert same_tools == native and notice is None
+        assert not any(m.additional_kwargs.get('fin_context_checkpoint_instruction') for m in cleaned)
         # Actual SDK request projection, not just the source selection helper.
-        payload = chat._get_request_payload(rows, tools=old_wire['tools'], tool_choice='auto')
+        payload = chat._get_request_payload(cleaned, tools=old_wire['tools'], tool_choice='auto')
         wire = {**old_wire, 'messages': payload['messages']}
         material = list(message_objects(wire['messages']))
         for original in expected:
@@ -86,8 +99,19 @@ def run(args):
         projected = working_view(rows)
         assert working_view(projected) == projected and rows == before
         view = next(json.loads(m.content) for m in projected if m.additional_kwargs.get('fin_research_working_view'))
+        c = view['current_context']
+        assert 'execution_budget' not in c and 'working_state_guidance' not in c['task_context']
+        assert 'revision_guidance' not in c['submission_to_repair']
+        for read in [c['execution_window']['budget_readback'], c['submission_to_repair']['candidate_readback'],
+                     *c['submission_to_repair']['field_reads'].values()]:
+            import jsonpointer
+            cid = read['arguments']['tool_call_id']
+            record = public_operation(rows, cid)
+            assert record is not None
+            assert record['receipt']['result'] == jsonpointer.resolve_pointer(
+                current_context(rows), cid.removeprefix('runtime:context:'))
         readbacks = []
-        for original in originals:
+        for original in {identity(r): r for r in [*originals, *expected]}.values():
             ref = identity(original)
             for route in view['operation_catalog']:
                 saved = public_operation(rows, route['tool_call_id'])
@@ -109,17 +133,21 @@ def run(args):
 
     for i, (event, wire) in enumerate(zip(events, wires), 1):
         rows = messages_from_dict([{'type': m['type'], 'data': m} for m in event['messages']])
-        check(rows, f'actual-request-{i}', wire)
+        expected = next(json.loads(m['content'])['current_materials'] for m in wire['messages']
+                        if m['role'] == 'user' and 'current_materials' in json.loads(m['content']))
+        check(rows, f'actual-request-{i}', wire, expected)
     # Do not apply the stopped third response or invent a provider response.
     # Exercise local saves on the actual third input, using isolated copies.
     state = json.loads(args.state.read_text(encoding='utf8'))
     old_attempt = deepcopy(state['last_submission_attempt'])
     old_observations = deepcopy(state['notebook']['observations'])
+    recorded_budget = public_operation(rows, 'runtime:context:/execution_budget')['receipt']['result']
 
     def append(cid, name, arguments, receipt, status='success'):
         request = _model_request(state=state,
             notebook=SpecialistNotebook.model_validate_json(json.dumps(state['notebook'])),
-            allow_workpaper_field_edits=True)
+            allow_workpaper_field_edits=True,
+            remaining_model_requests=recorded_budget.get('shared_remaining_model_requests'))
         # Match the native adapter's continuation envelope: observations already
         # live in canonical receipts, never paste the whole host state again.
         delta = _project_agentic_specialist_request(request)
@@ -136,11 +164,14 @@ def run(args):
             'base_submission_digest': canonical_sha256(candidate), 'edits': [
                 {'op': 'set_field', 'path': '/' + field, 'value': candidate[field] + '\n[OFFLINE FIXTURE]'}]}))
         state['workpaper_draft'], receipt = save_draft(state, action)
+        state['last_edit_feedback'] = receipt
         assert receipt['saved'] and not receipt['accepted'] and not receipt['submitted']
         append(f'offline-save-{i}', 'SaveWorkpaperEditsAction', action.model_dump(mode='json'), receipt)
         state = json.loads(json.dumps(state))
         rows = messages_from_dict(json.loads(json.dumps(messages_to_dict(rows))))
-        v = check(rows, f'saved-{i}-resumed', wires[-1])
+        v = check(rows, f'saved-{i}-resumed', wires[-1], current_materials)
+        assert v['current_context']['task_context']['revision_step']['kind'] != 'repair_current_error'
+        assert v['current_context']['task_context']['revision_progress']['saved_batches'] == i
         draft_route = v['current_context']['submission_to_repair']['candidate_readback']['arguments']['tool_call_id']
         assert public_operation(rows, draft_route) is not None
     saved_state = deepcopy(state)
@@ -155,7 +186,7 @@ def run(args):
         append('offline-bad', 'SaveWorkpaperEditsAction', bad.model_dump(mode='json'),
                {'saved': False, 'error': str(exc)}, 'error')
     assert state == saved_state
-    check(rows, 'after-local-error', wires[-1])
+    check(rows, 'after-local-error', wires[-1], current_materials)
     final = FinalizeWorkpaperRevisionAction(action='finalize_workpaper_revision', context_digest='0'*64,
         reason_summary='OFFLINE VALIDATOR ONLY', draft_digest=state['workpaper_draft']['digest'])
     proposal = finalize_draft(state, final)
@@ -167,7 +198,14 @@ def run(args):
     assert not result.get('final_submission'), 'Fixture cannot resolve the real review finding'
     append('offline-final-rejected', 'FinalizeWorkpaperRevisionAction', final.model_dump(mode='json'),
            {'accepted': False, 'feedback': result['last_submission_attempt']['validation_issues']}, 'error')
-    check(rows, 'after-final-rejection', wires[-1])
+    check(rows, 'after-final-rejection', wires[-1], current_materials)
+    # Invoke the real host guard with exhausted allowance. No scripted model
+    # response is needed and a save is never promoted to completed work.
+    budget_graph = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
+        model_turn=deny, evidence_tool=deny, finance_tool=deny, remaining_model_requests=lambda: 0))
+    stopped = budget_graph.nodes['model_decide'].runnable.invoke(state)
+    assert stopped['review_reason'] == 'shared_model_request_ceiling_reached_no_silent_completion'
+    assert not stopped.get('final_submission') and state == saved_state
     # Material selection follows author progress, not elapsed tool count.
     keep = originals[:1]
     append('offline-select', 'UpdateResearchStateAction', {'retain_source_ids': [identity(keep[0])]}, {'accepted': True})
@@ -177,7 +215,9 @@ def run(args):
     assert state['notebook']['observations'] == old_observations
     assert {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in files} == hashes
     report = {'network_disabled': True, 'paid_calls': 0, 'financial_artifacts_promoted': 0,
-        'original_files_unchanged': True, 'actual_request_count': 3, 'initial_materials': 7,
+        'original_files_unchanged': True, 'actual_request_count': len(events), 'initial_materials': 7,
+        'all_current_materials': len(current_materials), 'host_budget_zero_blocks_model': True,
+        'no_extra_checkpoint_note': True,
         'saved_batches_on_copies': 2, 'restart_after_save': True, 'bad_batch_preserves_prior_saves': True,
         'full_validation_still_rejects_unresolved_finding': True, 'readbacks_verified_each_stage': True,
         'original_observations_and_candidate_unchanged': True, 'stages': results, 'input_hashes': hashes}
@@ -189,5 +229,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     for key in ('audit', 'wire-dir', 'state', 'output'):
         parser.add_argument('--'+key, type=Path, required=True)
+    parser.add_argument('--expected-requests', type=int, default=3)
+    parser.add_argument('--initial-materials-wire', type=Path)
     with patch.object(socket.socket, 'connect', deny), patch('socket.create_connection', deny):
         run(parser.parse_args())

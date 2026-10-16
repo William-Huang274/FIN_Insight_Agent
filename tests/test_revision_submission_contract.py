@@ -51,7 +51,7 @@ def test_saved_batch_path_feedback_then_explicit_finalize():
         assert repair['candidate'] == candidate
         check = repair['pending_edit_validation']
         assert check['issues'][0]['suggested_path'] == '/task_note/finding_responses'
-        assert 'without submitting' in repair['submission_contract']['local_revision']
+        assert 'FinalizeWorkpaperRevisionAction submits the saved draft_digest' in repair['submission_contract']['local_revision']
         return _batch(request, [{'action': 'save_workpaper_edits', 'operation_id': 'repair-path', 'reason_summary': 'Repair only saved path.',
             'base_submission_digest': repair['base_submission_digest'],
             'pending_revision_digest': check['pending_revision_digest'],

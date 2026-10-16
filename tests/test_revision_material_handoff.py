@@ -100,7 +100,8 @@ def test_adapter_reentry_reaches_actual_sdk_with_only_edit_submission_and_saved_
         encoded = json.dumps(wire, ensure_ascii=False)
         assert 'Necessary FY2027 fact' in encoded and 'Additional fact' in encoded
         assert 'OLD BROAD REWRITE PLAN' not in encoded
-        assert ('Context size reminder' in encoded) is pressure
+        assert 'Context size reminder' not in encoded
+        assert 'native_draft_checkpoint' in encoded
         return httpx.Response(200, json={'id': 'offline', 'object': 'chat.completion', 'created': 1,
             'model': 'deepseek-v4-flash', 'choices': [{'index': 0, 'finish_reason': 'tool_calls', 'message': {
                 'role': 'assistant', 'content': '', 'tool_calls': [{'id': 'read-again', 'type': 'function',

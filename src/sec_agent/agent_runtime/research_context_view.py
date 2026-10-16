@@ -101,7 +101,11 @@ def compact_current_context(context):
     c = project_revision_task(deepcopy(context))
     repair = c.get('submission_to_repair') or {}
     draft = repair.get('draft_state') or {}
-    if draft.get('saved_batches') and isinstance(repair.get('candidate'), dict):
+    if is_review_revision(context):
+        from .revision_execution_view import project_revision_execution
+        c = project_revision_execution(c, context_readback,
+            context['task_context']['accepted_revision_baseline']['submission'])
+    elif draft.get('saved_batches') and isinstance(repair.get('candidate'), dict):
         import jsonpointer
         candidate = repair.pop('candidate')
         repair['candidate_readback'] = context_readback('/submission_to_repair/candidate')

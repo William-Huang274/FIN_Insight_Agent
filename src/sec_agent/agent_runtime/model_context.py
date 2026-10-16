@@ -1144,6 +1144,16 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
     LangChain owns message serialization/token estimation. No hidden summarizer
     call, fabricated tool result, removal of stored messages or fresh allowance.
     """
+    from .research_context_view import current_context, is_review_revision
+    active = current_context(messages)
+    revision = is_review_revision(active) or (
+        active.get('task_context', {}).get('revision_task', {}).get('kind') == 'accepted_workpaper_revision'
+        and 'SaveWorkpaperEditsAction' in native_tools)
+    if revision:
+        # Native saves already checkpoint revision progress. Do not require a
+        # second note transaction, or carry an earlier research-phase reminder.
+        # Transport size/turn limits still execute after request projection.
+        return [m for m in messages if not m.additional_kwargs.get('fin_context_checkpoint_instruction')], native_tools, None
     trigger = model.research_checkpoint_tokens
     if trigger is None or "UpdateResearchStateAction" not in native_tools:
         return messages, native_tools, None

@@ -58,9 +58,15 @@ def view(rows):
 def test_revision_view_has_one_live_task_and_exact_background_readbacks():
     rows = fixture(); saved = deepcopy(rows); v = view(rows); c = v['current_context']; t = c['task_context']
     assert rows == saved
-    assert c['submission_to_repair'] == context()['submission_to_repair']
+    repair = c['submission_to_repair']
+    assert repair['validation_feedback'] == context()['submission_to_repair']['validation_feedback']
+    record = public_operation(rows, repair['candidate_readback']['arguments']['tool_call_id'])
+    assert record['receipt']['result'] == context()['submission_to_repair']['candidate']
     assert c['allowed_actions'] == context()['allowed_actions']
-    assert c['execution_budget'] == context()['execution_budget']
+    assert 'execution_budget' not in c
+    assert c['execution_window']['current_request_authorized'] is True
+    record = public_operation(rows, c['execution_window']['budget_readback']['arguments']['tool_call_id'])
+    assert record['receipt']['result'] == context()['execution_budget']
     assert t['research_question'] == 'Original user question'
     assert t['revision_feedback'] == context()['task_context']['revision_feedback']
     assert 'objective' not in c['branch'] and c['branch']['tool_binding_id'] == 'B'

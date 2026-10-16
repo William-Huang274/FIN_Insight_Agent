@@ -468,7 +468,8 @@ def test_partial_edit_is_exposed_and_consumed_through_actual_sdk_and_native_grap
         'The causal interpretation remains bounded.', 'Uncertainty remains explicit.')
     schema = next(t for t in wires[2]['tools'] if t['function']['name'] == 'SaveWorkpaperEditsAction')
     assert 'str_replace' in json.dumps(schema) and 'upsert_coverage' in json.dumps(schema)
-    assert 'revision_guidance' in json.dumps(wires[2])
+    assert 'revision_instruction' in json.dumps(wires[2])
+    assert 'revision_guidance' not in json.dumps(wires[2])
     assert requests[3]['revision_submission_status']['accepted'] is False
     saved_receipt = json.loads(wires[3]['messages'][-1]['content'])['result']['draft_result']
     assert saved_receipt['saved'] and not saved_receipt['submitted']

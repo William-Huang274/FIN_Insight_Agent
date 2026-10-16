@@ -854,6 +854,13 @@ def _agentic_semantic_value(value: Any) -> Any:
     """Remove host identity/authority internals from model-visible loop state."""
 
     if isinstance(value, Mapping):
+        if value.get('execution') == 'local_source_bound_calculator' and 'check_id' in value and 'binding' in value:
+            # This is an execution result, not an instruction to disregard a
+            # failure. Keep its exact-call binding across the semantic view.
+            return {'check_id': value['check_id'], 'execution': value['execution'], 'scope': value['scope'],
+                    'binding': {'tool_call_id': value['binding']['tool_call_id'],
+                                'request_fingerprint': value['binding'].get('request_fingerprint', value['binding'].get('request_digest'))},
+                    'outcome': _agentic_semantic_value(value['outcome'])}
         if value.get('tool', value.get('read_tool')) == 'ReadDependencyWorkAction':
             projected = {str(k): _agentic_semantic_value(v) for k, v in value.items()}
             if 'task_id' in value.get('arguments', {}):

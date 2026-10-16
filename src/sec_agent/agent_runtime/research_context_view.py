@@ -805,4 +805,6 @@ def working_view(messages):
             m.content = json.dumps(b, ensure_ascii=False, separators=(',', ':'))
     compact_accepted_operations(recent, view)
     refresh_history_read_views(recent, messages, calls)
+    from sec_agent.agent_runtime.tool_recovery import project_recovery_receipts
+    project_recovery_receipts(recent, current, calls)
     return [*prefix, *recent, *reminders]

@@ -90,7 +90,8 @@ def project_revision_execution(context, readback, baseline, manuscript_reads=())
     local_error = repair.get('pending_edit_validation') or (
         feedback if feedback.get('saved') is False or feedback.get('batch_applied') is False else None)
     current_errors = validation.get('issues') if validation.get('binding') == 'current_candidate' else []
-    mode = ('repair_current_error' if local_error or current_errors else
+    binding_errors = [r for r in repair.get('calculation_binding_issues', []) if r.get('blocking')]
+    mode = ('repair_current_error' if local_error or current_errors or binding_errors else
             'edit_finding_fragment' if selected else 'reconcile_saved_draft')
     step = {
         'kind': mode,
@@ -107,6 +108,7 @@ def project_revision_execution(context, readback, baseline, manuscript_reads=())
     repair['field_reads'] = {k: readback(root + '/' + k.replace('~', '~0').replace('/', '~1'))
                              for k in candidate}
     claim_ids = set((selected or {}).get('claim_ids') or [])
+    claim_ids.update(cid for issue in binding_errors for cid in issue.get('claim_ids', []))
     fragment = {'claims': [deepcopy(r) for r in candidate.get('claims', []) if r.get('claim_id') in claim_ids],
                 'unresolved_target_claim_ids': sorted(claim_ids - set(repair['claim_ids']))}
     quote = (selected or {}).get('problematic_quote')

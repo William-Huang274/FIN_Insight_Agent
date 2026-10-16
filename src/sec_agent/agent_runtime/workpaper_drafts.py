@@ -94,6 +94,12 @@ def save_draft(state, action):
              if 'value_note' in edit.model_fields_set]
     if notes:
         receipt['edit_notes'] = notes
+    from .calculation_bindings import calculation_binding_issues
+    binding_issues = calculation_binding_issues(candidate, state.get('notebook') or {}, draft['arguments'])
+    if binding_issues:
+        receipt['calculation_binding_issues'] = [{**issue,
+            'blocks_final_submission': issue['blocking'], 'blocking': False,
+            'stage': 'saved_draft_advisory'} for issue in binding_issues]
     result = {**deepcopy(draft), 'arguments': candidate, 'digest': receipt['draft_digest'],
               'saved_batches': draft['saved_batches'] + 1,
               'changed_paths': list(dict.fromkeys([*draft['changed_paths'], *changed])),

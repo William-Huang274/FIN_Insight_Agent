@@ -7,6 +7,17 @@ from .reference_repair import resolve_reference
 
 def reference_issue(error, submission, notebook, delegated_work=None):
     prefix, _, source_id = error.partition(':')
+    if prefix == 'fact_reference_authority_invalid':
+        from .calculation_bindings import classification_issue
+        return classification_issue(error, submission, notebook)
+    if prefix == 'calculation_binding':
+        from .calculation_bindings import calculation_binding_issues
+        code, _, ref = source_id.partition(':')
+        matches = [r for r in calculation_binding_issues(submission, notebook)
+                   if r['code'] == code and r['source_id'] == ref]
+        if matches:
+            return {**matches[0], 'message': error}
+        return None
     fields = {'unknown_evidence_id': 'evidence_ids',
               'non_evidence_reference_cited': 'evidence_ids', 'unknown_fact_id': 'fact_ids'}
     if prefix not in fields:

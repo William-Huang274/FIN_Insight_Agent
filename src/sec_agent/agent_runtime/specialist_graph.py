@@ -28,6 +28,7 @@ from pydantic import (
 )
 
 from .research_contracts import ProviderEvidenceIntent
+from .calculation_bindings import FACT_STATES, KIND_DESCRIPTION, calculation_binding_issues
 from .task_outcome import AuthorTaskNote, TaskCoverage
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
 from .authoring_context import PrepareWorkpaperAction, bind_authoring, validate_specialist_preparation, specialist_basis, stage_methods
@@ -285,11 +286,7 @@ ClaimKind = Literal[
 
 class SpecialistClaim(_StrictModel):
     claim_id: str = Field(min_length=1, max_length=240)
-    kind: ClaimKind = Field(description=(
-        "reported_fact includes numbers quoted from source passages/PDF tables; cite PASSAGE in evidence_ids. "
-        "numeric_fact is exclusively a typed S2/NUMFACT receipt in fact_ids, not any sentence containing a number. "
-        "calculation cites an observed CALC receipt; inference/hypothesis/boundary describe analytical interpretation."
-    ))
+    kind: ClaimKind = Field(description=KIND_DESCRIPTION)
     materiality: Literal["high", "medium", "low"]
     statement: str = Field(min_length=1, max_length=4_000)
     evidence_ids: tuple[str, ...] = Field(default=(), max_length=32, description=(
@@ -442,13 +439,13 @@ def _claim_changes_schema(schema):
 class WorkpaperClaimChanges(_StrictModel):
     """Only supplied fields change; complete claim validation follows assembly."""
     model_config = ConfigDict(json_schema_extra=_claim_changes_schema)
-    kind: ClaimKind | None = None
+    kind: ClaimKind | None = Field(default=None, description=KIND_DESCRIPTION)
     materiality: Literal["high", "medium", "low"] | None = None
     statement: str | None = Field(default=None, min_length=1, max_length=4_000)
     evidence_ids: tuple[str, ...] | None = Field(default=None, max_length=32,
         description="PASSAGE/evidence IDs only. Omit to retain existing bindings; [] explicitly clears them.")
     fact_ids: tuple[str, ...] | None = Field(default=None, max_length=48,
-        description="NUMFACT/S2 or CALC IDs. CALC remains usable here even when writer_citable=false.")
+        description="NUMFACT/S2 or CALC IDs. CALC remains usable for calculation/inference/hypothesis/boundary even when writer_citable=false. Preserve its binding while dependent text remains. [] clears bindings, not dependent assertions; omit to retain existing IDs.")
     numeric_authority: Literal["authoritative", "non_authoritative", "not_applicable"] | None = None
     authority_note: str | None = Field(default=None, min_length=1, max_length=1_000)
     reasoning_summary: str | None = Field(default=None, max_length=4_000)
@@ -601,6 +598,7 @@ def workpaper_revision_contract() -> dict[str, str]:
     return {
         "local_revision": "SaveWorkpaperEditsAction persists ready changes, even one field or claim, without waiting for all related edits. Related prose and dependencies may be completed in later batches. Previously saved batches survive a later failure. FinalizeWorkpaperRevisionAction submits the saved draft_digest for complete validation; only then must the complete revision be consistent. No full content resubmission.",
         "claim_changes": "Use op=update_claim, exact claim_id, changes containing only new values for affected fields. Omitted fields retain their values; no old_value or array index is needed.",
+        "calculation_bindings": KIND_DESCRIPTION,
         "other_changes": "Use set_field with path/value for complete non-claim fields; str_replace for a short text fragment; upsert_coverage for an assessment. Update affected prose and judgments as needed; this does not auto-rewrite them.",
         "review_response_path": "/task_note/finding_responses",
         "review_response_item_schema": json.dumps(AuthorFindingResponse.model_json_schema(), ensure_ascii=False),
@@ -1537,6 +1535,9 @@ def _model_request(
         if allow_workpaper_field_edits:
             allowed_actions.extend(["save_workpaper_edits", "finalize_workpaper_revision"])
         body["submission_to_repair"] = {"base_submission_digest": canonical_sha256(candidate), "candidate": candidate}
+        body['submission_to_repair']['calculation_binding_issues'] = calculation_binding_issues(
+            candidate, notebook.model_dump(mode='json'),
+            (state.get('last_submission_attempt') or {}).get('arguments'))
         if draft:
             body["submission_to_repair"]["draft_state"] = {k: deepcopy(draft.get(k)) for k in ("digest", "baseline_digest", "saved_batches", "changed_paths", "latest_changed_paths", "draft_issues", "change_status")}
             body["revision_submission_status"] = {"status": "draft_saved_not_submitted", "accepted": False}
@@ -1832,7 +1833,7 @@ def _normalize_submission_quotes(submission, notebook):
 def _submission_errors(
     submission: SubmitWorkpaperAction,
     notebook: SpecialistNotebook,
-    *, enforce_case_route_requirements: bool = True,
+    *, enforce_case_route_requirements: bool = True, enforce_calculation_bindings: bool = True,
 ) -> tuple[str, ...]:
     errors: list[str] = []
     references: dict[str, SpecialistObservedReference] = {}
@@ -1906,7 +1907,12 @@ def _submission_errors(
         for issue in fact_issues:
             errors.append('source_fact_consistency:' + claim.claim_id + ':' + json.dumps(issue, ensure_ascii=False)
                 + ':preserve_original_unit_or_explicit_fiscal_label;read_and_cite_distinct_support_if_needed')
-        if claim.kind == "calculation" and not any(
+        # Current CALC references are each checked by the shared lineage checker
+        # below, including inference claims. Keep the original no-receipt/legacy
+        # namespace check without a second, weaker "one good CALC is enough" rule.
+        typed_calcs_checked = enforce_calculation_bindings and any(
+            ref.startswith('CALC::') for ref in claim.fact_ids)
+        if claim.kind == "calculation" and not typed_calcs_checked and not any(
             references.get(ref) and references[ref].authority_state == "non_authoritative_metric"
             and any(item.get("calculation_id") == ref and item.get("arithmetic_verified") is True
                     and item.get("numeric_fact_authority") is False
@@ -1945,22 +1951,7 @@ def _submission_errors(
             if reference is None:
                 errors.append(f"unknown_fact_id:{fact_id}")
                 continue
-            allowed_fact_states = {
-                "numeric_fact": {"numeric_fact"},
-                "calculation": {"numeric_fact", "non_authoritative_metric"},
-                "inference": {"numeric_fact", "non_authoritative_metric"},
-                "hypothesis": {
-                    "numeric_fact",
-                    "non_authoritative_metric",
-                    "research_scenario",
-                },
-                "boundary": {
-                    "numeric_fact",
-                    "non_authoritative_metric",
-                    "research_scenario",
-                },
-                "reported_fact": set(),
-            }[claim.kind]
+            allowed_fact_states = FACT_STATES[claim.kind]
             if reference.authority_state not in allowed_fact_states:
                 errors.append(
                     f"fact_reference_authority_invalid:{claim.kind}:{fact_id}"
@@ -1969,6 +1960,10 @@ def _submission_errors(
             claim.evidence_ids or claim.fact_ids
         ):
             errors.append(f"unsupported_deliverable_claim:{claim.claim_id}")
+    if enforce_calculation_bindings:
+        errors.extend('calculation_binding:' + issue['code'] + ':' + issue['source_id']
+            for issue in calculation_binding_issues(submission.model_dump(mode='json'), notebook.model_dump(mode='json'))
+            if issue['blocking'])
     return tuple(dict.fromkeys(errors))
 
 

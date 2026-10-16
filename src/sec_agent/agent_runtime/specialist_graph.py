@@ -209,7 +209,7 @@ class ReadResearchHistoryAction(_StrictModel):
     index: int | None = Field(default=None, ge=1, description='Required for turn or lead_assistance only. Must be omitted for operation; it cannot replace tool_call_id.')
     tool_call_id: str | None = Field(default=None, description='Required for operation, with index omitted. Copy the exact ID from saved_reads, operation_catalog or a supplied context-field readback. Source/document IDs are not tool_call_id. Reads saved data without re-execution; runtime:context: locators return run-bound current metadata.')
     view: Literal['receipt', 'record'] | None = Field(default=None, exclude_if=lambda value: value is None,
-        description='For operation: receipt reads the actual outcome without resending old arguments; record reads the full public operation including arguments. If omitted, submission calls return receipt, other operations return record. Follow next_read for paging.')
+        description='For operation: receipt reads the outcome without old arguments. Revision manuscript reads separate old task records into task_record_read; record returns the complete original field/operation. If omitted, submissions and revision manuscripts return receipt. Follow next_read for paging.')
     offset: int = Field(default=0, ge=0, description='Character offset for a large saved operation record. Copy next_offset from the prior historical receipt.')
     max_characters: int = Field(default=12_000, ge=1_000, le=24_000, description='Largest serialized historical-record window. This does not reread, truncate or alter the archived original.')
     source_ids: tuple[str, ...] = Field(default=(), max_length=12, description='For operation only: optional filter within the saved operation identified by required tool_call_id. Cannot be used alone or search across operations. Copy saved_reads arguments to return exact original objects instead of a generic serialized page.')
@@ -532,7 +532,8 @@ class SaveWorkpaperEditsAction(ReviseWorkpaperAction):
     """Persist ready changes, even one field, without waiting for the whole revision.
 
     Related prose or dependencies may be completed in later batches before final
-    submission. Saving never submits the paper or finishes research.
+    submission. One save may accompany independent reads/calculations whose
+    inputs are already available. Saving never submits the paper or finishes research.
     """
     action: Literal["save_workpaper_edits"]
     operation_id: str = Field(min_length=1, max_length=160,
@@ -2650,8 +2651,17 @@ def build_specialist_agentic_state_graph(
         if memory_enabled():
             models.update(WORKING_MEMORY_MODELS)
         terminal_mixed = len(batch.tool_calls) > 1 and any(
-            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SaveWorkpaperEditsAction", "FinalizeWorkpaperRevisionAction", "SubmitReviewAction", "RequestHumanReviewAction", "UpdateResearchStateAction", 'PrepareWorkpaperAction'}
+            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "FinalizeWorkpaperRevisionAction", "SubmitReviewAction", "RequestHumanReviewAction", "UpdateResearchStateAction", 'PrepareWorkpaperAction'}
             for call in batch.tool_calls)
+        saves = [call for call in batch.tool_calls if call.name == 'SaveWorkpaperEditsAction']
+        # Persistence is not terminal. Allow one version-bound save alongside
+        # reads; do not allow two writers or a finalization against an unseen
+        # draft version. ToolNode's existing serial executor preserves receipts.
+        save_mixed_invalid = bool(saves) and (len(saves) > 1 or any(call.name not in {
+            'SaveWorkpaperEditsAction', 'RequestEvidenceAction', 'RequestFinanceAction',
+            'RequestCalculationAction', 'RequestSourceAction', 'RequestResearchMethodAction',
+            'ReadResearchHistoryAction', 'ReadDependencyWorkAction', 'ReadDelegatedWorkAction'}
+            for call in batch.tool_calls))
         l0 = _validate_model_json(SpecialistL0Context, state["l0_context"], code="specialist_l0_context_invalid")
         assigned_routes = {row.get("minimum_route_obligation_id")
                            for row in state["task"].get("evidence_requests", ()) if isinstance(row, Mapping)}
@@ -2756,6 +2766,9 @@ def build_specialist_agentic_state_graph(
             if terminal_mixed:
                 return reject("specialist_terminal_action_must_be_alone",
                     "No tools in this response were dispatched. Submit or request human review as the sole call, after observing pending data results.")
+            if save_mixed_invalid:
+                return reject('specialist_revision_batch_requires_one_writer',
+                    'No tools dispatched. A response may contain one SaveWorkpaperEditsAction and independent reads/calculations; use the returned draft version before another save or finalization.')
             if isinstance(call, SpecialistInvalidToolCall):
                 # Unrecoverable syntax never executes. Complete prose fields
                 # remain available for human review independently of acceptance.

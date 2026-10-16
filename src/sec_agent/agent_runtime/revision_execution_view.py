@@ -8,6 +8,41 @@ from copy import deepcopy
 import jsonpointer
 
 
+def revision_document_receipt(receipt, role):
+    """Read manuscript content without reissuing its old task checklist.
+
+    The canonical field stays exact at view=record. This projection is used by
+    both live reads and restored reads, before pagination, not by the validator.
+    """
+    result = deepcopy(receipt)
+    value = result.get('result')
+    if not isinstance(value, dict):
+        return result
+    note = value if role['path'].endswith('/task_note') else value.get('task_note')
+    if not isinstance(note, dict):
+        return result
+    active = set(role['finding_ids'])
+    kept = {k: deepcopy(v) for k, v in note.items() if k == 'summary'}
+    if 'finding_responses' in note:
+        kept['finding_responses'] = [deepcopy(r) for r in note['finding_responses']
+                                    if r.get('finding_id') in active]
+    if role['changes_saved_in_this_revision'] and 'changes' in note:
+        kept['changes'] = deepcopy(note['changes'])
+    if role['path'].endswith('/task_note'):
+        result['result'] = kept
+    else:
+        value['task_note'] = kept
+    result['task_record_read'] = {
+        'tool': 'ReadResearchHistoryAction', 'arguments': {'section': 'operation',
+            'tool_call_id': 'runtime:context:/submission_to_repair/candidate/task_note', 'view': 'record'},
+        'role': 'saved_research_record_not_current_revision_requirements',
+        'fields': list(note),
+    }
+    result['revision_requirements_at'] = '/current_context/task_context/revision_task'
+    result['content_projection'] = 'manuscript_and_current_revision_responses'
+    return result
+
+
 def project_revision_execution(context, readback, baseline):
     c = context
     task = c['task_context']

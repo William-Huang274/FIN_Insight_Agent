@@ -235,12 +235,24 @@ def public_operation(messages, call_id):
         if not path.startswith('/'):
             return None
         try:
-            value = jsonpointer.resolve_pointer(current_context(messages), path)
+            context = current_context(messages)
+            value = jsonpointer.resolve_pointer(context, path)
         except (jsonpointer.JsonPointerException, TypeError):
             return None
+        role = {}
+        root = '/submission_to_repair/candidate'
+        if is_review_revision(context) and (path == root or path.startswith(root + '/task_note')):
+            if path in {root, root + '/task_note'}:
+                role['revision_document'] = {'path': path,
+                    'finding_ids': [f.get('finding_id') for f in context['task_context'].get('revision_feedback', [])],
+                    'changes_saved_in_this_revision': any(p in {'/task_note', '/task_note/changes'}
+                        or p.startswith('/task_note/changes/') for p in
+                        (context['submission_to_repair'].get('draft_state') or {}).get('changed_paths', []))}
+            else:
+                role['field_role'] = 'saved_workpaper_field_not_an_execution_requirement'
         return {'operation': {'id': call_id, 'name': 'CurrentResearchContextField', 'args': {'path': path}},
                 'receipt': {'status': 'success', 'result': deepcopy(value)},
-                'notice': 'Exact current host context field in this actor; no new source authority.'}
+                **role, 'notice': 'Exact current host context field in this actor; no new source authority.'}
     if call_id == INITIAL_CONTEXT_ID:
         for message in messages:
             body = decode(message.content)
@@ -301,8 +313,8 @@ def history_operation_page(record, *, offset=0, max_characters=12_000, source_id
     header = {k: deepcopy(operation[k]) for k in ('id', 'name', 'error') if k in operation}
     # Legacy offsets continue to address the full record. New cursors always
     # declare their view, so a subsequent page cannot switch serialization.
-    selected_view = view or ('receipt' if offset == 0 and operation.get('name') in {
-        'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SaveWorkpaperEditsAction', 'FinalizeWorkpaperRevisionAction', 'SubmitReviewAction'} else 'record')
+    selected_view = view or ('receipt' if offset == 0 and (record.get('revision_document') or operation.get('name') in {
+        'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SaveWorkpaperEditsAction', 'FinalizeWorkpaperRevisionAction', 'SubmitReviewAction'}) else 'record')
 
     def read_at(selected_view, offset=0):
         return {'tool': 'ReadResearchHistoryAction', 'arguments': {
@@ -334,6 +346,9 @@ def history_operation_page(record, *, offset=0, max_characters=12_000, source_id
             'notice': ('Exact source/numeric/calculation objects selected from the saved public operation; '
                        'not a new execution. Missing selected IDs were not guessed.'),
         }
+    if selected_view == 'receipt' and record.get('revision_document'):
+        from .revision_execution_view import revision_document_receipt
+        receipt = revision_document_receipt(receipt, record['revision_document'])
     payload = record if selected_view == 'record' else receipt
     encoded = json.dumps(payload, ensure_ascii=False, separators=(',', ':'))
     if offset == 0 and len(encoded) <= max_characters and selected_view == 'record':
@@ -342,7 +357,9 @@ def history_operation_page(record, *, offset=0, max_characters=12_000, source_id
         return {'operation': header, 'receipt': deepcopy(receipt), 'view': 'receipt',
             'next_offset': None, 'record_read': read_at('record'),
             'available_source_ids': available_ids,
-            'notice': 'Exact saved outcome. Full submitted arguments remain at record_read; no new execution or validation.'}
+            'notice': ('Manuscript view; old task records remain at task_record_read and complete original at record_read.'
+                       if record.get('revision_document') else
+                       'Exact saved outcome. Full submitted arguments remain at record_read; no new execution or validation.')}
     end = min(len(encoded), offset + max_characters)
     return {
         'operation': header,

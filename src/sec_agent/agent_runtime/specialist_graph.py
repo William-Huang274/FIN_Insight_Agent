@@ -483,6 +483,15 @@ class WorkpaperSetField(_StrictModel):
         "/task_note/finding_responses or /open_gaps. Use update_claim for claims. "
         "Use str_replace for a short prose fragment instead of copying a whole long section."))
     value: Any = Field(description="New field value only; base_submission_digest protects the version. Omitted fields remain unchanged.")
+    value_note: str | None = Field(default=None, max_length=1000,
+        description="Optional explanation of this edit. Preserved in the save receipt as metadata; never inserted into manuscript text or treated as evidence or completion.")
+
+    @model_serializer(mode="wrap")
+    def preserve_legacy_edit_shape(self, handler):
+        body = handler(self)
+        if 'value_note' not in self.model_fields_set:
+            body.pop('value_note', None)
+        return body
 
 
 class WorkpaperEditError(ValueError):

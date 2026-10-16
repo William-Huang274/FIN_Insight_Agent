@@ -88,6 +88,12 @@ def save_draft(state, action):
                'validation_status': 'draft_only_full_validation_on_finalize'}
     if rebase is not None:
         receipt['version_reconciliation'] = rebase
+    notes = [{'edit_index': i, 'path': workpaper_edit_path(draft['arguments'], edit),
+              'value_note': edit.value_note}
+             for i, edit in enumerate(resolved.edits)
+             if 'value_note' in edit.model_fields_set]
+    if notes:
+        receipt['edit_notes'] = notes
     result = {**deepcopy(draft), 'arguments': candidate, 'digest': receipt['draft_digest'],
               'saved_batches': draft['saved_batches'] + 1,
               'changed_paths': list(dict.fromkeys([*draft['changed_paths'], *changed])),

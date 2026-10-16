@@ -8,14 +8,17 @@ from .case_artifacts import CaseArtifacts
 from .workpaper_review_graph import validate_workpaper_state
 
 
-def author_continuation_options(options, state):
+def author_continuation_options(options, state, *, authorized_model_requests=None):
     """Bind one trusted author checkpoint BEFORE opening data and graph ports.
 
     Continuing an interrupted revision is not opening a new revision from its
     accepted baseline. The normal graph initializer keeps the current candidate,
-    saved draft, observations and lifetime limits. Do not override its checkpoint
+    saved draft, observations and lifetime counters. Do not override its checkpoint
     after composition: the calculator would already have restored older sources.
-    This host helper neither dispatches tools nor grants additional requests.
+    Automatic recovery preserves existing limits. A host may explicitly supply
+    an authorized remaining allowance to align the lifetime ceiling, bounded by
+    the live shared remainder. This is not a model argument or an automatic
+    budget extension; the transport still owns atomic total-budget enforcement.
     """
     baseline = options.get('recovery_state') or {}
     for key in ('run_id', 'agent_id', 'task'):
@@ -33,7 +36,19 @@ def author_continuation_options(options, state):
             or notebook.task_id != state['task']['task_id']
             or notebook.run_invocation_id != state['run_invocation_id']):
         raise ValueError('author_continuation_notebook_binding_mismatch')
-    return {**options, 'recovery_state': deepcopy(state),
+    restored = deepcopy(state)
+    if authorized_model_requests is not None:
+        if type(authorized_model_requests) is not int or authorized_model_requests < 0:
+            raise ValueError('author_continuation_authorized_budget_invalid')
+        shared = options.get('remaining_model_requests')
+        if shared is not None:
+            available = shared()
+            if type(available) is not int or available < 0:
+                raise ValueError('author_continuation_shared_budget_invalid')
+            if authorized_model_requests > available:
+                raise ValueError('author_continuation_authorized_budget_exceeds_shared_remaining')
+        restored['max_model_turns'] = notebook.model_turn_count + authorized_model_requests
+    return {**options, 'recovery_state': restored,
             'run_invocation_id': state['run_invocation_id'], 'revision_feedback': None}
 
 

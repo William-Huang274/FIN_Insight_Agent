@@ -38,6 +38,34 @@ def setter(value='Changed draft.'):
     return {'op': 'set_field', 'path': '/thesis', 'value': value}
 
 
+def test_edit_explanation_is_preserved_as_receipt_metadata_not_manuscript_content():
+    s = state()
+    original = deepcopy(s)
+    edits = [{**setter(), 'value_note': 'Explain the changed field without adding prose.'},
+             {'op': 'set_field', 'path': '/mechanism', 'value': 'Unrelated field updated.'}]
+    action = save_action(s, edits)
+    assert action.model_dump(mode='json')['edits'] == edits
+    draft, receipt = save_draft(s, action)
+    assert receipt['edit_notes'] == [{'edit_index': 0, 'path': '/thesis', 'value_note': edits[0]['value_note']}]
+    assert draft['arguments']['thesis'] == 'Changed draft.'
+    assert 'Explain the changed' not in json.dumps(draft['arguments'])
+    assert s == original and not receipt['submitted'] and not receipt['accepted']
+    restored = {**s, 'workpaper_draft': json.loads(json.dumps(draft))}
+    repeated, again = save_draft(restored, action)
+    assert repeated == draft and again['replayed'] and again['edit_notes'] == receipt['edit_notes']
+    with pytest.raises(ValueError, match='operation_id_conflict'):
+        save_draft(restored, save_action(s, [{**setter(), 'value_note': 'Different note.'}, edits[1]]))
+
+
+def test_legacy_edit_and_operation_identity_do_not_gain_a_default_note():
+    action = save_action(state(), [setter()])
+    assert action.model_dump(mode='json')['edits'] == [setter()]
+    _, receipt = save_draft(state(), action)
+    assert 'edit_notes' not in receipt
+    with pytest.raises(ValueError):
+        save_action(state(), [{**setter(), 'unknown_metadata': 'Do not silently discard.'}])
+
+
 def test_saved_draft_survives_serialization_replay_and_bad_batch():
     s = state(); old = deepcopy(s); a = save_action(s, [setter()])
     draft, receipt = save_draft(s, a)

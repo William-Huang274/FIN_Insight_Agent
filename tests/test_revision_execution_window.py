@@ -42,7 +42,9 @@ def test_successful_save_is_progress_not_error_or_acceptance():
     out = compact_current_context(json.loads(json.dumps(c)))
     assert out['task_context']['revision_step']['kind'] == 'edit_finding_fragment'
     assert out['task_context']['revision_progress']['saved_batches'] == 1
-    assert out['submission_to_repair']['latest_saved_fields'] == {'/claims/0/statement': 'Target claim'}
+    import jsonpointer
+    value_at = out['submission_to_repair']['latest_saved_fields']['/claims/0/statement']['current_value_at']
+    assert jsonpointer.resolve_pointer({'current_context': out}, value_at) == 'Target claim'
     repair['last_edit_feedback'] = {'batch_applied': False, 'error': 'stale digest'}
     out = compact_current_context(c)
     assert out['task_context']['revision_step']['kind'] == 'repair_current_error'

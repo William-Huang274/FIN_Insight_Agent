@@ -121,11 +121,27 @@ def project_revision_execution(context, readback, baseline, manuscript_reads=())
                                             'text': quote} for i in offsets]
     repair['current_fragment'] = fragment
     from .revision_manuscript import editing_surface
-    repair['manuscript'] = editing_surface(candidate, fragment, manuscript_reads, readback)
+    repair['manuscript'] = editing_surface(candidate, fragment, manuscript_reads, readback, changed_paths)
     repair['latest_saved_fields'] = {}
     for path in (repair.get('draft_state') or {}).get('latest_changed_paths') or []:
         try:
-            repair['latest_saved_fields'][path] = deepcopy(jsonpointer.resolve_pointer(candidate, path))
+            value = jsonpointer.resolve_pointer(candidate, path)
+            # The editing surface already owns the exact accepted value.
+            # Keep the public locator without duplicating its body.
+            owner = next((i for i, r in enumerate(repair['manuscript']['open_fields'])
+                          if 'value' in r and (path == r['path'] or path.startswith(r['path'] + '/'))), None)
+            if owner is not None:
+                parent = repair['manuscript']['open_fields'][owner]['path']
+                repair['latest_saved_fields'][path] = {'current_value_at':
+                    f'/current_context/submission_to_repair/manuscript/open_fields/{owner}/value' + path[len(parent):]}
+            elif isinstance(value, dict) and value.get('claim_id') in claim_ids:
+                index = next(i for i, r in enumerate(fragment['claims']) if r.get('claim_id') == value['claim_id'])
+                repair['latest_saved_fields'][path] = {'current_value_at':
+                    f'/current_context/submission_to_repair/current_fragment/claims/{index}'}
+            else:
+                # A fresh full read already carries this value, or the path
+                # is a broad collection deliberately kept on demand.
+                repair['latest_saved_fields'][path] = {'read': readback(root + path)}
         except jsonpointer.JsonPointerException:
             pass
     task['revision_step'] = step

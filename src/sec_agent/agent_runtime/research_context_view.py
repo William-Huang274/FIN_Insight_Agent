@@ -17,6 +17,16 @@ CONTEXT_FIELD_PREFIX = 'runtime:context:'
 # archive.
 
 
+def _merge_context(current, snapshot):
+    if 'allowed_actions' in snapshot:
+        # These belong to the active execution stage, not durable research.
+        for key in ('submission_to_repair', 'terminal_result', 'revision_submission_status'):
+            if key not in snapshot:
+                current.pop(key, None)
+    for k, v in snapshot.items():
+        current[k] = {**current.get(k, {}), **deepcopy(v)} if k in {'task_context', 'progress'} and isinstance(v, dict) else deepcopy(v)
+
+
 def current_context(messages):
     """Merge host snapshots only; never interpret assistant/source prose as state."""
     current = {}
@@ -27,14 +37,7 @@ def current_context(messages):
         c = b.get('current_context', b if isinstance(m, HumanMessage) else {})
         if not isinstance(c, dict) or not ('task_context' in c or 'allowed_actions' in c):
             continue
-        if 'allowed_actions' in c:
-            # These are current execution controls, not durable task context.
-            # A fresh host snapshot omitting them retires an old phase's menu.
-            for key in ('submission_to_repair', 'terminal_result', 'revision_submission_status'):
-                if key not in c:
-                    current.pop(key, None)
-        for k, v in c.items():
-            current[k] = {**current.get(k, {}), **deepcopy(v)} if k in {'task_context', 'progress'} and isinstance(v, dict) else deepcopy(v)
+        _merge_context(current, c)
     return current
 
 
@@ -612,8 +615,7 @@ def working_view(messages):
     current = deepcopy(contexts[0][1])
     restored = deepcopy(current.get('progress', {}).get('observations', []))
     for _, c in contexts[1:]:
-        for k, v in c.items():
-            current[k] = {**current.get(k, {}), **deepcopy(v)} if k in {'task_context', 'progress'} and isinstance(v, dict) else deepcopy(v)
+        _merge_context(current, c)
     task = current.get('task_context', {})
     accepted = task.get('research_working_state')
     for i, m in enumerate(messages):

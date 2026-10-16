@@ -2,7 +2,8 @@
 
 Derived from native successful reads/saves, never from model reasoning or a new
 required plan. Whole-paper reads do not pin a whole paper. Focused field reads
-survive unrelated tools until that field is saved or the revision stage ends.
+survive unrelated tools. Successful saves replace their values in the editing
+surface; they do not close the document while this revision is still active.
 """
 from copy import deepcopy
 
@@ -34,15 +35,29 @@ def manuscript_reads(messages, bodies, calls, before_index=None):
             if not locator.startswith(PREFIX + '/'):
                 continue
             path = locator[len(PREFIX):]
-            # Broad collections stay as an outline, not permanently expanded.
-            # Historical task records never become current revision guidance.
-            if path in {'/claims', '/task_note'} or path.startswith(('/task_note/coverage', '/task_note/issues', '/task_note/changes')):
+            # A whole claim collection stays an outline. Explicitly read task
+            # records are manuscript content, not renewed task requirements.
+            if path == '/claims':
                 continue
             page = result.get('historical_record', {})
             receipt = page.get('receipt', {})
+            if (path == '/task_note' and receipt.get('status') == 'success'
+                    and receipt.get('content_projection') == 'manuscript_and_current_revision_responses'
+                    and isinstance(receipt.get('result'), dict)):
+                # The default document view may have returned only summary
+                # and current responses. Retain those actual fields, not an
+                # inferred full task record that the author has not read.
+                for key, value in receipt['result'].items():
+                    field = path + '/' + key.replace('~', '~0').replace('/', '~1')
+                    active[field] = {'path': field, 'value': deepcopy(value),
+                                     'read_call_id': message.tool_call_id}
+                    if before_index is not None and index >= before_index:
+                        active[field]['in_native_reply'] = True
+                continue
             if before_index is not None and index >= before_index:
                 if 'result' in receipt:
-                    active.pop(path, None)  # Full value is in the fresh native reply.
+                    active[path] = {'path': path, 'value': deepcopy(receipt['result']),
+                                    'in_native_reply': True}
                 continue
             if receipt.get('status') != 'success':
                 continue
@@ -63,19 +78,39 @@ def manuscript_reads(messages, bodies, calls, before_index=None):
                 continue
             value = receipt['result']
             active[path] = {'path': path, 'value': deepcopy(value), 'read_call_id': message.tool_call_id}
-        elif message.name == 'SaveWorkpaperEditsAction' and result.get('saved') is True:
-            paths = result.get('changed_paths', result.get('latest_changed_paths', []))
-            for path in list(active):
-                if any(path == p or path.startswith(p + '/') or p.startswith(path + '/') for p in paths):
-                    del active[path]
     return list(active.values())
 
 
-def editing_surface(candidate, fragment, reads, readback):
+def _covers(parent, child):
+    return child == parent or child.startswith(parent + '/')
+
+
+def _saved_replacement(item, value, saved_paths):
+    """Only refresh differences accounted for by host-accepted field saves."""
+    path = item['path']
+    if any(_covers(p, path) for p in saved_paths):
+        return True
+    if 'value' not in item:
+        return False  # Do not turn a previously paginated read into full text.
+    old = deepcopy(item['value'])
+    try:
+        for saved in saved_paths:
+            if _covers(path, saved):
+                relative = saved[len(path):]
+                old = jsonpointer.set_pointer(old, relative,
+                    deepcopy(jsonpointer.resolve_pointer(value, relative)), inplace=True)
+    except (jsonpointer.JsonPointerException, TypeError, IndexError):
+        return False
+    return old == value
+
+
+def editing_surface(candidate, fragment, reads, readback, saved_paths=()):
     """Expose exact current statements and bounded, explicitly read fields.
 
-    A retained field must still equal its saved value. If it changed, the host's
-    current fragment/latest saved values own it; never resurrect an old value.
+    Retain explicitly read fields and accepted edits for the active revision.
+    The native draft owns saved paths, including recovered successful saves.
+    Failed proposals cannot add paths or replace values. Old field text is
+    never revived, and unread sections of the original paper stay on demand.
     """
     hot = {c.get('claim_id'): i for i, c in enumerate(fragment.get('claims', []))}
     outline = []
@@ -87,19 +122,48 @@ def editing_surface(candidate, fragment, reads, readback):
             row['statement'] = claim.get('statement')
         outline.append(row)
     kept = []
+    fresh = []
     for item in reads:
         path = item['path']
         try:
             value = jsonpointer.resolve_pointer(candidate, path)
         except jsonpointer.JsonPointerException:
             continue
+        if item.get('in_native_reply') and value == item.get('value'):
+            fresh.append(path)
+            continue  # One exact copy, in the unconsumed native tool reply.
         if ('value' in item and value != item['value']) or (
                 'value_fingerprint' in item and canonical_sha256(value) != item['value_fingerprint']):
-            continue
+            if not _saved_replacement(item, value, saved_paths):
+                continue
+            item = {'path': path, 'value': deepcopy(value),
+                    'read_call_id': item.get('read_call_id'), 'origin': 'current_saved_revision'}
         # The target claim is already complete in current_fragment.
         if isinstance(value, dict) and value.get('claim_id') in hot:
             continue
         kept.append({**deepcopy(item), 'read': readback(ROOT + path)})
+    # Accumulate the *current* accepted values, not past versions or receipts.
+    # Parent fields subsume their children. A later unrelated save must not
+    # retire the author's earlier changes before reconciliation/finalization.
+    for path in sorted(set(saved_paths), key=lambda p: (p.count('/'), p)):
+        if (path in {'', '/claims'} or any(_covers(p, path) for p in fresh)
+                or any('value' in r and _covers(r['path'], path) for r in kept)):
+            continue
+        try:
+            value = jsonpointer.resolve_pointer(candidate, path)
+        except jsonpointer.JsonPointerException:
+            continue
+        if isinstance(value, dict) and value.get('claim_id') in hot:
+            continue
+        kept = [r for r in kept if not _covers(path, r['path'])]
+        kept.append({'path': path, 'value': deepcopy(value), 'origin': 'current_saved_revision',
+                     'read': readback(ROOT + path)})
+    kept = [r for r in kept if not any(_covers(p, r['path']) for p in fresh)
+            and not any('value' in parent and parent['path'] != r['path']
+                        and _covers(parent['path'], r['path']) for parent in kept)]
+    for item in kept:
+        if _covers('/task_note', item['path']):
+            item['role'] = 'saved_research_record_not_current_revision_requirements'
     for index, item in enumerate(kept):
         value = item.get('value')
         if isinstance(value, dict) and value.get('claim_id'):
@@ -109,4 +173,4 @@ def editing_surface(candidate, fragment, reads, readback):
                     row['current_value_at'] = f'/current_context/submission_to_repair/manuscript/open_fields/{index}/value'
     return {'claim_outline': outline, 'open_fields': kept,
             'basis': 'current_candidate_exact_values_not_new_tasks',
-            'lifecycle': 'focused_reads_until_field_saved_or_revision_boundary; whole_record_remains_on_demand'}
+            'lifecycle': 'read_and_saved_fields_follow_current_revision; replace_on_save; release_at_revision_end; whole_record_on_demand'}

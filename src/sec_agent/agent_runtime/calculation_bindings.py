@@ -15,8 +15,8 @@ KIND_DESCRIPTION = (
     'numeric_fact requires an authoritative S2/NUMFACT. calculation uses an observed CALC and '
     'numeric_authority=non_authoritative. inference interprets evidence and may keep observed CALC '
     'in fact_ids with numeric_authority=not_applicable; hypothesis/boundary may also retain CALC. '
-    'For mixed disclosure and analysis, choose the kind describing the actual assertion or separate '
-    'the assertions. Do not clear CALC bindings while retaining the dependent result or interpretation. '
+    'For mixed disclosure and analysis, choose the kind describing the actual assertion. '
+    'Do not clear CALC bindings while retaining the dependent result or interpretation. '
     'A label change never verifies financial reasoning or arithmetic.'
 )
 CLASSIFICATION_OPTIONS = [
@@ -143,6 +143,8 @@ def classification_issue(error, submission, notebook):
         'diagnosis': 'claim_kind_reference_authority_mismatch',
         'observed_authority': observed.get('authority_state') if observed else None,
         'classification_options': CLASSIFICATION_OPTIONS if ref.startswith('CALC::') else [],
-        'instruction': KIND_DESCRIPTION + ' Retain the actual source/calculation when it supports the '
-            'assertion. Use update_claim with only changed fields. The runtime will not choose a kind '
-            'for you, write conclusions, or promote a CALC to S2 authority.'}
+        'instruction': 'The current kind does not admit this observed reference. Retain the actual '
+            'source/calculation when it supports the assertion; select the semantically appropriate '
+            'kind and numeric_authority using the supplied schema and options. Use update_claim with '
+            'only changed fields. The runtime will not choose a kind for you, write conclusions, or '
+            'promote a CALC to S2 authority.'}

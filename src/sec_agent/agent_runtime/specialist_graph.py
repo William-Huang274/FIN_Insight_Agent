@@ -598,7 +598,7 @@ def workpaper_revision_contract() -> dict[str, str]:
     return {
         "local_revision": "SaveWorkpaperEditsAction persists ready changes, even one field or claim, without waiting for all related edits. Related prose and dependencies may be completed in later batches. Previously saved batches survive a later failure. FinalizeWorkpaperRevisionAction submits the saved draft_digest for complete validation; only then must the complete revision be consistent. No full content resubmission.",
         "claim_changes": "Use op=update_claim, exact claim_id, changes containing only new values for affected fields. Omitted fields retain their values; no old_value or array index is needed.",
-        "calculation_bindings": KIND_DESCRIPTION,
+        "calculation_bindings": "Keep supporting CALC IDs in fact_ids while dependent results or interpretation remain. Use the supplied kind/numeric_authority schema. Draft warnings do not reject saving; finalization checks explicit references and bindings.",
         "other_changes": "Use set_field with path/value for complete non-claim fields; str_replace for a short text fragment; upsert_coverage for an assessment. Update affected prose and judgments as needed; this does not auto-rewrite them.",
         "review_response_path": "/task_note/finding_responses",
         "review_response_item_schema": json.dumps(AuthorFindingResponse.model_json_schema(), ensure_ascii=False),

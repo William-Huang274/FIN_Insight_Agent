@@ -140,6 +140,7 @@ def test_revision_schema_teaches_the_same_kind_contract_as_first_submission():
     first = SpecialistClaim.model_json_schema()['properties']['kind']['description']
     revised = WorkpaperClaimChanges.model_json_schema()['properties']['kind']['description']
     assert first == revised and 'inference' in revised and 'not_applicable' in revised
+    assert 'separate the assertions' not in revised  # Local update_claim cannot insert new claims.
     tool = json.dumps(convert_to_openai_tool(SaveWorkpaperEditsAction), ensure_ascii=False)
     assert 'Preserve its binding while dependent text remains' in tool
 

@@ -98,7 +98,7 @@ def recheck_failed_calculation(state, tool_call_id):
     quota extension, manuscript edit or historical receipt replacement occurs.
     The caller persists the returned state before resuming its normal workflow.
     """
-    from sec_agent.agent_runtime.specialist_graph import SpecialistNotebook, SpecialistToolObservation
+    from sec_agent.agent_runtime.specialist_graph import SpecialistNotebook, SpecialistToolObservation, RequestCalculationAction
 
     notebook = SpecialistNotebook.model_validate_json(json.dumps(state['notebook']))
     for key in ('run_id', 'run_invocation_id', 'agent_id'):
@@ -116,8 +116,15 @@ def recheck_failed_calculation(state, tool_call_id):
     if not call or call.get('name') != 'RequestCalculationAction' or len(rows) != 1 or rows[0].get('status') != 'error':
         raise ValueError('recovery_requires_current_failed_calculation')
     prior = rows[0]
+    normalizations = []
     if 'source_id_not_observed_in_this_tool_session' not in prior['content']:
-        raise ValueError('recovery_requires_source_registration_failure')
+        from .native_tool_arguments import complete_action_tag
+        normalized, normalizations = complete_action_tag(RequestCalculationAction, call['args'])
+        feedback = json.loads(prior['content']).get('feedback', [])
+        if not normalizations or not any(f.get('code') == 'specialist_tool_arguments_invalid' for f in feedback):
+            raise ValueError('recovery_requires_source_registration_or_missing_action_failure')
+        # Full validation still applies; never infer operands, sources or context.
+        RequestCalculationAction.model_validate_json(json.dumps(normalized))
     request = SourceBoundCalculation.model_validate(call['args']['request'])
     registry = ObservedSourceRegistry(state['notebook']['observations'])
     source_snapshot = {op.source_id: registry.get(op.source_id) for op in request.operands.values() if op.source_id}
@@ -141,6 +148,8 @@ def recheck_failed_calculation(state, tool_call_id):
     check = {'check_id': check_id, 'binding': binding, 'execution': 'local_source_bound_calculator',
              'scope': 'Exact saved request and restored source snapshot only; not global tool health or financial validation.',
              'outcome': outcome, 'runtime_receipt': receipt}
+    if normalizations:
+        check['argument_normalizations'] = normalizations
     restored = deepcopy(state)
     if restored.get('task_context') is None:
         restored['task_context'] = {}

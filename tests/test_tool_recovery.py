@@ -12,16 +12,19 @@ from sec_agent.research_foundation.source_bound_calculator import ObservedSource
 from test_specialist_graph import _input, _ToolPorts
 
 
-def failed_state():
+def failed_state(*, omit_action=False):
     request = {'expression': 'a / b', 'operands': {
         'a': {'source_id': 'PASSAGE::sample', 'literal': '15', 'quote': '15 to 25 years'},
         'b': {'source_id': 'PASSAGE::sample', 'literal': '25', 'quote': '15 to 25 years'}},
         'result_unit': 'ratio', 'rationale': 'A fixture arithmetic ratio, not financial validation.'}
     def model(r):
-        return {'action': 'native_tool_batch', 'context_digest': r['context_digest'], 'tool_calls': [{
+        batch = {'action': 'native_tool_batch', 'context_digest': r['context_digest'], 'tool_calls': [{
             'id': 'failed-calc', 'name': 'RequestCalculationAction', 'type': 'tool_call', 'args': {
                 'action': 'request_calculation', 'request': request, 'context_digest': r['context_digest'],
                 'reason_summary': 'Fixture source-bound calculation.'}}]}
+        if omit_action:
+            batch['tool_calls'][0]['args'].pop('action')
+        return batch
     def finance(_):
         raise ValueError('source_id_not_observed_in_this_tool_session')
     ports = _ToolPorts()

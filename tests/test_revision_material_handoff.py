@@ -77,6 +77,21 @@ def test_rejected_state_and_submission_stay_current():
         revision_material_handoff(rows, context())
 
 
+def test_normal_revision_transition_retains_cohort_through_reads_and_save():
+    rows = history()
+    rows.extend(batch('accepted', 'SubmitWorkpaperAction', {}, {'accepted': True}))
+    rows.append(HumanMessage(content=json.dumps(context()),
+        additional_kwargs={'fin_research_stage_boundary': 'accepted_submission_to_revision'}))
+    rows.extend(batch('read-original', 'RequestSourceAction', {},
+        {'passage_id': 'P3', 'passage': 'New source needed for revision'}))
+    rows.extend(batch('save-draft', 'SaveWorkpaperEditsAction', {}, {'saved': True, 'accepted': False}))
+    view = json.loads(next(m.content for m in working_view(rows)
+        if m.additional_kwargs.get('fin_research_working_view')))
+    assert view['material_focus'] == 'revision_working_set'
+    assert {m['passage_id'] for m in view['current_materials']} == {'P2', 'P3'}
+    assert public_operation(rows, 'first')['receipt']['result']['passage_id'] == 'P1'
+
+
 @pytest.mark.parametrize('pressure', [False, True])
 def test_adapter_reentry_reaches_actual_sdk_with_only_edit_submission_and_saved_sources(pressure):
     import httpx
@@ -191,4 +206,7 @@ def test_revision_explicit_release_keeps_exact_readback_and_later_read_reopens()
         additional_kwargs={'fin_research_stage_boundary': 'accepted_submission_to_revision'}))
     v = json.loads(next(m.content for m in working_view(rows)
                         if m.additional_kwargs.get('fin_research_working_view')))
-    assert v['material_focus'] != 'revision_working_set'
+    assert v['material_focus'] == 'revision_working_set'
+    assert {m['passage_id'] for m in v['current_materials']} == {'P1', 'P2'}
+    rows.extend(batch('new-stage-save', 'SaveWorkpaperEditsAction', {}, {'saved': True, 'accepted': False}))
+    assert material_ids(rows) == {'P1', 'P2'}

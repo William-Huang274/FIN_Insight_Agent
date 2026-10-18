@@ -295,6 +295,7 @@ class SpecialistClaim(_StrictModel):
         "reading coverage may leave this empty and explain its scope in authority_note; do not claim issuer non-disclosure from search failure."))
     fact_ids: tuple[str, ...] = Field(default=(), max_length=48, description=(
         "Observed NUMFACT/S2 IDs for numeric_fact, or canonical CALC IDs for calculation. "
+        "inference/hypothesis/boundary may also retain supporting observed CALC IDs with numeric_authority=not_applicable. "
         "Do not also copy CALC IDs into evidence_ids. Preserve source operands and calculation limitations."))
     numeric_authority: Literal[
         "authoritative", "non_authoritative", "not_applicable"
@@ -1543,6 +1544,8 @@ def _model_request(
             (state.get('last_submission_attempt') or {}).get('arguments'))
         if draft:
             body["submission_to_repair"]["draft_state"] = {k: deepcopy(draft.get(k)) for k in ("digest", "baseline_digest", "saved_batches", "changed_paths", "latest_changed_paths", "draft_issues", "change_status")}
+            from .workpaper_drafts import current_draft_issues
+            body["submission_to_repair"]["draft_state"]["draft_issues"] = current_draft_issues(candidate)
             body["revision_submission_status"] = {"status": "draft_saved_not_submitted", "accepted": False}
         targets = revision_progress(state, candidate)
         body["submission_to_repair"].update(
@@ -2650,6 +2653,7 @@ def build_specialist_agentic_state_graph(
         # share one local snapshot; do not add another queue or scheduler.
         working: SpecialistAgenticState = {**state, **revision_state(state)}
         calls = {call.id: call for call in batch.tool_calls}
+        argument_repairs = {}
         models = {model.__name__: model for model in (
             RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
             SubmitWorkpaperAction, ReviseWorkpaperAction, SaveWorkpaperEditsAction, FinalizeWorkpaperRevisionAction, SubmitReviewAction, RequestHumanReviewAction,
@@ -2800,9 +2804,13 @@ def build_specialist_agentic_state_graph(
                     "This call was not dispatched or accepted. Correct the JSON syntax and resubmit the complete arguments; "
                     "check object/array delimiters and string escaping. For revision, use a short str_replace or one upsert_coverage assessment instead of echoing large old/new fields. " + detail, agent_error=True)
             try:
-                # Validate ORIGINAL args, including extras, not a repaired or
-                # runtime-injected version. Unknown names never reach this tool.
-                action = models[call.name].model_validate_json(json.dumps(call.args, ensure_ascii=False, allow_nan=False))
+                # Tool identity is redundant with its registered name. Preserve
+                # original args/history; only complete an absent unique constant.
+                from .native_tool_arguments import complete_action_tag
+                arguments, repairs = complete_action_tag(models[call.name], call.args)
+                if repairs:
+                    argument_repairs[call.id] = repairs
+                action = models[call.name].model_validate_json(json.dumps(arguments, ensure_ascii=False, allow_nan=False))
             except ValidationError as exc:
                 # Use Pydantic's field locations and errors, never echo raw
                 # arguments/reasoning. The supplied tool schema stays authoritative.
@@ -2849,9 +2857,10 @@ def build_specialist_agentic_state_graph(
                     draft = current_draft(working)
                     action = finalize_draft(working, action)
                 except ValidationError as exc:
+                    from .calculation_bindings import claim_shape_feedback
                     return reject("workpaper_draft_finalize_shape_invalid", "Saved draft retained; correct these fields before finalizing.",
-                        edit_details=[{"location": list(e['loc']), "type": e['type'], "message": e['msg']}
-                                      for e in exc.errors(include_input=False, include_context=False, include_url=False)])
+                        edit_details=claim_shape_feedback(exc.errors(include_input=False, include_context=False,
+                            include_url=False), draft['arguments']))
                 except (ValueError, KeyError) as exc:
                     return reject("workpaper_draft_finalize_invalid", str(exc))
                 from .workpaper_changes import workpaper_changes
@@ -3203,6 +3212,11 @@ def build_specialist_agentic_state_graph(
                           for call in batch.tool_calls]
         replies = node.invoke([AIMessage(content="", tool_calls=dispatch_calls)],
                               config={**config, "max_concurrency": 1})
+        for message in replies:
+            if repairs := argument_repairs.get(message.tool_call_id):
+                content = json.loads(message.content)
+                content['argument_normalizations'] = repairs
+                message.content = json.dumps(content, ensure_ascii=False)
         if dependencies.working_state_enabled:
             working["runtime_progress"] = progress_after_tools(state["notebook"], working["notebook"], state.get("runtime_progress"),
                 has_reads=any(c.name in {"RequestSourceAction", "RequestEvidenceAction", "RequestFinanceAction", "RequestCalculationAction", "ReadDelegatedWorkAction", "ReadDependencyWorkAction"} for c in batch.tool_calls))

@@ -8,6 +8,18 @@ import json
 from pydantic import ValidationError
 
 from .research_graph_contracts import canonical_sha256
+from .calculation_bindings import claim_shape_feedback
+
+
+def current_draft_issues(candidate):
+    """Re-evaluate a resumed draft; immutable historical save receipts stay intact."""
+    from .specialist_graph import SubmitWorkpaperAction
+    try:
+        SubmitWorkpaperAction.model_validate_json(json.dumps(candidate))
+    except ValidationError as exc:
+        return claim_shape_feedback(exc.errors(include_input=False, include_context=False,
+                                               include_url=False), candidate)
+    return []
 
 
 def owner(state):
@@ -75,7 +87,7 @@ def save_draft(state, action):
         structural = [e for e in issues if e['type'] != 'value_error']
         if structural:
             raise ValueError('workpaper_draft_field_invalid:' + json.dumps(structural))
-        warnings = [{'location': list(e['loc']), 'type': e['type'], 'message': e['msg']} for e in issues]
+        warnings = claim_shape_feedback(issues, candidate)
     changed = list(dict.fromkeys(workpaper_edit_path(draft['arguments'], e) for e in resolved.edits))
     from .draft_validation import draft_change_status
     baseline = ((state.get('task_context') or {}).get('accepted_revision_baseline') or {}).get('submission')

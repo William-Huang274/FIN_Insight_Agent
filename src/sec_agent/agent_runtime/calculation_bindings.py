@@ -148,3 +148,39 @@ def classification_issue(error, submission, notebook):
             'kind and numeric_authority using the supplied schema and options. Use update_claim with '
             'only changed fields. The runtime will not choose a kind for you, write conclusions, or '
             'promote a CALC to S2 authority.'}
+
+
+def claim_shape_feedback(errors, submission):
+    """Explain cross-field errors using the current claim, without editing it."""
+    result = []
+    claims = submission.get('claims') or []
+    for error in errors:
+        location = list(error['loc'])
+        item = {'location': location, 'type': error['type'], 'message': error['msg']}
+        if (len(location) >= 2 and location[0] == 'claims'
+                and isinstance(location[1], int) and location[1] < len(claims)
+                and any(code in error['msg'] for code in (
+                    'non_numeric_claim_numeric_authority_invalid',
+                    'calculation_requires_non_authoritative_disclosure',
+                    'numeric_fact_requires_authoritative_fact'))):
+            claim = claims[location[1]]
+            calc_ids = [ref for _, ref in _fact_rows(claim) if ref.startswith('CALC::')]
+            options = [dict(row) for row in CLASSIFICATION_OPTIONS]
+            if not calc_ids:
+                options.append({'kind': 'reported_fact', 'numeric_authority': 'not_applicable',
+                    'when': 'The assertion only restates source disclosure; cite its PASSAGE. Non-S2 provenance belongs in authority_note.'})
+            item.update(claim_id=claim.get('claim_id'),
+                current_fields={k: claim.get(k) for k in ('kind', 'numeric_authority', 'fact_ids')},
+                retained_calculation_ids=calc_ids, classification_options=options,
+                edit={'op': 'update_claim', 'claim_id': claim.get('claim_id'),
+                      'changed_fields': ['kind', 'numeric_authority']},
+                instruction='Choose the pair matching the actual assertion, not merely to pass validation. '
+                    'Use SaveWorkpaperEditsAction with the current draft digest and update_claim changes; '
+                    'unchanged fact_ids and evidence_ids are retained. Keep CALC bindings while the '
+                    'computed result or comparison remains. For separate disclosure and calculation '
+                    'assertions, split them into source-bound reported_fact and calculation/inference '
+                    'claims and move the CALC to its dependent claim, preserving related text and operands. '
+                    'not_applicable describes the claim kind; it does not promote a source or CALC to S2. '
+                    'The runtime does not select a classification or change conclusions.')
+        result.append(item)
+    return result

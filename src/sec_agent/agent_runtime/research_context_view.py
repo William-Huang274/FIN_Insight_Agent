@@ -527,9 +527,24 @@ def revision_material_selection(messages, bodies):
     if not stages:
         return None
     start, stage = stages[-1]
-    if stage.additional_kwargs['fin_research_stage_boundary'] != 'revision_material_handoff':
+    boundary_kind = stage.additional_kwargs['fin_research_stage_boundary']
+    if boundary_kind not in {'revision_material_handoff', 'accepted_submission_to_revision'}:
         return None
-    selected = set(stage.additional_kwargs['fin_revision_material_ids'])
+    if boundary_kind == 'revision_material_handoff':
+        selected = set(stage.additional_kwargs['fin_revision_material_ids'])
+    else:
+        # A normal accepted-paper -> revision transition has the same material
+        # lifetime as an explicit reentry. Seed only the previously visible
+        # cohort, not the entire archived research journal. Later reads grow it
+        # until explicit release/selection or actual revision acceptance.
+        selected = set()
+        previous = working_view(messages[:start]) or messages[:start]
+        for message in previous:
+            body = decode(message.content)
+            if message.additional_kwargs.get('fin_research_working_view'):
+                selected.update(material_ids(body.get('current_materials', [])))
+            elif isinstance(message, ToolMessage):
+                selected.update(material_ids(body.get('result', body) if isinstance(body, dict) else body))
     for m, body in zip(messages[start + 1:], bodies[start + 1:]):
         if isinstance(m, AIMessage):
             for call in m.tool_calls:

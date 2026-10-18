@@ -122,6 +122,10 @@ class ObservedSourceRegistry:
         item = self._sources.get(source_id)
         return deepcopy(item) if item is not None else None
 
+    def snapshot(self):
+        """Host-only copy for navigation over the same successful originals."""
+        return deepcopy(self._sources)
+
 
 def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Callable[[str], dict]) -> dict:
     values, bindings = {}, {}

@@ -448,7 +448,15 @@ def build_research_data_mcp_server(
         ) -> SourceDocumentResult:
             await _validate_scope(dependencies.method_reader, run_scope=run_scope, branch_id=branch_id)
             try:
-                result = await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
+                from .saved_web_navigation import read_saved_web_window
+                result = None
+                if request.source_space == 'web' and request.operation == 'read':
+                    saved = list(source_registry.snapshot().values())
+                    if dependencies.case_artifacts is not None:
+                        saved.extend(dependencies.case_artifacts.source_snapshot().values())
+                    result = read_saved_web_window(request, saved, research_as_of=run_scope.research_as_of)
+                if result is None:
+                    result = await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
                                              request=request, branch_id=branch_id, run_scope=run_scope)
             except ValueError as exc:
                 # Only anticipated locator mistakes become public tool errors.

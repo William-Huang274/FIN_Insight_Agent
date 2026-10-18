@@ -308,3 +308,37 @@ def test_author_feedback_does_not_swallow_source_identity_conflicts():
             raise ValueError('canonical_source_observation_conflict:' + ref)
     with pytest.raises(ValueError, match='canonical_source_observation_conflict'):
         author_feedback([{'source_checks': [{'source_id': 'NUMFACT::x'}]}], Conflicting())
+
+
+def test_review_source_handoff_reads_saved_original_without_author_analysis():
+    from sec_agent.agent_runtime.author_revision import author_feedback, revision_source_handoff
+    from sec_agent.agent_runtime.specialist_handoff import DependencyReader
+    artifacts = artifact_fixture()
+    ref = next(iter(artifacts.read_paper('P02', 'sources')))
+    findings = author_feedback([{'source_checks': [{'source_id': ref, 'quote': 'review only'}]}], artifacts)
+    before = deepcopy(findings)
+    mapped, papers = revision_source_handoff(findings, artifacts, {})
+    assert findings == before
+    check = mapped[0]['source_checks'][0]
+    reader = DependencyReader(papers, source_only_tasks=tuple(papers))
+    payload, observations = reader(check['readback']['arguments'])
+    assert observations
+    original = artifacts.source_item(ref)
+    assert any(original == row for obs in observations for row in obs['content'])
+    assert 'analysis' not in payload and 'author_analysis' not in payload
+    with pytest.raises(ValueError, match='source_only'):
+        reader({**check['readback']['arguments'], 'section': 'analysis'})
+    unknown, extra = revision_source_handoff([{'source_checks': [{'source_id': 'PASSAGE::missing'}]}], artifacts, {})
+    assert extra == {} and 'readback' not in unknown[0]['source_checks'][0]
+
+
+def test_review_handoff_preserves_existing_dependency_reader_aliases():
+    from sec_agent.agent_runtime.author_revision import author_feedback, revision_source_handoff
+    from sec_agent.agent_runtime.specialist_handoff import DependencyReader
+    artifacts = artifact_fixture()
+    dependencies = {s['task']['task_id']: s for s in artifacts._author_states.values()}
+    ref = next(iter(artifacts.read_paper('P02', 'sources')))
+    mapped, extra = revision_source_handoff(author_feedback([{'source_checks': [{'source_id': ref}]}], artifacts), artifacts, dependencies)
+    assert extra == {}
+    _, observations = DependencyReader(dependencies)(mapped[0]['source_checks'][0]['readback']['arguments'])
+    assert observations

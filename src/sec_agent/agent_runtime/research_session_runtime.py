@@ -669,12 +669,15 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
                     if row["task"]["task_id"] in assignment.get("dependency_ids", [])}
                 if set(dependencies) != set(assignment.get("dependency_ids", [])):
                     raise ValueError("original_author_dependency_handoff_unavailable")
+                from .author_revision import revision_source_handoff
+                findings, revision_sources = revision_source_handoff(findings, current, dependencies)
                 async def resume():
                     with open_specialist_receipted_composition(run_id=saved["run_id"], run_invocation_id=invocation,
                             plan_invocation_id=plan_invocation_id, branch_id=saved["task"]["branch_id"],
                             turn_source="provider_model", model_turn=visible_turn(adapter.specialist_model_turn, saved["agent_id"], assignment["task_id"]),
                             environment=environment, source_read_enabled=True, live_web_read_enabled=live_web, **specialist_data,
                             research_task=assignment, dependency_workpapers=dependencies,
+                            revision_source_workpapers=revision_sources,
                             research_question=state["question"], recovery_state=saved,
                             revision_feedback=findings, required_source_checks=saved.get("required_source_checks", []),
                             max_model_turns=limits["model_calls"], max_tool_actions=limits["tool_calls"],

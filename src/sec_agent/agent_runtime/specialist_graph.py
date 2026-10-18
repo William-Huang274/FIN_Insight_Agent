@@ -1424,7 +1424,10 @@ def _model_request(
         body["collaboration_context"] = collaboration
     if state.get("task_context") is not None:
         body["task_context"] = state["task_context"]
-        if state['task_context'].get('dependency_workpapers') or state['task_context'].get('saved_source_materials'):
+        if (state['task_context'].get('dependency_workpapers') or state['task_context'].get('saved_source_materials')
+                or any(check.get('readback', {}).get('tool') == 'ReadDependencyWorkAction'
+                       for finding in state['task_context'].get('revision_feedback', [])
+                       for check in finding.get('source_checks', []))):
             allowed_actions.append('read_dependency_work')
         if state['task_context'].get('professional'):
             allowed_actions[:] = [a for a in allowed_actions if a not in {'request_finance','request_evidence'}]

@@ -228,3 +228,50 @@ def current_author_state(artifacts, paper_id, revisions):
         if view.get(field) != current.get(field):
             raise ValueError("original_author_candidate_requires_editorial_reconciliation:" + field)
     return deepcopy(state)
+
+
+def revision_source_handoff(findings, artifacts, dependencies):
+    """Resolve review sources to existing source-only expert handoffs.
+
+    Review text is navigation, not an observation. Only an explicit reader call
+    transfers the saved original to the author. Never reconstruct web locators
+    from citation strings or expose the other author's private conversation.
+    """
+    from .specialist_handoff import DependencyReader, SOURCE_ID_FIELDS
+    result, papers, owners = deepcopy(findings), {}, {}
+    for finding in result:
+        for check in finding.get('source_checks', []):
+            ref = check['source_id']
+            try:
+                item = artifacts.source_item(ref)
+            except ValueError as exc:
+                if str(exc).startswith('unknown_source_id_read_paper_sources_first:'):
+                    continue
+                raise
+            for pid, state in artifacts._author_states.items():
+                refs = artifacts.read_paper(pid, 'sources')
+                if not any(artifacts.source_item(r) == item for r in refs):
+                    continue
+                task_id = state['task']['task_id']
+                owners[ref] = task_id
+                if task_id not in dependencies:
+                    papers[task_id] = state
+                break
+    reader = DependencyReader({**dependencies, **papers}, source_only_tasks=tuple(papers)) if owners else None
+    for finding in result:
+        for check in finding.get('source_checks', []):
+            ref = check['source_id']
+            if ref not in owners:
+                continue
+            task_id = owners[ref]
+            target = artifacts.source_item(ref)
+            refs = reader.artifacts.read_paper(reader.ids[task_id], 'sources')
+            matches = [r for r in refs if any(target.get(k) and target.get(k) == reader.artifacts.source_item(r).get(k)
+                for k in SOURCE_ID_FIELDS)]
+            if len(matches) != 1:
+                raise ValueError('revision_source_handoff_identity_ambiguous:' + ref)
+            check['readback'] = {'tool': 'ReadDependencyWorkAction', 'arguments': {
+                'task_id': task_id, 'section': 'handoff', 'source_ids': matches}}
+            check['source_binding_notice'] = ('Read the saved original with this exact handoff before citing. '
+                'The review quote is not evidence; document and passage IDs are provenance, not web node arguments.')
+    return result, papers

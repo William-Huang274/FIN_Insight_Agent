@@ -1,5 +1,7 @@
 # 研究上下文：完整档案与当前工作台
 
+复核引用同一 case 其他专家已保存的来源时，原作者修订入口将其转换为准确的 `ReadDependencyWorkAction(section=handoff)`，复用原生来源交接。宿主从当前已接受底稿解析来源身份与所属任务；不从 PASSAGE 字符串猜网页节点、偏移或新的抓取地址。新加入的复核资料任务只提供来源目录与原文，不提供旧作者分析或私有历史；原有任务依赖与来源 ID 保持不变。原作者实际读取后，完整观察才进入其 notebook 和计算器，导航本身不授予引用权限。未知来源继续要求实际取证，身份冲突仍报错。网页工具的 `node_id` 与通用导航说明同时按来源空间区分，网页使用 document_id 与字符 offset；已归档来源优先沿交接入口读取。
+
 ## 修订版本与回执回读
 
 `draft_digest`、`base_submission_digest`、`current_candidate_digest`、`current_base_submission_digest` 与 `pending_revision_digest` 是公开修订工具需要的版本参数，语义投影保留这些字段；内部来源/请求/运行凭证的摘要仍不进入模型输入。保存回执中的 `draft_digest` 表示该次保存产生的版本，不能随后续修改改写。

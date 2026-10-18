@@ -94,6 +94,31 @@ def test_history_reads_failures_without_rerunning_and_excludes_private_reasoning
     assert public_operation(rows,'unknown') is None
 
 
+def test_recovery_context_original_does_not_advance_implicit_read_cohort():
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    rows = [HumanMessage(content=json.dumps({'allowed_actions': ['read_research_history'],
+        'task_context': {}, 'progress': {'observations': []}}))]
+    def original(ref):
+        return {'passage_id': ref, 'passage': 'Complete original ' + ref}
+    rows.extend(batch('a', 'RequestSourceAction', {}, original('A')))
+    rows.extend(batch('b', 'RequestSourceAction', {}, original('B')))
+    rows.extend(batch('failed', 'RequestSourceAction', {}, {'error': 'scope missing'}, status='error'))
+    before = working_view(rows)
+    assert json.loads(before[0].content)['current_materials'] == [original('B')]
+    saved = deepcopy(rows)
+    body = json.loads(rows[-1].content)
+    body['current_context'] = {'task_context': {'tool_recovery_checks': [{
+        'check_id': 'a'*64, 'binding': {'tool_call_id': 'failed',
+            'request_field': 'selection', 'request_digest': canonical_sha256(None)},
+        'outcome': {'status': 'success', 'result': {'items': [original('C')]}}}]}}
+    rows[-1] = rows[-1].model_copy(update={'content': json.dumps(body)})
+    after = working_view(rows)
+    view = json.loads(after[0].content)
+    assert view['current_materials'] == [original('B')]
+    assert 'Complete original C' in after[0].content
+    assert rows[-1].status == 'error' and saved[:-1] == rows[:-1]
+
+
 def test_large_history_operation_pages_or_returns_exact_selected_material_without_mutation():
     record = {
         'operation': {'id': 'large-read', 'name': 'RequestSourceAction', 'args': {'selection': {'document_id': 'WEB::call'}}},

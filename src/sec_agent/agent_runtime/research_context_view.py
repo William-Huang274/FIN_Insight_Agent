@@ -684,9 +684,14 @@ def working_view(messages):
         # was in the preceding implicit cohort.
         if batch_ids or released:
             batches.append(batch_ids)
+    # Only actual tool results are a new read batch. Current-context snapshots
+    # (including host recovery checks) do not consume or advance the author's
+    # existing material cohort merely by containing an original.
+    active_results = [body.get('result', body) for m, body in zip(messages[boundary:], bodies[boundary:])
+                      if isinstance(m, ToolMessage) and isinstance(body, dict)]
     active_material_ids = set()
-    for body in bodies[boundary:]:
-        active_material_ids.update(material_ids(body))
+    for result in active_results:
+        active_material_ids.update(material_ids(result))
     revision_selection = revision_material_selection(messages, bodies)
     if revision_selection is not None:
         selected_material_ids = revision_selection
@@ -719,7 +724,7 @@ def working_view(messages):
                 yield from objects(child)
     # Keep exact material once when it is already in the active native receipt.
     active_keys = {json.dumps(row, ensure_ascii=False, sort_keys=True)
-                   for b in bodies[boundary:] for row in objects(b)
+                   for b in active_results for row in objects(b)
                    if row.get('passage_id') or row.get('numeric_fact_id') or row.get('calculation_id')}
     material = [row for row in material if json.dumps(row, ensure_ascii=False, sort_keys=True) not in active_keys]
     all_originals = [restored, *[b.get('result', b) for m, b in zip(messages, bodies)

@@ -1,5 +1,16 @@
 # FinSight research intake
 
+## Current delivery boundary
+
+The organization project browser supports input preparation, initial orientation,
+explicit continuation and reconciliation when the OIDC BFF, resource spaces,
+organization runtime and start feature gate are configured. Current-reader report,
+citation and export access is separate from creator-only execution permission.
+See the [browser workflow and staged acceptance](../../docs/engineering/organization_research_browser.zh-CN.md)
+for the current acceptance gaps. This does not switch an existing deployment.
+The migration notes below describe incremental schema responsibilities, not the
+current availability of the complete workflow.
+
 Optional Spring Boot 3.5 / Java 21 business service. PostgreSQL owns project
 research requests and submission receipts; the existing Python BFF owns login,
 current project authorization and native research access. Agent Server remains
@@ -12,7 +23,7 @@ Flyway V3 adds new organization project metadata, project members and revisioned
 management. Java is their sole authority; Python still owns legacy personal
 projects. Project membership does not grant space access. Flyway V4 adds project
 references to same-organization team publications with current project AND source
-authorization, revisioned changes and audit. Shared research remains disabled.
+authorization, revisioned changes and audit. V4 alone does not enable shared research.
 Flyway V5 adds immutable organization research input preparations. Current project
 access and every selected source are required to read a preparation; researchers
 can explicitly verify frozen originals through the BFF. This creates no native
@@ -25,7 +36,7 @@ See [scoped organization evidence tools](../../docs/engineering/organization_exe
 Flyway V7 adds one durable native draft preparation command per binding, with
 frozen configuration, one dispatch attempt and read-only reconciliation. Native
 threads use organization ownership; personal research entry points cannot read
-or start them. Shared runs remain disabled. See
+or start them. V7 alone does not enable shared runs. See
 [organization native drafts](../../docs/engineering/organization_native_drafts.zh-CN.md).
 See [project resource links](../../docs/engineering/project_resource_links.zh-CN.md)
 and [organization project scope and static
@@ -77,8 +88,9 @@ To enable resource spaces, the BFF additionally requires
 `FINSIGHT_AUTH_MODE=oidc_product` and `FINSIGHT_RESOURCE_SPACES_ENABLED=1`.
 Existing private project assets are not automatically shared. Publications are
 independent fixed copies in the Python `organization-assets` store; back up this
-store alongside business PostgreSQL. Live database ACLs, shared Agent inputs and
-personal-space takeover are not included in this slice.
+store alongside business PostgreSQL. Live database ACLs and personal-space takeover
+are not included. Organization Agent inputs use the separately configured execution
+authority and frozen resource manifest described in the browser workflow.
 
 ## Execution scope compatibility
 
@@ -86,8 +98,8 @@ Flyway V9 adds one explicit orientation-to-research continuation command per
 execution, independent of the initial start receipt. It pins the predecessor run,
 checkpoint and state digest, preserves frozen inputs/configuration, and binds a
 new native run exactly once. Unknown dispatches are reconciled without retries.
-The organization project results page now uses current-viewer read APIs;
-browser start/continuation controls remain unavailable. See
+The organization project results page uses current-viewer read APIs; creator-only
+browser controls call these distinct preparation/start/continuation commands. See
 [organization continuation](../../docs/engineering/organization_native_continuation.zh-CN.md).
 
 Organization research has a separate current-reader authorization endpoint.

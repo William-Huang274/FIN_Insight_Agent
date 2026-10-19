@@ -41,6 +41,7 @@ def reading(organization, monkeypatch):
     s.root=f"/api/v1/organization-projects/{s.grant['project_id']}/research/{tid}"
     s.headers={'Authorization':'Bearer synthetic'}
     s.calls=[]
+    s.checkpoint_id=str(uuid4())
     s.values={'phase':'human_review','report_version':1,'report':{'title':'Synthetic report','narrative_markdown':'Static organization report [C1]',
         'citations':{'C1':{'sources':[{'source_id':'ORG:S1','text':'Pinned citation text','period':'FY2025','unit':'USD'}]}}}}
     async def authority(project,execution):
@@ -54,7 +55,7 @@ def reading(organization, monkeypatch):
         assert thread_id==tid
         s.calls.append('state')
         if s.state.get('revoke_in_state'):s.state['status']=404
-        return {'values':deepcopy(s.values)}
+        return {'values':deepcopy(s.values),'checkpoint':{'checkpoint_id':s.checkpoint_id}}
     s.intake.service.sdk.threads.get_state=state
     async def stream(thread_id,run_id,**kwargs):
         assert thread_id==tid and run_id==s.grant['run_id'] and kwargs['last_event_id']=='7-0'
@@ -73,6 +74,7 @@ def test_viewer_snapshot_report_citation_keep_private_routes_closed(reading):
         assert response.status_code==200,response.text
         assert response.headers['cache-control']=='no-store'
         assert response.json()['read_only'] is True
+        assert response.json()['checkpoint_id']==s.checkpoint_id
         assert not any(v for k,v in response.json().items() if k.startswith('can_'))
         assert c.get(s.root+'/report',headers=s.headers).json()['report']==s.values['report']
         source=c.get(s.root+'/source',params={'source_id':'ORG:S1','offset':7},headers=s.headers).json()
@@ -82,6 +84,36 @@ def test_viewer_snapshot_report_citation_keep_private_routes_closed(reading):
         assert c.get(f"/api/v1/research-sessions/{s.grant['execution_id']}",headers=s.headers).status_code==404
         assert c.post(f"/api/v1/research-sessions/{s.grant['execution_id']}/start",headers=s.headers).status_code==404
         assert c.get(s.root).status_code in (401,403)
+    assert not s.intake.runs
+
+
+def test_displayed_checkpoint_keeps_citation_and_export_on_same_saved_version(reading):
+    s=reading
+    saved=deepcopy(s.values)
+    requested=[]
+    async def state(thread_id,**kwargs):
+        assert thread_id==s.grant['execution_id']
+        requested.append(kwargs.get('checkpoint_id'))
+        return {'values':deepcopy(saved if kwargs.get('checkpoint_id')==s.checkpoint_id else s.values),
+                'checkpoint':{'checkpoint_id':s.checkpoint_id}}
+    s.intake.service.sdk.threads.get_state=state
+    with TestClient(s.intake.app()) as c:
+        displayed=c.get(s.root,headers=s.headers).json()
+        assert displayed['checkpoint_id']==s.checkpoint_id
+        # A newer saved report must not change the export/citation of the visible one.
+        s.values['report']['title']='Newer report'
+        s.values['report']['narrative_markdown']='Newer report content'
+        s.values['report']['citations']['C1']['sources'][0]['text']='Newer citation'
+        params={'checkpoint_id':displayed['checkpoint_id']}
+        source=c.get(s.root+'/source',params={**params,'source_id':'ORG:S1'},headers=s.headers)
+        assert source.json()['text']=='Pinned citation text'
+        report=c.get(s.root+'/report',params=params,headers=s.headers)
+        assert report.json()['report']==saved['report']
+        export=c.get(s.root+'/report/export/md',params=params,headers=s.headers)
+        assert export.status_code==200 and 'Static organization report' in export.text and 'Newer' not in export.text
+        s.state['status']=404
+        assert c.get(s.root+'/report/export/md',params=params,headers=s.headers).status_code==404
+    assert requested==[None,s.checkpoint_id,s.checkpoint_id,s.checkpoint_id]
     assert not s.intake.runs
 
 

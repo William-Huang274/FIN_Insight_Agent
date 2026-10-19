@@ -90,7 +90,8 @@ def install_organization_read_routes(router, service):
         projected.update({key: False for key in projected if key.startswith('can_')})
         projected.update(thread_id=str(execution_id), project_id=str(project_id),
                          title=scope.grant['title'], run_id=scope.grant['run_id'],
-                         status=scope.thread.get('status'), read_only=True)
+                         status=scope.thread.get('status'), read_only=True,
+                         checkpoint_id=(state.get('checkpoint') or {}).get('checkpoint_id'))
         if state.get('values', {}).get('research_orientation'):
             from sec_agent.agent_runtime.research_orientation import orientation_public_handoff
             projected['research_orientation'] = orientation_public_handoff(state['values']['research_orientation'])

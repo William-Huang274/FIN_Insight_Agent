@@ -12,6 +12,10 @@
 
 事件区只订阅该执行已登记的原生 run，最多保留 80 条公开进展。连接关闭后再次核对读取权限；核对失败清空事件与正文，不自动重连或重发命令。用户可手动重新连接，从该运行的已保存事件重新读取。没有实现跨刷新保存事件游标；不宣称无损事件回放。报告、引用快照、导出仍使用原来的当前读者 API。
 
+成果页面把当前正文对应的原生 `checkpoint_id` 同时带给引用和导出请求，避免页面看到旧报告、下载却取到新报告。历史版本仍须通过当前权限检查。旧服务未返回 checkpoint 时，正文可以显示，但下载不可用，引用也不回退最新版本；页面提示刷新，需要配套更新 BFF 才能恢复这些操作。
+
+导出通过同源 GET 读取完整响应后下载，明确处理状态码、内容类型和空文件。401/403/404 会清空报告、引用及操作区；503、网络错误及格式不匹配仅显示失败，不下载错误页，不自动重试。切换研究、刷新或卸载页面会取消未完成的下载。该行为不能收回用户已经保存的文件，也不承诺在断网后立即感知撤权。
+
 ## 跨服务合同
 
 浏览器前缀 `/api/v1/organization-projects/{project}`：
@@ -39,3 +43,26 @@ Java 新增 creator-only `execution-bindings/{id}/control` 聚合状态以及准
 复验入口：Python `test_organization_research_commands.py`、既有只读/接续/回执测试，Java `ResearchIntakeTest`，浏览器 `organization-research-inputs.spec.ts` / `organization-research-results.spec.ts`。真实隔离服务测试 `tests/integration/test_organization_graph_native.py` 已改为使用上述浏览器接口完成准备、启动、预览接续、提交接续和核对；保留当前读者、服务重启、重复提交、盗用运行和撤权检查。仅 provider 与登录边界是静态替身，不调用付费模型，不修改现有部署。
 
 此片不开放专家补跑、失败重试、报告修订、交接、审批或多实例生产运行。完整原件扩展、真实企业 SSO、静态人工业务验收和金融研究质量需要各自验收。测试中的正式研究停在待处理，不能将传输成功写成报告完成。
+
+## 分阶段收口顺序
+
+先完成现有业务闭环，再补数据库和运行验证。各阶段保留自己的证据；未满足退出条件时不标记完成。第一阶段固定在 Java/Python 集成分支推进，研究运行时仍在变化的其他分支先单独完成自身验证，之后按明确提交整合，不能直接覆盖组织工厂、冻结配置与准入检查。
+
+| 阶段 | 退出条件 | 当前边界 |
+| --- | --- | --- |
+| 1：现有业务接入 | 同一项目、固定资料、同一次执行可完成准备、首次启动、刷新恢复、明确接续、结果与引用读取、导出；重复请求与未知回执不新增运行；撤权有效 | 页面静态闭环和后端分层验收已有覆盖；真实隔离组织图仍只到待处理，完整报告交付尚未与真实服务串成同一案例 |
+| 2：数据库证据 | 真实 PostgreSQL 下确认约束、并发竞争、状态更新和查询计划；给出数据规模、执行计划、改动前后指标及限制 | 尚未作为这一阶段交付；既有幂等/锁测试不替代查询性能验证 |
+| 3：运行验证 | 明确健康/故障观测、部署与恢复步骤，在隔离环境验证多实例或故障场景并保留原记录 | 按已完成的业务路径选择场景；不以本机测试声称生产容量 |
+
+第一阶段的静态复现入口：
+
+```bash
+python -m pytest -q tests/test_organization_research_reads.py tests/test_organization_research_commands.py
+cd apps/workbench/frontend
+npm run typecheck
+npm run test:public -- organization-projects.spec.ts organization-research-inputs.spec.ts organization-research-results.spec.ts
+```
+
+Python 测试使用当前源码与已安装 qualification/workbench 依赖。浏览器仅启动独立 Vite，全部研究 API 是合成响应，四种下载的字节也是静态夹具；它验证用户操作、文件名/内容、版本参数和拒绝后的页面行为。`test_organization_research_reads.py` 使用真实四格式渲染器，另验证读者权限和导出前再次核权。两层结果不可相加成“真实服务端到端报告已通过”。真实容器入口仍为 `tests/integration/test_organization_graph_native.py`，需要满足其显式隔离开关、镜像、临时网络和输出目录条件。
+
+下一项收口工作是补同一真实服务链上的静态报告生产与读取案例，并明确标记替身边界，随后接浏览器真实 API 验收。验收输出必须位于独立目录，禁止复用运行中的服务、已有研究数据或自动重提未知请求。

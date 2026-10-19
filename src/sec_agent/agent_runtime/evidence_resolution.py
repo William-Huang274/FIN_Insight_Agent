@@ -82,7 +82,17 @@ def citation_inventory(artifacts, paper_id):
             parts = re.split(r'\.{3}|…', raw)
             pattern = '^' + '.+'.join(re.escape(part) for part in parts) + '$'
             candidates = []
-            for item in catalog:
+            # A complete case-local alias names its owning paper explicitly.
+            # Reading and reviewing it must use the same authorized snapshot.
+            # Never extend suffix/ellipsis search across papers.
+            reference_catalog = catalog
+            if re.fullmatch(r'P\d+:S\d+', raw):
+                owner = raw.split(':', 1)[0]
+                reference_catalog = []
+                if owner in {p['paper_id'] for p in artifacts.catalog()['papers']}:
+                    reference_catalog = [item for item in artifacts.source_identity_catalog(owner)
+                                         if item['source_id'] == raw]
+            for item in reference_catalog:
                 ids = [item['source_id'], *item['canonical_ids']]
                 matched = [ref for ref in ids if (re.fullmatch(pattern, ref) if short else ref == raw)]
                 node = item['identity'].get('node_id','')
@@ -104,6 +114,22 @@ def citation_inventory(artifacts, paper_id):
                     candidates[0]['source_id'] if status=='exact' else None,
                     rule='Exact identity or explicit ellipsis prefix/suffix candidates; never inferred confirmation.')})
     return result
+
+
+def review_reference_state(artifacts, messages, *, limit=10):
+    """Expose current mechanical blockers before submission, without confirming them."""
+    _, records = delivery_reference_findings(artifacts, messages, complete=False)
+    pending = [r for r in records if r['confirmation'] is None]
+    rows = []
+    for record in pending[:limit]:
+        rows.append({'reference_id': record['reference_id'],
+                     'original_reference': record['original_input'],
+                     **record['navigation']})
+    return {'origin': 'runtime_reference_state', 'pending_count': len(pending),
+            'items': rows, 'remaining_count': max(0, len(pending)-len(rows)),
+            'paper_ids': sorted({r['navigation']['paper_id'] for r in pending}),
+            'readback': {'tool': 'read_review_references', 'arguments': {'paper_id': '<paper_id>'}},
+            'financial_semantics_verified': False}
 
 
 def read_source_span(artifacts, source_id, start=0, end=None, anchor=None, max_characters=1000):
@@ -187,6 +213,9 @@ def delivery_reference_findings(artifacts, messages, *, complete):
                     if target else 'Resolve the original reference against current authorized sources before delivery; do not guess.'),
                 'source_checks':[]})
             records.append({**row['runtime_parsing'],'reference_id':ref,'paper_id':row['paper_id'],
+                'navigation': {'paper_id':row['paper_id'], 'paper_digest':row['paper_digest'],
+                    'field_path':row['field_path'], 'status':row['status'],
+                    'candidate_source_ids':[c['source_id'] for c in row['candidates']]},
                 'confirmation':confirmed,'generated_finding_id':'runtime_reference_'+ref,'draft_changed':False})
     if complete and missing:
         import json

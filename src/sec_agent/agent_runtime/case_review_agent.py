@@ -837,6 +837,28 @@ class StopOnAcceptedReview(AgentMiddleware):
         return None
 
 
+class ReviewReferenceState(AgentMiddleware):
+    """Project the same current reference state used by submission validation."""
+    def __init__(self, artifacts):
+        self.artifacts = artifacts
+
+    def project(self, request):
+        if self.artifacts is None:
+            return request
+        from .evidence_resolution import review_reference_state
+        state = review_reference_state(self.artifacts, request.state['messages'])
+        if not state['pending_count']:
+            return request
+        return request.override(messages=[*request.messages,
+            HumanMessage(content=json.dumps(state, ensure_ascii=False))])
+
+    def wrap_model_call(self, request, handler):
+        return handler(self.project(request))
+
+    async def awrap_model_call(self, request, handler):
+        return await handler(self.project(request))
+
+
 REVIEW_PROMPT = """You are an independent financial research reviewer of the supplied user's case, issuer and as-of date.
 You are agentic: plan your inspection, use the supplied read-only MCP tools in parallel when independent, inspect errors and correct tool arguments.
 The seed contains the catalog; do not fetch it again unless it has changed. Read every submitted workpaper once using read_research_artifact(section="workpaper"); even all claims omit narrative, counterevidence and open gaps and are not full-paper coverage. Inspect its cited source IDs first; expand original documents only for a specific unresolved check, not all original notebooks.
@@ -1215,10 +1237,16 @@ Use record_case_finding only for a proved, actionable error in a changed claim o
 When done, submit_case_review with an assessment of this revision, all saved findings and necessary unresolved checks. If the revised comparison is supported, a concise no-finding assessment is appropriate; do not invent advisory edits to fill a review. A necessary scope expansion means incomplete, not PASS. Provide concise source-grounded public reasons, no private chain of thought. No transport retry or whole-case acceptance."""
     from .working_memory_tools import working_memory_tools, WORKING_MEMORY_GUIDANCE
     notes = working_memory_tools(f"review_{role}")
+    context_middlewares = audit.middlewares() if audit else []
+    if require_inspection and not revision_target:
+        # After working-context projection, before the audit captures the actual
+        # request. Scoped revision review does not run this whole-case gate.
+        context_middlewares.insert(max(0, len(context_middlewares)-1), ReviewReferenceState(artifacts))
     agent = create_agent(model=model, tools=[*tools, *notes, record_case_finding, submit_case_review], state_schema=CaseReviewerState,
         system_prompt=prompt + (WORKING_MEMORY_GUIDANCE if notes else "") + METHOD_TOOL_GUIDANCE + method_instructions + f"\nBudget: up to {max_model_calls} model calls / {max_tool_calls} tools; no retries or silent partial acceptance.",
         middleware=[StopOnAcceptedReview(), InvalidToolCallFeedback(), CompactReviewSchemaFeedback(), ReviewWorkBudget(max_model_calls), ModelCallLimitMiddleware(run_limit=max_model_calls, exit_behavior="end"),
-                    ToolCallLimitMiddleware(run_limit=max_tool_calls, exit_behavior="end"), *(audit.middlewares() if audit else [])],
+                    ToolCallLimitMiddleware(run_limit=max_tool_calls, exit_behavior="end"),
+                    *context_middlewares],
         name=f"case_{role}")
     # Expose only the native count to the parent collector. Binding ainvoke
     # output_keys would hide this compiled child from subgraph discovery.

@@ -825,6 +825,42 @@ class StopOnAcceptedReview(AgentMiddleware):
         return None
 
 
+def self_contained_review_batch(current, review):
+    """A submitted review may duplicate, but must not depend on, sibling saves."""
+    if current is None:
+        return []
+    if sum(c['name']=='submit_case_review' for c in current.tool_calls)>1:
+        raise ValueError('submit_one_review_per_batch')
+    records = [c for c in current.tool_calls if c['name']=='record_case_finding']
+    if not records:
+        return []
+    inline = {f.finding_id:f for f in review.findings}
+    parsed = {}
+    for call in records:
+        args = call.get('args')
+        if not isinstance(args,dict) or set(args)!={'finding'}:
+            raise ValueError('same_batch_finding_arguments_invalid:complete submission cannot depend on a malformed sibling save')
+        raw=args['finding']
+        if isinstance(raw,str):
+            from .workpaper_delivery import decode_workpaper_arguments
+            raw, complete, repair=decode_workpaper_arguments(raw)
+            if not complete or repair is not None:
+                raise ValueError('same_batch_finding_arguments_invalid')
+        finding=CaseReviewFinding.model_validate(raw)
+        if finding.finding_id in parsed:
+            raise ValueError('record_same_finding_id_once_per_parallel_batch')
+        parsed[finding.finding_id]=finding
+    missing=sorted(set(parsed)-set(inline))
+    conflicts=sorted(fid for fid in parsed if fid in inline and parsed[fid]!=inline[fid])
+    withdrawn=sorted(set(parsed)&set(review.withdrawn_finding_reasons))
+    if missing or conflicts or withdrawn:
+        raise ValueError(json.dumps({'error':'same_batch_review_not_self_contained',
+            'missing_inline_finding_ids':missing,'conflicting_finding_ids':conflicts,
+            'concurrently_withdrawn_finding_ids':withdrawn,
+            'remedy':'Sibling saves remain independent. Wait for their receipts and submit using saved findings, or include the identical full finding in a self-contained submission. Conflicting versions are not chosen by runtime.'},ensure_ascii=False))
+    return sorted(parsed)
+
+
 class ReviewReferenceState(AgentMiddleware):
     """Project the same current reference state used by submission validation."""
     def __init__(self, artifacts):
@@ -1043,15 +1079,16 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
     def save_review(review: CaseReview, runtime: ToolRuntime, *, completion=None) -> Command:
         parsing = []
         proposed = list(review.findings)
+        current = next((m for m in reversed(runtime.state["messages"]) if isinstance(m, AIMessage)), None)
+        parallel_saves = bool(current and any(c['name']=='record_case_finding' for c in current.tool_calls))
+        independent_ids = []
         try:
             if audit and audit.source_access_check:
                 audit.source_access_check()
-            current = next((m for m in reversed(runtime.state["messages"]) if isinstance(m, AIMessage)), None)
-            if current and any(c["name"] == "record_case_finding" for c in current.tool_calls):
-                raise ValueError("submit_after_record_finding_batch_has_completed")
             submitted_ids = [f.finding_id for f in review.findings]
             if len(submitted_ids) != len(set(submitted_ids)):
                 raise ValueError("duplicate_finding_id")
+            independent_ids = self_contained_review_batch(current, review)
             withdrawn = set(review.withdrawn_finding_reasons)
             if not withdrawn.issubset(runtime.state.get("recorded_findings", {})) or withdrawn.intersection(submitted_ids):
                 raise ValueError("withdraw_only_saved_findings_not_resubmitted_findings")
@@ -1080,12 +1117,21 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
                 revision_target=revision_target, parsing_records=parsing)
             if confirmation:
                 validate_finding_confirmation(review, confirmation, artifacts, parsing_records=parsing)
+            if independent_ids:
+                parsing.append({'origin':'runtime_compatibility_parse','method':'self_contained_same_batch_review_v1',
+                    'finding_ids':independent_ids,'original_submitted_content_preserved':True,
+                    'same_batch_save_result_required':False,'full_review_validation_passed':True,
+                    'financial_semantics_verified':False})
             # Legacy checks remain readable, but their count is not completion.
         except ValueError as exc:
             # A bad sibling does not discard already valid substantive work.
             # The handoff stays open; this only checkpoints independent findings.
             retained = {}
             for finding in proposed:
+                # A rejected submission must never race a sibling save with a
+                # different version. Its original proposal remains in history.
+                if parallel_saves:
+                    continue
                 if sum(f.finding_id == finding.finding_id for f in proposed) != 1:
                     continue
                 partial = CaseReview(summary='Partial finding saved; review handoff is still open.',
@@ -1111,6 +1157,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             value["review_scope"] = {k: revision_target[k] for k in ("kind", "paper_id", "baseline_digest", "current_digest", "changed_claim_ids")}
             value["completion"] = completion
         return Command(update={"review": value,
+            "recorded_findings":{f['finding_id']:f for f in value['findings'] if f['finding_id'] in independent_ids},
             "recorded_inspections": merge_checks({}, review.inspection_checks),
             "runtime_parsing":runtime_parsing, "messages": [ToolMessage(
             content=("Revision-only review saved; unchanged research was not reviewed. Not whole-case or financial acceptance."
@@ -1119,7 +1166,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
 
     @tool
     def submit_case_review(review: SubmittedCaseReview, runtime: ToolRuntime) -> Command:
-        """Submit a complete case review; exact quote/ID/read errors are returned for correction, not accepted."""
+        """Submit a complete case review. Normally reuse saved findings. Same-batch saves are allowed only if this submission includes their identical full findings; all review checks still apply. Conflicting or missing siblings are not accepted."""
         return save_review(CaseReview.model_validate(review.model_dump(exclude={"completion"})), runtime, completion=review.completion)
 
     emphasis = ("Your role is Counter: challenge the thesis, demand/competition/supply mechanisms and cross-paper contradictions."
@@ -1130,7 +1177,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
         prompt += REVIEW_GUIDANCE
         @tool('submit_case_review')
         def submit_inspected_review(review: ReviewHandoff, runtime: ToolRuntime) -> Command:
-            """Hand back judgments, actionable findings and necessary unfinished checks. No paragraph forms or coverage hashes are required."""
+            """Hand back judgments, actionable findings and necessary unfinished checks. Reuse saved findings; a same-batch save is allowed only when its identical full finding is inline here. Full checks still apply. No paragraph forms or coverage hashes are required."""
             return save_review(CaseReview.model_validate(review.model_dump(exclude={'completion'})), runtime, completion=review.completion)
 
         submit_case_review = submit_inspected_review

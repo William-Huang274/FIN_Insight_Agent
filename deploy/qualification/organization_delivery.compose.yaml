@@ -1,0 +1,8 @@
+# Business delivery qualification only. Full research report production is static.
+services:
+  api:
+    environment:
+      LANGSERVE_GRAPHS: '{"research_session":"/probe/organization_delivery_graph.py:graph"}'
+      FIN_ORGANIZATION_DELIVERY_QUALIFICATION: '1'
+    volumes:
+      - ../../tests/integration/fixtures/organization_delivery_graph.py:/probe/organization_delivery_graph.py:ro

@@ -174,3 +174,22 @@ def test_frozen_config_mismatch_fails_before_state(reading):
     with TestClient(s.intake.app()) as c:
         assert c.get(s.root,headers=s.headers).status_code==409
     assert 'state' not in s.calls
+
+
+def test_run_registration_during_read_requires_fresh_snapshot_without_dispatch(reading):
+    s=reading
+    original=s.intake.service.sdk.threads.get_state
+    registered_run=str(uuid4())
+    async def state(*args,**kwargs):
+        value=await original(*args,**kwargs)
+        s.grant['run_id']=registered_run
+        s.grant['run_ids']=[registered_run]
+        return value
+    s.intake.service.sdk.threads.get_state=state
+    with TestClient(s.intake.app()) as c:
+        first=c.get(s.root,headers=s.headers)
+        assert first.status_code==409 and '重新读取' in first.json()['detail']
+        second=c.get(s.root,headers=s.headers)
+        assert second.status_code==200 and second.json()['run_id']==registered_run
+        assert second.json()['report']==s.values['report']
+    assert not s.intake.runs

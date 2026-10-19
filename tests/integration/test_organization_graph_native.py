@@ -28,6 +28,8 @@ class OrganizationGraphStack(Stack):
     compose_files = (COMPOSE, ROOT/'deploy/qualification/organization_graph.compose.yaml')
     graph_fixture = ROOT/'tests/integration/fixtures/organization_native_graph.py'
     synthetic_components = ['provider adapter', 'trace export gate', 'OIDC identity', 'original document']
+    registered_graph = '/probe/organization_native_graph.py:graph'
+    real_components = ['native factory','research parent graph','Lead graph','MCP','Java authority','SDK','queue','checkpoint']
 
     def __init__(self):
         super().__init__()
@@ -54,7 +56,7 @@ class OrganizationGraphStack(Stack):
         present={k:bool(v) for k,v in env.items() if any(s in k.upper() for s in ('API_KEY','TOKEN','SECRET'))}
         assert not any(v for k,v in present.items() if k not in ('LANGSMITH_API_KEY','FINSIGHT_ORGANIZATION_RUNTIME_SECRET'))
         assert env['LANGSMITH_TRACING']=='false'
-        assert json.loads(env['LANGSERVE_GRAPHS'])=={'research_session':'/probe/organization_native_graph.py:graph'}
+        assert json.loads(env['LANGSERVE_GRAPHS'])=={'research_session':self.registered_graph}
         assert env['FINSIGHT_BUSINESS_API_URL']==f'http://host.docker.internal:{self.java_port}'
         mounts={m['Destination']:m for m in row['Mounts']}
         assert not mounts['/qualification/src']['RW'] and not mounts['/qualification/configs']['RW']
@@ -64,8 +66,8 @@ class OrganizationGraphStack(Stack):
             'src/sec_agent/research_foundation/organization_execution_access.py']
         self.save('organization-container-contract',{'credential_presence_only':present,'mounts':list(mounts),
             'source_hashes':{p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in paths},
-            'real':['native factory','research parent graph','Lead graph','MCP','Java authority','SDK','queue','checkpoint'],
-            'substitutions':['scripted provider adapter','trace export gate (tracing disabled)','synthetic OIDC'],
+            'real':self.real_components,
+            'substitutions':self.synthetic_components,
             'provider_calls':0})
 
     def turns(self,tid):

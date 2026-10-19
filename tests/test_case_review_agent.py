@@ -305,7 +305,15 @@ def test_native_parallel_agents_errors_and_checkpointed_private_messages(artifac
                 {"configurable": {"thread_id": "fixture-thread"}, "recursion_limit": 150})
             assert result["phase"] == "case_review_ready_for_convergence"
             assert result["counter"]["model_calls"] == result["verifier"]["model_calls"] == 5
-            assert "messages" not in result and "reasoning_content" not in json.dumps(result)
+            assert "messages" not in result
+            from apps.workbench.backend.api.v1.report_sessions import public_state
+            public = json.dumps(public_state({'values': {'case_review': result}}))
+            assert 'reasoning_content' not in public and 'recovery_state' not in public
+            for role in ('counter', 'verifier'):
+                journal = result[role]['recovery_state']['messages']
+                assert any(m['type'] == 'tool' for m in journal)
+                assert all(m['data']['additional_kwargs']['reasoning_content'] == role
+                    for m in journal if m['type'] == 'ai' and m['data'].get('tool_calls'))
             checkpoints = list(saver.list(None))
             for role in ("counter", "verifier"):
                 own = [c for c in checkpoints if c.config["configurable"].get("checkpoint_ns", "").startswith(role + ":")]

@@ -151,13 +151,22 @@ class SubmittedCaseReview(CaseReview):
 class ReviewHandoff(BaseModel):
     """Active model interface: judgments and issues, not a paragraph checklist."""
     model_config = ConfigDict(extra='forbid')
-    completion: Literal['complete', 'incomplete']
+    completion: Literal['complete', 'incomplete'] = Field(description=
+        "Completion of the requested review, not merely finishing assigned finding IDs or submitting a response. "
+        "Use incomplete when any necessary verification remains in unresolved_data_requests; complete requires that list empty. "
+        "A complete review can still report proved errors and known research limitations; it is not financial approval.")
     summary: str = Field(min_length=20, max_length=12000)
     assessments: list[PaperAssessment] = Field(min_length=1, max_length=12)
     findings: list[CaseReviewFinding] = Field(default_factory=list, max_length=80)
     finding_checks: list[FindingConfirmation] = Field(default_factory=list, max_length=80)
-    unresolved_data_requests: list[str] = Field(default_factory=list, max_length=30)
-    research_limitations: list[str] = Field(default_factory=list)
+    unresolved_data_requests: list[str] = Field(default_factory=list, max_length=30, description=
+        "Necessary verification still undone for the current claims and requested review scope. "
+        "Explain what remains and why it matters. A nonempty list requires completion=incomplete. "
+        "Do not put every possible future research question here; do not clear genuine unfinished checks to pass validation.")
+    research_limitations: list[str] = Field(default_factory=list, description=
+        "Known limits of the answer after review, including their scope and effect on interpretation. "
+        "These do not themselves mean unfinished verification. Classify according to the current claims; "
+        "do not move a necessary unchecked dependency here just to claim completion.")
     withdrawn_finding_reasons: dict[str, Annotated[str, Field(min_length=20, max_length=2000)]] = Field(default_factory=dict)
 
     @model_validator(mode='after')
@@ -819,7 +828,7 @@ Numbers from issuer prose/media or calculations remain non-S2; mark that limitat
 The calculator resolves archived Pxx:Sxxx sources, numeric_fact_id from successful SQL queries, and exact PASSAGE IDs read in this tool session. For prose operands copy an exact quote and numeric literal; search previews do not qualify. Never disguise a sourced number as an assumption. The tool verifies arithmetic and literal presence, not financial meaning, units or source reliability.
 You can use read_source_document to search/read local or public web sources within enabled scope. Public web must first be searched for an ID. get_research_source_binding provides answer-free methods; old workflow search ceilings are not this run's budget.
 Provide concise public reasoning and specific, actionable findings in Chinese; no raw private chain of thought. Do not merely recite boundaries or demand perfect recall. Prioritize errors that change the thesis, magnitude, timing or confidence.
-Use submit_case_review when inspection is complete. Each finding must anchor an exact paper quote and any supplied claim IDs; source_checks must be exact original source quotes (S2 numeric literals are allowed). Distinguish material correction from advisory edits. A no-finding review still assesses every paper. If tools block further work, record unresolved_data_requests honestly, do not claim PASS.
+Use submit_case_review to hand back either a complete review or an honestly incomplete review. Completion concerns necessary verification in the requested scope, not just finishing a batch of finding IDs. Known answer limitations belong in research_limitations; unfinished necessary checks belong in unresolved_data_requests and require completion=incomplete. The reviewer decides which applies to the current claims. Each finding must anchor an exact paper quote and any supplied claim IDs; source_checks must be exact original source quotes (S2 numeric literals are allowed). Distinguish material correction from advisory edits. A no-finding review still assesses every paper. A completed review can still identify material errors; it is not PASS or financial approval.
 Record actionable findings with record_case_finding as soon as their relevant sources are checked. This saves the finding in your native checkpoint, not financial acceptance. Reuse its ID to correct it; submit_case_review merges saved findings so you need not rewrite them. Do not keep researching an established correction merely to make the review longer. Counter prioritizes competing explanations and thesis boundaries; Verifier prioritizes calculation, source and comparability errors; neither should independently recreate the entire research assignment.
 For a material numeric bridge, distinguish current-period totals from changes, stock from flow, and consolidated from segment/external revenue. Preserve operand period/unit/definition and reconcile the comparison before attributing a change. A source-confirmed literal and correct arithmetic do not establish economic comparability or causality. Request a bounded correction to the affected claim, not a wholesale rewrite. Assess the supplied question coverage and any omitted/unresolved items; a submitted paper is not already verified. A proved material error can be handed back for correction without independently writing the replacement research. Unchecked necessary issues belong in unresolved_data_requests.
 """
@@ -1138,11 +1147,24 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             rows=[r for r in runtime.state.get('recorded_inspections',{}).values() if r['paper_id']==paper_id]
             return json.dumps({'checks':rows[offset:offset+5],'next_offset':offset+5 if offset+5<len(rows) else None,'total':len(rows)},ensure_ascii=False)
         @tool
+        def read_review_handoff(section: Literal['catalog', 'revision_confirmation'],
+                                paper_id: str | None = None, offset: int = 0):
+            """Read exact handoff data omitted from navigation, including full version-bound change spans. Paginated; author statements are not evidence."""
+            from .review_context import handoff_page
+            try:
+                return json.dumps(handoff_page(artifacts, confirmation, section=section,
+                    paper_id=paper_id, offset=offset), ensure_ascii=False)
+            except ValueError as exc:
+                raise ToolException(str(exc)) from exc
+
+        read_review_handoff.handle_tool_error = True
+
+        @tool
         def read_review_history(runtime: ToolRuntime, index: int|None=None, offset: int=0):
             """Read the original public journal on demand. Old workflow instructions and failed checks are historical, not current requirements."""
             from .review_context import history_page
             return json.dumps(history_page(runtime.state['messages'],index=index,offset=offset),ensure_ascii=False)
-        tools = [*tools, read_review_location, read_saved_review_checks, read_review_history]
+        tools = [*tools, read_review_location, read_saved_review_checks, read_review_history, read_review_handoff]
         if audit:
             from .review_context import ReviewWorkingContext, working_messages
             if audit.context_summary:
@@ -1244,6 +1266,8 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                 "runtime_parsing":state.get('runtime_parsing',[]),
                 **({'execution_error': execution_error} if execution_error else {}),
                 "model_calls": count,
+                # Completed peers also need their own source/read journal for
+                # later author-change confirmation. Public projections strip it.
                 **({("blocked_recovery_state" if execution_error and execution_error.get('provider_call_attempted') else "recovery_state"):
                     {**{k:deepcopy(state[k]) for k in ('request_summary','request_summary_failure','author_change_projection') if k in state},
                      "messages": messages_to_dict(state["messages"]),
@@ -1251,7 +1275,7 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                      "recorded_inspections": deepcopy(state.get("recorded_inspections", {})),
                      "thread_model_call_count": count,
                      "thread_tool_call_count": deepcopy(state.get("thread_tool_call_count", {}))}}
-                   if not complete else {}),
+                   ),
                 **({"incomplete_output": [m.content for m in answers[:count] if m.content],
                     "recorded_findings": state.get("recorded_findings", {}),
                     "runtime_notices": [m.content for m in answers[count:] if m.content],

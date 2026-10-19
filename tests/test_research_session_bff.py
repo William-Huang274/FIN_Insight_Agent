@@ -308,7 +308,7 @@ def test_original_workpaper_reviews_are_visible_without_private_messages_or_raw_
 def test_native_parent_schema_needs_no_credentials_or_archived_answer_and_role_budgets_are_valid():
     root = Path(__file__).resolve().parents[1]
     profile, case = load_research_runtime_profile(root)
-    assert len(case["branch_topics"]) == 9 and profile["nodes"]["lead"]["profile"]["model"] == "deepseek-v4-flash"
+    assert len(case["branch_topics"]) == 9 and profile["nodes"]["lead"]["profile"]["model"] == "deepseek-flash"
     assert profile["nodes"]["specialist"]["profile"]["model"] == "deepseek-v4-pro"
     async def exercise():
         async with research_session_graph({}, SimpleNamespace(execution_runtime=None)) as graph:

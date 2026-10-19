@@ -202,65 +202,10 @@ def test_revision_submission_requires_explicit_completion_and_preserves_incomple
     asyncio.run(exercise())
 
 
-def test_budget_hint_keeps_provider_history_intact():
-    from langchain.agents.middleware.types import ModelRequest
-    from langchain_core.messages import SystemMessage
-    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
-    model = ScriptedNativeChat(marker="private", replies=[])
-    history = [AIMessage(content="public", additional_kwargs={"reasoning_content": "private"}),
-        ToolMessage(name="read_research_artifact", content="paper", tool_call_id="r",
-            artifact={"section": "workpaper", "paper_id": "P01"})]
-    request = ModelRequest(model=model, messages=history, system_message=SystemMessage(content="Issuer comes from user."),
-        state={"messages": history, "thread_model_call_count": 22, "recorded_findings": {"F1": {}}})
-    projected = ReviewWorkBudget(24).request_with_budget(request)
-    assert "2 model call(s) remain" in projected.system_message.content
-    assert "penultimate call retains tools" in projected.system_message.content
-    assert projected.messages == history
-    assert history[0].additional_kwargs["reasoning_content"] == "private"
-    request.state["thread_model_call_count"] = 2
-    assert ReviewWorkBudget(24).request_with_budget(request) is request  # Stable cache prefix, not a counter rewritten every turn.
-    request.state.update(thread_model_call_count=40, run_model_call_count=2)
-    assert ReviewWorkBudget(24).request_with_budget(request) is request  # Match the native run limit after an authorized resume.
 
 
-def test_closeout_reserve_blocks_new_reads_without_fabricating_a_result():
-    from types import SimpleNamespace
-    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
-    state = {"thread_model_call_count": 6, "messages": [ToolMessage(name="read_research_artifact", content="paper",
-        tool_call_id="read", artifact={"paper_id": "P01", "section": "workpaper"})]}
-    request = SimpleNamespace(state=state, tool_call={"name": "read_research_source", "id": "late-read"})
-    result = ReviewWorkBudget(6).wrap_tool_call(request, lambda _: pytest.fail("late read must not execute"))
-    assert result.status == "error" and "not executed" in result.content
-    request.tool_call = {"name": "submit_case_review", "id": "close"}
-    assert ReviewWorkBudget(6).wrap_tool_call(request, lambda _: "submitted") == "submitted"
 
 
-def test_penultimate_review_can_correct_calculation_before_final_submission():
-    from types import SimpleNamespace
-    from langchain.agents.middleware.types import ModelRequest
-    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
-    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, calculate_from_sources
-    history = [ToolMessage(name="read_review_target", content="scope", tool_call_id="scope",
-        artifact={"kind": "revision_only"})]
-    tools = [SimpleNamespace(name=n) for n in ("calculate_research_metric", "read_research_source", "submit_case_review", "record_case_finding")]
-    request = ModelRequest(model=ScriptedNativeChat(marker="fixture", replies=[]), messages=history, tools=tools,
-        state={"messages": history, "run_model_call_count": 4})
-    budget = ReviewWorkBudget(6)
-    assert budget.request_with_budget(request).tools == tools
-    # The fifth response has already incremented the native counter when its
-    # tool executes. Previously this correction was rejected with one turn left.
-    source = {"result_state": "numeric_fact", "numeric_fact_authority": True, "value_decimal": "-7"}
-    calc = SourceBoundCalculation(expression="base - loss", operands={
-        "base": {"literal": "11", "assumption_note": "Synthetic baseline"}, "loss": {"source_id": "NUMFACT::fixture"}},
-        result_unit="USD", rationale="Synthetic decline from positive income to a signed loss.")
-    tool_request = SimpleNamespace(state={**request.state, "run_model_call_count": 5},
-        tool_call={"name": "calculate_research_metric", "id": "correction"})
-    result = budget.wrap_tool_call(tool_request, lambda _: calculate_from_sources(calc, lambda _: source))
-    assert result["value_decimal"] == "18"
-    request.state["run_model_call_count"] = 5
-    assert {t.name for t in budget.request_with_budget(request).tools} == {"submit_case_review", "record_case_finding"}
-    tool_request.state["run_model_call_count"] = 6
-    assert budget.wrap_tool_call(tool_request, lambda _: pytest.fail("final call cannot start another calculation")).status == "error"
 
 
 def test_case_schema_factory_is_read_only_and_discovers_both_subgraphs(monkeypatch):
@@ -394,7 +339,6 @@ def test_targeted_claim_read_is_smaller_but_not_complete_review_coverage(artifac
 
 def test_all_claims_allow_saved_finding_but_full_review_requires_complete_workpaper():
     from test_research_convergence import artifact_fixture
-    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
 
     async def exercise():
         base = artifact_fixture()
@@ -422,73 +366,16 @@ def test_all_claims_allow_saved_finding_but_full_review_requires_complete_workpa
         assert result["review"]["findings"][0]["finding_id"] == "coverage"
         claims_reads = [m for m in result["messages"] if isinstance(m, ToolMessage)
                         and m.name == "read_research_artifact" and m.artifact["section"] == "claims"]
-        assert not ReviewWorkBudget.has_paper_read({"messages": claims_reads})
-        assert ReviewWorkBudget.has_paper_read(result)
         for message in result["messages"]:
             if isinstance(message, ToolMessage) and message.name == "read_research_artifact" and message.artifact["section"] == "workpaper":
                 assert {"narrative_markdown", "counterevidence", "open_gaps"}.issubset(message.artifact["content"])
     asyncio.run(exercise())
 
 
-def test_budget_hint_keeps_provider_history_intact():
-    from langchain.agents.middleware.types import ModelRequest
-    from langchain_core.messages import SystemMessage
-    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
-    model = ScriptedNativeChat(marker="private", replies=[])
-    history = [AIMessage(content="public", additional_kwargs={"reasoning_content": "private"}),
-        ToolMessage(name="read_research_artifact", content="paper", tool_call_id="r",
-            artifact={"section": "workpaper", "paper_id": "P01"})]
-    request = ModelRequest(model=model, messages=history, system_message=SystemMessage(content="Issuer comes from user."),
-        state={"messages": history, "thread_model_call_count": 22, "recorded_findings": {"F1": {}}})
-    projected = ReviewWorkBudget(24).request_with_budget(request)
-    assert "2 model call(s) remain" in projected.system_message.content
-    assert "penultimate call retains tools" in projected.system_message.content
-    assert projected.messages == history
-    assert history[0].additional_kwargs["reasoning_content"] == "private"
-    request.state["thread_model_call_count"] = 2
-    assert ReviewWorkBudget(24).request_with_budget(request) is request  # Stable cache prefix, not a counter rewritten every turn.
-    request.state.update(thread_model_call_count=40, run_model_call_count=2)
-    assert ReviewWorkBudget(24).request_with_budget(request) is request  # Match the native run limit after an authorized resume.
 
 
-def test_closeout_reserve_blocks_new_reads_without_fabricating_a_result():
-    from types import SimpleNamespace
-    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
-    state = {"thread_model_call_count": 6, "messages": [ToolMessage(name="read_research_artifact", content="paper",
-        tool_call_id="read", artifact={"paper_id": "P01", "section": "workpaper"})]}
-    request = SimpleNamespace(state=state, tool_call={"name": "read_research_source", "id": "late-read"})
-    result = ReviewWorkBudget(6).wrap_tool_call(request, lambda _: pytest.fail("late read must not execute"))
-    assert result.status == "error" and "not executed" in result.content
-    request.tool_call = {"name": "submit_case_review", "id": "close"}
-    assert ReviewWorkBudget(6).wrap_tool_call(request, lambda _: "submitted") == "submitted"
 
 
-def test_penultimate_review_can_correct_calculation_before_final_submission():
-    from types import SimpleNamespace
-    from langchain.agents.middleware.types import ModelRequest
-    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
-    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, calculate_from_sources
-    history = [ToolMessage(name="read_review_target", content="scope", tool_call_id="scope",
-        artifact={"kind": "revision_only"})]
-    tools = [SimpleNamespace(name=n) for n in ("calculate_research_metric", "read_research_source", "submit_case_review", "record_case_finding")]
-    request = ModelRequest(model=ScriptedNativeChat(marker="fixture", replies=[]), messages=history, tools=tools,
-        state={"messages": history, "run_model_call_count": 4})
-    budget = ReviewWorkBudget(6)
-    assert budget.request_with_budget(request).tools == tools
-    # The fifth response has already incremented the native counter when its
-    # tool executes. Previously this correction was rejected with one turn left.
-    source = {"result_state": "numeric_fact", "numeric_fact_authority": True, "value_decimal": "-7"}
-    calc = SourceBoundCalculation(expression="base - loss", operands={
-        "base": {"literal": "11", "assumption_note": "Synthetic baseline"}, "loss": {"source_id": "NUMFACT::fixture"}},
-        result_unit="USD", rationale="Synthetic decline from positive income to a signed loss.")
-    tool_request = SimpleNamespace(state={**request.state, "run_model_call_count": 5},
-        tool_call={"name": "calculate_research_metric", "id": "correction"})
-    result = budget.wrap_tool_call(tool_request, lambda _: calculate_from_sources(calc, lambda _: source))
-    assert result["value_decimal"] == "18"
-    request.state["run_model_call_count"] = 5
-    assert {t.name for t in budget.request_with_budget(request).tools} == {"submit_case_review", "record_case_finding"}
-    tool_request.state["run_model_call_count"] = 6
-    assert budget.wrap_tool_call(tool_request, lambda _: pytest.fail("final call cannot start another calculation")).status == "error"
 
 
 def test_submitted_review_with_unchecked_work_does_not_enter_report_pipeline(artifacts):

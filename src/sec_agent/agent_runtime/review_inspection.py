@@ -95,8 +95,7 @@ def quote_recovery(artifacts, finding):
             candidates.append((match.size, path, max(0, match.b - 100)))
     return {'finding_id': finding.finding_id, 'accepted': False,
         'remedy': 'Read a current field window and copy ONE exact contiguous substring, including literal markdown. '
-                  'Do not join a heading and paragraph or normalize whitespace. Reuse this finding ID; other saved findings remain. '
-                  'If this is the final call, put the corrected finding directly in submit_case_review with incomplete/unresolved work explicitly listed.',
+                  'Do not join a heading and paragraph or normalize whitespace. Reuse this finding ID; other saved findings remain.',
         'locations': [read_location(artifacts, finding.paper_id, path, offset, 800)
                       for _, path, offset in sorted(candidates, reverse=True)[:3]],
         'read_tool': 'read_review_location'}

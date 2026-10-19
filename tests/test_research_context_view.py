@@ -319,6 +319,31 @@ def test_real_adapter_keeps_canonical_journal_across_projected_rounds():
         assert restarted.read_public_operation(request['agent_id'],'call-1')==adapter.read_public_operation(request['agent_id'],'call-1')
 
 
+def test_next_revision_inherits_active_sources_before_acceptance_without_reopening_archive():
+    context={'allowed_actions':['read_research_history','revise_workpaper'],
+        'task_context':{'research_question':'Question'},'submission_to_repair':{'candidate':{'thesis':'Saved'}}}
+    def source(ref):
+        return {'observations':[{'status':'success','content':[{'result_state':'source_bound_passage',
+            'passage_id':ref,'passage':'Original '+ref}]}]}
+    rows=[HumanMessage(content=json.dumps(context))]
+    for ref in ('ARCHIVED','A','B'):
+        rows.extend(batch(ref,'RequestSourceAction',{},source(ref)))
+    rows.append(HumanMessage(content=json.dumps(context),additional_kwargs={
+        'fin_research_stage_boundary':'revision_material_handoff','fin_revision_material_ids':['A','B']}))
+    rows.extend(batch('calc','RequestCalculationAction',{}, {'calculation_id':'CALC-X','result':42}))
+    before=json.loads(working_view(rows)[0].content)['current_materials']
+    rows.extend(batch('final','FinalizeWorkpaperRevisionAction',{}, {'accepted':True}))
+    rows.append(HumanMessage(content=json.dumps(context),additional_kwargs={
+        'fin_research_stage_boundary':'accepted_submission_to_revision'}))
+    original=deepcopy(rows)
+    view=json.loads(working_view(rows)[0].content)
+    assert view['current_materials']==before
+    assert {r.get('passage_id') for r in before} >= {'A','B'}
+    assert 'ARCHIVED' not in {r.get('passage_id') for r in view['current_materials']}
+    assert public_operation(rows,'final')['receipt']['result']['accepted'] is True
+    assert rows==original
+
+
 def test_revision_boundary_archives_completed_terminal_but_keeps_readback_and_later_errors():
     rows=fixture()
     rows.extend(batch('accepted-draft','SubmitWorkpaperAction',{'thesis':'Saved paper'}, {'accepted':True}))

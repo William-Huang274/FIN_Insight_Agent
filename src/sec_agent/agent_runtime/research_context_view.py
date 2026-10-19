@@ -538,7 +538,20 @@ def revision_material_selection(messages, bodies):
         # cohort, not the entire archived research journal. Later reads grow it
         # until explicit release/selection or actual revision acceptance.
         selected = set()
-        previous = working_view(messages[:start]) or messages[:start]
+        predecessor = messages[:start]
+        # Acceptance closes the preceding revision, but is not a user release
+        # of its sources. Seed the new assignment from the view immediately
+        # before that terminal receipt, not the post-completion fallback cohort.
+        # Keep the real receipt in the journal and the new operation catalog.
+        if predecessor and isinstance(predecessor[-1], ToolMessage):
+            terminal = predecessor[-1]
+            terminal_body = decode(terminal.content)
+            terminal_result = terminal_body.get('result', terminal_body) if isinstance(terminal_body, dict) else {}
+            if (terminal.status == 'success'
+                    and terminal.name in {'FinalizeWorkpaperRevisionAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}
+                    and isinstance(terminal_result, dict) and terminal_result.get('accepted') is True):
+                predecessor = predecessor[:-1]
+        previous = working_view(predecessor) or predecessor
         for message in previous:
             body = decode(message.content)
             if message.additional_kwargs.get('fin_research_working_view'):

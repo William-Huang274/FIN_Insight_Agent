@@ -94,6 +94,7 @@ def save_draft(state, action):
     baseline = baseline or state['last_submission_attempt']['arguments']
     change_status = draft_change_status(baseline, candidate)
     receipt = {'saved': True, 'submitted': False, 'accepted': False,
+               'replayed': False, 'previous_draft_digest': draft['digest'],
                'operation_id': action.operation_id, 'draft_digest': canonical_sha256(candidate),
                'changed_paths': changed, 'draft_issues': warnings,
                'automatic_repairs': repairs, 'change_status': change_status,

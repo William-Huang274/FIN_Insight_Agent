@@ -6,6 +6,7 @@ from langchain_core.utils.function_calling import convert_to_openai_tool
 from sec_agent.agent_runtime.research_context_view import working_view, public_operation, history_operation_page
 from sec_agent.agent_runtime.specialist_graph import ReadResearchHistoryAction
 from test_context_retirement import batch
+from test_research_context_view import snapshot
 
 
 def fixture():
@@ -26,7 +27,7 @@ def fixture():
 def test_projected_revision_routes_read_exact_actor_originals_without_mutating_archive():
     messages, original = fixture()
     before = deepcopy(messages)
-    view = json.loads(working_view(messages)[0].content)
+    view = snapshot(working_view(messages))
     location = view['current_context']['task_context']['revision_feedback'][0]['reference_navigation']['locations'][0]
     assert location['status'] == 'ambiguous'
     candidate, missing = location['candidates']
@@ -47,7 +48,7 @@ def test_navigation_only_or_failed_receipts_do_not_become_original_readbacks():
         {'passage_id': 'PASSAGE::WEB::a', 'preview': 'Only a candidate'}]}})
     for status in ('success', 'error'):
         messages[2].status = status
-        view = json.loads(working_view(messages)[0].content)
+        view = snapshot(working_view(messages))
         candidate = view['current_context']['task_context']['revision_feedback'][0]['reference_navigation']['locations'][0]['candidates'][0]
         assert candidate['saved_reads'] == []
 

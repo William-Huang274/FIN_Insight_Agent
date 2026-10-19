@@ -70,6 +70,13 @@ def test_saved_draft_survives_serialization_replay_and_bad_batch():
     s = state(); old = deepcopy(s); a = save_action(s, [setter()])
     draft, receipt = save_draft(s, a)
     assert s == old and receipt['saved'] and not receipt['accepted'] and not receipt['submitted']
+    assert receipt['replayed'] is False
+    assert receipt['previous_draft_digest'] == a.base_submission_digest
+    assert receipt['draft_digest'] != receipt['previous_draft_digest']
+    from sec_agent.agent_runtime.deepseek_structured_agents import _agentic_semantic_value
+    wire_receipt = _agentic_semantic_value(receipt)
+    assert wire_receipt['previous_draft_digest'] == a.base_submission_digest
+    assert wire_receipt['replayed'] is False
     s['workpaper_draft'] = json.loads(json.dumps(draft))
     replay, r = save_draft(s, a)
     assert replay == draft and r['replayed'] and replay['saved_batches'] == 1
@@ -78,6 +85,15 @@ def test_saved_draft_survives_serialization_replay_and_bad_batch():
     with pytest.raises(WorkpaperEditError):
         save_draft(s, save_action(s, [setter('Would overwrite'), {'op':'set_field','path':'/missing','value':1}], 'bad'))
     assert s['workpaper_draft'] == draft and s['last_submission_attempt'] == old['last_submission_attempt']
+
+
+def test_unchanged_value_with_new_operation_is_not_an_idempotent_replay():
+    s = state()
+    s['workpaper_draft'], _ = save_draft(s, save_action(s, [setter()]))
+    next_draft, receipt = save_draft(s, save_action(s, [setter()], 'new-operation'))
+    assert receipt['previous_draft_digest'] == receipt['draft_digest']
+    assert receipt['saved'] and receipt['replayed'] is False
+    assert next_draft['saved_batches'] == 2
     with pytest.raises(WorkpaperEditError):
         save_draft(s, save_action(s, [setter()], 'stale', base_submission_digest='0'*64))
 

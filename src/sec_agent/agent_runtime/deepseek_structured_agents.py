@@ -852,7 +852,7 @@ _AGENTIC_HOST_ONLY_KEYS = frozenset(
 # These are optimistic-concurrency handles used by the public revision tools,
 # not internal evidence/receipt authority hashes.
 _REVISION_VERSION_KEYS = frozenset({
-    'draft_digest', 'base_submission_digest', 'current_candidate_digest',
+    'draft_digest', 'previous_draft_digest', 'base_submission_digest', 'current_candidate_digest',
     'current_base_submission_digest', 'pending_revision_digest',
 })
 

@@ -97,7 +97,7 @@ def test_current_error_pending_edits_and_later_material_lifecycle_remain_live():
                       {'accepted': False, 'issues': ['new error']}, status='error'))
     projected = working_view(rows)
     research_messages = [m for m in projected if not m.additional_kwargs.get('fin_context_checkpoint_instruction')]
-    assert research_messages[-2:] == rows[-2:]
+    assert research_messages[-3:-1] == rows[-2:]
     assert view(rows)['current_context']['submission_to_repair']['edit_progress'] == ['CURRENT EDIT']
     # Reading alone does not retire materials needed for the pending revision.
     later = [*fixture(), *batch('new', 'RequestSourceAction', {}, {'passage_id': 'P8', 'passage': 'Next original'})]

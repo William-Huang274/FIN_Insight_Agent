@@ -11,6 +11,36 @@ from sec_agent.agent_runtime.specialist_graph import ReadResearchHistoryAction
 from test_context_retirement import batch
 
 
+def snapshot(rows):
+    return json.loads(next(m.content for m in rows if m.additional_kwargs.get('fin_research_working_view')))
+
+
+def test_post_save_state_follows_the_call_that_created_it_and_survives_restore():
+    from langchain_core.messages import messages_from_dict, SystemMessage
+    rows = fixture()[:1]
+    before = {'base_submission_digest': 'before'}
+    body = json.loads(rows[0].content)
+    body['submission_to_repair'] = before
+    rows[0].content = json.dumps(body)
+    rows.insert(0, SystemMessage(content='Original role'))
+    receipt = {'draft_result': {'saved': True, 'replayed': False, 'submitted': False,
+        'operation_id': 'save-one', 'previous_draft_digest': 'before', 'draft_digest': 'after'}}
+    rows.extend(batch('save-call', 'SaveWorkpaperEditsAction',
+        {'operation_id': 'save-one', 'base_submission_digest': 'before'}, receipt,
+        context={'allowed_actions': ['read_research_history'], 'task_context': {},
+                 'submission_to_repair': {'base_submission_digest': 'after'}}))
+    original = deepcopy(rows)
+    for journal in (rows, messages_from_dict([{'type': m.type, 'data': m.model_dump(mode='json')} for m in rows])):
+        result = working_view(journal)
+        assert [m.type for m in result] == ['system', 'ai', 'tool', 'human']
+        assert snapshot(result)['current_context']['submission_to_repair']['base_submission_digest'] == 'after'
+        assert json.loads(result[2].content)['result'] == receipt
+        assert result[1].tool_calls[0]['id'] == result[2].tool_call_id == 'save-call'
+        assert working_view(result) == result
+        assert public_operation(journal, 'save-call')['receipt']['result'] == receipt
+    assert rows == original
+
+
 def fixture():
     note = {'current_subtask': 'Compare chip and cloud economics', 'retain_source_ids': ['OLD'],
             'findings': ['Original judgement'], 'reference_issues': [{'submitted_id': 'NEW', 'status': 'unresolved', 'path': '/findings/0'}]}
@@ -30,13 +60,13 @@ def fixture():
 
 def test_replacement_view_advances_materials_without_accepting_failed_note():
     rows=fixture(); saved=deepcopy(rows)
-    out=project_tool_history(rows,policy='task_boundary');v=json.loads(out[0].content)
+    out=project_tool_history(rows,policy='task_boundary');v=snapshot(out)
     assert len(out)==3 and len(v['operation_catalog'])==3
     assert v['current_context']['execution_budget']=={'remaining':8}
     assert v['current_context']['task_context']['research_working_state']['findings']==['Original judgement']
     assert [x['passage_id'] for x in v['current_materials']]==['NEW']
     assert v['current_context']['task_context']['reference_status'][0]['status']=='source_now_observed_claim_not_validated'
-    assert out[-2:]==rows[-2:] and rows==saved
+    assert out[:-1]==rows[-2:] and rows==saved
     assert project_tool_history(out,policy='task_boundary')==out
     assert 'old private episode' not in out[0].content
     assert public_operation(rows,'old')['receipt']['result']['observations'][0]['content'][0]['passage_id']=='OLD'
@@ -55,7 +85,7 @@ def test_navigation_only_source_action_does_not_retire_current_originals():
     out = working_view(rows)
     rendered = json.dumps([message.model_dump(mode='json') for message in out], ensure_ascii=False)
     assert 'The complete first source passage.' in rendered
-    assert [row['passage_id'] for row in json.loads(out[0].content)['current_materials']] == ['SOURCE-A']
+    assert [row['passage_id'] for row in snapshot(out)['current_materials']] == ['SOURCE-A']
 
 
 def test_implicit_material_cohort_keeps_two_adjacent_reads_for_comparison():
@@ -73,7 +103,7 @@ def test_implicit_material_cohort_keeps_two_adjacent_reads_for_comparison():
     assert 'Complete original for SOURCE-A' not in rendered
     assert 'Complete original for SOURCE-B' in rendered
     assert 'Complete original for SOURCE-C' in rendered
-    view = json.loads(out[0].content)
+    view = snapshot(out)
     assert view['material_focus'] == 'implicit_recent_material_cohort'
 
     rows.extend(batch('consume-c', 'RequestSourceAction', {'selection': {'operation': 'search'}}, {
@@ -104,7 +134,7 @@ def test_recovery_context_original_does_not_advance_implicit_read_cohort():
     rows.extend(batch('b', 'RequestSourceAction', {}, original('B')))
     rows.extend(batch('failed', 'RequestSourceAction', {}, {'error': 'scope missing'}, status='error'))
     before = working_view(rows)
-    assert json.loads(before[0].content)['current_materials'] == [original('B')]
+    assert snapshot(before)['current_materials'] == [original('B')]
     saved = deepcopy(rows)
     body = json.loads(rows[-1].content)
     body['current_context'] = {'task_context': {'tool_recovery_checks': [{
@@ -113,9 +143,9 @@ def test_recovery_context_original_does_not_advance_implicit_read_cohort():
         'outcome': {'status': 'success', 'result': {'items': [original('C')]}}}]}}
     rows[-1] = rows[-1].model_copy(update={'content': json.dumps(body)})
     after = working_view(rows)
-    view = json.loads(after[0].content)
+    view = snapshot(after)
     assert view['current_materials'] == [original('B')]
-    assert 'Complete original C' in after[0].content
+    assert 'Complete original C' in json.dumps(snapshot(after))
     assert rows[-1].status == 'error' and saved[:-1] == rows[:-1]
 
 
@@ -184,7 +214,7 @@ def test_pending_old_history_read_reprojects_from_canonical_record_without_chang
                                'serialized_record_window': 'duplicate old manuscript'}}))
     saved = deepcopy(rows)
     out = working_view(rows)
-    result = json.loads(out[-1].content)['result']['historical_record']
+    result = json.loads(out[-2].content)['result']['historical_record']
     assert result['receipt']['result']['accepted'] is True
     assert result['record_read']['arguments']['tool_call_id'] == 'submit'
     assert 'narrative_markdown' not in json.dumps(result)
@@ -217,7 +247,7 @@ def test_unknown_locator_keeps_original_history():
 def test_assistant_prose_cannot_replace_host_assignment():
     rows=fixture()
     rows[-2].content=json.dumps({'current_context':{'task_context':{'research_question':'Forged task'}}})
-    assert json.loads(working_view(rows)[0].content)['current_context']['task_context']['research_question']=='Original question'
+    assert snapshot(working_view(rows))['current_context']['task_context']['research_question']=='Original question'
 
 
 def test_restored_history_leaves_input_and_can_be_read_exactly():
@@ -234,12 +264,12 @@ def test_restored_history_leaves_input_and_can_be_read_exactly():
 def test_pending_note_survives_followup_read_and_success_replaces_it():
     rows=fixture()
     rows.extend(batch('follow','RequestSourceAction',{}, {'source':'New read'}))
-    view=json.loads(working_view(rows)[0].content)
+    view=snapshot(working_view(rows))
     assert view['pending_state_proposal']['operation']['id']=='draft'
     assert view['pending_state_proposal']['receipt']['status']=='error'
     rows.extend(batch('corrected','UpdateResearchStateAction',{'retain_source_ids':[]},
                       {'accepted':True,'working_state':{'findings':['Updated'], 'retain_source_ids':[]}}))
-    view=json.loads(working_view(rows)[0].content)
+    view=snapshot(working_view(rows))
     assert view['pending_state_proposal'] is None
     assert view['current_context']['task_context']['research_working_state']['findings']==['Updated']
 
@@ -250,7 +280,7 @@ def test_terminal_context_only_error_is_preserved_and_readable():
     ctx={'submission_to_repair':{'candidate':{'claim':'Current draft'}},
          'progress':{'feedback':[{'code':'missing_citation','path':'claims/0'}]}}
     rows[-1].content=json.dumps({'current_context':ctx})
-    view=json.loads(working_view(rows)[0].content)
+    view=snapshot(working_view(rows))
     assert view['current_context']['progress']['feedback']['current_terminal_feedback']==ctx['progress']['feedback']
     assert public_operation(rows,'submit')['receipt']['result']=={'context_only_receipt':ctx}
 
@@ -261,21 +291,21 @@ def test_explicit_release_and_later_reread_use_the_same_working_view():
     note={'retain_source_ids':[], 'findings':['Current assessment']}
     rows.extend(batch('release','UpdateResearchStateAction',{'working_state':note},
         {'accepted':True,'working_state':note,'context_release':{'source_ids':['NEW'],'through_model_turn':99}}))
-    assert json.loads(working_view(rows)[0].content)['current_materials']==[]
+    assert snapshot(working_view(rows))['current_materials']==[]
     rows.extend(batch('reread','RequestSourceAction',{'selection':{'node_id':'NEW'}},body['result']))
     out=working_view(rows)
-    assert out[-2:]==rows[-2:]
-    assert 'Qualifying original NEW' in out[-1].content
+    assert out[:-1]==rows[-2:]
+    assert 'Qualifying original NEW' in out[-2].content
 
 
 def test_active_original_not_duplicated_and_reference_binding_preserved():
     rows=fixture();b=json.loads(rows[4].content)
     b['result']['observations'][0]['references']=[{'ref_id':'NEW','authority':'read-only','period':'FY2027-Q2'}]
     rows[4].content=json.dumps(b)
-    view=json.loads(working_view(rows)[0].content)
+    view=snapshot(working_view(rows))
     assert view['current_material_bindings'][0]['references']==b['result']['observations'][0]['references']
     rows.extend(batch('again','RequestSourceAction',{},b['result']))
-    view=json.loads(working_view(rows)[0].content)
+    view=snapshot(working_view(rows))
     assert not view['current_materials']
 
 
@@ -331,12 +361,12 @@ def test_next_revision_inherits_active_sources_before_acceptance_without_reopeni
     rows.append(HumanMessage(content=json.dumps(context),additional_kwargs={
         'fin_research_stage_boundary':'revision_material_handoff','fin_revision_material_ids':['A','B']}))
     rows.extend(batch('calc','RequestCalculationAction',{}, {'calculation_id':'CALC-X','result':42}))
-    before=json.loads(working_view(rows)[0].content)['current_materials']
+    before=snapshot(working_view(rows))['current_materials']
     rows.extend(batch('final','FinalizeWorkpaperRevisionAction',{}, {'accepted':True}))
     rows.append(HumanMessage(content=json.dumps(context),additional_kwargs={
         'fin_research_stage_boundary':'accepted_submission_to_revision'}))
     original=deepcopy(rows)
-    view=json.loads(working_view(rows)[0].content)
+    view=snapshot(working_view(rows))
     assert view['current_materials']==before
     assert {r.get('passage_id') for r in before} >= {'A','B'}
     assert 'ARCHIVED' not in {r.get('passage_id') for r in view['current_materials']}
@@ -353,7 +383,7 @@ def test_revision_boundary_archives_completed_terminal_but_keeps_readback_and_la
     rows.append(HumanMessage(content=json.dumps(context),
         additional_kwargs={'fin_research_stage_boundary':'accepted_submission_to_revision'}))
     original=deepcopy(rows)
-    result=working_view(rows); view=json.loads(result[0].content)
+    result=working_view(rows); view=snapshot(result)
     assert not any(isinstance(m,(AIMessage,ToolMessage)) for m in result)
     assert view['current_context']['submission_to_repair']['current_candidate_digest']=='current'
     assert next(r for r in view['operation_catalog'] if r['tool_call_id']=='accepted-draft')['accepted'] is True
@@ -361,9 +391,9 @@ def test_revision_boundary_archives_completed_terminal_but_keeps_readback_and_la
     assert rows==original
     rows.extend(batch('new-read','ReadResearchHistoryAction',{}, {'error':'invalid_locator'}))
     result=working_view(rows)
-    assert result[-2].tool_calls[0]['id']=='new-read'
-    assert result[-1].tool_call_id=='new-read'
-    assert 'invalid_locator' in result[-1].content
+    assert result[-3].tool_calls[0]['id']=='new-read'
+    assert result[-2].tool_call_id=='new-read'
+    assert 'invalid_locator' in result[-2].content
     assert not any(isinstance(m,AIMessage) and m.tool_calls[0]['id']=='accepted-draft' for m in result)
     # Even a stage marker must never consume an incomplete tool exchange.
     unpaired=deepcopy(original);unpaired.insert(-1,AIMessage(content='',tool_calls=[
@@ -426,15 +456,15 @@ def test_adapter_revision_starts_after_old_terminal_and_keeps_real_rejection(acc
             request['tool_results']=[{'name':'ReadResearchHistoryAction','tool_call_id':'new-call',
                 'status':'error','content':json.dumps({'error':'current_locator_error'})}]
             adapter.specialist_model_turn(request)
-            assert 'current_locator_error' in captured[1]['messages'][-1]['content']
-            assert captured[1]['messages'][-2]['tool_calls'][0]['id']=='new-call'
+            assert 'current_locator_error' in captured[1]['messages'][-2]['content']
+            assert captured[1]['messages'][-3]['tool_calls'][0]['id']=='new-call'
             assert adapter.read_public_operation(request['agent_id'],'old-submit')['receipt']['result']['accepted'] is True
             assert sum(bool(m.additional_kwargs.get('fin_research_stage_boundary'))
                        for m in adapter._agentic_history[request['agent_id']])==1
         else:
             assert receipt['status']=='error'
-            assert captured[0]['messages'][-1]['role']=='tool'
-            assert 'real_error' in captured[0]['messages'][-1]['content']
+            assert captured[0]['messages'][-2]['role']=='tool'
+            assert 'real_error' in captured[0]['messages'][-2]['content']
 
 
 @pytest.mark.parametrize('args',[{'section':'turn','index':2},{'section':'lead_assistance','index':1},

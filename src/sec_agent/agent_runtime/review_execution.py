@@ -5,6 +5,18 @@ from langchain.agents import AgentState
 from langchain.agents.middleware import AgentMiddleware
 from langchain.agents.middleware.types import ExtendedModelResponse, ModelResponse, hook_config
 from langgraph.types import Command
+from langchain_core.messages import AIMessage, ToolMessage
+
+
+def latest_tool_batch_errors(state):
+    """Inspect every result of the latest action batch, never archived errors."""
+    messages = state.get('messages', [])
+    boundary = next((i for i in range(len(messages)-1, -1, -1)
+                     if isinstance(messages[i], AIMessage)), None)
+    if boundary is None:
+        return []
+    return [m for m in messages[boundary+1:]
+            if isinstance(m, ToolMessage) and m.status == 'error']
 
 
 class ReviewExecutionStopped(ValueError):
@@ -17,8 +29,9 @@ class ReviewExecutionStopped(ValueError):
 
 class ReviewExecutionControl:
     """One native review wave; not a queue, retry policy or budget owner."""
-    def __init__(self):
+    def __init__(self, *, stop_on_tool_error=False):
         self.stopped = Event()
+        self.stop_on_tool_error = stop_on_tool_error
 
     def stop(self, reason, state, **details):
         self.stopped.set()
@@ -27,6 +40,8 @@ class ReviewExecutionControl:
     def before_dispatch(self, state):
         if self.stopped.is_set():
             raise ReviewExecutionStopped('review_wave_stopped_no_new_dispatch', state)
+        if self.stop_on_tool_error and latest_tool_batch_errors(state):
+            self.stop('review_tool_batch_error_before_dispatch', state)
 class ReviewExecutionState(AgentState):
     execution_error: dict | None
 

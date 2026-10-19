@@ -769,6 +769,25 @@ class InvalidToolCallFeedback(AgentMiddleware):
                 detail["reason"] = "Expected a JSON object encoded as a string."
             feedback.append(ToolMessage(tool_call_id=call["id"], name=call.get("name"), status="error",
                 content=json.dumps(detail, ensure_ascii=False)))
+        # Decode only known object-valued parameters, once and without syntax
+        # repair. Keep the raw argument in the recovery record; native schema,
+        # source and semantic checks still decide whether the call is accepted.
+        object_fields = {'record_case_finding': 'finding', 'submit_case_review': 'review'}
+        for index, call in enumerate(parsed):
+            field = object_fields.get(call.get('name'))
+            args = call.get('args')
+            raw = args.get(field) if field and isinstance(args, dict) else None
+            if not isinstance(raw, str):
+                continue
+            try:
+                value, complete, repair = decode_workpaper_arguments(raw)
+                json.dumps(value, allow_nan=False)  # Also reject numeric overflow to infinity.
+            except (RecursionError, ValueError):
+                continue
+            if complete and repair is None:
+                parsed[index] = {**call, 'args': {**args, field: value}}
+                recovered.append({'tool_call_id': call['id'], 'method': 'json_object_parameter',
+                    'field': field, 'original_arguments': deepcopy(args)})
         if recovered:
             from .research_graph_contracts import canonical_sha256
             replacement = message.model_copy(update={'tool_calls': parsed, 'invalid_tool_calls': invalid,
@@ -1021,7 +1040,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
 
     @tool
     def record_case_finding(finding: CaseReviewFinding, runtime: ToolRuntime) -> Command:
-        """Save one source-checked finding now. finding must be an object, never a JSON-encoded string. Same ID replaces that finding; distinct IDs may be recorded in parallel. Not a completed review."""
+        """Save one source-checked finding now. Pass finding as an object. Runtime can decode one complete unambiguous JSON object string; all schema/source checks still apply. Same ID replaces that finding; distinct IDs may be recorded in parallel. Not a completed review."""
         parsing = []
         partial = CaseReview(summary="Partial finding checkpoint; no complete review or acceptance.",
             assessments=[PaperAssessment(paper_id=finding.paper_id, assessment="Only this finding has been inspected; full review remains open.")],

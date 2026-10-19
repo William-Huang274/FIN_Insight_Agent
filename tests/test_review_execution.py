@@ -139,6 +139,57 @@ def test_control_preserves_terminal_reason_and_blocks_further_dispatch():
         control.before_dispatch({'messages':[]})
 
 
+@pytest.mark.parametrize('error_index', [0, 1, 2, None])
+def test_every_tool_result_checked_before_next_model_dispatch(error_index):
+    from langchain_core.messages import ToolMessage
+    from langchain_core.tools import ToolException
+    from sec_agent.agent_runtime.review_execution import latest_tool_batch_errors
+
+    class BatchModel(BaseChatModel):
+        calls: list
+        @property
+        def _llm_type(self): return 'zero-provider-batch-stop'
+        def bind_tools(self, tools, **kwargs): return self
+        def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+            self.calls.append(1)
+            return ChatResult(generations=[ChatGeneration(message=AIMessage(content='done' if len(self.calls)>1 else '',
+                tool_calls=[] if len(self.calls)>1 else [
+                    {'id':str(i),'name':'probe','args':{'index':i},'type':'tool_call'} for i in range(3)]))])
+
+    async def exercise():
+        effects=[]; calls=[]; events=[]
+        @tool
+        def probe(index: int):
+            """Deterministic batch read."""
+            effects.append(index)
+            if index==error_index:raise ToolException('synthetic tool failure')
+            return f'preserved result {index}'
+        probe.handle_tool_error=True
+        profile,_=load_research_runtime_profile('.')
+        node=profile['nodes']['counter']
+        audit=CaseModelAudit(actor='counter',profile=DeepSeekModelProfile.model_validate(node['profile']),
+            basis=TokenBudgetBasis.model_validate_json(__import__('json').dumps(node['budget'])),
+            public_sink=events.append,private_sink=lambda e:None)
+        audit.review_execution_control=ReviewExecutionControl(stop_on_tool_error=True)
+        model=BatchModel(calls=calls)
+        agent=create_agent(model=model,tools=[probe],state_schema=CaseReviewerState,
+                           middleware=audit.middlewares())
+        state=await agent.ainvoke({'messages':[HumanMessage(content='Synthetic only')]})
+        assert sorted(effects)==[0,1,2]  # Drain the batch; retain successful siblings.
+        assert len(model.calls)==(2 if error_index is None else 1)
+        assert len([m for m in state['messages'] if isinstance(m,ToolMessage)])==3
+        if error_index is not None:
+            assert state['execution_error']['reason']=='review_tool_batch_error_before_dispatch'
+            assert state['execution_error']['provider_call_attempted'] is False
+            assert len(latest_tool_batch_errors(state))==1
+        else:assert not state.get('execution_error')
+        # An error belonging to an earlier batch is not a permanent stop.
+        assert not latest_tool_batch_errors({'messages':[
+            AIMessage(content='',tool_calls=[]),ToolMessage(content='old',tool_call_id='old',status='error'),
+            AIMessage(content='',tool_calls=[]),ToolMessage(content='new read',tool_call_id='new')]})
+    asyncio.run(exercise())
+
+
 @pytest.mark.parametrize('error', [RuntimeError('programming defect'), asyncio.CancelledError()])
 def test_boundary_preserves_programming_errors_and_user_cancellation(error):
     async def handler(request):

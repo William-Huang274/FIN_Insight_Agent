@@ -134,7 +134,7 @@ def test_revision_review_scope_preserves_valid_findings_and_never_passes_whole_c
             "assessments": [{"paper_id": "P01", "assessment": "Changed claim inspected; unchanged claims are not verified."}]}
         replies = [[call("read_review_target", {}, "read")],
             [call("record_case_finding", {"finding": valid}, "valid"),
-             call("record_case_finding", {"finding": json.dumps(valid)}, "string"),
+             call("record_case_finding", {"finding": json.dumps({**valid, "finding_id": "encoded"})}, "string"),
              call("record_case_finding", {"finding": outside}, "outside"),
              call("record_case_finding", {"finding": wrong_quote}, "badquote")],
             [call("submit_case_review", {"review": {**final, "completion": "complete", "unresolved_data_requests": []}}, "submit")]]
@@ -144,11 +144,11 @@ def test_revision_review_scope_preserves_valid_findings_and_never_passes_whole_c
         assert "read_review_target" in tool_names
         assert not {"read_research_artifact", "research_artifact_catalog", "read_source_document"} & tool_names
         result = await agent.ainvoke({"messages": [HumanMessage(content="Review this revision only.")]})
-        assert list(result["recorded_findings"]) == ["valid"]
+        assert set(result["recorded_findings"]) == {"valid", "encoded"}
         assert result["review"]["review_scope"]["kind"] == "revision_only"
-        assert [f["finding_id"] for f in result["review"]["findings"]] == ["valid"]
+        assert {f["finding_id"] for f in result["review"]["findings"]} == {"valid", "encoded"}
         errors = [m.content for m in result["messages"] if isinstance(m, ToolMessage) and m.status == "error"]
-        assert len(errors) == 3 and any("finding_outside_revision_scope" in e for e in errors)
+        assert len(errors) == 2 and any("finding_outside_revision_scope" in e for e in errors)
         assert any("problematic_quote_not_exact" in e for e in errors)
         with pytest.raises(ValueError, match="read_missing_papers"):
             validate_case_review(CaseReview.model_validate(final), current, result["messages"], paper_ids=["P01"])
@@ -347,9 +347,9 @@ def test_saved_finding_survives_limit_and_is_merged_without_rewriting(artifacts,
                 for i, p in enumerate(artifacts.catalog()["papers"])]
             save = [call("record_case_finding", {"finding": finding}, "save")]
             if malformed_sibling:
-                # Actual provider failure shape: JSON string instead of object.
-                # Native validation rejects it without aborting the valid sibling.
-                save.append(call("record_case_finding", {"finding": json.dumps(finding)}, "bad-sibling"))
+                # Incomplete JSON remains invalid; safe decoding must not invent
+                # the missing brace or discard the valid sibling's saved result.
+                save.append(call("record_case_finding", {"finding": json.dumps(finding)[:-1]}, "bad-sibling"))
             final = review_fixture(artifacts)
             if withdraw:
                 final["withdrawn_finding_reasons"] = {"F-saved": "Subsequent source inspection disproved this synthetic finding."}

@@ -102,7 +102,7 @@
   "reasoning_effort": "low",
   "model_profiles": {
     "lead": {
-      "model": "deepseek-v4-flash",
+      "model": "deepseek-flash",
       "thinking": "disabled",
       "reasoning_effort": "low"
     }

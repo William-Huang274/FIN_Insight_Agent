@@ -94,7 +94,52 @@ def test_punctuation_compatibility_still_rejects_partial_numeric_tokens(literal,
         run(literal, quote)
 
 
-@pytest.mark.parametrize('name',['_hidden','a.b','a-b','变量','x'*33])
+@pytest.mark.parametrize('name',['_hidden','a.b','a-b','鍙橀噺','x'*33])
 def test_unsafe_or_unsupported_names_remain_rejected(name):
     with pytest.raises(ValueError,match='ascii_identifier'):
         run(name=name)
+
+
+TABLE = "Operating cash flow | 27,747 | | 39,069 |\nInvesting activities | | | |\nPurchases | (22,446) | | (44,924) |"
+LAYOUT_QUOTE = TABLE.replace("Investing activities | | | |", "Investing activities | | |")
+
+
+def layout_calculation(body=TABLE, quote=LAYOUT_QUOTE):
+    request = SourceBoundCalculation(expression='a-b', operands={
+        'a': {'source_id': 'P08:S007', 'literal': '27,747', 'quote': quote},
+        'b': {'source_id': 'P08:S007', 'literal': '22,446', 'quote': quote}},
+        result_unit='USD million', rationale='Subtract reported capex magnitude.')
+    before = request.model_dump()
+    result = calculate_from_sources(request, lambda _: dict(result_state='source_bound_passage',
+        writer_citable=True, passage=body, period_end='2025-09-30'))
+    assert request.model_dump() == before
+    return result
+
+
+def test_unique_table_layout_restores_exact_original_without_changing_proposal():
+    result = layout_calculation()
+    assert result['value_decimal'] == '5301'
+    for operand in result['operands'].values():
+        assert operand['quote'] == TABLE
+        assert operand['source_id'] == 'P08:S007'
+        recovery = operand['quote_layout_recovery']
+        assert recovery['original_input'] == LAYOUT_QUOTE
+        assert recovery['normalized_result'] == TABLE
+        assert recovery['method'] == 'unique_table_nonempty_cells_v1'
+        assert not recovery['financial_semantics_verified']
+        assert operand['source_provenance']['period_end'] == '2025-09-30'
+    assert not result['financial_semantics_verified']
+    exact = layout_calculation(quote=TABLE)
+    assert all('quote_layout_recovery' not in x for x in exact['operands'].values())
+
+
+@pytest.mark.parametrize('body,quote', [
+    (TABLE + '\n' + TABLE, LAYOUT_QUOTE),
+    (TABLE, LAYOUT_QUOTE.replace('(22,446)', '22,446')),
+    (TABLE, LAYOUT_QUOTE.replace('39,069', '39,068')),
+    (TABLE, LAYOUT_QUOTE.replace('Purchases', 'Revenue')),
+    (TABLE, LAYOUT_QUOTE.replace('Investing activities | | |\n', '')),
+])
+def test_table_recovery_rejects_ambiguous_or_semantically_changed_quote(body, quote):
+    with pytest.raises(ValueError, match='operand_quote_not_in_observed_source'):
+        layout_calculation(body, quote)

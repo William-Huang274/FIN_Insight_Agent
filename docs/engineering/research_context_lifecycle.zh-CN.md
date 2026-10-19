@@ -386,3 +386,8 @@ Lead 的当前进度保留未提交任务的公开交接结果，包括停止原
 已接受底稿进入首次修订时，适配器先用实际成功回执闭合原提交调用，再将当前修订作为独立的任务消息加入原生日志。边界须匹配已接受版本、原作者轮次和未提交修订状态；真正的提交拒绝仍作为当前工具反馈保留。请求投影将边界前已完成的提交与思考移入历史目录，保留完整调用及回执的准确回读入口，不再将旧成功回执排列在新修订任务后。来源、当前候选及复核要求仍由当前工作视图提供；未完成的工具批次不能跨边界归档。后续读取、错误与修订继续遵守原有保留规则，恢复日志时同样保留阶段边界。此调整不接受任何新的研究判断，也不改变已保存原始审计。
 
 离线验收使用 `scripts/engineering/replay_context_retirement.py`，输入本机保存的基准 `replay.json` 与此前完整 SDK 请求投影目录。脚本禁止网络，核对同一原始记录摘要、完整请求字符数、保留正文与财务对象哈希、定位指针、原生调用配对、保存的回读参数，以及重复投影的一致性。回读核验复用原回执，不宣称外部服务已验证；字符下降不是供应商 token、实际费用或研究质量的实测改善。
+
+
+### Calculator source quote layout
+
+The calculator and review citation tools share the same unique contiguous quote resolver. Whitespace and empty table-cell layout differences may be restored only when all ordered nonempty cells match one source block; numbers, signs, words and row order are not inferred or rewritten. Calculator receipts retain the exact restored source quote, original proposed quote, source digest and offsets. Existing exact-quote calculations retain their identity. Column/period interpretation remains the author and reviewer responsibility; this recovery does not verify financial semantics. Ambiguous or changed quotes remain tool errors with source-specific feedback.

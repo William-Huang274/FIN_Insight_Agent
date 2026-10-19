@@ -230,6 +230,21 @@ class CaseArtifacts:
                      'period_start','period_end','unit','source_locator') if item.get(k) is not None}}
                 for ref in self._papers[paper_id]['sources'] for item in [self.source_item(ref)]]
 
+    def calculation_readbacks(self, claims):
+        """Navigation for existing bindings, never inferred source selection."""
+        rows = []
+        for ref in sorted({r for c in claims for r in c.get('source_ids', [])}):
+            try:
+                item = self.source_item(ref)
+            except ValueError:
+                continue  # Do not repair or fabricate a missing binding.
+            if item.get('result_state') == 'non_authoritative_metric':
+                rows.append({'source_id': ref, 'calculation_id': item['calculation_id'],
+                    'tool': 'read_research_source',
+                    'arguments': {'source_id': ref, 'offset': 0, 'max_characters': 4000},
+                    'notice': 'Saved expression, operands, quotes, units and result; not independent financial approval.'})
+        return rows
+
     def with_saved_calculations(self, citations):
         """Reuse complete host-bound calculations from this native task only."""
         result = deepcopy(self)
@@ -395,12 +410,15 @@ def register_case_artifact_tools(server, artifacts: CaseArtifacts, *, source_loo
             if section != "claims" or not claim_ids or not set(claim_ids).issubset({c["claim_id"] for c in content}):
                 raise ToolError("claim_ids_require_claims_section_and_existing_nonempty_ids")
             content = [c for c in content if c["claim_id"] in claim_ids]
-        return {"paper_id": paper_id, "section": section, "claim_ids": claim_ids, "content": content}
+        value = {"paper_id": paper_id, "section": section, "claim_ids": claim_ids, "content": content}
+        if section in ('workpaper', 'claims'):
+            value['calculation_readbacks'] = artifacts.calculation_readbacks(content['claims'] if section == 'workpaper' else content)
+        return value
 
     @server.tool(name="read_research_source", structured_output=True)
     def read_source(source_id: str, offset: Annotated[int, Field(ge=0)] = 0,
                     max_characters: Annotated[int, Field(ge=100, le=50000)] = 16000) -> dict[str, Any]:
-        """Read an exact archived source or S2 fact by disclosed source ID and window."""
+        """Read an archived source, S2 fact or saved CALC:: receipt by its disclosed ID (paper aliases also work). CALC returns the existing expression, operands with source quotes, units and result; no recalculation. Paginate with next_offset. Arithmetic verification does not verify period, scope or interpretation."""
         from mcp.server.mcpserver.exceptions import ToolError
         try:
             if source_lookup is None:

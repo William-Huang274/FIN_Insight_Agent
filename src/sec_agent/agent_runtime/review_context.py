@@ -8,17 +8,23 @@ from .research_graph_contracts import canonical_sha256
 
 def handoff_page(artifacts, confirmation, *, section, paper_id=None, offset=0):
     """Read the unchanged handoff, not a regenerated model summary."""
-    if offset < 0 or section not in {'catalog', 'revision_confirmation'}:
+    if offset < 0 or section not in {'catalog', 'revision_confirmation', 'historical_author_responses', 'historical_reviews'}:
         raise ValueError('invalid_review_handoff_section_or_offset')
     value = artifacts.catalog() if section == 'catalog' else deepcopy(confirmation)
+    if section in {'historical_author_responses', 'historical_reviews'}:
+        value = (value or {}).get(section, {} if section == 'historical_author_responses' else [])
     if paper_id is not None:
         if paper_id not in artifacts._papers:
             raise ValueError('unknown_paper_id_use_catalog')
         if section == 'catalog':
             value = next(p for p in value['papers'] if p['paper_id'] == paper_id)
+        elif section == 'historical_author_responses':
+            value = value.get(paper_id, [])
+        elif section == 'historical_reviews':
+            value = [r for r in value if paper_id in r.get('assigned_findings', {})]
         elif value:
             value = {k: (v.get(paper_id) if k in {'paper_version_digests', 'findings_to_confirm',
-                'changes', 'author_responses'} else v) for k, v in value.items()}
+                'changes', 'author_responses', 'historical_author_responses', 'calculation_readbacks'} else v) for k, v in value.items()}
     text = json.dumps(value, ensure_ascii=False)
     return {'section': section, 'paper_id': paper_id, 'offset': offset,
         'text': text[offset:offset+6000], 'total_characters': len(text),
@@ -27,7 +33,8 @@ def handoff_page(artifacts, confirmation, *, section, paper_id=None, offset=0):
 
 def confirmation_navigation(confirmation):
     """Keep scope/versions/changed fields; character diff coordinates are on demand."""
-    result = deepcopy(confirmation)
+    from .workpaper_changes import partition_author_responses
+    result = partition_author_responses(confirmation)
     for pid, change in (result or {}).get('changes', {}).items():
         removed = False
         for location in change.get('locations', []):
@@ -37,6 +44,24 @@ def confirmation_navigation(confirmation):
         if removed:
             change['exact_changes_read'] = {'tool': 'read_review_handoff',
                 'arguments': {'section': 'revision_confirmation', 'paper_id': pid, 'offset': 0}}
+    if result:
+        # History remains available on demand; it is not a second active queue.
+        for pid, rows in result.get('historical_author_responses', {}).items():
+            if isinstance(rows, dict):
+                continue  # Navigation projection is idempotent.
+            result['historical_author_responses'][pid] = {
+                'finding_ids': [r['finding_id'] for r in rows], 'count': len(rows),
+                'readback': {'tool': 'read_review_handoff', 'arguments': {
+                    'section': 'historical_author_responses', 'paper_id': pid, 'offset': 0}}}
+        records = result.get('historical_reviews', [])
+        result['historical_reviews'] = [r if 'review_digest' in r else {'correction_round': r.get('correction_round'),
+            'paper_version_digests': r.get('paper_version_digests'), 'phase': r.get('phase'),
+            'review_digest': canonical_sha256(r),
+            'roles': {role: {'status': v.get('status'),
+                'finding_checks': (v.get('review') or {}).get('finding_checks', [])}
+                for role, v in r.get('roles', {}).items()},
+            'readback': {'tool': 'read_review_handoff', 'arguments': {'section': 'historical_reviews', 'offset': 0}}}
+            for r in records]
     return result
 
 

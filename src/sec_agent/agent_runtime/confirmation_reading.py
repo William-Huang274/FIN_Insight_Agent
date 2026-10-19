@@ -126,8 +126,8 @@ def missing_reads(artifacts, confirmation, pid, messages):
 
 def with_reading_targets(artifacts, confirmation, messages=()):
     """Replace legacy full-field guidance in the view; original stored handoff stays intact."""
-    from copy import deepcopy
-    value = deepcopy(confirmation)
+    from .workpaper_changes import partition_author_responses
+    value = partition_author_responses(confirmation)
     if value:
         value['current_reading_targets'] = {}
         for pid in value['findings_to_confirm']:
@@ -138,6 +138,27 @@ def with_reading_targets(artifacts, confirmation, messages=()):
         for change in value.get('changes', {}).values():
             change['notice'] = ('Version-bound change locations, not proof of resolution. Read current_reading_targets '
                 'and any necessary related explanations or source/calculation context; unchanged research is reusable.')
+            change['position_unit'] = 'unicode_characters_zero_based_half_open'
+        value['calculation_readbacks'] = {}
+        for pid in value['findings_to_confirm']:
+            ids = set(value.get('changes', {}).get(pid, {}).get('changed_claim_ids', []))
+            ids.update(c for f in value['findings_to_confirm'][pid] for c in f.get('claim_ids', []))
+            value['calculation_readbacks'][pid] = artifacts.calculation_readbacks(
+                [c for c in artifacts.read_paper(pid, 'claims') if c['claim_id'] in ids])
+            claims = artifacts.read_paper(pid, 'claims')
+            indices = {c['claim_id']: i for i, c in enumerate(claims)}
+            for row in value.get('changes', {}).get(pid, {}).get('claim_changes', []):
+                if row['claim_id'] not in indices:
+                    continue
+                index = indices[row['claim_id']]
+                for field in row['fields']:
+                    if not field['after_present']:
+                        continue
+                    args = {'paper_id': pid, 'field_path': f"/claims/{index}/{field['field']}",
+                        'offset': 0, 'max_characters': 6000}
+                    if not isinstance(claims[index][field['field']], str):
+                        args['view'] = 'json'
+                    field['current_read'] = {'tool': 'read_review_location', 'arguments': args}
     return value
 
 
@@ -182,8 +203,9 @@ class ReviewReadingContext(AgentMiddleware):
                     if value.get('origin') == 'runtime_model_call_allowance':
                         continue
                     if self.confirmation and 'revision_confirmation' in value:
-                        value['revision_confirmation'] = with_reading_targets(
-                            self.artifacts, self.confirmation, request.state.get('messages', request.messages))
+                        from .review_context import confirmation_navigation
+                        value['revision_confirmation'] = confirmation_navigation(with_reading_targets(
+                            self.artifacts, self.confirmation, request.state.get('messages', request.messages)))
                         message = message.model_copy(update={'content': json.dumps(value, ensure_ascii=False)})
             messages.append(message)
         return request.override(messages=messages)

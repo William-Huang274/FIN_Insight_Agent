@@ -1191,24 +1191,11 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             rows=[r for r in runtime.state.get('recorded_inspections',{}).values() if r['paper_id']==paper_id]
             return json.dumps({'checks':rows[offset:offset+5],'next_offset':offset+5 if offset+5<len(rows) else None,'total':len(rows)},ensure_ascii=False)
         @tool
-        def read_review_handoff(section: Literal['catalog', 'revision_confirmation'],
-                                paper_id: str | None = None, offset: int = 0):
-            """Read exact handoff data omitted from navigation, including full version-bound change spans. Paginated; author statements are not evidence."""
-            from .review_context import handoff_page
-            try:
-                return json.dumps(handoff_page(artifacts, confirmation, section=section,
-                    paper_id=paper_id, offset=offset), ensure_ascii=False)
-            except ValueError as exc:
-                raise ToolException(str(exc)) from exc
-
-        read_review_handoff.handle_tool_error = True
-
-        @tool
         def read_review_history(runtime: ToolRuntime, index: int|None=None, offset: int=0):
             """Read the original public journal on demand. Old workflow instructions and failed checks are historical, not current requirements."""
             from .review_context import history_page
             return json.dumps(history_page(runtime.state['messages'],index=index,offset=offset),ensure_ascii=False)
-        tools = [*tools, read_review_location, read_saved_review_checks, read_review_history, read_review_handoff]
+        tools = [*tools, read_review_location, read_saved_review_checks, read_review_history]
         if audit:
             from .review_context import ReviewWorkingContext, working_messages
             if audit.context_summary:
@@ -1216,6 +1203,19 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
                     working_messages(state, artifacts, confirmation), 'review-working-state-v2')
             else:
                 audit.extra_middlewares.append(ReviewWorkingContext(artifacts, confirmation))
+    if confirmation or require_inspection:
+        @tool
+        def read_review_handoff(section: Literal['catalog', 'revision_confirmation', 'historical_author_responses', 'historical_reviews'],
+                                paper_id: str | None = None, offset: int = 0):
+            """Read exact handoff data: current changes and answers, historical author responses and version-bound reviewer judgments. Paginated; history does not assign new checks or confirm current correctness."""
+            from .review_context import handoff_page
+            try:
+                return json.dumps(handoff_page(artifacts, confirmation, section=section,
+                    paper_id=paper_id, offset=offset), ensure_ascii=False)
+            except ValueError as exc:
+                raise ToolException(str(exc)) from exc
+        read_review_handoff.handle_tool_error = True
+        tools = [*tools, read_review_handoff]
     if confirmation:
         if not any(t.name == 'read_review_location' for t in tools):
             tools = [*tools, read_review_location]

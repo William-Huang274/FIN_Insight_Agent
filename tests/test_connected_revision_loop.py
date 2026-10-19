@@ -242,7 +242,8 @@ def test_confirmation_navigation_uses_assigned_latest_changes_not_all_history():
     assert 'P02' in context['paper_version_digests']
     revisions['P01']['runtime_changes']['current_digest'] = 'stale'
     fallback = confirmation_context(artifacts, revisions, feedback)
-    assert fallback['changes']['P01'] == workpaper_changes(old, latest)
+    assert fallback['changes']['P01'] == {**workpaper_changes(old, latest),
+        'comparison_basis': 'original_paper_fallback_not_last_revision'}
 
 
 def test_private_history_restore_requires_exact_original_actor_and_receipt(tmp_path):

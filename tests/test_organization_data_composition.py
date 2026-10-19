@@ -14,7 +14,7 @@ from test_organization_research_inputs import fixture
 from test_organization_execution_access import runtime_grant, runtime_at
 from test_specialist_tool_batch import _handoff
 from test_specialist_graph import _model_turn_receipt
-from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticGraphError, SpecialistAction
+from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticGraphError, SpecialistAction, SpecialistNativeToolBatch
 from pydantic import TypeAdapter
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,7 +37,9 @@ def organization(tmp_path):
 
 def specialist(factory, model=_handoff, **extra):
     def replay(request):
-        action = TypeAdapter(SpecialistAction).validate_json(json.dumps(model(request))).model_dump(mode='json')
+        response = model(request)
+        schema = SpecialistNativeToolBatch if response['action'] == 'native_tool_batch' else SpecialistAction
+        action = TypeAdapter(schema).validate_json(json.dumps(response)).model_dump(mode='json')
         return {'action':action, 'runtime_receipt':_model_turn_receipt(request, action,
             receipt_id='host:organization-static-replay',
             kind='host', actor='dell_specialist_saved_response_replay', input_tokens=0, output_tokens=0,
@@ -112,6 +114,39 @@ def test_permission_loss_blocks_next_tool_and_model_at_actual_specialist_entry(o
         with pytest.raises(SpecialistAgenticGraphError, match='specialist_model_turn_failed'):
             opened.graph.invoke(opened.graph_input.model_dump(mode='json'))
     assert calls == []
+
+
+def test_composed_specialist_preserves_native_operation_readback(organization, monkeypatch):
+    """The access wrapper must not sever the adapter journal protocol."""
+    import sec_agent.agent_runtime.specialist_composition as module
+    from sec_agent.agent_runtime.research_context_view import history_reader
+    from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekStructuredAgentAdapter
+    from sec_agent.agent_runtime.research_session_runtime import cancellable_model_turn
+    from test_research_context_view import fixture as journal_fixture
+    from threading import Event
+    factory, _ = organization
+    adapter = object.__new__(DeepSeekStructuredAgentAdapter)
+    adapter._agentic_history = {'actor-a': journal_fixture()}
+    turn = cancellable_model_turn(adapter.specialist_model_turn, Event())
+    original_builder = module.build_specialist_agentic_state_graph
+    checked = []
+
+    def check_composed_reader(*args, **kwargs):
+        reader = history_reader(kwargs['dependencies'].model_turn)
+        assert reader is not None
+        assert reader('actor-a', 'old')['operation']['id'] == 'old'
+        assert reader('actor-b', 'old') is None
+        checked.append(True)
+        return original_builder(*args, **kwargs)
+
+    monkeypatch.setattr(module, 'build_specialist_agentic_state_graph', check_composed_reader)
+    with open_specialist_receipted_composition(
+            run_id='organization-test', run_invocation_id='organization-invocation',
+            branch_id=BRANCH, turn_source='provider_model', model_turn=turn,
+            source_read_enabled=True, research_question='Read the selected original evidence.',
+            data_composition_factory=factory, environment={}):
+        pass
+    assert checked == [True]
 
 
 @pytest.mark.parametrize('option', ['web','invalid_artifact'])

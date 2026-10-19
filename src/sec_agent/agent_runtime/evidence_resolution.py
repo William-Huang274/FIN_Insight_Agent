@@ -2,6 +2,7 @@
 import re
 
 from .research_graph_contracts import canonical_sha256
+from sec_agent.research_foundation.source_quotes import resolve_quote
 
 
 REFERENCE = re.compile(r'(?:PASSAGE::|CALC::|P\d+:S)[A-Za-z0-9_:./…-]+')
@@ -27,43 +28,65 @@ def select_source_span(body, digest, start, end):
     return body[start:end]
 
 
-def resolve_quote(body, quote):
-    """Only restore a unique contiguous table block with identical nonempty cells.
+class SourceQuoteSelectionRequired(ValueError):
+    """Navigation feedback: no quote or occurrence has been selected by the host."""
 
-    No number/sign/unit/word changes, fuzzy matching or skipped rows. Empty cell
-    layout may change; this does NOT establish column/period comparability.
-    """
-    if quote and quote in body:
-        return quote, None
-    tokens = list(re.finditer(r'\w+|[^\w\s]',body))
-    requested_tokens = re.findall(r'\w+|[^\w\s]',quote)
-    matches = [i for i in range(len(tokens)-len(requested_tokens)+1) if requested_tokens and
-               [t.group() for t in tokens[i:i+len(requested_tokens)]]==requested_tokens]
-    if len(matches)==1:
-        start = tokens[matches[0]].start()
-        end = tokens[matches[0]+len(requested_tokens)-1].end()
-        return body[start:end], parsing_record('unique_layout_whitespace_v1',quote,body[start:end],
-                                               source_digest=canonical_sha256(body),start=start,end=end)
-    requested = quote.strip().splitlines()
-    lines = body.splitlines(keepends=True)
-    if not requested or not all('|' in line for line in requested):
-        return quote, None
-    def cells(line):
-        return tuple(cell.strip() for cell in line.strip().split('|') if cell.strip())
-    target = [cells(line) for line in requested]
-    # Require text row labels and numeric content; never repair bare values.
-    if (any(not row or not re.search(r'[^\W\d_]',row[0]) for row in target)
-            or not any(re.search(r'\d',cell) for row in target for cell in row[1:])):
-        return quote, None
-    matches = [i for i in range(len(lines) - len(target) + 1)
-               if all('|' in lines[i+j] and cells(lines[i+j]) == row for j, row in enumerate(target))]
-    if len(matches) != 1:
-        return quote, None
-    start = sum(len(line) for line in lines[:matches[0]])
-    exact = ''.join(lines[matches[0]:matches[0]+len(target)]).rstrip('\r\n')
-    return exact, parsing_record('unique_table_nonempty_cells_v1', quote, exact,
-        source_digest=canonical_sha256(body), start=start, end=start+len(exact),
-        notice='Original table layout restored; column meaning must still be checked against original headings.')
+    def __init__(self, feedback):
+        import json
+        self.feedback = feedback
+        super().__init__(json.dumps(feedback, ensure_ascii=False))
+
+
+def quote_selection_feedback(error):
+    """Only pure navigation requests are nonfatal; any other error still stops."""
+    import json
+    try:
+        value = json.loads(str(error))
+    except (ValueError, TypeError):
+        return None
+    errors = value.get('errors', []) if isinstance(value, dict) else []
+    if errors and all(e.startswith('source_quote_selection_required:') for e in errors):
+        return {**value, 'status': 'source_quote_selection_required', 'accepted': False,
+                'notice': 'The affected selection is pending and was not accepted. Any independently saved findings are listed separately; the review is not complete.'}
+    return None
+
+
+def bind_source_quote(body, source_id, quote, span=None):
+    """Locate model-selected text; never choose between conflicting selections."""
+    digest = canonical_sha256(body)
+    original = {'source_id': source_id, 'quote': quote, 'quote_span': span}
+    selected = None
+    if span:
+        selected = select_source_span(body, span['source_digest'], span['start'], span['end'])
+        if not quote or quote == selected:
+            return selected, span, parsing_record('digest_bound_source_span_v1', original, selected,
+                source_digest=digest, start=span['start'], end=span['end'])
+    exact, layout = resolve_quote(body, quote)
+    positions = [m.start() for m in re.finditer(re.escape(exact), body)] if exact else []
+    if span or len(positions) != 1:
+        candidates = []
+        for pos in positions[:6]:
+            lo, hi = max(0, pos-120), min(len(body), pos+len(exact)+120)
+            candidates.append({'quote_span': {'source_digest': digest, 'start': pos, 'end': pos+len(exact)},
+                'context_preview': body[lo:min(hi,lo+1000)],
+                'readback': {'tool': 'read_review_source_span', 'arguments': {
+                    'source_id': source_id, 'start': lo, 'max_characters': min(6000,hi-lo)}}})
+        raise SourceQuoteSelectionRequired({'status': 'source_quote_selection_required',
+            'reason': 'quote_span_conflict' if span else 'multiple_quote_matches' if positions else 'quote_not_found',
+            'source_id': source_id, 'original_input': original, 'accepted': False, 'selected_match': None,
+            'supplied_span_preview': selected[:1000] if selected is not None else None,
+            'supplied_span_characters': len(selected) if selected is not None else None,
+            'quote_candidates': candidates, 'total_matches': len(positions),
+            'readback': {'tool': 'read_review_source_span', 'arguments': {
+                'source_id': source_id, 'start': 0, 'max_characters': 1000}},
+            'more_matches_readback': {'tool': 'read_review_source_span', 'arguments': {
+                'source_id': source_id, 'anchor': exact, 'match_offset': 6}} if len(positions)>6 else None,
+            'remedy': 'Decide which text you intend. For the literal quote, resubmit source_id + quote without quote_span; runtime locates it. For repeated text choose a returned exact quote_span. For the supplied span, explicitly use its full text or omit quote. A reading window is not a selected quotation. No finding or review has been accepted.'})
+    pos = positions[0]
+    resolved = {'source_digest': digest, 'start': pos, 'end': pos+len(exact)}
+    return exact, resolved, parsing_record('unique_source_quote_location_v1', original, exact,
+        source_digest=digest, start=pos, end=pos+len(exact), layout_recovery=layout)
+
 
 
 def citation_inventory(artifacts, paper_id):
@@ -82,7 +105,17 @@ def citation_inventory(artifacts, paper_id):
             parts = re.split(r'\.{3}|…', raw)
             pattern = '^' + '.+'.join(re.escape(part) for part in parts) + '$'
             candidates = []
-            for item in catalog:
+            # A complete case-local alias names its owning paper explicitly.
+            # Reading and reviewing it must use the same authorized snapshot.
+            # Never extend suffix/ellipsis search across papers.
+            reference_catalog = catalog
+            if re.fullmatch(r'P\d+:S\d+', raw):
+                owner = raw.split(':', 1)[0]
+                reference_catalog = []
+                if owner in {p['paper_id'] for p in artifacts.catalog()['papers']}:
+                    reference_catalog = [item for item in artifacts.source_identity_catalog(owner)
+                                         if item['source_id'] == raw]
+            for item in reference_catalog:
                 ids = [item['source_id'], *item['canonical_ids']]
                 matched = [ref for ref in ids if (re.fullmatch(pattern, ref) if short else ref == raw)]
                 node = item['identity'].get('node_id','')
@@ -106,24 +139,68 @@ def citation_inventory(artifacts, paper_id):
     return result
 
 
-def read_source_span(artifacts, source_id, start=0, end=None, anchor=None, max_characters=1000):
+def review_reference_state(artifacts, messages, *, limit=10):
+    """Expose current mechanical blockers before submission, without confirming them."""
+    _, records = delivery_reference_findings(artifacts, messages, complete=False)
+    pending = [r for r in records if r['confirmation'] is None]
+    rows = []
+    for record in pending[:limit]:
+        rows.append({'reference_id': record['reference_id'],
+                     'original_reference': record['original_input'],
+                     **record['navigation']})
+    return {'origin': 'runtime_reference_state', 'pending_count': len(pending),
+            'items': rows, 'remaining_count': max(0, len(pending)-len(rows)),
+            'paper_ids': sorted({r['navigation']['paper_id'] for r in pending}),
+            'readback': {'tool': 'read_review_references', 'arguments': {'paper_id': '<paper_id>'}},
+            'financial_semantics_verified': False}
+
+
+def read_source_span(artifacts, source_id, start=0, end=None, anchor=None, max_characters=1000, match_offset=0):
     body = source_body(artifacts, source_id)
     if not 1 <= max_characters <= 6000:
         raise ValueError('source_span_max_characters_must_be_1_to_6000')
+    if match_offset < 0 or (match_offset and anchor is None):
+        raise ValueError('match_offset_requires_anchor_and_nonnegative_index')
     original = {'source_id':source_id,'start':start,'end':end,'anchor':anchor,'max_characters':max_characters}
+    if match_offset:
+        original['match_offset'] = match_offset
     if anchor is not None:
         if not anchor or start != 0 or end is not None:
             raise ValueError('use_one_nonempty_anchor_or_explicit_offsets')
         positions = [m.start() for m in re.finditer(re.escape(anchor),body)]
+        if match_offset and match_offset >= len(positions):
+            raise ValueError('match_offset_out_of_range')
         if len(positions)!=1:
-            raise ValueError('source_anchor_not_unique:positions=' + str(positions[:12]))
+            # Ambiguity is navigation, not a tool failure or source selection.
+            # Bound previews to six windows / 6000 source characters per page.
+            digest = canonical_sha256(body)
+            width = min(max_characters,1000)
+            candidates = []
+            for index,pos in enumerate(positions[match_offset:match_offset+6],match_offset):
+                lo = max(0,pos-min(120,width//3))
+                hi = min(len(body),lo+width)
+                candidates.append({'match_index':index,'match_start':pos,'match_end':pos+len(anchor),
+                    'text':body[lo:hi],'window_span':{'source_digest':digest,'start':lo,'end':hi},
+                    'readback':{'tool':'read_review_source_span','arguments':{
+                        'source_id':source_id,'start':lo,'max_characters':min(6000,max(1000,max_characters*2))}}})
+            next_offset = match_offset+len(candidates)
+            return {'status':'multiple_anchor_matches' if positions else 'anchor_not_found',
+                'source_id':source_id,'source_digest':digest,'anchor':anchor,
+                'total_matches':len(positions),'match_offset':match_offset,'candidates':candidates,
+                'selected_match':None,'financial_semantics_verified':False,
+                'next_page':{'tool':'read_review_source_span','arguments':{
+                    'source_id':source_id,'anchor':anchor,'max_characters':max_characters,'match_offset':next_offset}}
+                    if next_offset<len(positions) else None,
+                'readback':{'tool':'read_review_source_span','arguments':{'source_id':source_id,'start':0,'max_characters':max_characters}},
+                'notice':'window_span covers context only; match_start/end locate the search anchor, not your selected quotation. Submit source_id + your exact quote; runtime locates it. Do not copy window_span as quote_span. No match or financial conclusion has been selected.'}
         start = positions[0]
     if end is None:
         end = min(len(body),start+max_characters)
     digest = canonical_sha256(body)
     text = select_source_span(body, digest, start, end)
     return {'source_id':source_id, 'source_digest':digest, 'text':text,
-            'quote_span':{'source_digest':digest,'start':start,'end':end},
+            'window_span':{'source_digest':digest,'start':start,'end':end},
+            'notice':'This is a reading window. Submit source_id + your chosen exact quote; runtime locates it. Only use these offsets as quote_span if selecting this entire text verbatim.',
             'runtime_parsing':parsing_record('exact_source_anchor_v1' if anchor else 'exact_source_span_v1', original,text,
                                             source_digest=digest)}
 
@@ -147,7 +224,7 @@ def confirmed_reference(artifacts, paper_id, reference_id, source_id, reason, me
             continue
         body = source_body(artifacts,source_id)
         text = value.get('text','')
-        offset = value.get('offset',value.get('quote_span',{}).get('start',0))
+        offset = value.get('offset',value.get('window_span',value.get('quote_span',{})).get('start',0))
         if text and body[offset:offset+len(text)]==text:
             observed.append(message.tool_call_id)
     if not observed:
@@ -180,13 +257,16 @@ def delivery_reference_findings(artifacts, messages, *, complete):
                 missing.append({'reference_id':ref,'paper_id':row['paper_id'],'original_reference':row['original_reference']})
             target = confirmed['selected_source_id'] if confirmed else None
             findings.append({'finding_id':'runtime_reference_'+ref, 'paper_id':row['paper_id'], 'claim_ids':[],
-                'severity':'material', 'problematic_quote':row['original_reference'],
+                'severity':'material', 'finding_type':'traceability', 'problematic_quote':row['original_reference'],
                 'diagnosis':'Runtime delivery-reference check: this original identifier is not directly resolvable. '
                     'This is a traceability defect, not a financial semantic verdict.',
                 'requested_change':('Replace this literal reference with confirmed complete source identity '+target
                     if target else 'Resolve the original reference against current authorized sources before delivery; do not guess.'),
                 'source_checks':[]})
             records.append({**row['runtime_parsing'],'reference_id':ref,'paper_id':row['paper_id'],
+                'navigation': {'paper_id':row['paper_id'], 'paper_digest':row['paper_digest'],
+                    'field_path':row['field_path'], 'status':row['status'],
+                    'candidate_source_ids':[c['source_id'] for c in row['candidates']]},
                 'confirmation':confirmed,'generated_finding_id':'runtime_reference_'+ref,'draft_changed':False})
     if complete and missing:
         import json

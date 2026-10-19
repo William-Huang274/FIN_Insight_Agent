@@ -65,7 +65,7 @@ def validate_workpaper_state(value: Mapping[str, Any]) -> dict[str, Any]:
                 "l0_context", "required_route_obligation_ids", "required_source_checks", "last_submission_attempt",
                 "tool_results", "research_working_state", "delegated_work", "runtime_progress", "lead_assistance_history",
                 "model_turn_invocations", "revision_targets", "revision_target_origins", "revision_state_version",
-                "last_edit_feedback", "workpaper_change_history") if key in state},
+                "last_edit_feedback", "workpaper_change_history", "authoring_context") if key in state},
             "agent_id": notebook.agent_id, "task": state["task"],
             "notebook": notebook.model_dump(mode="json"),
             "final_submission": submission.model_dump(mode="json"),

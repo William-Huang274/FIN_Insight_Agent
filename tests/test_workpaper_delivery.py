@@ -88,6 +88,19 @@ def test_human_workpaper_recovery_keeps_old_failure_and_source_gates():
         recover_workpaper(state,{**request,'base_agent_digest':'f'*64},owner='operator')
 
 
+@pytest.mark.parametrize('local_quote', [['specific excerpt'], 'invalid excerpt still needs source validation', ''])
+def test_claim_specific_quotes_are_preserved_instead_of_conflicting_with_shared_defaults(local_quote):
+    paper = deepcopy(_new_worker_fixture()['final_submission'])
+    ref = paper['claims'][0]['evidence_ids'][0]
+    paper['citation_quotes'] = {ref: ['shared excerpt one', 'shared excerpt two']}
+    paper['claims'][0]['citation_quotes'] = {ref: local_quote}
+    before = deepcopy(paper)
+    result = SubmitWorkpaperAction.model_validate_json(json.dumps(paper))
+    assert result.claims[0].citation_quotes[ref] == local_quote
+    assert result.claims[1].citation_quotes == {}
+    assert paper == before
+
+
 def test_new_parent_checkpoint_does_not_resume_old_pending_child_dispatch():
     from typing import TypedDict
     from langgraph.graph import StateGraph, START, END

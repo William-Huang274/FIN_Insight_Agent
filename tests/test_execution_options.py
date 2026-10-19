@@ -25,14 +25,15 @@ def test_reject_invalid_execution_without_transport(body):
     with pytest.raises(ValidationError): ExecutionOptions(**body)
 
 
-def test_selection_and_model_copy_preserve_budget():
+@pytest.mark.parametrize("model_name", ["deepseek-flash", "deepseek-v4-flash"])
+def test_selection_and_model_copy_preserve_budget(model_name):
     profile = json.loads((Path(__file__).parents[1] / "configs/research/runtime/research_session.json").read_text(encoding="utf-8"))
     original = deepcopy(profile)
-    selection = ExecutionOptions(mode="selected", branch_ids=[BRANCHES[0]], model="deepseek-v4-flash").validate_catalog(CATALOG)
+    selection = ExecutionOptions(mode="selected", branch_ids=[BRANCHES[0]], model=model_name).validate_catalog(CATALOG)
     with pytest.raises(ValueError): selection.validate_catalog([])
     changed = selection.apply_profile(profile)
     for role, node in changed["nodes"].items():
-        assert node["profile"]["model"] == "deepseek-v4-flash"
+        assert node["profile"]["model"] == model_name
         assert node["limits"] == original["nodes"][role]["limits"]
         assert node["budget"]["max_output_tokens"] == original["nodes"][role]["budget"]["max_output_tokens"]
         assert node["budget"]["reasoning_profile"] == original["nodes"][role]["budget"]["reasoning_profile"]

@@ -663,17 +663,24 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
                 paths = [*author_audit_paths, *(Path(settings["audit_root"]) / thread_id).glob("*/model-context-reasoning.private.jsonl")]
                 restore_author_history(adapter, saved, paths)
                 current = artifacts.with_revisions(convergence_state.get("revisions", {}))
-                findings = author_feedback(convergence_state["pending_feedback"][paper_id], current)
+                findings = author_feedback(convergence_state["pending_feedback"][paper_id], current,
+                    original_findings=state.get('feedback', {}).get(paper_id, []))
                 dependencies = {row["task"]["task_id"]: row for row in current._author_states.values()
                     if row["task"]["task_id"] in assignment.get("dependency_ids", [])}
                 if set(dependencies) != set(assignment.get("dependency_ids", [])):
                     raise ValueError("original_author_dependency_handoff_unavailable")
+                from .author_revision import revision_source_handoff
+                findings, revision_sources = revision_source_handoff(findings, current, dependencies)
+                from .revision_calculation_handoff import restore_revision_calculations
+                saved = restore_revision_calculations(saved, convergence_state.get('lead_decision') or {},
+                    current, paper_id)
                 async def resume():
                     with open_specialist_receipted_composition(run_id=saved["run_id"], run_invocation_id=invocation,
                             plan_invocation_id=plan_invocation_id, branch_id=saved["task"]["branch_id"],
                             turn_source="provider_model", model_turn=visible_turn(adapter.specialist_model_turn, saved["agent_id"], assignment["task_id"]),
                             environment=environment, source_read_enabled=True, live_web_read_enabled=live_web, **specialist_data,
                             research_task=assignment, dependency_workpapers=dependencies,
+                            revision_source_workpapers=revision_sources,
                             research_question=state["question"], recovery_state=saved,
                             revision_feedback=findings, required_source_checks=saved.get("required_source_checks", []),
                             max_model_turns=limits["model_calls"], max_tool_actions=limits["tool_calls"],

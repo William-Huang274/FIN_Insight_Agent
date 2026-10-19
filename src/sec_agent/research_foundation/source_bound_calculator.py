@@ -16,6 +16,8 @@ from typing import Any, Callable
 from pydantic import BaseModel, ConfigDict, Field
 from simpleeval import SimpleEval
 
+from .source_quotes import resolve_quote
+
 from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
 
 
@@ -26,7 +28,7 @@ class CalculationOperand(BaseModel):
     literal: str | None = Field(default=None, min_length=1, max_length=64,
         description="For prose copy the decimal numeric substring printed in the quote, including commas: quote 'Revenue $2,225 million' uses literal '2,225', not '2225' or '$2,225 million'. Exclude percent symbols, currency symbols, units and parentheses; no exponent notation. Do not put a derived difference/ratio here: bind originals and calculate in expression. For S2/saved CALC omit this. Parentheses/sign interpretation belongs explicitly in expression and rationale.")
     quote: str | None = Field(default=None, min_length=1, max_length=4000,
-        description="Exact contiguous source quote containing the literal; no paraphrase or ellipsis.")
+        description="Contiguous source quote containing the literal; no paraphrase or ellipsis. Unique whitespace/table empty-cell layout differences can be restored with an original-input receipt; numbers, signs and nonempty cells must match. The author must check column and period meaning.")
     assumption_note: str | None = Field(default=None, min_length=1, max_length=1000,
         description="Required for an unsourced scenario/scale/day-count input. It will remain an explicit assumption, never source truth.")
 
@@ -122,6 +124,10 @@ class ObservedSourceRegistry:
         item = self._sources.get(source_id)
         return deepcopy(item) if item is not None else None
 
+    def snapshot(self):
+        """Host-only copy for navigation over the same successful originals."""
+        return deepcopy(self._sources)
+
 
 def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Callable[[str], dict]) -> dict:
     values, bindings = {}, {}
@@ -159,20 +165,21 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                     "source_calculation": {key: item[key] for key in ("calculation_id", "expression", "result_unit", "authority_note")}}
             elif item.get("result_state") in {"reviewed_evidence", "source_bound_passage"} and item.get("writer_citable") is True:
                 text = str(item.get("passage") or item.get("bounded_excerpt") or "")
-                if not operand.quote or operand.quote not in text or operand.literal is None:
+                quote, quote_recovery = resolve_quote(text, operand.quote or "")
+                if not quote or quote not in text or operand.literal is None:
                     raise ValueError("operand_quote_not_in_observed_source")
                 literal_pattern = r"(?<![\w.,])" + re.escape(operand.literal)
                 # A comma or period followed by prose is punctuation, whereas
                 # one followed by a digit continues the numeric token.
                 numeric_end = r"(?!\w|[.,]\d)"
-                literal_match = re.search(literal_pattern + numeric_end, operand.quote)
+                literal_match = re.search(literal_pattern + numeric_end, quote)
                 quantity_match = None
                 quantity_rule = "numeric_quantity_x_suffix_v1"
                 if literal_match is None:
                     # Product specifications commonly write counts as "8x GPU".
                     # Keep exact quote/literal binding; do not accept identifiers,
                     # longer numbers or arbitrary unit suffixes by dropping \w.
-                    quantity_match = re.search(literal_pattern + r"[xX](?=\s|$)", operand.quote)
+                    quantity_match = re.search(literal_pattern + r"[xX](?=\s|$)", quote)
                     if quantity_match is None:
                         # Exact SI/IEC specification suffixes, case-sensitive.
                         # This recognizes a token boundary, not a unit conversion
@@ -180,7 +187,7 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                         quantity_match = re.search(literal_pattern +
                             r"(?:[kMGTPE]?B(?:/s)?|[KMGTPE]iB(?:/s)?|[kMGT]?W|"
                             r"[kMGTPE]?FLOPS|[kMGTPE]?FLOPs|[kMGTPE]?OPS)(?![\w/])",
-                            operand.quote)
+                            quote)
                         quantity_rule = "numeric_specification_unit_suffix_v1"
                     if quantity_match is None:
                         # Only thousands-group punctuation may differ. Require
@@ -188,7 +195,7 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                         # never round, change sign/scale or match identifiers.
                         matches = [m for m in re.finditer(
                             r"(?<![\w.,])-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?" + numeric_end,
-                            operand.quote)
+                            quote)
                             if m.group().replace(',', '') == operand.literal.replace(',', '')]
                         if len(matches) == 1:
                             quantity_match = matches[0]
@@ -196,9 +203,11 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                     if quantity_match is None:
                         raise ValueError("numeric_literal_not_in_exact_source_quote: operand=" + name)
                 value = _number(operand.literal)
-                binding = {"source_id": operand.source_id, "quote": operand.quote,
+                binding = {"source_id": operand.source_id, "quote": quote,
                     "literal": operand.literal, "authority": "non_authoritative_source_reported",
                     "extraction_meaning_verified": False}
+                if quote_recovery is not None:
+                    binding["quote_layout_recovery"] = quote_recovery
                 if quantity_match is not None:
                     binding["runtime_compatibility_parse"] = {
                         "rule": quantity_rule,
@@ -269,4 +278,6 @@ def register_source_calculator_tool(server, source_lookup, *, on_result=None):
             return result
         except ValueError as exc:
             from mcp.server.mcpserver.exceptions import ToolError
-            raise ToolError(str(exc) + ". For S2 or a saved CALC use {source_id: observed ID}; for prose use an observed PASSAGE/evidence/archive ID plus exact quote and literal. Re-query SQL or read the original passage if this tool session has not observed the ID. Do not remove source binding or relabel sourced numbers as assumptions.") from None
+            detail = (" The source was found, but the supplied quote could not be bound exactly or through a unique layout-only match. Read that source and copy the contiguous text; check repeated matches, row labels and all nonempty cells. Do not change numbers to force a match."
+                if str(exc) == "operand_quote_not_in_observed_source" else "")
+            raise ToolError(str(exc) + detail + ". For S2 or a saved CALC use {source_id: observed ID}; for prose use an observed PASSAGE/evidence/archive ID plus exact quote and literal. Re-query SQL or read the original passage if this tool session has not observed the ID. Do not remove source binding or relabel sourced numbers as assumptions.") from None

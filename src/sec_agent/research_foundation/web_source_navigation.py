@@ -3,7 +3,8 @@
 Not an index, crawler, Evidence admission service, or persistence engine. Run
 composition owns the short-lived discovered locators. Disclosed source windows
 and capture identifiers remain in the normal MCP/tool observations. A fresh
-lifecycle discovers locators again; the supplied capture adapter may reuse a
+lifecycle discovers new locators again; the MCP boundary first reads authorized
+saved original windows when available. The supplied capture adapter may reuse a
 scoped persisted capture. This is not cross-thread memory or evidence admission.
 """
 from __future__ import annotations

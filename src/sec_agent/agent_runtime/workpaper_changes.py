@@ -25,7 +25,7 @@ def workpaper_changes(before, after):
     return {"baseline_digest": canonical_sha256(before), "current_digest": canonical_sha256(after),
         "changed_claim_ids": changed, "locations": locations,
         "semantic_status": "not_independently_verified",
-        "notice": "Runtime-observed changes only. Read the current full field and related source/claim bindings before judgment; offsets are navigation, not isolated review scope."}
+        "notice": "Runtime-observed changes only. Read current changed sections with their necessary context and source/claim bindings before judgment; offsets are navigation, not financial verification."}
 
 
 def paper_versions(artifacts):

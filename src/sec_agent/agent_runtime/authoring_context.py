@@ -116,3 +116,18 @@ def specialist_basis(state):
         'working_state': deepcopy(state.get('research_working_state')),
         'revision_feedback': deepcopy((state.get('task_context') or {}).get('revision_feedback', [])),
         'source_checks': deepcopy(state.get('required_source_checks', []))}
+
+
+def validate_specialist_preparation(packet, *, owner, basis):
+    """Preparation belongs to an author/task, not to an immutable reading set.
+
+    Keep its original evidence basis as provenance. New observations/feedback
+    require the author's evaluation, not automatic regeneration of the brief.
+    Final source, quote and finding validation still uses the current notebook.
+    """
+    saved = packet.get('basis') or {}
+    validate_authoring(packet, owner=owner, basis=saved)
+    if (packet.get('stage') != 'workpaper' or not basis.get('task')
+            or saved.get('task') != basis['task']):
+        raise ValueError('authoring_owner_or_task_changed_prepare_again')
+    return [key for key in basis if saved.get(key) != basis[key]]

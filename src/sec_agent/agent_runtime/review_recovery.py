@@ -56,7 +56,10 @@ def review_after_author_changes(review, before, current, question, context):
                 raise ValueError('author_change_review_requires_saved_reviewer_state:' + role)
             submitted = row.get('review') or {}
             from .review_check_store import merge_checks
-            saved = {'messages': [], 'recorded_inspections': merge_checks({}, submitted.get('inspection_checks', [])),
+            # Legacy public-only reviews cannot recover lost reads. Preserve
+            # the actual question without pretending that those reads exist.
+            saved = {'messages': [message_to_dict(HumanMessage(content=json.dumps({'question': question}, ensure_ascii=False)))],
+                     'recorded_inspections': merge_checks({}, submitted.get('inspection_checks', [])),
                      'recorded_findings': {f['finding_id']: f for f in submitted.get('findings', [])}}
         checks = restore_checks(saved)
         findings = restore_findings(saved, row.get('review') or {})

@@ -19,25 +19,41 @@ from test_workpaper_partial_edits import paper, edit_action, text_edit
 from test_research_convergence import artifact_fixture
 
 
-def submitted_original():
+def submitted_original(*, authoring=False):
     ports = _ToolPorts()
     requests = []
     def turn(request):
         requests.append(request)
-        return _batch(request, [_evidence_action()({}), _finance_action()({})] if len(requests) == 1 else [paper()])
+        if len(requests) == 1:
+            return _batch(request, [_evidence_action()({}), _finance_action()({})])
+        if authoring and len(requests) == 2:
+            from test_authoring_context import BRIEF
+            return {'action': 'prepare_workpaper', 'brief': BRIEF,
+                'context_digest': request['context_digest'],
+                'reason_summary': 'Prepare the bounded fixture answer.'}
+        return _batch(request, [paper()])
     return build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
-        model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance)).compile().invoke(_input())
+        model_turn=turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
+        authoring_enabled=authoring)).compile().invoke(_input())
 
 
-def test_original_author_continues_and_records_actual_change_without_note_claim(tmp_path):
-    original = submitted_original()
+@pytest.mark.parametrize('authoring', [False, True])
+def test_original_author_continues_and_records_actual_change_without_note_claim(tmp_path, authoring):
+    original = submitted_original(authoring=authoring)
     assert original['phase'] == 'specialist_submission_accepted'
     saved = validate_workpaper_state(original)
+    if authoring:
+        assert saved['authoring_context'] == original['authoring_context']
+        assert saved['authoring_context'] is not original['authoring_context']
     seen = []
     feedback = [{'finding_id': 'verifier:F1', 'diagnosis': 'Inspect the actual fixture body.'}]
     def turn(request):
         seen.append(request)
         assert request['task_context']['revision_feedback'] == feedback
+        if authoring:
+            assert request['task_context']['authoring_context'] == original['authoring_context']
+            assert 'prepare_workpaper' not in request['allowed_actions']
+            assert 'save_workpaper_edits' in request['allowed_actions']
         baseline = request['task_context']['accepted_revision_baseline']
         assert baseline['submission'] == original['final_submission']
         assert 'not research quality' in baseline['notice']
@@ -46,13 +62,17 @@ def test_original_author_continues_and_records_actual_change_without_note_claim(
         assert 'claims' not in semantic['task_context']['accepted_revision_baseline']['submission']
         assert semantic['submission_to_repair']['candidate']['claims'] == request['submission_to_repair']['candidate']['claims']
         candidate = request['submission_to_repair']['candidate']
+        if len(seen) == 2:
+            return _batch(request, [{'action': 'finalize_workpaper_revision', 'reason_summary': 'Submit saved revision.',
+                'draft_digest': request['submission_to_repair']['base_submission_digest']}])
         answers = [{'finding_id': 'verifier:F1', 'disposition': 'corrected',
                     'explanation': 'Changed the precise fixture fragment; independent verification still required.'}]
-        return _batch(request, [edit_action(candidate, [text_edit(),
-            {'path': '/task_note/finding_responses', 'old_value': [], 'new_value': answers}]).model_dump(mode='json')])
+        edit = edit_action(candidate, [text_edit(),
+            {'path': '/task_note/finding_responses', 'old_value': [], 'new_value': answers}]).model_dump(mode='json')
+        return _batch(request, [{**edit, 'action': 'save_workpaper_edits', 'operation_id': 'connected-batch'}])
     builder = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
         model_turn=turn, evidence_tool=_ToolPorts().evidence, finance_tool=_ToolPorts().finance,
-        allow_workpaper_field_edits=True), recovery_state=saved, revision_feedback=feedback)
+        allow_workpaper_field_edits=True, authoring_enabled=authoring), recovery_state=saved, revision_feedback=feedback)
     async def resume():
         from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
         async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'author.sqlite')) as saver:
@@ -62,15 +82,35 @@ def test_original_author_continues_and_records_actual_change_without_note_claim(
             assert (await graph.aget_state(config)).values['notebook'] == result['notebook']
             return result
     result = asyncio.run(resume())
-    assert result['phase'] == 'specialist_submission_accepted' and len(seen) == 1
+    assert result['phase'] == 'specialist_submission_accepted' and len(seen) == 2
     assert result['agent_id'] == original['agent_id'] and result['task'] == original['task']
-    assert result['notebook']['model_turn_records'][:-1] == original['notebook']['model_turn_records']
+    assert result['notebook']['model_turn_records'][:-2] == original['notebook']['model_turn_records']
     assert result['notebook']['observations'] == original['notebook']['observations']
     assert result['final_submission']['task_note']['changes'] == original['final_submission']['task_note']['changes']
     change = task_outcome(result)['runtime_changes'][-1]
     assert '/narrative_markdown' in [r['path'] for r in change['locations']]
     assert change['semantic_status'] == 'not_independently_verified'
     assert original['final_submission']['narrative_markdown'] != result['final_submission']['narrative_markdown']
+
+
+@pytest.mark.parametrize('invalid', ['missing', 'owner', 'task', 'digest'])
+def test_handoff_does_not_authorize_invalid_preparation(invalid):
+    from sec_agent.agent_runtime.specialist_graph import _model_request, SpecialistNotebook
+    original = submitted_original(authoring=True)
+    if invalid == 'missing':
+        original.pop('authoring_context')
+    elif invalid == 'owner':
+        original['authoring_context']['owner'] = 'other-author'
+    elif invalid == 'task':
+        original['task']['objective'] = 'A different assignment'
+    else:
+        original['authoring_context']['basis_digest'] = '0' * 64
+    saved = validate_workpaper_state(original)
+    request = _model_request(state={**original, **saved}, notebook=SpecialistNotebook.model_validate_json(
+        json.dumps(saved['notebook'])), authoring_enabled=True, allow_workpaper_field_edits=True)
+    assert 'prepare_workpaper' in request['allowed_actions']
+    assert 'submit_workpaper' not in request['allowed_actions']
+    assert 'revise_workpaper' not in request['allowed_actions']
 
 
 def review_result(artifacts, feedback, *, stale=False, open_issue=False):
@@ -268,3 +308,37 @@ def test_author_feedback_does_not_swallow_source_identity_conflicts():
             raise ValueError('canonical_source_observation_conflict:' + ref)
     with pytest.raises(ValueError, match='canonical_source_observation_conflict'):
         author_feedback([{'source_checks': [{'source_id': 'NUMFACT::x'}]}], Conflicting())
+
+
+def test_review_source_handoff_reads_saved_original_without_author_analysis():
+    from sec_agent.agent_runtime.author_revision import author_feedback, revision_source_handoff
+    from sec_agent.agent_runtime.specialist_handoff import DependencyReader
+    artifacts = artifact_fixture()
+    ref = next(iter(artifacts.read_paper('P02', 'sources')))
+    findings = author_feedback([{'source_checks': [{'source_id': ref, 'quote': 'review only'}]}], artifacts)
+    before = deepcopy(findings)
+    mapped, papers = revision_source_handoff(findings, artifacts, {})
+    assert findings == before
+    check = mapped[0]['source_checks'][0]
+    reader = DependencyReader(papers, source_only_tasks=tuple(papers))
+    payload, observations = reader(check['readback']['arguments'])
+    assert observations
+    original = artifacts.source_item(ref)
+    assert any(original == row for obs in observations for row in obs['content'])
+    assert 'analysis' not in payload and 'author_analysis' not in payload
+    with pytest.raises(ValueError, match='source_only'):
+        reader({**check['readback']['arguments'], 'section': 'analysis'})
+    unknown, extra = revision_source_handoff([{'source_checks': [{'source_id': 'PASSAGE::missing'}]}], artifacts, {})
+    assert extra == {} and 'readback' not in unknown[0]['source_checks'][0]
+
+
+def test_review_handoff_preserves_existing_dependency_reader_aliases():
+    from sec_agent.agent_runtime.author_revision import author_feedback, revision_source_handoff
+    from sec_agent.agent_runtime.specialist_handoff import DependencyReader
+    artifacts = artifact_fixture()
+    dependencies = {s['task']['task_id']: s for s in artifacts._author_states.values()}
+    ref = next(iter(artifacts.read_paper('P02', 'sources')))
+    mapped, extra = revision_source_handoff(author_feedback([{'source_checks': [{'source_id': ref}]}], artifacts), artifacts, dependencies)
+    assert extra == {}
+    _, observations = DependencyReader(dependencies)(mapped[0]['source_checks'][0]['readback']['arguments'])
+    assert observations

@@ -264,7 +264,13 @@ def test_new_question_native_parent_to_report_human_point_and_followup_without_r
         assert result["phase"] == "ready_for_human_review" and result["__interrupt__"]
         assert len(result["case_papers"]) == len(result["research_tasks"]) == (10 if full_profile else 2)
         assert "messages" not in json.dumps(result["case_papers"])
-        assert "-private" not in json.dumps({k: v for k, v in result.items() if k != "__interrupt__"})
+        # Completed reviewers now retain private journals for author-change
+        # confirmation. They must not enter public views or other role inputs.
+        from apps.workbench.backend.api.v1.report_sessions import public_state
+        assert "-private" not in json.dumps(public_state({'values': result}))
+        for role, model in models.items():
+            if role not in {'counter', 'verifier'}:
+                assert '-private' not in str(model.contexts[0])
         assert set(result["revisions"]) == ({"P01"} if material else set())
         assert "independent_research_review" in str(models["synthesis"].contexts[0])
         writer_input = json.loads(models['writer'].contexts[0][1].content)

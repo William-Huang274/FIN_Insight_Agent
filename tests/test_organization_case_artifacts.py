@@ -149,23 +149,36 @@ def test_alias_calculation_uses_canonical_operands_and_survives_next_review_sess
         assert restored.case_artifacts.source_item(calculation['calculation_id']) == calculation
 
 
-def test_original_expert_revises_from_validated_history_then_reopens_for_review(submitted):
+def test_original_expert_revises_from_validated_history_then_reopens_for_review(submitted, tmp_path):
+    from test_specialist_tool_batch import _batch
     factory, _, _, paper = submitted
     original = deepcopy(paper)
     feedback = [{'finding_id':'verifier:scope', 'diagnosis':'Clarify this fixture does not establish financial correctness.'}]
+    requests = []
     def model(request):
+        requests.append(request)
+        (tmp_path/'revision-request.json').write_text(json.dumps(request), encoding='utf8')
         assert request['task_context']['revision_feedback'] == feedback
-        action = deepcopy(paper['final_submission'])
-        action['context_digest'] = request['context_digest']
-        action['narrative_markdown'] += ' This revision validates access and source continuity only.'
-        action['task_note'] = {'summary':'Clarified the scope of the static fixture.',
+        repair = request['submission_to_repair']
+        if repair['candidate']['narrative_markdown'] != paper['final_submission']['narrative_markdown']:
+            return {'action':'finalize_workpaper_revision', 'context_digest':request['context_digest'],
+                'reason_summary':'Submit the explicitly saved scope correction.',
+                'draft_digest':repair['base_submission_digest']}
+        note = {'summary':'Clarified the scope of the static fixture.',
             'changes':'Added an explicit access-only boundary.', 'finding_responses':[{
                 'finding_id':'verifier:scope', 'disposition':'corrected',
                 'explanation':'Added the requested qualification boundary; independent financial review remains outstanding.'}]}
-        return action
-    with specialist(factory, model, recovery_state=paper, revision_feedback=feedback) as opened:
+        return {'action':'save_workpaper_edits', 'context_digest':request['context_digest'],
+            'operation_id':'static-scope-edit', 'reason_summary':'Clarify the engineering qualification boundary.',
+            'base_submission_digest':repair['base_submission_digest'], 'edits':[
+                {'op':'set_field','path':'/narrative_markdown',
+                 'value':paper['final_submission']['narrative_markdown'] + ' This revision validates access and source continuity only.'},
+                {'op':'set_field', 'path':'/task_note', 'value':{**(repair['candidate'].get('task_note') or {}), **note}}]}
+    with specialist(factory, lambda request: _batch(request, [model(request)]),
+            recovery_state=paper, revision_feedback=feedback) as opened:
         revised = opened.graph.invoke(opened.graph_input.model_dump(mode='json'), {'recursion_limit':32})
     assert revised['phase'] == 'specialist_submission_accepted', revised.get('last_submission_attempt')
+    assert len(requests) == 2
     assert revised['notebook']['observations'] == paper['notebook']['observations']
     assert revised['final_submission']['narrative_markdown'] != paper['final_submission']['narrative_markdown']
     with open_case(factory, CaseArtifacts([revised])) as data:

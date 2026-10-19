@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 from contextlib import closing
 from uuid import uuid4
@@ -15,6 +16,26 @@ from pydantic import Field
 from .research_graph_contracts import canonical_sha256
 from .specialist_graph import SpecialistNotebook, SubmitWorkpaperAction, _submission_errors
 from .workpaper_review_graph import validate_workpaper_state
+
+
+def source_search_query(query):
+    """Quote bare numeric literals without changing numbers or explicit phrases.
+
+    FTS punctuation is syntax, whereas commas/decimal points in a normal
+    numeric lookup belong to the search text. Keep existing operators and
+    quoted phrases intact; this is lexical navigation, not numeric equality.
+    """
+    literals = []
+
+    def quote_number(match):
+        token = match.group()
+        if re.fullmatch(r'[+-]?\d+(?:[,.]\d+)*%?', token):
+            literals.append(token)
+            return '"' + token + '"'
+        return token
+
+    compiled = re.sub(r'"(?:[^"]|"")*"|[^\s"]+', quote_number, query)
+    return compiled, literals
 
 
 def revision_review_target(artifacts, paper_id, revision):
@@ -75,7 +96,11 @@ class CaseArtifacts:
             notebook = SpecialistNotebook.model_validate_json(json.dumps(paper["notebook"]))
             submission = SubmitWorkpaperAction.model_validate_json(json.dumps(paper["final_submission"]))
             errors = _submission_errors(submission, notebook, enforce_case_route_requirements=
-                paper.get("task_context", {}).get("instruction_source") != "current_user_research_request")
+                paper.get("task_context", {}).get("instruction_source") != "current_user_research_request",
+                # Reading an immutable accepted snapshot is not a new submission.
+                # New native submissions enforce current explicit CALC lineage;
+                # old records retain their original validation boundary.
+                enforce_calculation_bindings=False)
             if errors:
                 raise ValueError(f"research_bundle_invalid_citations:{paper['task']['task_id']}:{errors}")
             identity = (paper["agent_id"], paper["task"]["task_id"], paper["task"]["revision"])
@@ -294,13 +319,14 @@ class CaseArtifacts:
         if not isinstance(query, str) or not query.strip() or len(query) > 500 or type(limit) is not int or not 1 <= limit <= 8:
             raise ValueError("source_search_requires_query_and_limit_1_to_8")
         rows = [(ref, str(item.get("title", "")), self._source_text(item)) for ref, item in self._sources.items()]
+        compiled_query, literals = source_search_query(query)
         marker = str(uuid4())
         with closing(sqlite3.connect(":memory:")) as db:
             db.execute("CREATE VIRTUAL TABLE sources USING fts5(source_id UNINDEXED, title, body)")
             db.executemany("INSERT INTO sources VALUES (?, ?, ?)", rows)
             try:
                 matches = db.execute("SELECT source_id, highlight(sources, 2, ?, '') FROM sources WHERE sources MATCH ? ORDER BY bm25(sources), source_id LIMIT ?",
-                                     (marker, query, limit)).fetchall()
+                                     (marker, compiled_query, limit)).fetchall()
             except sqlite3.OperationalError as exc:
                 raise ValueError("source_search_query_invalid_use_FTS5_terms_or_quoted_phrase") from exc
         hits = []
@@ -312,6 +338,9 @@ class CaseArtifacts:
                          "read_arguments": {"source_id": ref, "offset": 0 if item["result_state"] == "numeric_fact" else offset,
                                             "max_characters": 2000}})
         return {"query": query, "matches": hits,
+                **({"query_interpretation": {"method": "numeric_literal_quoting_v1",
+                    "fts_query": compiled_query, "literal_terms": literals,
+                    "numeric_equality_verified": False}} if literals else {}),
                 "notice": "Navigation only across this task's archived observations. Read matches with read_research_source before verification. No matches does not prove non-disclosure or absence from the full document. FTS5 lexical search is not semantic retrieval."}
 
     def read_source(self, source_id, offset=0, max_characters=16000):
@@ -344,7 +373,7 @@ def register_case_artifact_tools(server, artifacts: CaseArtifacts, *, source_loo
     @server.tool(name="search_research_sources", structured_output=True)
     def search_sources(query: Annotated[str, Field(min_length=1, max_length=500)],
                        limit: Annotated[int, Field(ge=1, le=8)] = 5) -> dict[str, Any]:
-        """Locate saved source windows using FTS5 terms, OR or quoted phrases in the source language. Then read exact sources; a search is not verification."""
+        """Search saved sources using words or numbers such as 24,461 or 35.6%; runtime handles numeric punctuation. Explicit OR and quoted phrases remain supported. Read candidates before verification; no source is automatically selected."""
         from mcp.server.mcpserver.exceptions import ToolError
         try:
             return artifacts.search_sources(query, limit)

@@ -17,7 +17,7 @@
     "keep_tokens": 24000,
     "max_summaries": 2,
     "profile": {
-      "model": "deepseek-v4-flash",
+      "model": "deepseek-flash",
       "reasoning_effort": "low",
       "thinking": "disabled"
     },
@@ -51,7 +51,7 @@
   "nodes": {
     "lead": {
       "profile": {
-        "model": "deepseek-v4-flash",
+        "model": "deepseek-flash",
         "thinking": "disabled",
         "reasoning_effort": "low"
       },
@@ -340,7 +340,7 @@
     },
     "quick_writer": {
       "profile": {
-        "model": "deepseek-v4-flash",
+        "model": "deepseek-flash",
         "thinking": "disabled",
         "reasoning_effort": "low"
       },

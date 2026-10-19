@@ -67,6 +67,29 @@ def read_location(artifacts, paper_id, path, offset=0, max_characters=2000):
             'total_characters': len(text), 'notice': 'Exact current text; not a verified financial statement.'}
 
 
+def read_structured_location(artifacts, paper_id, path, offset=0, max_characters=2000):
+    """Read a structured field together, without turning directory previews into evidence."""
+    import json
+    paper = artifacts.read_paper(paper_id)
+    value = paper
+    try:
+        for part in path.lstrip('/').split('/'):
+            part = part.replace('~1', '/').replace('~0', '~')
+            value = value[int(part)] if isinstance(value, list) else value[part]
+    except (KeyError, ValueError, TypeError, IndexError) as exc:
+        raise ValueError('unknown_structured_review_field') from exc
+    if not isinstance(value, (dict, list)):
+        raise ValueError('use_text_view_for_string_field')
+    if offset < 0 or not 1 <= max_characters <= 6000:
+        raise ValueError('review_window_requires_nonnegative_offset_and_1_to_6000_characters')
+    text = json.dumps(value, ensure_ascii=False)
+    end = min(len(text), offset + max_characters)
+    return {'paper_id': paper_id, 'paper_digest': canonical_sha256(paper),
+        'field_path': path, 'view': 'json', 'offset': offset, 'text': text[offset:end],
+        'total_characters': len(text), 'next_offset': end if end < len(text) else None,
+        'notice': 'Current structured field; not financial confirmation or a quote location. Use a text leaf for exact finding quotes.'}
+
+
 def bind_location(artifacts, messages, paper_id, location_id):
     """Only a successful, current-version tool read can supply a finding quote."""
     from langchain_core.messages import ToolMessage
@@ -95,8 +118,7 @@ def quote_recovery(artifacts, finding):
             candidates.append((match.size, path, max(0, match.b - 100)))
     return {'finding_id': finding.finding_id, 'accepted': False,
         'remedy': 'Read a current field window and copy ONE exact contiguous substring, including literal markdown. '
-                  'Do not join a heading and paragraph or normalize whitespace. Reuse this finding ID; other saved findings remain. '
-                  'If this is the final call, put the corrected finding directly in submit_case_review with incomplete/unresolved work explicitly listed.',
+                  'Do not join a heading and paragraph or normalize whitespace. Reuse this finding ID; other saved findings remain.',
         'locations': [read_location(artifacts, finding.paper_id, path, offset, 800)
                       for _, path, offset in sorted(candidates, reverse=True)[:3]],
         'read_tool': 'read_review_location'}
@@ -164,8 +186,10 @@ The runtime preserves read receipts, versions and legacy checks. Do NOT recreate
 paragraph coverage, hashes or previously saved checks. Automatic paragraph/keyword candidates are navigation
 only and do not create mandatory work. Assess each assigned paper concisely; no per-paragraph pass records.
 Use read_review_location to get a location_id for an actionable finding instead of retyping its quote.
-Use read_review_source_span's quote_span when quoting original evidence. Ambiguous identities require a
-local clarification, not invented mappings. Record specific source-grounded findings as they emerge.
+For evidence supply source_id and your chosen exact quote; runtime locates it. Returned window_span is
+reading context, not citation offsets. Repeated quotes or conflicting selections return candidates for
+your decision; nothing is saved as accepted until selection is resolved. Do not invent mappings.
+Record specific source-grounded findings as they emerge.
 
 Ordinary editorial suggestions are advisory. A material issue changes the answer or leaves a significant
 statement misleading; identify the affected claim and explain its impact. Necessary checks you could not

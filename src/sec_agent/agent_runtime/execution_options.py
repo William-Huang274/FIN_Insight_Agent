@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 class ExecutionOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
     mode: Literal["standard", "auto", "selected", "single"] = "standard"
-    model: Literal["default", "deepseek-v4-flash", "deepseek-v4-pro"] = "default"
+    model: Literal["default", "deepseek-flash", "deepseek-v4-flash", "deepseek-v4-pro"] = "default"
     branch_ids: list[str] = Field(default_factory=list, max_length=24)
     require_all_branches: bool = Field(default=False, strict=True,
         description="Explicit fixed-catalog coverage for a user-requested study or qualification only. Standard full research does not imply all catalog topics.")

@@ -249,7 +249,7 @@ def load_quick_answer_config(model_config_path):
     settings = json.loads(path.read_text(encoding="utf-8"))
     profile = DeepSeekModelProfile.model_validate(settings["model_profile"])
     basis = TokenBudgetBasis.model_validate_json(json.dumps(settings["token_budget_basis"]))
-    if profile.model != "deepseek-v4-flash" or profile.thinking != "disabled" or basis.reasoning_profile != "agentic_message_history_thinking_disabled":
+    if profile.model not in {"deepseek-flash", "deepseek-v4-flash"} or profile.thinking != "disabled" or basis.reasoning_profile != "agentic_message_history_thinking_disabled":
         raise ValueError("quick_answer_profile_budget_mismatch")
     return profile, basis, settings["limits"]
 

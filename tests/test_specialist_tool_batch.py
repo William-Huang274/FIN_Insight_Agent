@@ -23,7 +23,7 @@ from test_specialist_graph import _input, _evidence_action, _finance_action, _su
 def _batch(request, actions):
     names = {"request_evidence": "RequestEvidenceAction", "request_finance": "RequestFinanceAction",
              "request_source": "RequestSourceAction", "request_human_review": "RequestHumanReviewAction",
-             "submit_workpaper": "SubmitWorkpaperAction", "revise_workpaper": "ReviseWorkpaperAction"}
+             "submit_workpaper": "SubmitWorkpaperAction", "revise_workpaper": "ReviseWorkpaperAction", "save_workpaper_edits": "SaveWorkpaperEditsAction", "finalize_workpaper_revision": "FinalizeWorkpaperRevisionAction"}
     return {"action": "native_tool_batch", "context_digest": request["context_digest"], "tool_calls": [
         {"id": f"call-{n}", "name": names[action["action"]], "type": "tool_call",
          "args": {**action, "context_digest": request["context_digest"]}} for n, action in enumerate(actions)]}
@@ -326,7 +326,8 @@ def test_missing_or_misattributed_batch_feedback_stops_before_next_transport(res
         adapter.specialist_model_turn(request)
 
 
-def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=False, local_edit=False, partial_edit=False, unsolicited_context=False):
+def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=False, local_edit=False, partial_edit=False, unsolicited_context=False,
+                                 working_view=False, legacy_terminal=False):
     """Offline model responses, actual SDK/ToolNode/history; not paid research."""
     from test_deepseek_structured_agents import _config
     requests, wires, public, ports = [], [], [], _ToolPorts()
@@ -354,12 +355,15 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=Fals
                 action["claims"][0]["evidence_ids"] = ["E:invented"]
                 if local_edit:
                     target = request["submission_to_repair"]
-                    action = {"action": "revise_workpaper", "reason_summary": "Restore the observed evidence binding.",
+                    action = {"action": "save_workpaper_edits", "operation_id": "restore-evidence", "reason_summary": "Restore the observed evidence binding.",
                         "base_submission_digest": target["base_submission_digest"], "edits": [
-                            {"path": "/claims/0/evidence_ids", "old_value": [], "new_value": ["E:DELL:Q1"]}]}
+                            {"op": "update_claim", "claim_id": target['candidate']['claims'][0]['claim_id'], "changes": {"evidence_ids": ["E:DELL:Q1"]}}]}
                     if partial_edit:
                         action['edits'].append({'op': 'str_replace', 'path': '/narrative_markdown',
                             'old_string': 'The causal interpretation remains bounded.', 'new_string': 'Uncertainty remains explicit.'})
+            if n == 4 and local_edit:
+                action = {'action': 'finalize_workpaper_revision', 'reason_summary': 'Submit saved draft.',
+                    'draft_digest': request['submission_to_repair']['base_submission_digest']}
             calls = _batch(request, [action])["tool_calls"]
         if runtime_context_binding:
             for call in calls:
@@ -377,7 +381,8 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=Fals
 
     with httpx.Client(transport=httpx.MockTransport(respond)) as client:
         model = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("offline-no-network"),
-            http_client=client, max_retries=0, use_responses_api=False, extra_body={"thinking": {"type": "enabled"}})
+            http_client=client, max_retries=0, use_responses_api=False, extra_body={"thinking": {"type": "enabled"}},
+            tool_context_policy="task_boundary" if working_view else "legacy_window")
         adapter = DeepSeekStructuredAgentAdapter(
             config=_config().model_copy(update={"thinking": "enabled", "agentic_message_history": True,
                                                "runtime_context_binding": runtime_context_binding}),
@@ -386,11 +391,17 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=Fals
         def model_turn(request):
             requests.append(request)
             # Explicit scripted qualification: no mock response is model proof.
-            return adapter.specialist_model_turn(request)["action"]
+            decision = adapter.specialist_model_turn(request)["action"]
+            if legacy_terminal and len(decision["tool_calls"]) == 1:
+                call = decision["tool_calls"][0]
+                if call["name"] == "SubmitWorkpaperAction" and len(requests) == 3:
+                    # Simulate the direct terminal stored by the old adapter.
+                    return call["args"]
+            return decision
 
         graph = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
             model_turn=model_turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
-            allow_workpaper_field_edits=local_edit)).compile()
+            allow_workpaper_field_edits=local_edit, working_state_enabled=working_view)).compile()
         result = graph.invoke(_input(), config={"recursion_limit": 32})
     assert len(ports.calls) == 2  # Submissions/feedback never dispatch data tools.
     assert "reasoning_content" not in json.dumps(result) + json.dumps(public)
@@ -418,22 +429,54 @@ def test_terminal_schema_feedback_then_semantic_feedback_then_corrected_submissi
     assert result["final_submission"]["claims"][0]["evidence_ids"] == ["E:DELL:Q1"]
 
 
+@pytest.mark.parametrize("legacy_terminal", [False, True])
+def test_rejected_terminal_keeps_explicit_receipt_after_actual_sdk_context_projection(legacy_terminal):
+    result, requests, wires = _terminal_feedback_sdk_graph(
+        runtime_context_binding=True, working_view=True, legacy_terminal=legacy_terminal)
+    messages = wires[3]["messages"]
+    rejected_index, rejected = next((i, row) for i, row in reversed(list(enumerate(messages)))
+        if row["role"] == "tool" and json.loads(row["content"]).get("result", {}).get("accepted") is False)
+    assert rejected["role"] == "tool"
+    assert rejected["tool_call_id"] == messages[rejected_index - 1]["tool_calls"][0]["id"]
+    receipt = json.loads(rejected["content"])["result"]
+    assert receipt["accepted"] is False
+    assert "unknown_evidence_id:E:invented" in json.dumps(receipt["feedback"])
+    assert receipt["validation_issues"]
+    assert receipt["validation_issues"][0]["diagnosis"] == "unobserved_reference"
+    assert receipt["validation_issues"][0]["affected_locations"] == [["claims", 0, "evidence_ids", 0]]
+    assert "current_context" not in json.loads(rejected["content"])
+    assert requests[3]["submission_to_repair"]["candidate"]["claims"][0]["evidence_ids"] == ["E:invented"]
+    assert result["last_submission_attempt"]["accepted"] is True
+    assert result["notebook"]["tool_action_count"] == 2
+    if legacy_terminal:
+        assert requests[3]["terminal_result"] == receipt
+    else:
+        assert requests[3]["tool_results"][0]["status"] == "error"
+        assert "terminal_result" not in requests[3]
+
+
 def test_local_edit_survives_real_sdk_tool_binding_and_returns_whole_workpaper():
     result, requests, wires = _terminal_feedback_sdk_graph(runtime_context_binding=True, local_edit=True)
-    assert len(requests) == 3
+    assert len(requests) == 4
     assert result["phase"] == "specialist_submission_accepted"
     assert result["final_submission"]["narrative_markdown"] == _submission()({})["narrative_markdown"]
     assert requests[2]["submission_to_repair"]["base_submission_digest"] in json.dumps(wires[2])
-    assert result["last_submission_attempt"]["tool_name"] == "ReviseWorkpaperAction"
+    assert result["last_submission_attempt"]["tool_name"] == "FinalizeWorkpaperRevisionAction"
 
 
 def test_partial_edit_is_exposed_and_consumed_through_actual_sdk_and_native_graph():
-    result, requests, wires = _terminal_feedback_sdk_graph(runtime_context_binding=True, local_edit=True, partial_edit=True)
+    result, requests, wires = _terminal_feedback_sdk_graph(runtime_context_binding=True, local_edit=True, partial_edit=True, working_view=True)
     assert result['final_submission']['narrative_markdown'] == _submission()({})['narrative_markdown'].replace(
         'The causal interpretation remains bounded.', 'Uncertainty remains explicit.')
-    schema = next(t for t in wires[2]['tools'] if t['function']['name'] == 'ReviseWorkpaperAction')
+    schema = next(t for t in wires[2]['tools'] if t['function']['name'] == 'SaveWorkpaperEditsAction')
     assert 'str_replace' in json.dumps(schema) and 'upsert_coverage' in json.dumps(schema)
-    assert 'revision_guidance' in json.dumps(wires[2])
+    assert 'revision_instruction' in json.dumps(wires[2])
+    assert 'revision_guidance' not in json.dumps(wires[2])
+    assert requests[3]['revision_submission_status']['accepted'] is False
+    saved_receipt = next(json.loads(row['content'])['result']['draft_result']
+        for row in reversed(wires[3]['messages']) if row['role'] == 'tool'
+        and 'draft_result' in json.loads(row['content']).get('result', {}))
+    assert saved_receipt['saved'] and not saved_receipt['submitted']
 
 
 def test_runtime_context_is_not_a_model_argument_and_quote_guards_still_apply():

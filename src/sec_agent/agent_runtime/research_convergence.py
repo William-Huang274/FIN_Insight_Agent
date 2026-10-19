@@ -139,6 +139,13 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     called only for an actually needed actor, with that actor's own message state.
     Old standalone convergence and old review sessions retain their legacy graph.
     """
+    # Accept the native parent record as well as the already-public production
+    # handoff. Completed reviewers now keep journals for their own continuation;
+    # those journals must never become another author's synthesis material.
+    if any(isinstance(research_review_context.get(role), dict)
+           and 'status' in research_review_context[role] and 'review' in research_review_context[role]
+           for role in ('counter', 'verifier')):
+        research_review_context = public_confirmation({'review': research_review_context})['review']
     if not 1 <= max_parallel_authors <= 12:
         raise ValueError("invalid_author_parallelism")
     if not 1 <= max_correction_rounds <= 3:
@@ -454,8 +461,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             for finding in rows:
                 decision = dispositions[(pid, finding["finding_id"])]
                 if decision["disposition"] == "repair":
-                    feedback.setdefault(pid, []).append({**finding, "requested_change": decision["requested_change"],
-                        "lead_rationale": decision["rationale"], "expected_progress": decision["expected_progress"]})
+                    from .revision_guidance import lead_repair_feedback
+                    feedback.setdefault(pid, []).append(lead_repair_feedback(finding, decision))
         for finding in state["lead_decision"].get("new_findings", []):
             if finding["disposition"] == "repair":
                 feedback.setdefault(finding["paper_id"], []).append({

@@ -120,7 +120,7 @@ def _repair_read_working_set(messages):
     boundary = -1
     for index, message in enumerate(messages):
         if isinstance(message, AIMessage) and any(c['name'] in {
-            'SubmitWorkpaperAction', 'ReviseWorkpaperAction'} for c in message.tool_calls):
+            'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'FinalizeWorkpaperRevisionAction'} for c in message.tool_calls):
             boundary = index
         if isinstance(message, (HumanMessage, ToolMessage)) and isinstance(message.content, str):
             try:
@@ -230,7 +230,7 @@ def _normalize_terminal_feedback(messages):
     """
     projected = deepcopy(list(messages))
     calls = {c['id']: c for m in projected if isinstance(m, AIMessage) for c in m.tool_calls}
-    terminals = {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SubmitReviewAction', 'RequestHumanReviewAction'}
+    terminals = {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'FinalizeWorkpaperRevisionAction', 'SubmitReviewAction', 'RequestHumanReviewAction'}
     for message in projected:
         if not isinstance(message, ToolMessage):
             continue
@@ -408,7 +408,7 @@ def coalesce_context_snapshots(messages):
                 continue
             changed = False
             for call in calls:
-                if (call['id'] in completed and call['name'] in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}
+                if (call['id'] in completed and call['name'] in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SaveWorkpaperEditsAction', 'FinalizeWorkpaperRevisionAction'}
                         and not call['args'].get('archived_workpaper_operation')):
                     call['args'] = {'archived_workpaper_operation': True,
                         'original_tool_call_id': call['id'], 'current_candidate_at': target,
@@ -782,7 +782,7 @@ def _durable_authoring_context(message, calls):
     restored = isinstance(message, HumanMessage)
     if not restored and (not isinstance(message, ToolMessage)
             or calls.get(message.tool_call_id, {}).get('name') != message.name
-            or message.name not in {'PrepareWorkpaperAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}):
+            or message.name not in {'PrepareWorkpaperAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SaveWorkpaperEditsAction', 'FinalizeWorkpaperRevisionAction'}):
         return None
     try:
         envelope = json.loads(message.content)
@@ -804,7 +804,7 @@ def _durable_authoring_context(message, calls):
         and isinstance(result, dict) and result.get('status') == 'prepared'))
         and isinstance(preparation, dict) and preparation.get('version') == 'authoring_context.v1'
         and isinstance(preparation.get('brief'), dict) and preparation['brief'].get('ready') is True)
-    editable = ((restored or message.name in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction'})
+    editable = ((restored or message.name in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SaveWorkpaperEditsAction', 'FinalizeWorkpaperRevisionAction'})
         and isinstance(repair, dict) and isinstance(repair.get('candidate'), dict)
         and repair['candidate'].get('action') == 'submit_workpaper'
         and isinstance(repair.get('current_candidate_digest'), str)
@@ -881,7 +881,7 @@ def task_boundary_history(messages):
                 if call["name"] != "UpdateResearchStateAction":
                     material_sources.update(_literal_reference_ids(call.get("args", {})))
         if not isinstance(message, ToolMessage) or message.name not in {
-                "UpdateResearchStateAction", "SubmitWorkpaperAction", "ReviseWorkpaperAction"} or message.status == "error":
+                "UpdateResearchStateAction", "SubmitWorkpaperAction", "ReviseWorkpaperAction", "FinalizeWorkpaperRevisionAction"} or message.status == "error":
             continue
         try:
             body = json.loads(message.content)
@@ -892,7 +892,7 @@ def task_boundary_history(messages):
         if not isinstance(body, dict):
             continue
         if message.name != 'UpdateResearchStateAction':
-            accepted = body.get('accepted') and (message.name == 'SubmitWorkpaperAction'
+            accepted = body.get('accepted') and (message.name in {'SubmitWorkpaperAction', 'FinalizeWorkpaperRevisionAction'}
                 or (body.get('edit_result') or {}).get('submission_accepted'))
             if accepted:
                 # An accepted artifact is a durable completion boundary. A
@@ -1144,6 +1144,16 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
     LangChain owns message serialization/token estimation. No hidden summarizer
     call, fabricated tool result, removal of stored messages or fresh allowance.
     """
+    from .research_context_view import current_context, is_review_revision
+    active = current_context(messages)
+    revision = is_review_revision(active) or (
+        active.get('task_context', {}).get('revision_task', {}).get('kind') == 'accepted_workpaper_revision'
+        and 'SaveWorkpaperEditsAction' in native_tools)
+    if revision:
+        # Native saves already checkpoint revision progress. Do not require a
+        # second note transaction, or carry an earlier research-phase reminder.
+        # Transport size/turn limits still execute after request projection.
+        return [m for m in messages if not m.additional_kwargs.get('fin_context_checkpoint_instruction')], native_tools, None
     trigger = model.research_checkpoint_tokens
     if trigger is None or "UpdateResearchStateAction" not in native_tools:
         return messages, native_tools, None

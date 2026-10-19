@@ -62,12 +62,12 @@ class SourceDocumentRequest(BaseModel):
     document_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
         description="Exact server document_id from catalog/search. Uploaded documents keep the UPLOAD:: prefix; a node's embedded hash is not a document ID.")
     node_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
-        description="Exact node_id returned by this document's outline/search/read navigation. Never infer the next ID by incrementing a suffix; use returned next_offset or follow-up arguments.")
+        description="Only local/library/uploads/organization node navigation. Omit for web: use document_id and offset in characters. A PASSAGE citation ID is never a node_id. Copy exact returned node navigation; never infer an ID.")
     query: str = Field(default="", max_length=600,
         description="For catalog use a company name/ticker or leave empty (also '*' lists the menu), not a research sentence. Search accepts research keywords. For data this is a literal field filter: financial=concept e.g. Revenue, positions=issuer name, filings=form e.g.10-Q; prices=ticker, normally leave empty. Dates/period instructions are NOT parsed from query.")
     page_start: int | None = Field(default=None, ge=1)
     page_end: int | None = Field(default=None, ge=1)
-    offset: int = Field(default=0, ge=0)
+    offset: int = Field(default=0, ge=0, description="For web read, character offset in the captured document; omit node_id, character_offset and page fields. Other spaces use their returned pagination arguments. Saved cross-author sources use their handoff readback.")
     character_offset: int | None = Field(default=None, ge=0,
         description="Explicit character window for a local/upload node read. Copy readback/next_readback; offset still paginates nodes. A window is not the complete section/table.")
     limit: int = Field(default=8, ge=1, le=20)

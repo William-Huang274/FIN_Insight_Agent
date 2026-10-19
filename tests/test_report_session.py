@@ -368,6 +368,7 @@ def test_public_tool_events_saved_without_raw_arguments(monkeypatch):
     monkeypatch.setattr("langgraph.config.get_stream_writer", lambda: emitted.append)
     audit = CaseModelAudit.__new__(CaseModelAudit)
     audit.stream_public, audit.actor, audit.events = True, "writer", []
+    audit.source_access_check = None
     persisted = []
     audit.activity_sink = persisted.append
     async def handler(request):

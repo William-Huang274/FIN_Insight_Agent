@@ -6,6 +6,7 @@ import json
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
+from functools import wraps
 from typing import Any, Literal
 
 from .agent_server_data_composition import (
@@ -381,7 +382,7 @@ def _build_graph_input(
                    "source_spaces": ['organization'] if organization_only else (["local", "web"] if live_web_read_enabled else ["local"]),
                    "web_usage": ("For new external information use source_space=web, operation=search, query; then operation=read with returned WEB document_id. Pagination offset counts characters. Search metadata dates need checking against research_as_of. Source date unknown is not proof of as-of availability. Cite exact fetched text and label forecasts/opinions/non-S2 numbers. Commercial previews are not paid reports."
                                  if live_web_read_enabled else "unavailable_in_this_profile"),
-                   "usage": "Use request_source with operation catalog/search to get document_id; outline/read by document_id and optional node_id. Read full sections/tables, paginate with offset. Prefer node IDs for HTML. Search previews are not citable.",
+                   "usage": "For local/library/uploads/organization use catalog/search then their returned document/node navigation. For web use search/read with document_id and character offset only; omit node_id and page fields. PASSAGE IDs are citations, never node IDs. For already saved cross-author originals copy the review/dependency readback instead of reconstructing a web request. Search previews are not citable.",
                    "completion": (
                        "Answer the current research question. Cite observed sources for each material claim, use canonical receipts for calculations, and disclose unresolved limitations. Historical case route obligations remain historical provenance, not mandatory coverage for this question. Source attribution, exact quotes and numeric authority checks still apply; semantic completeness requires review."
                        if research_question else
@@ -960,8 +961,9 @@ def _bound_task_for_action(
     if lane == "evidence":
         action = request.action
         if isinstance(action, RequestSourceAction):
+            selection = _bounded_source_selection(action.selection)
             rebound_body = task.model_dump(mode="json")
-            rebound_body.update(evidence_requests=({"source_document": action.selection.model_dump(mode="json")},), fact_requests=())
+            rebound_body.update(evidence_requests=({"source_document": selection.model_dump(mode="json")},), fact_requests=())
             rebound = _model_json(BoundBranchTask, rebound_body, code="specialist_source_task_invalid")
             return ToolLaneTask(lane=lane, task=rebound)
         if not isinstance(action, RequestEvidenceAction):
@@ -996,6 +998,22 @@ def _bound_task_for_action(
         code="specialist_rebound_branch_task_invalid",
     )
     return ToolLaneTask(lane=lane, task=rebound)
+
+
+def _bounded_source_selection(selection):
+    """Keep a live-web reading turn small without changing its archive.
+
+    Web captures remain complete in the scoped source cache and the returned
+    passage carries exact offsets plus ``next_offset``.  A specialist request
+    that asks for a whole earnings-call page therefore receives the first
+    24,000-character window and can deliberately continue at that locator,
+    instead of placing 60,000+ characters into the immediate and historical
+    model context.  Local/library source readers retain their native window
+    policies because their parsed node boundaries are the relevant unit there.
+    """
+    if selection.source_space == "web" and selection.operation == "read" and selection.max_characters > 24_000:
+        return selection.model_copy(update={"max_characters": 24_000})
+    return selection
 
 
 def _mcp_port(
@@ -1089,6 +1107,7 @@ def _open_specialist_composition(
     plan_invocation_id: str | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
+    revision_source_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
     source_workpaper: Mapping[str, Any] | None = None,
     research_question: str | None = None,
     role_method_reader=None,
@@ -1100,13 +1119,23 @@ def _open_specialist_composition(
     lead_assistance=None,
     required_source_checks=(),
     data_composition_factory=None,
+    remaining_model_requests=None,
 ) -> Iterator[_OpenedSpecialistComposition]:
     try:
         from .specialist_handoff import DependencyReader, bind_saved_materials
         if source_workpaper is not None and (recovery_state is not None or collaboration_context is not None or revision_feedback):
             raise SpecialistAgenticCompositionError('fresh_source_formation_cannot_restore_author_state')
         saved_papers = dict(dependency_workpapers or {})
-        source_only = ()
+        source_only = tuple(revision_source_workpapers or {})
+        if source_only and (not recovery_state or source_workpaper is not None):
+            raise SpecialistAgenticCompositionError('revision_sources_require_original_author_recovery')
+        if set(source_only) & set(saved_papers):
+            raise SpecialistAgenticCompositionError('revision_source_duplicate_dependency')
+        for paper in (revision_source_workpapers or {}).values():
+            for key in ('case_id', 'snapshot_id', 'research_as_of', 'foundation_digest'):
+                if paper['task'][key] != recovery_state['task'][key]:
+                    raise SpecialistAgenticCompositionError('revision_source_scope_mismatch:' + key)
+        saved_papers.update(revision_source_workpapers or {})
         if source_workpaper is not None:
             if not research_task or research_task.get('professional'):
                 raise SpecialistAgenticCompositionError('fresh_source_formation_requires_research_assignment')
@@ -1206,6 +1235,7 @@ def _open_specialist_composition(
                 body["required_source_checks"] = list(required_source_checks)
                 graph_input = _model_json(SpecialistAgenticInput, body, code="specialist_required_source_scope_invalid")
             task = graph_input.task
+            @wraps(model_turn)
             def authorized_model_turn(request):
                 access_check = getattr(approved, 'access_check', None)
                 if access_check:
@@ -1223,6 +1253,7 @@ def _open_specialist_composition(
                 return approved.dependencies.evidence_tool(ToolLaneTask(lane="evidence", task=bound).model_dump(mode="json"))
 
             dependencies = SpecialistAgenticDependencies(
+                remaining_model_requests=remaining_model_requests,
                 restore_source_observations=approved.restore_source_observations,
                 dependency_reader=dependency_reader,
                 subtask_runner=subtask_runner,
@@ -1334,6 +1365,7 @@ def open_specialist_receipted_composition(
     plan_invocation_id: str | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
+    revision_source_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
     source_workpaper: Mapping[str, Any] | None = None,
     research_question: str | None = None,
     role_method_reader=None,
@@ -1345,6 +1377,7 @@ def open_specialist_receipted_composition(
     lead_assistance=None,
     required_source_checks=(),
     data_composition_factory=None,
+    remaining_model_requests=None,
 ) -> Iterator[SpecialistReceiptedComposition]:
     """Open the same bounded graph for a trusted replay or provider turn port."""
 
@@ -1371,6 +1404,7 @@ def open_specialist_receipted_composition(
         plan_invocation_id=plan_invocation_id,
         research_task=research_task,
         dependency_workpapers=dependency_workpapers,
+        revision_source_workpapers=revision_source_workpapers,
         source_workpaper=source_workpaper,
         research_question=research_question,
         role_method_reader=role_method_reader,
@@ -1381,6 +1415,7 @@ def open_specialist_receipted_composition(
         lead_assistance=lead_assistance,
         required_source_checks=required_source_checks,
         data_composition_factory=data_composition_factory,
+        remaining_model_requests=remaining_model_requests,
     ) as opened:
         yield SpecialistReceiptedComposition(
             graph_input=opened.graph_input,

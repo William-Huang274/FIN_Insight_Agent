@@ -8,6 +8,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 
 from sec_agent.agent_runtime.research_context_view import working_view, public_operation
 from test_context_retirement import batch
+from test_research_context_view import snapshot
 
 
 def state():
@@ -38,12 +39,12 @@ def test_accepted_copies_resolve_exactly_and_original_journal_is_unchanged():
     args = {**note, 'reason_summary': 'Save progress', 'resolved_questions': ['Past question']}
     receipt = {'accepted': True, 'working_state': {**note, 'reference_issues': [{'status': 'unresolved'}]}}
     rows.extend(batch('save', 'UpdateResearchStateAction', args, receipt))
-    saved = deepcopy(rows); out = working_view(rows); view = json.loads(out[0].content)
-    assert 'current_value_at' in str(out[-2:])
-    assert expanded(out[-2].tool_calls[0]['args'], view) == args
-    assert expanded(json.loads(out[-1].content)['result'], view) == receipt
-    assert out[-2].additional_kwargs == rows[-2].additional_kwargs
-    assert out[-2].tool_calls[0]['id'] == out[-1].tool_call_id == 'save'
+    saved = deepcopy(rows); out = working_view(rows); view = snapshot(out)
+    assert 'current_value_at' in str(out[-3:-1])
+    assert expanded(out[-3].tool_calls[0]['args'], view) == args
+    assert expanded(json.loads(out[-2].content)['result'], view) == receipt
+    assert out[-3].additional_kwargs == rows[-2].additional_kwargs
+    assert out[-3].tool_calls[0]['id'] == out[-2].tool_call_id == 'save'
     assert rows == saved and working_view(out) == out
     assert public_operation(rows, 'save')['receipt']['result'] == receipt
 
@@ -53,7 +54,7 @@ def test_unaccepted_or_failed_identical_proposal_is_never_compacted(status, acce
     note = state(); rows = base(note)
     receipt = {'working_state': note, 'accepted': accepted, 'feedback': 'Repair this field'}
     rows.extend(batch('bad', 'UpdateResearchStateAction', note, receipt, status=status))
-    assert working_view(rows)[-2:] == rows[-2:]
+    assert working_view(rows)[-3:-1] == rows[-2:]
 
 
 def test_pending_call_and_different_argument_are_not_assumed_accepted():
@@ -61,7 +62,7 @@ def test_pending_call_and_different_argument_are_not_assumed_accepted():
     proposed = {**note, 'findings': ['A different proposed finding']}
     rows.extend(batch('ok', 'UpdateResearchStateAction', proposed, {'accepted': True, 'working_state': note}))
     out = working_view(rows)
-    assert out[-2].tool_calls[0]['args']['findings'] == proposed['findings']
+    assert out[-3].tool_calls[0]['args']['findings'] == proposed['findings']
     pending = AIMessage(content='', tool_calls=[{'id': 'pending', 'name': 'UpdateResearchStateAction', 'args': note}])
     rows.append(pending)
     assert working_view(rows)[-1] == pending
@@ -70,7 +71,7 @@ def test_pending_call_and_different_argument_are_not_assumed_accepted():
 def test_acknowledgement_without_saved_state_does_not_rewrite_proposal():
     rows = base(state())
     rows.extend(batch('ack', 'UpdateResearchStateAction', state(), {'accepted': True}))
-    assert working_view(rows)[-2:] == rows[-2:]
+    assert working_view(rows)[-3:-1] == rows[-2:]
 
 
 def test_preparation_and_basis_share_current_objects_but_keep_digest_and_conditions():
@@ -82,19 +83,19 @@ def test_preparation_and_basis_share_current_objects_but_keep_digest_and_conditi
     args = {'brief': brief, 'reason_summary': 'Ready to write'}
     rows.extend(batch('prep', 'PrepareWorkpaperAction', args, {'status': 'prepared'},
         context={'task_context': {'authoring_context': authoring}}))
-    saved = deepcopy(rows); out = working_view(rows); view = json.loads(out[0].content)
+    saved = deepcopy(rows); out = working_view(rows); view = snapshot(out)
     projected = view['current_context']['task_context']['authoring_context']
     assert expanded(projected, view) == authoring
-    assert expanded(out[-2].tool_calls[0]['args'], view) == args
+    assert expanded(out[-3].tool_calls[0]['args'], view) == args
     assert public_operation(rows, 'prep')['operation']['args'] == args and rows == saved
 
 
-def test_stable_material_prefix_survives_new_turn_but_released_material_exits():
+def test_stable_material_body_survives_new_turn_but_released_material_exits():
     note = state(); rows = base(note)
     rows.extend(batch('save', 'UpdateResearchStateAction', note, {'accepted': True, 'working_state': note}))
-    first = working_view(rows)[0].content
+    first = next(m.content for m in working_view(rows) if m.additional_kwargs.get('fin_research_working_view'))
     body = json.loads(rows[0].content); body['turn_index'] += 1; rows[0].content = json.dumps(body)
-    second = working_view(rows)[0].content
+    second = next(m.content for m in working_view(rows) if m.additional_kwargs.get('fin_research_working_view'))
     assert len(os.path.commonprefix([first, second])) > len(json.dumps(note))
     assert json.loads(first)['current_materials'] == json.loads(second)['current_materials']
     assert list(json.loads(first))[:2] == ['current_materials', 'current_material_bindings']
@@ -102,7 +103,7 @@ def test_stable_material_prefix_survives_new_turn_but_released_material_exits():
     rows.extend(batch('next', 'RequestSourceAction', {}, {'passage_id': 'P2', 'passage': 'New source'}))
     changed = {**note, 'retain_source_ids': ['P2']}
     rows.extend(batch('release', 'UpdateResearchStateAction', changed, {'accepted': True, 'working_state': changed}))
-    assert 'Exact source, scope' not in working_view(rows)[0].content
+    assert 'Exact source, scope' not in next(m.content for m in working_view(rows) if m.additional_kwargs.get('fin_research_working_view'))
 
 
 def test_tool_order_is_deterministic_without_adding_inactive_tools():

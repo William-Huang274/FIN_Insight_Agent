@@ -13,7 +13,18 @@ import hashlib
 import json
 from pathlib import Path
 import socket
+import sys
 from unittest.mock import patch
+
+
+# The developer virtualenv can have the primary checkout installed in editable
+# mode.  This replay is deliberately runnable from an isolated worktree, so
+# load the adjacent source tree before importing runtime modules.  Otherwise a
+# replay can silently combine this script with a different checkout's runtime.
+ROOT = Path(__file__).resolve().parents[2]
+SOURCE_ROOT = str((ROOT / "src").resolve())
+if SOURCE_ROOT not in sys.path:
+    sys.path.insert(0, SOURCE_ROOT)
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 

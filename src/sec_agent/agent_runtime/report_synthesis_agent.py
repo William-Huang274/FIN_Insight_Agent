@@ -1,6 +1,6 @@
 """Compose, review and revise a report from case working papers."""
 from __future__ import annotations
-from .lead_issue_decision import LeadIssueDecision, decision_errors
+from .lead_issue_decision import LeadIssueDecision, decision_errors, resolve_disposition_ids
 
 from sec_agent.research_foundation.source_quotes import contains_source_quote
 
@@ -580,10 +580,11 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_lead_issue_decision(decision: LeadIssueDecision, runtime: ToolRuntime) -> Command:
-        """Decide every original finding using current papers/sources. No self-certified acceptance. Repair only affected work, or retain unresolved and stop."""
+        """Decide every original finding using current papers/sources. Unique current-paper original IDs resolve with a receipt; ambiguous IDs need full IDs. No self-certified acceptance. Repair only affected work, or retain unresolved and stop."""
         from .workpaper_changes import paper_versions
-        errors = decision_errors(decision, feedback or {}, {p["paper_id"] for p in artifacts.catalog()["papers"]}, incomplete_reviewers=incomplete_reviewers,
-            current_versions=paper_versions(artifacts.with_revisions(runtime.state.get('revisions', {}))) if incomplete_reviewers is not None else None)
+        decision, resolutions, errors = resolve_disposition_ids(decision, feedback or {})
+        errors.extend(decision_errors(decision, feedback or {}, {p["paper_id"] for p in artifacts.catalog()["papers"]}, incomplete_reviewers=incomplete_reviewers,
+            current_versions=paper_versions(artifacts.with_revisions(runtime.state.get('revisions', {}))) if incomplete_reviewers is not None else None))
         try:
             refs = " ".join("[" + ref + "]" for row in [*decision.dispositions, *decision.new_findings] for ref in row.citation_ids)
             citations = report_citations(refs, artifacts, runtime.state.get("messages", [])) if refs else {}
@@ -591,8 +592,14 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             errors.append(str(exc))
             citations = {}
         if errors:
-            return output_message(runtime, error="; ".join(errors))
-        return output_message(runtime, {"kind": "lead_issue_decision", **decision.model_dump(mode="json"), "citations": citations})
+            result = output_message(runtime, error="; ".join(errors))
+        else:
+            result = output_message(runtime, {"kind": "lead_issue_decision", **decision.model_dump(mode="json"), "citations": citations,
+                **({'finding_id_resolutions': resolutions} if resolutions else {})})
+        if resolutions:
+            result.update['messages'][0].content += '\n' + json.dumps({'finding_id_resolutions': resolutions,
+                'submission_saved': not errors}, ensure_ascii=False)
+        return result
 
     @tool
     def read_public_conversation(runtime: ToolRuntime, message_index: int | None = None, offset: int = 0, max_characters: int = 6000) -> dict:
@@ -642,7 +649,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def search_research_sources(query: str, runtime: ToolRuntime, limit: int = 5) -> dict:
-        """Locate archived source windows in the current revised papers using FTS5 source-language terms, OR or quoted phrases. Read matches with read_current_source; searching is not verification."""
+        """Search current archived sources using words or numbers such as 24,461 or 35.6%; runtime handles numeric punctuation. Explicit OR and quoted phrases remain supported. Read candidates with read_current_source; searching does not select or verify a source."""
         try:
             result = artifacts.with_revisions(runtime.state.get("revisions", {})).search_sources(query, limit)
             result["notice"] = result["notice"].replace("read_research_source", "read_current_source")
@@ -896,7 +903,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         submit = submit_case_report
         selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     elif role == "decision":
-        specific = "You are the Research Lead handling current independent review findings BEFORE final judgment. Read relevant current workpapers and original sources. For each supplied paper/finding pair decide targeted repair, source-backed disagreement, or unresolved. Preserve unaffected work, numerical/period/unit/denominator qualifiers and counterevidence. State expected progress, not just 'try again'. Do not write the final report here. Disagreement remains visible to the independent downstream verifier. If no findings need work, proceed to synthesis; if necessary evidence cannot be obtained, stop explicitly. Never declare a reviewer or author correct merely because they submitted."
+        specific = "You are the Research Lead handling current independent review findings BEFORE final judgment. Inspect the affected current text and use original sources where needed to decide each paper/finding pair: targeted repair, source-backed disagreement, or unresolved. Separate identifier repair from factual or inferential correction. Preserve existing correct content and qualifiers; figures appearing only in feedback are not existing text to preserve. Do not turn an identifier defect into a requirement to add claims. Record a newly discovered substantive issue separately with its basis. State expected progress for the actual defect, not just 'try again'. Do not write the final report here. Disagreement remains visible to the independent downstream verifier. If no findings need work, proceed to synthesis; if necessary evidence cannot be obtained, stop explicitly. Never declare a reviewer or author correct merely because they submitted."
         submit = submit_lead_issue_decision
         specific += " For a supplied advisory finding only, you may choose carry_advisory with an explicit reason it does not affect the answer and report_handling that avoids or qualifies the wording in synthesis. This preserves the issue visibly; it does not repair the paper or certify review. Do not reopen unchanged research for style alone. Material, unclassified and newly discovered issues cannot be carried this way."
         if incomplete_reviewers is not None:

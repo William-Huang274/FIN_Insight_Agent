@@ -28,9 +28,10 @@ from pydantic import (
 )
 
 from .research_contracts import ProviderEvidenceIntent
+from .calculation_bindings import FACT_STATES, KIND_DESCRIPTION, calculation_binding_issues
 from .task_outcome import AuthorTaskNote, TaskCoverage
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
-from .authoring_context import PrepareWorkpaperAction, bind_authoring, validate_authoring, specialist_basis, stage_methods
+from .authoring_context import PrepareWorkpaperAction, bind_authoring, validate_specialist_preparation, specialist_basis, stage_methods
 from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools, apply_working_state, accepted_context_checkpoint
 from .source_check_scope import RequiredSourceCheck, SOURCE_CHECK_GUIDANCE, source_check_progress, source_check_errors
 from .workpaper_revision_state import revision_state, revision_progress, revision_submission_issues
@@ -202,20 +203,25 @@ class RequestFinanceAction(_StrictModel):
 
 
 class ReadResearchHistoryAction(_StrictModel):
-    """Read public actions, exact operation receipts or Lead assistance; never re-execute."""
+    """Read saved history, never re-execute. operation requires tool_call_id and forbids index; turn/lead_assistance require index and forbid tool_call_id/source_ids."""
     action: Literal['read_research_history'] = 'read_research_history'
     context_digest: str
     section: Literal['turn', 'lead_assistance', 'operation']
-    index: int | None = Field(default=None, ge=1)
-    tool_call_id: str | None = Field(default=None, description='For operation: copy the exact ID from operation_catalog or a supplied context-field readback. Reads saved data without re-execution; runtime:context: locators return run-bound current metadata.')
+    index: int | None = Field(default=None, ge=1, description='Required for turn or lead_assistance only. Must be omitted for operation; it cannot replace tool_call_id.')
+    tool_call_id: str | None = Field(default=None, description='Required for operation, with index omitted. Copy the exact ID from saved_reads, operation_catalog or a supplied context-field readback. Source/document IDs are not tool_call_id. Reads saved data without re-execution; runtime:context: locators return run-bound current metadata.')
+    view: Literal['receipt', 'record'] | None = Field(default=None, exclude_if=lambda value: value is None,
+        description='For operation: receipt reads the outcome without old arguments. Revision manuscript reads separate old task records into task_record_read; record returns the complete original field/operation. If omitted, submissions and revision manuscripts return receipt. Follow next_read for paging.')
+    offset: int = Field(default=0, ge=0, description='Character offset for a large saved operation record. Copy next_offset from the prior historical receipt.')
+    max_characters: int = Field(default=12_000, ge=1_000, le=24_000, description='Largest serialized historical-record window. This does not reread, truncate or alter the archived original.')
+    source_ids: tuple[str, ...] = Field(default=(), max_length=12, description='For operation only: optional filter within the saved operation identified by required tool_call_id. Cannot be used alone or search across operations. Copy saved_reads arguments to return exact original objects instead of a generic serialized page.')
     reason_summary: str
 
     @model_validator(mode='after')
     def history_selector(self):
         if self.section == 'operation':
             if not self.tool_call_id or self.index is not None:
-                raise ValueError('operation_requires_tool_call_id_without_index')
-        elif self.index is None or self.tool_call_id is not None:
+                raise ValueError('operation_requires_tool_call_id_without_index: copy section=operation, tool_call_id and source_ids from saved_reads; or copy the operation_catalog tool_call_id. Omit index. source_ids alone cannot locate an operation.')
+        elif self.index is None or self.tool_call_id is not None or self.source_ids:
             raise ValueError('history_section_requires_index_without_tool_call_id')
         return self
 
@@ -280,11 +286,7 @@ ClaimKind = Literal[
 
 class SpecialistClaim(_StrictModel):
     claim_id: str = Field(min_length=1, max_length=240)
-    kind: ClaimKind = Field(description=(
-        "reported_fact includes numbers quoted from source passages/PDF tables; cite PASSAGE in evidence_ids. "
-        "numeric_fact is exclusively a typed S2/NUMFACT receipt in fact_ids, not any sentence containing a number. "
-        "calculation cites an observed CALC receipt; inference/hypothesis/boundary describe analytical interpretation."
-    ))
+    kind: ClaimKind = Field(description=KIND_DESCRIPTION)
     materiality: Literal["high", "medium", "low"]
     statement: str = Field(min_length=1, max_length=4_000)
     evidence_ids: tuple[str, ...] = Field(default=(), max_length=32, description=(
@@ -293,6 +295,7 @@ class SpecialistClaim(_StrictModel):
         "reading coverage may leave this empty and explain its scope in authority_note; do not claim issuer non-disclosure from search failure."))
     fact_ids: tuple[str, ...] = Field(default=(), max_length=48, description=(
         "Observed NUMFACT/S2 IDs for numeric_fact, or canonical CALC IDs for calculation. "
+        "inference/hypothesis/boundary may also retain supporting observed CALC IDs with numeric_authority=not_applicable. "
         "Do not also copy CALC IDs into evidence_ids. Preserve source operands and calculation limitations."))
     numeric_authority: Literal[
         "authoritative", "non_authoritative", "not_applicable"
@@ -371,7 +374,7 @@ class SubmitWorkpaperAction(_StrictModel):
         "and actual changes. This is an author assessment, never execution or independent-review approval. "
         "Null is retained for older artifacts; it is displayed as missing, not completed."))
     citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict, exclude=True,
-        description="Optional shared quotes keyed by exact evidence ID. Runtime copies them only to claims already citing that ID; no need to repeat the same quote in every claim.")
+        description="Optional default quotes keyed by exact evidence ID. Runtime copies them only to claims already citing that ID without their own quote. Explicit claim-specific quotes take precedence and remain subject to source validation.")
 
     @model_validator(mode="after")
     def validate_submission_shape(self) -> "SubmitWorkpaperAction":
@@ -384,9 +387,13 @@ class SubmitWorkpaperAction(_StrictModel):
             for ref in claim.evidence_ids:
                 if ref not in self.citation_quotes:
                     continue
-                if ref in claim.citation_quotes and claim.citation_quotes[ref] != self.citation_quotes[ref]:
-                    raise ValueError("workpaper_shared_quote_conflict")
-                claim.citation_quotes[ref] = deepcopy(self.citation_quotes[ref])
+                # A claim may select a more precise excerpt from the same
+                # passage. Shared quotes are defaults, not a second assertion
+                # that every claim must quote the whole passage identically.
+                # Do not overwrite even an invalid local quote: the source
+                # validator must still report it to the author.
+                if ref not in claim.citation_quotes:
+                    claim.citation_quotes[ref] = deepcopy(self.citation_quotes[ref])
         claim_ids = tuple(claim.claim_id for claim in self.claims)
         if len(claim_ids) != len(set(claim_ids)):
             raise ValueError("specialist_submission_claim_id_duplicate")
@@ -416,6 +423,75 @@ class WorkpaperCoverageEdit(_StrictModel):
     assessment: TaskCoverage = Field(description="One assessment keyed by the exact assigned criterion. Inserts if absent, replaces if unique; do not echo the old coverage array.")
 
 
+def _claim_changes_schema(schema):
+    # Absence retains a field. Null is a real value only for nullable notes;
+    # do not advertise placeholder nulls that the host would then reject.
+    for name, field in schema.get('properties', {}).items():
+        field.pop('default', None)
+        if name not in {'authority_note', 'reasoning_summary'} and 'anyOf' in field:
+            variants = [v for v in field['anyOf'] if v.get('type') != 'null']
+            if len(variants) == 1:
+                field.pop('anyOf')
+                field.update(variants[0])
+            else:
+                field['anyOf'] = variants
+
+
+class WorkpaperClaimChanges(_StrictModel):
+    """Only supplied fields change; complete claim validation follows assembly."""
+    model_config = ConfigDict(json_schema_extra=_claim_changes_schema)
+    kind: ClaimKind | None = Field(default=None, description=KIND_DESCRIPTION)
+    materiality: Literal["high", "medium", "low"] | None = None
+    statement: str | None = Field(default=None, min_length=1, max_length=4_000)
+    evidence_ids: tuple[str, ...] | None = Field(default=None, max_length=32,
+        description="PASSAGE/evidence IDs only. Omit to retain existing bindings; [] explicitly clears them.")
+    fact_ids: tuple[str, ...] | None = Field(default=None, max_length=48,
+        description="NUMFACT/S2 or CALC IDs. CALC remains usable for calculation/inference/hypothesis/boundary even when writer_citable=false. Preserve its binding while dependent text remains. [] clears bindings, not dependent assertions; omit to retain existing IDs.")
+    numeric_authority: Literal["authoritative", "non_authoritative", "not_applicable"] | None = None
+    authority_note: str | None = Field(default=None, min_length=1, max_length=1_000)
+    reasoning_summary: str | None = Field(default=None, max_length=4_000)
+    citation_quotes: dict[str, str | list[str]] | None = Field(default=None,
+        description="Complete replacement of this claim's quote map when supplied. Omit to retain it. Shared source text may support multiple claims.")
+
+    @model_validator(mode="after")
+    def require_actual_fields(self):
+        if not self.model_fields_set:
+            raise ValueError("claim_changes_empty")
+        for key in self.model_fields_set - {"authority_note", "reasoning_summary"}:
+            if getattr(self, key) is None:
+                raise ValueError(f"claim_change_null_not_allowed:{key};omit_to_retain")
+        return self
+
+    @model_serializer(mode="wrap")
+    def only_changed_fields(self, handler):
+        return {key: value for key, value in handler(self).items() if key in self.model_fields_set}
+
+
+class WorkpaperClaimEdit(_StrictModel):
+    op: Literal["update_claim"]
+    claim_id: str = Field(min_length=1, max_length=240,
+        description="Exact existing claim ID, not its array position. Cannot insert or rename claims.")
+    changes: WorkpaperClaimChanges = Field(description="New values for changed fields only. The base_submission_digest guards the whole version; never copy old values or unchanged fields.")
+
+
+class WorkpaperSetField(_StrictModel):
+    op: Literal["set_field"]
+    path: str = Field(min_length=1, description=(
+        "JSON Pointer to a non-claim content field; an omitted optional top-level field may be initialized. E.g. /thesis, /mechanism, "
+        "/task_note/finding_responses or /open_gaps. Use update_claim for claims. "
+        "Use str_replace for a short prose fragment instead of copying a whole long section."))
+    value: Any = Field(description="New field value only; base_submission_digest protects the version. Omitted fields remain unchanged.")
+    value_note: str | None = Field(default=None, max_length=1000,
+        description="Optional explanation of this edit. Preserved in the save receipt as metadata; never inserted into manuscript text or treated as evidence or completion.")
+
+    @model_serializer(mode="wrap")
+    def preserve_legacy_edit_shape(self, handler):
+        body = handler(self)
+        if 'value_note' not in self.model_fields_set:
+            body.pop('value_note', None)
+        return body
+
+
 class WorkpaperEditError(ValueError):
     def __init__(self, code, issues):
         super().__init__(code)
@@ -424,16 +500,20 @@ class WorkpaperEditError(ValueError):
 
 class WorkpaperEditCorrection(_StrictModel):
     edit_index: int = Field(ge=0)
-    edit: WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit
+    edit: WorkpaperClaimEdit | WorkpaperSetField | WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit
 
 
 class ReviseWorkpaperAction(_StrictModel):
+    """Apply version-bound local edits and submit the assembled workpaper for validation.
+
+    Reuses unchanged content; no subsequent full SubmitWorkpaperAction is needed.
+    """
     action: Literal["revise_workpaper"]
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
     reason_summary: str = Field(min_length=1, max_length=1000)
     base_submission_digest: str = Field(pattern=_DIGEST_PATTERN)
-    edits: tuple[WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit, ...] = Field(default=(),
-        description="One atomic batch. On rejection it is saved; repair only affected edits with pending_revision_digest and edit_corrections. Prefer str_replace for text fragments and upsert_coverage for one assessment.")
+    edits: tuple[WorkpaperClaimEdit | WorkpaperSetField | WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit, ...] = Field(default=(),
+        description="One version-bound batch: update_claim by ID with changed fields, set_field for other complete fields, str_replace for prose fragments, upsert_coverage for assessments. On rejection, repair only affected saved edits with pending_revision_digest and edit_corrections.")
     pending_revision_digest: str | None = Field(default=None, pattern=_DIGEST_PATTERN)
     edit_corrections: tuple[WorkpaperEditCorrection, ...] = ()
 
@@ -455,13 +535,33 @@ class ReviseWorkpaperAction(_StrictModel):
         return self
 
 
-def resolve_workpaper_revision(action: ReviseWorkpaperAction, pending: dict | None) -> ReviseWorkpaperAction:
+class SaveWorkpaperEditsAction(ReviseWorkpaperAction):
+    """Persist ready changes, even one field, without waiting for the whole revision.
+
+    Related prose or dependencies may be completed in later batches before final
+    submission. One save may accompany independent reads/calculations whose
+    inputs are already available. Saving never submits the paper or finishes research.
+    """
+    action: Literal["save_workpaper_edits"]
+    operation_id: str = Field(min_length=1, max_length=160,
+        description="Unique batch identity. Reuse with identical content only when checking an uncertain save receipt.")
+
+
+class FinalizeWorkpaperRevisionAction(_StrictModel):
+    """Submit the saved draft version for complete validation without resending its content."""
+    action: Literal["finalize_workpaper_revision"]
+    context_digest: str = Field(pattern=_DIGEST_PATTERN)
+    reason_summary: str = Field(min_length=1, max_length=1000)
+    draft_digest: str = Field(pattern=_DIGEST_PATTERN)
+
+
+def resolve_workpaper_revision(action: ReviseWorkpaperAction, pending: dict | None, *, current_base: str | None = None) -> ReviseWorkpaperAction:
     """Repair a saved atomic batch without guessing or dropping its other edits."""
     if action.edits:
         return action
     if not pending or action.pending_revision_digest != pending.get("digest"):
         raise ValueError("pending_revision_digest_mismatch_use_current_edit_feedback")
-    if action.base_submission_digest != pending.get("base_submission_digest"):
+    if action.base_submission_digest not in {pending.get("base_submission_digest"), current_base}:
         raise ValueError("pending_revision_base_mismatch")
     edits = deepcopy(pending["edits"])
     seen = set()
@@ -471,7 +571,7 @@ def resolve_workpaper_revision(action: ReviseWorkpaperAction, pending: dict | No
             raise ValueError("pending_revision_edit_index_invalid_or_repeated")
         seen.add(index)
         edits[index] = correction.edit.model_dump(mode="json")
-    return ReviseWorkpaperAction.model_validate_json(json.dumps({
+    return type(action).model_validate_json(json.dumps({
         **action.model_dump(mode="json"), "edits": edits,
         "pending_revision_digest": None, "edit_corrections": []}))
 
@@ -480,6 +580,31 @@ def save_workpaper_revision(action: ReviseWorkpaperAction) -> dict:
     batch = {"base_submission_digest": action.base_submission_digest,
         "edits": [edit.model_dump(mode="json") for edit in action.edits]}
     return {**batch, "digest": canonical_sha256(batch)}
+
+
+def workpaper_edit_path(original: dict, edit) -> str:
+    if isinstance(edit, WorkpaperCoverageEdit):
+        return "/task_note/coverage"
+    if isinstance(edit, WorkpaperClaimEdit):
+        matches = [i for i, claim in enumerate(original.get("claims", []))
+                   if isinstance(claim, dict) and claim.get("claim_id") == edit.claim_id]
+        if len(matches) != 1:
+            raise ValueError("claim_id_not_found_or_not_unique")
+        return f"/claims/{matches[0]}"
+    return edit.path
+
+
+def workpaper_revision_contract() -> dict[str, str]:
+    from .task_outcome import AuthorFindingResponse
+    return {
+        "local_revision": "SaveWorkpaperEditsAction persists ready changes, even one field or claim, without waiting for all related edits. Related prose and dependencies may be completed in later batches. Previously saved batches survive a later failure. FinalizeWorkpaperRevisionAction submits the saved draft_digest for complete validation; only then must the complete revision be consistent. No full content resubmission.",
+        "claim_changes": "Use op=update_claim, exact claim_id, changes containing only new values for affected fields. Omitted fields retain their values; no old_value or array index is needed.",
+        "calculation_bindings": "Keep supporting CALC IDs in fact_ids while dependent results or interpretation remain. Use the supplied kind/numeric_authority schema. Draft warnings do not reject saving; finalization checks explicit references and bindings.",
+        "other_changes": "Use set_field with path/value for complete non-claim fields; str_replace for a short text fragment; upsert_coverage for an assessment. Update affected prose and judgments as needed; this does not auto-rewrite them.",
+        "review_response_path": "/task_note/finding_responses",
+        "review_response_item_schema": json.dumps(AuthorFindingResponse.model_json_schema(), ensure_ascii=False),
+        "change_note_path": "/task_note/changes",
+    }
 
 
 def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperAction) -> dict[str, Any]:
@@ -495,7 +620,13 @@ def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperActio
     editable = set(SubmitWorkpaperAction.model_fields) - {"action", "context_digest", "reason_summary"}
     updated, issues = deepcopy(original), []
     for index, edit in enumerate(action.edits):
-        path = "/task_note/coverage" if isinstance(edit, WorkpaperCoverageEdit) else edit.path
+        try:
+            path = workpaper_edit_path(updated, edit)
+        except ValueError:
+            issues.append({"location": ["edits", index], "edit_index": index,
+                "claim_id": edit.claim_id, "path": "/claims", "code": "claim_id_not_found_or_not_unique",
+                "remedy": "Copy an exact existing claim_id from the current candidate; IDs are not inferred or created."})
+            continue
         def issue(code, remedy, **details):
             issues.append({"location": ["edits", index], "edit_index": index, "path": path,
                 "code": code, "remedy": remedy, **details})
@@ -506,14 +637,33 @@ def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperActio
             issue("invalid_path", "Use a valid JSON Pointer into the current candidate.")
             continue
         if not parts or parts[0] not in editable:
-            issue("field_not_editable", "Edit only workpaper content, not action/context/reason metadata.")
+            nested = ("/task_note" + path if parts and parts[0] in (original.get("task_note") or {}) else None)
+            if nested:
+                issue("field_not_editable", f"This field belongs under task_note. Use {nested}; retain the intended edit content. Correct this saved edit only, not the whole workpaper.", suggested_path=nested)
+            else:
+                issue("field_not_editable", "Edit only workpaper content, not action/context/reason metadata.")
             continue
+        missing_optional = False
         try:
             current = pointer.resolve(updated)
         except (jsonpatch.JsonPointerException, TypeError):
-            issue("path_not_found", "Locate the existing field in submission_to_repair.candidate; array paths use numeric indices.")
-            continue
-        if isinstance(edit, WorkpaperTextEdit):
+            # Historical submissions omit optional fields (e.g. task_note).
+            # An explicit field edit can initialize one without rewriting or
+            # normalizing the frozen original/digest. Nested typos still fail.
+            missing_optional = (isinstance(edit, WorkpaperSetField) and len(parts) == 1
+                and parts[0] not in updated and not SubmitWorkpaperAction.model_fields[parts[0]].is_required())
+            if not missing_optional:
+                issue("path_not_found", "Locate the existing field in submission_to_repair.candidate; array paths use numeric indices.")
+                continue
+            current = None
+        if isinstance(edit, WorkpaperClaimEdit):
+            replacement = {**current, **edit.changes.model_dump(mode="json")}
+        elif isinstance(edit, WorkpaperSetField):
+            if parts[0] == "claims":
+                issue("claim_update_requires_id", "Use update_claim with an existing claim_id and changed fields.")
+                continue
+            replacement = edit.value
+        elif isinstance(edit, WorkpaperTextEdit):
             if not isinstance(current, str):
                 issue("text_field_required", "Use str_replace only on a text field; use upsert_coverage for assessments.")
                 continue
@@ -554,8 +704,9 @@ def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperActio
                 continue
             replacement = edit.new_value
         try:
-            updated = jsonpatch.apply_patch(updated, [{"op": "test", "path": path, "value": current},
-                {"op": "replace", "path": path, "value": replacement}], in_place=False)
+            patch = ([{"op": "add", "path": path, "value": replacement}] if missing_optional else
+                [{"op": "test", "path": path, "value": current}, {"op": "replace", "path": path, "value": replacement}])
+            updated = jsonpatch.apply_patch(updated, patch, in_place=False)
         except (jsonpatch.JsonPatchException, jsonpatch.JsonPointerException):
             issue("path_update_failed", "Recheck this path against the current candidate.")
     if issues:
@@ -919,7 +1070,9 @@ class SpecialistFeedback(_StrictModel):
     # explanation is long. The provider's total input budget remains enforced.
     message: str = Field(min_length=1)
     owner_layer: Literal["agent", "runtime", "tool", "data"]
-    available_next_actions: tuple[str, ...] = Field(min_length=1, max_length=8)
+    # These are runtime-owned allowed actions, including revision operations.
+    # An older fixed count must not prevent delivery of recovery feedback.
+    available_next_actions: tuple[str, ...] = Field(min_length=1)
     public_information_gap_proved: Literal[False] = False
 
 
@@ -1093,6 +1246,7 @@ class SpecialistAgenticState(TypedDict, total=False):
     revision_tracking_version: int
     last_edit_feedback: dict[str, Any]
     pending_workpaper_revision: dict[str, Any] | None
+    workpaper_draft: dict[str, Any] | None
     notebook: dict[str, Any]
     pending_action: dict[str, Any] | None
     tool_results: list[dict[str, Any]]
@@ -1132,6 +1286,8 @@ class SpecialistAgenticDependencies:
     lead_assistance: Callable | None = None
     dependency_reader: Callable | None = None
     restore_source_observations: Callable | None = None
+    # Live shared-run allowance supplied by the scheduler, not a fresh node quota.
+    remaining_model_requests: Callable[[], int] | None = None
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
@@ -1211,6 +1367,7 @@ def _model_request(
     authoring_enabled: bool = False,
     authoring_domain: str = 'finance',
     method_reader=None,
+    remaining_model_requests: int | None = None,
 ) -> dict[str, Any]:
     l0 = _validate_model_json(
         SpecialistL0Context,
@@ -1264,13 +1421,25 @@ def _model_request(
             "reason_summary_is_decision_rationale_not_chain_of_thought": True,
         },
     }
+    if remaining_model_requests is not None:
+        if type(remaining_model_requests) is not int or remaining_model_requests < 0:
+            raise SpecialistAgenticGraphError("shared_model_request_budget_invalid")
+        budget = body["execution_budget"]
+        budget["node_remaining_model_turns"] = budget["remaining_model_turns"]
+        budget["shared_remaining_model_requests"] = remaining_model_requests
+        budget["remaining_model_turns"] = min(budget["remaining_model_turns"], remaining_model_requests)
+        budget["allowance_scope"] = "shared_run_including_this_request_not_reserved_for_this_author"
+        budget["stop_behavior"] = "At exhaustion preserve unfinished work; do not claim completion or omit necessary checks. Transport enforces the shared allowance."
     if state.get("tool_results"):
         body["tool_results"] = state["tool_results"]
     if collaboration:
         body["collaboration_context"] = collaboration
     if state.get("task_context") is not None:
         body["task_context"] = state["task_context"]
-        if state['task_context'].get('dependency_workpapers') or state['task_context'].get('saved_source_materials'):
+        if (state['task_context'].get('dependency_workpapers') or state['task_context'].get('saved_source_materials')
+                or any(check.get('readback', {}).get('tool') == 'ReadDependencyWorkAction'
+                       for finding in state['task_context'].get('revision_feedback', [])
+                       for check in finding.get('source_checks', []))):
             allowed_actions.append('read_dependency_work')
         if state['task_context'].get('professional'):
             allowed_actions[:] = [a for a in allowed_actions if a not in {'request_finance','request_evidence'}]
@@ -1311,11 +1480,12 @@ def _model_request(
     if authoring_enabled and not collaboration:
         from sec_agent.research_foundation.research_methods import get_research_method
         try:
-            validate_authoring(state.get('authoring_context') or {},
+            preparation_changes = validate_specialist_preparation(state.get('authoring_context') or {},
                 owner=state['agent_id'], basis=specialist_basis(state))
             drafting = True
         except ValueError:
             drafting = False
+            preparation_changes = []
         selected_methods = [row['role_method'] for row in body['l0_context']['skill_summaries']
                             if isinstance(row.get('role_method'), dict) and row['role_method'].get('method_id')]
         def authoring_method_reader(method_id):
@@ -1334,36 +1504,100 @@ def _model_request(
         for key in ('role_method', 'research_method', 'delegation_guidance'):
             context.pop(key, None)
         context['authoring_context'] = state.get('authoring_context') if drafting else None
+        context['changes_since_preparation'] = preparation_changes
         context['stage_methods'] = stage_methods('workpaper' if drafting else 'prepare_workpaper',
             domain=authoring_domain, reader=authoring_method_reader)
-        context['authoring_instruction'] = ('Preparation is already accepted and bound to the CURRENT evidence and working state. '
-            'Write and use SubmitWorkpaperAction now; do not repeat preparation because an older note or continuation '
-            'instruction still says to prepare. Preparation becomes available again only if research/working-state '
-            'changes invalidate this binding. Preserve original evidence and unresolved limits.' if drafting else
+        context['authoring_instruction'] = ('Your preparation for this task is retained with its original basis. '
+            'Evaluate changes_since_preparation against the current sources, working state and review findings; '
+            'update affected judgments in the candidate when needed. Changed inputs do not automatically require another preparation. '
+            'Submit the first draft with SubmitWorkpaperAction; save revision batches with SaveWorkpaperEditsAction. '
+            'FinalizeWorkpaperRevisionAction validates the saved draft version without full resubmission. Do not repeat preparation because an older note or continuation '
+            'instruction still says to prepare. Preserve original evidence and unresolved limits.' if drafting else
             'Complete the assigned research, then call PrepareWorkpaperAction with your public effective state before final submission. No final submission until prepared.')
         body['task_context'] = context
-    last = state.get("last_submission_attempt") or {}
+    from .submission_reference_feedback import refresh_reference_feedback, refresh_terminal_receipts
+    from .revision_submission_state import revision_attempt_view, accepted_baseline
+    last = refresh_reference_feedback(revision_attempt_view(state),
+        notebook.model_dump(mode="json"), state.get("delegated_work"))
+    if body.get("tool_results"):
+        body["tool_results"] = refresh_terminal_receipts(body["tool_results"], last)
+    if (last.get("accepted") is False and notebook.model_turn_records
+            and isinstance(notebook.model_turn_records[-1].action, (SubmitWorkpaperAction, SubmitReviewAction))):
+        # Old checkpoints may contain a direct terminal action, without a native
+        # ToolNode receipt. Preserve its real rejection at the tool-call boundary
+        # during recovery; source reads and human-review handoffs do not qualify.
+        body["terminal_result"] = {"accepted": False,
+            "feedback": last.get("feedback", []),
+            "validation_issues": last.get("validation_issues", [])}
+    baseline = accepted_baseline(state)
+    if last.get('submission_status') == 'not_submitted':
+        body['revision_submission_status'] = {'status': 'not_submitted',
+            'baseline_accepted': True, 'baseline_digest': baseline['submission_digest']}
+        if (notebook.model_turn_records
+                and notebook.model_turn_records[-1].turn_index == baseline['through_model_turn']
+                and isinstance(notebook.model_turn_records[-1].action, (SubmitWorkpaperAction, SubmitReviewAction))):
+            body['terminal_result'] = {'accepted': True, 'feedback': [], 'validation_issues': []}
     candidate = last.get("arguments")
+    draft = state.get("workpaper_draft")
+    if draft:
+        from .workpaper_drafts import current_draft
+        draft = current_draft(state)
+        candidate = draft["arguments"]
     if "submit_workpaper" in allowed_actions and isinstance(candidate, dict) and candidate.get("action") == "submit_workpaper" and not last.get("accepted"):
+        from .revision_guidance import AUTHOR_REVISION_GUIDANCE
+        # Refresh the request view on resume too; do not append to stale guidance.
+        body["task_context"] = {**body.get("task_context", {}), "revision_instruction": AUTHOR_REVISION_GUIDANCE}
         if allow_workpaper_field_edits:
-            allowed_actions.append("revise_workpaper")
+            allowed_actions.extend(["save_workpaper_edits", "finalize_workpaper_revision"])
         body["submission_to_repair"] = {"base_submission_digest": canonical_sha256(candidate), "candidate": candidate}
+        body['submission_to_repair']['calculation_binding_issues'] = calculation_binding_issues(
+            candidate, notebook.model_dump(mode='json'),
+            (state.get('last_submission_attempt') or {}).get('arguments'))
+        if draft:
+            body["submission_to_repair"]["draft_state"] = {k: deepcopy(draft.get(k)) for k in ("digest", "baseline_digest", "saved_batches", "changed_paths", "latest_changed_paths", "draft_issues", "change_status")}
+            from .workpaper_drafts import current_draft_issues
+            body["submission_to_repair"]["draft_state"]["draft_issues"] = current_draft_issues(candidate)
+            body["revision_submission_status"] = {"status": "draft_saved_not_submitted", "accepted": False}
         targets = revision_progress(state, candidate)
         body["submission_to_repair"].update(
             edit_progress=targets, last_edit_feedback=state.get("last_edit_feedback"),
             current_candidate_digest=canonical_sha256(candidate),
             validation_feedback={"issues": last.get("validation_issues", []),
                 "validated_candidate_digest": last.get("validated_candidate_digest"),
-                "binding": ("current_candidate" if last.get("validated_candidate_digest") == canonical_sha256(candidate)
+                "binding": ("current_candidate" if (last.get("validated_candidate_digest") == canonical_sha256(candidate)
+                    or last.get("submitted_draft_digest") == canonical_sha256(candidate))
                     else "legacy_or_attempt_feedback_not_confirmed_for_current_candidate"),
                 "origin": "runtime_submission_validation",
                 "notice": "Use precise current-candidate locations for repair. Older notebook feedback is history; "
-                    "it does not establish an unresolved error in a later candidate. Unbound feedback requires checking the current value."},
-            revision_guidance="Revision is in progress. Keep the whole assignment, required_source_checks and prior review findings in scope, not only the latest tool error. "
-                "Unchanged requested fields block submission; completion notes do not close them. Changed fields are not semantically verified. "
-                "Before reporting a correction, inspect the actual current candidate, not an earlier proposed edit. Correct related body, claims, counterevidence and notes consistently. "
-                "For a text fragment use str_replace; for one coverage assessment use upsert_coverage. No need to repeat the whole field or coverage array. "
-                "A previous working_state marked completed describes the prior submission, not completion of this revision.")
+                    "it does not establish an unresolved error in a later candidate. Unbound feedback requires checking the current value."})
+        if allow_workpaper_field_edits:
+            # An existing candidate is edited and assembled by the runtime.
+            # Do not offer two competing submission protocols for this stage.
+            allowed_actions.remove("submit_workpaper")
+            body["submission_to_repair"]["submission_contract"] = workpaper_revision_contract()
+            pending = state.get("pending_workpaper_revision") or {}
+            if pending:
+                # Re-evaluate old checkpoint errors with the current validator;
+                # never apply or silently repair the author's proposed content.
+                try:
+                    proposal = ReviseWorkpaperAction.model_validate_json(json.dumps({
+                        "action": "revise_workpaper", "context_digest": "0" * 64,
+                        "reason_summary": "Validate saved edit paths for current feedback.",
+                        "base_submission_digest": pending["base_submission_digest"], "edits": pending["edits"]}))
+                    if draft and proposal.base_submission_digest != draft['digest']:
+                        from .draft_rebase import assess_draft_rebase
+                        assessment = assess_draft_rebase(draft, proposal)
+                        if assessment['conflicts']:
+                            raise WorkpaperEditError('workpaper_edit_base_conflict', assessment['conflicts'])
+                        proposal = proposal.model_copy(update={'base_submission_digest': draft['digest']})
+                    apply_workpaper_edits(candidate, proposal)
+                except WorkpaperEditError as exc:
+                    body["submission_to_repair"]["pending_edit_validation"] = {
+                        "pending_revision_digest": pending["digest"], "issues": exc.issues,
+                        "current_base_submission_digest": canonical_sha256(candidate),
+                        "next_action": "The pending proposal is retained, not applied. Reconcile affected fields against the current candidate, then send only edit_corrections with this pending_revision_digest and current_base_submission_digest. Other pending edits are reused; existing saved batches are preserved."}
+                except (ValueError, KeyError):
+                    pass  # Existing schema feedback remains authoritative.
     return {**body, "context_digest": canonical_sha256(body)}
 
 
@@ -1582,7 +1816,7 @@ def _quote_issue_location(error, submission, notebook):
                     "source_line_candidates": get_close_matches(quote, lines, n=3, cutoff=.65),
                     "origin": "runtime_quote_navigation_not_confirmation",
                     "instruction": "Inspect candidate lines in their original source context; candidates may differ "
-                        "in period, value or meaning. Use ReviseWorkpaperAction to replace only this candidate field "
+                        "in period, value or meaning. Use SaveWorkpaperEditsAction to save only this candidate field "
                         "with exact original text after checking support. No quote or claim has been auto-corrected."}
     return None
 
@@ -1616,7 +1850,7 @@ def _normalize_submission_quotes(submission, notebook):
 def _submission_errors(
     submission: SubmitWorkpaperAction,
     notebook: SpecialistNotebook,
-    *, enforce_case_route_requirements: bool = True,
+    *, enforce_case_route_requirements: bool = True, enforce_calculation_bindings: bool = True,
 ) -> tuple[str, ...]:
     errors: list[str] = []
     references: dict[str, SpecialistObservedReference] = {}
@@ -1690,7 +1924,12 @@ def _submission_errors(
         for issue in fact_issues:
             errors.append('source_fact_consistency:' + claim.claim_id + ':' + json.dumps(issue, ensure_ascii=False)
                 + ':preserve_original_unit_or_explicit_fiscal_label;read_and_cite_distinct_support_if_needed')
-        if claim.kind == "calculation" and not any(
+        # Current CALC references are each checked by the shared lineage checker
+        # below, including inference claims. Keep the original no-receipt/legacy
+        # namespace check without a second, weaker "one good CALC is enough" rule.
+        typed_calcs_checked = enforce_calculation_bindings and any(
+            ref.startswith('CALC::') for ref in claim.fact_ids)
+        if claim.kind == "calculation" and not typed_calcs_checked and not any(
             references.get(ref) and references[ref].authority_state == "non_authoritative_metric"
             and any(item.get("calculation_id") == ref and item.get("arithmetic_verified") is True
                     and item.get("numeric_fact_authority") is False
@@ -1729,22 +1968,7 @@ def _submission_errors(
             if reference is None:
                 errors.append(f"unknown_fact_id:{fact_id}")
                 continue
-            allowed_fact_states = {
-                "numeric_fact": {"numeric_fact"},
-                "calculation": {"numeric_fact", "non_authoritative_metric"},
-                "inference": {"numeric_fact", "non_authoritative_metric"},
-                "hypothesis": {
-                    "numeric_fact",
-                    "non_authoritative_metric",
-                    "research_scenario",
-                },
-                "boundary": {
-                    "numeric_fact",
-                    "non_authoritative_metric",
-                    "research_scenario",
-                },
-                "reported_fact": set(),
-            }[claim.kind]
+            allowed_fact_states = FACT_STATES[claim.kind]
             if reference.authority_state not in allowed_fact_states:
                 errors.append(
                     f"fact_reference_authority_invalid:{claim.kind}:{fact_id}"
@@ -1753,6 +1977,10 @@ def _submission_errors(
             claim.evidence_ids or claim.fact_ids
         ):
             errors.append(f"unsupported_deliverable_claim:{claim.claim_id}")
+    if enforce_calculation_bindings:
+        errors.extend('calculation_binding:' + issue['code'] + ':' + issue['source_id']
+            for issue in calculation_binding_issues(submission.model_dump(mode='json'), notebook.model_dump(mode='json'))
+            if issue['blocking'])
     return tuple(dict.fromkeys(errors))
 
 
@@ -1864,9 +2092,11 @@ def build_specialist_agentic_state_graph(
                 # return to model_decide without a pending tool dispatch.
                 and recovery_state.get('phase') in {
                     'ready_for_model_decision', 'tool_observation_ready',
-                    'typed_feedback_ready', 'model_action_selected'}
+                    'typed_feedback_ready', 'model_action_selected',
+                    'submission_rejected_with_typed_feedback'}
                 and recovery_state.get('pending_action') is None)
             if revising:
+                from .revision_guidance import AUTHOR_REVISION_GUIDANCE
                 from .workpaper_review_graph import validate_workpaper_state
                 validate_workpaper_state(recovery_state)
                 revision_candidate = _jsonable(recovery_state["final_submission"])
@@ -1896,7 +2126,7 @@ def build_specialist_agentic_state_graph(
                             "history_notice": "Earlier source requests and authoring proposals may be marked historical_operation in this request. Their original arguments remain in native history; exact results, failures and saved-read routes remain in observations. A historical request is not proof that it succeeded. Newer proposals, financial requests and calculations are not replaced.",
                             "submission": _jsonable(recovery_state["final_submission"]),
                             "notice": "This is the last accepted workpaper, supplied after native validation. Acceptance covers the submission contract, not research quality. Older failed submissions and tool errors remain audit history; they do not establish an unresolved defect in this baseline. Continue the assigned research revision and evaluate current evidence; do not repeat historical repairs unless the current candidate actually needs them."},
-                        "revision_instruction": "Continue your original task and current candidate. Use precise edits. Read relevant original sources to evaluate every assigned finding; correct related prose and claim bindings together, or explain disagreement/unresolved work. Return task_note.finding_responses for every exact finding_id once. Runtime changes are not semantic closure; preserve the overall assignment and unfinished details."} if revising else {})},
+                        "revision_instruction": AUTHOR_REVISION_GUIDANCE} if revising else {})},
                 "workpaper_change_history": _jsonable(recovery_state.get("workpaper_change_history", [])),
                 "notebook": _replace_notebook(prior, run_invocation_id=validated.run_invocation_id,
                                              status="researching").model_dump(mode="json"),
@@ -1907,12 +2137,14 @@ def build_specialist_agentic_state_graph(
                     else prior.model_turn_count + validated.max_model_turns),
                 "max_tool_actions": (recovery_state['max_tool_actions'] if same_invocation
                     else prior.tool_action_count + validated.max_tool_actions),
-                "last_submission_attempt": ({"arguments": revision_candidate, "accepted": False, "feedback": []}
+                "last_submission_attempt": ({"arguments": revision_candidate, "accepted": None,
+                    "submission_status": "not_submitted", "feedback": []}
                     if revising else _jsonable(recovery_state.get("last_submission_attempt"))),
                 **({"revision_targets": {}, "revision_target_origins": {}, "revision_tracking_version": 1}
                    if revising else revision_state(recovery_state)),
                 "last_edit_feedback": _jsonable(recovery_state.get("last_edit_feedback", {})),
                 "pending_workpaper_revision": None if revising else _jsonable(recovery_state.get("pending_workpaper_revision")),
+                "workpaper_draft": None if revising else _jsonable(recovery_state.get("workpaper_draft")),
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
                 "dependency_readbacks": _jsonable(recovery_state.get("dependency_readbacks", {})),
@@ -1921,7 +2153,7 @@ def build_specialist_agentic_state_graph(
                 "context_reopen_turns": _jsonable(recovery_state.get("context_reopen_turns", {})),
                 "pending_working_state_update": _jsonable(recovery_state.get("pending_working_state_update")),
                 "research_context_checkpoint_accepted": accepted_context_checkpoint(recovery_state),
-                "authoring_context": None if revising else _jsonable(recovery_state.get("authoring_context")),
+                "authoring_context": _jsonable(recovery_state.get("authoring_context")),
                 "runtime_progress": _jsonable(recovery_state.get("runtime_progress", {})),
                 "lead_assistance_history": _jsonable(recovery_state.get("lead_assistance_history", [])),
                 "lead_assistance_acknowledged": recovery_state.get('lead_assistance_acknowledged', 0),
@@ -1953,6 +2185,16 @@ def build_specialist_agentic_state_graph(
             state.get("notebook"),
             code="specialist_notebook_invalid",
         )
+        shared_remaining = (dependencies.remaining_model_requests()
+            if dependencies.remaining_model_requests is not None else None)
+        if shared_remaining is not None:
+            if type(shared_remaining) is not int or shared_remaining < 0:
+                raise SpecialistAgenticGraphError("shared_model_request_budget_invalid")
+            if shared_remaining == 0:
+                return {"pending_action": None, "phase": "human_review_required",
+                    "review_trigger": "model_turn_ceiling",
+                    "review_reason": "shared_model_request_ceiling_reached_no_silent_completion",
+                    "notebook": _replace_notebook(notebook, status="human_review_required").model_dump(mode="json")}
         if notebook.model_turn_count >= int(state["max_model_turns"]):
             return {
                 "pending_action": None,
@@ -1970,6 +2212,7 @@ def build_specialist_agentic_state_graph(
             return {"pending_action": None, "phase": "human_review_required", "review_trigger": "model_request",
                 "review_reason": "repeated_no_progress_after_lead_assistance"}
         request = _model_request(state=state, notebook=notebook,
+            remaining_model_requests=shared_remaining,
             authoring_enabled=dependencies.authoring_enabled, authoring_domain=dependencies.authoring_domain, method_reader=dependencies.method_reader,
             working_state_enabled=dependencies.working_state_enabled,
             allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
@@ -2421,9 +2664,10 @@ def build_specialist_agentic_state_graph(
         # share one local snapshot; do not add another queue or scheduler.
         working: SpecialistAgenticState = {**state, **revision_state(state)}
         calls = {call.id: call for call in batch.tool_calls}
+        argument_repairs = {}
         models = {model.__name__: model for model in (
             RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
-            SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
+            SubmitWorkpaperAction, ReviseWorkpaperAction, SaveWorkpaperEditsAction, FinalizeWorkpaperRevisionAction, SubmitReviewAction, RequestHumanReviewAction,
         )}
         if dependencies.dependency_reader is not None:
             models['ReadDependencyWorkAction'] = ReadDependencyWorkAction
@@ -2438,8 +2682,17 @@ def build_specialist_agentic_state_graph(
         if memory_enabled():
             models.update(WORKING_MEMORY_MODELS)
         terminal_mixed = len(batch.tool_calls) > 1 and any(
-            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction", "UpdateResearchStateAction", 'PrepareWorkpaperAction'}
+            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "FinalizeWorkpaperRevisionAction", "SubmitReviewAction", "RequestHumanReviewAction", "UpdateResearchStateAction", 'PrepareWorkpaperAction'}
             for call in batch.tool_calls)
+        saves = [call for call in batch.tool_calls if call.name == 'SaveWorkpaperEditsAction']
+        # Persistence is not terminal. Allow one version-bound save alongside
+        # reads; do not allow two writers or a finalization against an unseen
+        # draft version. ToolNode's existing serial executor preserves receipts.
+        save_mixed_invalid = bool(saves) and (len(saves) > 1 or any(call.name not in {
+            'SaveWorkpaperEditsAction', 'RequestEvidenceAction', 'RequestFinanceAction',
+            'RequestCalculationAction', 'RequestSourceAction', 'RequestResearchMethodAction',
+            'ReadResearchHistoryAction', 'ReadDependencyWorkAction', 'ReadDelegatedWorkAction'}
+            for call in batch.tool_calls))
         l0 = _validate_model_json(SpecialistL0Context, state["l0_context"], code="specialist_l0_context_invalid")
         assigned_routes = {row.get("minimum_route_obligation_id")
                            for row in state["task"].get("evidence_requests", ()) if isinstance(row, Mapping)}
@@ -2465,7 +2718,16 @@ def build_specialist_agentic_state_graph(
                             tool_action_count=before.tool_action_count + 1,
                             dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode="json")
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps(body, ensure_ascii=False))
-            terminal_submission = call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction"}
+            # Check the offered stage before recording a proposal. Recording a
+            # first draft creates a candidate; it must not retroactively revoke
+            # that first submission, nor may an unavailable old tool replace it.
+            stage_actions = _model_request(state=working, notebook=before,
+                authoring_enabled=dependencies.authoring_enabled, authoring_domain=dependencies.authoring_domain,
+                method_reader=dependencies.method_reader, allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
+                allow_delegation=dependencies.subtask_runner is not None,
+                working_state_enabled=dependencies.working_state_enabled)['allowed_actions']
+            unavailable_full_submission = call.name == 'SubmitWorkpaperAction' and 'submit_workpaper' not in stage_actions
+            terminal_submission = call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction"} and not unavailable_full_submission
             if call.name == "ReviseWorkpaperAction":
                 working["last_submission_attempt"] = {**(working.get("last_submission_attempt") or {}),
                     "tool_call_id": call.id, "tool_name": call.name, "feedback": [], "accepted": False}
@@ -2519,12 +2781,25 @@ def build_specialist_agentic_state_graph(
                             if pending else "Candidate unchanged. No valid edit batch was saved; correct the reported argument fields and submit edits against the current candidate.")}
                     working["last_edit_feedback"] = detail
                     body["edit_result"] = detail
+                if call.name in {"SaveWorkpaperEditsAction", "FinalizeWorkpaperRevisionAction"}:
+                    draft = working.get("workpaper_draft")
+                    body["draft_result"] = {"saved": False, "submitted": False, "accepted": False,
+                        "prior_draft_preserved": True, "draft_digest": draft.get("digest") if draft else None,
+                        "issues": edit_details or [],
+                        "pending_revision_digest": (working.get("pending_workpaper_revision") or {}).get("digest")}
                 return ToolMessage(name=call.name, tool_call_id=call.id, status="error",
                     content=json.dumps(body, ensure_ascii=False))
 
+            if unavailable_full_submission:
+                return reject("specialist_action_not_available_in_current_runtime",
+                    "Save changes using SaveWorkpaperEditsAction, then submit the draft version with FinalizeWorkpaperRevisionAction. This full submission was not applied."
+                    if 'save_workpaper_edits' in stage_actions else "This submission tool is not available for the current role or stage. The candidate was not changed.")
             if terminal_mixed:
                 return reject("specialist_terminal_action_must_be_alone",
                     "No tools in this response were dispatched. Submit or request human review as the sole call, after observing pending data results.")
+            if save_mixed_invalid:
+                return reject('specialist_revision_batch_requires_one_writer',
+                    'No tools dispatched. A response may contain one SaveWorkpaperEditsAction and independent reads/calculations; use the returned draft version before another save or finalization.')
             if isinstance(call, SpecialistInvalidToolCall):
                 # Unrecoverable syntax never executes. Complete prose fields
                 # remain available for human review independently of acceptance.
@@ -2540,9 +2815,13 @@ def build_specialist_agentic_state_graph(
                     "This call was not dispatched or accepted. Correct the JSON syntax and resubmit the complete arguments; "
                     "check object/array delimiters and string escaping. For revision, use a short str_replace or one upsert_coverage assessment instead of echoing large old/new fields. " + detail, agent_error=True)
             try:
-                # Validate ORIGINAL args, including extras, not a repaired or
-                # runtime-injected version. Unknown names never reach this tool.
-                action = models[call.name].model_validate_json(json.dumps(call.args, ensure_ascii=False, allow_nan=False))
+                # Tool identity is redundant with its registered name. Preserve
+                # original args/history; only complete an absent unique constant.
+                from .native_tool_arguments import complete_action_tag
+                arguments, repairs = complete_action_tag(models[call.name], call.args)
+                if repairs:
+                    argument_repairs[call.id] = repairs
+                action = models[call.name].model_validate_json(json.dumps(arguments, ensure_ascii=False, allow_nan=False))
             except ValidationError as exc:
                 # Use Pydantic's field locations and errors, never echo raw
                 # arguments/reasoning. The supplied tool schema stays authoritative.
@@ -2561,17 +2840,49 @@ def build_specialist_agentic_state_graph(
             if action.context_digest != batch.context_digest:
                 return reject("specialist_model_turn_context_binding_invalid",
                     "Copy the current context_digest exactly; this call was not dispatched.")
-            if action.action not in _model_request(state=working, notebook=before,
-                    authoring_enabled=dependencies.authoring_enabled, authoring_domain=dependencies.authoring_domain, method_reader=dependencies.method_reader,
-                    allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
-                    allow_delegation=dependencies.subtask_runner is not None,
-                    working_state_enabled=dependencies.working_state_enabled)["allowed_actions"]:
+            if action.action not in stage_actions and not (type(action) is ReviseWorkpaperAction and "save_workpaper_edits" in stage_actions):
                 return reject("specialist_action_not_available_in_current_runtime", "This action is not available for your assigned role.")
             if isinstance(action, RequestSourceAction) and not l0.source_read_enabled:
                 return reject("specialist_action_not_available_in_current_runtime", "Source reading is not enabled in this runtime profile.")
             if isinstance(action, RequestEvidenceAction) and action.minimum_route_obligation_id not in assigned_routes:
                 return reject("specialist_evidence_route_not_assigned", "This evidence route is outside this Specialist task assignment.")
-            if isinstance(action, ReviseWorkpaperAction):
+            if isinstance(action, SaveWorkpaperEditsAction):
+                from .workpaper_drafts import save_draft
+                try:
+                    draft, receipt = save_draft(working, action)
+                except WorkpaperEditError as exc:
+                    # A complete rejected proposal is recoverable; previously saved
+                    # draft batches and the accepted baseline remain untouched.
+                    if action.edits:
+                        working["pending_workpaper_revision"] = save_workpaper_revision(action)
+                    return reject("workpaper_draft_edit_invalid", str(exc), edit_details=exc.issues)
+                except (ValueError, KeyError) as exc:
+                    return reject("workpaper_draft_save_invalid", str(exc))
+                working.update(workpaper_draft=draft, pending_workpaper_revision=None,
+                    last_edit_feedback=receipt, pending_action=None, phase="tool_observation_ready")
+                return ToolMessage(name=call.name, tool_call_id=call.id,
+                    content=json.dumps({"draft_result": receipt}, ensure_ascii=False))
+            if isinstance(action, FinalizeWorkpaperRevisionAction):
+                from .workpaper_drafts import finalize_draft, current_draft
+                try:
+                    draft = current_draft(working)
+                    action = finalize_draft(working, action)
+                except ValidationError as exc:
+                    from .calculation_bindings import claim_shape_feedback
+                    return reject("workpaper_draft_finalize_shape_invalid", "Saved draft retained; correct these fields before finalizing.",
+                        edit_details=claim_shape_feedback(exc.errors(include_input=False, include_context=False,
+                            include_url=False), draft['arguments']))
+                except (ValueError, KeyError) as exc:
+                    return reject("workpaper_draft_finalize_invalid", str(exc))
+                from .workpaper_changes import workpaper_changes
+                previous = (working.get('last_submission_attempt') or {}).get('arguments')
+                working['workpaper_change_history'] = [*working.get('workpaper_change_history', []),
+                    {**workpaper_changes(previous, action.model_dump(mode='json')),
+                        'attempt_id': state['run_invocation_id'], 'submitted_draft_digest': draft['digest']}]
+                working["last_submission_attempt"] = {"arguments": action.model_dump(mode="json"),
+                    "accepted": False, "tool_call_id": call.id, "tool_name": call.name,
+                    "submitted_draft_digest": draft['digest'], "feedback": []}
+            if type(action) is ReviseWorkpaperAction:
                 prior = working.get("last_submission_attempt") or {}
                 try:
                     action = resolve_workpaper_revision(action, working.get("pending_workpaper_revision"))
@@ -2580,10 +2891,10 @@ def build_specialist_agentic_state_graph(
                     return reject("specialist_workpaper_edit_invalid", str(exc), agent_error=True)
                 targets = dict(working.get("revision_targets", {}))
                 for edit in action.edits:
-                    path = "/task_note/coverage" if isinstance(edit, WorkpaperCoverageEdit) else edit.path
                     try:
+                        path = workpaper_edit_path(prior["arguments"], edit)
                         targets.setdefault(path, canonical_sha256(jsonpatch.JsonPointer(path).resolve(prior["arguments"])))
-                    except (jsonpatch.JsonPointerException, TypeError, KeyError):
+                    except (jsonpatch.JsonPointerException, TypeError, KeyError, ValueError):
                         pass
                 working["revision_targets"] = targets
                 try:
@@ -2614,27 +2925,33 @@ def build_specialist_agentic_state_graph(
                     return reject("specialist_workpaper_edit_invalid", str(exc), agent_error=True)
             working["pending_action"] = action.model_dump(mode="json")
             if isinstance(action, PrepareWorkpaperAction):
-                if before.tool_action_count >= state['max_tool_actions']:
-                    return reject('authoring_preparation_tool_limit', 'No preparation accepted; preserve incomplete work.')
+                # Preparation is a local transition that binds the author's
+                # current public evidence state before writing.  It neither
+                # reads a source nor dispatches an MCP/finance operation, so
+                # exhausting the external-research allowance must not strand
+                # an otherwise ready specialist before SubmitWorkpaperAction.
+                # Keep the binding/ready validation below; only its accounting
+                # is deliberately separate from external tool actions.
                 if not action.brief.ready:
                     return reject('authoring_research_not_ready', 'Continue the scoped research or request explicit attention; do not claim finished.')
                 working['authoring_context'] = bind_authoring(action.brief, owner=state['agent_id'],
                     stage='workpaper', basis=specialist_basis(working))
-                digest = _semantic_action_digest(action)
-                if digest not in before.dispatched_action_digests:
-                    working['notebook'] = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,
-                        dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode='json')
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({
-                    'status': 'prepared', 'notice': 'Next request restores your public preparation in a writing context; budget and source scope unchanged.'}))
+                    'status': 'prepared', 'notice': 'Next request restores your public preparation in a writing context; external research budget and source scope are unchanged.'}))
             if isinstance(action, ReadResearchHistoryAction):
-                if before.tool_action_count >= working['max_tool_actions']:
+                digest = _semantic_action_digest(action)
+                already_read = digest in before.dispatched_action_digests
+                if not already_read and before.tool_action_count >= working['max_tool_actions']:
                     return reject('specialist_history_tool_limit', 'No additional history read executed.')
                 if action.section == 'operation':
-                    from .research_context_view import history_reader
+                    from .research_context_view import history_operation_page, history_reader
                     reader = history_reader(dependencies.model_turn)
                     if reader is None:
                         return reject('public_history_reader_unavailable', 'Native journal reader is not wired to this runtime; this is an execution problem, not missing source evidence.')
-                    payload = reader(state['agent_id'], action.tool_call_id)
+                    record = reader(state['agent_id'], action.tool_call_id)
+                    payload = (history_operation_page(record, offset=action.offset,
+                        max_characters=action.max_characters, source_ids=action.source_ids, view=action.view)
+                        if record is not None else None)
                 elif action.section == 'turn':
                     record = next((r for r in before.model_turn_records if r.turn_index == action.index), None)
                     payload = record.action.model_dump(mode='json') if record else None
@@ -2643,9 +2960,12 @@ def build_specialist_agentic_state_graph(
                     payload = history[action.index - 1] if action.index <= len(history) else None
                 if payload is None:
                     return reject('unknown_public_history_record', 'Use the exact operation_catalog tool_call_id, or the indexed turn/lead_assistance entry. No original tool was rerun.')
-                digest = _semantic_action_digest(action)
-                working['notebook'] = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,
-                    dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode='json')
+                # Reopening the same saved operation is valid and dispatches no
+                # external request. Retain the unique-action accounting used by
+                # the notebook instead of appending a duplicate digest.
+                if not already_read:
+                    working['notebook'] = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,
+                        dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode='json')
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({
                     'historical_record': payload, 'notice': 'Historical public record, not current instructions or a new tool execution.'}, ensure_ascii=False))
             if isinstance(action, UpdateResearchStateAction):
@@ -2848,6 +3168,9 @@ def build_specialist_agentic_state_graph(
                     "validation_issues": (working.get("last_submission_attempt") or {}).get("validation_issues", [])}
                 if call.name == "ReviseWorkpaperAction":
                     body["edit_result"] = {**working.get("last_edit_feedback", {}), "submission_accepted": accepted}
+                if call.name == "FinalizeWorkpaperRevisionAction":
+                    body['draft_result'] = {'submitted': True, 'accepted': accepted,
+                        'draft_digest': draft['digest'], 'draft_retained': True}
                 return ToolMessage(name=call.name, tool_call_id=call.id,
                     status="success" if accepted else "error", content=json.dumps(body, ensure_ascii=False))
             if isinstance(action, RequestHumanReviewAction):
@@ -2900,9 +3223,17 @@ def build_specialist_agentic_state_graph(
                           for call in batch.tool_calls]
         replies = node.invoke([AIMessage(content="", tool_calls=dispatch_calls)],
                               config={**config, "max_concurrency": 1})
+        for message in replies:
+            if repairs := argument_repairs.get(message.tool_call_id):
+                content = json.loads(message.content)
+                content['argument_normalizations'] = repairs
+                message.content = json.dumps(content, ensure_ascii=False)
         if dependencies.working_state_enabled:
             working["runtime_progress"] = progress_after_tools(state["notebook"], working["notebook"], state.get("runtime_progress"),
                 has_reads=any(c.name in {"RequestSourceAction", "RequestEvidenceAction", "RequestFinanceAction", "RequestCalculationAction", "ReadDelegatedWorkAction", "ReadDependencyWorkAction"} for c in batch.tool_calls))
+            if (working.get('workpaper_draft') or {}).get('digest') != (state.get('workpaper_draft') or {}).get('digest'):
+                working['runtime_progress'] = {'consecutive_no_new_observations': 0,
+                    'status': 'draft_changed', 'notice': 'Draft changes saved; full validation and submission remain pending.'}
         return {**working, "pending_action": None,
                 "tool_results": [message.model_dump(mode="json") for message in replies]}
 
@@ -2936,9 +3267,9 @@ def build_specialist_agentic_state_graph(
             errors += tuple(source_check_errors(state.get("required_source_checks", []), notebook.model_dump(mode="json"), action))
             if dependencies.authoring_enabled and not state.get('collaboration_context'):
                 try:
-                    validate_authoring(state.get('authoring_context', {}), owner=state['agent_id'], basis=specialist_basis(state))
+                    validate_specialist_preparation(state.get('authoring_context') or {}, owner=state['agent_id'], basis=specialist_basis(state))
                 except ValueError:
-                    errors += ('authoring_owner_or_basis_changed_prepare_again',)
+                    errors += ('authoring_owner_or_task_changed_prepare_again',)
             findings = (state.get("task_context") or {}).get("revision_feedback", [])
             if findings:
                 expected = {f["finding_id"] for f in findings}
@@ -2953,6 +3284,13 @@ def build_specialist_agentic_state_graph(
         if errors:
             locations = []
             for error in errors:
+                from .submission_reference_feedback import reference_issue
+                ref_issue = reference_issue(error, action.model_dump(mode="json"),
+                    notebook.model_dump(mode="json"), state.get("delegated_work"))
+                if ref_issue is not None:
+                    if ref_issue not in locations:
+                        locations.append(ref_issue)
+                    continue
                 quote_issue = _quote_issue_location(error, action, notebook)
                 if quote_issue is not None:
                     locations.append(quote_issue)

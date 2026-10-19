@@ -216,8 +216,9 @@ def build_research_data_mcp_server(
     # Source projection of this composition's successful data/calculator responses.
     # No new store/admission: the typed SQL result remains the authority and is
     # already persisted in the agent's native ToolMessages. A new composition
-    # must re-query or receive its case archive; never accept a model-supplied
-    # number as an observed fact.
+    # restores the SAME trusted author notebook as the graph (or its case
+    # archive); previously observed originals need no re-query. Never accept
+    # a model-supplied number as an observed fact.
     from .source_bound_calculator import ObservedSourceRegistry, register_source_calculator_tool
     source_registry = dependencies.source_registry or ObservedSourceRegistry()
     source_registry.restore(dependencies.restored_observations)
@@ -447,7 +448,15 @@ def build_research_data_mcp_server(
         ) -> SourceDocumentResult:
             await _validate_scope(dependencies.method_reader, run_scope=run_scope, branch_id=branch_id)
             try:
-                result = await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
+                from .saved_web_navigation import read_saved_web_window
+                result = None
+                if request.source_space == 'web' and request.operation == 'read':
+                    saved = list(source_registry.snapshot().values())
+                    if dependencies.case_artifacts is not None:
+                        saved.extend(dependencies.case_artifacts.source_snapshot().values())
+                    result = read_saved_web_window(request, saved, research_as_of=run_scope.research_as_of)
+                if result is None:
+                    result = await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
                                              request=request, branch_id=branch_id, run_scope=run_scope)
             except ValueError as exc:
                 # Only anticipated locator mistakes become public tool errors.

@@ -99,13 +99,15 @@ def test_prior_edit_intent_is_advisory_after_current_reference_errors_are_fixed(
         if n == 3:
             return _batch(request, [edit_action(candidate, [{'path': '/narrative_markdown',
                 'old_value': 'Expense table absent.', 'new_value': 'Provided.'}]).model_dump(mode='json')])
-        if n == 4:
+        if n == 4 or (full_submission and n == 5):
+            if n == 5:
+                assert candidate == requests[3]['submission_to_repair']['candidate']
             # Fix the actual reference error. A previous proposed prose edit
             # can be abandoned without changing text just to satisfy a gate.
             edits = [{'path': '/claims/0/evidence_ids', 'old_value': ['E:unobserved'], 'new_value': ['E:DELL:Q1']},
                 {'op': 'upsert_coverage', 'assessment': assessment('all corrected')}]
             action = edit_action(candidate, edits)
-            if full_submission:
+            if full_submission and n == 4:
                 from sec_agent.agent_runtime.specialist_graph import apply_workpaper_edits
                 return _batch(request, [apply_workpaper_edits(candidate, action)])
             return _batch(request, [action.model_dump(mode='json')])
@@ -113,7 +115,10 @@ def test_prior_edit_intent_is_advisory_after_current_reference_errors_are_fixed(
     graph = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(model_turn=turn,
         evidence_tool=ports.evidence, finance_tool=ports.finance, allow_workpaper_field_edits=True)).compile()
     result = graph.invoke(_input(), {'recursion_limit': 40})
-    assert len(requests) == 4 and result['phase'] == 'specialist_submission_accepted'
+    assert len(requests) == (5 if full_submission else 4) and result['phase'] == 'specialist_submission_accepted'
+    if full_submission:
+        assert 'submit_workpaper' not in requests[3]['allowed_actions']
+        assert requests[4]['submission_to_repair']['candidate'] == requests[3]['submission_to_repair']['candidate']
     assert 'Expense table absent.' in result['final_submission']['narrative_markdown']
     assert result['final_submission']['claims'][0]['evidence_ids'] == ['E:DELL:Q1']
     assert any(i['type'] == 'requested_revision_not_applied' and i['path'] == '/narrative_markdown'

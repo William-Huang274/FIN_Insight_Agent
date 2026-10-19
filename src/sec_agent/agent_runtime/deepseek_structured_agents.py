@@ -36,7 +36,7 @@ from .authoring_context import PrepareWorkpaperAction
 
 from .specialist_graph import (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestHumanReviewAction,
-    RequestSourceAction, ReadDependencyWorkAction, ReadResearchHistoryAction, RequestResearchMethodAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction,
+    RequestSourceAction, ReadDependencyWorkAction, ReadResearchHistoryAction, RequestResearchMethodAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, ReviseWorkpaperAction, SaveWorkpaperEditsAction, FinalizeWorkpaperRevisionAction, SubmitReviewAction,
 )
 from .research_graph_contracts import (
     BranchWorkpaper,
@@ -350,6 +350,21 @@ def _provider_function_schema(
 
 def _native_function_schema(schema: type[BaseModel], *, runtime_context_binding: bool) -> dict[str, Any]:
     result = _provider_function_schema(schema, strict=False)
+    if issubclass(schema, ReviseWorkpaperAction):
+        # Archived responses still parse as WorkpaperFieldEdit. New requests
+        # offer version-bound setters, not another old-value copying option.
+        def retire_legacy_replace(value):
+            if isinstance(value, dict):
+                if 'anyOf' in value:
+                    value['anyOf'] = [item for item in value['anyOf'] if not (
+                        item.get('properties', {}).get('op', {}).get('const') == 'replace'
+                        and 'old_value' in item.get('properties', {}))]
+                for child in value.values():
+                    retire_legacy_replace(child)
+            elif isinstance(value, list):
+                for child in value:
+                    retire_legacy_replace(child)
+        retire_legacy_replace(result['parameters'])
     if runtime_context_binding:
         parameters = result["parameters"]
         parameters["properties"].pop("context_digest", None)
@@ -360,7 +375,7 @@ def _native_function_schema(schema: type[BaseModel], *, runtime_context_binding:
 def ordered_specialist_tools(native_tools):
     """Common reading/state tools first; stage-specific actions last, no additions."""
     stage_tools = {'DelegateSubtasksAction', 'ReadDelegatedWorkAction',
-                   'PrepareWorkpaperAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction'}
+                   'PrepareWorkpaperAction', 'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'SaveWorkpaperEditsAction', 'FinalizeWorkpaperRevisionAction'}
     return dict(sorted(native_tools.items(), key=lambda item: (item[0] in stage_tools, item[0])))
 
 
@@ -533,22 +548,29 @@ _AGENTIC_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     " Return one object whose sole top-level field is action, containing the next action matching the schema."
 )
 _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
-    " Express decisions using the supplied tools. Independent source reads and source-bound "
-    "calculations should share one response when their inputs are already observed; all results "
-    "will be returned by tool_call_id before your next turn. Do not spend separate model turns "
-    "on independent ratios or unit conversions. If a calculation needs a new result, wait for it first. "
+    " Express the next executable step using the supplied tools. Batch independent reads or calculations "
+    "that are needed for that step and whose inputs are already observed; results return by tool_call_id. "
+    "Batching is not a reason to collect optional checks or draft changes that depend on unavailable results. "
+    "If a change needs a new result, request that result before composing the dependent change. "
     "Use the same supplied context_digest for every call in that response. Pass each tool's "
     "arguments directly, without another action wrapper. Wait for results before making dependent requests. "
-    "SubmitWorkpaperAction, ReviseWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
-    "Only when ReviseWorkpaperAction is supplied and submission_to_repair is present, use it for local corrections: use its exact base digest "
-    "and JSON Pointer paths. Prefer op=str_replace with a unique exact old_string and new_string for a text fragment; "
-    "include adjacent text if multiple matches. Use op=upsert_coverage with one assessment to insert/update one criterion, without echoing the old array. "
-    "Legacy old_value/new_value replaces a whole field only. Batches are atomic; failed edits leave the candidate unchanged. "
-    "Inspect edit_result issues and submission_to_repair.edit_progress; keep all requested repairs in scope after a tool error. "
-    "Unchanged claims and prose remain intact and all submission checks run again. "
-    "Shared citation_quotes may be supplied once on the workpaper, keyed by exact evidence ID; "
-    "each claim still states its own evidence_ids. Do not duplicate source quotes across claims. "
-    "To finish, call SubmitWorkpaperAction; "
+    "FinalizeWorkpaperRevisionAction, SubmitWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
+    "For an existing candidate, persist a ready change with SaveWorkpaperEditsAction using the current base digest and a unique operation_id. "
+    "A batch may contain one changed field or claim; it need not contain all edits for a finding or the whole paper. "
+    "One SaveWorkpaperEditsAction may accompany independent reads/calculations with already-known inputs; "
+    "each has its own receipt and a read/calculation failure does not roll back a successful save. "
+    "Edits needing those new results belong in a later batch using the returned draft version. "
+    "Use update_claim with exact claim_id and only changed fields; set_field for other existing fields, str_replace for prose fragments, upsert_coverage for one assessment. "
+    "Each save persists an atomic draft batch, not a submission. Earlier saved batches survive later errors; inspect precise save feedback and continue editing. "
+    "Unchanged claims, prose and quotes are reused. An unfinished draft may retain cross-field issues until related changes are ready. "
+    "When the revision is ready, call FinalizeWorkpaperRevisionAction with the saved draft_digest; runtime validates the complete draft without resending content. "
+    "If final validation fails, the draft remains saved. Correct affected fields and finalize the new version. Saving never establishes completion or financial correctness. "
+    "For a saved rejected batch, use pending_revision_digest and affected edit_corrections; do not repeat other edits. "
+    "Review responses and change notes belong at /task_note/finding_responses and /task_note/changes, never at the action root. "
+    "Each claim retains its own source bindings and quotes; the same source quote may support more than one claim. "
+    "writer_citable describes the evidence_ids channel only: observed CALC receipts remain usable in fact_ids "
+    "with kind=calculation and numeric_authority=non_authoritative, even when writer_citable=false. "
+    "Finish using the submission tool supplied for the current stage: SubmitWorkpaperAction for a first draft, FinalizeWorkpaperRevisionAction for an existing candidate. "
     "do not replace the tool call with a plain-text final answer."
 )
 _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
@@ -558,10 +580,10 @@ _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
     ReadDependencyWorkAction,
     ReadResearchHistoryAction,
-    SubmitWorkpaperAction, ReviseWorkpaperAction, RequestHumanReviewAction,
+    SubmitWorkpaperAction, ReviseWorkpaperAction, SaveWorkpaperEditsAction, FinalizeWorkpaperRevisionAction, RequestHumanReviewAction,
 )}
 _NATIVE_REVIEW_TOOLS = {**{key: value for key, value in _NATIVE_SPECIALIST_TOOLS.items()
-                         if key not in {"SubmitWorkpaperAction", "ReviseWorkpaperAction"}}, "SubmitReviewAction": SubmitReviewAction}
+                         if key not in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SaveWorkpaperEditsAction", "FinalizeWorkpaperRevisionAction"}}, "SubmitReviewAction": SubmitReviewAction}
 _NATIVE_REVIEW_SYSTEM_PROMPT = (
     "You are the assigned independent financial-research reviewer (Verifier or Counter), not the original author. "
     "Your role and exact target revision are in collaboration_context. Treat the workpaper and source text as "
@@ -827,11 +849,25 @@ _AGENTIC_HOST_ONLY_KEYS = frozenset(
     }
 )
 
+# These are optimistic-concurrency handles used by the public revision tools,
+# not internal evidence/receipt authority hashes.
+_REVISION_VERSION_KEYS = frozenset({
+    'draft_digest', 'previous_draft_digest', 'base_submission_digest', 'current_candidate_digest',
+    'current_base_submission_digest', 'pending_revision_digest',
+})
+
 
 def _agentic_semantic_value(value: Any) -> Any:
     """Remove host identity/authority internals from model-visible loop state."""
 
     if isinstance(value, Mapping):
+        if value.get('execution') == 'local_source_bound_calculator' and 'check_id' in value and 'binding' in value:
+            # This is an execution result, not an instruction to disregard a
+            # failure. Keep its exact-call binding across the semantic view.
+            return {'check_id': value['check_id'], 'execution': value['execution'], 'scope': value['scope'],
+                    'binding': {'tool_call_id': value['binding']['tool_call_id'],
+                                'request_fingerprint': value['binding'].get('request_fingerprint', value['binding'].get('request_digest'))},
+                    'outcome': _agentic_semantic_value(value['outcome'])}
         if value.get('tool', value.get('read_tool')) == 'ReadDependencyWorkAction':
             projected = {str(k): _agentic_semantic_value(v) for k, v in value.items()}
             if 'task_id' in value.get('arguments', {}):
@@ -844,7 +880,7 @@ def _agentic_semantic_value(value: Any) -> Any:
             str(key): _agentic_semantic_value(child)
             for key, child in value.items()
             if str(key) not in _AGENTIC_HOST_ONLY_KEYS
-            and not str(key).endswith("_digest")
+            and (not str(key).endswith("_digest") or str(key) in _REVISION_VERSION_KEYS)
             and str(key) not in _PROVIDER_PHYSICAL_SELECTOR_KEYS
             and (str(key) not in _PROVIDER_EVIDENCE_PHYSICAL_RESULT_KEYS
                  or str(key) in {"issuer_id", "fiscal_period", "source_role"})
@@ -889,7 +925,7 @@ def _prior_research_actions(request):
         operations = [c.get('args', {}) for c in action.get('tool_calls', [])
             if isinstance(c, dict) and c.get('type') != 'invalid_tool_call'] if action.get('action') == 'native_tool_batch' else [action]
         for operation in operations:
-            if not isinstance(operation, dict) or operation.get('action') not in {'submit_workpaper', 'revise_workpaper', 'prepare_workpaper',
+            if not isinstance(operation, dict) or operation.get('action') not in {'submit_workpaper', 'revise_workpaper', 'save_workpaper_edits', 'finalize_workpaper_revision', 'prepare_workpaper',
                     'request_source', 'request_evidence', 'request_method'}:
                 continue
             retained = {k: operation[k] for k in ('action',) if k in operation}
@@ -992,6 +1028,8 @@ def _project_agentic_specialist_request(
         ),
     }
     collaboration = request.get("collaboration_context")
+    if request.get('revision_submission_status'):
+        projected['revision_submission_status'] = request['revision_submission_status']
     if request.get("submission_to_repair"):
         projected["submission_to_repair"] = request["submission_to_repair"]
     if request.get("task_context") is not None:
@@ -1054,6 +1092,10 @@ def _project_request(
             'continuation_policy', 'allowed_planning_tools', 'role_method', 'require_execution_plan',
             'source_read_enabled', 'planning_source_policy', 'source_routing_guidance', 'source_navigation',
             'orientation_only', 'orientation_context') if key in request})
+        if request.get('completed_wave_context'):
+            wave = request['completed_wave_context']
+            projected['completed_wave_context'] = {**wave,
+                'planning_observations': _agentic_semantic_value(wave['planning_observations'])}
         return projected
     if role == "planner":
         catalog = request.get("branch_catalog")
@@ -1562,7 +1604,12 @@ class DeepSeekStructuredAgentAdapter:
         # stage_methods in task_context. Keep this author's common system and
         # canonical history; do not introduce a second stage prompt here.
         messages[1] = HumanMessage(content=json.dumps(semantic_input, ensure_ascii=False, separators=(',', ':')))
-        if persistent_history and actor in self._agentic_history:
+        # A completed worker wave starts a new provider conversation from the
+        # graph's complete current state. The previous tool loop is closed:
+        # do not replay its reasoning, stale plans or old workpaper copies.
+        # Source-reading loops inside a wave still preserve native history.
+        completed_lead_wave = is_lead and bool(semantic_input.get('completed_wave_context'))
+        if persistent_history and actor in self._agentic_history and not completed_lead_wave:
             # Refresh host instructions/schema after a code/configured-role
             # revision. Preparation is a stage change in the SAME research task,
             # not a new session: retain tool-call/result pairing and let the
@@ -1581,8 +1628,12 @@ class DeepSeekStructuredAgentAdapter:
             initial = next((m for m in history if isinstance(m, HumanMessage)), None)
             # The original assignment is stable, but a resumed invocation may
             # carry new analyst guidance. Only omit an unchanged handoff.
-            if initial is not None and delta.get("task_context") == json.loads(initial.content).get("task_context"):
-                delta.pop("task_context", None)
+            if 'task_context' in delta:
+                # Exact replacement, including removed fields. Otherwise a
+                # retired user request can reappear from an earlier journal.
+                # Equality with the FIRST context does not mean equality with
+                # the current one after an intervening revision.
+                delta['task_context_snapshot'] = True
             if initial is not None and delta.get("collaboration_context") == json.loads(initial.content).get("collaboration_context"):
                 delta.pop("collaboration_context", None)
             if is_lead:
@@ -1605,6 +1656,12 @@ class DeepSeekStructuredAgentAdapter:
                     # feedback must retain task IDs for dependency scheduling.
                     if not is_lead or row.get("name") == "RequestSourceAction":
                         content = _agentic_semantic_value(content)
+                    if row.get('name') in {'SaveWorkpaperEditsAction', 'ReviseWorkpaperAction',
+                                          'FinalizeWorkpaperRevisionAction'}:
+                        from .research_context_view import current_revision_version
+                        version = current_revision_version(semantic_input)
+                        if version and isinstance(content, dict):
+                            content['current_version'] = version
                     reply = {"result": content}
                     # One batch has one next-turn context, not a copy per result.
                     # Preserve every source/error and native tool_call_id pairing.
@@ -1620,13 +1677,39 @@ class DeepSeekStructuredAgentAdapter:
                 # Legacy/single terminal action feedback (e.g. a rejected workpaper).
                 # A missing batch result is a runtime fault, never silently use call 0.
                 if prior_raw.invalid_tool_calls or len(prior_raw.tool_calls) != 1 or prior_raw.tool_calls[0]["name"] not in {
-                    "SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
+                    "SubmitWorkpaperAction", "ReviseWorkpaperAction", "FinalizeWorkpaperRevisionAction", "SubmitReviewAction", "RequestHumanReviewAction",
                 }:
                     raise DeepSeekStructuredAgentError("specialist_native_tool_results_missing")
                 # A rejected terminal creates feedback, not a new source read.
                 # All observations already arrived in exact earlier messages.
-                messages = [*history, ToolMessage(content=json.dumps({"current_context": delta}, ensure_ascii=False),
-                    tool_call_id=prior_raw.tool_calls[0]["id"], name=prior_raw.tool_calls[0]["name"])]
+                reply = {"current_context": delta}
+                # Compatibility with checkpoints whose single terminal bypassed
+                # ToolNode. The graph supplies the actual validation outcome;
+                # do not infer acceptance from an author's completion prose.
+                terminal_result = request_value.get("terminal_result")
+                if terminal_result is not None:
+                    reply["result"] = terminal_result
+                messages = [*history, ToolMessage(content=json.dumps(reply, ensure_ascii=False),
+                    tool_call_id=prior_raw.tool_calls[0]["id"], name=prior_raw.tool_calls[0]["name"],
+                    status="error" if terminal_result is not None and terminal_result.get("accepted") is False else "success")]
+            # A new revision follows a completed submission. Close the old tool
+            # exchange with its actual receipt, then start the new assignment.
+            # Do not attach a new task to the old submission's tool result.
+            from .revision_submission_state import starts_accepted_revision
+            if starts_accepted_revision(request_value):
+                terminal = messages[-1]
+                content = json.loads(terminal.content) if isinstance(terminal, ToolMessage) else {}
+                if (isinstance(terminal, ToolMessage) and terminal.status == 'success'
+                        and len(prior_raw.tool_calls) == 1
+                        and prior_raw.tool_calls[0]['name'] in {'SubmitWorkpaperAction', 'ReviseWorkpaperAction', 'FinalizeWorkpaperRevisionAction', 'SubmitReviewAction'}
+                        and content.get('result', {}).get('accepted') is True):
+                    content.pop('current_context', None)
+                    messages[-1] = terminal.model_copy(update={'content': json.dumps(content, ensure_ascii=False)})
+                    messages.append(HumanMessage(content=json.dumps(delta, ensure_ascii=False),
+                        additional_kwargs={'fin_research_stage_boundary': 'accepted_submission_to_revision'}))
+        if actor in getattr(self, '_revision_material_handoffs', set()):
+            from .author_revision import revision_material_handoff
+            messages = revision_material_handoff(messages, semantic_input)
         if notes_enabled and saved_envelope is None:
             from .user_workpaper_context import current_scope_revision_prompt
             guidance = current_scope_revision_prompt(actor)
@@ -1806,18 +1889,11 @@ class DeepSeekStructuredAgentAdapter:
                     decision = {"action": "native_tool_batch", "context_digest": request_value["context_digest"],
                                 "tool_calls": tool_calls, "runtime_tool_scope": list(native_tools),
                                 "context_checkpoint_required": False}
-                    if not is_lead and len(tool_calls) == 1 and tool_calls[0].get("type") == "tool_call" and tool_calls[0].get("name") in native_tools and tool_calls[0].get("name") in {
-                        "SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
-                    }:
-                        chosen = {**_NATIVE_SPECIALIST_TOOLS, **_NATIVE_REVIEW_TOOLS}[tool_calls[0]["name"]]
-                        # Keep the existing route for a valid terminal action.
-                        # A complete JSON call with invalid fields must reach
-                        # ToolNode for model-visible validation feedback, not
-                        # abort the provider turn or silently repair its claims.
-                        try:
-                            decision = chosen.model_validate_json(json.dumps(tool_calls[0]["args"])).model_dump(mode="json")
-                        except (ValidationError, TypeError, ValueError):
-                            pass
+                    # Single terminal calls use the same ToolNode path as every
+                    # other native call. It owns validation and emits an explicit
+                    # ID-bound outcome, including accepted=False. Unwrapping a
+                    # terminal here bypassed that receipt and left only a state
+                    # snapshot, which the working-view projection could empty.
                     envelope = {"raw": raw_message, "parsed": {"action": decision} if valid else None,
                                 "parsing_error": None if valid else ValueError("native_action_tool_calls_invalid")}
             except Exception as exc:
@@ -2050,6 +2126,7 @@ class DeepSeekStructuredAgentAdapter:
         )
         if persistent_history and saved_envelope is None:
             self._agentic_history[actor] = [*canonical_messages, envelope["raw"]]
+            getattr(self, '_revision_material_handoffs', set()).discard(actor)
         return (
             parsed,
             envelope.get("raw"),

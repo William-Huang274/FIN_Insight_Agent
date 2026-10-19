@@ -281,6 +281,7 @@ def test_convergence_opens_same_revision_for_local_and_mcp_readers(submitted, tm
 
 
 def test_revision_phase_resumes_original_author_with_bound_private_history(submitted, tmp_path, monkeypatch):
+    from test_specialist_tool_batch import _batch
     from langchain_core.messages import HumanMessage, AIMessage
     from langchain_core.runnables import RunnableLambda
     from sec_agent.agent_runtime.specialist_composition import open_specialist_receipted_composition
@@ -317,15 +318,33 @@ def test_revision_phase_resumes_original_author_with_bound_private_history(submi
         'raw_response':AIMessage(content='Static prior receipt').model_dump(mode='json')})+'\n', encoding='utf-8')
     feedback = [{'finding_id':'verifier:scope', 'diagnosis':'State the access-only fixture boundary explicitly.'}]
     adapter = SimpleNamespace(_agentic_history={})
+    repairs = []
     def repair(request):
+        repairs.append(request)
+        (tmp_path/'revision-request.json').write_text(json.dumps(request), encoding='utf8')
         assert paper['agent_id'] in adapter._agentic_history
         assert request['task_context']['revision_feedback'] == feedback
-        action = {**deepcopy(paper['final_submission']), 'context_digest':request['context_digest']}
-        action['narrative_markdown'] += ' This changed text proves revision wiring, not financial quality.'
-        action['task_note'] = {'summary':'Clarified static boundary.', 'changes':'Added scope statement.',
+        if len(repairs) == 1:
+            # A legacy whole submission must return recoverable feedback even
+            # when current revision actions exceed the old eight-action cap.
+            assert len(request['allowed_actions']) > 8
+            return replay({**deepcopy(paper['final_submission']), 'context_digest':request['context_digest']}, request)
+        if len(repairs) == 2:
+            assert request['notebook']['feedback'][-1]['available_next_actions'] == request['allowed_actions']
+        repair = request['submission_to_repair']
+        if repair['candidate']['narrative_markdown'] != paper['final_submission']['narrative_markdown']:
+            return replay(_batch(request, [{'action':'finalize_workpaper_revision', 'context_digest':request['context_digest'],
+                'reason_summary':'Submit the saved scope correction.',
+                'draft_digest':repair['base_submission_digest']}]), request)
+        note = {'summary':'Clarified static boundary.', 'changes':'Added scope statement.',
             'finding_responses':[{'finding_id':'verifier:scope','disposition':'corrected',
                 'explanation':'Added explicit qualification scope; financial judgment remains untested.'}]}
-        return replay(action, request)
+        return replay(_batch(request, [{'action':'save_workpaper_edits', 'context_digest':request['context_digest'],
+            'operation_id':'static-phase-scope-edit', 'reason_summary':'Clarify the engineering qualification boundary.',
+            'base_submission_digest':repair['base_submission_digest'], 'edits':[
+                {'op':'set_field','path':'/narrative_markdown',
+                 'value':paper['final_submission']['narrative_markdown'] + ' This changed text proves revision wiring, not financial quality.'},
+                {'op':'set_field', 'path':'/task_note', 'value':{**(repair['candidate'].get('task_note') or {}), **note}}]}]), request)
     adapter.specialist_model_turn = repair
     monkeypatch.setattr(runtime.DeepSeekStructuredAgentAdapter, 'from_config', lambda **k:adapter)
     def convergence(**kwargs):
@@ -342,6 +361,7 @@ def test_revision_phase_resumes_original_author_with_bound_private_history(submi
         {'question':'Static revision question','case_papers':[paper], 'revisions':{}, 'message':'Clarify qualification scope.'})
     revised = result['revision']
     assert revised['status'] == 'revision_submitted'
+    assert len(repairs) == 3
     assert revised['author_identity']['agent_id'] == paper['agent_id']
     assert 'This changed text proves' in revised['workpaper']['narrative_markdown']
     assert revised['author_state']['notebook']['observations'] == paper['notebook']['observations']

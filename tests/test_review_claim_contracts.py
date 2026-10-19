@@ -101,7 +101,7 @@ def test_confirmation_accepts_current_claim_wording_and_bound_source_spans():
         validate_finding_confirmation(review,confirmation,a)
     item.current_quote=current;item.source_checks[0].quote_span=None
     item.source_checks[0].quote='Revenue | 100 | 91'
-    with pytest.raises(ValueError,match='confirmation_source_quote_not_exact'):
+    with pytest.raises(ValueError,match='source_quote_selection_required'):
         validate_finding_confirmation(review,confirmation,a)
 
 

@@ -1,6 +1,6 @@
 """Compose, review and revise a report from case working papers."""
 from __future__ import annotations
-from .lead_issue_decision import LeadIssueDecision, decision_errors
+from .lead_issue_decision import LeadIssueDecision, decision_errors, resolve_disposition_ids
 
 from sec_agent.research_foundation.source_quotes import contains_source_quote
 
@@ -580,10 +580,11 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_lead_issue_decision(decision: LeadIssueDecision, runtime: ToolRuntime) -> Command:
-        """Decide every original finding using current papers/sources. No self-certified acceptance. Repair only affected work, or retain unresolved and stop."""
+        """Decide every original finding using current papers/sources. Unique current-paper original IDs resolve with a receipt; ambiguous IDs need full IDs. No self-certified acceptance. Repair only affected work, or retain unresolved and stop."""
         from .workpaper_changes import paper_versions
-        errors = decision_errors(decision, feedback or {}, {p["paper_id"] for p in artifacts.catalog()["papers"]}, incomplete_reviewers=incomplete_reviewers,
-            current_versions=paper_versions(artifacts.with_revisions(runtime.state.get('revisions', {}))) if incomplete_reviewers is not None else None)
+        decision, resolutions, errors = resolve_disposition_ids(decision, feedback or {})
+        errors.extend(decision_errors(decision, feedback or {}, {p["paper_id"] for p in artifacts.catalog()["papers"]}, incomplete_reviewers=incomplete_reviewers,
+            current_versions=paper_versions(artifacts.with_revisions(runtime.state.get('revisions', {}))) if incomplete_reviewers is not None else None))
         try:
             refs = " ".join("[" + ref + "]" for row in [*decision.dispositions, *decision.new_findings] for ref in row.citation_ids)
             citations = report_citations(refs, artifacts, runtime.state.get("messages", [])) if refs else {}
@@ -591,8 +592,14 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             errors.append(str(exc))
             citations = {}
         if errors:
-            return output_message(runtime, error="; ".join(errors))
-        return output_message(runtime, {"kind": "lead_issue_decision", **decision.model_dump(mode="json"), "citations": citations})
+            result = output_message(runtime, error="; ".join(errors))
+        else:
+            result = output_message(runtime, {"kind": "lead_issue_decision", **decision.model_dump(mode="json"), "citations": citations,
+                **({'finding_id_resolutions': resolutions} if resolutions else {})})
+        if resolutions:
+            result.update['messages'][0].content += '\n' + json.dumps({'finding_id_resolutions': resolutions,
+                'submission_saved': not errors}, ensure_ascii=False)
+        return result
 
     @tool
     def read_public_conversation(runtime: ToolRuntime, message_index: int | None = None, offset: int = 0, max_characters: int = 6000) -> dict:

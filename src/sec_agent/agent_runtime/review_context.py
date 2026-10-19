@@ -107,6 +107,24 @@ def history_page(messages, *, index=None, offset=0, limit=20):
         'next_offset':offset+6000 if offset+6000<len(text) else None,'total_characters':len(text)}
 
 
+def source_window_view(message):
+    """Project legacy window labels; preserve original receipts in the journal."""
+    if not isinstance(message, ToolMessage) or message.status!='success' or message.name!='read_review_source_span':
+        return message
+    try:
+        value=json.loads(message.content)
+    except (ValueError,TypeError):
+        return message
+    if not isinstance(value,dict):return message
+    changed=False
+    for row in [value,*value.get('candidates',[])]:
+        if isinstance(row,dict) and 'quote_span' in row and 'text' in row and 'window_span' not in row:
+            row['window_span']=row.pop('quote_span');changed=True
+    if not changed:return message
+    value['notice']='Legacy reading-window labels projected as window_span; original receipt remains in read_review_history. Submit source_id + chosen exact quote; runtime locates it. Do not copy a context window as selected quote_span.'
+    return message.model_copy(update={'content':json.dumps(value,ensure_ascii=False)})
+
+
 def working_messages(state, artifacts, confirmation=None):
     full=state['messages']
     # Legacy instructions/checklist errors remain in the journal, not active
@@ -165,7 +183,7 @@ def working_messages(state, artifacts, confirmation=None):
     from .model_context import deduplicate_read_results
     return deduplicate_read_results([*user_messages,
         HumanMessage(id='review-working-state-v2',content=json.dumps(packet,ensure_ascii=False)),
-        *(paper_quote_view(m) for m in recent)])
+        *(source_window_view(paper_quote_view(m)) for m in recent)])
 
 
 class ReviewWorkingContext(AgentMiddleware):

@@ -391,3 +391,11 @@ Lead 的当前进度保留未提交任务的公开交接结果，包括停止原
 ### Calculator source quote layout
 
 The calculator and review citation tools share the same unique contiguous quote resolver. Whitespace and empty table-cell layout differences may be restored only when all ordered nonempty cells match one source block; numbers, signs, words and row order are not inferred or rewritten. Calculator receipts retain the exact restored source quote, original proposed quote, source digest and offsets. Existing exact-quote calculations retain their identity. Column/period interpretation remains the author and reviewer responsibility; this recovery does not verify financial semantics. Ambiguous or changed quotes remain tool errors with source-specific feedback.
+
+### 复核阅读窗口与引用选择
+
+`read_review_source_span` 的输出用 `window_span` 表示阅读上下文，`match_start/end` 仅表示检索词位置。模型优先提交 `source_id + quote`，runtime 对唯一原文匹配生成准确 `quote_span`、digest 和解析回执。显式提交的 `quote_span` 仍兼容；同时给引句时必须与完整区间相等，不能把较大的阅读窗口当成短引句位置。
+
+多处匹配或引句/区间冲突返回 `source_quote_selection_required`：显示原选择、准确候选及回读参数，`accepted=false`，由模型决定后再提交。它是正常选择反馈，工具传输成功不等于意见保存或复核完成；不更新该项已保存意见，也不产生已完成复核。混有来源缺失、过期 digest 或其他真实错误仍以错误返回。finding 保存与最终 confirmation 使用同一定位规则。
+
+恢复旧记录时，仅在模型视图中把读取回执的旧 `quote_span` 标签投影成 `window_span`；原文、数字、位置、原始回执及历史回读均不变。旧提示中“直接使用读取回执 quote_span”的要求已替换。独立程序若消费新的读取输出应改读 `window_span`；已持久化旧回执仍可回读，提交端字段不更名。

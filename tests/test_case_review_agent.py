@@ -438,7 +438,7 @@ def test_review_returns_all_independent_quote_errors_at_once(artifacts):
     assert len(errors) == 9  # read coverage plus four independent errors per finding
     for fid in ("F1", "F2"):
         assert f"problematic_quote_not_exact:{fid}" in errors
-        assert f"source_quote_not_exact:{fid}:P01:S001" in errors
+        assert f"source_quote_selection_required:{fid}:source_checks/0" in errors
         assert f"unknown_source_id:{fid}:P99:S001" in errors
 
 

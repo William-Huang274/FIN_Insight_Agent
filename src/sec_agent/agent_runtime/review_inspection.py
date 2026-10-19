@@ -163,8 +163,10 @@ The runtime preserves read receipts, versions and legacy checks. Do NOT recreate
 paragraph coverage, hashes or previously saved checks. Automatic paragraph/keyword candidates are navigation
 only and do not create mandatory work. Assess each assigned paper concisely; no per-paragraph pass records.
 Use read_review_location to get a location_id for an actionable finding instead of retyping its quote.
-Use read_review_source_span's quote_span when quoting original evidence. Ambiguous identities require a
-local clarification, not invented mappings. Record specific source-grounded findings as they emerge.
+For evidence supply source_id and your chosen exact quote; runtime locates it. Returned window_span is
+reading context, not citation offsets. Repeated quotes or conflicting selections return candidates for
+your decision; nothing is saved as accepted until selection is resolved. Do not invent mappings.
+Record specific source-grounded findings as they emerge.
 
 Ordinary editorial suggestions are advisory. A material issue changes the answer or leaves a significant
 statement misleading; identify the affected claim and explain its impact. Necessary checks you could not

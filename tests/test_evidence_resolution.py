@@ -7,6 +7,9 @@ from langchain_core.messages import HumanMessage, ToolMessage
 from sec_agent.agent_runtime.evidence_resolution import (
     resolve_quote, citation_inventory, confirmed_reference, delivery_reference_findings, read_source_span,
     review_reference_state)
+from sec_agent.agent_runtime.evidence_resolution import (
+    bind_source_quote, SourceQuoteSelectionRequired, quote_selection_feedback)
+from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
 from sec_agent.agent_runtime.case_review_agent import (
     CaseReview, validate_case_review, validate_inspection_checks, build_case_reviewer, case_mcp_tools)
 from sec_agent.agent_runtime.review_inspection import inspection_manifest
@@ -24,6 +27,51 @@ def sample():
         'passage':'Income |  | 10 |  | 20 |\nTax |  | (2) |  | (4) |\n'}
     a._papers['P01']['workpaper']['narrative_markdown']='Growth contribution requires checking. PASSAGE::...2:3'
     return a
+
+
+def test_unique_quote_located_without_model_offsets_and_without_rewriting_text():
+    body = 'Before\nRevenue 10\nAfter'
+    quote, span, record = bind_source_quote(body, 'P01:S001', 'Revenue 10')
+    assert quote == 'Revenue 10' and body[span['start']:span['end']] == quote
+    assert record['original_input']['quote_span'] is None
+    assert record['basis']['source_digest'] == canonical_sha256(body)
+    assert not record['financial_semantics_verified']
+
+
+def test_conflict_returns_both_choices_without_selecting_or_mutating_input():
+    body = 'Revenue 10\nOther context'
+    span = {'source_digest':canonical_sha256(body), 'start':3, 'end':len(body)}
+    before = deepcopy(span)
+    with pytest.raises(SourceQuoteSelectionRequired) as caught:
+        bind_source_quote(body, 'P01:S001', 'Revenue 10', span)
+    feedback = caught.value.feedback
+    assert span == before and feedback['selected_match'] is None and not feedback['accepted']
+    assert feedback['supplied_span_preview'] == body[3:]
+    assert feedback['quote_candidates'][0]['quote_span']['start'] == 0
+    assert feedback['original_input']['quote'] == 'Revenue 10'
+    # A caller's explicit choice, not the host, resolves the conflict.
+    assert bind_source_quote(body, 'P01:S001', 'Revenue 10')[0] == 'Revenue 10'
+    assert bind_source_quote(body, 'P01:S001', '', span)[0] == body[3:]
+
+
+def test_repeated_quote_requires_occurrence_selection_even_if_text_is_exact():
+    body = 'Revenue 10\nRevenue 10'
+    with pytest.raises(SourceQuoteSelectionRequired) as caught:
+        bind_source_quote(body, 'P01:S001', 'Revenue 10')
+    f = caught.value.feedback
+    assert f['total_matches'] == 2 and f['selected_match'] is None
+    selected = f['quote_candidates'][1]['quote_span']
+    assert bind_source_quote(body, 'P01:S001', 'Revenue 10', selected)[1] == selected
+    selected['source_digest'] = 'stale'
+    with pytest.raises(ValueError, match='stale_digest'):
+        bind_source_quote(body, 'P01:S001', 'Revenue 10', selected)
+
+
+def test_selection_feedback_never_masks_a_sibling_tool_error():
+    normal = {'errors':['source_quote_selection_required:F:source_checks/0']}
+    assert quote_selection_feedback(ValueError(json.dumps(normal)))['accepted'] is False
+    for other in ('unknown_source_id:F:P99', 'source_span_stale_digest', 'read_missing_papers_before_review'):
+        assert quote_selection_feedback(ValueError(json.dumps({'errors':[*normal['errors'],other]}))) is None
 
 
 def test_table_compatibility_restores_only_unique_identical_nonempty_cells():
@@ -158,7 +206,7 @@ def test_digest_bound_quote_selection_and_compatibility_receipts():
     review=CaseReview.model_validate(review_fixture(a))
     finding={'finding_id':'F','paper_id':'P01','severity':'advisory','problematic_quote':'Growth contribution',
         'diagnosis':'Synthetic source operation test only.','requested_change':'Inspect the actual selected source span.',
-        'source_checks':[{'source_id':'P01:S002','quote_span':selected['quote_span']}]}
+        'source_checks':[{'source_id':'P01:S002','quote_span':selected['window_span']}]}
     review=review.model_copy(update={'findings':CaseReview.model_validate({**review.model_dump(),'findings':[finding]}).findings})
     receipts=[];validate_case_review(review,a,reads(a),parsing_records=receipts)
     assert review.findings[0].source_checks[0].quote==body.rstrip()
@@ -172,7 +220,7 @@ def test_literal_anchor_selection_returns_contexts_without_selecting_ambiguous_m
     a=sample()
     selected=read_source_span(a,'P01:S002',anchor='Tax',max_characters=100)
     assert selected['text']=='Tax |  | (2) |  | (4) |\n'
-    assert selected['quote_span']['start']==len('Income |  | 10 |  | 20 |\n')
+    assert selected['window_span']['start']==len('Income |  | 10 |  | 20 |\n')
     assert selected['runtime_parsing']['method']=='exact_source_anchor_v1'
     body=a._sources['P01:S002']['passage']
     result=read_source_span(a,'P01:S002',anchor='|')
@@ -180,7 +228,7 @@ def test_literal_anchor_selection_returns_contexts_without_selecting_ambiguous_m
     assert 'text' not in result and 'quote_span' not in result
     assert len(result['candidates'])==6 and result['next_page']
     for item in result['candidates']:
-        span=item['quote_span']
+        span=item['window_span']
         assert item['text']==body[span['start']:span['end']]
         assert body[item['match_start']:item['match_end']]=='|'
         assert read_source_span(a,**item['readback']['arguments'])['text']

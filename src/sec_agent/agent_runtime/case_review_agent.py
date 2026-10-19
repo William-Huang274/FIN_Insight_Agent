@@ -45,8 +45,8 @@ class SourceQuoteSpan(BaseModel):
 class ReviewSourceCheck(BaseModel):
     model_config = ConfigDict(extra="forbid")
     source_id: str
-    quote: str = Field(default='', max_length=6000)
-    quote_span: SourceQuoteSpan | None = None
+    quote: str = Field(default='', max_length=6000, description='Preferred: provide source_id and the exact contiguous quote you choose. Runtime locates a unique occurrence and records precise offsets. Repeated occurrences return candidates for your selection.')
+    quote_span: SourceQuoteSpan | None = Field(default=None, description='Optional exact selected-quotation offsets, NOT a reading window. Omit when quoting unique text. If both quote and quote_span are supplied, the quote must equal the ENTIRE span text. Conflicts return both choices without selecting for you.')
 
 
 class CaseReviewFinding(BaseModel):
@@ -297,36 +297,24 @@ def validate_case_review(review: CaseReview, artifacts: CaseArtifacts, messages,
                     errors.append(f"unknown_source_id:{finding.finding_id}:{check.source_id}")
                     continue
                 body = str(source.get("passage") or source.get("bounded_excerpt") or source.get("value_decimal") or "")
-            from .evidence_resolution import select_source_span, resolve_quote, parsing_record
-            receipt = None
-            if check.quote_span:
-                try:
+            from .evidence_resolution import bind_source_quote, SourceQuoteSelectionRequired
+            try:
+                if check.quote_span:
                     from .evidence_resolution import source_body
                     body = source_body(artifacts,check.source_id)
-                    selected = select_source_span(body, check.quote_span.source_digest, check.quote_span.start, check.quote_span.end)
-                    if check.quote and check.quote != selected:
-                        raise ValueError('source_span_quote_conflict')
-                    receipt = parsing_record('digest_bound_source_span_v1',check.model_dump(mode='json'),selected,
-                        source_digest=check.quote_span.source_digest)
-                    check.quote = selected
-                except ValueError as exc:
-                    errors.append(f'{exc}:{finding.finding_id}:source_checks/{check_index}')
-                    continue
-            elif check.quote not in body:
-                check.quote, receipt = resolve_quote(body, check.quote)
+                exact, span, receipt = bind_source_quote(body, check.source_id, check.quote,
+                    check.quote_span.model_dump() if check.quote_span else None)
+                check.quote, check.quote_span = exact, SourceQuoteSpan.model_validate(span)
+            except SourceQuoteSelectionRequired as exc:
+                errors.append(f'source_quote_selection_required:{finding.finding_id}:source_checks/{check_index}')
+                source_recovery.append({**exc.feedback, 'finding_id':finding.finding_id,'source_check_index':check_index})
+                continue
+            except ValueError as exc:
+                errors.append(f'{exc}:{finding.finding_id}:source_checks/{check_index}')
+                continue
             if receipt is not None and parsing_records is not None:
                 parsing_records.append({**receipt,'finding_id':finding.finding_id,'source_check_index':check_index,
                     'source_id':check.source_id})
-            if not contains_source_quote(body, check.quote):
-                errors.append(f"source_quote_not_exact:{finding.finding_id}:{check.source_id}")
-                from difflib import SequenceMatcher
-                match = SequenceMatcher(None, check.quote, body, autojunk=False).find_longest_match()
-                start = max(0, match.b - 100)
-                source_recovery.append({'finding_id':finding.finding_id, 'source_id':check.source_id, 'source_check_index':check_index,
-                    'original_window':body[start:start+1000], 'accepted':False,
-                    'window_basis':'Known archived source or actually observed tool window; not a new disclosure claim.',
-                    'remedy':'Copy an exact contiguous source quote from the original window; do not reconstruct a table row from memory.',
-                    'read_tool':'read_review_source_span','arguments':{'source_id':check.source_id,'start':start,'end':min(len(body),start+1000)}})
     if errors:
         # Return all independent local errors at once. Exactness is unchanged;
         # do not make the model resubmit a whole review to discover each typo.
@@ -904,6 +892,7 @@ class ReviewCallAllowance(AgentMiddleware):
 
 def validate_finding_confirmation(review, confirmation, artifacts, *, parsing_records=None):
     """Check coverage/version navigation, not the reviewer's financial verdict."""
+    source_recovery = []
     expected = {f["finding_id"] for rows in confirmation["findings_to_confirm"].values() for f in rows}
     checks = [c.finding_id for c in review.finding_checks]
     errors = []
@@ -936,26 +925,19 @@ def validate_finding_confirmation(review, confirmation, artifacts, *, parsing_re
         for source in check.source_checks:
             try:
                 body = artifacts._source_text(artifacts.source_item(source.source_id))
-                from .evidence_resolution import resolve_quote, select_source_span, parsing_record
-                receipt = None
-                if source.quote_span:
-                    selected = select_source_span(body, source.quote_span.source_digest,
-                        source.quote_span.start, source.quote_span.end)
-                    if source.quote and source.quote != selected:
-                        raise ValueError('source_span_quote_conflict')
-                    receipt = parsing_record('digest_bound_source_span_v1', source.model_dump(mode='json'), selected,
-                        source_digest=source.quote_span.source_digest)
-                    source.quote = selected
-                elif source.quote not in body:
-                    source.quote, receipt = resolve_quote(body, source.quote)
+                from .evidence_resolution import bind_source_quote, SourceQuoteSelectionRequired
+                exact, span, receipt = bind_source_quote(body, source.source_id, source.quote,
+                    source.quote_span.model_dump() if source.quote_span else None)
+                source.quote, source.quote_span = exact, SourceQuoteSpan.model_validate(span)
                 if receipt is not None and parsing_records is not None:
                     parsing_records.append({**receipt, 'finding_id':check.finding_id, 'source_id':source.source_id})
-                if not contains_source_quote(body, source.quote):
-                    errors.append("confirmation_source_quote_not_exact:" + check.finding_id + ":" + source.source_id)
+            except SourceQuoteSelectionRequired as exc:
+                errors.append('source_quote_selection_required:' + check.finding_id + ':' + source.source_id)
+                source_recovery.append({**exc.feedback, 'finding_id':check.finding_id})
             except ValueError as exc:
                 errors.append("confirmation_source_invalid:" + check.finding_id + ":" + source.source_id + ':' + str(exc))
     if errors:
-        raise ValueError(json.dumps({"errors": errors}, ensure_ascii=False))
+        raise ValueError(json.dumps({"errors": errors, 'source_quote_recovery':source_recovery}, ensure_ascii=False))
 
 
 def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, max_tool_calls=64, audit=None, method_instructions="", revision_target=None, confirmation=None, require_inspection=False):
@@ -973,7 +955,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
 
     @tool(response_format='content_and_artifact')
     def read_review_source_span(source_id: str, start: int = 0, end: int | None = None, anchor: str | None = None, max_characters: int = 1000, match_offset: int = 0):
-        """Read original text by source_id and literal anchor, or offsets. Multiple matches return positions, exact context windows and readback arguments; decide relevance yourself. Use next_page for additional matches. No match returns navigation, not a source gap. Runtime computes quote_span; default reads first1000 characters. This is not financial verification."""
+        """Read original text by source_id and literal anchor, or offsets. Multiple matches return anchor positions, window_span and readback arguments; decide relevance yourself. These are reading windows, not quote_span. Submit source_id + your chosen quote; runtime locates it. Use next_page for more matches. No match is navigation, not a source gap or financial verification."""
         if audit and audit.source_access_check:
             audit.source_access_check()
         from .evidence_resolution import read_source_span
@@ -1044,10 +1026,12 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             validate_case_review(partial, artifacts, runtime.state["messages"], paper_ids=[finding.paper_id], revision_target=revision_target,
                                  require_full_workpaper=False,parsing_records=parsing)
         except ValueError as exc:
+            from .evidence_resolution import quote_selection_feedback
+            feedback = quote_selection_feedback(exc)
             return Command(update={"runtime_parsing":[{**r,'operation_status':'rejected'} for r in parsing],
-                "messages": [ToolMessage(content=str(exc), status="error",
+                "messages": [ToolMessage(content=json.dumps(feedback,ensure_ascii=False) if feedback else str(exc), status="success" if feedback else "error",
                 name="record_case_finding", tool_call_id=runtime.tool_call_id,
-                artifact={'runtime_parsing':[{**r,'operation_status':'rejected'} for r in parsing]})]})
+                artifact={**(feedback or {}),'runtime_parsing':[{**r,'operation_status':'rejected'} for r in parsing]})]})
         finding = partial.findings[0]
         return Command(update={"recorded_findings": {finding.finding_id: finding.model_dump(mode="json")},
             "runtime_parsing":[{**r,'operation_status':'finding_recorded'} for r in parsing],
@@ -1113,11 +1097,13 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
                 except ValueError:
                     continue
                 retained[finding.finding_id] = partial.findings[0].model_dump(mode='json')
+            from .evidence_resolution import quote_selection_feedback
+            feedback = quote_selection_feedback(exc)
             return Command(update={"recorded_findings":retained,
                 "runtime_parsing":[{**r,'operation_status':'rejected'} for r in parsing],
-                "messages": [ToolMessage(content=str(exc) + ('\nSaved valid findings: ' + ', '.join(retained) + '. Correct only the reported errors; omit saved findings on resubmission.' if retained else ''), status="error",
+                "messages": [ToolMessage(content=(json.dumps(feedback,ensure_ascii=False) if feedback else str(exc)) + ('\nSaved valid findings: ' + ', '.join(retained) + '. Correct only the reported errors; omit saved findings on resubmission.' if retained else ''), status="success" if feedback else "error",
                 name="submit_case_review", tool_call_id=runtime.tool_call_id,
-                artifact={'runtime_parsing':[{**r,'operation_status':'rejected'} for r in parsing]})]})
+                artifact={**(feedback or {}),'runtime_parsing':[{**r,'operation_status':'rejected'} for r in parsing]})]})
         value = review.model_dump(mode="json")
         runtime_parsing = [{**r,'operation_status':'review_recorded'} for r in parsing]
         value['completion'] = completion

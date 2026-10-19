@@ -28,6 +28,66 @@ def select_source_span(body, digest, start, end):
     return body[start:end]
 
 
+class SourceQuoteSelectionRequired(ValueError):
+    """Navigation feedback: no quote or occurrence has been selected by the host."""
+
+    def __init__(self, feedback):
+        import json
+        self.feedback = feedback
+        super().__init__(json.dumps(feedback, ensure_ascii=False))
+
+
+def quote_selection_feedback(error):
+    """Only pure navigation requests are nonfatal; any other error still stops."""
+    import json
+    try:
+        value = json.loads(str(error))
+    except (ValueError, TypeError):
+        return None
+    errors = value.get('errors', []) if isinstance(value, dict) else []
+    if errors and all(e.startswith('source_quote_selection_required:') for e in errors):
+        return {**value, 'status': 'source_quote_selection_required', 'accepted': False,
+                'notice': 'The affected selection is pending and was not accepted. Any independently saved findings are listed separately; the review is not complete.'}
+    return None
+
+
+def bind_source_quote(body, source_id, quote, span=None):
+    """Locate model-selected text; never choose between conflicting selections."""
+    digest = canonical_sha256(body)
+    original = {'source_id': source_id, 'quote': quote, 'quote_span': span}
+    selected = None
+    if span:
+        selected = select_source_span(body, span['source_digest'], span['start'], span['end'])
+        if not quote or quote == selected:
+            return selected, span, parsing_record('digest_bound_source_span_v1', original, selected,
+                source_digest=digest, start=span['start'], end=span['end'])
+    exact, layout = resolve_quote(body, quote)
+    positions = [m.start() for m in re.finditer(re.escape(exact), body)] if exact else []
+    if span or len(positions) != 1:
+        candidates = []
+        for pos in positions[:6]:
+            lo, hi = max(0, pos-120), min(len(body), pos+len(exact)+120)
+            candidates.append({'quote_span': {'source_digest': digest, 'start': pos, 'end': pos+len(exact)},
+                'context_preview': body[lo:min(hi,lo+1000)],
+                'readback': {'tool': 'read_review_source_span', 'arguments': {
+                    'source_id': source_id, 'start': lo, 'max_characters': min(6000,hi-lo)}}})
+        raise SourceQuoteSelectionRequired({'status': 'source_quote_selection_required',
+            'reason': 'quote_span_conflict' if span else 'multiple_quote_matches' if positions else 'quote_not_found',
+            'source_id': source_id, 'original_input': original, 'accepted': False, 'selected_match': None,
+            'supplied_span_preview': selected[:1000] if selected is not None else None,
+            'supplied_span_characters': len(selected) if selected is not None else None,
+            'quote_candidates': candidates, 'total_matches': len(positions),
+            'readback': {'tool': 'read_review_source_span', 'arguments': {
+                'source_id': source_id, 'start': 0, 'max_characters': 1000}},
+            'more_matches_readback': {'tool': 'read_review_source_span', 'arguments': {
+                'source_id': source_id, 'anchor': exact, 'match_offset': 6}} if len(positions)>6 else None,
+            'remedy': 'Decide which text you intend. For the literal quote, resubmit source_id + quote without quote_span; runtime locates it. For repeated text choose a returned exact quote_span. For the supplied span, explicitly use its full text or omit quote. A reading window is not a selected quotation. No finding or review has been accepted.'})
+    pos = positions[0]
+    resolved = {'source_digest': digest, 'start': pos, 'end': pos+len(exact)}
+    return exact, resolved, parsing_record('unique_source_quote_location_v1', original, exact,
+        source_digest=digest, start=pos, end=pos+len(exact), layout_recovery=layout)
+
+
 
 def citation_inventory(artifacts, paper_id):
     from .review_inspection import PROSE_FIELDS, text_locations
@@ -120,7 +180,7 @@ def read_source_span(artifacts, source_id, start=0, end=None, anchor=None, max_c
                 lo = max(0,pos-min(120,width//3))
                 hi = min(len(body),lo+width)
                 candidates.append({'match_index':index,'match_start':pos,'match_end':pos+len(anchor),
-                    'text':body[lo:hi],'quote_span':{'source_digest':digest,'start':lo,'end':hi},
+                    'text':body[lo:hi],'window_span':{'source_digest':digest,'start':lo,'end':hi},
                     'readback':{'tool':'read_review_source_span','arguments':{
                         'source_id':source_id,'start':lo,'max_characters':min(6000,max(1000,max_characters*2))}}})
             next_offset = match_offset+len(candidates)
@@ -132,14 +192,15 @@ def read_source_span(artifacts, source_id, start=0, end=None, anchor=None, max_c
                     'source_id':source_id,'anchor':anchor,'max_characters':max_characters,'match_offset':next_offset}}
                     if next_offset<len(positions) else None,
                 'readback':{'tool':'read_review_source_span','arguments':{'source_id':source_id,'start':0,'max_characters':max_characters}},
-                'notice':'These are exact source windows, not a selected match or verified conclusion. Inspect the contexts and choose relevant spans yourself; use returned readback arguments for more context.'}
+                'notice':'window_span covers context only; match_start/end locate the search anchor, not your selected quotation. Submit source_id + your exact quote; runtime locates it. Do not copy window_span as quote_span. No match or financial conclusion has been selected.'}
         start = positions[0]
     if end is None:
         end = min(len(body),start+max_characters)
     digest = canonical_sha256(body)
     text = select_source_span(body, digest, start, end)
     return {'source_id':source_id, 'source_digest':digest, 'text':text,
-            'quote_span':{'source_digest':digest,'start':start,'end':end},
+            'window_span':{'source_digest':digest,'start':start,'end':end},
+            'notice':'This is a reading window. Submit source_id + your chosen exact quote; runtime locates it. Only use these offsets as quote_span if selecting this entire text verbatim.',
             'runtime_parsing':parsing_record('exact_source_anchor_v1' if anchor else 'exact_source_span_v1', original,text,
                                             source_digest=digest)}
 
@@ -163,7 +224,7 @@ def confirmed_reference(artifacts, paper_id, reference_id, source_id, reason, me
             continue
         body = source_body(artifacts,source_id)
         text = value.get('text','')
-        offset = value.get('offset',value.get('quote_span',{}).get('start',0))
+        offset = value.get('offset',value.get('window_span',value.get('quote_span',{})).get('start',0))
         if text and body[offset:offset+len(text)]==text:
             observed.append(message.tool_call_id)
     if not observed:

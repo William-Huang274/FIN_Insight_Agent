@@ -10,6 +10,22 @@ from sec_agent.agent_runtime.review_context import paper_quote_view, confirmatio
 from sec_agent.agent_runtime.case_review_agent import ReviewHandoff
 
 
+def test_legacy_read_window_projection_does_not_modify_receipt_or_text():
+    from sec_agent.agent_runtime.review_context import source_window_view
+    value={'status':'multiple_anchor_matches','source_id':'P08:S011','candidates':[
+        {'match_start':183,'match_end':197,'text':'the exact original window',
+         'quote_span':{'source_digest':'original','start':63,'end':663}}]}
+    original=ToolMessage(content=json.dumps(value),artifact=deepcopy(value),
+        name='read_review_source_span',tool_call_id='read1')
+    before=original.model_dump()
+    view=source_window_view(original); decoded=json.loads(view.content)
+    assert 'quote_span' not in decoded['candidates'][0]
+    assert decoded['candidates'][0]['window_span']==value['candidates'][0]['quote_span']
+    assert decoded['candidates'][0]['text']==value['candidates'][0]['text']
+    assert original.model_dump()==before and view.artifact==original.artifact
+    assert source_window_view(view)==view
+
+
 def expand_quotes(value):
     result = deepcopy(value)
     table = result.pop('citation_quote_table', None)

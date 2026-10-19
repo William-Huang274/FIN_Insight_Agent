@@ -8,23 +8,22 @@ from langchain.agents.middleware.types import ModelRequest
 from mcp import Client
 import pytest
 
-from sec_agent.agent_runtime.case_review_agent import ReviewCallAllowance, build_case_reviewer, case_mcp_tools
+from sec_agent.agent_runtime.case_review_agent import build_case_reviewer, case_mcp_tools
+from sec_agent.agent_runtime.confirmation_reading import ReviewReadingContext
 from test_research_convergence import artifact_fixture
 from test_research_mcp import _build_server
 
 
-def test_allowance_counts_current_request_explicitly_without_changing_tools_or_system():
+def test_legacy_countdown_exits_request_without_changing_tools_or_journal():
     history=[HumanMessage(content='Original research'),AIMessage(content='',additional_kwargs={'reasoning_content':'saved'})]
     tools=[object(),object()]
     request=ModelRequest(model=LastRead(),messages=history,tools=tools,system_message=SystemMessage(content='Stable role'),
         state={'messages':history,'thread_model_call_count':25,'run_model_call_count':1})
-    projected=ReviewCallAllowance(2).request_with_budget(request)
-    value=json.loads(projected.messages[-1].content)
-    assert value['current_request_number']==2 and value['additional_requests_after_this_response']==0
-    assert value['completed_requests_in_run']==1
+    countdown=HumanMessage(content=json.dumps({'origin':'runtime_model_call_allowance', 'additional_requests_after_this_response':0}))
+    request=request.override(messages=[*history,countdown])
+    projected=ReviewReadingContext(artifact_fixture()).project(request)
     assert projected.tools==tools and projected.system_message==request.system_message
-    assert projected.messages[:-1]==history and len(history)==2
-    assert 'closeout' not in projected.messages[-1].content
+    assert projected.messages==history and request.messages[-1]==countdown
 
 
 class LastRead(BaseChatModel):
@@ -65,11 +64,11 @@ def test_final_authorized_response_executes_tool_and_stops_before_next_model(pap
         assert 'closeout reserve' not in reply.content
         assert any(m.tool_call_id=='previous-read' and m.artifact==history[1].artifact
             for m in result['messages'] if isinstance(m,ToolMessage))
-        assert json.loads(model.seen[-1].content)['additional_requests_after_this_response']==0
+        assert not any('runtime_model_call_allowance' in str(m.content) or 'Budget: up to' in str(m.content) for m in model.seen)
     asyncio.run(run())
 
 
-def test_two_request_run_keeps_tools_and_replaces_allowance_instead_of_accumulating():
+def test_two_request_run_enforces_limit_without_countdown():
     async def run():
         artifacts=artifact_fixture(); model=LastRead(accepted_requests=2)
         async with Client(_build_server(case_artifacts=artifacts),raise_exceptions=False) as client:
@@ -80,10 +79,7 @@ def test_two_request_run_keeps_tools_and_replaces_allowance_instead_of_accumulat
         for index,messages in enumerate(model.snapshots,1):
             notices=[m for m in messages if isinstance(m,HumanMessage)
                 and 'runtime_model_call_allowance' in m.content]
-            assert len(notices)==1
-            value=json.loads(notices[0].content)
-            assert value['current_request_number']==index
-            assert value['additional_requests_after_this_response']==2-index
+            assert notices==[]
         assert not any('runtime_model_call_allowance' in m.content for m in result['messages']
             if isinstance(m,HumanMessage))
     asyncio.run(run())

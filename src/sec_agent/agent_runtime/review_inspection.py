@@ -67,6 +67,29 @@ def read_location(artifacts, paper_id, path, offset=0, max_characters=2000):
             'total_characters': len(text), 'notice': 'Exact current text; not a verified financial statement.'}
 
 
+def read_structured_location(artifacts, paper_id, path, offset=0, max_characters=2000):
+    """Read a structured field together, without turning directory previews into evidence."""
+    import json
+    paper = artifacts.read_paper(paper_id)
+    value = paper
+    try:
+        for part in path.lstrip('/').split('/'):
+            part = part.replace('~1', '/').replace('~0', '~')
+            value = value[int(part)] if isinstance(value, list) else value[part]
+    except (KeyError, ValueError, TypeError, IndexError) as exc:
+        raise ValueError('unknown_structured_review_field') from exc
+    if not isinstance(value, (dict, list)):
+        raise ValueError('use_text_view_for_string_field')
+    if offset < 0 or not 1 <= max_characters <= 6000:
+        raise ValueError('review_window_requires_nonnegative_offset_and_1_to_6000_characters')
+    text = json.dumps(value, ensure_ascii=False)
+    end = min(len(text), offset + max_characters)
+    return {'paper_id': paper_id, 'paper_digest': canonical_sha256(paper),
+        'field_path': path, 'view': 'json', 'offset': offset, 'text': text[offset:end],
+        'total_characters': len(text), 'next_offset': end if end < len(text) else None,
+        'notice': 'Current structured field; not financial confirmation or a quote location. Use a text leaf for exact finding quotes.'}
+
+
 def bind_location(artifacts, messages, paper_id, location_id):
     """Only a successful, current-version tool read can supply a finding quote."""
     from langchain_core.messages import ToolMessage

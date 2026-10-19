@@ -671,6 +671,9 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
                     raise ValueError("original_author_dependency_handoff_unavailable")
                 from .author_revision import revision_source_handoff
                 findings, revision_sources = revision_source_handoff(findings, current, dependencies)
+                from .revision_calculation_handoff import restore_revision_calculations
+                saved = restore_revision_calculations(saved, convergence_state.get('lead_decision') or {},
+                    current, paper_id)
                 async def resume():
                     with open_specialist_receipted_composition(run_id=saved["run_id"], run_invocation_id=invocation,
                             plan_invocation_id=plan_invocation_id, branch_id=saved["task"]["branch_id"],

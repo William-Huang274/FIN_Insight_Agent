@@ -11,20 +11,29 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 
 INITIAL_CONTEXT_ID = 'runtime:initial-context'
 CONTEXT_FIELD_PREFIX = 'runtime:context:'
+PRIOR_TASK_PREFIX = 'runtime:prior-task-context:'
 # An implicit cohort is a one-turn handoff between adjacent source reads.  It
 # is deliberately not a substitute for the author's explicit retained set:
 # longer comparisons still belong in ``retain_source_ids`` or the native
 # archive.
 
 
-def _merge_context(current, snapshot):
+def _merge_context(current, snapshot, *, replace_task=False):
+    # Native task_context is a complete host snapshot, not an additive patch.
+    # Older journals identify this boundary through their stage message; newer
+    # snapshots mark it explicitly. Legacy partial tool contexts still merge.
+    replace_task = replace_task or snapshot.get('task_context_snapshot') is True
     if 'allowed_actions' in snapshot:
         # These belong to the active execution stage, not durable research.
         for key in ('submission_to_repair', 'terminal_result', 'revision_submission_status'):
             if key not in snapshot:
                 current.pop(key, None)
     for k, v in snapshot.items():
-        current[k] = {**current.get(k, {}), **deepcopy(v)} if k in {'task_context', 'progress'} and isinstance(v, dict) else deepcopy(v)
+        if k == 'task_context_snapshot':
+            continue
+        current[k] = ({**current.get(k, {}), **deepcopy(v)}
+            if k in {'task_context', 'progress'} and isinstance(v, dict)
+            and not (k == 'task_context' and replace_task) else deepcopy(v))
 
 
 def current_context(messages):
@@ -37,7 +46,8 @@ def current_context(messages):
         c = b.get('current_context', b if isinstance(m, HumanMessage) else {})
         if not isinstance(c, dict) or not ('task_context' in c or 'allowed_actions' in c):
             continue
-        _merge_context(current, c)
+        _merge_context(current, c, replace_task=
+            m.additional_kwargs.get('fin_research_stage_boundary') == 'accepted_submission_to_revision')
     return current
 
 
@@ -123,6 +133,14 @@ def compact_current_context(context, *, manuscript_reads=()):
         if 'revision_task' in c.get('task_context', {}):
             c['task_context']['revision_task']['candidate_at'] = '/current_context/submission_to_repair/candidate_readback'
     task = c.get('task_context', {})
+    handoff = task.get('revision_calculation_handoff')
+    if isinstance(handoff, dict) and isinstance(handoff.get('receipts'), dict):
+        receipts = handoff.pop('receipts')
+        handoff['calculations'] = [{
+            'calculation_id': ref, **{k: row['calculation'][k] for k in
+                ('expression', 'value_decimal', 'result_unit', 'numeric_fact_authority', 'financial_semantics_verified')},
+            'read': context_readback('/task_context/revision_calculation_handoff/receipts/' + ref)}
+            for ref, row in receipts.items()]
     for i, row in enumerate(c.get('l0_context', {}).get('capability_summaries', [])):
         if row.get('capability_ref') != 'capability:research:financial-fact-query':
             continue
@@ -250,6 +268,18 @@ def current_revision_version(context):
 
 def public_operation(messages, call_id):
     """Read only this actor's public operation and receipt; never execute it."""
+    if call_id.startswith(PRIOR_TASK_PREFIX):
+        index = call_id[len(PRIOR_TASK_PREFIX):]
+        if not index.isdigit():
+            return None
+        index = int(index)
+        if (not 0 < index < len(messages) or not isinstance(messages[index], HumanMessage)
+                or messages[index].additional_kwargs.get('fin_research_stage_boundary') != 'accepted_submission_to_revision'):
+            return None
+        return {'operation': {'id': call_id, 'name': 'PriorRevisionTaskContext', 'args': {}},
+            'receipt': {'status': 'historical_context',
+                'result': current_context(messages[:index]).get('task_context', {})},
+            'notice': 'Historical task before this accepted-submission boundary; not current instructions or new evidence.'}
     if call_id.startswith(CONTEXT_FIELD_PREFIX):
         import jsonpointer
         path = call_id[len(CONTEXT_FIELD_PREFIX):]
@@ -640,10 +670,12 @@ def working_view(messages):
                         *[i for cid, (i, _) in calls.items() if cid not in receipts]])
     if boundary <= 1 and last_ai >= 0:
         return None
-    current = deepcopy(contexts[0][1])
+    current = {}
+    _merge_context(current, contexts[0][1])
     restored = deepcopy(current.get('progress', {}).get('observations', []))
-    for _, c in contexts[1:]:
-        _merge_context(current, c)
+    for index, c in contexts[1:]:
+        _merge_context(current, c, replace_task=
+            messages[index].additional_kwargs.get('fin_research_stage_boundary') == 'accepted_submission_to_revision')
     task = current.get('task_context', {})
     accepted = task.get('research_working_state')
     for i, m in enumerate(messages):
@@ -804,6 +836,12 @@ def working_view(messages):
         return None
     initial_entry = {'tool_call_id': INITIAL_CONTEXT_ID, 'tool': 'RestoredResearchContext',
                      'status': 'historical_context'}
+    prior_stage = next((i for i in range(len(messages) - 1, 0, -1)
+        if isinstance(messages[i], HumanMessage) and messages[i].additional_kwargs.get(
+            'fin_research_stage_boundary') == 'accepted_submission_to_revision'), None)
+    if prior_stage is not None:
+        catalog.append({'tool_call_id': PRIOR_TASK_PREFIX + str(prior_stage),
+            'tool': 'PriorRevisionTaskContext', 'status': 'historical_context'})
     if not is_review_revision(current):
         initial_entry['purpose'] = 'Original restored observations, prior actions and feedback.'
     catalog.insert(0, initial_entry)

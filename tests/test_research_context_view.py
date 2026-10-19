@@ -431,7 +431,8 @@ def test_adapter_revision_starts_after_old_terminal_and_keeps_real_rejection(acc
         request['notebook']['model_turn_count']=5
         adapter._agentic_history[request['agent_id']]=[SystemMessage(content='Original system'),
             HumanMessage(content=json.dumps({'allowed_actions':['read_research_history'],
-                'task_context':{'research_question':'Original assignment'}})),
+                'task_context':{'research_question':'Original assignment',
+                    'user_revision_request': 'COMPLETED_PRIOR_REVISION_REQUEST'}})),
             AIMessage(content='',tool_calls=[{'id':'old-submit','name':'SubmitWorkpaperAction','args':{'thesis':'Saved'}}],
                 additional_kwargs={'reasoning_content':'old completed reasoning'})]
         adapter.specialist_model_turn(request)
@@ -445,6 +446,8 @@ def test_adapter_revision_starts_after_old_terminal_and_keeps_real_rejection(acc
             assert [m['role'] for m in captured[0]['messages']]==['system','user']
             assert 'old completed reasoning' not in json.dumps(captured[0])
             view=json.loads(captured[0]['messages'][1]['content'])
+            assert 'COMPLETED_PRIOR_REVISION_REQUEST' not in json.dumps(view)
+            assert json.loads(history[-2].content)['task_context_snapshot'] is True
             assert next(r for r in view['operation_catalog'] if r['tool_call_id']=='old-submit')['accepted'] is True
             from langchain_core.messages import messages_from_dict
             # Restart from the complete journal, then keep the next error live.

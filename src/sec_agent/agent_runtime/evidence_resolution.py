@@ -132,17 +132,44 @@ def review_reference_state(artifacts, messages, *, limit=10):
             'financial_semantics_verified': False}
 
 
-def read_source_span(artifacts, source_id, start=0, end=None, anchor=None, max_characters=1000):
+def read_source_span(artifacts, source_id, start=0, end=None, anchor=None, max_characters=1000, match_offset=0):
     body = source_body(artifacts, source_id)
     if not 1 <= max_characters <= 6000:
         raise ValueError('source_span_max_characters_must_be_1_to_6000')
+    if match_offset < 0 or (match_offset and anchor is None):
+        raise ValueError('match_offset_requires_anchor_and_nonnegative_index')
     original = {'source_id':source_id,'start':start,'end':end,'anchor':anchor,'max_characters':max_characters}
+    if match_offset:
+        original['match_offset'] = match_offset
     if anchor is not None:
         if not anchor or start != 0 or end is not None:
             raise ValueError('use_one_nonempty_anchor_or_explicit_offsets')
         positions = [m.start() for m in re.finditer(re.escape(anchor),body)]
+        if match_offset and match_offset >= len(positions):
+            raise ValueError('match_offset_out_of_range')
         if len(positions)!=1:
-            raise ValueError('source_anchor_not_unique:positions=' + str(positions[:12]))
+            # Ambiguity is navigation, not a tool failure or source selection.
+            # Bound previews to six windows / 6000 source characters per page.
+            digest = canonical_sha256(body)
+            width = min(max_characters,1000)
+            candidates = []
+            for index,pos in enumerate(positions[match_offset:match_offset+6],match_offset):
+                lo = max(0,pos-min(120,width//3))
+                hi = min(len(body),lo+width)
+                candidates.append({'match_index':index,'match_start':pos,'match_end':pos+len(anchor),
+                    'text':body[lo:hi],'quote_span':{'source_digest':digest,'start':lo,'end':hi},
+                    'readback':{'tool':'read_review_source_span','arguments':{
+                        'source_id':source_id,'start':lo,'max_characters':min(6000,max(1000,max_characters*2))}}})
+            next_offset = match_offset+len(candidates)
+            return {'status':'multiple_anchor_matches' if positions else 'anchor_not_found',
+                'source_id':source_id,'source_digest':digest,'anchor':anchor,
+                'total_matches':len(positions),'match_offset':match_offset,'candidates':candidates,
+                'selected_match':None,'financial_semantics_verified':False,
+                'next_page':{'tool':'read_review_source_span','arguments':{
+                    'source_id':source_id,'anchor':anchor,'max_characters':max_characters,'match_offset':next_offset}}
+                    if next_offset<len(positions) else None,
+                'readback':{'tool':'read_review_source_span','arguments':{'source_id':source_id,'start':0,'max_characters':max_characters}},
+                'notice':'These are exact source windows, not a selected match or verified conclusion. Inspect the contexts and choose relevant spans yourself; use returned readback arguments for more context.'}
         start = positions[0]
     if end is None:
         end = min(len(body),start+max_characters)

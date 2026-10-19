@@ -168,14 +168,38 @@ def test_digest_bound_quote_selection_and_compatibility_receipts():
         validate_case_review(review,a,reads(a))
 
 
-def test_literal_anchor_selection_needs_no_model_character_count_and_rejects_ambiguity():
+def test_literal_anchor_selection_returns_contexts_without_selecting_ambiguous_match():
     a=sample()
     selected=read_source_span(a,'P01:S002',anchor='Tax',max_characters=100)
     assert selected['text']=='Tax |  | (2) |  | (4) |\n'
     assert selected['quote_span']['start']==len('Income |  | 10 |  | 20 |\n')
     assert selected['runtime_parsing']['method']=='exact_source_anchor_v1'
-    with pytest.raises(ValueError,match='not_unique'):
-        read_source_span(a,'P01:S002',anchor='|')
+    body=a._sources['P01:S002']['passage']
+    result=read_source_span(a,'P01:S002',anchor='|')
+    assert result['status']=='multiple_anchor_matches' and result['selected_match'] is None
+    assert 'text' not in result and 'quote_span' not in result
+    assert len(result['candidates'])==6 and result['next_page']
+    for item in result['candidates']:
+        span=item['quote_span']
+        assert item['text']==body[span['start']:span['end']]
+        assert body[item['match_start']:item['match_end']]=='|'
+        assert read_source_span(a,**item['readback']['arguments'])['text']
+    next_page=read_source_span(a,**result['next_page']['arguments'])
+    assert next_page['candidates'][0]['match_index']==6
+    assert next_page['selected_match'] is None
+
+
+def test_anchor_navigation_is_bounded_and_missing_anchor_is_not_missing_source():
+    a=sample();a._sources['P01:S002']['passage']=('before Tax after '*1000)
+    result=read_source_span(a,'P01:S002',anchor='Tax',max_characters=6000)
+    assert result['total_matches']==1000
+    assert sum(len(c['text']) for c in result['candidates'])<=6000
+    absent=read_source_span(a,'P01:S002',anchor='Absent')
+    assert absent['status']=='anchor_not_found' and absent['candidates']==[]
+    assert absent['selected_match'] is None and absent['readback']
+    for kwargs in ({'anchor':'Tax','start':1},{'match_offset':1},{'anchor':'Tax','match_offset':-1},
+                   {'anchor':'Tax','match_offset':1000}):
+        with pytest.raises(ValueError):read_source_span(a,'P01:S002',**kwargs)
 
 
 def test_overall_equation_cannot_cover_other_paragraphs_or_ambiguous_wording():

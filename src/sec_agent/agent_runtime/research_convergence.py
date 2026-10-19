@@ -420,7 +420,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         from .case_review_agent import CaseReview, case_review_scope_digest, validate_finding_confirmation
         from .research_session import responsible_author_feedback
         from .workpaper_changes import confirmation_context
-        context = confirmation_context(artifacts, state.get("revisions", {}), state["pending_feedback"])
+        context = confirmation_context(artifacts, state.get("revisions", {}), state["pending_feedback"],
+            artifact_history=state.get('artifact_history', ()), confirmation_history=state.get('confirmation_history', ()))
         current = artifacts.with_revisions(state.get("revisions", {}))
         result = await review_revisions(current, context, config)
         record = {"context": context, "review": result, "correction_round": state["correction_round"]}

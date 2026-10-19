@@ -651,7 +651,8 @@ def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperActio
             # An explicit field edit can initialize one without rewriting or
             # normalizing the frozen original/digest. Nested typos still fail.
             missing_optional = (isinstance(edit, WorkpaperSetField) and len(parts) == 1
-                and parts[0] not in updated and not SubmitWorkpaperAction.model_fields[parts[0]].is_required())
+                and parts[0] not in updated and not SubmitWorkpaperAction.model_fields[parts[0]].is_required()
+                and SubmitWorkpaperAction.model_fields[parts[0]].exclude is not True)
             if not missing_optional:
                 issue("path_not_found", "Locate the existing field in submission_to_repair.candidate; array paths use numeric indices.")
                 continue

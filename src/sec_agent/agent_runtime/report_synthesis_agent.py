@@ -642,7 +642,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def search_research_sources(query: str, runtime: ToolRuntime, limit: int = 5) -> dict:
-        """Locate archived source windows in the current revised papers using FTS5 source-language terms, OR or quoted phrases. Read matches with read_current_source; searching is not verification."""
+        """Search current archived sources using words or numbers such as 24,461 or 35.6%; runtime handles numeric punctuation. Explicit OR and quoted phrases remain supported. Read candidates with read_current_source; searching does not select or verify a source."""
         try:
             result = artifacts.with_revisions(runtime.state.get("revisions", {})).search_sources(query, limit)
             result["notice"] = result["notice"].replace("read_research_source", "read_current_source")

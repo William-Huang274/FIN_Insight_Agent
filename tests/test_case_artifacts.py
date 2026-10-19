@@ -171,9 +171,48 @@ def test_source_search_is_available_through_native_mcp_and_case_adapter():
             result = await client.call_tool("search_research_sources", {"query": "revenue"})
             assert not result.is_error
             assert "matches" in result.structured_content
+            numeric = await client.call_tool("search_research_sources", {"query": "24,461"})
+            assert not numeric.is_error
+            assert numeric.structured_content['query_interpretation']['fts_query'] == '"24,461"'
             invalid = await client.call_tool("search_research_sources", {"query": '"unclosed'})
             assert invalid.is_error
     asyncio.run(exercise())
+
+
+@pytest.mark.parametrize('query', ['24,461', '35.6%', '-5,855', '+5,301', '1,234.50'])
+def test_normal_numeric_search_is_literal_navigation_with_exact_readback(query):
+    from test_research_session import _new_worker_fixture
+    artifacts = CaseArtifacts([_new_worker_fixture()])
+    for i in range(2):
+        artifacts._sources[f'P01:N{i}'] = {'result_state': 'source_bound_passage',
+            'title': 'Synthetic numeric navigation', 'passage': f'Fixture {query} amount; period {i}.',
+            'numeric_fact_authority': False}
+    original = deepcopy(artifacts._sources)
+    result = artifacts.search_sources(query)
+    assert result['query'] == query
+    assert result['query_interpretation']['fts_query'] == '"' + query + '"'
+    assert not result['query_interpretation']['numeric_equality_verified']
+    assert {h['source_id'] for h in result['matches']} >= {'P01:N0', 'P01:N1'}
+    assert 'selected_source' not in result
+    for hit in result['matches']:
+        if hit['source_id'].startswith('P01:N'):
+            assert query in artifacts.read_source(**hit['read_arguments'])['text']
+            assert not hit['numeric_fact_authority']
+    assert artifacts._sources == original
+
+
+def test_numeric_search_preserves_operators_phrases_and_does_not_join_tokens():
+    from sec_agent.agent_runtime.case_artifacts import source_search_query
+    assert source_search_query('FCF 24,461 OR 35.6%')[0] == 'FCF "24,461" OR "35.6%"'
+    assert source_search_query('"FCF 24,461" OR revenue') == ('"FCF 24,461" OR revenue', [])
+    assert source_search_query('"a ""quoted"" 24,461"') == ('"a ""quoted"" 24,461"', [])
+    assert source_search_query('2026Q2 OR cash*') == ('2026Q2 OR cash*', [])
+    from test_research_session import _new_worker_fixture
+    artifacts = CaseArtifacts([_new_worker_fixture()])
+    artifacts._sources['P01:N'] = {'result_state': 'source_bound_passage', 'passage': '24 unrelated words 461'}
+    assert not artifacts.search_sources('24,461')['matches']
+    with pytest.raises(ValueError, match='query_invalid'):
+        artifacts.search_sources('"unclosed 24,461')
 
 
 def test_calculator_reads_s2_value_locally_without_model_copy_or_authority_promotion():

@@ -387,6 +387,8 @@ Lead 的当前进度保留未提交任务的公开交接结果，包括停止原
 
 `read_review_handoff` 同时用于局部确认和完整复核，支持 `revision_confirmation`、`historical_author_responses`、`historical_reviews` 与 `catalog`，按 6,000 字符分页。历史答复可按 paper_id 直接回读。正文完整 diff 坐标在交接原件中按需读取；论断变化字段在当前投影中直接可见。旧运行只有粗粒度变更记录时，仅从宿主已保存历史中选择 digest 完全匹配的基线来恢复差异；没有匹配就标记 `exact_baseline_unavailable`，不拿最初稿件替代上次稿件。缺失或过期变更记录的原稿对比回退明确标为 `original_paper_fallback_not_last_revision`，不再声称它就是最近一次修改。原始消息和已保存提案不改写。
 
+局部确认与完整复核共用已有的工作上下文投影及 `read_review_history`、`read_saved_review_checks`。显式合同切换后，旧计划和旧思考留在原始日志，不再继续充当当前指导；成功读取原件和已保存意见仍保留，必要观察可以原样交接到新工作视图。读取覆盖继续依据原始工具回执校验，不能用人工摘要或诊断读取冒充实际阅读。没有切换边界时，正常连续研究历史仍保留。此通道不改变严重性、复核范围或最终验收规则。
+
 `read_research_source` 明确支持已有 `CALC::` 回执及现有底稿别名，返回保存的公式、操作数及来源引句、单位和结果，不重新计算。当前变动论断与论断读取结果会提供已绑定计算的 `calculation_readbacks` 准确参数，分页仍按 `next_offset`。仅列出已有绑定，不补选来源，不改变权威级别；独立核对期间、范围和推断仍由研究模型负责。未知绑定不通过猜测修复。
 
 `scripts/engineering/replay_confirmation_handoff.py --run-dir <保存的连续复核记录根目录> --output <私有输出目录>` 禁网重放十次保存响应的原生工具批次，检查具体差异、新旧答复隔离、CALC 入口、成功读取与全部底稿不变。它是固定十轮诊断脚本，不是服务运行入口。回放不重新生成模型回答、不提交新的金融判断，诊断专用回读不进入正式恢复状态；工具回放通过不证明模型能更快完成复核。

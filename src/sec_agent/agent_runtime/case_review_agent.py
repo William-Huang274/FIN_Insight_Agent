@@ -1184,6 +1184,10 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             return save_review(CaseReview.model_validate(review.model_dump(exclude={'completion'})), runtime, completion=review.completion)
 
         submit_case_review = submit_inspected_review
+    if (require_inspection or confirmation) and not revision_target:
+        # Both full reviews and local confirmations can cross a contract
+        # transition. Keep their original journals readable while projecting
+        # the current assignment and retained observations consistently.
         @tool
         def read_saved_review_checks(paper_id: str, runtime: ToolRuntime, offset: int=0):
             """Read legacy reviewer records for reference. They are fallible assessments, never a mandatory checklist or approval."""

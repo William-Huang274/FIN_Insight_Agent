@@ -98,3 +98,48 @@ def test_calc_readbacks_preserve_alias_and_unknown_binding_without_selection():
     nav=artifacts.calculation_readbacks(claims)
     assert len(nav)==1 and nav[0]['arguments']['source_id']==ref
     assert claims[0]['source_ids'][-1]=='CALC::missing'
+
+
+def test_local_confirmation_uses_contract_boundary_and_keeps_original_readback():
+    import asyncio
+    from langchain_core.language_models.chat_models import BaseChatModel
+    from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+    from langchain_core.outputs import ChatGeneration, ChatResult
+    from sec_agent.agent_runtime.case_review_agent import build_case_reviewer
+
+    class Audit:
+        context_summary = None
+        source_access_check = None
+        def __init__(self): self.extra_middlewares = []
+        def middlewares(self): return self.extra_middlewares
+
+    class Capture(BaseChatModel):
+        seen: list = []
+        @property
+        def _llm_type(self): return 'offline-contract-transition'
+        def bind_tools(self, tools, **kwargs):
+            assert {'read_review_history','read_saved_review_checks','read_review_handoff'} <= {t.name for t in tools}
+            return self
+        def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+            self.seen = list(messages)
+            return ChatResult(generations=[ChatGeneration(message=AIMessage(content='',tool_calls=[{
+                'name':'read_review_history','args':{'index':2},'id':'reread','type':'tool_call'}]))])
+
+    artifacts,_,_,revisions,feedback=setup()
+    context=confirmation_context(artifacts,revisions,feedback)
+    old=ToolMessage(name='read_research_source',tool_call_id='old',content='EXACT_PRIOR_RECEIPT')
+    history=[HumanMessage(content=json.dumps({'question':'Original research question'})),
+        AIMessage(content='OLD_PLAN',additional_kwargs={'reasoning_content':'OLD_REASONING'},tool_calls=[{
+            'name':'read_research_source','args':{'source_id':'S1'},'id':'old','type':'tool_call'}]),old,
+        HumanMessage(content='review_handoff_contract_v2'),
+        HumanMessage(content=json.dumps({'retained_observation':'EXACT_PRIOR_RECEIPT'}))]
+    model=Capture()
+    agent=build_case_reviewer(role='verifier',model=model,artifacts=artifacts.with_revisions(revisions),
+        tools=[],confirmation=context,audit=Audit(),max_model_calls=1)
+    result=asyncio.run(agent.ainvoke({'messages':history}))
+    projected=str([m.model_dump() for m in model.seen])
+    assert 'OLD_PLAN' not in projected and 'OLD_REASONING' not in projected
+    assert 'EXACT_PRIOR_RECEIPT' in projected and 'Original research question' in projected
+    assert old in result['messages']
+    receipt=next(m for m in result['messages'] if isinstance(m,ToolMessage) and m.tool_call_id=='reread')
+    assert receipt.status=='success' and 'EXACT_PRIOR_RECEIPT' in receipt.content

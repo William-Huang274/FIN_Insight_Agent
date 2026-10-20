@@ -193,7 +193,7 @@ def test_integrated_research_omits_duplicate_synthesis_and_keeps_final_review():
     assert writer_input['authoring_view'] == 'source_materials.v4'
     assert 'research_review' not in writer_input
     verifier_input = json.loads(models[("report_verifier", None, 0)].contexts[0][1].content)
-    assert verifier_input["completed_research_reviews"]["verifier"]
+    assert verifier_input["supporting_records"]["completed_research_reviews"]["read"]["tool"] == "read_review_history"
     assert result["phase"] == "case_report_ready_for_human_review"
 
 

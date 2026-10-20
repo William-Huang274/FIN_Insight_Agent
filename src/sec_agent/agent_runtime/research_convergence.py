@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from copy import deepcopy
 from datetime import datetime, timezone
-from difflib import unified_diff
 import json
 import operator
 from typing import Annotated, Any
@@ -300,10 +299,9 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                 reports = [r["output"] for r in state.get("artifact_history", []) if r["actor"] == author_role]
                 baseline = reports[-2] if len(reports) > 1 else (existing_state or {}).get(target)
                 if baseline and reports:
-                    body["report_changes_from_previous_review"] = "\n".join(unified_diff(
-                        json.dumps(report_model_view(baseline), ensure_ascii=False, indent=2).splitlines(),
-                        json.dumps(report_model_view(reports[-1]), ensure_ascii=False, indent=2).splitlines(),
-                        fromfile="previously_reviewed_report", tofile="current_report", lineterm=""))
+                    from .report_review_context import report_change_text
+                    body["report_changes_from_previous_review"] = report_change_text(
+                        report_model_view(baseline), report_model_view(reports[-1]))
                     body["instruction"] += " This is a correction review: verify closure of prior findings, changed text/charts and newly introduced consequences. Reopen unchanged research only for a stated material reason; do not automatically repeat a full-case review."
                 if round_index or existing_state:
                     body["previous_review"] = deepcopy(state.get("synthesis_review" if role == "research_verifier" else "report_review", {}))
@@ -330,6 +328,9 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             from .report_authoring import report_authoring_message_update
             value['messages'], same_authoring_basis = report_authoring_message_update(
                 body, saved.values.get('messages', []))
+        elif role in {'report_verifier', 'research_verifier'}:
+            from .report_review_context import review_message_update
+            value['messages'] = review_message_update(body, saved.values.get('messages', []))
         elif authoring_stages and role == 'prepare':
             # Re-enter with this version's public state, not old research/writing turns.
             # Previous checkpoint snapshots and provider audits remain available.
@@ -345,7 +346,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                         same_authoring_basis = previous_input[basis_key] == body[basis_key]
                         break
         if same_authoring_basis and saved.values.get("messages") and not saved.next and not saved.values.get("output"):
-            refreshed_assignment = value["messages"] if role == "writer" else []
+            refreshed_assignment = value["messages"] if role in {"writer", "report_verifier", "research_verifier"} else []
             value = Command(goto="model", update={"messages": [*refreshed_assignment, HumanMessage(content=
                 "The previous attempt ended without an accepted structured submission. It did NOT complete this role. "
                 "Continue from your retained source reads, correct the rejected submission and call your submission tool. "

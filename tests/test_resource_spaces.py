@@ -90,6 +90,43 @@ def test_knowledge_and_decimal_financial_selection_keep_source_identity(tmp_path
             assert row['period_end'] == '2025-06-30' and row['filed_at'] == '2025-09-01'
 
 
+def test_financial_publication_receipt_failure_recovers_with_concurrent_same_id(tmp_path, source_library):
+    from concurrent.futures import ThreadPoolExecutor
+    import sqlite3
+    import threading
+
+    client, provider, _, _, _, _, source, project = setup(tmp_path, source_library)
+    saved = save(client, project, selections(provider)[1])
+    ref = reference(source, project, saved)
+    original = source.read('local-pilot', ref)['capture']
+    root = tmp_path/'recovery-custody'
+    shared = SpaceAssets(root)
+    org, space, resource = [str(uuid4()) for _ in range(3)]
+    with shared.workspace.library.documents.connect() as db:
+        db.execute("""CREATE TRIGGER fail_receipt BEFORE INSERT ON space_publications
+                      BEGIN SELECT RAISE(ABORT, 'injected receipt failure'); END""")
+    with pytest.raises(sqlite3.IntegrityError, match='injected receipt failure'):
+        shared.publish(source, 'local-pilot', resource, org, space, ref)
+    # Body and receipt are separate transactions. Keep the recoverable body;
+    # there is no successful publication receipt yet.
+    with shared.workspace.library.documents.connect() as db:
+        assert db.execute('SELECT count(*) FROM attachments').fetchone()[0] == 1
+        assert db.execute('SELECT count(*) FROM space_publications').fetchone()[0] == 0
+        db.execute('DROP TRIGGER fail_receipt')
+    barrier = threading.Barrier(4)
+    def retry():
+        reopened = SpaceAssets(root)
+        barrier.wait(timeout=10)
+        return reopened.publish(source, 'local-pilot', resource, org, space, ref)
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        bindings = [f.result(timeout=30) for f in [pool.submit(retry) for _ in range(4)]]
+    assert all(b == bindings[0] for b in bindings)
+    assert SpaceAssets(root).read(bindings[0])['capture'] == original
+    with shared.workspace.library.documents.connect() as db:
+        assert db.execute('SELECT count(*) FROM attachments').fetchone()[0] == 1
+        assert db.execute('SELECT count(*) FROM space_publications').fetchone()[0] == 1
+
+
 def test_bff_checks_current_authority_and_hides_internal_bindings(tmp_path, monkeypatch):
     import apps.workbench.backend.business_transport as transport
     source, ref = source_at(tmp_path)

@@ -29,6 +29,7 @@ from .case_artifacts import CaseArtifacts
 from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE
 from sec_agent.research_foundation.source_bound_calculator import source_items_from_tool
 from sec_agent.research_foundation.source_quotes import contains_source_quote
+from .review_submission_notes import AssessmentNote, preserve_assessment_notes
 
 
 CASE_TOOLS = frozenset({"research_artifact_catalog", "read_research_artifact", "read_research_source", "search_research_sources",
@@ -68,6 +69,9 @@ class PaperAssessment(BaseModel):
     model_config = ConfigDict(extra="forbid")
     paper_id: str
     assessment: str = Field(min_length=20, max_length=5000)
+    supplemental_notes: list[AssessmentNote] = Field(default_factory=list, max_length=16,
+        exclude_if=lambda notes: not notes,
+        description="Optional verbatim supplementary explanations with their original field/path. Not finding statuses, evidence or completion decisions.")
 
 
 class FindingConfirmation(BaseModel):
@@ -814,11 +818,19 @@ class InvalidToolCallFeedback(AgentMiddleware):
                 parsed[index] = {**call, 'args': {**args, field: value}}
                 recovered.append({'tool_call_id': call['id'], 'method': 'json_object_parameter',
                     'field': field, 'original_arguments': deepcopy(args)})
+        for index, call in enumerate(parsed):
+            if call.get('name') != 'submit_case_review':
+                continue
+            normalized, note_records = preserve_assessment_notes(call.get('args'))
+            if note_records:
+                parsed[index] = {**call, 'args': normalized}
+                recovered.append({'tool_call_id':call['id'], 'method':'assessment_note_preservation_v1',
+                    'original_arguments':deepcopy(call['args']), 'runtime_parsing':note_records})
         if recovered:
             from .research_graph_contracts import canonical_sha256
             replacement = message.model_copy(update={'tool_calls': parsed, 'invalid_tool_calls': invalid,
                 'response_metadata': {**message.response_metadata, 'format_recovery': recovered[0]['method'],
-                    'tool_argument_recovery':recovered,
+                    'tool_argument_recovery':[*message.response_metadata.get('tool_argument_recovery', []), *recovered],
                     'original_invalid_arguments_digest': canonical_sha256(message.invalid_tool_calls)}})
             return {'messages': [replacement, *feedback], 'jump_to': 'tools'}
         if not feedback:
@@ -829,7 +841,7 @@ class InvalidToolCallFeedback(AgentMiddleware):
 class CompactReviewSchemaFeedback(AgentMiddleware):
     """Keep native schema validation, omit its duplicate full argument echo."""
     @staticmethod
-    def compact(message):
+    def compact(message, preserved_notes=()):
         if (not isinstance(message, ToolMessage) or message.status != 'error'
                 or not isinstance(message.content, str)
                 or not message.content.startswith("Error invoking tool '")):
@@ -841,18 +853,33 @@ class CompactReviewSchemaFeedback(AgentMiddleware):
         from .evidence_resolution import parsing_record
         detail = {'error':'tool_arguments_schema_invalid', 'details':errors.strip(),
             'executed':False, 'remedy':'Correct the named fields using the declared schema. The original tool arguments remain in the prior assistant message; no review was accepted.'}
+        if preserved_notes:
+            detail['preserved_supplemental_notes'] = [
+                {'paper_id':r['basis']['paper_id'], 'original_path':r['basis']['field_path']}
+                for r in preserved_notes]
+            detail['notice'] = ('Supplementary text is retained verbatim in the normalized candidate and original arguments. '
+                'Only the listed validation errors remain; no review was accepted.')
         receipt = parsing_record('native_schema_feedback_v1',
             {'tool_call_id':message.tool_call_id,'feedback_digest':canonical_sha256(message.content)},
             detail, original_arguments_retained_in_assistant_message=True)
         artifact = dict(message.artifact) if isinstance(message.artifact,dict) else {}
-        artifact['runtime_parsing'] = [*artifact.get('runtime_parsing',[]),receipt]
+        artifact['runtime_parsing'] = [*artifact.get('runtime_parsing',[]),
+            *[{**r, 'operation_status':'schema_rejected'} for r in preserved_notes],receipt]
         return message.model_copy(update={'content':json.dumps(detail,ensure_ascii=False),'artifact':artifact})
 
+    @staticmethod
+    def preserved_notes(request):
+        current = next((m for m in reversed(request.state['messages']) if isinstance(m, AIMessage)), None)
+        return [r for recovery in (current.response_metadata.get('tool_argument_recovery', []) if current else [])
+            if recovery.get('tool_call_id') == request.tool_call['id']
+            for r in recovery.get('runtime_parsing', [])
+            if r.get('method') == 'assessment_note_preservation_v1']
+
     def wrap_tool_call(self, request, handler):
-        return self.compact(handler(request))
+        return self.compact(handler(request), self.preserved_notes(request))
 
     async def awrap_tool_call(self, request, handler):
-        return self.compact(await handler(request))
+        return self.compact(await handler(request), self.preserved_notes(request))
 
 
 class StopOnAcceptedReview(AgentMiddleware):
@@ -1107,6 +1134,10 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
         parsing = []
         proposed = list(review.findings)
         current = next((m for m in reversed(runtime.state["messages"]) if isinstance(m, AIMessage)), None)
+        if current:
+            parsing.extend(deepcopy(record) for recovery in current.response_metadata.get('tool_argument_recovery', [])
+                if recovery.get('tool_call_id') == runtime.tool_call_id
+                for record in recovery.get('runtime_parsing', []))
         parallel_saves = bool(current and any(c['name']=='record_case_finding' for c in current.tool_calls))
         independent_ids = []
         try:
@@ -1188,7 +1219,8 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             "runtime_parsing":runtime_parsing, "messages": [ToolMessage(
             content=("Revision-only review saved; unchanged research was not reviewed. Not whole-case or financial acceptance."
                 if revision_target else "Review handoff accepted for case convergence; not a product or financial PASS."),
-            name="submit_case_review", tool_call_id=runtime.tool_call_id)]})
+            name="submit_case_review", tool_call_id=runtime.tool_call_id,
+            artifact={'runtime_parsing': runtime_parsing})]})
 
     @tool
     def submit_case_review(review: SubmittedCaseReview, runtime: ToolRuntime) -> Command:

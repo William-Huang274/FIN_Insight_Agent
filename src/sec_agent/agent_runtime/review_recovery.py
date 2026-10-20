@@ -100,6 +100,17 @@ def public_confirmation(record):
             'status', 'review', 'recorded_findings', 'model_calls', 'tool_calls') if key in row}
         if public[role].get('review'):
             public[role]['review'] = public_review(public[role]['review'])
+        # The full argument audit remains in the reviewer's journal. Lead gets
+        # the exact note in the review plus compact provenance, not another copy
+        # of all assessment prose or unrelated parsing diagnostics.
+        preserved = [{'method': r['method'], 'field_path': r['basis']['field_path'],
+            'paper_id': r['basis']['paper_id'], 'operation_status': r.get('operation_status'),
+            'financial_semantics_verified': False}
+            for r in row.get('runtime_parsing', [])
+            if r.get('method') == 'assessment_note_preservation_v1'
+            and r.get('operation_status') == 'review_recorded']
+        if preserved:
+            public[role]['annotation_preservation'] = preserved
         public[role]['tool_feedback'] = deepcopy(row.get('tool_feedback', [])[-4:])
         public[role]['resumable'] = bool(row.get('recovery_state'))
     return {**{key: deepcopy(record[key]) for key in ('context', 'correction_round') if key in record},

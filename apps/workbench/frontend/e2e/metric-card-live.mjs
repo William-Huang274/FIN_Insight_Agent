@@ -1,4 +1,4 @@
-// Real HTTP/browser acceptance. No response mocking and no Agent starts.
+// Real HTTP/browser acceptance. Optional loss of a real reply; no fabricated data.
 import {chromium,expect} from 'playwright/test';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
@@ -12,7 +12,7 @@ const context=await browser.newContext({baseURL:origin,viewport:{width:1440,heig
   extraHTTPHeaders:{Authorization:'Bearer qualification-alice','X-Workbench-Request':'1'}});
 // Only block outbound traffic; no service response is fabricated.
 await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
-const page=await context.newPage(),requests=[],errors=[],results=[],drafts=[];
+const page=await context.newPage(),requests=[],errors=[],results=[],drafts=[],recoveries=[];
 page.setDefaultTimeout(45000);
 page.on('pageerror',e=>errors.push(String(e)));
 page.on('request',r=>{if(new URL(r.url()).pathname.startsWith('/api/'))requests.push({method:r.method(),path:new URL(r.url()).pathname});});
@@ -44,7 +44,34 @@ try{
     await dialog.getByLabel('本页资料').selectOption(saved.document_id);
     await dialog.getByLabel('目标空间').selectOption(process.env.FIN_METRIC_SPACE);
     await dialog.getByRole('checkbox').check();
+    let persisted=null;
+    const loseReply=index===0&&process.env.FIN_METRIC_PUBLICATION_REPLY_LOSS==='1';
+    if(loseReply)await page.route('**/api/v1/asset-workspace/spaces/publish',async route=>{
+      // Commit through the real service, then suppress only the browser reply.
+      const response=await route.fetch({maxRetries:0});
+      expect(response.status()).toBe(200);
+      persisted=await response.json();
+      await route.abort('failed');
+    },{times:1});
     await dialog.getByRole('button',{name:'确认发布此版本',exact:true}).click();
+    if(loseReply){
+      await expect(dialog.getByRole('alert')).toBeVisible();
+      expect(persisted).not.toBeNull();
+      const posts=()=>requests.filter(r=>r.path.endsWith('/spaces/publish')&&r.method==='POST').length;
+      expect(posts()).toBe(1);
+      await page.reload();
+      await page.getByRole('button',{name:'发布到组织空间',exact:true}).click();
+      await expect(dialog.getByRole('region',{name:'待核对的发布'})).toBeVisible();
+      await page.screenshot({path:resolve(output,'publication-recovery-1440.png'),fullPage:true});
+      await page.setViewportSize({width:390,height:844});
+      await page.screenshot({path:resolve(output,'publication-recovery-390.png'),fullPage:true});
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
+      await page.setViewportSize({width:1440,height:1000});
+      await dialog.getByRole('button',{name:'查询发布结果',exact:true}).click();
+      await expect(dialog.getByRole('link',{name:'打开空间中的资料'})).toHaveAttribute('href',new RegExp(`resource=${persisted.id}`));
+      expect(posts()).toBe(1);
+      recoveries.push({resource_id:persisted.id,reply_lost_after_real_commit:true,reload_preserved:true,query_without_resubmit:true});
+    }
     const published=dialog.getByRole('link',{name:'打开空间中的资料'});
     await expect(published).toBeVisible();
     const resource=new URL(await published.getAttribute('href'),origin).searchParams.get('resource');
@@ -96,7 +123,7 @@ try{
   }
   expect(errors).toEqual([]);
   expect(requests.filter(r=>/\/(runs|start|continue)$/.test(r.path))).toEqual([]);
-  await writeFile(resolve(output,'result.json'),JSON.stringify({results,drafts,requests,page_errors:errors,provider_calls:0,response_mocks:0},null,2));
+  await writeFile(resolve(output,'result.json'),JSON.stringify({results,drafts,recoveries,requests,page_errors:errors,provider_calls:0,response_mocks:0},null,2));
 }finally{
   await writeFile(resolve(output,'observations.json'),JSON.stringify({results,requests,page_errors:errors},null,2));
   await page.screenshot({path:resolve(output,'last-page.png'),fullPage:true}).catch(()=>{});

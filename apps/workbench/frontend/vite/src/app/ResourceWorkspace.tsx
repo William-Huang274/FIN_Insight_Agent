@@ -15,13 +15,16 @@ type Organization={id:string;name:string;role:string};
 type Member={subject:string;display_name:string;role:string;active?:boolean};
 const types=[['all-resources','全部'],['files','文件资料'],['library','知识库'],['financial-data','数据库']] as const;
 const resourceType=(view:string)=>view==='files'?'files':view==='library'?'knowledge':view==='financial-data'?'database':'';
+export function currentIntent(operation:string):{encoded:string;id:string}|null{
+  try{const value=JSON.parse(sessionStorage.getItem(`finsight.space.intent:${browserOwner}:${operation}`)||'null');return typeof value?.encoded==='string'&&typeof value?.id==='string'?value:null;}catch{return null;}
+}
 export function intentId(operation:string,body:unknown){
   const key=`finsight.space.intent:${browserOwner}:${operation}`,encoded=JSON.stringify(body);
-  let prior:{encoded:string;id:string}|null=null;try{prior=JSON.parse(sessionStorage.getItem(key)||'null');}catch{/* Unreadable local intent creates no server action. */}
+  const prior=currentIntent(operation);
   if(prior?.encoded===encoded)return prior.id;
   const id=crypto.randomUUID();sessionStorage.setItem(key,JSON.stringify({encoded,id}));return id;
 }
-export function finishIntent(operation:string){sessionStorage.removeItem(`finsight.space.intent:${browserOwner}:${operation}`);}
+export function finishIntent(operation:string,id?:string){if(!id||currentIntent(operation)?.id===id)sessionStorage.removeItem(`finsight.space.intent:${browserOwner}:${operation}`);}
 
 export default function ResourceWorkspace({children}:{children:ReactNode}){
   const projects=useWorkspaceProjects(),[params,setParams]=useSearchParams();

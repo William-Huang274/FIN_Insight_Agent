@@ -28,9 +28,15 @@
 
 `POST /api/v1/asset-workspace/captures` 接收该选择身份。服务端按配置的不可变公开发布库重新读卡，校验当前发布摘要和完整卡摘要，再写入已有 attachment/capture 事务。浏览器不能提交数值、单位或任意 SQL；额外字段拒绝。数据或发布版本变化时返回冲突，需重新打开数据卡确认。
 
+存储仍使用 `project_source_snapshot.v1`、`kind=financial`、`selection_mode=explicit_rows`。`query.kind=metric_cards` 标识指标卡，其选择范围包含记录 ID、公司、截止日和发布库 SHA256。每张卡保留原始字段及计算输入，组织读取和正式结构化工具沿用已有快照/授权合同。没有新的 Java 表或数据库迁移。
+
+当前范围是**公开发布库的单张指标卡选取**。团队实时 SQL 连接器、行列级数据库授权、批量选卡、发行人重述的自动替代关系、审批工作流和生产负载不在本批交付中。工程案例不能证明金融结论正确。
+
 ## 发布中断与恢复验收
 
 组织发布涉及 Python 资料副本、Python 发布回执、Java/PostgreSQL 资源登记三个持久化位置，不能把它们描述为一个分布式原子事务。客户端遇到未知响应时，应保留原发布 ID，先读取结果；需要再次提交时使用同一 ID、空间和原版本。当前恢复由用户明确重试，不自动补发。
+
+页面已提供“核对上次发布”：在同一标签页刷新后重新打开发布弹窗，可查询当前授权下的结果，或按原请求重试。旧待办处理前不覆盖原发布身份；结束核对仅清除本地记录，不撤销服务器资料。查询失败保留待办，避免把撤权或不可读当成未发布。详见[资料空间的重试与恢复](resource_spaces.zh-CN.md#重试停用与恢复)。
 
 旧 case 的四份公司指标快照通过真实 HTTP BFF、Spring Boot、PostgreSQL 和 SQLite 验证了以下场景。原数值、期间、单位、来源、修订和计算输入逐行比较；没有调用模型，也没有修改历史金融答案。
 
@@ -48,10 +54,6 @@
 
 这些结果没有证明跨库时间点灾备、断电恢复、自动孤立副本回收或生产容量。故障期留在 Python 中的副本仍可能占用空间；不可因未出现在 Java 目录就自行删除它。
 
-存储仍使用 `project_source_snapshot.v1`、`kind=financial`、`selection_mode=explicit_rows`。`query.kind=metric_cards` 标识指标卡，其选择范围包含记录 ID、公司、截止日和发布库 SHA256。每张卡保留原始字段及计算输入，组织读取和正式结构化工具沿用已有快照/授权合同。没有新的 Java 表或数据库迁移。
-
-当前范围是**公开发布库的单张指标卡选取**。团队实时 SQL 连接器、行列级数据库授权、批量选卡、发行人重述的自动替代关系、审批工作流和生产负载不在本批交付中。工程案例不能证明金融结论正确。
-
 ## 验证与复现
 
 普通回归不依赖私有历史案例：
@@ -66,6 +68,7 @@ python -m pytest tests/test_metric_card_capture.py tests/test_metric_research_in
 
 ```powershell
 $env:FIN_METRIC_BROWSER_QUALIFICATION = '1'
+$env:FIN_METRIC_PUBLICATION_REPLY_LOSS = '1' # 可选：真实提交成功后吞掉首张卡的浏览器回执
 $env:FIN_STRUCTURED_SQL_CASES = '<historical-output>/cases.json'
 $env:FIN_METRIC_PUBLIC_LIBRARY = '<matching-immutable-published-library.sqlite>'
 $env:FIN_NATIVE_ATTEMPT_DIR = '<new-private-attempt-directory>'
@@ -76,6 +79,8 @@ python -m pytest tests/integration/test_metric_card_browser_stack.py -q
 隔离栈使用唯一 Compose 项目、独立端口和未占用网段；只启动 PostgreSQL、Java、BFF。登录身份和组织初始化是测试设置，用户保存、发布、关联和读取经过真实页面/API，不伪造业务响应。浏览器限制访问本次服务，未启动研究或调用付费模型。
 
 结果保存在尝试目录内：浏览器请求日志、四公司卡片身份、桌面/窄屏截图、服务日志和权限验收结果。失败尝试保留。验收结束只停止本次自有进程与容器，保留证据；不切换共享部署。
+
+启用回执丢失场景时，浏览器测试先将请求发送到真实服务，收到200后只中断浏览器的响应传输，不伪造发布数据。页面刷新、打开“待核对的发布”、点击查询后找回原资源，全程仅一次发布 POST；PostgreSQL 对该资源仅一条发布审计，四卡空间仍只有四条资源。该故障注入与正常业务响应在结果中分别记录。普通浏览器测试另覆盖原请求重试、404、错误绑定、显式结束核对和登录身份隔离。
 
 ## 2026-10-20 验收结果
 

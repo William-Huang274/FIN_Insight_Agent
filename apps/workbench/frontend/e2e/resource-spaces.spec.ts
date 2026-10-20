@@ -23,7 +23,7 @@ async function fixture(page:Page,manager=true){
     else if(u.pathname===`/api/v1/business/workspaces/spaces/${team}/resources`)result={items:active&&(!u.searchParams.get('type')||u.searchParams.get('type')==='files')?[{id:resource,title:version.title,resource_type:'files',revision:1}]:[],next_offset:null};
     else if(u.pathname===`/api/v1/business/workspaces/spaces/${personal}/resources`)result={items:[],next_offset:null};
     else if(u.pathname.startsWith('/api/v1/business/workspaces/spaces/')&&u.pathname.endsWith('/resources'))result={items:[],next_offset:null};
-    else if(u.pathname.startsWith('/api/v1/asset-workspace/spaces/resources/'))result={version,text:'发布时的合成资料。',truncated:false,editable:false,permission_revision:1,publication:{space_id:team}};
+    else if(u.pathname.startsWith('/api/v1/asset-workspace/spaces/resources/'))result={resource_id:u.pathname.split('/').at(-1),version,text:'发布时的合成资料。',truncated:false,editable:false,permission_revision:1,publication:{space_id:team,source_ref:ref}};
     else if(u.pathname.endsWith('/revoke')){active=false;result={revoked:true};}
     else if(u.pathname==='/api/v1/asset-workspace/catalog')result={items:[{project_id:org,project_name:'AI 基础设施',asset_id:ref.asset_id,kind:'document',version_count:1,current:version}],next_offset:null};
     else if(u.pathname==='/api/v1/asset-workspace/spaces/publish'){
@@ -71,9 +71,62 @@ test('explicit publication retains identity on manual retry after unknown respon
   await dialog.getByRole('button',{name:'确认发布此版本'}).click();
   await expect(dialog.getByRole('alert')).toContainText('响应丢失');
   expect(publications).toHaveLength(1);
-  await dialog.getByRole('button',{name:'确认发布此版本'}).click();
+  await dialog.getByRole('button',{name:'按原请求重试'}).click();
   await expect(dialog.getByRole('link',{name:'打开空间中的资料'})).toBeVisible();
   expect(publications).toHaveLength(2);expect(publications[0]).toEqual(publications[1]);
+});
+for(const outcome of ['saved','unavailable','mismatch'] as const)test(`publication recovery after reload: ${outcome}`,async({page},info)=>{
+  const {publications}=await fixture(page);
+  await page.goto('/workspace/assets?view=files');
+  await page.getByRole('button',{name:'发布到组织空间'}).click();
+  const dialog=page.getByRole('dialog',{name:'发布资料到组织空间'});
+  await dialog.getByLabel('本页资料').selectOption(ref.version_id);
+  await dialog.getByLabel('目标空间').selectOption(team);
+  await dialog.getByRole('checkbox').check();
+  await dialog.getByRole('button',{name:'确认发布此版本'}).click();
+  await expect(dialog.getByRole('alert')).toContainText('响应丢失');
+  const original=publications[0];
+  await page.reload();
+  await page.getByRole('button',{name:'发布到组织空间'}).click();
+  await expect(dialog.getByRole('region',{name:'待核对的发布'})).toBeVisible();
+  await expect(dialog.getByLabel('目标空间')).toHaveCount(0);
+  expect(publications).toHaveLength(1);
+  if(outcome!=='saved')await page.route(`**/api/v1/asset-workspace/spaces/resources/${original.id}`,route=>route.fulfill(
+    outcome==='unavailable'?{status:404,json:{detail:'资料不可访问'}}:
+      {json:{resource_id:original.id,publication:{space_id:team,source_ref:{...ref,digest:'b'.repeat(64)}}}}));
+  await dialog.getByRole('button',{name:'查询发布结果'}).click();
+  if(outcome==='saved'){
+    await expect(dialog.getByRole('link',{name:'打开空间中的资料'})).toHaveAttribute('href',new RegExp(`resource=${original.id}`));
+  }else{
+    await expect(dialog.getByRole('alert')).toContainText('不能据此认定发布没有发生');
+    await expect(dialog.getByRole('region',{name:'待核对的发布'})).toBeVisible();
+    await expect(dialog.getByRole('link',{name:'打开空间中的资料'})).toHaveCount(0);
+    if(outcome==='unavailable'){
+      page.once('dialog',d=>d.dismiss());
+      await dialog.getByRole('button',{name:'结束本次核对'}).click();
+      await expect(dialog.getByRole('region',{name:'待核对的发布'})).toBeVisible();
+      page.once('dialog',d=>d.accept());
+      await dialog.getByRole('button',{name:'结束本次核对'}).click();
+      await expect(dialog.getByRole('button',{name:'确认发布此版本'})).toBeDisabled();
+    }
+  }
+  expect(publications).toHaveLength(1);
+  await page.screenshot({path:info.outputPath(`publication-recovery-${outcome}.png`)});
+});
+test('publication pending intent is not offered to another login identity',async({page})=>{
+  const {publications}=await fixture(page);
+  await page.goto('/workspace/assets?view=files');
+  await page.evaluate(({team,ref})=>sessionStorage.setItem('finsight.space.intent:local-pilot:publish',
+    JSON.stringify({id:crypto.randomUUID(),encoded:JSON.stringify({space_id:team,ref})})),{team,ref});
+  await page.route('**/auth/status',route=>route.fulfill({json:{
+    mode:'oidc_product',authenticated:true,browser_login:false,owner:'another-user'}}));
+  await page.reload();
+  await page.getByRole('button',{name:'发布到组织空间'}).click();
+  const dialog=page.getByRole('dialog',{name:'发布资料到组织空间'});
+  await expect(dialog.getByLabel('目标空间')).toBeVisible();
+  await expect(dialog.getByRole('region',{name:'待核对的发布'})).toHaveCount(0);
+  expect(publications).toHaveLength(0);
+  expect(await page.evaluate(()=>sessionStorage.getItem('finsight.space.intent:local-pilot:publish'))).not.toBeNull();
 });
 test('manager revokes publication and stale space links do not display other-space contents',async({page})=>{
   await fixture(page);

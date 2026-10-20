@@ -70,6 +70,16 @@ def test_metric_cards_browser_publication_and_current_permissions(monkeypatch):
         assert run.returncode == 0, run.stderr[-5000:]
         result = json.loads((output/'result.json').read_text(encoding='utf8'))
         assert len(result['results']) == 4
+        if os.getenv('FIN_METRIC_PUBLICATION_REPLY_LOSS') == '1':
+            assert len(result['recoveries']) == 1
+            recovery = result['recoveries'][0]
+            assert recovery['query_without_resubmit'] and recovery['reload_preserved']
+            with psycopg.connect(host='127.0.0.1', port=s.pg_port, dbname='business',
+                                 user='probe', password=s.password) as db:
+                assert db.execute("SELECT count(*) FROM space_resource WHERE space_id=%s",
+                                  (space,)).fetchone()[0] == 4
+                assert db.execute("SELECT count(*) FROM resource_space_audit WHERE action='resource_publish' AND target=%s",
+                                  (recovery['resource_id'],)).fetchone()[0] == 1
         readers = []
         for draft in result['drafts']:
             execution = str(uuid4())
@@ -134,6 +144,7 @@ def test_metric_cards_browser_publication_and_current_permissions(monkeypatch):
             with pytest.raises(OrganizationExecutionUnavailable):
                 readers[-1].read_rows(item['resource_id'])
         s.save('metric-browser-result', {'cases':result['results'],'provider_calls':0,'response_mocks':0,
+            'publication_recovery':result.get('recoveries', []),
             'research_drafts':result['drafts'],'native_navigation_and_mcp_rows':True,
             'early_cutoff_blocked_in_verification_and_native_reads':True,
             'real_services':['browser','BFF','Spring Boot','PostgreSQL','SQLite asset custody'],

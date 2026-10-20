@@ -4,7 +4,8 @@ import json
 import pytest
 
 from sec_agent.agent_runtime.period_relations import (
-    Period, compare_periods, text_period_checks, workpaper_period_checks, remedy_period_checks,
+    Period, compare_periods, text_period_checks, text_period_analysis,
+    workpaper_period_checks, remedy_period_checks, project_period_receipt,
 )
 from sec_agent.agent_runtime.workpaper_drafts import save_draft
 from test_workpaper_draft_lifecycle import state, save_action
@@ -63,20 +64,107 @@ def test_consistent_negated_and_non_relational_prose_does_not_raise(text):
 
 
 def test_ambiguous_reference_and_list_do_not_choose_period():
-    checks = text_period_checks("2030Q3为上一季度。", path="/thesis",
+    analysis = text_period_analysis("2030Q3为上一季度。", path="/thesis",
                                reference_text="本期为2031Q2。\n当前季度为2031Q4。")
+    assert not analysis["checks"]
+    checks = analysis["diagnostics"]
     assert checks[0]["reference_label"] is None
     assert checks[0]["label_check"]["status"] == "binding_unresolved"
-    checks = text_period_checks("本期为2031Q2。2030Q2、2030Q3为上一季度。", path="/thesis")
+    analysis = text_period_analysis("本期为2031Q2。2030Q2、2030Q3为上一季度。", path="/thesis")
+    assert not analysis["checks"]
+    checks = analysis["diagnostics"]
     assert checks[0]["comparison_label"] is None
     assert checks[0]["binding_basis"] == "ambiguous_ordered_list"
 
 
 def test_no_date_taken_from_publication_or_asof_or_unrelated_later_paragraph():
     text = "发布日2031Q2。\n2030Q3为上一季度。\n本期为2031Q4。"
-    check = text_period_checks(text, path="/thesis")[0]
+    analysis = text_period_analysis(text, path="/thesis")
+    assert not analysis["checks"]
+    check = analysis["diagnostics"][0]
     assert check["reference_label"] is None
     assert check["label_check"]["expected_label"] is None
+
+
+@pytest.mark.parametrize("year", [2004, 2031, 2048])
+@pytest.mark.parametrize("second", ["第 三 季度", "第三季度", "Q3"])
+def test_mixed_complements_and_negative_parenthetical_scope(year, second):
+    literal = f"{year - 1}年{second}"
+    text = (f"本期为{year}Q2。{year - 1}Q2、{year - 1}Q3两个对照列，分别为上年同期与"
+            f"{literal}的实际数（非{year}Q2数，亦非{year}Q2的上一季度），仅展示同比与趋势。")
+    assert not text_period_checks(text, path="/narrative_markdown")
+    # The same first slot must still be checked when it is really wrong.
+    wrong = text.replace(f"{year - 1}Q2、", f"{year - 2}Q2、")
+    checks = text_period_checks(wrong, path="/narrative_markdown")
+    assert len(checks) == 1
+    assert checks[0]["comparison_label"] == f"{year - 2}Q2"
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("本期为2031Q2。2030Q3、2030Q1分别为2030年第三季度与上年同期。", "2030Q2"),
+    ("Current period: 2031Q2. 2030Q3 and 2030Q1 are Q3 2030 and the year-earlier period respectively.", "2030Q2"),
+    ("本期为2031Q2。2030Q3并非上一季度；2030Q4为上一季度。", "2031Q1"),
+    ("本期为2031Q2。（2030Q3为上一季度）", "2031Q1"),
+])
+def test_literal_slot_keeps_order_and_negative_scope_does_not_hide_other_assertions(text, expected):
+    checks = text_period_checks(text, path="/thesis")
+    assert len(checks) == 1
+    assert checks[0]["label_check"]["expected_label"] == expected
+
+
+@pytest.mark.parametrize("text", [
+    "本期为FY2031Q2。2030Q3为上一季度。",
+    "本期为2031Q2。2030H1为上一季度。",
+    "本期为2031Q2。2030Q2、2030Q3分别为上年同期与其他历史数据。",
+    "本期为2031Q2。2030Q2、2030Q3分别为未知期间与上一季度及2030Q3。",
+    "本期为2031Q2。2030Q3不是上一季度。",
+])
+def test_parse_uncertainty_is_not_an_author_task(text):
+    result = text_period_analysis(text, path="/thesis")
+    assert not result["checks"]
+    assert result["diagnostics"]
+    assert all(not d["author_action_required"] and "instruction" not in d
+               for d in result["diagnostics"])
+
+
+def test_historical_period_receipt_projection_preserves_other_feedback_and_original():
+    receipt = {"saved": True, "accepted": False, "submitted": False,
+        "period_relation_checks": [{"instruction": "old false warning"}],
+        "semantic_check_status": "period_relations_require_author_check_not_schema_errors",
+        "draft_issues": [{"code": "real_schema_issue"}], "draft_digest": "abc"}
+    original = deepcopy(receipt)
+    projected = project_period_receipt(receipt)
+    assert receipt == original
+    assert "period_relation_checks" not in projected
+    assert projected["draft_issues"] == original["draft_issues"]
+    assert projected["saved"] and not projected["submitted"] and not projected["accepted"]
+
+
+def test_current_view_refreshes_checks_and_recent_receipt_keeps_exact_readback():
+    from langchain_core.messages import AIMessage, ToolMessage
+    from sec_agent.agent_runtime.research_context_view import (
+        compact_current_context, compact_accepted_operations, public_operation,
+    )
+    stale = {"saved": True, "submitted": False, "accepted": False, "draft_digest": "same",
+             "period_relation_checks": [{"code": "period_relation_requires_check", "instruction": "old warning"}]}
+    context = {"task_context": {}, "submission_to_repair": {
+        "candidate": {"narrative_markdown": "本期为2031Q2。2030Q2为上年同期。"},
+        "last_edit_feedback": stale, "period_relation_checks": stale["period_relation_checks"]}}
+    original = deepcopy(context)
+    projected = compact_current_context(context)
+    assert not projected["submission_to_repair"]["period_relation_checks"]
+    assert "period_relation_checks" not in projected["submission_to_repair"]["last_edit_feedback"]
+    journal = [
+        AIMessage(content="", tool_calls=[{"id": "save", "name": "SaveWorkpaperEditsAction", "args": {}}]),
+        ToolMessage(content=json.dumps({"result": stale}), name="SaveWorkpaperEditsAction", tool_call_id="save"),
+    ]
+    recent = deepcopy(journal)
+    compact_accepted_operations(recent, {"current_context": projected})
+    visible = json.loads(recent[-1].content)["result"]
+    assert "period_relation_checks" not in visible and visible["saved"]
+    assert visible["draft_digest"] == "same" and not visible["accepted"]
+    assert public_operation(journal, "save")["receipt"]["result"] == stale
+    assert context == original
 
 
 def test_citation_and_historical_notes_are_not_new_author_assertions():

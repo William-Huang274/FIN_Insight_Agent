@@ -46,7 +46,8 @@ _PERIOD = re.compile(
     r"(?<![A-Za-z0-9])(?:(?P<fy>FY)\s*)?(?P<year>\d{4})\s*(?:年\s*)?"
     r"(?P<unit>[QH])\s*(?P<part>[1-4])(?!\d)"
     r"|(?<![A-Za-z0-9])(?P<revunit>[QH])\s*(?P<revpart>[1-4])\s+"
-    r"(?:(?P<revfy>FY)\s*)?(?P<revyear>\d{4})(?!\d)", re.I)
+    r"(?:(?P<revfy>FY)\s*)?(?P<revyear>\d{4})(?!\d)"
+    r"|(?P<zhyear>\d{4})\s*年\s*第\s*(?P<zhpart>[一二三四1-4])\s*季度", re.I)
 # These are surface forms, not financial rules. Unsupported syntax is not
 # silently treated as verified. The arithmetic above is independent of language.
 _RELATIONS = {
@@ -63,12 +64,19 @@ _ANCHOR = re.compile(
     r"本(?:期|季|节|段|报告)|当前(?:季度|期间)|研究期间|报告期间|"
     r"\bcurrent (?:quarter|period|half-year)\b|\breporting period\b", re.I)
 _COPULA = re.compile(r"分别(?:为|是)|(?:为|是)|\b(?:is|are|represents?)\b", re.I)
-_NEGATION = re.compile(r"不是|并非|不应|不能称|不可称|\b(?:not|isn't|aren't)\b", re.I)
+_NEGATION = re.compile(r"不是|并非|亦非|均非|非|不应|不能称|不可称|"
+                       r"\b(?:not|isn't|aren't)\b", re.I)
+_LIST_SEPARATOR = re.compile(r"、|，|,|与|和|以及|及|\band\b", re.I)
 
 
 def _periods(text):
     result = []
     for match in _PERIOD.finditer(text):
+        if match["zhyear"]:
+            part = match["zhpart"]
+            result.append((match, Period(int(match["zhyear"]),
+                int(part) if part.isdigit() else "一二三四".index(part) + 1, 4)))
+            continue
         unit = (match["unit"] or match["revunit"]).upper()
         part = int(match["part"] or match["revpart"])
         frequency = 4 if unit == "Q" else 2
@@ -95,40 +103,63 @@ def _anchors(text):
     return list(dict.fromkeys(found))
 
 
-def text_period_checks(text, *, path, reference_text=None):
-    """Locate explicit assertions; ambiguous bindings remain nonblocking checks.
+def _scopes(text, start=0):
+    """Separate parenthetical assertions without inheriting an outer subject.
 
-    Reference text is the same paper only (e.g. Lead's requested remedy against
-    that paper). No reference period is selected across papers, or from as-of /
-    publication dates. Ordered lists need equally many periods and relations.
+    Spaces preserve original offsets. A bracket's own explicit proposition can
+    still be checked; a subjectless aside cannot borrow an outer list item.
     """
+    masked = list(text)
+    stack, children = [], []
+    for index, char in enumerate(text):
+        if char in "(（":
+            stack.append(index)
+        elif char in ")）" and stack:
+            opening = stack.pop()
+            if not stack:
+                children.extend(_scopes(text[opening + 1:index], start + opening + 1))
+                masked[opening:index + 1] = " " * (index + 1 - opening)
+    # An unclosed aside is unsupported, not an assertion of the outer subject.
+    if stack:
+        masked[stack[0]:] = " " * (len(text) - stack[0])
+    return [(start, "".join(masked)), *children]
+
+
+def text_period_analysis(text, *, path, reference_text=None):
+    """Return bound affirmative contradictions separately from parser diagnostics.
+
+    Diagnostics never require an author response or a manuscript rewrite.
+    Reference text is the same paper only. Explicit ordered complements may
+    contain both relative labels and literal periods; neither is a missing slot.
+    """
+    checks, diagnostics = [], []
     if not isinstance(text, str):
-        return []
+        return {"checks": checks, "diagnostics": diagnostics}
     # Preserve offsets in original text while tolerating Markdown emphasis.
     plain = text.replace("*", " ").replace("`", " ")
     external = _anchors((reference_text or "").replace("*", " "))
-    checks = []
     for paragraph in re.finditer(r"[^\n]+", plain):
         paragraph_text = paragraph.group()
         local = _anchors(paragraph_text)
         anchors = local or external
         distinct = {period for period, _ in anchors}
         reference = next(iter(distinct)) if len(distinct) == 1 else None
-        for clause in re.finditer(r"[^。；;.]+", paragraph_text):
-            sentence = clause.group()
+        scopes = [(base + clause.start(), clause.group())
+                  for base, scope in _scopes(paragraph_text)
+                  for clause in re.finditer(r"[^。；;.]+", scope)]
+        for clause_start, sentence in scopes:
             relations = list(_RELATION.finditer(sentence))
             if not relations:
                 continue
             prefix = sentence[:relations[0].start()]
-            if _NEGATION.search(prefix):
-                continue
             copulas = list(_COPULA.finditer(prefix))
             if not copulas:
                 continue  # mentions of comparisons are not assertions of identity
-            subject = prefix[:copulas[-1].start()]
+            copula = copulas[-1]
+            subject = prefix[:copula.start()]
             subjects = _periods(subject)
             # Explicit "A is the previous quarter of B" / "A 是 B 的上一季度".
-            direct = _periods(prefix[copulas[-1].end():])
+            direct = _periods(prefix[copula.end():])
             ref, binding = reference, "current_period_anchor"
             if len(subjects) == len(relations) == 1:
                 after = _periods(sentence[relations[-1].end():])
@@ -138,17 +169,45 @@ def text_period_checks(text, *, path, reference_text=None):
                     ref, binding = after[0][1], "explicit_relation_reference"
             if not subjects:
                 continue
-            offset = paragraph.start() + clause.start()
+            offset = paragraph.start() + clause_start
             quote = text[offset:offset + len(sentence)]
-            paired = len(subjects) == len(relations)
-            for index, relation_match in enumerate(relations):
+            predicate_start = copula.end()
+            # A direct reference date belongs to the relation, not a list slot.
+            direct_binding = binding == "explicit_relation_reference"
+            slots = []
+            cuts = [predicate_start, *[m.end() for m in
+                    _LIST_SEPARATOR.finditer(sentence, predicate_start)], len(sentence)]
+            for begin, end in zip(cuts, cuts[1:]):
+                slot = sentence[begin:end]
+                tokens = [*[(m.start(), m.end(), "relation") for m in _RELATION.finditer(slot)],
+                          *[(m.start(), m.end(), "period") for m, _ in _periods(slot)]]
+                if _LIST_SEPARATOR.sub("", slot).strip():
+                    slots.append((begin, end, len(tokens)))
+            # Unknown list items must not disappear and shift later bindings.
+            # Token-free trailing commentary is not another period complement.
+            paired = (direct_binding or (len(slots) >= len(subjects)
+                       and all(count == 1 for _, _, count in slots[:len(subjects)])
+                       and all(count == 0 for _, _, count in slots[len(subjects):])))
+            for relation_match in relations:
                 relation, frequency = _RELATIONS[relation_match.group().lower()]
-                comparison = subjects[index][1] if paired else None
+                slot_index = next((i for i, (a, b, _) in enumerate(slots)
+                                   if a <= relation_match.start() < b), None)
+                comparison = (subjects[0][1] if direct_binding else
+                              subjects[slot_index][1] if paired and slot_index is not None else None)
+                # Negation is local to this predicate/complement. Do not invert
+                # it into an affirmative error or demand changes to negative prose.
+                slot_start = slots[slot_index][0] if slot_index is not None else predicate_start
+                negated = bool(_NEGATION.search(sentence[copula.start():predicate_start])
+                               or _NEGATION.search(subject[subjects[-1][0].end():])
+                               or re.search(r"不\s*$", subject)
+                               or _NEGATION.search(sentence[slot_start:relation_match.start()]))
                 result = {"status": "binding_unresolved", "expected_label": None}
                 if ref and comparison:
                     result = (compare_periods(ref, comparison, relation)
                               if frequency in (None, ref.frequency)
                               else {"status": "not_comparable", "expected_label": None})
+                if negated:
+                    result = {"status": "negative_or_qualified_proposition", "expected_label": None}
                 if result["status"] == "consistent":
                     continue
                 item = {
@@ -164,15 +223,44 @@ def text_period_checks(text, *, path, reference_text=None):
                     "label_check": result, "blocking": False,
                     "financial_semantics_verified": False,
                     "assumptions": ["Same issuer/reporting calendar; no fiscal-calendar change.",
-                                    "Prose parsing and reference binding require author confirmation."],
-                    "instruction": "Check the quoted period relation and its reference against the table/source. "
-                        "If this binding is wrong, explain the actual reference/calendar in the manuscript. "
-                        "Do not substitute another date merely to satisfy this check. Saved edits remain intact.",
+                                    "Prose parsing does not independently establish financial meaning."],
                 }
                 item["check_id"] = canonical_sha256({k: item[k] for k in
                     ("path", "quote", "relation", "reference_label", "comparison_label")})
-                checks.append(item)
-    return checks
+                if result["status"] == "inconsistent":
+                    item["instruction"] = (
+                        "Check this explicitly bound period relation against its source/calendar. "
+                        "The label arithmetic is advisory, not a financial verdict. "
+                        "Do not change dates merely to satisfy the check. Saved edits remain intact.")
+                    checks.append(item)
+                else:
+                    item.update(code="period_relation_parse_diagnostic", author_action_required=False)
+                    diagnostics.append(item)
+    return {"checks": checks, "diagnostics": diagnostics}
+
+
+def text_period_checks(text, *, path, reference_text=None):
+    """Only affirmative, comparable, uniquely bound label contradictions."""
+    return text_period_analysis(text, path=path, reference_text=reference_text)["checks"]
+
+
+def project_period_receipt(receipt):
+    """Request-only view: historical advisories are not current task findings.
+
+    Saved receipts remain immutable/readable. The caller supplies fresh checks
+    beside the current candidate; no manuscript or financial finding is changed.
+    """
+    from copy import deepcopy
+    projected = deepcopy(receipt)
+    if isinstance(projected, dict) and "period_relation_checks" in projected:
+        projected.pop("period_relation_checks")
+        if projected.get("semantic_check_status") == "period_relations_require_author_check_not_schema_errors":
+            projected.pop("semantic_check_status")
+        projected["period_check_view"] = {
+            "current_checks_at": "/current_context/submission_to_repair/period_relation_checks",
+            "historical_checks": "Available in the original operation receipt; not current findings.",
+        }
+    return projected
 
 
 def workpaper_period_checks(candidate):

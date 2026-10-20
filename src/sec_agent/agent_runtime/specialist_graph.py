@@ -1542,7 +1542,7 @@ def _model_request(
         body['submission_to_repair']['calculation_binding_issues'] = calculation_binding_issues(
             candidate, notebook.model_dump(mode='json'),
             (state.get('last_submission_attempt') or {}).get('arguments'))
-        from .period_relations import workpaper_period_checks
+        from .period_relations import workpaper_period_checks, project_period_receipt
         body['submission_to_repair']['period_relation_checks'] = workpaper_period_checks(candidate)
         if draft:
             body["submission_to_repair"]["draft_state"] = {k: deepcopy(draft.get(k)) for k in ("digest", "baseline_digest", "saved_batches", "changed_paths", "latest_changed_paths", "draft_issues", "change_status")}
@@ -1551,7 +1551,7 @@ def _model_request(
             body["revision_submission_status"] = {"status": "draft_saved_not_submitted", "accepted": False}
         targets = revision_progress(state, candidate)
         body["submission_to_repair"].update(
-            edit_progress=targets, last_edit_feedback=state.get("last_edit_feedback"),
+            edit_progress=targets, last_edit_feedback=project_period_receipt(state.get("last_edit_feedback")),
             current_candidate_digest=canonical_sha256(candidate),
             validation_feedback={"issues": last.get("validation_issues", []),
                 "validated_candidate_digest": last.get("validated_candidate_digest"),

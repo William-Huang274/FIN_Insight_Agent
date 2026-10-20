@@ -20,7 +20,7 @@ Java 内部 `GET /v1/workspaces/projects/{project}/execution-bindings/{id}/read-
 | `GET /`（无尾斜杠） | 公开研究状态，所有操作能力标记关闭；不读个人附件、个人记忆或私有消息 |
 | `GET /report` | 当前报告；可传 `checkpoint_id` 读取该 thread 的历史快照，仍检查当前权限 |
 | `GET /source?source_id=…&offset=…` | 已提交报告/综合中的保存引用，保留来源字段、期间及单位，文本每页最多16000字符 |
-| `GET /report/export/{md,pdf,docx,pptx}` | 复用无模型导出器；完成渲染后再次授权，再返回文件 |
+| `GET /report/export/{html,md,pdf,docx,pptx}` | 复用无模型导出器；完成渲染后再次授权，再返回文件 |
 | `GET /runs/{run_id}/events` | 只接受 Java 关联的 run；支持 `Last-Event-ID`，复用公开事件过滤，不返回原始消息 |
 
 BFF 在读取 SDK 前、读取后和响应序列化/渲染后重新核对授权；全部成功响应使用 `Cache-Control: no-store`。每次事件输出前重新核对，不因流建立成功就永久放行。若撤权或授权服务故障发生在流建立后，结束流且不发送已缓冲的下一条业务事件；无事件的空闲流不会额外启动后台权限轮询。已返回的内容无法撤回，跨 Java、原生存储和客户端之间没有全局事务承诺。
@@ -35,7 +35,9 @@ uv run --no-sync python -m pytest -q tests/test_organization_research_reads.py t
 ./mvnw.cmd verify
 ```
 
-Python 用例通过实际 BFF 路由、静态 SDK 状态和真实四种导出器验证权限前后检查、历史报告、引用冲突、配置不匹配、撤权期间的事件过滤及拒绝个人入口。Java 用真实 PostgreSQL 验证 viewer 缺少源权限时拒绝、获授权后读取、不能启动、关闭绑定后读历史、创建人离开以及读者源/项目资格撤销。
+Python 用例通过实际 BFF 路由、静态 SDK 状态和真实五种导出器验证权限前后检查、历史报告、引用冲突、配置不匹配、撤权期间的事件过滤及拒绝个人入口。Java 用真实 PostgreSQL 验证 viewer 缺少源权限时拒绝、获授权后读取、不能启动、关闭绑定后读历史、创建人离开以及读者源/项目资格撤销。
+
+HTML 网页阅读版沿用所选 checkpoint 和全部输入当前读权限，显示已保存组织来源的摘录、期间和单位；不在导出时另查原文。下载前撤权会拒绝生成或返回文件；已经合法下载的离线文件无法通过服务端撤权收回。组织页面提供“网页阅读版”按钮，仍不使用个人研究接口读取组织 thread。
 
 `tests/integration/test_organization_graph_native.py` 继续使用隔离五服务和脚本 provider，增加真实 OIDC 替身 viewer 到 BFF/Java/原生状态的读取、服务重启后回读，以及源撤销后所有只读入口拒绝。该实际图只产出预研究，没有伪称已生成完整报告；四种报告导出另由明确标记的静态报告测试。没有真实模型调用、真实 OIDC 验收或金融质量结论。
 

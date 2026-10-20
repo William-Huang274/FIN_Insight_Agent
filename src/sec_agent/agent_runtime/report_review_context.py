@@ -65,7 +65,8 @@ def report_change_text(previous, current):
 def _public_record(message):
     """Never return private reasoning or provider metadata."""
     if isinstance(message, AIMessage):
-        return {"type": "ai", "content": message.content, "tool_calls": message.tool_calls,
+        from .context_records import public_text
+        return {"type": "ai", "content": public_text(message), "tool_calls": message.tool_calls,
                 "invalid_tool_calls": message.invalid_tool_calls}
     if isinstance(message, ToolMessage):
         return {"type": "tool", "name": message.name, "tool_call_id": message.tool_call_id,

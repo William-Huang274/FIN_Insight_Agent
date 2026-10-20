@@ -116,17 +116,19 @@ def paper_quote_view(message):
 
 
 def history_page(messages, *, index=None, offset=0, limit=20):
+    from .context_records import public_text
     if offset < 0 or not 1 <= limit <= 20:
         raise ValueError('history_offset_or_limit_invalid')
     if index is None:
         rows=[{'index':i,'kind':m.type,'tool':getattr(m,'name',None),
             'calls':[{'name':t['name'],'arguments_keys':list(t.get('args',{}))} for t in getattr(m,'tool_calls',[])],
-            'preview':str(m.content)[:180]} for i,m in enumerate(messages[offset:offset+limit],offset)]
+            'preview':str(public_text(m) if isinstance(m, AIMessage) else m.content)[:180]}
+            for i,m in enumerate(messages[offset:offset+limit],offset)]
         return {'messages':rows,'next_offset':offset+limit if offset+limit<len(messages) else None,'total':len(messages)}
     if not 0 <= index < len(messages):raise ValueError('history_index_invalid')
     message=messages[index]
     # Never serialize additional_kwargs/reasoning_content or sibling state.
-    text=json.dumps({'kind':message.type,'content':message.content,
+    text=json.dumps({'kind':message.type,'content':public_text(message) if isinstance(message, AIMessage) else message.content,
         'tool_calls':getattr(message,'tool_calls',[]),'tool':getattr(message,'name',None),
         'tool_call_id':getattr(message,'tool_call_id',None)},ensure_ascii=False)
     return {'index':index,'text':text[offset:offset+6000],

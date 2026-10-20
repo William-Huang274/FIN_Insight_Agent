@@ -33,6 +33,7 @@ class LastRead(BaseChatModel):
     seen: list=[]
     tools_seen: list=[]
     paper: str='P01'
+    tool_name: str='read_research_artifact'
     @property
     def _llm_type(self):return 'offline-final-authorized-read'
     def bind_tools(self,tools,**kwargs):
@@ -43,7 +44,7 @@ class LastRead(BaseChatModel):
         self.calls+=1;self.seen=list(messages)
         self.snapshots.append(list(messages))
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content='',tool_calls=[{
-            'name':'read_research_artifact','id':'last-read','args':{'paper_id':self.paper},'type':'tool_call'}]))])
+            'name':self.tool_name,'id':'last-read','args':{'paper_id':self.paper},'type':'tool_call'}]))])
 
 
 @pytest.mark.parametrize('paper,expected_status',[('P01','success'),('UNKNOWN','error')])
@@ -82,4 +83,31 @@ def test_two_request_run_enforces_limit_without_countdown():
             assert notices==[]
         assert not any('runtime_model_call_allowance' in m.content for m in result['messages']
             if isinstance(m,HumanMessage))
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize('role', ['decision', 'synthesis', 'writer', 'lead_writer', 'verifier'])
+@pytest.mark.parametrize('allowance', [1, 2])
+def test_output_roles_keep_internal_ceiling_out_of_model_instructions(role, allowance):
+    from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_agent
+
+    async def run():
+        model = LastRead(accepted_requests=allowance, tool_name='read_current_workpaper')
+        agent = build_case_output_agent(
+            role=role, model=model, tools=[], artifacts=artifact_fixture(),
+            limits={'model_calls': allowance, 'tool_calls': 8},
+            incomplete_reviewers=[],
+        )
+        result = await agent.ainvoke({'messages': [HumanMessage(content='Continue the current research.')]})
+        assert model.calls == allowance
+        assert not result.get('output')
+        receipts = [m for m in result['messages'] if isinstance(m, ToolMessage)]
+        assert len(receipts) == allowance and all(m.status == 'success' for m in receipts)
+        for messages in model.snapshots:
+            system = '\n'.join(str(m.content) for m in messages if isinstance(m, SystemMessage))
+            assert 'Budget:' not in system
+            assert 'model calls/' not in system
+            assert 'calls left' not in system
+        assert 'read_current_workpaper' in model.tools_seen
+
     asyncio.run(run())

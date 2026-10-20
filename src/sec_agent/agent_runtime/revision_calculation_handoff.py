@@ -10,6 +10,16 @@ import json
 from .research_graph_contracts import RuntimeReceipt, canonical_sha256
 
 
+def _same_calculation(saved, recomputed):
+    # These fields are attached by source/tool transport after calculation.
+    # Preserve them in the receipt; they are not outputs of arithmetic replay.
+    # Unknown extras still fail rather than silently dropping future semantics.
+    transport = {"fact_id", "cell_binding_used", "mcp_receipt_chain", "source_tool_lane_receipt_id"}
+    if "fact_id" in saved and saved["fact_id"] != saved["calculation_id"]:
+        return False
+    return {k: v for k, v in saved.items() if k not in transport} == recomputed
+
+
 def restore_revision_calculations(state, decision, artifacts, paper_id):
     from .specialist_graph import SpecialistNotebook, SpecialistToolObservation, _replace_notebook
     from .specialist_composition import _reference_from_item
@@ -52,7 +62,7 @@ def restore_revision_calculations(state, decision, artifacts, paper_id):
         request = SourceBoundCalculation.model_validate({
             **{k: calculation[k] for k in ('expression', 'result_unit', 'rationale')}, 'operands': operands})
         recomputed = calculate_from_sources(request, store.source_item)
-        if recomputed != calculation:
+        if not _same_calculation(calculation, recomputed):
             raise ValueError('revision_calculation_original_mismatch:' + ref)
         sources = {op.source_id: store.source_item(op.source_id)
                    for op in request.operands.values() if op.source_id}
@@ -77,6 +87,7 @@ def restore_revision_calculations(state, decision, artifacts, paper_id):
         digest = canonical_sha256(binding)
         receipts[ref] = {'binding': binding, 'calculation': deepcopy(calculation),
             'operand_sources': deepcopy(sources), 'arithmetic_recheck': 'exact_original_match',
+            'recheck_scope': 'calculation_content_and_identity; original_transport_metadata_preserved',
             'financial_semantics_verified': False}
         if content:
             payload = dict(schema_version='fin_ia_specialist_tool_observation_v1_0',

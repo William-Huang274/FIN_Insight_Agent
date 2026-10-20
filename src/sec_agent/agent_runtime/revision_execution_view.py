@@ -103,6 +103,9 @@ def project_revision_execution(context, readback, baseline, manuscript_reads=())
         'scope': 'focus_not_edit_allowlist',
         'related_changes': 'author_assessed_before_explicit_final_submission',
     }
+    if repair.get('period_relation_checks'):
+        step['period_checks_at'] = '/current_context/submission_to_repair/period_relation_checks'
+        step['period_check_status'] = 'author_check_required_not_automatic_finding_or_completion'
     repair['candidate_readback'] = readback(root)
     repair['candidate_fields'] = list(candidate)
     repair['claim_ids'] = [r['claim_id'] for r in candidate.get('claims', []) if 'claim_id' in r]

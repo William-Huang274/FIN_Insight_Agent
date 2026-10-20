@@ -29,6 +29,7 @@ from .case_artifacts import CaseArtifacts
 from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE
 from sec_agent.research_foundation.source_bound_calculator import source_items_from_tool
 from sec_agent.research_foundation.source_quotes import contains_source_quote
+from .review_submission_notes import AssessmentNote, preserve_assessment_notes
 
 
 CASE_TOOLS = frozenset({"research_artifact_catalog", "read_research_artifact", "read_research_source", "search_research_sources",
@@ -68,6 +69,9 @@ class PaperAssessment(BaseModel):
     model_config = ConfigDict(extra="forbid")
     paper_id: str
     assessment: str = Field(min_length=20, max_length=5000)
+    supplemental_notes: list[AssessmentNote] = Field(default_factory=list, max_length=16,
+        exclude_if=lambda notes: not notes,
+        description="Optional verbatim supplementary explanations with their original field/path. Not finding statuses, evidence or completion decisions.")
 
 
 class FindingConfirmation(BaseModel):
@@ -212,6 +216,23 @@ def _text_values(value):
     elif isinstance(value, list):
         for child in value:
             yield from _text_values(child)
+
+
+def review_assessment_scope(review, artifacts, *, confirmation=None):
+    """Use the assigned scope at both submission and downstream handoff.
+
+    Related assessments/findings may widen a local confirmation, but cannot
+    remove assigned papers. Full reviews still cover the complete catalog.
+    """
+    catalog = {p["paper_id"] for p in artifacts.catalog()["papers"]}
+    if confirmation is None:
+        return catalog
+    assigned = set(confirmation["findings_to_confirm"])
+    expected = (assigned | {a.paper_id for a in review.assessments}
+                | {f.paper_id for f in review.findings})
+    if not assigned or not expected.issubset(catalog):
+        raise ValueError("research_confirmation_paper_scope_invalid")
+    return expected
 
 
 def validate_case_review(review: CaseReview, artifacts: CaseArtifacts, messages, *, paper_ids=None, revision_target=None, require_full_workpaper=True, parsing_records=None, confirmation=None) -> None:
@@ -436,6 +457,42 @@ async def organization_source_tools(client):
     return await _scoped_mcp_tools(client, allowed=names, required=names)
 
 
+def normalize_source_read_arguments(name, arguments, run_scope):
+    """Normalize lossless source-read syntax without selecting sources or windows."""
+    request = arguments.get("request")
+    if name != "read_source_document" or not isinstance(request, dict) or not run_scope:
+        return arguments, None
+    branch = request.get("branch_id")
+    normalized = deepcopy(arguments)
+    relocated = (isinstance(branch, str) and branch in run_scope["selected_branch_ids"]
+        and ("branch_id" not in arguments or arguments["branch_id"] == branch))
+    if relocated:
+        normalized["branch_id"] = normalized["request"].pop("branch_id")
+    # Library exact-node reads already start at the beginning. A literal zero
+    # adds no selection information; nonzero offsets, other spaces, pagination,
+    # missing selectors and conflicting branch envelopes remain native errors.
+    selected = normalized["request"]
+    zero_window = (selected.get("source_space") == "library"
+        and selected.get("operation") == "read"
+        and selected.get("document_id") and selected.get("node_id")
+        and type(selected.get("character_offset")) is int
+        and selected["character_offset"] == 0
+        and selected.get("offset", 0) == 0
+        and "branch_id" not in selected
+        and normalized.get("branch_id") in run_scope["selected_branch_ids"])
+    if zero_window:
+        selected.pop("character_offset")
+    if not relocated and not zero_window:
+        return arguments, None
+    from .evidence_resolution import parsing_record
+    return normalized, parsing_record(
+        "source_read_default_window_v1" if zero_window else "source_read_branch_envelope_v1",
+        deepcopy(arguments), deepcopy(normalized),
+        from_path="request.character_offset" if zero_window else "request.branch_id",
+        to_path="request.default_node_start" if zero_window else "branch_id",
+        source_selection_unchanged=True, native_validation_required=True)
+
+
 async def _scoped_mcp_tools(client, *, allowed, required, run_scope=None, method_arguments=None):
     """MCP2 schema -> StructuredTool only; no transport or dispatcher rewrite.
 
@@ -469,6 +526,7 @@ async def _scoped_mcp_tools(client, *, allowed, required, run_scope=None, method
 
         def bind_call(_name, _injected):
             async def call(**arguments):
+                arguments, recovery = normalize_source_read_arguments(_name, arguments, run_scope)
                 if _name == "read_research_source":
                     arguments.setdefault("max_characters", 4000)
                 if set(arguments).intersection(_injected):
@@ -477,10 +535,16 @@ async def _scoped_mcp_tools(client, *, allowed, required, run_scope=None, method
                     raise ToolException("branch_outside_case_scope")
                 result = await client.call_tool(_name, {**arguments, **_injected})
                 if result.is_error:
-                    raise ToolException("\n".join(c.text for c in result.content if c.type == "text"))
+                    error = "\n".join(c.text for c in result.content if c.type == "text")
+                    if recovery:
+                        error = json.dumps({"error": error, "runtime_argument_recovery": [recovery],
+                            "accepted": False}, ensure_ascii=False)
+                    raise ToolException(error)
                 body = result.structured_content
                 if not isinstance(body, dict):
                     raise RuntimeError("case_tool_expected_structured_object")
+                if recovery:
+                    body = {**body, "runtime_argument_recovery": [recovery]}
                 if _name == "get_research_source_binding":
                     body = deepcopy(body["method_package"]["method"])
                     body.pop("scope_ceiling", None)
@@ -797,11 +861,19 @@ class InvalidToolCallFeedback(AgentMiddleware):
                 parsed[index] = {**call, 'args': {**args, field: value}}
                 recovered.append({'tool_call_id': call['id'], 'method': 'json_object_parameter',
                     'field': field, 'original_arguments': deepcopy(args)})
+        for index, call in enumerate(parsed):
+            if call.get('name') != 'submit_case_review':
+                continue
+            normalized, note_records = preserve_assessment_notes(call.get('args'))
+            if note_records:
+                parsed[index] = {**call, 'args': normalized}
+                recovered.append({'tool_call_id':call['id'], 'method':'assessment_note_preservation_v1',
+                    'original_arguments':deepcopy(call['args']), 'runtime_parsing':note_records})
         if recovered:
             from .research_graph_contracts import canonical_sha256
             replacement = message.model_copy(update={'tool_calls': parsed, 'invalid_tool_calls': invalid,
                 'response_metadata': {**message.response_metadata, 'format_recovery': recovered[0]['method'],
-                    'tool_argument_recovery':recovered,
+                    'tool_argument_recovery':[*message.response_metadata.get('tool_argument_recovery', []), *recovered],
                     'original_invalid_arguments_digest': canonical_sha256(message.invalid_tool_calls)}})
             return {'messages': [replacement, *feedback], 'jump_to': 'tools'}
         if not feedback:
@@ -812,7 +884,7 @@ class InvalidToolCallFeedback(AgentMiddleware):
 class CompactReviewSchemaFeedback(AgentMiddleware):
     """Keep native schema validation, omit its duplicate full argument echo."""
     @staticmethod
-    def compact(message):
+    def compact(message, preserved_notes=()):
         if (not isinstance(message, ToolMessage) or message.status != 'error'
                 or not isinstance(message.content, str)
                 or not message.content.startswith("Error invoking tool '")):
@@ -824,18 +896,33 @@ class CompactReviewSchemaFeedback(AgentMiddleware):
         from .evidence_resolution import parsing_record
         detail = {'error':'tool_arguments_schema_invalid', 'details':errors.strip(),
             'executed':False, 'remedy':'Correct the named fields using the declared schema. The original tool arguments remain in the prior assistant message; no review was accepted.'}
+        if preserved_notes:
+            detail['preserved_supplemental_notes'] = [
+                {'paper_id':r['basis']['paper_id'], 'original_path':r['basis']['field_path']}
+                for r in preserved_notes]
+            detail['notice'] = ('Supplementary text is retained verbatim in the normalized candidate and original arguments. '
+                'Only the listed validation errors remain; no review was accepted.')
         receipt = parsing_record('native_schema_feedback_v1',
             {'tool_call_id':message.tool_call_id,'feedback_digest':canonical_sha256(message.content)},
             detail, original_arguments_retained_in_assistant_message=True)
         artifact = dict(message.artifact) if isinstance(message.artifact,dict) else {}
-        artifact['runtime_parsing'] = [*artifact.get('runtime_parsing',[]),receipt]
+        artifact['runtime_parsing'] = [*artifact.get('runtime_parsing',[]),
+            *[{**r, 'operation_status':'schema_rejected'} for r in preserved_notes],receipt]
         return message.model_copy(update={'content':json.dumps(detail,ensure_ascii=False),'artifact':artifact})
 
+    @staticmethod
+    def preserved_notes(request):
+        current = next((m for m in reversed(request.state['messages']) if isinstance(m, AIMessage)), None)
+        return [r for recovery in (current.response_metadata.get('tool_argument_recovery', []) if current else [])
+            if recovery.get('tool_call_id') == request.tool_call['id']
+            for r in recovery.get('runtime_parsing', [])
+            if r.get('method') == 'assessment_note_preservation_v1']
+
     def wrap_tool_call(self, request, handler):
-        return self.compact(handler(request))
+        return self.compact(handler(request), self.preserved_notes(request))
 
     async def awrap_tool_call(self, request, handler):
-        return self.compact(await handler(request))
+        return self.compact(await handler(request), self.preserved_notes(request))
 
 
 class StopOnAcceptedReview(AgentMiddleware):
@@ -1034,12 +1121,21 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
         return json.dumps(revision_target, ensure_ascii=False), deepcopy(revision_target)
 
     @tool(response_format="content_and_artifact")
-    def read_review_location(paper_id: str, field_path: str, offset: int = 0, max_characters: int = 2000, view: Literal['text', 'json'] = 'text') -> tuple[str, dict]:
-        """Read current text (with quote location_id), or view=json for a complete structured field with pagination. Default container reads are directories, not evidence; JSON windows are not quote locations."""
-        from .review_inspection import read_location, read_structured_location
+    def read_review_location(paper_id: str, field_path: str, offset: int | None = None, max_characters: int = 2000, view: Literal['text', 'json'] = 'text', quote: str | None = None, match_index: int | None = None, paper_digest: str | None = None, match_offset: int = 0) -> tuple[str, dict]:
+        """Locate an already-read exact quote in field_path (claim ID paths supported): pass quote, not guessed offset. Unique match returns quote-only location_id; repeated matches return contexts and version-bound readback calls for your selection. No match is normal navigation. Alternatively use offset pagination, or view=json for structured fields. Directory previews/JSON are not quote locations; quote and offset cannot be combined."""
+        from .review_inspection import read_location, read_structured_location, read_quoted_location
         try:
-            reader = read_structured_location if view == 'json' else read_location
-            value = reader(artifacts, paper_id, field_path, offset, max_characters)
+            if quote is not None:
+                if offset is not None or view != 'text':
+                    raise ValueError('choose_literal_quote_or_offset_json_read_not_both')
+                value = read_quoted_location(artifacts, paper_id, field_path, quote,
+                    match_index=match_index, paper_digest=paper_digest, match_offset=match_offset,
+                    max_characters=max_characters)
+            else:
+                if match_index is not None or paper_digest is not None or match_offset:
+                    raise ValueError('quote_selection_parameters_require_quote')
+                reader = read_structured_location if view == 'json' else read_location
+                value = reader(artifacts, paper_id, field_path, offset or 0, max_characters)
         except ValueError as exc:
             raise ToolException(str(exc) + '; use a field_path from the current paper or quote_recovery window.') from exc
         return json.dumps(value, ensure_ascii=False), value
@@ -1081,6 +1177,10 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
         parsing = []
         proposed = list(review.findings)
         current = next((m for m in reversed(runtime.state["messages"]) if isinstance(m, AIMessage)), None)
+        if current:
+            parsing.extend(deepcopy(record) for recovery in current.response_metadata.get('tool_argument_recovery', [])
+                if recovery.get('tool_call_id') == runtime.tool_call_id
+                for record in recovery.get('runtime_parsing', []))
         parallel_saves = bool(current and any(c['name']=='record_case_finding' for c in current.tool_calls))
         independent_ids = []
         try:
@@ -1111,9 +1211,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
                 # Confirmation covers the assigned repairs, not an implicit
                 # restart of every unchanged paper. Optional additional
                 # assessments/findings still require their own actual reads.
-                confirmation_papers = (set(confirmation['findings_to_confirm'])
-                    | {a.paper_id for a in review.assessments}
-                    | {f.paper_id for f in review.findings})
+                confirmation_papers = review_assessment_scope(review, artifacts, confirmation=confirmation)
             validate_case_review(review, artifacts, runtime.state["messages"], paper_ids=confirmation_papers,
                 revision_target=revision_target, parsing_records=parsing,
                 confirmation=confirmation if not require_inspection else None)
@@ -1164,7 +1262,8 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             "runtime_parsing":runtime_parsing, "messages": [ToolMessage(
             content=("Revision-only review saved; unchanged research was not reviewed. Not whole-case or financial acceptance."
                 if revision_target else "Review handoff accepted for case convergence; not a product or financial PASS."),
-            name="submit_case_review", tool_call_id=runtime.tool_call_id)]})
+            name="submit_case_review", tool_call_id=runtime.tool_call_id,
+            artifact={'runtime_parsing': runtime_parsing})]})
 
     @tool
     def submit_case_review(review: SubmittedCaseReview, runtime: ToolRuntime) -> Command:
@@ -1184,6 +1283,10 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             return save_review(CaseReview.model_validate(review.model_dump(exclude={'completion'})), runtime, completion=review.completion)
 
         submit_case_review = submit_inspected_review
+    if (require_inspection or confirmation) and not revision_target:
+        # Both full reviews and local confirmations can cross a contract
+        # transition. Keep their original journals readable while projecting
+        # the current assignment and retained observations consistently.
         @tool
         def read_saved_review_checks(paper_id: str, runtime: ToolRuntime, offset: int=0):
             """Read legacy reviewer records for reference. They are fallible assessments, never a mandatory checklist or approval."""

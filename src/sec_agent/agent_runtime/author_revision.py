@@ -176,6 +176,16 @@ def author_feedback(findings, artifacts, *, original_findings=()):
     """Review aliases are navigation; restore their actual source identity."""
     from .revision_guidance import restore_review_request
     result = [restore_review_request(finding, original_findings) for finding in findings]
+    from .period_relations import remedy_period_checks
+    # Lead's proposed wording is fallible. Keep it verbatim, with a separate
+    # version-current advisory; never invent a new finding or disposition.
+    checks = remedy_period_checks(result, artifacts.read_paper)
+    for finding in result:
+        finding.pop('runtime_period_checks', None)
+        relevant = [c for c in checks if c['paper_id'] == finding.get('paper_id')
+                    and c['finding_id'] == finding.get('finding_id')]
+        if relevant:
+            finding['runtime_period_checks'] = relevant
     inventories = {}
     for finding in result:
         # Exact current-text lookup only. This also serves old saved findings

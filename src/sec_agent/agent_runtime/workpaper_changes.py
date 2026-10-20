@@ -125,7 +125,11 @@ def confirmation_context(artifacts, revisions, feedback, *, artifact_history=(),
             'roles': {role: {'status': review.get(role, {}).get('status'),
                 'review': deepcopy(review.get(role, {}).get('review'))} for role in ('verifier', 'counter')},
             'notice': 'Recorded reviewer judgments for these historical versions; not acceptance of the current revision.'})
+    from .period_relations import workpaper_period_checks
+    period_checks = {pid: checks for pid in feedback
+                     if (checks := workpaper_period_checks(current.read_paper(pid)))}
     return partition_author_responses({"paper_version_digests": paper_versions(current), "findings_to_confirm": deepcopy(feedback),
+        **({'runtime_period_checks': period_checks} if period_checks else {}),
         "changes": changes,
         "author_responses": {pid: deepcopy(revisions.get(pid, {}).get("finding_responses", [])) for pid in feedback},
         'historical_reviews': history,

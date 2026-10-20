@@ -90,6 +90,61 @@ def read_structured_location(artifacts, paper_id, path, offset=0, max_characters
         'notice': 'Current structured field; not financial confirmation or a quote location. Use a text leaf for exact finding quotes.'}
 
 
+def read_quoted_location(artifacts, paper_id, path, quote, *, match_index=None,
+                         paper_digest=None, match_offset=0, max_characters=2000):
+    """Locate the author's literal selection in one current field, never infer intent."""
+    paper = artifacts.read_paper(paper_id)
+    digest = canonical_sha256(paper)
+    if paper_digest is not None and paper_digest != digest:
+        raise ValueError('review_location_is_stale_or_wrong_paper')
+    if not quote or not quote.strip() or len(quote) > 6000:
+        raise ValueError('review_quote_requires_1_to_6000_nonblank_characters')
+    if not 1 <= max_characters <= 6000 or match_offset < 0:
+        raise ValueError('review_quote_invalid_window_or_match_offset')
+    path = resolve_location(paper, path)
+    body = dict(text_locations(paper))[path]
+    # Include overlapping exact occurrences; never normalize financial wording.
+    positions = [m.start() for m in re.finditer('(?=' + re.escape(quote) + ')', body)]
+    base = {'paper_id': paper_id, 'paper_digest': digest, 'field_path': path,
+            'quote': quote, 'total_matches': len(positions), 'financial_semantics_verified': False}
+    args = {'paper_id': paper_id, 'field_path': path, 'quote': quote,
+            'paper_digest': digest, 'max_characters': max_characters}
+    if match_index is not None:
+        if paper_digest is None:
+            raise ValueError('review_quote_selection_requires_candidate_paper_digest')
+        if match_offset or not 0 <= match_index < len(positions):
+            raise ValueError('review_quote_match_index_out_of_range_or_conflicting_page')
+    elif len(positions) == 1:
+        if match_offset:
+            raise ValueError('review_quote_match_offset_out_of_range')
+        match_index = 0
+    if match_index is not None:
+        start = positions[match_index]
+        value = read_location(artifacts, paper_id, path, start, len(quote))
+        return {**base, **value, 'status': 'exact_quote_match', 'selected_match': match_index,
+                'match_start': start, 'match_end': start + len(quote),
+                'runtime_parsing': {'method': 'exact_review_quote_v1',
+                    'origin': 'runtime_literal_location', 'model_quote_unchanged': True}}
+    if match_offset and match_offset >= len(positions):
+        raise ValueError('review_quote_match_offset_out_of_range')
+    candidates = []
+    width = min(max_characters, 1000)
+    for index, start in enumerate(positions[match_offset:match_offset + 6], match_offset):
+        lo = max(0, start - min(120, width // 3))
+        hi = min(len(body), lo + width)
+        candidates.append({'match_index': index, 'match_start': start, 'match_end': start + len(quote),
+            'context': body[lo:hi], 'context_start': lo, 'context_end': hi,
+            'readback': {'tool': 'read_review_location', 'arguments': {**args, 'match_index': index}}})
+    next_offset = match_offset + len(candidates)
+    return {**base, 'status': 'multiple_quote_matches' if positions else 'quote_not_found',
+            'selected_match': None, 'candidates': candidates,
+            'next_page': {'tool': 'read_review_location', 'arguments': {**args, 'match_offset': next_offset}}
+                if next_offset < len(positions) else None,
+            'readback': {'tool': 'read_review_location', 'arguments': {
+                'paper_id': paper_id, 'field_path': path, 'offset': 0, 'max_characters': max_characters}},
+            'notice': 'Select a candidate using its readback, or revise your literal quote. No location or finding is accepted by this navigation response.'}
+
+
 def bind_location(artifacts, messages, paper_id, location_id):
     """Only a successful, current-version tool read can supply a finding quote."""
     from langchain_core.messages import ToolMessage
@@ -185,7 +240,10 @@ Neither duplicates the other's entire assignment. State what you checked and any
 The runtime preserves read receipts, versions and legacy checks. Do NOT recreate inspection tables,
 paragraph coverage, hashes or previously saved checks. Automatic paragraph/keyword candidates are navigation
 only and do not create mandatory work. Assess each assigned paper concisely; no per-paragraph pass records.
-Use read_review_location to get a location_id for an actionable finding instead of retyping its quote.
+For a paper finding, an already-read exact problematic_quote remains valid without a location_id.
+When you need a version-bound location_id, pass your chosen exact quote and field_path to
+read_review_location; runtime locates it. Do not estimate character offsets for text already read.
+Multiple literal matches return contexts and exact selection calls; choose the intended occurrence.
 For evidence supply source_id and your chosen exact quote; runtime locates it. Returned window_span is
 reading context, not citation offsets. Repeated quotes or conflicting selections return candidates for
 your decision; nothing is saved as accepted until selection is resolved. Do not invent mappings.

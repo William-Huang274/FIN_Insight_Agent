@@ -4,6 +4,10 @@ These are literal field projections, not a second model or a semantic censor.
 The Lead remains responsible for weighing the authors' findings.
 """
 from copy import deepcopy
+import json
+
+from langchain_core.messages import HumanMessage, RemoveMessage
+from langgraph.graph.message import REMOVE_ALL_MESSAGES
 
 from sec_agent.research_foundation.research_methods import research_writing_guidance
 from .research_graph_contracts import canonical_sha256
@@ -177,13 +181,35 @@ def author_overview(artifacts, paper_id):
                if paper.get('human_editorial_revision') else {})}
 
 
+def resolve_paper_claim_ids(paper_id, claims, claim_ids):
+    """Resolve literal local/full identities within one explicit paper only."""
+    available = [c['claim_id'] for c in claims]
+    resolved = []
+    for requested in claim_ids:
+        candidates = {requested}
+        if requested.startswith(paper_id + ':'):
+            candidates.add(requested[len(paper_id) + 1:])
+        matches = [identity for identity in available if identity in candidates]
+        if len(matches) != 1:
+            reason = 'ambiguous_claim_ids' if matches else 'unknown_claim_ids'
+            raise ValueError(
+                f'{reason}:{requested}; paper_id={paper_id}; '
+                'use section=citations to read exact IDs; claim_ids accepts a local ID '
+                'or this paper_id:local_id when uniquely matched')
+        if matches[0] not in resolved:
+            resolved.append(matches[0])
+    return resolved
+
+
 def author_analysis(artifacts, paper_id, *, fields=None, claim_ids=None):
     """Opt-in, unchanged author judgments/conditions; not source fact records."""
     paper = artifacts.read_paper(paper_id)
     if fields is not None and (not fields or set(fields) - set(ANALYSIS_FIELDS)):
         raise ValueError('unknown_analysis_fields_use_overview')
-    if claim_ids is not None and (not claim_ids or set(claim_ids) - {c['claim_id'] for c in paper['claims']}):
-        raise ValueError('unknown_claim_ids_use_overview')
+    if claim_ids is not None:
+        if not claim_ids:
+            raise ValueError('unknown_claim_ids_use_overview')
+        claim_ids = resolve_paper_claim_ids(paper_id, paper['claims'], claim_ids)
     chosen = set(fields) if fields is not None else ({'claims'} if claim_ids is not None else set(ANALYSIS_FIELDS))
     if claim_ids is not None:
         chosen.add('claims')
@@ -212,20 +238,62 @@ def citation_index(artifacts, paper_id):
             "section": "claims"}, "optional_argument": "claim_ids selects full quotes for the chosen IDs"}}
 
 
-def report_authoring_input(question, artifacts, *, human_feedback=None, report=None, review=None, material_conditions=()):
-    """Fresh composition and local revision use explicit, different inputs.
+def report_authoring_input(question, artifacts, *, human_feedback=None, report=None, review=None,
+                           synthesis=None, synthesis_review=None, material_conditions=()):
+    """Project the current authoring target, not a historical review archive.
 
-Do not recursively copy a synthesis/review/working-note archive into writing.
-The original question and all current papers are the substantive continuity.
+First composition continues the Lead's current synthesis and its review.
+Report revision targets the report and its own review instead. A direct report
+without an intermediate synthesis retains the source-navigation entry.
 """
     body = {"question": question, "research_as_of": artifacts.research_as_of,
         "catalog": authoring_catalog(artifacts), "authoring_view": "source_materials.v4"}
     if human_feedback:
         body["human_feedback"] = deepcopy(human_feedback)
     if material_conditions:
-        body['material_conditions'] = list(dict.fromkeys(material_conditions))
+        # The current review already carries these exact conditions. Do not
+        # duplicate them as a second set of writing requirements.
+        reviewed_conditions = (synthesis_review or {}).get("research_limitations", []) if synthesis and not report else []
+        conditions = [item for item in dict.fromkeys(material_conditions) if item not in reviewed_conditions]
+        if conditions:
+            body['material_conditions'] = conditions
     if report:
         from .report_synthesis_agent import report_model_view
         body["report"] = report_model_view(report)
         body["revision_request"] = {k: deepcopy(review[k]) for k in ("findings", "unresolved_data_requests") if review and k in review}
+    elif synthesis:
+        from .report_synthesis_agent import report_model_view
+        body["authoring_view"] = "current_synthesis.v1"
+        body["research_synthesis"] = deepcopy(report_model_view(synthesis))
+        body["synthesis_digest"] = canonical_sha256(synthesis)
+        if synthesis_review:
+            body["synthesis_review"] = {k: deepcopy(synthesis_review[k]) for k in (
+                "summary", "findings", "research_limitations", "unresolved_data_requests", "completion")
+                if k in synthesis_review}
+            body["synthesis_review_digest"] = canonical_sha256(synthesis_review)
     return body
+
+
+def report_authoring_message_update(body, previous_messages):
+    """Refresh the same version's assignment without discarding its tool results.
+
+Return native message-reducer updates. A changed basis starts a new authoring
+history; immutable prior checkpoints still retain the old one. This does not
+rewrite any model proposal, source receipt or private reasoning.
+"""
+    content = json.dumps(body, ensure_ascii=False)
+    basis = body.get("authoring_basis_digest")
+    for message in reversed(previous_messages):
+        if not isinstance(message, HumanMessage) or not isinstance(message.content, str):
+            continue
+        try:
+            previous = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(previous, dict) or "authoring_basis_digest" not in previous:
+            continue
+        same_basis = bool(basis and previous["authoring_basis_digest"] == basis and message.id)
+        if same_basis:
+            return [HumanMessage(content=content, id=message.id)], True
+        break
+    return [RemoveMessage(id=REMOVE_ALL_MESSAGES), HumanMessage(content=content)], False

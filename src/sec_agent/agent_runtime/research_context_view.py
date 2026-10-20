@@ -113,6 +113,16 @@ def compact_current_context(context, *, manuscript_reads=()):
     """Catalogs point to exact run-bound fields; author state and constraints stay hot."""
     c = project_revision_task(deepcopy(context))
     repair = c.get('submission_to_repair') or {}
+    if isinstance(repair.get('candidate'), dict):
+        from .period_relations import workpaper_period_checks, project_period_receipt
+        checks = workpaper_period_checks(repair['candidate'])
+        if checks or 'period_relation_checks' in repair:
+            repair['period_relation_checks'] = checks
+        if 'last_edit_feedback' in repair:
+            feedback = project_period_receipt(repair['last_edit_feedback'])
+            if feedback != repair['last_edit_feedback']:
+                repair['period_relation_checks'] = checks
+            repair['last_edit_feedback'] = feedback
     draft = repair.get('draft_state') or {}
     if is_review_revision(context):
         from .revision_execution_view import project_revision_execution
@@ -237,6 +247,15 @@ def compact_accepted_operations(recent, view):
               and isinstance(authoring, dict) and isinstance(authoring.get('brief'), dict) and 'brief' in call['args']):
             call['args']['brief'] = reference_equal_fields(call['args']['brief'], authoring['brief'],
                 '/current_context/task_context/authoring_context/brief')
+        elif (message.name == 'SaveWorkpaperEditsAction'
+              and 'period_relation_checks' in
+                  (view['current_context'].get('submission_to_repair') or {})):
+            from .period_relations import project_period_receipt
+            projected = project_period_receipt(result)
+            if 'result' in body:
+                body['result'] = projected
+            else:
+                body = projected
         else:
             continue
         message.content = json.dumps(body, ensure_ascii=False, separators=(',', ':'))

@@ -59,3 +59,33 @@ def test_missing_receipt_and_case_scope_fail_before_model_dispatch():
     state['task']['case_id'] = 'other-case'
     with pytest.raises(ValueError, match='case_scope_mismatch'):
         restore_revision_calculations(state, decision, artifacts, 'P01')
+
+
+def test_enriched_receipt_retains_transport_history_and_exact_readback():
+    state, decision, artifacts, ref = inputs()
+    calc = decision['citations'][ref]['sources'][0]['calculation']
+    calc.update(fact_id=ref, cell_binding_used=False, source_tool_lane_receipt_id='fixture-lane',
+                mcp_receipt_chain=[{'call_id': 'fixture-calculator', 'is_error': False}])
+    before = deepcopy((state, decision))
+    restored = restore_revision_calculations(state, decision, artifacts, 'P01')
+    assert (state, decision) == before
+    registry = ObservedSourceRegistry(restored['notebook']['observations'])
+    assert registry.get(ref) == calc
+    receipt = restored['task_context']['revision_calculation_handoff']['receipts'][ref]
+    assert receipt['calculation'] == calc
+    assert receipt['financial_semantics_verified'] is False
+    assert restore_revision_calculations(restored, decision, artifacts, 'P01') == restored
+
+
+@pytest.mark.parametrize('field,value', [
+    ('fact_id', 'CALC::wrong-identity'), ('value_decimal', '7'),
+    ('result_unit', 'different-unit'), ('financial_semantics_verified', True),
+    ('unknown_financial_condition', 'Do not ignore an unknown field'),
+])
+def test_enriched_receipt_does_not_hide_identity_or_semantic_conflicts(field, value):
+    state, decision, artifacts, ref = inputs()
+    calc = decision['citations'][ref]['sources'][0]['calculation']
+    calc.update(fact_id=ref, mcp_receipt_chain=[{'call_id': 'fixture'}])
+    calc[field] = value
+    with pytest.raises(ValueError, match='original_mismatch'):
+        restore_revision_calculations(state, decision, artifacts, 'P01')

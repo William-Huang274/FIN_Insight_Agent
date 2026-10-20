@@ -1554,6 +1554,8 @@ def _model_request(
         body['submission_to_repair']['calculation_binding_issues'] = calculation_binding_issues(
             candidate, notebook.model_dump(mode='json'),
             (state.get('last_submission_attempt') or {}).get('arguments'))
+        from .period_relations import workpaper_period_checks, project_period_receipt
+        body['submission_to_repair']['period_relation_checks'] = workpaper_period_checks(candidate)
         if draft:
             body["submission_to_repair"]["draft_state"] = {k: deepcopy(draft.get(k)) for k in ("digest", "baseline_digest", "saved_batches", "changed_paths", "latest_changed_paths", "draft_issues", "change_status")}
             from .workpaper_drafts import current_draft_issues
@@ -1561,7 +1563,7 @@ def _model_request(
             body["revision_submission_status"] = {"status": "draft_saved_not_submitted", "accepted": False}
         targets = revision_progress(state, candidate)
         body["submission_to_repair"].update(
-            edit_progress=targets, last_edit_feedback=state.get("last_edit_feedback"),
+            edit_progress=targets, last_edit_feedback=project_period_receipt(state.get("last_edit_feedback")),
             current_candidate_digest=canonical_sha256(candidate),
             validation_feedback={"issues": last.get("validation_issues", []),
                 "validated_candidate_digest": last.get("validated_candidate_digest"),
@@ -3167,6 +3169,12 @@ def build_specialist_agentic_state_graph(
                 body = {"accepted": accepted, "feedback": [item.model_dump(mode="json")
                     for item in after.feedback[len(before.feedback):]],
                     "validation_issues": (working.get("last_submission_attempt") or {}).get("validation_issues", [])}
+                if isinstance(action, SubmitWorkpaperAction):
+                    from .period_relations import workpaper_period_checks
+                    checks = workpaper_period_checks(action.model_dump(mode='json'))
+                    if checks:
+                        body['period_relation_checks'] = checks
+                        body['semantic_check_status'] = 'not_verified_by_submission_acceptance'
                 if call.name == "ReviseWorkpaperAction":
                     body["edit_result"] = {**working.get("last_edit_feedback", {}), "submission_accepted": accepted}
                 if call.name == "FinalizeWorkpaperRevisionAction":

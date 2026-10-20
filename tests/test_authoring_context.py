@@ -82,11 +82,14 @@ def test_real_convergence_lead_prepares_before_writing_and_reprepares_on_revisio
     for round_ in (0,1):
         model=models[('writer',None,round_)]
         payload=json.loads(model.contexts[0][1].content)
-        assert payload['authoring_view'] == 'source_materials.v4'
+        assert payload['authoring_view'] == ('source_materials.v4' if round_ else 'current_synthesis.v1')
         assert len(payload['authoring_basis_digest']) == 64
         assert {p['paper_id']: p['version'] for p in payload['catalog']['papers']} == result['authoring_context']['basis']['papers']
         assert 'authoring_context' not in payload
-        assert 'research_synthesis' not in payload
+        assert ('research_synthesis' in payload) is not bool(round_)
+        if not round_:
+            assert payload['research_synthesis']['narrative_markdown'] == result['synthesis']['narrative_markdown']
+            assert payload['synthesis_review']['findings'] == result['synthesis_review']['findings']
         assert ('report' in payload) is bool(round_)
         assert len(model.contexts[0]) == 2  # New current-version input, no previous draft/tool transcript.
     assert result['phase']=='case_report_ready_for_human_review'

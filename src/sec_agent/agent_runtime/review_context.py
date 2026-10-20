@@ -24,7 +24,8 @@ def handoff_page(artifacts, confirmation, *, section, paper_id=None, offset=0):
             value = [r for r in value if paper_id in r.get('assigned_findings', {})]
         elif value:
             value = {k: (v.get(paper_id) if k in {'paper_version_digests', 'findings_to_confirm',
-                'changes', 'author_responses', 'historical_author_responses', 'calculation_readbacks'} else v) for k, v in value.items()}
+                'changes', 'author_responses', 'historical_author_responses', 'calculation_readbacks',
+                'runtime_period_checks'} else v) for k, v in value.items()}
     text = json.dumps(value, ensure_ascii=False)
     return {'section': section, 'paper_id': paper_id, 'offset': offset,
         'text': text[offset:offset+6000], 'total_characters': len(text),

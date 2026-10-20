@@ -34,6 +34,22 @@ def read_all_missing(artifacts, context, messages):
     return messages
 
 
+def test_quote_reads_count_only_their_exact_coverage_not_candidate_previews():
+    from sec_agent.agent_runtime.review_inspection import read_quoted_location
+    artifacts, context = fixture()
+    reads = read_all_missing(artifacts, context, [])
+    window = next(m for m in reads if m.name == 'read_review_location')
+    v = window.artifact
+    selected = read_quoted_location(artifacts, 'P01', v['field_path'], v['text'])
+    window.artifact = selected
+    assert missing_reads(artifacts, context, 'P01', reads) == []
+    window.artifact = {**selected, 'text': selected['text'][:-1]}
+    assert missing_reads(artifacts, context, 'P01', reads)
+    window.artifact = read_quoted_location(artifacts, 'P01', v['field_path'], '|')
+    assert window.artifact['status'] == 'multiple_quote_matches'
+    assert missing_reads(artifacts, context, 'P01', reads)
+
+
 def test_local_read_coverage_keeps_headers_notes_and_accepts_real_windows():
     artifacts, context=fixture()
     view=with_reading_targets(artifacts,context)

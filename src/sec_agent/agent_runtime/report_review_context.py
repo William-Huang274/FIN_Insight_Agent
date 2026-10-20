@@ -84,7 +84,25 @@ def read_review_record(messages, message_index, field=None, offset=0, max_charac
     if field is not None:
         body = assignment(message)
         if body is None or field not in body:
-            raise ValueError("review_record_assignment_field_not_found")
+            candidates = []
+            for index, record in enumerate(messages):
+                candidate = assignment(record)
+                if candidate is not None and field in candidate:
+                    candidates.append({
+                        "message_index": index, "review_basis": review_basis(candidate),
+                        "report_title": candidate["report"].get("title"),
+                        "read": {"tool": "read_review_history", "arguments": {
+                            "message_index": index, "field": field, "offset": offset,
+                            "max_characters": max_characters}},
+                    })
+            return {
+                "status": "record_selection_required", "accepted": False,
+                "requested": {"message_index": message_index, "field": field},
+                "record_type_at_requested_index": message.type,
+                "available_assignment_fields": sorted(body) if body is not None else [],
+                "candidates": candidates,
+                "notice": "The requested field is not present at this index. Choose the intended assignment/version using an exact candidate read; no record was selected or verified.",
+            }
         value = body[field]
     text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
     if offset > len(text):

@@ -89,8 +89,20 @@ def test_paginated_exact_readback_and_invalid_bounds():
     assert "".join(chunks) == whole
     with pytest.raises(ValueError):
         read_review_record(messages, 50)
-    with pytest.raises(ValueError):
-        read_review_record(messages, 2, field="report")
+    choice = read_review_record(messages, 2, field="report")
+    assert choice["status"] == "record_selection_required" and not choice["accepted"]
+    assert choice["candidates"][0]["read"]["arguments"]["message_index"] == 0
+    assert "content" not in choice
+
+
+def test_field_and_record_mismatch_returns_version_choices_without_selecting():
+    messages = [task(1, author_responses={"old": "unchanged"}),
+                *reading(), task(2, author_responses={"new": "changed"})]
+    result = read_review_record(messages, 1, field="author_responses")
+    assert [r["message_index"] for r in result["candidates"]] == [0, 3]
+    assert len({r["review_basis"] for r in result["candidates"]}) == 2
+    assert result["record_type_at_requested_index"] == "ai"
+    assert not result["accepted"] and "content" not in result
 
 
 def test_small_markdown_change_does_not_duplicate_entire_report():

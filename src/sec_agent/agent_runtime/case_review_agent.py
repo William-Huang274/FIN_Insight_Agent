@@ -214,6 +214,23 @@ def _text_values(value):
             yield from _text_values(child)
 
 
+def review_assessment_scope(review, artifacts, *, confirmation=None):
+    """Use the assigned scope at both submission and downstream handoff.
+
+    Related assessments/findings may widen a local confirmation, but cannot
+    remove assigned papers. Full reviews still cover the complete catalog.
+    """
+    catalog = {p["paper_id"] for p in artifacts.catalog()["papers"]}
+    if confirmation is None:
+        return catalog
+    assigned = set(confirmation["findings_to_confirm"])
+    expected = (assigned | {a.paper_id for a in review.assessments}
+                | {f.paper_id for f in review.findings})
+    if not assigned or not expected.issubset(catalog):
+        raise ValueError("research_confirmation_paper_scope_invalid")
+    return expected
+
+
 def validate_case_review(review: CaseReview, artifacts: CaseArtifacts, messages, *, paper_ids=None, revision_target=None, require_full_workpaper=True, parsing_records=None, confirmation=None) -> None:
     """Check actual read coverage, exact IDs/quotes; never grade prose semantics."""
     expected = {p["paper_id"] for p in artifacts.catalog()["papers"]}
@@ -1120,9 +1137,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
                 # Confirmation covers the assigned repairs, not an implicit
                 # restart of every unchanged paper. Optional additional
                 # assessments/findings still require their own actual reads.
-                confirmation_papers = (set(confirmation['findings_to_confirm'])
-                    | {a.paper_id for a in review.assessments}
-                    | {f.paper_id for f in review.findings})
+                confirmation_papers = review_assessment_scope(review, artifacts, confirmation=confirmation)
             validate_case_review(review, artifacts, runtime.state["messages"], paper_ids=confirmation_papers,
                 revision_target=revision_target, parsing_records=parsing,
                 confirmation=confirmation if not require_inspection else None)

@@ -17,7 +17,7 @@ from langgraph.types import interrupt
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .case_artifacts import CaseArtifacts
-from .case_review_agent import CaseReview
+from .case_review_agent import CaseReview, review_assessment_scope
 from .report_session import SessionState, build_report_session_graph
 from .workpaper_review_graph import validate_workpaper_state
 from .execution_options import execution_from_config, unreviewed_report_status
@@ -87,11 +87,12 @@ def can_continue_remaining_research(state):
     return bool(state.get("case_papers") or state.get("research_failed_workpapers"))
 
 
-def responsible_author_feedback(case_review, artifacts, *, include_advisory=False):
+def responsible_author_feedback(case_review, artifacts, *, include_advisory=False, confirmation=None):
     """Route material findings; Lead may also receive advisory dispositions.
 
     Reviewer IDs are namespaced to avoid Counter and Verifier both using F1.
     The original finding remains unchanged in the persisted review artifact.
+    A confirmation uses its trusted assignment, not a new whole-case review.
     """
     papers = {row["paper_id"] for row in artifacts.catalog()["papers"]}
     feedback = {}
@@ -100,7 +101,9 @@ def responsible_author_feedback(case_review, artifacts, *, include_advisory=Fals
         if row.get("status") != "review_submitted":
             raise ValueError("research_review_incomplete_no_silent_convergence")
         review = CaseReview.model_validate(row["review"])
-        if {assessment.paper_id for assessment in review.assessments} != papers:
+        expected = review_assessment_scope(review, artifacts, confirmation=confirmation)
+        assessed = [assessment.paper_id for assessment in review.assessments]
+        if set(assessed) != expected or len(assessed) != len(expected):
             raise ValueError("research_review_paper_scope_mismatch")
         for finding in review.findings:
             if finding.paper_id not in papers:

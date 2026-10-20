@@ -87,7 +87,8 @@ def test_viewer_snapshot_report_citation_keep_private_routes_closed(reading):
     assert not s.intake.runs
 
 
-def test_displayed_checkpoint_keeps_citation_and_export_on_same_saved_version(reading):
+@pytest.mark.parametrize('format', ['md', 'html'])
+def test_displayed_checkpoint_keeps_citation_and_export_on_same_saved_version(reading, format):
     s=reading
     saved=deepcopy(s.values)
     requested=[]
@@ -109,15 +110,17 @@ def test_displayed_checkpoint_keeps_citation_and_export_on_same_saved_version(re
         assert source.json()['text']=='Pinned citation text'
         report=c.get(s.root+'/report',params=params,headers=s.headers)
         assert report.json()['report']==saved['report']
-        export=c.get(s.root+'/report/export/md',params=params,headers=s.headers)
+        export=c.get(s.root+'/report/export/'+format,params=params,headers=s.headers)
         assert export.status_code==200 and 'Static organization report' in export.text and 'Newer' not in export.text
+        if format == 'html':
+            assert 'Pinned citation text' in export.text and 'FY2025' in export.text and 'USD' in export.text
         s.state['status']=404
-        assert c.get(s.root+'/report/export/md',params=params,headers=s.headers).status_code==404
+        assert c.get(s.root+'/report/export/'+format,params=params,headers=s.headers).status_code==404
     assert requested==[None,s.checkpoint_id,s.checkpoint_id,s.checkpoint_id]
     assert not s.intake.runs
 
 
-@pytest.mark.parametrize('route',['','/report','/source?source_id=ORG:S1','/report/export/md'])
+@pytest.mark.parametrize('route',['','/report','/source?source_id=ORG:S1','/report/export/md','/report/export/html'])
 def test_revocation_during_state_read_never_delivers_result(reading,route):
     s=reading;s.state['revoke_in_state']=True
     with TestClient(s.intake.app()) as c:
@@ -125,19 +128,20 @@ def test_revocation_during_state_read_never_delivers_result(reading,route):
         assert result.status_code==404 and 'Static organization' not in result.text
 
 
-def test_export_rechecks_after_render_and_never_dispatches(reading,monkeypatch):
+@pytest.mark.parametrize('format', ['md', 'html'])
+def test_export_rechecks_after_render_and_never_dispatches(reading,monkeypatch,format):
     s=reading
     def export(*args,**kwargs):
         s.state['status']=404
         return b'SENSITIVE EXPORT','text/plain'
     monkeypatch.setattr('apps.workbench.backend.application.report_delivery.export_report',export)
     with TestClient(s.intake.app()) as c:
-        result=c.get(s.root+'/report/export/md',headers=s.headers)
+        result=c.get(s.root+'/report/export/'+format,headers=s.headers)
         assert result.status_code==404 and 'SENSITIVE' not in result.text
     assert not s.intake.runs
 
 
-@pytest.mark.parametrize('format,magic',[('md',b'# Synthetic'),('pdf',b'%PDF'),('docx',b'PK'),('pptx',b'PK')])
+@pytest.mark.parametrize('format,magic',[('html',b'<!doctype html>'),('md',b'# Synthetic'),('pdf',b'%PDF'),('docx',b'PK'),('pptx',b'PK')])
 def test_authorized_static_report_export_uses_real_renderer(reading,format,magic):
     s=reading
     with TestClient(s.intake.app()) as c:

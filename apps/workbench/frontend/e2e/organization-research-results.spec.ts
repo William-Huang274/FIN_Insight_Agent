@@ -6,7 +6,7 @@ const longMetricRecord=JSON.stringify({source:'historical metric',revision:'fixe
 for(const width of [1440,390])test(`organization results read and revoked source clear at ${width}`,async({page},info)=>{
   let revoked=false,exportFailure='',missingCheckpoint=false;const calls:string[]=[],downloads:string[]=[];
   page.on('download',d=>downloads.push(d.suggestedFilename()));
-  const documents={md:{mime:'text/markdown',body:'# Synthetic report'},pdf:{mime:'application/pdf',body:'%PDF-static-fixture'},docx:{mime:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',body:'PK-static-docx'},pptx:{mime:'application/vnd.openxmlformats-officedocument.presentationml.presentation',body:'PK-static-pptx'}};
+  const documents={html:{mime:'text/html',body:'<!doctype html><title>Static saved report</title>'},md:{mime:'text/markdown',body:'# Synthetic report'},pdf:{mime:'application/pdf',body:'%PDF-static-fixture'},docx:{mime:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',body:'PK-static-docx'},pptx:{mime:'application/vnd.openxmlformats-officedocument.presentationml.presentation',body:'PK-static-pptx'}};
   await page.setViewportSize({width,height:960});
   await page.route('**/api/v1/**',async route=>{
     const r=route.request(),u=new URL(r.url());calls.push(r.method()+' '+u.pathname);
@@ -43,15 +43,15 @@ for(const width of [1440,390])test(`organization results read and revoked source
   await expect(page.getByText('预研究供确定方向，不表示正式研究完成或结论通过审批。')).toBeVisible();
   const exports=page.getByRole('navigation',{name:'组织报告导出'});
   // These bytes are synthetic HTTP fixtures; backend renderer qualification is separate.
-  for(const [format,label] of [['md','Markdown'],['pdf','PDF'],['docx','Word'],['pptx','PowerPoint']]){
+  for(const [format,label] of [['html','网页阅读版'],['md','Markdown'],['pdf','PDF'],['docx','Word'],['pptx','PowerPoint']]){
     const pending=page.waitForEvent('download');await exports.getByRole('button',{name:label,exact:true}).click();
     const downloaded=await pending;expect(downloaded.suggestedFilename()).toBe(`finsight-organization-research.${format}`);
     expect(await readFile((await downloaded.path())!,'utf8')).toBe(documents[format as keyof typeof documents].body);
   }
   exportFailure='html';await exports.getByRole('button',{name:'PDF',exact:true}).click();
-  await expect(page.getByRole('alert')).toContainText('响应格式不正确');expect(downloads).toHaveLength(4);
+  await expect(page.getByRole('alert')).toContainText('响应格式不正确');expect(downloads).toHaveLength(5);
   exportFailure='unavailable';await exports.getByRole('button',{name:'PDF',exact:true}).click();
-  await expect(page.getByRole('alert')).toContainText('503');expect(downloads).toHaveLength(4);
+  await expect(page.getByRole('alert')).toContainText('503');expect(downloads).toHaveLength(5);
   await expect(page.getByRole('heading',{name:'合成报告',exact:true})).toBeVisible();exportFailure='';
   // Only an explicit second click retries an export; no research command is sent.
   const retry=page.waitForEvent('download');await exports.getByRole('button',{name:'PDF',exact:true}).click();await retry;
@@ -62,14 +62,14 @@ for(const width of [1440,390])test(`organization results read and revoked source
   await page.screenshot({path:info.outputPath(`organization-results-${width}.png`),fullPage:true});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   revoked=true;
-  if(width===390)await exports.getByRole('button',{name:'Word',exact:true}).click();
+  if(width===390)await exports.getByRole('button',{name:'网页阅读版',exact:true}).click();
   else await page.getByRole('button',{name:'查看引用 ORG:S1'}).click();
   await expect(page.getByRole('alert')).toContainText('资料当前不可访问');
   await expect(page.getByRole('heading',{name:'合成报告',exact:true})).toHaveCount(0);
   await expect(page.getByText('固定引用片段',{exact:true})).toHaveCount(0);
   expect(calls.some(p=>p.includes(`/research-sessions/${execution}`))).toBe(false);
   await expect(page.getByRole('button',{name:/启动|接续/})).toHaveCount(0);
-  expect(downloads).toHaveLength(5);
+  expect(downloads).toHaveLength(6);
 });
 
 for(const width of [1440,390])test(`organization browser start unknown reconcile and confirm at ${width}`,async({page},info)=>{

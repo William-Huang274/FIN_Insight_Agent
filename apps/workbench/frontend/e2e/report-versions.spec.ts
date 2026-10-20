@@ -109,6 +109,7 @@ for (const width of [1440, 1024, 390]) {
     await page.getByLabel("阅读报告版本").selectOption(checkpoint);
     await expect(page.getByRole("heading", { name: "历史报告标题" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Markdown", exact: true })).toHaveAttribute("href", new RegExp(`checkpoint_id=${checkpoint}`));
+    await expect(page.getByRole("link", { name: "网页阅读版", exact: true })).toHaveAttribute("href", new RegExp(`/export/html\\?checkpoint_id=${checkpoint}`));
     await page.getByRole("button", { name: "与当前版本比较" }).click();
     await page.locator(".fs-diff-reason summary").click();
     await expect(page.getByText("根据原始现金流来源修订", { exact: false })).toBeVisible();

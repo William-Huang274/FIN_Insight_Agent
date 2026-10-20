@@ -1,5 +1,6 @@
 """One historical case across browser, authority, retrieval and native delivery."""
 from hashlib import sha256
+from copy import deepcopy
 import json
 import os
 from pathlib import Path
@@ -37,9 +38,11 @@ class HistoricalDeliveryStack(DeliveryStack):
         if kwargs.get('mode') == 'denied':
             return result
         from pypdf import PdfReader
+        from bs4 import BeautifulSoup
         output = self.output/label
         spec = json.loads((self.historical/'case.json').read_text(encoding='utf8'))
-        texts = {'md':(output/'report.md').read_text(encoding='utf8'),
+        texts = {'html':BeautifulSoup((output/'report.html').read_text(encoding='utf8'),'html.parser').get_text(),
+            'md':(output/'report.md').read_text(encoding='utf8'),
             'pdf':'\n'.join(page.extract_text() or '' for page in PdfReader(output/'report.pdf').pages)}
         for fmt in ('docx', 'pptx'):
             with ZipFile(output/f'report.{fmt}') as archive:
@@ -192,11 +195,30 @@ def test_historical_case_unified_business_delivery(monkeypatch):
         api('POST',f'/projects/{project}/members',{'revision':api('GET',f'/projects/{project}')['revision'],'subject':'oidc:viewer','role':'viewer'})
         assert s.bff.get(read,headers=viewer).status_code == 404
         api('POST',f'/spaces/{space}/members',{'subject':'oidc:viewer','role':'reader'})
+        # Native test-fixture state update, not a user revision workflow: retain
+        # two actual PostgreSQL checkpoints so export cannot silently use latest.
+        newer_report = deepcopy(report)
+        newer_report['narrative_markdown'] += '\n\nSTATIC_SECOND_VERSION_MARKER'
+        updated = s.request(s.native,'POST',f'/threads/{tid}/state',
+            json={'values':{'report':newer_report,'report_version':2},'as_node':'initialize'})
+        s.save('static-second-report-checkpoint',updated)
+        newer_snapshot = s.request(s.bff,'GET',read)
+        newer_checkpoint = newer_snapshot['checkpoint_id']
+        assert newer_snapshot['report'] == newer_report and newer_checkpoint != checkpoint
+        assert newer_snapshot['report_version'] == 2
         for process in (business,web): process.terminate(); process.wait(timeout=20)
         s.compose('stop','-t','5','api','redis','postgres'); s.compose('up','-d','--pull','never','api'); s.healthy()
         s.boot('java'); s.boot('bff')
         restored = s.request(s.bff,'GET',read)
-        assert restored['report'] == report and restored['checkpoint_id'] == checkpoint
+        assert restored['report'] == newer_report and restored['checkpoint_id'] == newer_checkpoint
+        old_saved = s.request(s.bff,'GET',read+'/report',params={'checkpoint_id':checkpoint})
+        assert old_saved['report'] == report and old_saved['report_version'] == 1
+        for label, selected, has_marker in [('old',checkpoint,False),('new',newer_checkpoint,True)]:
+            downloaded = s.bff.get(read+'/report/export/html',headers=viewer,params={'checkpoint_id':selected})
+            assert downloaded.status_code == 200
+            assert ('STATIC_SECOND_VERSION_MARKER' in downloaded.text) is has_marker
+            assert 'NVIDIA 10-K 2026' in downloaded.text and metric['id'] in downloaded.text
+            (s.output/f'report-version-{label}.html').write_bytes(downloaded.content)
         s.browser(project,'browser-restarted',mode='viewer',execution=tid)
         assert nav.navigate(query).items[0]['retrieval']['cache_hit']
         assert s.bff.post(read+'/start',headers=viewer,json={}).status_code == 404
@@ -211,10 +233,12 @@ def test_historical_case_unified_business_delivery(monkeypatch):
         api('POST',f"/resources/{card['resource_id']}/revoke",{'revision':current['permission_revision']})
         for headers in ({},viewer):
             for suffix in ['', '/report', *['/source?source_id='+c['source_id'] for c in sources],
-                           *['/report/export/'+fmt for fmt in ('md','pdf','docx','pptx')],
+                           *['/report/export/'+fmt for fmt in ('html','md','pdf','docx','pptx')],
                            '/runs/'+snapshot['run_id']+'/events']:
                 assert s.bff.get(read+suffix,headers=headers).status_code == 404
-        assert s.bff.get(read+'/report/export/md',params={'checkpoint_id':checkpoint}).status_code == 404
+        for selected in (checkpoint,newer_checkpoint):
+            for fmt in ('md','html'):
+                assert s.bff.get(read+'/report/export/'+fmt,params={'checkpoint_id':selected}).status_code == 404
         with pytest.raises(OrganizationExecutionUnavailable): nav.navigate(query)
         with pytest.raises(OrganizationExecutionUnavailable): frozen.read_rows(card['resource_id'])
         s.browser(project,'browser-revoked',mode='denied',execution=tid)
@@ -228,10 +252,13 @@ def test_historical_case_unified_business_delivery(monkeypatch):
             'native_search_miss_then_hit':True,'unselected_source_rejected':True,'metric_rows_exact':True,
             'index_digest':index_digest,'source_hashes':inputs_before,'normal_execution':tid,'lost_execution':lost['execution'],
             'draft':draft_id,'manifest_digest':draft['manifest_digest'],'checkpoint':checkpoint,
+            'second_checkpoint':newer_checkpoint,'selected_html_versions_after_restart':True,
+            'version_fixture':'explicit native state update; not a user revision or reviewer workflow',
             'source_resources':[text_resources[0],card['resource_id']],
-            'exports':['md','pdf','docx','pptx'],'all_five_owned_services_restarted':True,
+            'exports':['html','md','pdf','docx','pptx'],'all_five_owned_services_restarted':True,
             'card_revocation_denies_text_cache_and_all_report_reads':True,
-            'financial_quality':'not_assessed','real_oidc':'not_assessed','runtime_neighbor_merged':False,
+            'financial_quality':'not_assessed','real_oidc':'not_assessed',
+            'runtime_identity_evidence':['environment.json','unified-source-contract.json'],
             'report_producer':'labelled static fixture using actual orientation receipts'})
     finally:
         for process in s.processes:

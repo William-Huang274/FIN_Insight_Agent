@@ -131,7 +131,7 @@ def install_organization_read_routes(router, service):
         return await scope.response(result)
 
     @router.get(prefix + '/report/export/{format}')
-    async def export(project_id: UUID, execution_id: UUID, format: Literal['md', 'pdf', 'docx', 'pptx'],
+    async def export(project_id: UUID, execution_id: UUID, format: Literal['md', 'html', 'pdf', 'docx', 'pptx'],
                      request: Request, checkpoint_id: UUID | None = None):
         scope = await opened(project_id, execution_id)
         values = (await scope.state(checkpoint_id)).get('values', {})

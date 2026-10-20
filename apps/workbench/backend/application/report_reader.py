@@ -41,9 +41,13 @@ def citation_cards(report):
                     title = "来源绑定计算" if calc else "已绑定原文"
                 if source.get("ticker"):
                     title = source["ticker"] + " · " + title
-            details = " · ".join(str(source[k]) for k in
-                ("fiscal_period", "period_start", "period_end", "publication_date") if source.get(k))
+            details = " · ".join(dict.fromkeys(str(source[k]) for k in
+                ("fiscal_period", "period", "period_start", "period_end", "publication_date", "unit") if source.get(k)))
             quotes = (claim.get("citation_quotes") or {}).get(source.get("source_id"), [])
+            # Organization citations carry the authorized, checkpoint-bound
+            # excerpt directly; no additional source lookup is needed on export.
+            if not quotes and isinstance(source.get("text"), str) and source["text"]:
+                quotes = [source["text"]]
             calculations = []
             if calc.get("expression"):
                 calculations.append(f"{calc['expression']} = {calc.get('value_decimal', '')} {calc.get('result_unit', '')}")
@@ -111,6 +115,7 @@ nav h2{font-size:12px;letter-spacing:2px;color:var(--muted);margin:0 0 16px}
 nav a{display:block;font-size:13px;line-height:1.65;color:#42596a;padding:7px 10px;border-left:2px solid var(--line)}
 nav a:hover,nav a:focus{border-color:var(--teal);background:#e1eaed}
 main{min-width:0;background:var(--paper);box-shadow:0 6px 32px #142a3910;border:1px solid var(--line)}
+main,nav{overflow-wrap:anywhere}
 header{padding:44px 48px 30px;border-top:5px solid var(--teal);border-bottom:1px solid var(--line)}
 .kicker{font-size:12px;letter-spacing:2px;color:var(--teal);font-weight:700}
 h1{font-size:32px;line-height:1.55;letter-spacing:-.6px;margin:18px 0 22px}
@@ -137,6 +142,7 @@ figure img{width:100%;height:auto}figcaption{font-size:13px;line-height:1.8;colo
 .source{padding:10px 0 10px 14px;border-left:2px solid #d7e4e8;margin:10px 0}
 .meta{color:var(--muted);font-size:12px}details{margin-top:9px}summary{cursor:pointer;color:var(--teal)}
 .quote{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:#f5f8fa;padding:12px}
+pre{max-width:100%;overflow-x:auto;padding:14px;background:#f5f8fa;font-size:12px;line-height:1.7}
 code{overflow-wrap:anywhere}footer{font-size:12px;color:var(--muted);padding:22px 48px;background:#f7fafb;border-top:1px solid var(--line)}
 @media(max-width:850px){.layout{display:block;margin:16px auto;padding:0 10px}nav{position:static;max-height:190px;margin-bottom:16px;padding:12px;background:white;border:1px solid var(--line)}header{padding:28px 22px 24px}h1{font-size:26px}article,.appendix{padding-left:22px;padding-right:22px}article{font-size:15px}h2{font-size:20px}footer{padding:20px}.edition{display:none}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

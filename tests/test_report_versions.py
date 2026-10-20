@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from uuid import uuid4
 
 import httpx
+import pytest
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -72,7 +73,8 @@ def test_older_versions_use_native_get_cursor_and_check_thread_ownership_first()
         assert len(calls) == count
 
 
-def test_version_diff_export_and_source_use_the_selected_snapshot():
+@pytest.mark.parametrize("format", ["md", "html"])
+def test_version_diff_export_and_source_use_the_selected_snapshot(format):
     app, tid, _, old, new, _, _ = version_app()
     base = f"/api/v1/research-sessions/{tid}"
     with TestClient(app) as client:
@@ -82,8 +84,10 @@ def test_version_diff_export_and_source_use_the_selected_snapshot():
         assert result.json()["reason"] == "根据现金流来源修订"
         historical = client.get(f"{base}/report-versions/{old}")
         assert historical.json()["report_version"] == 1 and "PRIVATE_SENTINEL" not in historical.text
-        exported = client.get(f"{base}/report/export/md", params={"checkpoint_id": old})
+        exported = client.get(f"{base}/report/export/{format}", params={"checkpoint_id": old})
+        assert exported.status_code == 200
         assert "旧结论" in exported.text and "修订结论" not in exported.text
+        assert "PRIVATE_SENTINEL" not in exported.text
         source = client.get(f"{base}/source", params={"source_id": "NUMFACT::fixture", "checkpoint_id": old})
         assert source.status_code == 200 and source.json()["value_decimal"] == "12"
         assert client.get(f"{base}/source", params={"source_id": "NUMFACT::other", "checkpoint_id": old}).status_code == 404

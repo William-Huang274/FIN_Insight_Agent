@@ -42,7 +42,7 @@ class DeliveryStack(OrganizationGraphStack):
         assert result.returncode == 0, result.stderr[-4000:]
         observed = json.loads((output/'result.json').read_text(encoding='utf-8'))
         if mode != 'denied':
-            for suffix,magic in [('md',b'#'),('pdf',b'%PDF'),('docx',b'PK'),('pptx',b'PK')]:
+            for suffix,magic in [('html',b'<!doctype html>'),('md',b'#'),('pdf',b'%PDF'),('docx',b'PK'),('pptx',b'PK')]:
                 body = (output/('report.'+suffix)).read_bytes()
                 assert body.startswith(magic), suffix
             expected = self.env.get('FIN_DELIVERY_EXPECTED_TEXT', 'Synthetic pinned organization evidence.')
@@ -72,7 +72,7 @@ def test_real_business_delivery_browser_restart_unknown_and_revocation(monkeypat
         api('POST',f'/projects/{project}/resources/{resource}',{'revision':1,'linked':True})
 
         # The browser creates the draft, prepares, starts, confirms continuation,
-        # refreshes, reads the exact citation and downloads all four real formats.
+        # refreshes, reads the exact citation and downloads all five real formats.
         normal = s.browser(project,'browser-normal')
         tid = normal['execution']; read = f'/api/v1/organization-projects/{project}/research/{tid}'
         assert len(s.runs(tid)) == 2 and len(s.turns(tid)) == 4
@@ -118,7 +118,7 @@ def test_real_business_delivery_browser_restart_unknown_and_revocation(monkeypat
         current = s.request(s.bff,'GET',f'/api/v1/asset-workspace/spaces/resources/{resource}')
         api('POST',f'/resources/{resource}/revoke',{'revision':current['permission_revision']})
         paths = ['', '/report', '/source?source_id='+citation['source_id'],
-            *['/report/export/'+fmt for fmt in ('md','pdf','docx','pptx')],
+            *['/report/export/'+fmt for fmt in ('html','md','pdf','docx','pptx')],
             '/runs/'+snapshot['run_id']+'/events']
         for suffix in paths:
             assert s.bff.get(read+suffix,headers=viewer).status_code == 404
@@ -127,7 +127,7 @@ def test_real_business_delivery_browser_restart_unknown_and_revocation(monkeypat
         assert len(s.runs(tid)) == 2 and len(s.runs(lost_tid)) == 2
         s.save('business-delivery-result',{'normal_execution':tid,'lost_reply_execution':lost_tid,
             'native_threads':2,'native_runs':4,'scripted_responses':8,'provider_calls':0,
-            'all_five_owned_services_restart':True,'browser_api_interceptions':0,'exports':['md','pdf','docx','pptx'],
+            'all_five_owned_services_restart':True,'browser_api_interceptions':0,'exports':['html','md','pdf','docx','pptx'],
             'current_acl_after_restart_and_revocation':True,'report_producer':'static labelled fixture',
             'financial_quality':'not_assessed','real_oidc':'not_assessed',
             'sources':{p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in

@@ -39,6 +39,19 @@ def test_html_untrusted_markdown_metadata_and_urls_cannot_execute():
     assert soup.find("meta", attrs={"http-equiv": "Content-Security-Policy"})
 
 
+def test_organization_excerpt_is_escaped_and_keeps_saved_period_unit():
+    report = {"title": "Saved organization report", "narrative_markdown": "Finding [C1]",
+        "citations": {"C1": {"sources": [{"source_id": "ORG:1", "period": "FY2025", "unit": "USD",
+            "text": '<script>saved excerpt</script>', "organization_source": {"execution_id": "saved"}}]}}}
+    before = deepcopy(report)
+    data, _ = export_report(report, "html")
+    soup = BeautifulSoup(data, "html.parser")
+    assert soup.select_one("#ref-1 .quote").text == '<script>saved excerpt</script>'
+    assert not soup.find("script")
+    assert "FY2025" in soup.select_one("#ref-1").text and "USD" in soup.select_one("#ref-1").text
+    assert report == before
+
+
 def test_pdf_keeps_lists_headings_and_readable_source_without_mutating_report():
     report = sample()
     report["narrative_markdown"] += "\n\n1. **第一项**\n2. 第二项\n"

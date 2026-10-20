@@ -2,6 +2,7 @@
 import {chromium,expect} from 'playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
 const origin=process.env.FIN_DELIVERY_BROWSER_ORIGIN;
 const endpoint=new URL(origin);
 if(process.env.FIN_ORGANIZATION_DELIVERY_QUALIFICATION!=='1'||endpoint.hostname!=='127.0.0.1'||['18165','18765'].includes(endpoint.port))throw Error('isolated_browser_required');
@@ -72,11 +73,36 @@ try{
     await page.reload();await expect(page.getByRole('heading',{name:'Static business delivery report',exact:true})).toBeVisible();
     await page.getByRole('button',{name:/^查看引用 /}).first().click();
     await expect(page.getByRole('region',{name:'引用快照内容'})).toContainText(expected);
-    for(const [format,label] of [['md','Markdown'],['pdf','PDF'],['docx','Word'],['pptx','PowerPoint']]){
+    for(const [format,label] of [['html','网页阅读版'],['md','Markdown'],['pdf','PDF'],['docx','Word'],['pptx','PowerPoint']]){
       const pending=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();
       const file=await pending;expect(await file.failure()).toBeNull();
       await file.saveAs(resolve(output,'report.'+format));
     }
+    // Open the actual authorized download offline, without API mocks or auth
+    // headers. The file must remain readable at desktop and phone widths.
+    const offline=await browser.newContext();
+    try{
+      await offline.setOffline(true);
+      const reader=await offline.newPage(),external=[];
+      reader.on('request',r=>{if(/^https?:/.test(r.url()))external.push(r.url());});
+      await reader.goto(pathToFileURL(resolve(output,'report.html')).href);
+      await expect(reader.locator('article')).toContainText(expected);
+      await expect(reader.locator('#sources details')).not.toHaveCount(0);
+      for(const width of [1440,390]){
+        await reader.setViewportSize({width,height:960});
+        await reader.screenshot({path:resolve(output,`reader-${width}.png`),fullPage:true});
+        expect(await reader.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+      }
+      const missing=await reader.locator('a[href^="#"]').evaluateAll(links=>
+        links.map(a=>a.getAttribute('href').slice(1)).filter(id=>!document.getElementById(id)));
+      await reader.locator('sup.cite a').first().click();
+      const excerpt=reader.locator('#sources details').first();
+      await excerpt.locator('summary').click();
+      await expect(excerpt).toHaveAttribute('open','');
+      await expect(excerpt.locator('.quote')).toContainText(expected);
+      expect(missing).toEqual([]);expect(external).toEqual([]);
+      await writeFile(resolve(output,'reader-checks.json'),JSON.stringify({external_requests:external,missing_anchors:missing,widths:[1440,390],offline:true}));
+    }finally{await offline.close();}
     if(mode==='viewer')await expect(page.getByRole('button',{name:/^开始预研究$|^确认接续研究$/})).toHaveCount(0);
   }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

@@ -2,6 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import {Download} from 'lucide-react';
 
 const formats={
+  html:{label:'网页阅读版',mime:'text/html'},
   md:{label:'Markdown',mime:'text/markdown'},
   pdf:{label:'PDF',mime:'application/pdf'},
   docx:{label:'Word',mime:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'},

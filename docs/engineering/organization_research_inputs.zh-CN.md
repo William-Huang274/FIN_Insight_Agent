@@ -1,5 +1,7 @@
 # 组织研究输入准备与原件校验
 
+2026-10-20 增补：准备单支持可选 `retrieval_release_id`，页面仅展示当前可读且资料集合匹配的已发布索引。Java 再核对完整输入版本，冻结 `manifest.retrieval_index`；更换所选资料时清除页面旧选择，复制准备单保留匹配的发布选择。旧记录不补空值、不改摘要。登记、新查询向量及真实服务验收见[组织并发与检索质量验收](organization_capacity_and_retrieval_qualification.zh-CN.md)。下文保留最初输入准备阶段的说明；后续启动/接续见对应文档。
+
 2026-10-13。接续[项目关联空间资料](project_resource_links.zh-CN.md)，完成受控研究的第一小包：组织项目内保存问题和固定资料版本，并显式校验当前权限及 Python 原件。它是业务输入准备单，不是原生研究草稿；不创建 thread/run，不启动 Agent，`research_enabled=false` 保持。产品范围见[分阶段交付](../product/java_research_intake.zh-CN.md)。
 
 ## 用户流程

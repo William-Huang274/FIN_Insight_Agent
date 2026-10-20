@@ -118,6 +118,35 @@ freezing the exact saved command representation. See the
 [shared execution contract](../../docs/engineering/java_python_integration.zh-CN.md)
 for delayed phase construction and scope compatibility checks.
 
+## Frozen organization retrieval releases
+
+Flyway V10 stores append-only project retrieval releases. A preparation may
+specify `retrieval_release_id`; Java matches the complete frozen resource inputs
+and saves `manifest.retrieval_index` (release ID, index/matrix SHA-256, model,
+dimensions and projection). Omitted releases leave historical manifest shapes
+and digests unchanged. Publishing a newer release does not upgrade an existing
+preparation.
+
+Operators prepare immutable Python indexes under
+`FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT/<organization>/releases/<release>/`.
+Project managers register a prepared release through the BFF route
+`POST /api/v1/asset-workspace/organization-projects/{project}/research-drafts/{draft}/retrieval-releases/{release}/register`.
+The BFF verifies the original text projection, matrix integrity and current
+permissions before asking Java to register server-derived metadata. The generic
+browser business gateway does not permit direct release registration. GET
+`/v1/workspaces/projects/{project}/retrieval-releases` lists currently readable
+releases; selecting one in the preparation UI does not confer source access.
+
+Python verifies the frozen release before prepare/start/continuation and source
+search. New queries require explicit server configuration
+`FINSIGHT_ORGANIZATION_QUERY_EMBEDDING=qwen` and `QWEN_API_KEY`; their model must
+match the index. The query cache is separate from permissions and scoped to the
+organization, index and model. Concurrent followers wait up to 45 seconds for
+the first receipt; they never send another provider request. Failed or unknown
+requests remain blocked for reconciliation. No generation or paid rerank is
+enabled by this setting. Back up retained releases and query receipts with the
+business database and organization originals.
+
 ## Failure semantics
 
 See [request lifecycle and fault qualification](../../docs/engineering/java_intake_recovery.zh-CN.md)

@@ -26,7 +26,7 @@ def main():
         "citations": {"P01:C1": {"sources": [{"title": "Synthetic QA fixture", "source_url": "https://example.com/synthetic-qa"}]}}, "charts": [chart]}
     (output / "synthetic-chart.png").write_bytes(chart_png(chart))
     (output / "synthetic-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    for kind in ("md", "pdf", "docx", "pptx"):
+    for kind in ("html", "md", "pdf", "docx", "pptx"):
         body, _ = export_report(report, kind, review_status="合成测试，不是财务结论")
         (output / f"synthetic-report.{kind}").write_bytes(body)
     print(json.dumps({"output_directory": str(output), "model_calls": 0, "real_company_data": False}))

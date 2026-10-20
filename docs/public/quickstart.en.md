@@ -8,7 +8,7 @@ The development branch includes an optional [Java research intake](../engineerin
 
 | Path | Requirements | What it checks |
 | --- | --- | --- |
-| Public source check | Python 3.11, uv | Attachments, exports, configuration consumption, targeted revision; synthetic reports in four formats |
+| Public source check | Python 3.11, uv | Attachments, exports, configuration consumption, targeted revision; synthetic reports in five formats |
 | Browser interaction check | Node.js 22, npm, Chromium | Navigation, sources, diffs, configuration editing and replay at three widths, using synthetic API responses |
 | Full research workspace | The above, Docker, model/tool credentials, source data and service settings | Actual threads, models, tools, reports, revisions and usage |
 
@@ -23,7 +23,7 @@ uv sync --locked --extra agent-runtime --extra external-search --extra workbench
 uv run --no-sync python -m scripts.dev.verify_public_checkout --output-directory .local/public-check-01
 ```
 
-The check generates MD, PDF, DOCX, PPTX, a chart PNG and synthetic report JSON; test counts come from the current output. The output directory must not exist. Choose `.local/public-check-02` for another attempt; earlier results are not overwritten. Files are explicitly synthetic, not company research results. Inspect Word/PPT layout in Office or LibreOffice in addition to structural checks.
+The check generates HTML, MD, PDF, DOCX, PPTX, a chart PNG and synthetic report JSON; test counts come from the current output. The output directory must not exist. Choose `.local/public-check-02` for another attempt; earlier results are not overwritten. Files are explicitly synthetic, not company research results. HTML provides an offline reader with a contents menu, numbered references and expandable excerpts. Inspect Word/PPT layout in Office or LibreOffice in addition to structural checks.
 
 The script calls existing pytest tests and the exporter. It does not load local `.env`, deploy services or submit model tasks.
 

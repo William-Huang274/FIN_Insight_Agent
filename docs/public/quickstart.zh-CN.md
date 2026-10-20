@@ -6,7 +6,7 @@
 
 | 方式 | 需要什么 | 可以验证什么 |
 | --- | --- | --- |
-| 公开源码检查 | Python 3.11、uv | 上传、导出、配置消费、目标修订；合成四格式报告 |
+| 公开源码检查 | Python 3.11、uv | 上传、导出、配置消费、目标修订；合成五格式报告 |
 | 前端交互检查 | Node.js 22、npm、Chromium | 三种宽度下的导航、来源、修订对比、配置编辑和回放；API 为合成响应 |
 | 完整研究工作台 | 上述依赖、Docker、模型/工具凭据、原始资料和服务设置 | 实际线程、模型、工具、报告、修订和运行费用 |
 
@@ -21,7 +21,7 @@ uv sync --locked --extra agent-runtime --extra external-search --extra workbench
 uv run --no-sync python -m scripts.dev.verify_public_checkout --output-directory .local/public-check-01
 ```
 
-检查会生成 MD、PDF、DOCX、PPTX、图表 PNG 和合成报告 JSON，测试数量以当前执行输出为准。目录必须尚不存在；再次运行请改成 `.local/public-check-02`。导出文件明确标注为合成测试，不是公司研究结果。PDF 可直接打开；Word/PPT 还应在 Office 或 LibreOffice 中检查布局。
+检查会生成 HTML、MD、PDF、DOCX、PPTX、图表 PNG 和合成报告 JSON，测试数量以当前执行输出为准。目录必须尚不存在；再次运行请改成 `.local/public-check-02`。导出文件明确标注为合成测试，不是公司研究结果。HTML 阅读版与 PDF 可直接打开；Word/PPT 还应在 Office 或 LibreOffice 中检查布局。
 
 脚本使用现有 pytest 与导出器，不加载本地 `.env`、不部署服务、不提交模型任务。
 

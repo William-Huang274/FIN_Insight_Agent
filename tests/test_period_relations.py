@@ -174,6 +174,59 @@ def test_citation_and_historical_notes_are_not_new_author_assertions():
                     "authority_note": misleading}]}) == []
 
 
+@pytest.mark.parametrize("nested", [False, True])
+@pytest.mark.parametrize("saved", [False, True, None])
+def test_native_receipt_projection_only_retires_acknowledged_checks(nested, saved):
+    from langchain_core.messages import AIMessage, ToolMessage
+    from sec_agent.agent_runtime.research_context_view import (
+        compact_accepted_operations, public_operation,
+    )
+    receipt = {"saved": saved, "accepted": False, "draft_digest": "unchanged",
+               "period_relation_checks": [{"instruction": "historical warning"}],
+               "draft_issues": [{"code": "still_actionable"}],
+               "source": {"period_relation_checks": ["source data, not feedback"]}}
+    result = {"draft_result": receipt, "feedback": ["preserve"]} if nested else receipt
+    journal = [
+        AIMessage(content="", tool_calls=[{"id": "s", "name": "SaveWorkpaperEditsAction", "args": {}}]),
+        ToolMessage(content=json.dumps({"result": result}), name="SaveWorkpaperEditsAction", tool_call_id="s"),
+    ]
+    frozen = deepcopy(journal)
+    # No authoritative current check view: do not hide historical feedback.
+    recent = deepcopy(journal)
+    compact_accepted_operations(recent, {"current_context": {"submission_to_repair": {}}})
+    assert recent == journal
+    current_checks = [{"instruction": "real current contradiction"}]
+    view = {"current_context": {"submission_to_repair": {"period_relation_checks": current_checks}}}
+    compact_accepted_operations(recent, view)
+    visible = json.loads(recent[-1].content)["result"]
+    if nested:
+        assert visible["feedback"] == ["preserve"]
+        visible = visible["draft_result"]
+    if saved is True:
+        assert "period_relation_checks" not in visible
+        assert visible["period_check_view"]["current_checks_at"].endswith("/period_relation_checks")
+    else:
+        assert visible == receipt
+    assert visible["draft_issues"] == receipt["draft_issues"]
+    assert visible["source"] == receipt["source"]
+    assert visible["draft_digest"] == "unchanged" and visible["accepted"] is False
+    assert view["current_context"]["submission_to_repair"]["period_relation_checks"] == current_checks
+    assert recent[0] == journal[0]
+    assert public_operation(journal, "s")["receipt"]["result"] == result
+    assert journal == frozen
+
+
+def test_old_feedback_projection_always_has_a_current_destination():
+    from sec_agent.agent_runtime.research_context_view import compact_current_context
+    context = {"task_context": {}, "submission_to_repair": {
+        "candidate": {"narrative_markdown": "本期为2031Q2。2030Q2为上年同期。"},
+        "last_edit_feedback": {"draft_result": {"saved": True,
+            "period_relation_checks": [{"instruction": "old warning"}]}}}}
+    projected = compact_current_context(context)["submission_to_repair"]
+    assert projected["period_relation_checks"] == []
+    assert "period_relation_checks" not in projected["last_edit_feedback"]["draft_result"]
+
+
 def test_save_keeps_proposal_and_current_check_survives_claim_of_correction():
     s = state()
     narrative = "本期为2031Q2。2030Q3为上一季度。"

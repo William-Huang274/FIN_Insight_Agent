@@ -252,14 +252,24 @@ def project_period_receipt(receipt):
     """
     from copy import deepcopy
     projected = deepcopy(receipt)
-    if isinstance(projected, dict) and "period_relation_checks" in projected:
-        projected.pop("period_relation_checks")
-        if projected.get("semantic_check_status") == "period_relations_require_author_check_not_schema_errors":
-            projected.pop("semantic_check_status")
-        projected["period_check_view"] = {
-            "current_checks_at": "/current_context/submission_to_repair/period_relation_checks",
-            "historical_checks": "Available in the original operation receipt; not current findings.",
-        }
+    # Only traverse native receipt envelopes, never manuscript/source fields.
+    # A failed or unacknowledged proposal is still actionable feedback.
+    node = projected
+    while isinstance(node, dict):
+        if node.get("saved") is True and "period_relation_checks" in node:
+            node.pop("period_relation_checks")
+            if node.get("semantic_check_status") == "period_relations_require_author_check_not_schema_errors":
+                node.pop("semantic_check_status")
+            node["period_check_view"] = {
+                "current_checks_at": "/current_context/submission_to_repair/period_relation_checks",
+                "historical_checks": "Available in the original operation receipt; not current findings.",
+            }
+        if isinstance(node.get("draft_result"), dict):
+            node = node["draft_result"]
+        elif isinstance(node.get("result"), dict):
+            node = node["result"]
+        else:
+            break
     return projected
 
 

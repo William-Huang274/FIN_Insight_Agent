@@ -22,6 +22,84 @@ from sec_agent.agent_runtime.specialist_graph import (
 from sec_agent.agent_runtime.workpaper_drafts import save_draft
 
 
+def check_paths(value, path=""):
+    """Inspect the complete message payload, including JSON tool envelopes."""
+    if isinstance(value, str):
+        try:
+            return check_paths(json.loads(value), path + "<json>")
+        except (ValueError, TypeError):
+            return []
+    if isinstance(value, list):
+        return [p for i, item in enumerate(value) for p in check_paths(item, f"{path}/{i}")]
+    if isinstance(value, dict):
+        found = ([(path + "/period_relation_checks", len(value["period_relation_checks"]))]
+                 if "period_relation_checks" in value else [])
+        return found + [p for key, item in value.items() if key != "period_relation_checks"
+                        for p in check_paths(item, path + "/" + key)]
+    return []
+
+
+def audit_request(response):
+    messages = messages_from_dict([{"type": m["type"], "data": m} for m in response["messages"]])
+    frozen = deepcopy(messages)
+    projected = working_view(messages)
+    snapshot = next(json.loads(m.content) for m in projected
+                    if m.additional_kwargs.get("fin_research_working_view"))
+    with patch("sec_agent.agent_runtime.period_relations.project_period_receipt",
+               side_effect=deepcopy):
+        unretired = working_view(messages)
+    baseline = next(json.loads(m.content) for m in unretired
+                    if m.additional_kwargs.get("fin_research_working_view"))
+    assert snapshot["current_materials"] == baseline["current_materials"]
+    assert snapshot["current_material_bindings"] == baseline["current_material_bindings"]
+    expected = workpaper_period_checks(current_context(messages)["submission_to_repair"]["candidate"])
+    assert snapshot["current_context"]["submission_to_repair"]["period_relation_checks"] == expected
+    archived = []
+    for message in messages:
+        if message.type != "tool" or message.name != "SaveWorkpaperEditsAction":
+            continue
+        body = json.loads(message.content)
+        result = body.get("result", body)
+        original = public_operation(messages, message.tool_call_id)
+        assert original["receipt"]["result"] == result
+        archived.append(message.tool_call_id)
+    for message in projected:
+        if message.type == "tool" and message.name == "SaveWorkpaperEditsAction":
+            assert not check_paths(message.content), "stale checks in native save envelope"
+    # Projection must not touch model reasoning, proposals or tool-call pairing.
+    original_ai = {m.id: m for m in messages if m.type == "ai" and m.id}
+    for message in projected:
+        if message.type == "ai" and message.id in original_ai:
+            assert message.additional_kwargs == original_ai[message.id].additional_kwargs
+    assert messages == frozen
+    return {"call_id": response.get("call_id"),
+            "before_check_paths": check_paths([m.model_dump() for m in messages]),
+            "after_check_paths": check_paths([m.model_dump() for m in projected]),
+            "current_check_count": len(expected), "archive_readbacks": archived,
+            "materials": snapshot["current_materials"], "bindings": snapshot["current_material_bindings"]}
+
+
+def requests_only(args):
+    paths = [args.before, args.saved, *args.responses, *args.preserve]
+    hashes = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+    with patch("socket.socket.connect", side_effect=AssertionError("offline_network_forbidden")):
+        views = [audit_request(json.loads(p.read_text(encoding="utf-8"))) for p in args.responses]
+    assert all(v["materials"] == views[0]["materials"] and v["bindings"] == views[0]["bindings"]
+               for v in views)
+    assert all(hashlib.sha256(Path(p).read_bytes()).hexdigest() == h for p, h in hashes.items())
+    result = {"provider_calls": 0, "original_file_hashes": hashes,
+              "requests_replayed": len(views), "material_count": len(views[0]["materials"]),
+              "material_bindings_preserved": True, "original_records_unchanged": True,
+              "native_save_active_historical_checks": 0,
+              "current_check_counts": [v["current_check_count"] for v in views],
+              "financial_quality_pass": False}
+    args.output.mkdir(parents=True, exist_ok=False)
+    for name, value in (("result", result), ("request-observations", views)):
+        (args.output / (name + ".json")).write_text(json.dumps(value, ensure_ascii=False, indent=2),
+                                                  encoding="utf-8")
+    print(json.dumps(result, ensure_ascii=False))
+
+
 def main(args):
     paths = [args.before, args.saved, *args.responses]
     hashes = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
@@ -34,6 +112,7 @@ def main(args):
     replayed, views = [], []
     with patch("socket.socket.connect", side_effect=AssertionError("offline_network_forbidden")):
         for response in responses:
+            audit_request(response)
             raw_calls = response["raw_response"]["tool_calls"]
             assert len(raw_calls) == 1 and raw_calls[0]["name"] == "SaveWorkpaperEditsAction"
             operation = raw_calls[0]["args"]["operation_id"]
@@ -75,7 +154,7 @@ def main(args):
                     continue
                 body = json.loads(message.content)
                 result = body.get("result", body)
-                if "period_relation_checks" not in result:
+                if not check_paths(result):
                     continue
                 archived = public_operation(messages, message.tool_call_id)
                 assert archived is not None
@@ -131,4 +210,9 @@ if __name__ == "__main__":
     for key in ("before", "saved", "output"):
         parser.add_argument("--" + key, type=Path, required=True)
     parser.add_argument("--responses", type=Path, nargs="+", required=True)
-    main(parser.parse_args())
+    parser.add_argument("--requests-only", action="store_true",
+                        help="Audit complete real requests without replaying saved/finalized proposals.")
+    parser.add_argument("--preserve", type=Path, nargs="*", default=[],
+                        help="Additional accepted-state files to hash-check in requests-only mode.")
+    args = parser.parse_args()
+    (requests_only if args.requests_only else main)(args)

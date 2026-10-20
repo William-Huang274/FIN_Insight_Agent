@@ -15,6 +15,51 @@ from test_research_mcp import _build_server, _method_arguments, GET_RESEARCH_MET
 
 BRANCH = "Q1_ISSUER_TRUTH"
 
+def test_explicit_library_start_is_lossless_and_nonzero_is_not_discarded():
+    raw = {"branch_id": BRANCH, "request": {"source_space": "library",
+        "operation": "read", "document_id": "DOC::selected",
+        "node_id": "CHUNK::selected", "character_offset": 0, "max_characters": 8000}}
+    before = deepcopy(raw)
+    normalized, record = normalize_source_read_arguments(
+        "read_source_document", raw, {"selected_branch_ids": [BRANCH]})
+    assert raw == before
+    assert normalized == {"branch_id": BRANCH, "request": {
+        k: v for k, v in raw["request"].items() if k != "character_offset"}}
+    assert record["original_input"] == before
+    assert record["normalized_result"] == normalized
+    assert normalize_source_read_arguments("read_source_document", normalized,
+        {"selected_branch_ids": [BRANCH]}) == (normalized, None)
+    for changes in ({"character_offset": 1}, {"offset": 1}, {"node_id": None},
+                    {"source_space": "local"}, {"operation": "search"},
+                    {"character_offset": False}, {"character_offset": "0"}):
+        invalid = {**raw, "request": {**raw["request"], **changes}}
+        assert normalize_source_read_arguments("read_source_document", invalid,
+            {"selected_branch_ids": [BRANCH]}) == (invalid, None)
+
+
+def test_library_zero_window_reaches_native_reader_without_changing_selection():
+    invoked = []
+    def reader(*, request, branch_id, **_):
+        invoked.append((request.document_id, request.node_id, request.character_offset,
+                        request.max_characters, branch_id))
+        return SourceDocumentResult(operation="read", items=({"text": "Exact node"},),
+            total_matches=1, next_offset=None, notice="Synthetic.",
+            source_snapshot_sha256="a" * 64)
+    async def run():
+        async with Client(_build_server(source_document_reader=reader)) as client:
+            method = await client.call_tool(GET_RESEARCH_METHOD_TOOL, _method_arguments([BRANCH]))
+            tools = await _scoped_mcp_tools(client, allowed={"read_source_document"},
+                required={"read_source_document"}, run_scope=method.structured_content["run_scope"])
+            raw = {"branch_id": BRANCH, "request": {"source_space": "library",
+                "operation": "read", "document_id": "DOC::selected", "node_id": "CHUNK::selected",
+                "character_offset": 0, "max_characters": 8000}}
+            result = await tools[0].ainvoke({"name": "read_source_document", "args": raw,
+                "id": "original-zero-window", "type": "tool_call"})
+            assert result.status == "success"
+            assert result.artifact["runtime_argument_recovery"][0]["original_input"] == raw
+            assert invoked == [("DOC::selected", "CHUNK::selected", None, 8000, BRANCH)]
+    asyncio.run(run())
+
 
 @pytest.mark.parametrize("outer", [None, BRANCH])
 def test_relocation_is_lossless_and_idempotent(outer):

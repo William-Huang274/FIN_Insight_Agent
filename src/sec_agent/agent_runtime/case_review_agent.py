@@ -458,20 +458,38 @@ async def organization_source_tools(client):
 
 
 def normalize_source_read_arguments(name, arguments, run_scope):
-    """Relocate an explicitly selected, authorized branch; never infer one."""
+    """Normalize lossless source-read syntax without selecting sources or windows."""
     request = arguments.get("request")
     if name != "read_source_document" or not isinstance(request, dict) or not run_scope:
         return arguments, None
     branch = request.get("branch_id")
-    if (not isinstance(branch, str) or branch not in run_scope["selected_branch_ids"]
-            or ("branch_id" in arguments and arguments["branch_id"] != branch)):
-        return arguments, None
     normalized = deepcopy(arguments)
-    normalized["branch_id"] = normalized["request"].pop("branch_id")
+    relocated = (isinstance(branch, str) and branch in run_scope["selected_branch_ids"]
+        and ("branch_id" not in arguments or arguments["branch_id"] == branch))
+    if relocated:
+        normalized["branch_id"] = normalized["request"].pop("branch_id")
+    # Library exact-node reads already start at the beginning. A literal zero
+    # adds no selection information; nonzero offsets, other spaces, pagination,
+    # missing selectors and conflicting branch envelopes remain native errors.
+    selected = normalized["request"]
+    zero_window = (selected.get("source_space") == "library"
+        and selected.get("operation") == "read"
+        and selected.get("document_id") and selected.get("node_id")
+        and type(selected.get("character_offset")) is int
+        and selected["character_offset"] == 0
+        and selected.get("offset", 0) == 0
+        and "branch_id" not in selected
+        and normalized.get("branch_id") in run_scope["selected_branch_ids"])
+    if zero_window:
+        selected.pop("character_offset")
+    if not relocated and not zero_window:
+        return arguments, None
     from .evidence_resolution import parsing_record
-    return normalized, parsing_record("source_read_branch_envelope_v1",
+    return normalized, parsing_record(
+        "source_read_default_window_v1" if zero_window else "source_read_branch_envelope_v1",
         deepcopy(arguments), deepcopy(normalized),
-        from_path="request.branch_id", to_path="branch_id",
+        from_path="request.character_offset" if zero_window else "request.branch_id",
+        to_path="request.default_node_start" if zero_window else "branch_id",
         source_selection_unchanged=True, native_validation_required=True)
 
 

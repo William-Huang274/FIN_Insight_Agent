@@ -5,6 +5,7 @@
 body:has(.pw-shell){margin:0}.pw-shell .pw-sidebar a:not([aria-current]){color:var(--muted)}.pw-shell .pw-sidebar .fs-brand{color:var(--ink)}
 .op-members{margin-top:24px}.op-current-name{font-size:13px;overflow-wrap:anywhere}.pw-shell section[aria-label="组织项目"]{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
 .rw-types button[aria-current]{background:var(--soft);color:var(--accent);border-color:var(--accent)}.rw-management>summary{padding:14px 20px;cursor:pointer}.rw-management-body{padding:0 20px 20px}.rw-management code{overflow-wrap:anywhere}.rw-resource-row{width:100%;text-align:left;border-radius:0!important}.rw-reading{margin-top:15px;overflow-wrap:anywhere}.rw-reading table{display:block;overflow-x:auto}.rw-reading img{max-width:100%}.pw-shell .cw-shell{min-height:650px}
+.rw-space-filter{display:grid;gap:7px;min-width:0;max-width:100%}.rw-space-filter select{width:100%}
 .pw-settings .rw-publish-confirm{display:flex;align-items:flex-start;gap:9px}.pw-shell .rw-publish-confirm input{width:16px;min-width:16px;height:16px;padding:0;flex:0 0 16px;margin:3px 0}.pw-dialog>button:last-child{margin-top:12px}
 /* Project workspace: explicit typography, quiet navigation, readable research. */
 .fs-workspace.pw-shell{font:14px/1.65 "Segoe UI","Microsoft YaHei UI","Microsoft YaHei",system-ui,sans-serif;letter-spacing:.01em;color:var(--ink);background:var(--canvas)}
@@ -37,7 +38,8 @@ body:has(.pw-shell){margin:0}.pw-shell .pw-sidebar a:not([aria-current]){color:v
 .org-research-layout .pw-row small{font-size:11px;margin-top:5px}
 .org-research-layout>.pw-card:first-child>.pw-toolbar{margin:24px 10px 0;gap:6px}
 .org-research-layout>.pw-card:first-child>.pw-toolbar button{font-size:11px;padding:6px 8px;min-height:30px}
-.org-document{min-height:540px;overflow-wrap:anywhere}
+.org-document{min-height:540px;min-width:0;overflow-wrap:anywhere}
+.org-document pre{max-width:100%;overflow-x:auto}
 .org-document>h3{font-size:26px;line-height:1.45;margin:8px 0 15px;letter-spacing:-.02em}
 .org-eyebrow{font-size:10px;font-weight:650;letter-spacing:.15em;color:var(--muted)}
 .org-document .org-status{display:inline-flex;align-items:center;gap:8px;background:var(--soft);color:var(--accent);font-size:12px;border-radius:20px;padding:4px 11px;margin:0 0 24px}

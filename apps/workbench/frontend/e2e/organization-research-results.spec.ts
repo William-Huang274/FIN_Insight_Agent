@@ -2,6 +2,7 @@ import {test,expect} from './identity-fixture';
 import {readFile,writeFile} from 'node:fs/promises';
 const project='20000000-0000-4000-8000-000000000002',execution='30000000-0000-4000-8000-000000000003';
 const checkpoint='60000000-0000-4000-8000-000000000006';
+const longMetricRecord=JSON.stringify({source:'historical metric',revision:'fixed',evidence:'source-identity-'.repeat(400)});
 for(const width of [1440,390])test(`organization results read and revoked source clear at ${width}`,async({page},info)=>{
   let revoked=false,exportFailure='',missingCheckpoint=false;const calls:string[]=[],downloads:string[]=[];
   page.on('download',d=>downloads.push(d.suggestedFilename()));
@@ -19,7 +20,7 @@ for(const width of [1440,390])test(`organization results read and revoked source
     else if(u.pathname===`/api/v1/organization-projects/${project}/research`)result={items:[{execution_id:execution,draft_id:'draft',title:'固定资料研究',run_id:'run'}],next_offset:null};
     else if(u.pathname===`/api/v1/organization-projects/${project}/research/${execution}`)result={title:'固定资料研究',phase:'ready_for_human_review',read_only:true,checkpoint_id:missingCheckpoint?null:checkpoint,
       research_orientation:{overview:'已保存的预研究概览',findings:[{finding_id:'F1',judgment:'存在一份固定资料',unresolved:'仍需核对财务含义'}]},
-      report:{title:'合成报告',narrative_markdown:'这是用于权限验收的合成正文。',citations:{C1:{sources:[{source_id:'ORG:S1'}]}}}};
+      report:{title:'合成报告',narrative_markdown:'这是用于权限验收的合成正文。\n\n```json\n'+longMetricRecord+'\n```\n\n| 公司 | 原件身份 |\n| --- | --- |\n| NVIDIA | '+('source-identity-'.repeat(40))+' |',citations:{C1:{sources:[{source_id:'ORG:S1'}]}}}};
     else if(u.pathname.includes('/report/export/')){
       expect(u.searchParams.get('checkpoint_id')).toBe(checkpoint);
       if(revoked){await route.fulfill({status:404,json:{detail:'资料当前不可访问'}});return;}
@@ -37,6 +38,8 @@ for(const width of [1440,390])test(`organization results read and revoked source
   await page.goto(`/workspace/projects?scope=organization&project=${project}&view=results`);
   await page.getByRole('button',{name:/固定资料研究/}).click();
   await expect(page.getByRole('heading',{name:'合成报告',exact:true})).toBeVisible();
+  await expect(page.locator('.org-document pre')).toContainText(longMetricRecord);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
   await expect(page.getByText('预研究供确定方向，不表示正式研究完成或结论通过审批。')).toBeVisible();
   const exports=page.getByRole('navigation',{name:'组织报告导出'});
   // These bytes are synthetic HTTP fixtures; backend renderer qualification is separate.

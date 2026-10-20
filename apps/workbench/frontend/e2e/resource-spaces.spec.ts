@@ -33,8 +33,19 @@ async function fixture(page:Page,manager=true){
     }
     else throw Error('Unexpected request '+u.pathname);
     await route.fulfill({json:result});
-  });return {calls,publications};
+  });return {calls,publications,spaces};
 }
+test('long organization and space names stay within mobile viewport',async({page},info)=>{
+  await page.setViewportSize({width:390,height:960});
+  const {spaces}=await fixture(page,false);
+  for(const space of spaces){space.organization_name='Historical unified organization';space.name='Historical team inputs';}
+  await page.goto(`/workspace/assets?view=all-resources&space=${team}`);
+  await expect(page.getByRole('combobox',{name:'所属空间'})).toHaveValue(team);
+  const overflow=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,
+    elements:[...document.querySelectorAll('label,select')].map(e=>({tag:e.tagName,text:e.textContent?.slice(0,100),right:e.getBoundingClientRect().right})).filter(e=>e.right>innerWidth+1)}));
+  expect(overflow.scroll,JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.width+1);
+  await page.screenshot({path:info.outputPath('long-space-name-390.png'),fullPage:true});
+});
 for(const width of [1440,390])test(`unified space and type navigation with readonly publication at ${width}`,async({page},info)=>{
   await page.setViewportSize({width,height:960});const {calls}=await fixture(page,false);
   await page.goto(`/workspace/assets?view=all-resources&space=${team}`);

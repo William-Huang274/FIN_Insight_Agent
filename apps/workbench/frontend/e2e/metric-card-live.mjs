@@ -1,0 +1,77 @@
+// Real HTTP/browser acceptance. No response mocking and no Agent starts.
+import {chromium,expect} from 'playwright/test';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+const origin=process.env.FIN_METRIC_BROWSER_ORIGIN,endpoint=new URL(origin);
+if(process.env.FIN_METRIC_BROWSER_QUALIFICATION!=='1'||endpoint.hostname!=='127.0.0.1'||['18165','18765'].includes(endpoint.port))throw Error('isolated_browser_required');
+const spec=JSON.parse(await readFile(process.env.FIN_STRUCTURED_SQL_CASES,'utf8'));
+const output=resolve(process.env.FIN_METRIC_BROWSER_OUTPUT);
+await mkdir(output,{recursive:false});
+const browser=await chromium.launch({headless:true});
+const context=await browser.newContext({baseURL:origin,viewport:{width:1440,height:1000},
+  extraHTTPHeaders:{Authorization:'Bearer qualification-alice','X-Workbench-Request':'1'}});
+// Only block outbound traffic; no service response is fabricated.
+await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+const page=await context.newPage(),requests=[],errors=[],results=[];
+page.setDefaultTimeout(45000);
+page.on('pageerror',e=>errors.push(String(e)));
+page.on('request',r=>{if(new URL(r.url()).pathname.startsWith('/api/'))requests.push({method:r.method(),path:new URL(r.url()).pathname});});
+try{
+  for(const [index,c] of spec.cases.entries()){
+    const row=c.snapshot.rows[c.entity_id==='COMPANY::meta'?2:0];
+    await page.goto(`/workspace/assets?view=financial-data&company=${encodeURIComponent(c.entity_id)}`);
+    await page.getByRole('navigation',{name:'数据层级目录'}).getByRole('button',{name:/指标分析/}).click();
+    await page.getByLabel('搜索指标总览').fill(row.label);
+    const pending=page.waitForResponse(r=>r.url().endsWith('/metrics/query')&&r.request().postDataJSON()?.section==='card');
+    await page.locator('.mw-overview-grid button').filter({hasText:row.label}).first().click();
+    const card=await (await pending).json();
+    expect(card.items[0].id).toBe(row.id);
+    expect(card.items).toEqual([row]);
+    await page.getByRole('button',{name:'保存此数据卡到项目',exact:true}).click();
+    await page.getByLabel('来源目标项目').selectOption(process.env.FIN_METRIC_PRIVATE_PROJECT);
+    const title=`Historical card ${index+1} ${row.company_name}`;
+    await page.getByLabel('来源资产名称').fill(title);
+    await page.getByLabel('来源批注').fill('历史案例工程验收；不代表新的金融结论。');
+    const savedResponse=page.waitForResponse(r=>r.url().endsWith('/asset-workspace/captures')&&r.request().method()==='POST');
+    await page.getByRole('button',{name:'保存到项目',exact:true}).click();
+    const saved=await (await savedResponse).json();
+    await page.getByRole('link',{name:'打开已保存资产 →',exact:true}).click();
+    await expect(page.getByRole('region',{name:'已保存指标数据卡'})).toContainText(row.value??row.text_value);
+    await page.reload();
+    await expect(page.getByRole('region',{name:'已保存指标数据卡'})).toContainText(row.period_label);
+    await page.getByRole('button',{name:'发布到组织空间',exact:true}).click();
+    const dialog=page.getByRole('dialog',{name:'发布资料到组织空间'});
+    await dialog.getByLabel('本页资料').selectOption(saved.document_id);
+    await dialog.getByLabel('目标空间').selectOption(process.env.FIN_METRIC_SPACE);
+    await dialog.getByRole('checkbox').check();
+    await dialog.getByRole('button',{name:'确认发布此版本',exact:true}).click();
+    const published=dialog.getByRole('link',{name:'打开空间中的资料'});
+    await expect(published).toBeVisible();
+    const resource=new URL(await published.getAttribute('href'),origin).searchParams.get('resource');
+    await published.click();
+    await expect(page.getByRole('region',{name:'已保存指标数据卡'})).toContainText(row.value??row.text_value);
+    await page.goto(`/workspace/projects?scope=organization&project=${process.env.FIN_METRIC_TEAM_PROJECT}&view=files`);
+    await page.getByText('关联团队资料',{exact:true}).click();
+    await page.getByLabel('关联来源空间').selectOption(process.env.FIN_METRIC_SPACE);
+    await page.locator('.pw-row').filter({hasText:title}).getByRole('button',{name:'关联到项目',exact:true}).click();
+    await page.getByRole('button',{name:title+'.md',exact:true}).click();
+    await expect(page.getByRole('region',{name:'已保存指标数据卡'})).toContainText(row.unit);
+    await page.screenshot({path:resolve(output,`card-${index+1}-1440.png`),fullPage:true});
+    if(index===2){
+      await page.getByText('计算输入与公式',{exact:true}).click();
+      await expect(page.getByRole('region',{name:'已保存指标数据卡'})).toContainText(row.inputs[0].value);
+      await page.setViewportSize({width:390,height:844});
+      await page.screenshot({path:resolve(output,'calculation-390.png'),fullPage:true});
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
+      await page.setViewportSize({width:1440,height:1000});
+    }
+    results.push({entity_id:c.entity_id,record_id:row.id,document_id:saved.document_id,resource_id:resource,card_digest:card.capture_selection.snapshot});
+  }
+  expect(errors).toEqual([]);
+  expect(requests.filter(r=>/\/(runs|start|continue)$/.test(r.path))).toEqual([]);
+  await writeFile(resolve(output,'result.json'),JSON.stringify({results,requests,page_errors:errors,provider_calls:0,response_mocks:0},null,2));
+}finally{
+  await writeFile(resolve(output,'observations.json'),JSON.stringify({results,requests,page_errors:errors},null,2));
+  await page.screenshot({path:resolve(output,'last-page.png'),fullPage:true}).catch(()=>{});
+  await browser.close();
+}

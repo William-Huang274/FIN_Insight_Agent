@@ -36,3 +36,4 @@
 .cw-reader-fragment + .cw-reader-fragment{border-top:1px solid var(--line,#e1e5ef);margin-top:24px;padding-top:20px}
 .cw-fragment-context{margin:12px 0;padding:10px 14px;background:var(--canvas,#f5f6fa);border-radius:6px;overflow-wrap:anywhere}
 .cw-fragment-context summary{cursor:pointer;color:var(--muted,#69738b);font-size:12px}
+.cw-company-list{max-height:60vh;overflow-y:auto;overscroll-behavior:contain}

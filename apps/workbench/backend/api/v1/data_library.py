@@ -37,7 +37,17 @@ def build_data_library_router(attachments_root, fact_mart=None, research_library
     def metric_workspace(request:Request,query:MetricWorkspaceQuery):
         current_owner(request)
         from sec_agent.research_foundation.metric_workspace import query_metrics
-        try:return query_metrics(foundation(),**query.model_dump())
+        try:
+            path = foundation()
+            if query.section == 'card' and len(query.entity_ids) == 1:
+                from sec_agent.research_foundation.project_source_captures import metric_capture_snapshot
+                from sec_agent.research_foundation.financial_library import content_digest
+                snapshot, result = metric_capture_snapshot(path, entity_id=query.entity_ids[0],
+                    record_id=query.record_id, as_of=query.as_of)
+                result['capture_selection'] = {'kind':'metric','entity_id':query.entity_ids[0],
+                    'record_id':query.record_id,'as_of':query.as_of,'snapshot':content_digest(snapshot)}
+                return result
+            return query_metrics(path,**query.model_dump())
         except ValueError as exc:raise HTTPException(422,str(exc)) from None
 
     def foundation():

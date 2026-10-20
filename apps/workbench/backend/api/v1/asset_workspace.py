@@ -37,7 +37,7 @@ class SpacePublication(BaseModel):
     ref: AssetRef
 
 
-def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None):
+def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None, research_library=None):
     workspace = AssetWorkspace(root)
     from ...space_assets import SpaceAssets
     from ...business_transport import space_business_request
@@ -145,7 +145,8 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None)
         owner = identity(request, response, True)
         if attachments_root is None:
             raise HTTPException(503, '来源接入尚未配置')
-        return call(save_capture, workspace, owner, body, attachments_root, fact_mart)
+        library = research_library or attachments_root / 'public-library' / 'research-library.sqlite'
+        return call(save_capture, workspace, owner, body, attachments_root, fact_mart, library)
 
     @router.put('/captures/note')
     def note(body: CaptureNoteEdit, request: Request, response: Response):

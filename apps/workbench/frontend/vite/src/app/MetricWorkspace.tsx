@@ -4,13 +4,14 @@ import {ArrowLeft,ArrowUpRight,BarChart3,ChevronRight,LayoutGrid,List,Search,X} 
 import {displayNumber} from './FinancialDataViews';
 import './metric-workspace.css';
 import MetricReviewPanel,{type MetricReview} from './MetricReviewPanel';
+import {AssetCaptureDialog,type CaptureSelection} from './AssetCaptureDialog';
 
 type Company={entity_id:string;name:string};
 type Basis={label:string;fiscal_year:number|null;fiscal_period:string|null;period_kind:string;start:string|null;end:string|null};
 type Input={display_label?:string;id?:string;concept?:string;role?:string;value?:string;unit?:string;period_start?:string;period_end?:string;trade_date?:string;source_id?:string;components?:Input[];derivation?:string};
 type Row={id:string;entity_id:string;company_name:string;metric:string;label:string;value:string|null;unit:string;status:string;period_label:string;period_kind:string;group:string;record_type:string;value_state:string;observation_kind:string;observation_date:string;axis_key:string|null;financial_basis?:Basis;available_at:string;formula?:string;formula_version?:string;inputs?:Input[];comparison_note:string;source_id?:string;sources?:{id:string;title:string;url:string;published_at:string}[];detail?:{missing?:string[];security_basis?:{share_count_note?:string}};text_value?:string;qualifiers?:string[];comparator?:string;business_scope?:string;evidence_quote?:string;evidence_locator?:string;available_at_basis?:string;chart_policy?:string;effective_at?:string;reference_year?:number;reference_date_precision?:string};
 type Catalog={id:string;label:string;group:string;units:string[];companies:string[];period_kinds:string[]};
-type Result={industry_reviews?:MetricReview[];items:Row[];total:number;next_offset:number|null;metric_catalog:Catalog[];fiscal_years:number[];coverage:{entity_id:string;count:number;state:string}[];comparison:{state:string;notes:string[]}};
+type Result={capture_selection?:CaptureSelection;industry_reviews?:MetricReview[];items:Row[];total:number;next_offset:number|null;metric_catalog:Catalog[];fiscal_years:number[];coverage:{entity_id:string;count:number;state:string}[];comparison:{state:string;notes:string[]}};
 type Section='overview'|'history'|'valuation'|'compare';
 const groups:Record<string,string>={profitability:'盈利能力',cashflow:'现金流与投入',solvency:'偿债能力',efficiency:'回报与效率',growth:'增长表现',valuation:'市场估值',industry:'行业与业务'};
 const kinds:Record<string,string>={quarter:'单季',ytd:'累计',annual:'全年',instant:'期末时点',daily:'日频',unknown:'期间待核',event:'事件',ttm:'滚动十二个月'};
@@ -71,7 +72,7 @@ function ComparisonTable({rows,companies,digits,open,alignment}:{rows:Row[];comp
   })}</>;
 }
 
-function DataCard({row,digits,close,onSource}:{row:Row;digits:number;close:()=>void;onSource:(id:string)=>void}){
+function DataCard({row,digits,close,onSource,onSave}:{row:Row;digits:number;close:()=>void;onSource:(id:string)=>void;onSave?:()=>void}){
   const ref=useRef<HTMLDivElement>(null),[path,setPath]=useState<Input[]>([]);
   const input=path[path.length-1];
   useEffect(()=>{const prev=document.activeElement as HTMLElement|null;ref.current?.focus();function key(e:KeyboardEvent){if(document.querySelector('.dl-overlay,.cw-reader-backdrop'))return;if(e.key==='Escape'){e.stopImmediatePropagation();close();}if(e.key==='Tab'){const items=ref.current?.querySelectorAll<HTMLElement>('button,a,[tabindex="0"]');if(!items?.length)return;const first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}}document.addEventListener('keydown',key,true);return()=>{document.removeEventListener('keydown',key,true);prev?.focus();};},[close]);
@@ -88,7 +89,7 @@ function DataCard({row,digits,close,onSource}:{row:Row;digits:number;close:()=>v
       {input?.source_id&&<button onClick={()=>onSource(input.source_id!)}>查看该输入原文</button>}
       {!input&&row.sources?.length!==0&&<section><h3>来源材料</h3>{row.sources?.map(s=><button className="mw-source" key={s.id} onClick={()=>onSource(s.id)}><span>{s.title}<small>{s.published_at||'发布日期未确认'}</small></span><ArrowUpRight size={15}/></button>)}</section>}
       {!input&&<details><summary>记录与版本</summary><dl className="mw-card-facts"><dt>记录编号</dt><dd>{row.id}</dd><dt>公式版本</dt><dd>{row.formula_version||'原始披露'}</dd></dl>{row.detail?.security_basis?.share_count_note&&<p>{row.detail.security_basis.share_count_note}</p>}{row.detail?.missing?.length&&<p>缺少输入：{row.detail.missing.join('、')}</p>}{row.qualifiers?.filter(q=>!businessNotes.includes(q)).map(q=><p key={q}>{q}</p>)}</details>}
-    </div><footer>显示数值经过舍入；原始精度、日期及出处完整保留。</footer></div></div>,document.body);
+    </div><footer><span>{input?'返回指标卡后可保存完整记录。':'保存完整原值、期间和依据；显示舍入不影响保存。'}</span>{onSave&&!input&&<button className="mw-save-card" onClick={onSave}>保存此数据卡到项目</button>}</footer></div></div>,document.body);
 }
 
 export default function MetricWorkspace({entityId,companies,onSource}:{entityId:string;companies:Company[];onSource:(id:string)=>void}){
@@ -97,6 +98,7 @@ export default function MetricWorkspace({entityId,companies,onSource}:{entityId:
   const [selected,setSelected]=useState([entityId]),[companySearch,setCompanySearch]=useState(''),[search,setSearch]=useState(''),[digits,setDigits]=useState(2),[unit,setUnit]=useState('');
   const [data,setData]=useState<Result|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[card,setCard]=useState<Row|null>(null),[offset,setOffset]=useState(0);
   const [catalog,setCatalog]=useState<Catalog[]>([]),[years,setYears]=useState<number[]>([]);
+  const [cardSelection,setCardSelection]=useState<CaptureSelection|null>(null),[capture,setCapture]=useState<{selection:CaptureSelection;title:string;summary:string}|null>(null);
   useEffect(()=>{setSelected([entityId]);setMetric('');setYear('');setPeriod('');setStart('');setEnd('');setCard(null);setUnit('');setOffset(0);},[entityId]);
   const ids=section==='compare'?selected:[entityId];const identity=ids.join('|');
   useEffect(()=>{const controller=new AbortController();query({entity_ids:ids,section:'catalog'},controller.signal).then(v=>{setCatalog(v.items as unknown as Catalog[]);setYears(v.fiscal_years||[]);}).catch(e=>{if(e.name!=='AbortError')setError(e.message);});return()=>controller.abort();},[identity]);
@@ -104,7 +106,7 @@ export default function MetricWorkspace({entityId,companies,onSource}:{entityId:
     query({entity_ids:ids,section,metric,fiscal_year:year?Number(year):null,period_kind:period,date_start:start,date_end:end,frequency,alignment,offset:display==='chart'||section==='compare'?0:offset,limit:display==='chart'||section==='compare'?2000:section==='overview'?500:60},controller.signal).then(setData).catch(e=>{if(e.name!=='AbortError')setError(e.message);}).finally(()=>{if(!controller.signal.aborted)setBusy(false);});return()=>controller.abort();
   },[identity,section,metric,period,year,start,end,frequency,alignment,offset,display]);
   const cardRequest=useRef(0);
-  async function open(r:Row){const request=++cardRequest.current;try{const result=await query({entity_ids:[r.entity_id],section:'card',record_id:r.id});if(request===cardRequest.current)setCard(result.items[0]);}catch(e){setError(e instanceof Error?e.message:'数据卡读取失败');}}
+  async function open(r:Row){const request=++cardRequest.current;setCardSelection(null);try{const result=await query({entity_ids:[r.entity_id],section:'card',record_id:r.id});if(request===cardRequest.current){setCard(result.items[0]);setCardSelection(result.capture_selection||null);}}catch(e){setError(e instanceof Error?e.message:'数据卡读取失败');}}
   function changeSection(s:Section){setSection(s);setOffset(0);setYear('');setPeriod('');setMetric('');setDisplay('table');setUnit('');setAlignment('date');setFrequency('native');}
   function reset(){setMetric('');setYear('');setPeriod('');setStart('');setEnd('');setUnit('');setOffset(0);}
   const rows=(data?.items||[]).filter(r=>(!unit||r.unit===unit)&&(!search||r.label.toLowerCase().includes(search.toLowerCase())));
@@ -126,6 +128,7 @@ export default function MetricWorkspace({entityId,companies,onSource}:{entityId:
     {error&&<div role="alert" className="mw-error">{error}</div>}
     {busy?<div className="mw-loading" role="status">正在读取指标与期间…</div>:section==='compare'&&!metric?<div className="mw-empty"><LayoutGrid size={25}/><h3>选择一个指标，开始比较</h3><p>公司、期间、数值与出处将一起保留。</p></div>:!rows.length?<div className="mw-empty"><h3>当前筛选没有观测记录</h3><p>可调整指标或期间。没有记录不代表数值为零。</p><button onClick={reset}>清空筛选</button></div>:section==='overview'?<><label className="mw-overview-search"><Search size={15}/><input aria-label="搜索指标总览" placeholder="搜索当前指标…" value={search} onChange={e=>setSearch(e.target.value)}/></label>{Object.entries(groups).map(([g,label])=>{const list=rows.filter(r=>r.group===g);return list.length?<section key={g} className="mw-group"><h3>{label}<small>{list.length}</small></h3><div className="mw-overview-grid">{list.map(r=><button key={r.id} onClick={()=>void open(r)}><span className="mw-tile-title">{r.label}<ArrowUpRight size={15}/></span><strong>{valueText(r,digits)} <small>{r.unit}</small></strong><span>{r.period_label} · {kinds[r.period_kind]||r.period_kind}</span>{r.business_scope&&<span>{r.business_scope}</span>}{r.value_state!=='actual'&&<em>{stateLabel[r.value_state]}</em>}{r.observation_kind==='valuation'&&<span>财务依据：{r.financial_basis?.label}</span>}{r.value==null&&<em>{stateName(r)}</em>}</button>)}</div></section>:null;})}</>:display==='chart'?<><Trend rows={rows} digits={digits} open={r=>void open(r)} alignment={alignment} frequency={frequency}/>{data?.next_offset!=null&&<p className="mw-context-note">本图显示前 2,000 条，请缩小日期范围后查看完整走势。</p>}</>:section==='compare'?<ComparisonTable rows={rows} companies={companies.filter(c=>ids.includes(c.entity_id))} digits={digits} open={r=>void open(r)} alignment={alignment}/>:<div className="mw-history-table"><table><thead><tr>{!metric&&<th>指标</th>}<th>{section==='valuation'||selectedCatalog?.group==='valuation'?'估值日':'报告期 / 观察日'}</th><th>口径 / 财务依据</th><th className="mw-number">数值</th><th>记录</th></tr></thead><tbody>{rows.map(r=><tr key={r.id}>{!metric&&<td>{r.label}</td>}<td>{r.period_label}{r.observation_kind!=='valuation'&&<small>{r.observation_date}</small>}</td><td>{r.observation_kind==='valuation'?r.financial_basis?.label:kinds[r.period_kind]||r.period_kind}{r.business_scope&&<small>{r.business_scope}</small>}{r.value_state!=='actual'&&<small>{stateLabel[r.value_state]}</small>}{r.financial_basis?.start&&<small>{r.financial_basis.start} — {r.financial_basis.end}</small>}</td><td className="mw-number">{valueText(r,digits)} <span>{r.unit==='text'?'':r.unit}</span>{r.value==null&&<small>{stateName(r)}</small>}</td><td><button onClick={()=>void open(r)}>数据卡 <ArrowUpRight size={13}/></button></td></tr>)}</tbody></table></div>}
     {section!=='overview'&&section!=='compare'&&display==='table'&&data&&data.total>60&&<div className="mw-pagination"><span>{offset+1}–{Math.min(offset+60,data.total)} / {data.total}</span><button disabled={!offset} onClick={()=>setOffset(Math.max(0,offset-60))}>上一页</button><button disabled={data.next_offset==null} onClick={()=>setOffset(data.next_offset||0)}>下一页</button></div>}
-    {card&&<DataCard row={card} digits={digits} close={()=>setCard(null)} onSource={onSource}/>}
+    {card&&<DataCard row={card} digits={digits} close={()=>setCard(null)} onSource={onSource} onSave={cardSelection?()=>{setCapture({selection:cardSelection,title:`${card.company_name} ${card.label} ${card.period_label}`,summary:`${card.company_name} · ${card.period_label} · ${card.unit} · 1 条指标记录`});setCard(null);}:undefined}/>}
+    {capture&&<AssetCaptureDialog selection={capture.selection} initialTitle={capture.title} summary={capture.summary} onClose={()=>setCapture(null)}/>}
   </div>;
 }

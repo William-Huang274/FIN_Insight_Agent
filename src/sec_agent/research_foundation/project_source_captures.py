@@ -31,16 +31,51 @@ class FinancialSelection(BaseModel):
     row_ids: list[Annotated[str, Field(pattern=r'^[a-f0-9]{64}$')]] = Field(min_length=1, max_length=100)
 
 
+class MetricSelection(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    kind: Literal['metric']
+    entity_id: str = Field(min_length=1, max_length=200)
+    record_id: str = Field(min_length=1, max_length=200)
+    as_of: str = Field(pattern=r'^\d{4}-\d{2}-\d{2}$')
+    snapshot: str = Field(pattern=r'^[a-f0-9]{64}$')
+
+
+def metric_capture_snapshot(path, *, entity_id, record_id, as_of):
+    """Read the complete card from a validated immutable public release.
+
+    The browser submits only identity/cutoff/digest, never numeric facts or SQL.
+    Existing financial snapshots and organization custody retain the saved card.
+    """
+    from .research_library import open_library
+    from .metric_workspace import query_metrics
+    library = open_library(path)
+    result = query_metrics(path, [entity_id], section='card', record_id=record_id, as_of=as_of)
+    query = {'kind':'metric_cards', 'entity_ids':[entity_id], 'record_ids':[record_id],
+             'as_of':as_of, 'library_digest':library.manifest['sha256']}
+    rows = result['items']
+    snapshot = {'schema_version':'project_source_snapshot.v1', 'kind':'financial',
+                'query':query, 'query_digest':content_digest({'query':query,'rows':rows}),
+                'matching_count':len(rows), 'selection_mode':'explicit_rows', 'rows':rows}
+    return snapshot, result
+
+
 class CaptureRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     project_id: UUID
     title: str = Field(min_length=1, max_length=120)
     note: str = Field(default='', max_length=10000)
-    selection: Annotated[SourceSelection | FinancialSelection, Field(discriminator='kind')]
+    selection: Annotated[SourceSelection | FinancialSelection | MetricSelection, Field(discriminator='kind')]
 
 
-def source_snapshot(selection, attachments_root, fact_mart):
-    if selection.kind == 'library':
+def source_snapshot(selection, attachments_root, fact_mart, research_library=None):
+    if selection.kind == 'metric':
+        if research_library is None:
+            raise ValueError('metric_capture_library_not_configured')
+        payload, _ = metric_capture_snapshot(research_library, entity_id=selection.entity_id,
+            record_id=selection.record_id, as_of=selection.as_of)
+        if content_digest(payload) != selection.snapshot:
+            raise AssetConflict('指标数据卡或资料版本已变化，请重新打开数据卡并核对；尚未保存。')
+    elif selection.kind == 'library':
         rows, digest = library_nodes(attachments_root)
         if digest != selection.snapshot:
             raise AssetConflict('知识库在阅读后已更新，请重新打开原文、核对并选择；尚未保存。')
@@ -107,9 +142,9 @@ def safe_title(title):
     return (value[:116] or '保存的来源') + ('' if value.lower().endswith('.md') else '.md')
 
 
-def save_capture(workspace, owner, body, attachments_root, fact_mart):
+def save_capture(workspace, owner, body, attachments_root, fact_mart, research_library=None):
     scope = workspace.library.scope(owner, body.project_id)
-    snapshot = source_snapshot(body.selection, attachments_root, fact_mart)
+    snapshot = source_snapshot(body.selection, attachments_root, fact_mart, research_library)
     return workspace.library.documents.add(scope, safe_title(body.title), render_capture(snapshot, body.note).encode(),
         source_capture={'snapshot':snapshot,'note':body.note})
 

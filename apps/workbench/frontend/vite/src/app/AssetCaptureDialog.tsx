@@ -2,7 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import {X} from 'lucide-react';
 import {assetRequest as request} from '../api/assetWorkspace';
 
-export type CaptureSelection={kind:'library';document_id:string;snapshot:string;section_ids:string[]}|{kind:'financial';query:Record<string,unknown>;snapshot:string;row_ids:string[]};
+export type CaptureSelection={kind:'library';document_id:string;snapshot:string;section_ids:string[]}|{kind:'financial';query:Record<string,unknown>;snapshot:string;row_ids:string[]}|{kind:'metric';entity_id:string;record_id:string;as_of:string;snapshot:string};
 
 export function AssetCaptureDialog({selection,initialTitle,summary,onClose}:{selection:CaptureSelection;initialTitle:string;summary:string;onClose:()=>void}){
   const dialog=useRef<HTMLDialogElement>(null);

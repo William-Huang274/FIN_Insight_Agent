@@ -92,8 +92,13 @@ def missing_reads(artifacts, confirmation, pid, messages):
             continue
         if m.name == 'read_review_location' and v.get('paper_digest') == target['paper_digest'] and v.get('text'):
             try:
-                reader = read_structured_location if v.get('view') == 'json' else read_location
-                exact = reader(artifacts, pid, v['field_path'], v['offset'], len(v['text']))
+                if v.get('status') == 'exact_quote_match':
+                    from .review_inspection import read_quoted_location
+                    exact = read_quoted_location(artifacts, pid, v['field_path'], v['quote'],
+                        match_index=v['selected_match'], paper_digest=v['paper_digest'])
+                else:
+                    reader = read_structured_location if v.get('view') == 'json' else read_location
+                    exact = reader(artifacts, pid, v['field_path'], v['offset'], len(v['text']))
             except (ValueError, KeyError):
                 continue
             if v == exact:

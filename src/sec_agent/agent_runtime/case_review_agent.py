@@ -1034,12 +1034,21 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
         return json.dumps(revision_target, ensure_ascii=False), deepcopy(revision_target)
 
     @tool(response_format="content_and_artifact")
-    def read_review_location(paper_id: str, field_path: str, offset: int = 0, max_characters: int = 2000, view: Literal['text', 'json'] = 'text') -> tuple[str, dict]:
-        """Read current text (with quote location_id), or view=json for a complete structured field with pagination. Default container reads are directories, not evidence; JSON windows are not quote locations."""
-        from .review_inspection import read_location, read_structured_location
+    def read_review_location(paper_id: str, field_path: str, offset: int | None = None, max_characters: int = 2000, view: Literal['text', 'json'] = 'text', quote: str | None = None, match_index: int | None = None, paper_digest: str | None = None, match_offset: int = 0) -> tuple[str, dict]:
+        """Locate an already-read exact quote in field_path (claim ID paths supported): pass quote, not guessed offset. Unique match returns quote-only location_id; repeated matches return contexts and version-bound readback calls for your selection. No match is normal navigation. Alternatively use offset pagination, or view=json for structured fields. Directory previews/JSON are not quote locations; quote and offset cannot be combined."""
+        from .review_inspection import read_location, read_structured_location, read_quoted_location
         try:
-            reader = read_structured_location if view == 'json' else read_location
-            value = reader(artifacts, paper_id, field_path, offset, max_characters)
+            if quote is not None:
+                if offset is not None or view != 'text':
+                    raise ValueError('choose_literal_quote_or_offset_json_read_not_both')
+                value = read_quoted_location(artifacts, paper_id, field_path, quote,
+                    match_index=match_index, paper_digest=paper_digest, match_offset=match_offset,
+                    max_characters=max_characters)
+            else:
+                if match_index is not None or paper_digest is not None or match_offset:
+                    raise ValueError('quote_selection_parameters_require_quote')
+                reader = read_structured_location if view == 'json' else read_location
+                value = reader(artifacts, paper_id, field_path, offset or 0, max_characters)
         except ValueError as exc:
             raise ToolException(str(exc) + '; use a field_path from the current paper or quote_recovery window.') from exc
         return json.dumps(value, ensure_ascii=False), value

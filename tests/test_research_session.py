@@ -274,8 +274,12 @@ def test_new_question_native_parent_to_report_human_point_and_followup_without_r
         assert set(result["revisions"]) == ({"P01"} if material else set())
         assert "independent_research_review" in str(models["synthesis"].contexts[0])
         writer_input = json.loads(models['writer'].contexts[0][1].content)
-        assert writer_input['authoring_view'] == 'source_materials.v4'
-        assert 'research_synthesis' not in writer_input
+        assert writer_input['authoring_view'] == 'current_synthesis.v1'
+        # The frozen Lead-writing baseline continues the already reviewed
+        # synthesis. Verify the actual handoff, not just the new view label.
+        synthesis_review_input = json.loads(models['research_verifier'].contexts[0][1].content)
+        assert writer_input['research_synthesis'] == synthesis_review_input['report']
+        assert writer_input['synthesis_review']['findings'] == []
         assert "citations" not in json.loads(models["terminal"].contexts[0][1].content)["report"]
         original = deepcopy(result["report"])
         # Recompile to simulate a fresh graph factory over the same native store.

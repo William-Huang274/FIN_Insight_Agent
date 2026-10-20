@@ -245,6 +245,12 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                         "requested_change": "Recheck this unresolved item against permitted sources; correct or disagree with evidence, otherwise retain unresolved."})
         agent = make_agent(role, current, feedback=own_feedback, paper_id=paper_id,
                            correction_round=round_index, revising_report=bool(state.get("report")))
+        if role in {"report_verifier", "research_verifier"}:
+            # These two serial, separately named parent nodes review successive
+            # versions. Per-invocation child checkpoints cannot supply their own
+            # earlier receipts on the next parent visit. Use LangGraph's native
+            # per-thread subgraph persistence; parallel authors stay isolated.
+            agent = agent.copy(update={"checkpointer": True})
         value = {"revisions": deepcopy(state.get("revisions", {})),
                  "synthesis": deepcopy(state.get("synthesis", {}))}
         body = {"question": question, "research_as_of": artifacts.research_as_of}
@@ -323,6 +329,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         # without its required submission. Reopen only that completed child via
         # the documented Command API; retain its own messages and accepted peers.
         saved = await agent.aget_state(config)
+        new_review_basis = False
         same_authoring_basis = role != 'writer' and (not authoring_stages or role != 'prepare')
         if role == 'writer':
             from .report_authoring import report_authoring_message_update
@@ -331,6 +338,12 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         elif role in {'report_verifier', 'research_verifier'}:
             from .report_review_context import review_message_update
             value['messages'] = review_message_update(body, saved.values.get('messages', []))
+            if value['messages'][0].id is None:
+                # New review basis, new verdict. Keep the immutable journal but
+                # never let StopOnOutput reuse a previous version's submission.
+                value['output'] = None
+                new_review_basis = bool(saved.values.get('messages'))
+                same_authoring_basis = False
         elif authoring_stages and role == 'prepare':
             # Re-enter with this version's public state, not old research/writing turns.
             # Previous checkpoint snapshots and provider audits remain available.
@@ -351,6 +364,17 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                 "The previous attempt ended without an accepted structured submission. It did NOT complete this role. "
                 "Continue from your retained source reads, correct the rejected submission and call your submission tool. "
                 "The host has restarted only this failed role; do not repeat unrelated research.")]})
+        if new_review_basis and saved.next:
+            raise ValueError("review_version_changed_with_pending_child_work")
+        if new_review_basis:
+            # A resumed parent can otherwise make a completed persistent child
+            # return its prior result without applying this new assignment.
+            # Re-enter the declared entry node (including before-agent middleware),
+            # rather than bypassing counters/guards by jumping to the model.
+            entries = [target for source, target in agent.builder.edges if source == START]
+            if len(entries) != 1:
+                raise ValueError("review_agent_requires_one_declared_entry")
+            value = Command(goto=entries[0], update=value)
         result = await agent.ainvoke(value, config)
         if not result.get("output"):
             raise ValueError(f"research_actor_ended_without_submission:{actor}")

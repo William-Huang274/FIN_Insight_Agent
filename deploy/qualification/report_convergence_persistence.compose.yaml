@@ -1,0 +1,7 @@
+# Overlay after report_review_persistence.compose.yaml, dedicated qualification.
+services:
+  api:
+    environment:
+      LANGSERVE_GRAPHS: '{"research_session":"/probe/report_convergence_persistence_graph.py:graph"}'
+    volumes:
+      - ../../tests/integration/fixtures/report_convergence_persistence_graph.py:/probe/report_convergence_persistence_graph.py:ro

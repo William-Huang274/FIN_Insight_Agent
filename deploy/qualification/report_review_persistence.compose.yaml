@@ -1,0 +1,13 @@
+# Overlay on intake_native.compose.yaml. Never register this graph in production.
+services:
+  api:
+    environment:
+      LANGSERVE_GRAPHS: '{"research_session":"/probe/report_review_persistence_graph.py:graph"}'
+      PYTHONPATH: /qualification/src
+      PYTHONDONTWRITEBYTECODE: '1'
+      FIN_REPO_ROOT: /qualification
+      FIN_REPORT_REVIEW_PERSISTENCE_QUALIFICATION: '1'
+    volumes:
+      - ../../src:/qualification/src:ro
+      - ../../configs:/qualification/configs:ro
+      - ../../tests/integration/fixtures/report_review_persistence_graph.py:/probe/report_review_persistence_graph.py:ro

@@ -614,6 +614,41 @@ class ResearchIntakeTest {
         var prepared=workspace(researcher,"POST","/projects/"+project+"/research-drafts",Map.of("id",draft,"title","执行准备","question","核对组织固定输入中的财务期间和单位。","research_as_of","2026-10-12","resource_ids",List.of(resource)),200);
         return new ExecutionFixture(admin,researcher,org,project,space,resource,draft,prepared.path("manifest_digest").asText());
     }
+    @Test void retrieval_release_is_immutable_project_scoped_and_frozen_without_changing_legacy_drafts() throws Exception {
+        var f=executionFixture();
+        String drafts="/projects/"+f.project()+"/research-drafts",releases="/projects/"+f.project()+"/retrieval-releases";
+        var legacy=workspace(f.researcher(),"GET",drafts+"/"+f.draft(),null,200);
+        assertThat(legacy.path("manifest").has("retrieval_index")).isFalse();
+        UUID first=UUID.randomUUID(),second=UUID.randomUUID();
+        var publication=new HashMap<String,Object>(Map.of("id",first,"source_draft_id",f.draft(),
+            "index_digest","b".repeat(64),"matrix_sha256","c".repeat(64),
+            "model","qwen3.7-text-embedding","dimensions",1024,"projection","organization-text-6000.v1"));
+        var invalidProjection=new HashMap<>(publication);
+        invalidProjection.put("projection","organization-text-6000Xv1");
+        workspace(f.admin(),"POST",releases,invalidProjection,400);
+        workspace(f.researcher(),"POST",releases,publication,403);
+        var contract=workspace(f.admin(),"POST",releases,publication,200);
+        assertThat(workspace(f.admin(),"POST",releases,publication,200)).isEqualTo(contract);
+        var changed=new HashMap<>(publication);changed.put("index_digest","d".repeat(64));
+        workspace(f.admin(),"POST",releases,changed,409);
+        UUID preparedId=UUID.randomUUID();
+        var create=new HashMap<String,Object>(Map.of("id",preparedId,"title","固定检索版本",
+            "question","核对组织固定输入中的公司期间和单位。","research_as_of","2026-10-12",
+            "resource_ids",List.of(f.resource()),"retrieval_release_id",first));
+        var prepared=workspace(f.researcher(),"POST",drafts,create,200);
+        assertThat(prepared.path("manifest").path("retrieval_index")).isEqualTo(contract);
+        changed.put("id",second);
+        workspace(f.admin(),"POST",releases,changed,200);
+        assertThat(workspace(f.researcher(),"POST",drafts,create,200)).isEqualTo(prepared);
+        assertThat(workspace(f.researcher(),"GET",drafts+"/"+f.draft(),null,200)).isEqualTo(legacy);
+        assertThat(workspace(f.researcher(),"GET",releases,null,200).path("items").size()).isEqualTo(2);
+        var other=executionFixture();
+        var foreign=new HashMap<>(create);foreign.put("id",UUID.randomUUID());foreign.put("resource_ids",List.of(other.resource()));
+        workspace(other.researcher(),"POST","/projects/"+other.project()+"/research-drafts",foreign,404);
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",f.researcher(),"role","remove"),200);
+        assertThat(workspace(f.researcher(),"GET",releases,null,200).path("items").size()).isZero();
+        workspace(f.researcher(),"GET",drafts+"/"+preparedId,null,404);
+    }
     HttpResponse<String> runtimeRequest(String path,String body,String signedPath,String signingKey) throws Exception {
         var now=Instant.now();
         var claims=new JWTClaimsSet.Builder().issuer("finsight-agent-runtime").audience("finsight-java-organization-runtime").subject("finsight-agent-runtime")

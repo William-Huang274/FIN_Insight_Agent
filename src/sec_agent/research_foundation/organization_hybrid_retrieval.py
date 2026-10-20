@@ -1,7 +1,8 @@
 """Explicit prepared vectors, current Java authorization, and scoped ID caches.
 
-No provider client, automatic preparation, public-library fallback or positive
-permission cache. NumPy handles cosine ranking; navigation owns BM25/readback.
+New queries require an explicitly configured, audited embedding source and a
+frozen release. No automatic corpus preparation, public-library fallback or
+positive permission cache. NumPy ranks cosine; navigation owns BM25/readback.
 Prepared files are host-owned artifacts, never supplied in Agent tool arguments.
 """
 from hashlib import sha256
@@ -64,14 +65,14 @@ def preparation_nodes(reader, *, workbench_url):
     return manifest['organization_id'], nodes
 
 
-def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, model, provenance):
+def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, model, provenance, release_id=None):
     """Host-side publication of exact prepared content/query embeddings.
 
     Caller must verify embedding text/model provenance before publication.
     Never overwrites a release; use a new root for a new version. No API calls.
     """
     organization_id = str(UUID(organization_id))
-    if not model or not provenance or not nodes or len(nodes) != len(vectors) or not queries:
+    if not model or not provenance or not nodes or len(nodes) != len(vectors) or (not queries and release_id is None):
         raise ValueError('organization_retrieval_preparation_incomplete')
     dimensions = len(vectors[0])
     if dimensions < 1 or dimensions > 8192:
@@ -86,19 +87,28 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
         raise ValueError('organization_retrieval_duplicate_node')
     matrix = np.stack([vector(v, dimensions) for v in vectors])
     directory = Path(root) / organization_id
+    if release_id is not None:
+        release_id = str(UUID(str(release_id)))
+        directory = directory/'releases'/release_id
+        if dimensions != 1024 or model not in {'text-embedding-v4', 'qwen3.7-text-embedding'}:
+            raise ValueError('organization_release_requires_supported_provider_model')
     directory.mkdir(parents=True, exist_ok=False)
     np.save(directory/'vectors.npy', matrix, allow_pickle=False)
     manifest = {'format': FORMAT, 'organization_id': organization_id, 'model': model,
         'dimensions': dimensions, 'records': records, 'provenance': provenance,
         'matrix_sha256': sha256((directory/'vectors.npy').read_bytes()).hexdigest(),
         'queries': {sha256(q.encode()).hexdigest(): vector(v, dimensions).tolist() for q, v in queries.items()}}
+    if release_id is not None:
+        from .organization_index_release import FORMAT as RELEASE_FORMAT, PROJECTION
+        manifest.update(format=RELEASE_FORMAT, release_id=release_id, projection=PROJECTION)
     (directory/'index.json').write_text(json.dumps(manifest, ensure_ascii=False), encoding='utf8')
     return digest(manifest)
 
 
 class OrganizationHybridRetrieval:
-    def __init__(self, reader, root):
+    def __init__(self, reader, root, query_source=None):
         self.reader, self.root = reader, Path(root)
+        self.query_source = query_source
 
     def rank(self, rows, query, snapshot, literal):
         from .organization_source_navigation import OrganizationSourceNavigation
@@ -108,19 +118,26 @@ class OrganizationHybridRetrieval:
         allowed = {OrganizationSourceNavigation._identity(item) for item in manifest['inputs']}
         if not rows or any(row['parent_document_id'] not in allowed for row in rows):
             raise OrganizationExecutionUnavailable('organization_retrieval_scope_mismatch')
-        directory = self.root / str(UUID(manifest['organization_id']))
-        try:
-            encoded = (directory/'index.json').read_bytes()
-            index = json.loads(encoded)
-            matrix_bytes = (directory/'vectors.npy').read_bytes()
-        except (OSError, ValueError):
-            raise ValueError('organization_retrieval_index_not_prepared_or_invalid') from None
-        if index.get('format') != FORMAT or index.get('organization_id') != manifest['organization_id']:
-            raise OrganizationExecutionUnavailable('organization_retrieval_index_scope_mismatch')
-        if sha256(matrix_bytes).hexdigest() != index['matrix_sha256']:
-            raise ValueError('organization_retrieval_index_integrity_failure')
-        from io import BytesIO
-        matrix = np.load(BytesIO(matrix_bytes), allow_pickle=False)
+        pinned = manifest.get('retrieval_index')
+        if pinned is not None:
+            from .organization_index_release import load_release
+            directory, index, matrix, _ = load_release(
+                self.root, manifest['organization_id'], pinned['release_id'], pinned)
+            encoded = json.dumps(index, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()
+        else:
+            directory = self.root / str(UUID(manifest['organization_id']))
+            try:
+                encoded = (directory/'index.json').read_bytes()
+                index = json.loads(encoded)
+                matrix_bytes = (directory/'vectors.npy').read_bytes()
+            except (OSError, ValueError):
+                raise ValueError('organization_retrieval_index_not_prepared_or_invalid') from None
+            if index.get('format') != FORMAT or index.get('organization_id') != manifest['organization_id']:
+                raise OrganizationExecutionUnavailable('organization_retrieval_index_scope_mismatch')
+            if sha256(matrix_bytes).hexdigest() != index['matrix_sha256']:
+                raise ValueError('organization_retrieval_index_integrity_failure')
+            from io import BytesIO
+            matrix = np.load(BytesIO(matrix_bytes), allow_pickle=False)
         records = {r['node_id']: r for r in index['records']}
         if (len(records) != len(index['records']) or matrix.dtype != np.float32
                 or matrix.shape != (len(records), index['dimensions'])):
@@ -139,16 +156,25 @@ class OrganizationHybridRetrieval:
             if type(position) is not int or not 0 <= position < len(matrix):
                 raise ValueError('organization_retrieval_invalid_vector_position')
             selected.append(position)
-        query_hash = sha256(query.encode()).hexdigest()
-        if query_hash not in index['queries']:
-            raise ValueError('organization_retrieval_query_not_prepared_no_provider_fallback')
-        query_vector = vector(index['queries'][query_hash], index['dimensions'])
-        # Selection happens before cosine scoring/top-K. Unselected documents
-        # cannot occupy quotas, produce previews, or influence lexical ranks.
         subset = matrix[selected]
         if (not np.isfinite(subset).all()
                 or not np.allclose(np.linalg.norm(subset.astype(np.float64), axis=1), 1., rtol=1e-5, atol=1e-6)):
             raise ValueError('organization_retrieval_invalid_prepared_vectors')
+        query_hash = sha256(query.encode()).hexdigest()
+        query_receipt = {'provider_calls': 0, 'cache_hit': True, 'source': 'prepared_index'}
+        if query_hash in index['queries']:
+            query_vector = vector(index['queries'][query_hash], index['dimensions'])
+        elif pinned is not None:
+            from .organization_index_release import ConfiguredQuerySource
+            self.reader._after(before)  # Recheck before any billable request.
+            source = self.query_source or ConfiguredQuerySource(self.root/'query-cache')
+            values, query_receipt = source.embed(query, scope='organization:'+manifest['organization_id'],
+                index_digest=pinned['index_digest'], model=pinned['model'], dimensions=pinned['dimensions'])
+            query_vector = vector(values, index['dimensions'])
+        else:
+            raise ValueError('organization_retrieval_query_not_prepared_no_provider_fallback')
+        # Selection happens before cosine scoring/top-K. Unselected documents
+        # cannot occupy quotas, produce previews, or influence lexical ranks.
         scope = {'policy': POLICY, 'grant': digest(before), 'index': sha256(encoded).hexdigest(),
             'query': query_hash, 'nodes': [(r['node_id'], r['content_sha256']) for r in rows]}
         key = digest(scope)
@@ -163,13 +189,12 @@ class OrganizationHybridRetrieval:
                 dense = [rows[i]['node_id'] for i in sorted(range(len(rows)),
                     key=lambda i: (-float(scores[i]), rows[i]['node_id']))[:24]]
                 lexical = [r['node_id'] for r in literal[:12]]
-                fused = {}
+                from retrieval.rank_fusion import reciprocal_rank_fusion
                 for channel in (dense, lexical):
-                    for rank, node_id in enumerate(channel, 1):
+                    for node_id in channel:
                         if node_id not in by_id:
                             raise OrganizationExecutionUnavailable('organization_retrieval_candidate_outside_scope')
-                        fused[node_id] = fused.get(node_id, 0.) + 1/(60 + rank)
-                entry = {'ordered': sorted(fused, key=lambda n: (-fused[n], n)), 'dense': dense, 'lexical': lexical}
+                entry = {'ordered': reciprocal_rank_fusion([dense, lexical]), 'dense': dense, 'lexical': lexical}
                 self.reader._after(before)
                 db.execute('INSERT OR IGNORE INTO ranks VALUES (?,?)', (key, json.dumps(entry)))
             for channel in ('ordered', 'dense', 'lexical'):
@@ -180,4 +205,5 @@ class OrganizationHybridRetrieval:
         self.reader._after(before)
         return [by_id[n] for n in entry['ordered']], {'mode': POLICY, 'cache_hit': bool(saved),
             'index_digest': scope['index'], 'dense_node_ids': entry['dense'], 'lexical_node_ids': entry['lexical'],
-            'candidate_node_ids': entry['ordered'], 'provider_calls': 0, 'rerank': 'local_rrf_no_provider'}
+            'candidate_node_ids': entry['ordered'], 'provider_calls': query_receipt['provider_calls'],
+            'query_embedding': query_receipt, 'rerank': 'local_rrf_no_provider'}

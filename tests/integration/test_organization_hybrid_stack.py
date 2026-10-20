@@ -129,6 +129,9 @@ def test_historical_vectors_current_authority_and_scoped_caches(monkeypatch):
                 restored.restore([{'status':'success','content':[a['citation']]}])
                 assert restored.source(a['citation']['passage_id'])==a['citation']
                 assert restored.navigate(a['request']).items[0]['retrieval']['cache_hit']
+                if count := int(os.environ.get('FIN_RETRIEVAL_CAPACITY_REQUESTS', '0')):
+                    from tests.integration.qualification_retrieval_load import qualify
+                    qualify(s, tenants, root, count=count)
             current=s.request(s.bff,'GET',f"/api/v1/asset-workspace/spaces/resources/{a['selected']}")
             api('POST',f"/resources/{a['selected']}/revoke",{'revision':current['permission_revision']})
             with pytest.raises(OrganizationExecutionUnavailable): a['nav'].navigate(a['request'])

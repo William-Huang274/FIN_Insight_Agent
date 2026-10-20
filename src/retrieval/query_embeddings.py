@@ -7,13 +7,14 @@ or fall back to another model. Successful embeddings are not access grants.
 from hashlib import sha256
 import json
 import math
+import time
 
 from sec_agent.adapters.local_records import LocalRecords
 from retrieval.source_hybrid import CachedRetrieval
 
 
 class QueryEmbeddingSource:
-    def __init__(self, path, api, *, model, dimensions=1024, max_query_bytes=8192):
+    def __init__(self, path, api, *, model, dimensions=1024, max_query_bytes=8192, wait_inflight_seconds=0):
         if model not in {'text-embedding-v4', 'qwen3.7-text-embedding'}:
             raise ValueError('query_embedding_unsupported_model')
         if api.embedding_model != model or dimensions != 1024:
@@ -23,6 +24,9 @@ class QueryEmbeddingSource:
         self.path, self.api = path, api
         self.model, self.dimensions = model, dimensions
         self.max_query_bytes = max_query_bytes
+        if not 0 <= wait_inflight_seconds <= 60:
+            raise ValueError('query_embedding_invalid_wait_limit')
+        self.wait_inflight_seconds = wait_inflight_seconds
 
     def embed(self, query, *, scope, index_digest, model, dimensions):
         """Use only after resolving the current authorized source/index scope.
@@ -46,7 +50,25 @@ class QueryEmbeddingSource:
             separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
         with LocalRecords(self.path) as cache:
             client = CachedRetrieval(cache, self.api, namespace)
-            result = client.call('embedding', [query])
+            try:
+                result = client.call('embedding', [query])
+            except RuntimeError:
+                # Followers may wait for the original durable receipt, never
+                # submit another request. Failed/orphaned records stay blocked.
+                if client.calls or not self.wait_inflight_seconds:
+                    raise
+                deadline = time.monotonic() + self.wait_inflight_seconds
+                while True:
+                    saved = cache.get(client.key('embedding', [query]))
+                    if saved and saved.get('status') == 'completed' and saved.get('result'):
+                        result = saved['result']
+                        client.hits += 1
+                        break
+                    if not saved or saved.get('status') != 'started':
+                        raise
+                    if time.monotonic() >= deadline:
+                        raise RuntimeError('query_embedding_still_pending_no_resubmission') from None
+                    time.sleep(.05)
         values = result.get('values')
         if (result.get('model') != self.model or not isinstance(values, list) or len(values) != 1
                 or len(values[0]) != self.dimensions

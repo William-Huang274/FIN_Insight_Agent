@@ -9,3 +9,5 @@ services:
   api:
     cpus: 1.5
     mem_limit: 1536m
+    environment:
+      N_JOBS_PER_WORKER: ${FIN_CAPACITY_NATIVE_JOBS:-1}

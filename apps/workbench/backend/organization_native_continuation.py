@@ -76,7 +76,8 @@ def install_organization_continuation_routes(router, service):
             raise HTTPException(409, '前序用量未知或审计不完整，先核对原运行')
         shared = SimpleNamespace(workspace=AssetWorkspace(service.attachment_store.root.parent / 'project-library' / 'organization-assets'))
         await run_in_threadpool(verify_storage, shared, grant['organization_id'], grant['inputs'],
-                                json.loads(grant['manifest_text'])['research_as_of'])
+                                json.loads(grant['manifest_text'])['research_as_of'],
+                                json.loads(grant['manifest_text']).get('retrieval_index'))
         await reauthorize(service, grant)
         run = await service.sdk.runs.create(tid, 'research_session', **arguments,
             multitask_strategy='reject', stream_mode='custom', stream_subgraphs=True, stream_resumable=True)

@@ -41,6 +41,8 @@ class OrganizationSourceNavigation:
         if request.page_start is not None or request.page_end is not None:
             raise ValueError('organization_projection_has_no_pdf_page_locator')
         before, manifest, _ = self.reader._grant()
+        if request.operation == 'search' and manifest.get('retrieval_index') is not None and self.hybrid is None:
+            raise ValueError('organization_frozen_index_requires_configured_storage')
         selected = {self._identity(item): item for item in manifest['inputs']}
         if request.document_id:
             if request.document_id not in selected:

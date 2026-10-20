@@ -5,6 +5,7 @@ successful results and blocks unknown/failed requests; no automatic retry flag.
 """
 import argparse
 from contextlib import closing
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from hashlib import sha256
 import json
@@ -25,6 +26,7 @@ def main():
     parser.add_argument('--scope', required=True)
     parser.add_argument('--query', required=True, help='Public qualification text only; never put credentials here')
     parser.add_argument('--execute', action='store_true')
+    parser.add_argument('--concurrency', type=int, default=1, choices=[1, 4, 8, 16])
     args = parser.parse_args()
     size = len(args.query.encode('utf8'))
     if not args.query.strip() or size > 8192:
@@ -37,7 +39,8 @@ def main():
     attempt = args.output / str(uuid4())
     attempt.mkdir()
     basis = {'purpose': 'Verify a new query vector, exact index model identity, durable receipt and reuse',
-        'input_scale': {'texts': 1, 'utf8_bytes': size, 'query_sha256': sha256(args.query.encode()).hexdigest()},
+        'input_scale': {'texts': 1, 'concurrent_identical_callers':args.concurrency,
+                        'utf8_bytes': size, 'query_sha256': sha256(args.query.encode()).hexdigest()},
         'required_output': 'One finite nonzero 1024-dimensional vector and provider usage receipt',
         'quality_risk': 'Connectivity and vector integrity only; no recall or financial quality claim',
         'reasoning_profile': 'Non-generative embedding; no rerank or research model',
@@ -53,10 +56,19 @@ def main():
     started = time.perf_counter()
     try:
         with closing(QwenRetrieval(os.environ['QWEN_API_KEY'], embedding_model=args.model, timeout=45)) as api:
-            source = QueryEmbeddingSource(args.output/'cache', api, model=args.model)
-            vector, metadata = source.embed(args.query, scope=args.scope,
-                index_digest=args.index_digest, model=args.model, dimensions=1024)
+            source = QueryEmbeddingSource(args.output/'cache', api, model=args.model, wait_inflight_seconds=45)
+            def invoke(_):
+                start = time.perf_counter()
+                vector, metadata = source.embed(args.query, scope=args.scope,
+                    index_digest=args.index_digest, model=args.model, dimensions=1024)
+                return vector, {**metadata, 'caller_elapsed_ms':(time.perf_counter()-start)*1000}
+            with ThreadPoolExecutor(max_workers=args.concurrency) as pool:
+                results = list(pool.map(invoke, range(args.concurrency)))
+            vector, metadata = next((r for r in results if r[1]['provider_calls']), results[0])
+            assert all(r[0] == vector for r in results)
+            assert sum(r[1]['provider_calls'] for r in results) <= 1
             output = {'status': 'completed', **metadata, 'elapsed_ms': (time.perf_counter()-started)*1000}
+            output['concurrent_callers'] = [r[1] for r in results]
             (attempt/'vector.json').write_text(json.dumps(vector), encoding='utf8')
             # Confirm persisted reuse through a new adapter, without another request.
             restored = QueryEmbeddingSource(args.output/'cache', api, model=args.model)

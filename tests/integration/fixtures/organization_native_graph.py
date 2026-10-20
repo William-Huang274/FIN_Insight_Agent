@@ -47,11 +47,17 @@ def adapter(**kwargs):
                 'execution_plan':{'depth':'integrated','rationale':note,'omitted_steps_reason':note,'escalation_conditions':note}}
         elif count == 1:
             assert request['orientation_context']['source_space'] == 'organization'
+            query = os.getenv('FIN_PROBE_ORGANIZATION_QUERY')
             name, args = 'RequestSourceAction', {'action':'request_source','reason_summary':'List pinned originals.',
-                'selection':{'source_space':'organization','operation':'catalog'}}
+                'selection':({'source_space':'organization','operation':'search','query':query} if query
+                             else {'source_space':'organization','operation':'catalog'})}
         elif count == 2:
             result = json.loads(request['tool_results'][0]['content'])['result']
-            document = next(r['document_id'] for r in result['items'] if r.get('document_id'))
+            if os.getenv('FIN_PROBE_ORGANIZATION_QUERY'):
+                selection = result['items'][0]['readback']
+            else:
+                document = next(r['document_id'] for r in result['items'] if r.get('document_id'))
+                selection = {'source_space':'organization','operation':'read','document_id':document}
             if 'Revoke during static model' in json.dumps(request):
                 (evidence/(tid+'.ready')).write_text('static model response pending')
                 deadline = time.monotonic()+45
@@ -59,7 +65,7 @@ def adapter(**kwargs):
                     if time.monotonic()>deadline: raise AssertionError('revocation_barrier_timeout')
                     time.sleep(.1)
             name, args = 'RequestSourceAction', {'action':'request_source','reason_summary':'Read pinned original.',
-                'selection':{'source_space':'organization','operation':'read','document_id':document}}
+                'selection':selection}
         elif count == 3:
             result = json.loads(request['tool_results'][0]['content'])['result']
             passage = next(r for r in result['items'] if r.get('result_state')=='source_bound_passage')

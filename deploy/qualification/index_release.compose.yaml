@@ -1,0 +1,10 @@
+# Explicitly authorized embedding only. Static research provider remains in place.
+services:
+  api:
+    environment:
+      FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT: /organization-indexes
+      FINSIGHT_ORGANIZATION_QUERY_EMBEDDING: qwen
+      QWEN_API_KEY: ${QWEN_API_KEY:?explicit paid query qualification required}
+      FIN_PROBE_ORGANIZATION_QUERY: ${FIN_PROBE_ORGANIZATION_QUERY:?fixed public query required}
+    volumes:
+      - ${FIN_PROBE_ORGANIZATION_INDEXES:?isolated release and query receipts}:/organization-indexes

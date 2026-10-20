@@ -19,13 +19,16 @@ import java.util.*;
 class OrganizationResearchDrafts {
     record Create(@NotNull UUID id,@NotBlank @Size(max=120) String title,
                   @NotBlank @Size(min=10,max=16000) String question,@NotNull LocalDate research_as_of,
-                  @NotNull @Size(min=1,max=12) List<@NotNull UUID> resource_ids) {}
+                  @NotNull @Size(min=1,max=12) List<@NotNull UUID> resource_ids,
+                  UUID retrieval_release_id) {}
     private final JdbcTemplate db;
     private final OrganizationProjects projects;
     private final ObjectMapper json;
     private final TransactionTemplate tx;
-    OrganizationResearchDrafts(JdbcTemplate db,OrganizationProjects projects,ObjectMapper json,PlatformTransactionManager manager) {
+    private final OrganizationRetrievalReleases releases;
+    OrganizationResearchDrafts(JdbcTemplate db,OrganizationProjects projects,ObjectMapper json,PlatformTransactionManager manager,OrganizationRetrievalReleases releases) {
         this.db=db;this.projects=projects;this.json=json;this.tx=new TransactionTemplate(manager);
+        this.releases=releases;
     }
     private String actor(HttpServletRequest request) {
         String actor=(String)request.getAttribute("owner");
@@ -99,6 +102,8 @@ class OrganizationResearchDrafts {
                 .put("draft_id",body.id().toString()).put("project_id",projectId.toString()).put("organization_id",project.get("organization_id").toString())
                 .put("research_as_of",body.research_as_of().toString()).put("visibility_policy","current_project_and_all_inputs");
             manifest.set("inputs",inputs);
+            if(body.retrieval_release_id()!=null)
+                manifest.set("retrieval_index",releases.freeze(projectId,body.retrieval_release_id(),inputs));
             String encoded=manifest.toString(),hash=Delegation.digest(encoded.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             int inserted=db.update("INSERT INTO organization_research_draft(id,project_id,organization_id,created_by,request_digest,title,question,research_as_of,manifest_text,manifest_digest) VALUES(?,?,?,?,?,?,?,?::date,?,?) ON CONFLICT DO NOTHING",
                 body.id(),projectId,project.get("organization_id"),actor,digest,body.title().trim(),body.question().trim(),body.research_as_of().toString(),encoded,hash);

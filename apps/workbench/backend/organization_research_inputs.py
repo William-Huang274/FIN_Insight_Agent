@@ -40,7 +40,7 @@ def validate_grant(grant, project_id, draft_id):
         raise HTTPException(502, '研究输入授权身份或固定版本不匹配') from None
 
 
-def verify_storage(shared, org, inputs, research_as_of=None):
+def verify_storage(shared, org, inputs, research_as_of=None, retrieval_index=None):
     checked = []
     for item in inputs:
         ref = AssetRef.model_validate(item['binding']['ref'])
@@ -58,6 +58,14 @@ def verify_storage(shared, org, inputs, research_as_of=None):
         except (ProjectAssetUnavailable, ValueError, OSError):
             raise HTTPException(409, '固定研究原件暂不可核实；不会替换版本或启动研究') from None
         checked.append({'resource_id': item['resource_id'], 'ref': version['ref']})
+    if retrieval_index is not None:
+        import os
+        from sec_agent.research_foundation.organization_index_release import verify_release_inputs
+        try:
+            root = os.environ['FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT']
+            verify_release_inputs(shared.workspace, org, inputs, retrieval_index, root, research_as_of)
+        except (OSError, KeyError, TypeError, ValueError, ProjectAssetUnavailable, AssetConflict):
+            raise HTTPException(409, '固定索引或资料投影不可核实；不会切换最新版本或启动研究') from None
     return checked
 
 
@@ -65,7 +73,8 @@ async def verify_inputs(shared, authority, actor, project_id, draft_id):
     path = f'projects/{project_id}/research-drafts/{draft_id}/material-access'
     grant = await authority(actor, 'POST', path)
     org, inputs = validate_grant(grant, project_id, draft_id)
-    checked = await run_in_threadpool(verify_storage, shared, org, inputs, grant['manifest']['research_as_of'])
+    checked = await run_in_threadpool(verify_storage, shared, org, inputs, grant['manifest']['research_as_of'],
+                                     grant['manifest'].get('retrieval_index'))
     # No distributed transaction: recheck after I/O and fail on any intervening revocation.
     after = await authority(actor, 'POST', path)
     validate_grant(after, project_id, draft_id)

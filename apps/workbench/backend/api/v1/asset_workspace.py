@@ -82,6 +82,9 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None,
         if str(grant.get('id')) != str(resource_id):
             raise HTTPException(502, '资料授权结果不匹配')
         result = await run_in_threadpool(call, shared.read, grant['binding'])
+        after = await space_business_request(actor, 'POST', f'resources/{resource_id}/access')
+        if after != grant:
+            raise HTTPException(409, '读取期间资料授权已变化，请重新打开资料')
         return {**result, 'resource_id': str(resource_id), 'permission_revision': grant['revision']}
 
     @router.get('/organization-projects/{project_id}/resources/{resource_id}')
@@ -92,12 +95,40 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None,
                 or str(grant.get('organization_id')) != str(grant.get('binding', {}).get('organization_id'))):
             raise HTTPException(502, '项目资料授权结果不匹配')
         result = await run_in_threadpool(call, shared.read, grant['binding'])
+        after = await space_business_request(actor, 'POST', f'projects/{project_id}/resources/{resource_id}/access')
+        if after != grant:
+            raise HTTPException(409, '读取期间项目或资料授权已变化，请重新打开资料')
         return {**result, 'resource_id': str(resource_id), 'permission_revision': grant['revision']}
 
     @router.post('/organization-projects/{project_id}/research-drafts/{draft_id}/verify')
     async def verify_research_inputs(project_id: UUID, draft_id: UUID, request: Request, response: Response):
         from ...organization_research_inputs import verify_inputs
         return await verify_inputs(shared, space_business_request, identity(request, response, True), project_id, draft_id)
+
+    @router.post('/organization-projects/{project_id}/research-drafts/{draft_id}/retrieval-releases/{release_id}/register')
+    async def register_index(project_id: UUID, draft_id: UUID, release_id: UUID, request: Request, response: Response):
+        import os
+        from ...organization_research_inputs import validate_grant, verify_storage
+        from sec_agent.research_foundation.organization_index_release import load_release
+        actor = identity(request, response, True)
+        project = await space_business_request(actor, 'GET', f'projects/{project_id}')
+        if project.get('can_manage') is not True:
+            raise HTTPException(403, '由项目管理员登记已准备的索引版本')
+        path = f'projects/{project_id}/research-drafts/{draft_id}/material-access'
+        before = await space_business_request(actor, 'POST', path)
+        org, inputs = validate_grant(before, project_id, draft_id)
+        try:
+            _, _, _, contract = await run_in_threadpool(load_release,
+                os.environ['FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT'], org, str(release_id))
+        except (OSError, KeyError, ValueError, TypeError):
+            raise HTTPException(409, '索引尚未在服务器准备完成，未登记发布') from None
+        await run_in_threadpool(verify_storage, shared, org, inputs,
+            before['manifest']['research_as_of'], contract)
+        if await space_business_request(actor, 'POST', path) != before:
+            raise HTTPException(409, '索引发布期间资料授权发生变化')
+        return await space_business_request(actor, 'POST', f'projects/{project_id}/retrieval-releases',
+            {'id':str(release_id), 'source_draft_id':str(draft_id),
+             **{k:v for k,v in contract.items() if k != 'release_id'}})
 
     @router.get('/catalog')
     def catalog_page(request: Request, response: Response, project_id: UUID | None = None,

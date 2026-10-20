@@ -35,6 +35,23 @@ def wait_for(check, seconds=60):
     raise AssertionError('native_lifecycle_observation_timeout; inspect retained attempt')
 
 
+def direct_java():
+    """Resolve Windows launcher shims so terminating Popen terminates the JVM."""
+    executable = os.getenv('FINSIGHT_TEST_JAVA') or shutil.which('java')
+    assert executable, 'java_executable_required'
+    if os.name != 'nt':
+        return executable
+    properties = subprocess.run([executable, '-XshowSettings:properties', '-version'],
+        capture_output=True, text=True, timeout=15, check=True)
+    for line in properties.stderr.splitlines():
+        key, separator, value = line.strip().partition(' = ')
+        if separator and key == 'java.home':
+            direct = Path(value) / 'bin' / 'java.exe'
+            assert direct.is_file(), 'java_home_executable_missing'
+            return str(direct)
+    raise AssertionError('java_home_not_reported')
+
+
 class Stack:
     compose_files = (COMPOSE,)
     graph_fixture = ROOT / 'tests/integration/fixtures/intake_native_graph.py'
@@ -49,7 +66,7 @@ class Stack:
         (self.state / 'calls').mkdir(parents=True)
         self.project = 'fin-intake-native-' + uuid4().hex[:12]
         self.docker = os.getenv('FINSIGHT_TEST_DOCKER') or shutil.which('docker')
-        self.java = os.getenv('FINSIGHT_TEST_JAVA') or shutil.which('java')
+        self.java = direct_java()
         assert self.docker and self.java
         self.jar = Path(os.environ['FINSIGHT_INTAKE_TEST_JAR']).resolve()
         assert self.jar.is_file()

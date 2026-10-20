@@ -170,7 +170,7 @@ def test_bff_checks_current_authority_and_hides_internal_bindings(tmp_path, monk
         assert client.get(read,headers=bob).status_code == 502
         state['active'] = False
         assert client.get(read,headers=bob).status_code == 404
-        assert state['reads'] == 3
+        assert state['reads'] == 4  # successful storage read also rechecks authority
 
 
 def test_project_read_rechecks_combined_grant_and_rejects_mismatched_identity(tmp_path, monkeypatch):
@@ -207,7 +207,7 @@ def test_project_read_rechecks_combined_grant_and_rejects_mismatched_identity(tm
         state['active'] = False
         denied = client.get(url, headers=WRITE)
         assert denied.status_code == 404 and 'Pinned original' not in denied.text
-        assert state['calls'] == 5
+        assert state['calls'] == 6
         for suffix in (f'projects/{project}/resources/{resource}/access', f'projects/{project}/start', f'projects/{project}/prepare'):
             assert client.post('/api/v1/business/workspaces/'+suffix, headers=WRITE, json={}).status_code == 404
 
@@ -237,3 +237,31 @@ def test_organization_project_gateway_requires_enabled_individual_login(tmp_path
             assert client.get('/api/v1/business/config',headers=WRITE).json()['organization_projects'] is False
             assert client.get('/api/v1/business/workspaces/projects',headers=WRITE).status_code==404
             assert client.post('/api/v1/business/workspaces/projects',headers=WRITE,json={}).status_code==404
+
+
+@pytest.mark.parametrize('project_scope', [False, True])
+@pytest.mark.parametrize('fault,status', [('revoked', 404), ('changed', 409)])
+def test_no_original_bytes_returned_if_authority_changes_during_read(tmp_path, monkeypatch, project_scope, fault, status):
+    import apps.workbench.backend.business_transport as transport
+    source, ref = source_at(tmp_path)
+    org, space, resource, project = [str(uuid4()) for _ in range(4)]
+    binding = SpaceAssets(tmp_path/'organization-assets').publish(source, 'alice', resource, org, space, ref)
+    state = {'calls': 0}
+    async def authority(actor, method, path, body=None):
+        state['calls'] += 1
+        if state['calls'] == 2 and fault == 'revoked':
+            raise HTTPException(404, 'revoked during storage read')
+        return {'id':resource, 'revision':2 if state['calls']==2 else 1, 'binding':binding,
+                'organization_id':org, **({'project_id':project} if project_scope else {})}
+    monkeypatch.setattr(transport, 'space_business_request', authority)
+    monkeypatch.setenv('FINSIGHT_RESOURCE_SPACES_ENABLED','1')
+    monkeypatch.setenv('FINSIGHT_BUSINESS_API_URL','http://127.0.0.1:9')
+    monkeypatch.setenv('FINSIGHT_BUSINESS_SHARED_SECRET','synthetic-test-secret-with-at-least-32-bytes')
+    app = app_at(tmp_path, monkeypatch)
+    app.include_router(build_asset_workspace_router(tmp_path), prefix='/api/v1')
+    path = f'organization-projects/{project}' if project_scope else 'spaces'
+    with TestClient(app) as client:
+        response = client.get(f'/api/v1/asset-workspace/{path}/resources/{resource}', headers=WRITE)
+    assert state['calls'] == 2
+    assert response.status_code == status
+    assert 'Pinned original evidence.' not in response.text

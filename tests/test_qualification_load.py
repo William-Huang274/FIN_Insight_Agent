@@ -20,3 +20,10 @@ def test_closed_loop_counts_each_request_and_retains_wrong_results_and_failures(
     assert len({r['worker'] for r in result['samples']}) == 4
     assert result['samples'][3]['result'] == {'ok': False, 'error_type': 'TimeoutError'}
     assert result['success_rate'] == 15/17
+
+
+def test_resource_stop_withholds_new_requests_without_claiming_success():
+    calls = []
+    result = measure(lambda i, w: (calls.append(i) or {'ok': True}),
+        concurrency=1, requests=10, should_continue=lambda: len(calls) < 3)
+    assert result['completed'] == 3 and result['not_started'] == 7

@@ -11,6 +11,7 @@ import time
 from urllib.parse import urlsplit
 
 import httpx
+from sec_agent.adapters.delegated_http import delegated_ssl_context
 from fastapi import APIRouter, HTTPException, Request
 from starlette.responses import JSONResponse, Response
 
@@ -18,6 +19,7 @@ INTERNAL = '/api/v1/internal-research/'
 _PUBLIC = re.compile(r'(tasks|tasks/[0-9a-f-]{36}(?:/(?:prepare|start|reconcile))?)$')
 _SPACES = re.compile(r'workspaces(?:/(?:organizations|spaces|join)|/organizations/[0-9a-f-]{36}/(?:members|invites|remove-member)|/spaces/[0-9a-f-]{36}/(?:members|resources)|/resources/[0-9a-f-]{36}/revoke)?$')
 _ORG_PROJECTS = re.compile(r'workspaces/projects(?:/[0-9a-f-]{36}(?:/members|/(?:resources|research-drafts)(?:/[0-9a-f-]{36})?)?)?$')
+_RETRIEVAL_RELEASES = re.compile(r'workspaces/projects/[0-9a-f-]{36}/retrieval-releases$')
 
 
 def resource_spaces_enabled():
@@ -35,7 +37,8 @@ async def space_business_request(owner, method, suffix, body=None):
     data = b'' if body is None else json.dumps(body, ensure_ascii=False, separators=(',', ':')).encode()
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(15, connect=3), trust_env=False,
-                transport=httpx.AsyncHTTPTransport(retries=0), follow_redirects=False) as client:
+                transport=httpx.AsyncHTTPTransport(retries=0, trust_env=False,
+                    verify=delegated_ssl_context()), follow_redirects=False) as client:
             response = await client.request(method, base + path, content=data,
                 headers={'Authorization': 'Bearer ' + delegate(owner, method, path, data), 'Content-Type': 'application/json'})
         value = response.json()
@@ -165,7 +168,8 @@ def build_business_gateway():
         owner = current_owner(request)
         if not base:
             raise HTTPException(503, '本部署尚未接入研究业务服务')
-        if not _PUBLIC.fullmatch(path) and not ((_SPACES.fullmatch(path) or _ORG_PROJECTS.fullmatch(path)) and resource_spaces_enabled()):
+        release_read = request.method == 'GET' and _RETRIEVAL_RELEASES.fullmatch(path)
+        if not _PUBLIC.fullmatch(path) and not ((_SPACES.fullmatch(path) or _ORG_PROJECTS.fullmatch(path) or release_read) and resource_spaces_enabled()):
             raise HTTPException(404)
         if request.method == 'POST':
             if request.headers.get('x-workbench-request') != '1':
@@ -185,7 +189,8 @@ def build_business_gateway():
             headers['Idempotency-Key'] = key
         try:
             async with httpx.AsyncClient(timeout=httpx.Timeout(35, connect=3), trust_env=False,
-                    transport=httpx.AsyncHTTPTransport(retries=0), follow_redirects=False) as client:
+                    transport=httpx.AsyncHTTPTransport(retries=0, trust_env=False,
+                        verify=delegated_ssl_context()), follow_redirects=False) as client:
                 response = await client.request(request.method, base + target, content=body, headers=headers)
             return Response(response.content, status_code=response.status_code, media_type='application/json', headers={'Cache-Control': 'no-store'})
         except httpx.HTTPError:

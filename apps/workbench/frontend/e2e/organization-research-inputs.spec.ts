@@ -2,7 +2,7 @@ import {test,expect,type Page} from './identity-fixture';
 const org='10000000-0000-4000-8000-000000000001',project='20000000-0000-4000-8000-000000000002',resource='30000000-0000-4000-8000-000000000003';
 const url=`/workspace/projects?scope=organization&project=${project}&view=research`;
 async function fixture(page:Page,role='researcher'){
-  const state={saved:null as any,drafts:{} as Record<string,any>,posts:[] as any[],drop:false,revoked:false,verifies:0,hold:false,holdRead:false,release:null as null|(()=>void),execution:null as any,prepares:[] as any[],reconciles:0};
+  const state={releases:[] as any[],saved:null as any,drafts:{} as Record<string,any>,posts:[] as any[],drop:false,revoked:false,verifies:0,hold:false,holdRead:false,release:null as null|(()=>void),execution:null as any,prepares:[] as any[],reconciles:0};
   await page.route('**/api/v1/**',async route=>{
     const r=route.request(),u=new URL(r.url()),b=r.postData()?r.postDataJSON():null;let result:any={};
     if(u.pathname==='/api/v1/business/config')result={enabled:true,organization_projects:true,resource_spaces:true,team_collaboration:false};
@@ -10,6 +10,7 @@ async function fixture(page:Page,role='researcher'){
     else if(u.pathname==='/api/v1/research-sessions')result=[];
     else if(u.pathname==='/api/v1/business/workspaces')result={spaces:[],organizations:[{id:org,name:'合成研究团队',role:'member'}]};
     else if(u.pathname===`/api/v1/business/workspaces/projects/${project}`)result={id:project,organization_id:org,organization_name:'合成研究团队',name:'AI 基础设施',description:'无模型静态案例',archived:false,revision:3,can_manage:false,role,research_enabled:false};
+    else if(u.pathname.endsWith('/retrieval-releases'))result={items:state.revoked?[]:state.releases};
     else if(u.pathname.endsWith('/members'))result=[];
     else if(u.pathname.endsWith('/resources'))result={items:[{id:resource,title:'季度资料固定副本',resource_type:'files',space_name:'行业研究组'}],next_offset:null};
     else if(u.pathname.endsWith('/research-drafts')){
@@ -17,7 +18,7 @@ async function fixture(page:Page,role='researcher'){
         if(role==='viewer')throw Error('viewer attempted mutation');
         state.posts.push(b);
         if(state.drafts[b.id])expect(b).toEqual(state.posts.find(p=>p.id===b.id));
-        state.saved={...b,created_at:'2026-10-13T10:00:00Z',status:'inputs_saved',execution_enabled:false,manifest_digest:'sha256:'+'a'.repeat(64),manifest:{research_as_of:b.research_as_of,inputs:[{resource_id:resource,title:'季度资料固定副本',resource_type:'files',ref:{version_id:'frozen-v1',digest:'b'.repeat(64)}}]}};
+        state.saved={...b,created_at:'2026-10-13T10:00:00Z',status:'inputs_saved',execution_enabled:false,manifest_digest:'sha256:'+'a'.repeat(64),manifest:{...(b.retrieval_release_id?{retrieval_index:state.releases.find(x=>x.release_id===b.retrieval_release_id)}:{}),research_as_of:b.research_as_of,inputs:[{resource_id:resource,title:'季度资料固定副本',resource_type:'files',ref:{version_id:'frozen-v1',digest:'b'.repeat(64)}}]}};
         state.drafts[b.id]=state.saved;
         if(state.drop){state.drop=false;await route.fulfill({status:503,json:{detail:'提交响应丢失'}});return;}result=state.saved;
       }else result={items:state.revoked?[]:Object.values(state.drafts),next_offset:null};
@@ -50,6 +51,32 @@ async function fill(page:Page){
   await page.getByRole('checkbox',{name:/季度资料固定副本/}).check();
   await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
 }
+test('selected release survives response loss and copying while source changes require reselection',async({page})=>{
+  const state=await fixture(page),release='40000000-0000-4000-8000-000000000004';
+  state.releases=[{release_id:release,model:'qwen3.7-text-embedding',index_digest:'c'.repeat(64),
+    published_at:'2026-10-20T10:00:00Z',resource_ids:[resource]}];
+  await page.goto(url);
+  await page.getByLabel('准备单标题',{exact:true}).fill('固定检索版本');
+  await page.getByLabel('研究问题',{exact:true}).fill('研究固定披露中的现金流和资本支出变化。');
+  await page.getByLabel('研究截止日期',{exact:true}).fill('2026-10-12');
+  await page.getByRole('checkbox',{name:/季度资料固定副本/}).check();
+  await page.getByLabel('检索版本',{exact:true}).selectOption(release);
+  state.drop=true;
+  await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
+  await expect(page.getByRole('alert')).toContainText('响应丢失');
+  await page.reload();
+  await page.getByRole('button',{name:'以原内容重试保存',exact:true}).click();
+  await expect(page.getByText(/检索版本已固定/)).toBeVisible();
+  expect(state.posts).toHaveLength(2);
+  expect(state.posts[1]).toEqual(state.posts[0]);
+  expect(state.posts[0].retrieval_release_id).toBe(release);
+  await page.getByRole('button',{name:'复制为新准备单',exact:true}).click();
+  await expect(page.getByLabel('检索版本',{exact:true})).toHaveValue(release);
+  await page.getByRole('checkbox',{name:/季度资料固定副本/}).uncheck();
+  await expect(page.getByLabel('检索版本',{exact:true})).toHaveValue('');
+  await expect(page.getByRole('status')).toContainText('资料选择已变化');
+  expect(state.posts).toHaveLength(2);
+});
 for(const width of [1440,390])test(`frozen preparation, explicit verify and withdrawal at ${width}`,async({page},info)=>{
   await page.setViewportSize({width,height:960});const state=await fixture(page);
   await page.goto(url);await expect(page.getByRole('checkbox',{name:/季度资料固定副本/})).toBeVisible();

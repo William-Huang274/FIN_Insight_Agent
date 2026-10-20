@@ -93,7 +93,8 @@ def install_organization_native_routes(router, service):
         from types import SimpleNamespace
         shared = SimpleNamespace(workspace=AssetWorkspace(service.attachment_store.root.parent / 'project-library' / 'organization-assets'))
         await run_in_threadpool(verify_storage, shared, grant['organization_id'], grant['inputs'],
-                                json.loads(grant['manifest_text'])['research_as_of'])
+                                json.loads(grant['manifest_text'])['research_as_of'],
+                                json.loads(grant['manifest_text']).get('retrieval_index'))
         await reauthorize(service, grant)
         try:
             metadata = metadata_for(grant, service)

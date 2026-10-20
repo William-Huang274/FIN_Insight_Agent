@@ -13,6 +13,7 @@ from typing import Any
 from uuid import UUID
 
 import httpx
+from sec_agent.adapters.delegated_http import delegated_ssl_context
 
 from .asset_workspace import AssetRef, AssetConflict
 from .project_asset_access import ProjectAssetUnavailable
@@ -64,7 +65,8 @@ class OrganizationExecutionAuthority:
                             'method': 'POST', 'path': path, 'body_sha256': sha256(body).hexdigest()}, self._secret, algorithm='HS256')
         try:
             with httpx.Client(timeout=httpx.Timeout(10, connect=3), trust_env=False, follow_redirects=False,
-                              transport=self._transport or httpx.HTTPTransport(retries=0)) as client:
+                              transport=self._transport or httpx.HTTPTransport(
+                                  retries=0, trust_env=False, verify=delegated_ssl_context())) as client:
                 response = client.post(self.base_url + path, content=body,
                                        headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'})
                 if response.status_code != 200:
@@ -88,6 +90,9 @@ def validate_execution_grant(grant, execution_id, manifest_digest):
                 or manifest['visibility_policy'] != 'current_project_and_all_inputs'
                 or any(manifest[key] != str(UUID(grant[key])) for key in ('draft_id', 'project_id', 'organization_id'))):
             raise ValueError('manifest_scope')
+        if 'retrieval_index' in manifest:
+            from .organization_index_release import validate_contract
+            validate_contract(manifest['retrieval_index'])
         selected = {str(UUID(item['resource_id'])): item for item in manifest['inputs']}
         inputs = grant['inputs']
         if not 1 <= len(inputs) <= 12 or len(selected) != len(manifest['inputs']) or len(inputs) != len(selected):

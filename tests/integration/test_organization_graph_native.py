@@ -25,6 +25,7 @@ pytestmark = pytest.mark.skipif(os.getenv('FIN_ORGANIZATION_GRAPH_QUALIFICATION'
 
 
 class OrganizationGraphStack(Stack):
+    allowed_provider_keys = ()
     compose_files = (COMPOSE, ROOT/'deploy/qualification/organization_graph.compose.yaml')
     graph_fixture = ROOT/'tests/integration/fixtures/organization_native_graph.py'
     synthetic_components = ['provider adapter', 'trace export gate', 'OIDC identity', 'original document']
@@ -54,7 +55,8 @@ class OrganizationGraphStack(Stack):
         row=json.loads(subprocess.check_output([self.docker,'inspect',ids[0]],text=True,timeout=15))[0]
         env=dict(v.split('=',1) for v in row['Config']['Env'])
         present={k:bool(v) for k,v in env.items() if any(s in k.upper() for s in ('API_KEY','TOKEN','SECRET'))}
-        assert not any(v for k,v in present.items() if k not in ('LANGSMITH_API_KEY','FINSIGHT_ORGANIZATION_RUNTIME_SECRET'))
+        assert not any(v for k,v in present.items() if k not in (
+            'LANGSMITH_API_KEY','FINSIGHT_ORGANIZATION_RUNTIME_SECRET',*self.allowed_provider_keys))
         assert env['LANGSMITH_TRACING']=='false'
         assert json.loads(env['LANGSERVE_GRAPHS'])=={'research_session':self.registered_graph}
         assert env['FINSIGHT_BUSINESS_API_URL']==f'http://host.docker.internal:{self.java_port}'
@@ -68,7 +70,8 @@ class OrganizationGraphStack(Stack):
             'source_hashes':{p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in paths},
             'real':self.real_components,
             'substitutions':self.synthetic_components,
-            'provider_calls':0})
+            'provider_calls':None if self.allowed_provider_keys else 0,
+            'explicit_provider_keys':list(self.allowed_provider_keys)})
 
     def turns(self,tid):
         path=self.events/'model-turns.jsonl'

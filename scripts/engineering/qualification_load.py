@@ -18,7 +18,7 @@ def distribution(values):
         for p in (50, 95, 99)}, 'max_ms': ordered[-1], 'min_ms': ordered[0]}
 
 
-def measure(operation, *, concurrency, requests, max_seconds=180):
+def measure(operation, *, concurrency, requests, max_seconds=180, should_continue=None):
     """Operation(index, worker) returns a dict whose ok field is strictly bool.
 
     Each worker sends its next request only after the previous one terminates.
@@ -34,6 +34,8 @@ def measure(operation, *, concurrency, requests, max_seconds=180):
         barrier.wait(timeout=30)
         for index in range(number, requests, concurrency):
             if time.perf_counter()-started >= max_seconds:
+                break
+            if should_continue is not None and not should_continue():
                 break
             before = time.perf_counter()
             try:

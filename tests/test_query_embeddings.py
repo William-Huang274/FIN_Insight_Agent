@@ -98,3 +98,31 @@ def test_concurrent_same_query_has_one_billable_request(tmp_path):
             release.set()
         assert first.result(timeout=10)[1]['provider_calls'] == 1
     assert request(source)[1]['cache_hit'] and api.calls == 1
+
+
+def test_waiting_followers_reuse_one_receipt_without_dispatching_again(tmp_path):
+    import time
+    api = Api()
+    original = api.embed
+    def slow(texts):
+        time.sleep(.2)
+        return original(texts)
+    api.embed = slow
+    source = QueryEmbeddingSource(tmp_path, api, model=api.embedding_model, wait_inflight_seconds=2)
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(lambda _: request(source), range(8)))
+    assert api.calls == 1
+    assert sum(r[1]['provider_calls'] for r in results) == 1
+    assert sum(bool(r[1]['cache_hit']) for r in results) == 7
+
+
+def test_waiting_follower_does_not_resubmit_failed_or_orphaned_request(tmp_path):
+    api = Api()
+    source = QueryEmbeddingSource(tmp_path, api, model=api.embedding_model, wait_inflight_seconds=.1)
+    api.error = TimeoutError()
+    with pytest.raises(TimeoutError):
+        request(source)
+    api.error = None
+    with pytest.raises(RuntimeError):
+        request(source)
+    assert api.calls == 1

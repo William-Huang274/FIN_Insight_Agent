@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import time
+from threading import Event
 from uuid import uuid4
 
 import httpx
@@ -45,6 +46,9 @@ class CapacityStack(OrganizationGraphStack):
         super().__init__()
         self.env['FIN_ORGANIZATION_CAPACITY_QUALIFICATION'] = '1'
         self.env['JAVA_TOOL_OPTIONS'] = '-Xms64m -Xmx256m -XX:ActiveProcessorCount=2'
+        jobs = int(os.environ.get('FIN_CAPACITY_NATIVE_JOBS', '1'))
+        assert jobs in (1, 2, 4)
+        self.env['FIN_CAPACITY_NATIVE_JOBS'] = str(jobs)
 
 
 def test_historical_source_multi_identity_research_load(monkeypatch):
@@ -70,7 +74,8 @@ def test_historical_source_multi_identity_research_load(monkeypatch):
     try:
         s.save('load-contract', {'levels':levels, 'requests_per_level':count, 'identities':users,
             'source_sha256':document['sha256'], 'case':case['id'], 'paid_calls':0,
-            'native_jobs_per_worker':1, 'java_heap_max_mib':256, 'initial_available_memory':memory,
+            'native_jobs_per_worker':int(s.env['FIN_CAPACITY_NATIVE_JOBS']),
+            'java_heap_max_mib':256, 'initial_available_memory':memory,
             'meaning':'Closed-loop full orientation with scripted model decisions and real original readback',
             'source_hashes':{p:sha256((ROOT/p).read_bytes()).hexdigest() for p in [
                 'tests/integration/test_organization_capacity_stack.py',
@@ -114,6 +119,14 @@ def test_historical_source_multi_identity_research_load(monkeypatch):
         for level in levels:
             memory = available_memory()
             assert memory is None or memory >= 512*1024**2, 'host_stop_line_512MiB'
+            stopped = Event()
+            observations = []
+            def resource_guard():
+                free = available_memory()
+                observations.append({'monotonic':time.monotonic(), 'free_bytes':free})
+                if free is not None and free < 512*1024**2:
+                    stopped.set()
+                return not stopped.is_set()
             def operation(index, worker):
                 number = worker if level > 1 else index % users
                 client, project = clients[number], projects[number % len(projects)]
@@ -155,7 +168,10 @@ def test_historical_source_multi_identity_research_load(monkeypatch):
                 except Exception as error:
                     return {'ok':False, 'identity':number, 'project':project, 'draft_id':draft,
                         'thread_id':tid, 'stage_ms':stage_ms, 'error_type':type(error).__name__}
-            result = measure(operation, concurrency=level, requests=count, max_seconds=900)
+            result = measure(operation, concurrency=level, requests=count, max_seconds=1800,
+                             should_continue=resource_guard)
+            result['resource_observations'] = observations
+            result['resource_stop'] = stopped.is_set()
             result['available_memory_before'] = memory
             result['available_memory_after'] = available_memory()
             result['stage_latency'] = {stage:distribution([

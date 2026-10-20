@@ -12,7 +12,7 @@ const context=await browser.newContext({baseURL:origin,viewport:{width:1440,heig
   extraHTTPHeaders:{Authorization:'Bearer qualification-alice','X-Workbench-Request':'1'}});
 // Only block outbound traffic; no service response is fabricated.
 await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
-const page=await context.newPage(),requests=[],errors=[],results=[];
+const page=await context.newPage(),requests=[],errors=[],results=[],drafts=[];
 page.setDefaultTimeout(45000);
 page.on('pageerror',e=>errors.push(String(e)));
 page.on('request',r=>{if(new URL(r.url()).pathname.startsWith('/api/'))requests.push({method:r.method(),path:new URL(r.url()).pathname});});
@@ -67,9 +67,36 @@ try{
     }
     results.push({entity_id:c.entity_id,record_id:row.id,document_id:saved.document_id,resource_id:resource,card_digest:card.capture_selection.snapshot});
   }
+  // Save immutable business inputs, then explicitly verify originals. No native
+  // thread is created: even the valid draft stops before "prepare execution".
+  for(const [label,cutoff,status] of [['early','2020-01-01',409],['valid',spec.as_of,200]]){
+    await page.goto(`/workspace/projects?scope=organization&project=${process.env.FIN_METRIC_TEAM_PROJECT}&view=research`);
+    await page.getByLabel('准备单标题',{exact:true}).fill(`Historical metrics ${label}`);
+    await page.getByLabel('研究问题',{exact:true}).fill('核对已选历史指标的公司、期间、来源及计算输入，不生成研究结论。');
+    await page.getByLabel('研究截止日期',{exact:true}).fill(cutoff);
+    const choices=page.getByRole('checkbox');
+    await expect(choices).toHaveCount(4);
+    for(const choice of await choices.all())await choice.check();
+    const saving=page.waitForResponse(r=>/\/research-drafts$/.test(new URL(r.url()).pathname)&&r.request().method()==='POST');
+    await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
+    const response=await saving;expect(response.status()).toBe(200);
+    const draft=await response.json();
+    expect(draft.manifest.inputs.map(i=>i.resource_id).sort()).toEqual(results.map(i=>i.resource_id).sort());
+    const verifying=page.waitForResponse(r=>r.url().endsWith(`/research-drafts/${draft.id}/verify`));
+    await page.getByRole('button',{name:'重新校验权限与原件',exact:true}).click();
+    expect((await verifying).status()).toBe(status);
+    if(label==='early')await expect(page.getByRole('alert')).toContainText('可获知日');
+    else{
+      await expect(page.getByRole('status')).toContainText('校验通过');
+      await page.reload();
+      await expect(page.getByRole('heading',{name:`Historical metrics ${label}`,exact:true})).toBeVisible();
+      await page.screenshot({path:resolve(output,'research-inputs-1440.png'),fullPage:true});
+    }
+    drafts.push({id:draft.id,manifest_digest:draft.manifest_digest,research_as_of:cutoff,verification_status:status});
+  }
   expect(errors).toEqual([]);
   expect(requests.filter(r=>/\/(runs|start|continue)$/.test(r.path))).toEqual([]);
-  await writeFile(resolve(output,'result.json'),JSON.stringify({results,requests,page_errors:errors,provider_calls:0,response_mocks:0},null,2));
+  await writeFile(resolve(output,'result.json'),JSON.stringify({results,drafts,requests,page_errors:errors,provider_calls:0,response_mocks:0},null,2));
 }finally{
   await writeFile(resolve(output,'observations.json'),JSON.stringify({results,requests,page_errors:errors},null,2));
   await page.screenshot({path:resolve(output,'last-page.png'),fullPage:true}).catch(()=>{});

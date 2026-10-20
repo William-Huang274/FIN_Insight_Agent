@@ -141,6 +141,12 @@ class OrganizationExecutionReader:
             result = self.workspace.read('organization:' + manifest['organization_id'], binding['ref'])
             if result['version']['ref'] != binding['ref']:
                 raise _unavailable()
+            from .project_source_captures import validate_metric_cutoff, financial_capture_text
+            capture = result.get('capture') or {}
+            validate_metric_cutoff(capture, manifest['research_as_of'])
+            if capture.get('kind') == 'financial':
+                text = financial_capture_text(capture)
+                result = {**result, 'text': text[:100000], 'truncated': len(text) > 100000}
         except (KeyError, OSError, ValueError, AssetConflict, sqlite3.Error):
             raise _unavailable() from None
         self._after(before)  # An authorization response is never a lease across storage I/O.

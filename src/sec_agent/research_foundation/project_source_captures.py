@@ -5,6 +5,7 @@ This module owns source semantics; it does not introduce a second asset store.
 """
 import json
 import re
+from datetime import date
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -135,6 +136,47 @@ def render_capture(snapshot, note):
             lines += [f"## 财务原始记录 {i}", '```json\n'+json.dumps(r,ensure_ascii=False,sort_keys=True,indent=2)+'\n```']
     lines += ['# 用户批注（非来源事实）', note or '（暂无批注）']
     return '\n\n'.join(lines)
+
+
+def validate_metric_cutoff(capture, research_as_of):
+    """Metric availability is not its observation period or a browser query date.
+
+    Only typed metric snapshots have this contract. Free-form uploads and source
+    excerpts remain unverified; this check cannot certify their historical scope.
+    """
+    if (capture or {}).get('query', {}).get('kind') != 'metric_cards':
+        return
+    try:
+        cutoff = date.fromisoformat(research_as_of)
+        rows = capture['rows']
+        if not rows:
+            raise ValueError('empty_metric_capture')
+        for row in rows:
+            if date.fromisoformat(row['available_at']) > cutoff:
+                raise ValueError('metric_not_available')
+            # Calculation inputs can carry independently dated disclosures.
+            pending = list(row.get('inputs') or [])
+            while pending:
+                item = pending.pop()
+                for key in ('available_at', 'filed_at'):
+                    if key in item and date.fromisoformat(item[key]) > cutoff:
+                        raise ValueError('input_not_available')
+                pending.extend(item.get('components') or [])
+    except (KeyError, TypeError, ValueError, AttributeError):
+        raise AssetConflict('指标卡或计算输入的可获知日晚于研究截止日，或日期不完整；请核对截止日期并重新选择资料。') from None
+
+
+def financial_capture_text(capture):
+    """Project the exact saved financial snapshot for native source navigation.
+
+    UI readers keep using structured rows. Native readers need the original text
+    as well; an empty UI text field must not become "source unavailable".
+    """
+    snapshot = {key: capture[key] for key in (
+        'schema_version', 'kind', 'query', 'query_digest', 'matching_count', 'selection_mode', 'rows')}
+    if snapshot['kind'] != 'financial' or content_digest(snapshot) != capture['snapshot_digest']:
+        raise AssetConflict('固定财务快照身份不匹配，不能投影研究原文。')
+    return render_capture(snapshot, capture.get('note', ''))
 
 
 def safe_title(title):

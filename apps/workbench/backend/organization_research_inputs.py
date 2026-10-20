@@ -40,16 +40,22 @@ def validate_grant(grant, project_id, draft_id):
         raise HTTPException(502, '研究输入授权身份或固定版本不匹配') from None
 
 
-def verify_storage(shared, org, inputs):
+def verify_storage(shared, org, inputs, research_as_of=None):
     checked = []
     for item in inputs:
         ref = AssetRef.model_validate(item['binding']['ref'])
         try:
             # resolve verifies original bytes, version digest and any captured financial/source snapshot.
-            version, _ = shared.workspace.resolve('organization:' + org, ref)
+            version, row = shared.workspace.resolve('organization:' + org, ref)
+            if row and row.get('project_origin', {}).get('asset_capture'):
+                from sec_agent.research_foundation.project_source_captures import read_capture, validate_metric_cutoff
+                captured = read_capture(shared.workspace.library.documents, row)
+                validate_metric_cutoff(captured['snapshot'], research_as_of)
         except KeyError:
             raise HTTPException(409, '已保存的研究原件缺失；准备单保留，请恢复存储后重新校验') from None
-        except (AssetConflict, ProjectAssetUnavailable, ValueError, OSError):
+        except AssetConflict as exc:
+            raise HTTPException(409, str(exc)) from None
+        except (ProjectAssetUnavailable, ValueError, OSError):
             raise HTTPException(409, '固定研究原件暂不可核实；不会替换版本或启动研究') from None
         checked.append({'resource_id': item['resource_id'], 'ref': version['ref']})
     return checked
@@ -59,7 +65,7 @@ async def verify_inputs(shared, authority, actor, project_id, draft_id):
     path = f'projects/{project_id}/research-drafts/{draft_id}/material-access'
     grant = await authority(actor, 'POST', path)
     org, inputs = validate_grant(grant, project_id, draft_id)
-    checked = await run_in_threadpool(verify_storage, shared, org, inputs)
+    checked = await run_in_threadpool(verify_storage, shared, org, inputs, grant['manifest']['research_as_of'])
     # No distributed transaction: recheck after I/O and fail on any intervening revocation.
     after = await authority(actor, 'POST', path)
     validate_grant(after, project_id, draft_id)

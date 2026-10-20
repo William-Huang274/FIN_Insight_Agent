@@ -12,6 +12,16 @@
 
 没有组织空间权限或部署未启用此功能时，发布不能成功。个人项目保存与组织发布为两个明确动作，不因保存自动扩大可见范围。
 
+## 作为组织研究输入
+
+项目研究页可以在准备单中选择多张已发布并关联的卡片，保存问题、研究截止日和固定版本。保存准备单不代表资料已经适合该截止日；详情中的“重新校验权限与原件”会检查权限、原件完整性及指标卡的可获知日。校验失败保留原准备单，需要选择合适资料或新建正确截止日的准备单，不自动删行或换版本。
+
+有明确 `metric_cards` 合同的数据，按每行 `available_at` 与研究截止日比较；计算输入中显式提供的 `available_at`/`filed_at` 也必须符合截止日。缺失或无效的卡片可获知日拒绝。截止日当天可用。观察期或预测期可以在未来：例如7月已公布的下一年指引，可以用于7月末的研究。查询页面的默认 `as_of=9999-12-31` 不会代替记录的实际可获知日。
+
+相同检查用于原件校验、原生草稿准备、首次启动、接续派发前以及组织工具实际读取。Java 保存的截止日和固定输入提供业务约束，Python 依据固定卡的日期语义核验。未声称任意上传文件、批注或原文摘录的历史可用性已经得到认证。
+
+组织运行的文本读取从已验摘要的 financial 快照恢复保存时的原文表示，包含完整数值、来源、公式输入和明确分隔的用户批注，供既有来源导航使用；结构化工具继续返回原始行。页面仍使用数据卡视图，避免重复展示原始 JSON。文本超过现有100,000字符上限时明确标记截断，结构化分页不因此删行。该投影不将用户选取的快照升级为已审核金融事实。
+
 ## API 与数据合同
 
 `POST /api/v1/data-library/metrics/query` 的单公司 `section=card` 响应增加 `capture_selection`，包括 `kind=metric`、公司、稳定记录 ID、截止日和快照摘要。旧数据卡字段及工具输出保持兼容。
@@ -27,7 +37,7 @@
 普通回归不依赖私有历史案例：
 
 ```powershell
-python -m pytest tests/test_metric_card_capture.py tests/test_project_source_captures.py tests/test_metric_workspace.py tests/test_resource_spaces.py tests/test_organization_execution_access.py tests/test_structured_sql_acceptance.py -q
+python -m pytest tests/test_metric_card_capture.py tests/test_metric_research_inputs.py tests/test_project_source_captures.py tests/test_metric_workspace.py tests/test_resource_spaces.py tests/test_organization_execution_access.py tests/test_structured_sql_acceptance.py -q
 ```
 
 新增测试覆盖完整计算输入、精度、重复保存、原文不可篡改、错误公司/记录/截止日、额外数值字段、失效摘要和发布版本变更。旧捕获、组织授权与结构化回滚测试保持有效。
@@ -56,3 +66,5 @@ python -m pytest tests/integration/test_metric_card_browser_stack.py -q
 - 真实测试先暴露了登录栏遮住数据卡保存按钮，以及组织空间列表异步返回清空已选资料的两处问题；修复层级和加载期间交互后通过正常点击验收。完整公司目录新增独立滚动，缺少开始日期不再误标为时点。
 
 这组结果证明的是固定数据卡的用户操作及当前权限闭环。登录由测试身份替代，未验证真实 SSO；未启动研究、未评定 Agent 研究质量，也未验证生产容量。
+
+后续研究输入验收复用同一真实服务脚本，四张卡共同进入浏览器准备单：过早截止日校验返回409，合理截止日返回200并可刷新回读。真实Java执行绑定下，正式来源导航及MCP结构化工具读取通过；错误截止日和撤权均拒绝工具读取。此轮约131秒，包含服务启动，不是性能指标。新增9项时间边界/原文/原生准备回归通过；组织准备、启动、接续、检索及读取相关回归通过。原生准备拒绝测试确认尚未创建thread/run，服务联调未启动Agent图。

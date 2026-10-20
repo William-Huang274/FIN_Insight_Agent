@@ -68,7 +68,8 @@ def install_organization_start_routes(router, service):
             raise HTTPException(409, '原生草稿已有运行；请核对原记录')
         from types import SimpleNamespace
         shared = SimpleNamespace(workspace=AssetWorkspace(service.attachment_store.root.parent / 'project-library' / 'organization-assets'))
-        await run_in_threadpool(verify_storage, shared, grant['organization_id'], grant['inputs'])
+        await run_in_threadpool(verify_storage, shared, grant['organization_id'], grant['inputs'],
+                                json.loads(grant['manifest_text'])['research_as_of'])
         await reauthorize(service, grant)
         run = await service.sdk.runs.create(grant['execution_id'], 'research_session', **arguments,
             multitask_strategy='reject', stream_mode='custom', stream_subgraphs=True, stream_resumable=True)

@@ -6,6 +6,10 @@ from uuid import UUID
 
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
+from types import SimpleNamespace
+from sec_agent.research_foundation.asset_workspace import AssetWorkspace
+from .organization_research_inputs import verify_storage
 
 from .authentication import service_owner
 from .business_transport import space_business_request
@@ -70,6 +74,9 @@ def install_organization_continuation_routes(router, service):
         _, usage = public_run_usage(service.audit_root, tid, runs[0]['run_id'])
         if usage is None or not usage['recorded_requests'] or usage['unknown_or_pending_requests'] or usage['partial_audit']:
             raise HTTPException(409, '前序用量未知或审计不完整，先核对原运行')
+        shared = SimpleNamespace(workspace=AssetWorkspace(service.attachment_store.root.parent / 'project-library' / 'organization-assets'))
+        await run_in_threadpool(verify_storage, shared, grant['organization_id'], grant['inputs'],
+                                json.loads(grant['manifest_text'])['research_as_of'])
         await reauthorize(service, grant)
         run = await service.sdk.runs.create(tid, 'research_session', **arguments,
             multitask_strategy='reject', stream_mode='custom', stream_subgraphs=True, stream_resumable=True)

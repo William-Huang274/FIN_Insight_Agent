@@ -113,6 +113,11 @@ def save_draft(state, action):
         receipt['calculation_binding_issues'] = [{**issue,
             'blocks_final_submission': issue['blocking'], 'blocking': False,
             'stage': 'saved_draft_advisory'} for issue in binding_issues]
+    from .period_relations import workpaper_period_checks
+    period_checks = workpaper_period_checks(candidate)
+    if period_checks:
+        receipt['period_relation_checks'] = period_checks
+        receipt['semantic_check_status'] = 'period_relations_require_author_check_not_schema_errors'
     result = {**deepcopy(draft), 'arguments': candidate, 'digest': receipt['draft_digest'],
               'saved_batches': draft['saved_batches'] + 1,
               'changed_paths': list(dict.fromkeys([*draft['changed_paths'], *changed])),

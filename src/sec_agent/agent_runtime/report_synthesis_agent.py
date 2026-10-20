@@ -594,7 +594,13 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         if errors:
             result = output_message(runtime, error="; ".join(errors))
         else:
+            from .period_relations import remedy_period_checks
+            current = artifacts.with_revisions(runtime.state.get('revisions', {}))
+            period_checks = remedy_period_checks(
+                [r.model_dump(mode='json') for r in [*decision.dispositions, *decision.new_findings]],
+                current.read_paper)
             result = output_message(runtime, {"kind": "lead_issue_decision", **decision.model_dump(mode="json"), "citations": citations,
+                **({'period_relation_checks': period_checks} if period_checks else {}),
                 **({'finding_id_resolutions': resolutions} if resolutions else {})})
         if resolutions:
             result.update['messages'][0].content += '\n' + json.dumps({'finding_id_resolutions': resolutions,

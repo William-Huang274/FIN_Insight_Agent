@@ -85,7 +85,45 @@ Python 展示提交固定后正常合并，未 cherry-pick 漏掉依赖，也未
 
 过程中 Docker 查询再次卡住。隔壁确认无 Docker/模型运行后按已有用户授权恢复：正常重启超时，停止 Docker 自有进程并终止 `docker-desktop` 后重新启动；未删除套接字、数据卷或虚拟磁盘。本轮结束时自有服务停止，原三个共享容器健康。恢复成功不等于查明了反复卡住的根因，仍需另行诊断。
 
+## S1 追加：生产复核父图与 PostgreSQL（2026-10-21）
+
+验收指导 `60499c06` 快进合入共同分支后，在独立 Agent Server / PostgreSQL / Redis 中执行实际 `create_agent` 和 `build_research_convergence_graph`，模型回复使用确定性测试替身。此次没有通过更新报告 state 来模拟修订。
+
+**发现并修复的生产问题：** 单独的 verifier 能正常持久化，但生产父图再次进入同一复核角色时，默认的 per-invocation 子图 checkpoint 不会带入上一版工具回执。已有历史目录与精确读取工具因此不能获得原消息。改为两个串行复核节点各自的 per-thread 原生持久化；并行作者和其他角色不改变。
+
+父图从断点接续还会向子图传递恢复语义。若子图已经完成，普通新输入可能直接读回旧输出。现在新复核基线明确清空旧 output，并用 `Command` 进入该子代理声明的入口节点，保留 before-agent 限额及授权中间件；相同基线继续使用原消息 ID，未完成旧版不能被新版覆盖。旧输出仍在历史 checkpoint 和产物历史中，不能当新版结论。采用框架已有机制，没有另建记忆库或调度器，机制依据见 [LangGraph 子图持久化](https://docs.langchain.com/oss/python/langgraph/use-subgraphs)。
+
+| 验收范围 | 最终证据 | 限制 |
+| --- | --- | --- |
+| 独立 verifier 正常及中断换版 | 两线程、六次版本复核、九个原生运行；指定旧 checkpoint 回读；三服务重启后值和 checkpoint 一致，已完成历史读取不重复 | 输入报告与历史回执为静态数据 |
+| 生产 convergence 父图 | integrated 路由执行三版 writer→report_verifier、两次 writer 修订、四个原生运行；第二版后重启三服务；原来源读取一次、历史回读两次；新版均有独立提交 | 脚本意见为表达责任，不涵盖专家重研、真人交互或金融质量 |
+| 两组真实服务合计 | **2 项通过，114.96 秒；13 个原生运行、21 次脚本模型回复、0 次提供方调用** | 次数是本验收的工程覆盖，不是性能或质量指标 |
+| 父图定向回归 | 41 项通过，38.04 秒；包括子图重建、不同线程隔离、每版一个任务、六个调用与六个回执配对 | 与扩展回归重叠 |
+| 扩展回归 | 初轮 120 通过、3 个既存断言失败；原 60499c06 convergence 在独立进程复跑同样三处失败。对齐当前综合交接后，其所属研究会话测试 12 项全部通过，19.21 秒 | 12 项与前轮重叠，不累计成 132 个独立测试 |
+
+既存断言仍期待 writer 不接收 synthesis，而冻结 Python 基线已改为 Lead 继续当前综合。修正后的测试要求 `current_synthesis.v1`，并核对 writer 收到的综合正文与 research_verifier 核对的正文一致；没有回退实际写作行为或删掉交接检查。
+
+本机证据：`Z:/FIN_Insight_Agent_qualification/20261021_release_acceptance/persistent-review-final-r1` 下的 `reviewer`、`convergence`，分别保留环境/源码指纹、每版 checkpoint、重启前后记录和机器可读结果。两组运行结束均核对源码指纹未变；日志/数据卷保留在仓库外。早期失败保留在同级目录：独立 verifier 的服务器运行 ID、静态断点 run/thread 状态及断点关闭属于测试假设修正；`convergence-persistence-r1` 则是真实父图缺失旧回执的问题复现。
+
+### 复现入口
+
+测试文件：`tests/integration/test_report_review_persistence.py`。默认跳过，明确启用后运行：
+
+```powershell
+$env:FIN_REPORT_REVIEW_PERSISTENCE_QUALIFICATION = "1"
+# 指定新的仓库外 FIN_NATIVE_ATTEMPT_DIR；两组各建 reviewer/convergence 子目录。
+# FIN_PROBE_SUBNET 和 FIN_CONVERGENCE_PROBE_SUBNET 为分别检查过的两个空闲子网。
+# 其余沿用 tests/integration/test_java_intake_native.py 的隔离 Stack 配置：
+# FIN_PROBE_IMAGE（本地固定 sha256 镜像）、FIN_NATIVE_LICENSE_ENV、
+# FINSIGHT_TEST_DOCKER、FINSIGHT_TEST_JAVA、FINSIGHT_INTAKE_TEST_JAR。
+# 基类记录 JAR，但本测试不启动 Java/BFF，实际服务清单以本测试 manifest 为准。
+python -m pytest tests/integration/test_report_review_persistence.py -q
+```
+
+本次固定镜像内 LangGraph API 0.13.3、LangGraph 1.2.11、psycopg 3.3.4，未升级依赖。开发许可可用，但测试容器拒绝模型提供方凭据并关闭 tracing。测试仅停止自己创建的容器，不删除卷，也不停止共享服务。
+
 ## 放行前剩余步骤
 
-1. 将完整报告复核图的连续换版、工具历史和中断接续放入真实持久化链路，验证普通接续和运维恢复分别成立；本轮两版静态 checkpoint 的读取/导出不能替代审查执行流程。
-2. 记录问题归属并修复复测，全部通过后再评估 main 合并和部署。组织业务和展示追加已完成本节限定验收；当前仍为集成候选，未合 main、未切部署。
+1. **组织报告追问与局部修订仍未接入。** 需新增 Java 多轮持久命令，绑定当前 checkpoint、报告版本与摘要，沿用原发起人和全部固定资料授权；未知回执只核对原操作。相应 run 进入当前读取授权后，才能验证普通网页操作。
+2. 本次证明新的复核子图可以跨版本、跨进程继续；**不自动迁移旧 per-invocation 子图 checkpoint**。旧研究和进行中的任务保持原冻结部署。专用验收环境需记录代码、镜像、JAR、前端、数据库迁移与回退边界。
+3. 组织业务和展示只完成各节限定验收。S1 尚未放行，main 未合入、共享部署未切换；后续按[第一版执行计划](first_release_acceptance_execution.zh-CN.md)进入产品交互和 RAG，而不是把本次静态图运行称为真实金融研究通过。

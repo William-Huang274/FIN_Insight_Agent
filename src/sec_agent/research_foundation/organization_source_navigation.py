@@ -15,13 +15,17 @@ from .organization_execution_access import OrganizationExecutionUnavailable
 
 
 class OrganizationSourceNavigation:
-    def __init__(self, reader, *, workbench_url):
+    def __init__(self, reader, *, workbench_url, retrieval_root=None):
         parsed = urlsplit(workbench_url)
         if (parsed.scheme not in {'http', 'https'} or not parsed.hostname or parsed.username or parsed.password
                 or parsed.path not in {'', '/'} or parsed.query or parsed.fragment):
             raise ValueError('organization_source_requires_workbench_origin')
         self.reader, self.workbench_url = reader, workbench_url.rstrip('/')
         self.observed = ObservedSourceRegistry()
+        self.hybrid = None
+        if retrieval_root is not None:
+            from .organization_hybrid_retrieval import OrganizationHybridRetrieval
+            self.hybrid = OrganizationHybridRetrieval(reader, retrieval_root)
 
     @staticmethod
     def _identity(item):
@@ -71,10 +75,11 @@ class OrganizationSourceNavigation:
         if request.operation == 'outline':
             nodes = [row for row in nodes if row['node_kind'] == 'section']
         result = navigate_source_nodes(nodes, request, snapshot=self.reader.authority.manifest_digest[7:],
-            allowed_space='organization', hybrid_enabled=False)
+            allowed_space='organization', hybrid_enabled=False,
+            ranker=self.hybrid.rank if self.hybrid is not None else None)
         result = result.model_copy(update={'items': tuple({**item,
             'organization_source': provenance[item['document_id']]} for item in result.items),
-            'notice': result.notice + ' Organization originals only; lexical search, no external embedding/rerank. '
+            'notice': result.notice + ' Organization originals only; no external embedding/rerank. '
                 'The source projection may be truncated (organization_source.source_truncated). '
                 'Offsets identify projected text, not original PDF pages. Adjacent windows/tables require review. '
                 'Research cutoff records intent; historical availability and financial semantics are not certified.'})

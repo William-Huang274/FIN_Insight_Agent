@@ -80,7 +80,7 @@ uv run --no-sync python -m pytest -q tests/integration/test_resource_spaces_stac
 
 目录、搜索和大块的 `window_required` 都不是可引用证据。正式读取才生成 `PASSAGE::`。组织来源身份随引用进入现有来源摘要，保存 `organization_source.ref`、资源 ID、manifest 摘要、源投影截断与来源捕获信息。字符块由组织原件的现有文本投影生成，不伪造 PDF 页码；大块用 `character_offset/next_readback` 读取。当前投影仍受原件阅读器 100,000 字符上限限制，需视觉读取或空正文明确失败，不将其视为未披露。
 
-组织搜索强制使用本地关键词/BM25，不继承宿主 `FINSIGHT_SOURCE_HYBRID` 开关，避免把组织正文隐式送给 embedding/rerank。未开放宿主 SQL、个人 uploads、公共 library 或 web；不允许失败后落回这些空间。公开引用 URL 指向配置的工作台组织项目资源入口，浏览器仍需当前权限。
+组织搜索默认使用本地关键词/BM25，不继承宿主 `FINSIGHT_SOURCE_HYBRID` 开关。新增的[组织授权混合检索](organization_hybrid_retrieval.zh-CN.md)须由服务器显式配置，使用已准备向量和查询，不发送组织正文给 embedding/rerank；缺失索引明确失败。未开放宿主 SQL、个人 uploads、公共 library 或 web；不允许失败后落回这些空间。公开引用 URL 指向配置的工作台组织项目资源入口，浏览器仍需当前权限。
 
 导航前后、每份原件读取前后、引用与计算工具调用前后均核验当前权限。扫描多个来源后再次核权，避免前一份来源已撤权、后续扫描仍返回合并结果。已读缓存不是权限租约，不从模型参数导入别人的引用或个人记忆。同一组织执行的历史来源恢复见第六片；底稿隔离见第四片，完整阶段工厂仍待接入。
 

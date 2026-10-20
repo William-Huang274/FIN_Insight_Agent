@@ -71,7 +71,7 @@ def _unavailable(*args, **kwargs):
 
 class OrganizationDataFactory:
     """Host injects a method-only foundation and an explicit timezone-aware cutoff."""
-    def __init__(self, reader, *, foundation, research_as_of, workbench_url):
+    def __init__(self, reader, *, foundation, research_as_of, workbench_url, retrieval_root=None):
         grant, manifest, _ = reader._grant()
         cutoff = datetime.fromisoformat(research_as_of.replace('Z', '+00:00'))
         if (foundation.case_identity.case_id != 'research:' + grant['execution_id']
@@ -81,6 +81,7 @@ class OrganizationDataFactory:
             raise ValueError('organization_foundation_identity_or_cutoff_mismatch')
         self.reader, self.foundation, self.research_as_of = reader, foundation, research_as_of
         self.workbench_url = workbench_url
+        self.retrieval_root = retrieval_root
         self.grant = grant
 
     @contextmanager
@@ -97,7 +98,8 @@ class OrganizationDataFactory:
         catalog = {'schema_version':'organization_source_routes.v1', 'source_spaces':['organization'],
                    'manifest_digest':self.reader.authority.manifest_digest, 'routes':[]}
         catalog['catalog_digest'] = canonical_sha256(catalog)
-        navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url)
+        navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url,
+            retrieval_root=self.retrieval_root)
         artifact_sources = {}
         if case_artifacts is not None:
             from .case_artifacts import CaseArtifacts

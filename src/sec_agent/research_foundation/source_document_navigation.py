@@ -204,7 +204,7 @@ class SourceDocumentResult(BaseModel):
 
 def navigate_source_nodes(
     nodes: Sequence[Mapping[str, Any]], request: SourceDocumentRequest, *, snapshot: str, allowed_space: str = "local",
-    hybrid_enabled: bool | None = None,
+    hybrid_enabled: bool | None = None, ranker=None,
 ) -> SourceDocumentResult:
     if request.source_space != allowed_space:
         raise ValueError("live_web_source_read_not_enabled_use_local_or_request_live_capability")
@@ -245,6 +245,7 @@ def navigate_source_nodes(
     if request.operation == "catalog":
         rows.sort(key=lambda r: (str(r.get("company")), str(r.get("title")), str(r.get("parent_document_id"))))
     retrieval_notice = ''
+    scoped_retrieval = None
     if request.operation == "search" and rows:
         eligible_rows = rows
         tokens = tokenize(request.query)
@@ -256,7 +257,11 @@ def navigate_source_nodes(
         rows = [rows[i] for i in ranked if set(tokens).intersection(corpus[i])]
         import os
         use_hybrid = hybrid_enabled if hybrid_enabled is not None else os.environ.get('FINSIGHT_SOURCE_HYBRID') == '1'
-        if use_hybrid:
+        if ranker is not None:
+            rows, receipt = ranker(eligible_rows, request.query, snapshot, rows)
+            scoped_retrieval = receipt
+            retrieval_notice = ' Retrieval: ' + str(receipt)
+        elif use_hybrid:
             from retrieval.source_hybrid import cache_path, rank_sources
             path = cache_path()
             try:
@@ -340,6 +345,8 @@ def navigate_source_nodes(
         elif request.operation == "search":
             item["preview"] = content[:500]
             item["preview_truncated"] = len(content) > 500
+            if scoped_retrieval is not None:
+                item['retrieval'] = scoped_retrieval
         items.append(item)
     next_offset = request.offset + len(items)
     return SourceDocumentResult(

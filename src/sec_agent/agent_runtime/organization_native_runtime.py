@@ -113,7 +113,8 @@ async def organization_graph(config, native, thread):
     workspace = AssetWorkspace(Path(os.environ['FINSIGHT_ORGANIZATION_ASSETS_ROOT']))
     reader = OrganizationExecutionReader(workspace, resources)
     organization = OrganizationDataFactory(reader, foundation=foundation, research_as_of=cutoff,
-        workbench_url=settings['workbench_url'])
+        workbench_url=settings['workbench_url'],
+        retrieval_root=os.getenv('FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT'))
     public, private = host.session_audit_sinks(Path(settings['audit_root']) / thread_id / run_id)
     budget = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,
         metadata=thread['metadata'], environment=os.environ)

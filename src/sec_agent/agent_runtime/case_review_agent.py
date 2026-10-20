@@ -457,6 +457,24 @@ async def organization_source_tools(client):
     return await _scoped_mcp_tools(client, allowed=names, required=names)
 
 
+def normalize_source_read_arguments(name, arguments, run_scope):
+    """Relocate an explicitly selected, authorized branch; never infer one."""
+    request = arguments.get("request")
+    if name != "read_source_document" or not isinstance(request, dict) or not run_scope:
+        return arguments, None
+    branch = request.get("branch_id")
+    if (not isinstance(branch, str) or branch not in run_scope["selected_branch_ids"]
+            or ("branch_id" in arguments and arguments["branch_id"] != branch)):
+        return arguments, None
+    normalized = deepcopy(arguments)
+    normalized["branch_id"] = normalized["request"].pop("branch_id")
+    from .evidence_resolution import parsing_record
+    return normalized, parsing_record("source_read_branch_envelope_v1",
+        deepcopy(arguments), deepcopy(normalized),
+        from_path="request.branch_id", to_path="branch_id",
+        source_selection_unchanged=True, native_validation_required=True)
+
+
 async def _scoped_mcp_tools(client, *, allowed, required, run_scope=None, method_arguments=None):
     """MCP2 schema -> StructuredTool only; no transport or dispatcher rewrite.
 
@@ -490,6 +508,7 @@ async def _scoped_mcp_tools(client, *, allowed, required, run_scope=None, method
 
         def bind_call(_name, _injected):
             async def call(**arguments):
+                arguments, recovery = normalize_source_read_arguments(_name, arguments, run_scope)
                 if _name == "read_research_source":
                     arguments.setdefault("max_characters", 4000)
                 if set(arguments).intersection(_injected):
@@ -498,10 +517,16 @@ async def _scoped_mcp_tools(client, *, allowed, required, run_scope=None, method
                     raise ToolException("branch_outside_case_scope")
                 result = await client.call_tool(_name, {**arguments, **_injected})
                 if result.is_error:
-                    raise ToolException("\n".join(c.text for c in result.content if c.type == "text"))
+                    error = "\n".join(c.text for c in result.content if c.type == "text")
+                    if recovery:
+                        error = json.dumps({"error": error, "runtime_argument_recovery": [recovery],
+                            "accepted": False}, ensure_ascii=False)
+                    raise ToolException(error)
                 body = result.structured_content
                 if not isinstance(body, dict):
                     raise RuntimeError("case_tool_expected_structured_object")
+                if recovery:
+                    body = {**body, "runtime_argument_recovery": [recovery]}
                 if _name == "get_research_source_binding":
                     body = deepcopy(body["method_package"]["method"])
                     body.pop("scope_ceiling", None)

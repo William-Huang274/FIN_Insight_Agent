@@ -96,19 +96,46 @@ try{
   }
   // Save immutable business inputs, then explicitly verify originals. No native
   // thread is created: even the valid draft stops before "prepare execution".
+  let original=null;
   for(const [label,cutoff,status] of [['early','2020-01-01',409],['valid',spec.as_of,200]]){
-    await page.goto(`/workspace/projects?scope=organization&project=${process.env.FIN_METRIC_TEAM_PROJECT}&view=research`);
+    if(label==='early'){
+      await page.goto(`/workspace/projects?scope=organization&project=${process.env.FIN_METRIC_TEAM_PROJECT}&view=research`);
+      await page.getByRole('textbox',{name:'研究问题',exact:true}).fill('核对已选历史指标的公司、期间、来源及计算输入，不生成研究结论。');
+      const choices=page.getByRole('checkbox');
+      await expect(choices).toHaveCount(4);
+      for(const choice of await choices.all())await choice.check();
+    }else{
+      // An invalid cutoff clears the stale detail. Refresh authorizes the old
+      // record again, then copy must re-read it without creating anything.
+      await page.getByRole('button',{name:'刷新准备单',exact:true}).click();
+      await expect(page.getByRole('heading',{name:'Historical metrics early',exact:true})).toBeVisible();
+      const writes=()=>requests.filter(r=>r.path.endsWith('/research-drafts')&&r.method==='POST').length;
+      const before=writes();
+      await page.getByRole('button',{name:'复制为新准备单',exact:true}).click();
+      await expect(page.getByRole('textbox',{name:'研究问题',exact:true})).toHaveValue(original.question);
+      await expect(page.getByLabel('研究截止日期',{exact:true})).toHaveValue('2020-01-01');
+      for(const choice of await page.getByRole('checkbox').all())await expect(choice).toBeChecked();
+      expect(writes()).toBe(before);
+      await page.setViewportSize({width:390,height:844});
+      await page.screenshot({path:resolve(output,'copy-preparation-390.png'),fullPage:true});
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
+      await page.setViewportSize({width:1440,height:1000});
+    }
     await page.getByLabel('准备单标题',{exact:true}).fill(`Historical metrics ${label}`);
-    await page.getByLabel('研究问题',{exact:true}).fill('核对已选历史指标的公司、期间、来源及计算输入，不生成研究结论。');
     await page.getByLabel('研究截止日期',{exact:true}).fill(cutoff);
-    const choices=page.getByRole('checkbox');
-    await expect(choices).toHaveCount(4);
-    for(const choice of await choices.all())await choice.check();
     const saving=page.waitForResponse(r=>/\/research-drafts$/.test(new URL(r.url()).pathname)&&r.request().method()==='POST');
     await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
     const response=await saving;expect(response.status()).toBe(200);
     const draft=await response.json();
     expect(draft.manifest.inputs.map(i=>i.resource_id).sort()).toEqual(results.map(i=>i.resource_id).sort());
+    if(label==='early')original=draft;
+    else{
+      expect(draft.id).not.toBe(original.id);
+      expect(draft.manifest.inputs).toEqual(original.manifest.inputs);
+      const old=await context.request.get(`/api/v1/business/workspaces/projects/${process.env.FIN_METRIC_TEAM_PROJECT}/research-drafts/${original.id}`);
+      expect(old.status()).toBe(200);
+      expect(await old.json()).toEqual(original);
+    }
     const verifying=page.waitForResponse(r=>r.url().endsWith(`/research-drafts/${draft.id}/verify`));
     await page.getByRole('button',{name:'重新校验权限与原件',exact:true}).click();
     expect((await verifying).status()).toBe(status);
@@ -119,7 +146,8 @@ try{
       await expect(page.getByRole('heading',{name:`Historical metrics ${label}`,exact:true})).toBeVisible();
       await page.screenshot({path:resolve(output,'research-inputs-1440.png'),fullPage:true});
     }
-    drafts.push({id:draft.id,manifest_digest:draft.manifest_digest,research_as_of:cutoff,verification_status:status});
+    drafts.push({id:draft.id,manifest_digest:draft.manifest_digest,research_as_of:cutoff,verification_status:status,
+      ...(label==='valid'?{copied_from:original.id,original_unchanged:true,fixed_inputs_unchanged:true}:{})});
   }
   expect(errors).toEqual([]);
   expect(requests.filter(r=>/\/(runs|start|continue)$/.test(r.path))).toEqual([]);

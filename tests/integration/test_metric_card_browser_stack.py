@@ -70,6 +70,20 @@ def test_metric_cards_browser_publication_and_current_permissions(monkeypatch):
         assert run.returncode == 0, run.stderr[-5000:]
         result = json.loads((output/'result.json').read_text(encoding='utf8'))
         assert len(result['results']) == 4
+        old, corrected = result['drafts']
+        assert corrected['copied_from'] == old['id'] != corrected['id']
+        assert corrected['original_unchanged'] and corrected['fixed_inputs_unchanged']
+        with psycopg.connect(host='127.0.0.1', port=s.pg_port, dbname='business',
+                             user='probe', password=s.password) as db:
+            assert db.execute("SELECT count(*) FROM organization_research_draft WHERE project_id=%s",
+                              (project,)).fetchone()[0] == 2
+            assert db.execute("SELECT count(*) FROM organization_project_audit WHERE project_id=%s AND action='research_inputs_save'",
+                              (project,)).fetchone()[0] == 2
+            manifests = {str(row[0]): json.loads(row[1]) for row in db.execute(
+                "SELECT id,manifest_text FROM organization_research_draft WHERE project_id=%s", (project,))}
+            assert manifests[old['id']]['research_as_of'] == '2020-01-01'
+            assert manifests[corrected['id']]['research_as_of'] == spec['as_of']
+            assert manifests[old['id']]['inputs'] == manifests[corrected['id']]['inputs']
         if os.getenv('FIN_METRIC_PUBLICATION_REPLY_LOSS') == '1':
             assert len(result['recoveries']) == 1
             recovery = result['recoveries'][0]
@@ -145,6 +159,8 @@ def test_metric_cards_browser_publication_and_current_permissions(monkeypatch):
                 readers[-1].read_rows(item['resource_id'])
         s.save('metric-browser-result', {'cases':result['results'],'provider_calls':0,'response_mocks':0,
             'publication_recovery':result.get('recoveries', []),
+            'preparation_copy':{'original_unchanged':True,'fixed_inputs_unchanged':True,
+                'draft_rows':2,'save_audits':2,'automatic_submission':False},
             'research_drafts':result['drafts'],'native_navigation_and_mcp_rows':True,
             'early_cutoff_blocked_in_verification_and_native_reads':True,
             'real_services':['browser','BFF','Spring Boot','PostgreSQL','SQLite asset custody'],

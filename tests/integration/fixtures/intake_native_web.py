@@ -23,6 +23,11 @@ if organization_probe:
     os.environ.pop('FINSIGHT_OIDC_CLIENT_ID', None)
     class SyntheticIdentity(authentication.OIDCBackend):
         def verify(self, token):
+            if os.environ.get('FIN_ORGANIZATION_CAPACITY_QUALIFICATION') == '1':
+                import re
+                match = re.fullmatch(r'qualification-user-(\d{1,2})', token)
+                if match and 0 <= int(match[1]) < 32:
+                    return 'oidc:load-user-' + str(int(match[1]))
             if token not in ('qualification-alice', 'qualification-viewer'):
                 raise AuthenticationError('qualification_identity_required')
             return 'oidc:alice' if token == 'qualification-alice' else 'oidc:viewer'

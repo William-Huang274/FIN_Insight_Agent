@@ -1,0 +1,11 @@
+# Only the isolated capacity fixture. Shared services are never reconfigured.
+services:
+  postgres:
+    cpus: 0.5
+    mem_limit: 256m
+  redis:
+    cpus: 0.25
+    mem_limit: 64m
+  api:
+    cpus: 1.5
+    mem_limit: 1536m

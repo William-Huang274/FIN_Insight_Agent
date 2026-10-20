@@ -12,6 +12,7 @@ FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工�
 
 | 文档 | 内容 |
 | --- | --- |
+| [组织并发与检索质量验收](engineering/organization_capacity_and_retrieval_qualification.zh-CN.md) | 多身份真实服务压力、网页与 Agent 检索、新题召回、索引版本和新查询向量；分阶段记录实测边界与简历指标 |
 | [历史案例应用验收](engineering/historical_application_scenarios.zh-CN.md) | 固定 runtime 基线，复用旧案例验证 Java/Python 资料、向量与知识库路径；只读缓存、逐场景证据和待接权限边界 |
 | [组织授权混合检索](engineering/organization_hybrid_retrieval.zh-CN.md) | 已准备向量与 BM25 的授权前置、固定版本、执行范围缓存、历史真实向量的跨组织验收；不调用提供方 |
 | [结构化 SQL 与数据卡验收](engineering/structured_sql_acceptance.zh-CN.md) | 历史公司/期间/单位、固定快照、修订与并发写入、SQL 回滚及 Java 重启；无付费调用 |

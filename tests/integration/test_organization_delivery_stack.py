@@ -45,7 +45,8 @@ class DeliveryStack(OrganizationGraphStack):
             for suffix,magic in [('md',b'#'),('pdf',b'%PDF'),('docx',b'PK'),('pptx',b'PK')]:
                 body = (output/('report.'+suffix)).read_bytes()
                 assert body.startswith(magic), suffix
-            assert b'Synthetic pinned organization evidence.' in (output/'report.md').read_bytes()
+            expected = self.env.get('FIN_DELIVERY_EXPECTED_TEXT', 'Synthetic pinned organization evidence.')
+            assert expected in (output/'report.md').read_text(encoding='utf8')
         return observed
 
 

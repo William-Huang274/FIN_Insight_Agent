@@ -17,7 +17,9 @@ page.setDefaultTimeout(45000);
 page.on('pageerror',e=>errors.push(String(e)));
 page.on('request',r=>{if(new URL(r.url()).pathname.startsWith('/api/'))requests.push({method:r.method(),path:new URL(r.url()).pathname});});
 try{
-  for(const [index,c] of spec.cases.entries()){
+  const cases=spec.cases.filter(c=>!process.env.FIN_METRIC_CASE_ENTITY||c.entity_id===process.env.FIN_METRIC_CASE_ENTITY);
+  expect(cases.length).toBeGreaterThan(0);
+  for(const [index,c] of cases.entries()){
     const row=c.snapshot.rows[c.entity_id==='COMPANY::meta'?2:0];
     await page.goto(`/workspace/assets?view=financial-data&company=${encodeURIComponent(c.entity_id)}`);
     await page.getByRole('navigation',{name:'数据层级目录'}).getByRole('button',{name:/指标分析/}).click();
@@ -97,7 +99,7 @@ try{
   // Save immutable business inputs, then explicitly verify originals. No native
   // thread is created: even the valid draft stops before "prepare execution".
   let original=null;
-  for(const [label,cutoff,status] of [['early','2020-01-01',409],['valid',spec.as_of,200]]){
+  if(process.env.FIN_METRIC_SKIP_PREPARATION!=='1')for(const [label,cutoff,status] of [['early','2020-01-01',409],['valid',spec.as_of,200]]){
     if(label==='early'){
       await page.goto(`/workspace/projects?scope=organization&project=${process.env.FIN_METRIC_TEAM_PROJECT}&view=research`);
       await page.getByRole('textbox',{name:'研究问题',exact:true}).fill('核对已选历史指标的公司、期间、来源及计算输入，不生成研究结论。');

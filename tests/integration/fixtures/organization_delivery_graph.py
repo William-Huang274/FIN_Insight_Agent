@@ -33,18 +33,23 @@ def delivery_builder(*, promote_orientation=False, **phases):
         result = await phases['research'].ainvoke(payload, config)
         assert result['phase'] == 'research_needs_attention', 'unexpected_scripted_research_result'
         orientation = state['research_orientation']
-        passage = next(item for receipt in orientation['runtime_provenance'].values()
+        passages = [item for receipt in orientation['runtime_provenance'].values()
             for item in receipt.get('result', {}).get('items', [])
-            if item.get('result_state') == 'source_bound_passage')
-        assert passage['organization_source']['execution_id'] == config['configurable']['thread_id']
-        source = {**deepcopy(passage), 'source_id':passage['passage_id'], 'text':passage['passage']}
+            if item.get('result_state') == 'source_bound_passage']
+        assert passages
+        citations, paragraphs = {}, []
+        for index, passage in enumerate(passages, 1):
+            assert passage['organization_source']['execution_id'] == config['configurable']['thread_id']
+            source = {**deepcopy(passage), 'source_id':passage['passage_id'], 'text':passage['passage']}
+            citations[f'C{index}'] = {'sources':[source]}
+            paragraphs.append(passage['passage'] + f' [C{index}]')
         get_stream_writer()({'kind':'stage','actor':'qualification','event':'outcome',
             'objective':'Static report delivery fixture saved; financial quality not assessed.'})
         return {'phase':'ready_for_human_review','report_version':1,
             'report':{'title':'Static business delivery report',
                 'narrative_markdown':'Engineering fixture only. No financial conclusion or review acceptance.\n\n'
-                    + passage['passage'] + ' [C1]',
-                'citations':{'C1':{'sources':[source]}},'charts':[]},
+                    + '\n\n'.join(paragraphs),
+                'citations':citations,'charts':[]},
             'report_review':{'findings':[],'unresolved_data_requests':[]}}
 
     builder = StateGraph(ResearchSessionState, input_schema=ResearchRequest)

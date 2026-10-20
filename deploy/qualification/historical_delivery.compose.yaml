@@ -1,0 +1,10 @@
+# Existing prepared vectors and historical copies; never a production graph.
+services:
+  api:
+    environment:
+      LANGSERVE_GRAPHS: '{"research_session":"/probe/historical_delivery_graph.py:graph"}'
+      FIN_HISTORICAL_DELIVERY_QUALIFICATION: '1'
+      FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT: /probe-historical/indexes
+    volumes:
+      - ../../tests/integration/fixtures/historical_delivery_graph.py:/probe/historical_delivery_graph.py:ro
+      - ${FIN_PROBE_HISTORICAL_ROOT:?isolated historical inputs and caches}:/probe-historical

@@ -177,13 +177,35 @@ def author_overview(artifacts, paper_id):
                if paper.get('human_editorial_revision') else {})}
 
 
+def resolve_paper_claim_ids(paper_id, claims, claim_ids):
+    """Resolve literal local/full identities within one explicit paper only."""
+    available = [c['claim_id'] for c in claims]
+    resolved = []
+    for requested in claim_ids:
+        candidates = {requested}
+        if requested.startswith(paper_id + ':'):
+            candidates.add(requested[len(paper_id) + 1:])
+        matches = [identity for identity in available if identity in candidates]
+        if len(matches) != 1:
+            reason = 'ambiguous_claim_ids' if matches else 'unknown_claim_ids'
+            raise ValueError(
+                f'{reason}:{requested}; paper_id={paper_id}; '
+                'use section=citations to read exact IDs; claim_ids accepts a local ID '
+                'or this paper_id:local_id when uniquely matched')
+        if matches[0] not in resolved:
+            resolved.append(matches[0])
+    return resolved
+
+
 def author_analysis(artifacts, paper_id, *, fields=None, claim_ids=None):
     """Opt-in, unchanged author judgments/conditions; not source fact records."""
     paper = artifacts.read_paper(paper_id)
     if fields is not None and (not fields or set(fields) - set(ANALYSIS_FIELDS)):
         raise ValueError('unknown_analysis_fields_use_overview')
-    if claim_ids is not None and (not claim_ids or set(claim_ids) - {c['claim_id'] for c in paper['claims']}):
-        raise ValueError('unknown_claim_ids_use_overview')
+    if claim_ids is not None:
+        if not claim_ids:
+            raise ValueError('unknown_claim_ids_use_overview')
+        claim_ids = resolve_paper_claim_ids(paper_id, paper['claims'], claim_ids)
     chosen = set(fields) if fields is not None else ({'claims'} if claim_ids is not None else set(ANALYSIS_FIELDS))
     if claim_ids is not None:
         chosen.add('claims')

@@ -12,6 +12,46 @@ from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_age
 from sec_agent.agent_runtime.model_context import deduplicate_read_results
 
 
+def test_claim_identity_resolution_is_unique_and_paper_scoped():
+    from sec_agent.agent_runtime.report_authoring import resolve_paper_claim_ids
+    claims = [{'claim_id': 'C1'}, {'claim_id': 'C2'}]
+    assert resolve_paper_claim_ids('P01', claims, ['P01:C2', 'C1', 'P01:C1']) == ['C2', 'C1']
+    for invalid in ('P02:C1', 'P01:missing', 'C', 'P01:P01:C1'):
+        with pytest.raises(ValueError, match='unknown_claim_ids.*section=citations'):
+            resolve_paper_claim_ids('P01', claims, [invalid])
+    for ambiguous in ([{'claim_id': 'C1'}, {'claim_id': 'P01:C1'}],
+                      [{'claim_id': 'C1'}, {'claim_id': 'C1'}]):
+        with pytest.raises(ValueError, match='ambiguous_claim_ids'):
+            resolve_paper_claim_ids('P01', ambiguous, ['P01:C1'])
+
+
+@pytest.mark.parametrize('section', ['claims', 'analysis'])
+def test_native_workpaper_read_accepts_full_claim_ids_without_changing_records(artifacts, section):
+    async def run():
+        original = deepcopy(artifacts._papers)
+        claims = artifacts.read_paper('P01', 'claims')
+        chosen = claims[0]['claim_id']
+        args = {'paper_id': 'P01', 'section': section, 'claim_ids': [f'P01:{chosen}']}
+        expected = ([claims[0]] if section == 'claims'
+                    else author_analysis(artifacts, 'P01', claim_ids=[chosen]))
+        model = NativeFixtureModel(marker='full-claim-identity', replies=[
+            [call('read_current_workpaper', args, 'read-full-id')]])
+        agent = build_case_output_agent(role='synthesis', model=model, tools=[], artifacts=artifacts,
+            limits={'model_calls': 1, 'tool_calls': 2})
+        async for result in agent.astream(
+                {'messages': [{'role': 'user', 'content': 'Read the selected claim.'}]},
+                stream_mode='values'):
+            if any(isinstance(m, ToolMessage) for m in result['messages']):
+                break
+        receipt = next(m for m in result['messages'] if isinstance(m, ToolMessage))
+        assert receipt.status == 'success'
+        assert json.loads(receipt.content) == expected
+        assert artifacts._papers == original
+        action = next(m for m in result['messages'] if isinstance(m, AIMessage) and m.tool_calls)
+        assert action.tool_calls[0]['args'] == args
+    asyncio.run(run())
+
+
 @pytest.mark.parametrize('options', [
     {'role': 'lead_writer'}, {'role': 'writer'},
     {'role': 'lead_writer', 'report_revision': True},

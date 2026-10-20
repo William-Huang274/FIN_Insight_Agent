@@ -665,7 +665,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def read_current_workpaper(paper_id: str, runtime: ToolRuntime, section: Literal["handoff", "overview", "analysis", "assignment", "citations", "workpaper", "claims", "sources"] = "handoff", claim_ids: list[str] | None = None, source_ids: list[str] | None = None, offset: int = 0, limit: int = 4, analysis_fields: list[Literal["thesis", "mechanism", "counterevidence", "what_would_change", "open_gaps", "claims"]] | None = None) -> dict:
-        """handoff reads a source menu and original passages/numbers; select source_ids or follow next_read. overview lists author viewpoints; claims plus claim_ids reads selected arguments, conditions and quotes. analysis_fields selects thesis, mechanism, counterevidence, what_would_change, open_gaps or claims in analysis; omitting selectors reads full author analysis. assignment reads historical specialist instructions, not the Lead's current task. citations lists IDs; workpaper reads full prose; sources lists locators. Originals remain unchanged."""
+        """handoff reads a source menu and original passages/numbers; select source_ids or follow next_read. overview lists author viewpoints; claims plus claim_ids reads selected arguments, conditions and quotes. claim_ids accepts local IDs or paper_id:local_id, uniquely matched within the specified paper; citations lists exact IDs if ambiguous or unknown. analysis_fields selects thesis, mechanism, counterevidence, what_would_change, open_gaps or claims in analysis; omitting selectors reads full author analysis. assignment reads historical specialist instructions, not the Lead's current task. citations lists IDs; workpaper reads full prose; sources lists locators. Originals remain unchanged."""
         try:
             current = artifacts.with_revisions(runtime.state.get("revisions", {})).with_human_edits(runtime.state.get('human_edits', []))
             if claim_ids is not None and section not in {'claims', 'analysis'}:
@@ -691,9 +691,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
                 return citation_index(current, paper_id)
             result = current.read_paper(paper_id, section)
             if claim_ids is not None:
-                unknown = set(claim_ids) - {c['claim_id'] for c in result}
-                if unknown:
-                    raise ValueError('unknown_claim_ids:' + ','.join(sorted(unknown)))
+                from .report_authoring import resolve_paper_claim_ids
+                claim_ids = resolve_paper_claim_ids(paper_id, result, claim_ids)
                 result = [c for c in result if c['claim_id'] in claim_ids]
             editorial = current.read_paper(paper_id).get('human_editorial_revision')
             if section == 'claims' and editorial:

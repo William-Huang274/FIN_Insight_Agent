@@ -22,6 +22,8 @@
 
 ## 修订来源的准确回读
 
+`read_current_workpaper` 的 `claims` 与 `analysis` 选择器统一接受底稿内局部论断 ID 和 `paper_id:local_id` 完整引用 ID。解析只检查显式指定底稿的当前论断；只有唯一匹配才转换，不跨底稿查找、不模糊纠正，也不改写保存的论断、引用或模型原始参数。完整 ID 与实际局部 ID 同时指向不同论断、重复身份或未知 ID 时，返回明确错误和 `section=citations` 回读入口。返回的论断内容、顺序与原有局部 ID 调用保持一致。
+
 修订引用导航中的 `saved_reads` 从该作者原生日志的成功回执生成：仅匹配包含完整原文、数值或计算对象的准确身份，并提供 `ReadResearchHistoryAction` 的完整参数。模型无需从 `WEB::` 等 ID 猜测 `source_space`。找不到完整原件时明确列入 `unlocated_source_ids`，不把候选元数据或失败回执变成原文，也不跨作者读取；引用语义及原稿状态不因此获得批准。
 
 历史工具的 `section=operation` 必须填写 `tool_call_id`，不能填写 `index`；`source_ids` 仅筛选该操作回执内的原始对象，不能独立定位或跨操作搜索。`turn` 和 `lead_assistance` 才使用 `index`。工具说明与参数错误均说明这一条件。旧参数及日志身份保持兼容，原始回执不改写。

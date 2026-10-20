@@ -10,6 +10,8 @@ Lead初步判断的依据边界、具体任务依赖和分阶段模型试验见[
 
 FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工修订的本地金融研究工作台。
 
+报告网页阅读、PDF 排版及导出与研究验收的边界见[报告阅读与导出](engineering/report_delivery.zh-CN.md)。
+
 | 文档 | 内容 |
 | --- | --- |
 | [Java / Python 共同版本](engineering/java_python_integration.zh-CN.md) | 业务受理与新版研究配置整合、修订到接续的配置继承、旧请求兼容及分层静态验收 |

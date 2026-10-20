@@ -1101,7 +1101,7 @@ def build_report_sessions_router(service):
             raise HTTPException(422, "来源或阅读范围不合法") from None
 
     @router.get("/research-sessions/{thread_id}/report/export/{format}")
-    async def export(thread_id: UUID, format: Literal["md", "pdf", "docx", "pptx"], request: Request, checkpoint_id: UUID | None = None):
+    async def export(thread_id: UUID, format: Literal["md", "html", "pdf", "docx", "pptx"], request: Request, checkpoint_id: UUID | None = None):
         state = await service.report_state(thread_id, checkpoint_id) if checkpoint_id else await service.state(thread_id)
         report = state.get("values", {}).get("report")
         if not report:

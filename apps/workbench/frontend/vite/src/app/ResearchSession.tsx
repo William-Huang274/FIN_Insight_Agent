@@ -723,7 +723,7 @@ export function ResearchSession() {
                   <article className="rs-prose" ref={reportArticle}>
                     <h2 className="rs-report-title">{displayedReport?.title}</h2>
                     {displayedReport && <div className="rs-export-actions"><span>导出这版报告</span>
-                      {([['md', 'Markdown'], ['pdf', 'PDF'], ['docx', 'Word'], ['pptx', 'PowerPoint']] as const).map(([format, label]) =>
+                      {([['html', '网页阅读版'], ['pdf', 'PDF'], ['docx', 'Word'], ['pptx', 'PowerPoint'], ['md', 'Markdown']] as const).map(([format, label]) =>
                         <a key={format} href={`/api/v1/research-sessions/${id}/report/export/${format}${reportQuery}`} download>{label}</a>)}
                       {!!displayedReport.charts?.length && <a href="#report-charts">查看 {displayedReport.charts.length} 幅图表</a>}
                     </div>}

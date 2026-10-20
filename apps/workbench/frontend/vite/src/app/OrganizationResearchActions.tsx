@@ -1,13 +1,14 @@
 import {useEffect,useRef,useState} from 'react';
 import {ArrowRight,RefreshCw,Play,ShieldCheck} from 'lucide-react';
 import {assetRequest} from '../api/assetWorkspace';
+import {OrganizationReportActions} from './OrganizationReportActions';
 
 type Stage='preparation'|'start'|'continuation';
 type Control={can_operate:boolean;enabled?:boolean;preparation?:string;start?:string;continuation?:string};
 type Preview={previous_run_id:string;checkpoint_id:string;state_digest:string};
 const names:Record<Stage,string>={preparation:'准备研究',start:'首次启动',continuation:'正式研究'};
 
-export function OrganizationResearchActions({base,phase,onChanged}:{base:string;phase?:string;onChanged:()=>void}){
+export function OrganizationResearchActions({base,phase,hasReport=false,busyRun=false,citations=[],onChanged}:{base:string;phase?:string;hasReport?:boolean;busyRun?:boolean;citations?:string[];onChanged:()=>void}){
   const [control,setControl]=useState<Control|null>(null),[preview,setPreview]=useState<Preview|null>(null);
   const [busy,setBusy]=useState(false),[error,setError]=useState(''),[revision,refresh]=useState(0);
   const guard=useRef(false),generation=useRef(0);
@@ -36,6 +37,7 @@ export function OrganizationResearchActions({base,phase,onChanged}:{base:string;
       {preview&&<div className="org-confirm" role="group" aria-label="确认正式研究"><h4>沿用当前预研究，开始正式研究？</h4><p>问题、资料版本、模型配置保持冻结。正式研究会重新取证与核查，可能产生新的模型费用。</p><div className="pw-toolbar"><button className="pw-primary" disabled={busy} onClick={()=>void act('continue',preview)}>确认接续研究</button><button disabled={busy} onClick={()=>setPreview(null)}>暂不开始</button></div></div>}
       {(['preparation','start','continuation'] as Stage[]).some(s=>control[s]==='rejected')&&<p>原命令已拒绝。请保留记录排查原因，不能从此页面重试运行。</p>}
       {control.continuation==='received'&&<p>正式研究已受理。可查看运行动态与保存内容；刷新不会重复执行。</p>}
+      {hasReport&&<OrganizationReportActions base={base} busyRun={busyRun} citations={citations} onChanged={onChanged}/>}
       {control.start==='received'&&control.continuation==='absent'&&phase!=='research_orientation_submitted'&&<p>预研究已受理。查看运行动态或刷新保存内容；只有前序预研究成功结束且用量可核对，才能确认接续。</p>}
     </>}
   </section>;

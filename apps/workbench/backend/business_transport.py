@@ -125,20 +125,23 @@ class InternalResearchIdentity:
                 except (ValueError, KeyError, TypeError):
                     return await JSONResponse({'detail': '缺少有效项目或操作凭证'}, status_code=422)(scope, replay, send)
                 try:
-                    if scope['path'] in {INTERNAL + 'organization/prepare', INTERNAL + 'organization/start', INTERNAL + 'organization/continue'}:
+                    if scope['path'] in {INTERNAL + 'organization/prepare', INTERNAL + 'organization/start', INTERNAL + 'organization/continue', INTERNAL + 'organization/report-actions'}:
                         from .organization_native_drafts import preparation_authority
                         from .organization_native_runs import start_authority
                         from .organization_native_continuation import continuation_authority
+                        from .organization_report_actions import action_authority
                         try:
                             execution_id = UUID(json.loads(body)['execution_id'])
+                            reporting = scope['path'] == INTERNAL + 'organization/report-actions'
+                            extra = {'command_id': UUID(json.loads(body)['command_id'])} if reporting else {}
                         except (ValueError, KeyError, TypeError):
                             return await JSONResponse({'detail': '缺少组织执行标识'}, status_code=422)(scope, replay, send)
                         starting = scope['path'] == INTERNAL + 'organization/start'
                         continuing = scope['path'] == INTERNAL + 'organization/continue'
-                        authority = continuation_authority if continuing else start_authority if starting else preparation_authority
-                        key = 'finsight_organization_continuation' if continuing else 'finsight_organization_start' if starting else 'finsight_organization_preparation'
+                        authority = action_authority if reporting else continuation_authority if continuing else start_authority if starting else preparation_authority
+                        key = 'finsight_organization_report_action' if reporting else 'finsight_organization_continuation' if continuing else 'finsight_organization_start' if starting else 'finsight_organization_preparation'
                         scope[key] = await authority(self.service,
-                            project_id, execution_id, raw_body=bytes(body), operation_id=request.headers['idempotency-key'])
+                            project_id, execution_id, raw_body=bytes(body), operation_id=request.headers['idempotency-key'], **extra)
                     else:
                         await require_project(self.service, project_id)
                 except HTTPException as exc:

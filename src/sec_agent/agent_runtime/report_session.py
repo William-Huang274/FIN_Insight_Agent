@@ -85,7 +85,8 @@ def abandoned_question_update(state, reason):
 
 
 def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=None, quick_writer=None,
-                               state_schema=SessionState, input_schema=SessionInput, start_at_initialize=True, revision_handler=None, revision_requires_case_review=False):
+                               state_schema=SessionState, input_schema=SessionInput, start_at_initialize=True, revision_handler=None, revision_requires_case_review=False,
+                               review_action_check=None):
     """One human request, native agentic work, then another real interrupt.
 
     There is no automatic rewrite-until-PASS edge. Report acceptance is a human
@@ -107,6 +108,8 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             "phase": state["phase"], "actions": ["ask", "revise", "accept"],
             "notice": "Acceptance is local human report review, not automatic release or financial authority."})
         action = ReviewAction.model_validate(response)
+        if review_action_check is not None:
+            review_action_check(state, action)
         if action.action == 'manual_complete':
             current = artifacts(state) if callable(artifacts) else artifacts
             update = apply_manual_review(state, action.manual_review, current,

@@ -46,12 +46,16 @@ class ResearchIntakeTest {
     static final Map<String,ObjectNode> organizationContinuations = new ConcurrentHashMap<>();
     static final Set<String> dropOrganizationContinuation = ConcurrentHashMap.newKeySet();
     static final AtomicInteger organizationContinues = new AtomicInteger();
+    static final Map<String,ObjectNode> reportCommands = new ConcurrentHashMap<>();
+    static final Set<String> dropReportCommands = ConcurrentHashMap.newKeySet();
+    static final AtomicInteger reportDispatches = new AtomicInteger();
     static final HttpServer PYTHON = fakePython();
     @DynamicPropertySource static void properties(DynamicPropertyRegistry r) {
         r.add("spring.datasource.url", PG::getJdbcUrl); r.add("spring.datasource.username", PG::getUsername); r.add("spring.datasource.password", PG::getPassword);
         r.add("finsight.shared-secret", () -> SECRET); r.add("finsight.python-url", () -> "http://127.0.0.1:"+PYTHON.getAddress().getPort());
         r.add("finsight.runtime-secret", () -> RUNTIME_SECRET);
         r.add("finsight.organization-start-enabled", () -> true);
+        r.add("finsight.organization-report-actions-enabled", () -> true);
     }
     @LocalServerPort int port;
     @Autowired TaskStore store;
@@ -104,6 +108,22 @@ class ResearchIntakeTest {
                             .put("continuation_request_digest","sha256:"+Delegation.digest(bytes)).put("run_id",UUID.randomUUID().toString()).put("status","pending");
                         organizationContinuations.put(id,result);if(dropOrganizationContinuation.contains(id)){exchange.close();return;}
                         send(exchange,200,result);return;
+                    }
+                    if(path.equals("organization/report-actions")) {
+                        var p=JSON.readTree(bytes); String id=p.path("command_id").asText(); reportDispatches.incrementAndGet();
+                        var result=JSON.createObjectNode().put("execution_id",p.path("execution_id").asText())
+                            .put("thread_id",p.path("execution_id").asText()).put("project_id",p.path("project_id").asText())
+                            .put("configuration_digest",p.path("configuration_digest").asText()).put("report_command_id",id)
+                            .put("report_action_operation_id",exchange.getRequestHeaders().getFirst("Idempotency-Key"))
+                            .put("report_action_request_digest","sha256:"+Delegation.digest(bytes))
+                            .put("run_id",UUID.randomUUID().toString()).put("status","pending");
+                        reportCommands.put(id,result);
+                        if(dropReportCommands.contains(id)){exchange.close();return;}
+                        send(exchange,200,result); return;
+                    }
+                    if(path.startsWith("organization/executions/")&&path.contains("/report-actions/")) {
+                        var result=reportCommands.get(path.substring(path.lastIndexOf('/')+1));
+                        send(exchange,result==null?404:200,result==null?JSON.createObjectNode():result);return;
                     }
                     if(path.startsWith("organization/executions/")&&path.endsWith("/continuation-state")){
                         var result=organizationContinuations.get(path.split("/")[2]);send(exchange,result==null?404:200,result==null?JSON.createObjectNode():result);return;
@@ -800,6 +820,71 @@ class ResearchIntakeTest {
         assertThat(runtimeRequest(runtime,admission.toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(404);
         assertThat(workspace(f.researcher(),"GET","/projects/"+f.project()+"/research-executions",null,200).path("items").size()).isZero();
         assertThat(organizationContinues.get()-before).isEqualTo(1);
+    }
+    @Test void organization_report_commands_are_durable_idempotent_version_bound_and_revocable() throws Exception {
+        var f=executionFixture(); UUID execution=UUID.randomUUID();
+        workspace(f.researcher(),"POST",f.createPath(),Map.of("id",execution,"manifest_digest",f.digest()),200);
+        String base="/projects/"+f.project()+"/execution-bindings/"+execution, commands=base+"/report-commands";
+        workspace(f.researcher(),"POST",base+"/prepare",Map.of("execution",Map.of("mode","auto","model","default","branch_ids",List.of())),200);
+        var started=workspace(f.researcher(),"POST",base+"/start",Map.of("research_as_of","2026-10-12T12:00:00Z"),200);
+        UUID id=UUID.randomUUID(),checkpoint=UUID.randomUUID();
+        var body=new HashMap<String,Object>();
+        body.put("id",id); body.put("previous_run_id",started.path("run_id").asText()); body.put("checkpoint_id",checkpoint);
+        body.put("state_digest","sha256:"+"b".repeat(64)); body.put("report_version",1);
+        body.put("report_digest","c".repeat(64)); body.put("action","ask"); body.put("message","解释报告的来源");
+        body.put("answer_mode","quick"); body.put("target",null);
+        workspace(f.admin(),"POST",commands,body,404);
+        dropReportCommands.add(id.toString()); int before=reportDispatches.get();
+        try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
+            var calls=new ArrayList<Future<JsonNode>>();
+            for(int i=0;i<5;i++)calls.add(pool.submit(()->workspace(f.researcher(),"POST",commands,body,200)));
+            for(var call:calls)assertThat(call.get().path("status").asText()).isEqualTo("unknown");
+        }
+        assertThat(reportDispatches.get()-before).isEqualTo(1);
+        var changed=new HashMap<String,Object>(body); changed.put("message","换成另一意见");
+        workspace(f.researcher(),"POST",commands,changed,409);
+        changed=new HashMap<>(body);changed.put("id",UUID.randomUUID());changed.put("checkpoint_id",UUID.randomUUID());
+        workspace(f.researcher(),"POST",commands,changed,409); // Unknown preceding command blocks new spending.
+        var grant=workspace(f.researcher(),"GET",commands+"/"+id+"/access",null,200);
+        var receipt=reportCommands.get(id.toString()).deepCopy();
+        String runtime="/v1/runtime/organization-executions/"+execution+"/admit-report-action";
+        var admission=JSON.createObjectNode().put("command_id",id.toString()).put("thread_id",execution.toString())
+            .put("run_id",receipt.path("run_id").asText()).put("operation_id",grant.path("report_action_operation_id").asText())
+            .put("manifest_digest",f.digest()).put("configuration_digest",grant.path("configuration_digest").asText())
+            .put("report_action_request_digest",grant.path("report_action_request_digest").asText());
+        assertThat(runtimeRequest(runtime,admission.toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(200);
+        assertThat(runtimeRequest(runtime,admission.deepCopy().put("run_id",UUID.randomUUID().toString()).toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(409);
+        reportCommands.get(id.toString()).put("report_action_request_digest","sha256:"+"0".repeat(64));
+        assertThat(workspace(f.researcher(),"POST",commands+"/"+id+"/reconcile",null,200).path("status").asText()).isEqualTo("unknown");
+        reportCommands.put(id.toString(),receipt);
+        assertThat(workspace(f.researcher(),"POST",commands+"/"+id+"/reconcile",null,200).path("status").asText()).isEqualTo("received");
+        assertThat(workspace(f.researcher(),"POST",commands,body,200).path("run_id")).isEqualTo(receipt.path("run_id"));
+        assertThat(reportDispatches.get()-before).isEqualTo(1);
+        var reads=workspace(f.researcher(),"GET",base+"/read-access",null,200);
+        assertThat(reads.path("run_id")).isEqualTo(receipt.path("run_id"));
+        assertThat(reads.path("run_ids").size()).isEqualTo(2);
+        var next=new HashMap<>(body);next.put("id",UUID.randomUUID());next.put("previous_run_id",receipt.path("run_id").asText());
+        workspace(f.researcher(),"POST",commands,next,409); // Same checkpoint cannot be spent twice.
+        // An explanation need not modify the report: a fresh native checkpoint
+        // permits a different question with the SAME report version and digest.
+        next.put("checkpoint_id",UUID.randomUUID()); next.put("message","进一步解释这份报告的单位");
+        var secondQuestion=workspace(f.researcher(),"POST",commands,next,200);
+        assertThat(secondQuestion.path("status").asText()).isEqualTo("received");
+        next.put("id",UUID.randomUUID());next.put("previous_run_id",secondQuestion.path("run_id").asText());
+        next.put("checkpoint_id",UUID.randomUUID()); next.put("action","revise");
+        workspace(f.researcher(),"POST",commands,next,422); // Quick mode cannot silently revise.
+        next.put("answer_mode","deep");
+        var revised=workspace(f.researcher(),"POST",commands,next,200);
+        assertThat(revised.path("status").asText()).isEqualTo("received");
+        assertThat(revised.path("run_id")).isNotEqualTo(receipt.path("run_id"));
+        assertThat(workspace(f.researcher(),"GET",base+"/read-access",null,200).path("run_ids").size()).isEqualTo(4);
+        assertThat(workspace(f.researcher(),"GET",commands,null,200).path("items").size()).isEqualTo(3);
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",f.researcher(),"role","remove"),200);
+        workspace(f.researcher(),"POST",commands,body,404);
+        workspace(f.researcher(),"GET",base+"/read-access",null,404);
+        workspace(f.researcher(),"GET",commands+"/"+id,null,404);
+        assertThat(runtimeRequest(runtime,admission.toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(404);
+        assertThat(reportDispatches.get()-before).isEqualTo(3);
     }
     @Test void organization_viewer_reads_require_current_project_and_sources_not_creator_role() throws Exception {
         var f=executionFixture();UUID id=UUID.randomUUID();

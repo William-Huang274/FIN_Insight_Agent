@@ -1,0 +1,8 @@
+# Static output producers; real Java admission and native human-review actions.
+services:
+  api:
+    environment:
+      LANGSERVE_GRAPHS: '{"research_session":"/probe/organization_report_actions_graph.py:graph"}'
+      FIN_ORGANIZATION_REPORT_ACTIONS_QUALIFICATION: '1'
+    volumes:
+      - ../../tests/integration/fixtures/organization_report_actions_graph.py:/probe/organization_report_actions_graph.py:ro

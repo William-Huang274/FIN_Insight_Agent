@@ -82,6 +82,8 @@ def install_organization_native_routes(router, service):
     install_organization_start_routes(router, service)
     from .organization_native_continuation import install_organization_continuation_routes
     install_organization_continuation_routes(router, service)
+    from .organization_report_actions import install_organization_report_action_routes
+    install_organization_report_action_routes(router, service)
     prefix = '/internal-research/organization'
 
     @router.post(prefix + '/prepare')

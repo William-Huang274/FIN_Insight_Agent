@@ -29,12 +29,16 @@ class OrganizationResearchReads {
         if(actor==null||actor.equals("local-pilot"))throw new ApiFailure(403,"组织研究需要独立登录身份");
         if(db.queryForList(OrganizationProjects.VISIBLE+" AND p.id=?",actor,project).isEmpty())throw new ApiFailure(404,"项目不可访问");
         var candidates=db.queryForList("WITH visible_drafts AS ("+OrganizationResearchDrafts.VISIBLE+") "+"""
-            SELECT b.id AS execution_id,b.draft_id,d.title,COALESCE(c.run_id,s.run_id) AS run_id
+            SELECT b.id AS execution_id,b.draft_id,d.title,COALESCE(r.run_id,c.run_id,s.run_id) AS run_id
             FROM organization_execution_binding b
             JOIN visible_drafts d ON d.id=b.draft_id
             JOIN organization_native_preparation p ON p.execution_id=b.id AND p.status='received'
             LEFT JOIN organization_native_start s ON s.execution_id=b.id
             LEFT JOIN organization_native_continuation c ON c.execution_id=b.id
+            LEFT JOIN LATERAL (
+                SELECT run_id FROM organization_report_command WHERE execution_id=b.id AND run_id IS NOT NULL
+                ORDER BY command_sequence DESC LIMIT 1
+            ) r ON true
             ORDER BY b.created_at DESC,b.id LIMIT 31 OFFSET ?
             """,project,actor,actor,project,actor,offset);
         var result=new HashMap<String,Object>();result.put("items",candidates.stream().limit(30).toList());
@@ -47,12 +51,17 @@ class OrganizationResearchReads {
         return tx.execute(status->{
             var row=db.queryForList("""
                 SELECT b.draft_id,d.title,d.question,d.manifest_text,p.operation_id,p.request_body,
-                       p.response::text AS receipt,s.run_id AS initial_run_id,COALESCE(c.run_id,s.run_id) AS run_id
+                       p.response::text AS receipt,s.run_id AS initial_run_id,c.run_id AS continuation_run_id,
+                       COALESCE(r.run_id,c.run_id,s.run_id) AS run_id
                 FROM organization_execution_binding b
                 JOIN organization_research_draft d ON d.id=b.draft_id
                 JOIN organization_native_preparation p ON p.execution_id=b.id AND p.status='received'
                 LEFT JOIN organization_native_start s ON s.execution_id=b.id
                 LEFT JOIN organization_native_continuation c ON c.execution_id=b.id
+                LEFT JOIN LATERAL (
+                    SELECT run_id FROM organization_report_command WHERE execution_id=b.id AND run_id IS NOT NULL
+                    ORDER BY command_sequence DESC LIMIT 1
+                ) r ON true
                 WHERE b.id=? AND d.project_id=?
                 """,id,project).stream().findFirst().orElseThrow(()->new ApiFailure(404,"研究不可访问"));
             // Reuse the same project AND every frozen source rule, without the
@@ -69,7 +78,10 @@ class OrganizationResearchReads {
             result.put("run_id",row.get("run_id"));
             var runs=new LinkedHashSet<Object>();
             if(row.get("initial_run_id")!=null)runs.add(row.get("initial_run_id"));
+            if(row.get("continuation_run_id")!=null)runs.add(row.get("continuation_run_id"));
             if(row.get("run_id")!=null)runs.add(row.get("run_id"));
+            runs.addAll(db.queryForList("SELECT run_id FROM organization_report_command WHERE execution_id=? AND run_id IS NOT NULL ORDER BY command_sequence",
+                UUID.class,id));
             result.put("run_ids",runs);return result;
         });
     }

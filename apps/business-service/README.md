@@ -147,6 +147,38 @@ requests remain blocked for reconciliation. No generation or paid rerank is
 enabled by this setting. Back up retained releases and query receipts with the
 business database and organization originals.
 
+## Organization report questions and revisions
+
+Flyway V11 adds `organization_report_command` without rewriting prior commands.
+Enable the Java service with `FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED=true`
+and the BFF with the same variable set to `1` only on a qualified deployment.
+The default is disabled. This flag does not grant access to any source.
+
+The original initiator submits an explicit `ask` or `revise` command after a
+completed native human-review checkpoint. Each command freezes the predecessor
+run, checkpoint, state digest, report version and report digest. A targeted
+revision additionally binds a saved citation and the same request ID. Runtime
+model options remain those of the original preparation. Manual completion and
+acceptance are not exposed through these organization commands.
+
+The Java request ID is immutable and the dispatch operation ID is server-owned.
+A native checkpoint can be consumed by one non-rejected command. This does
+**not** make a report version single-use: questions can keep the report unchanged
+while producing a fresh checkpoint for the next question. Current permission on
+the project and every frozen input is checked before receipt replay and native
+admission. The real `human_review` node also compares `Command.resume` with the
+saved action before selecting a writer or any other action branch.
+
+Browser routes under
+`/api/v1/organization-projects/{project}/research/{execution}` provide
+`report-action-preview`, `report-commands` and
+`report-commands/{command}/reconcile`. Writes delegate to Java; the browser does
+not call the native SDK. Reconciliation searches the exact operation across
+native pagination and never resubmits. A received command means dispatch was
+acknowledged, not that the report is correct or the run has completed.
+After an unknown or failed run, preserve the command and audit records; this
+slice does not add an automatic failed-run retry.
+
 ## Failure semantics
 
 See [request lifecycle and fault qualification](../../docs/engineering/java_intake_recovery.zh-CN.md)

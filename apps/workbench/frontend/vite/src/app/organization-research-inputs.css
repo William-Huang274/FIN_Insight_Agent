@@ -21,3 +21,8 @@
   width: 100%;
   text-align: left;
 }
+.org-report-actions { display:grid; gap:12px; margin-top:20px; border-top:1px solid var(--border,#e5e7eb); padding-top:20px; }
+.org-report-actions h4,.org-report-actions p { margin:0; }
+.org-report-actions label { display:grid; gap:8px; }
+.org-report-actions textarea { width:100%; box-sizing:border-box; resize:vertical; min-height:96px; font:inherit; padding:12px; border:1px solid var(--border,#e5e7eb); border-radius:12px; background:var(--surface,#fff); color:inherit; }
+.org-report-actions button[aria-pressed=true] { background:var(--accent-soft,#eef0ff); color:var(--accent,#4856c7); }

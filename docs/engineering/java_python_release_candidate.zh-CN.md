@@ -122,8 +122,34 @@ python -m pytest tests/integration/test_report_review_persistence.py -q
 
 本次固定镜像内 LangGraph API 0.13.3、LangGraph 1.2.11、psycopg 3.3.4，未升级依赖。开发许可可用，但测试容器拒绝模型提供方凭据并关闭 tracing。测试仅停止自己创建的容器，不删除卷，也不停止共享服务。
 
+## 2026-10-21：组织报告追问与修订的普通页面闭环
+
+新增 V11 `organization_report_command`，由 Java 持久化每一轮追问/修订，固定请求标识、原生前序运行、检查点、状态摘要、报告版本和正文摘要。局部意见同时固定引用 ID 和同一个请求标识。Java CAS 领取一次派发，未知回执只查询原操作；Python 用相同固定命令恢复原生 `human_review`，在选择任何动作分支前核对真实 `Command.resume`，不只信任 metadata。
+
+去重约束落在 **native checkpoint，而非 report_version**。两个不同问题可以使用同一 v1 报告，但第一个问题结束后必须读取新的 checkpoint。前一个操作回执未知时不能发起下一轮；修改同一幂等键内容、重新使用旧 checkpoint、绑定另一个 run 或撤销原资料权限均不能绕过。新 run 纳入组织成果、事件和引用的当前读取授权。已受理只表示派发回执确认，不表示运行完成。
+
+普通项目成果页提供追问、修订关注范围（整份报告或已保存引用）、意见编辑、基线预览、二次确认、操作回执核对与历史对话。页面不直接调用 Agent Server，也不能在此更改准备时冻结的模型配置。组织人工完成/接受、失败运行的自动重试、专家重研质量不在本批交付范围。默认仍关闭，需要 Java 的 `FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED=true` 与 BFF 的同名变量 `1`。
+
+| 验收 | 结果与范围 |
+| --- | --- |
+| Java HTTP + 实际 PostgreSQL | **32 项通过，41.40 秒**。新增案例覆盖五个并发相同提交只派发一次、丢回执、内容冲突、运行身份冲突、两次同报告追问、修订和撤权。其余为既有组织/准备/启动/读取回归。 |
+| Python 定向回归 | **112 项通过，98.26 秒**。覆盖新增命令、引用目标与基线、接续/首次启动、实际人工审阅节点的请求篡改拒绝及个人报告/研究图兼容。无付费调用。 |
+| 浏览器受控接口回归 | **7 项通过，约 1 分钟**。1440/390 宽度，确认前不派发、未知回执刷新核对、同报告第二次追问、读取撤权与导出。使用接口夹具，不能替代下行真实服务。 |
+| 普通页面真实服务复验 | **1 项通过，145.93 秒**。实际 BFF / Spring Boot / PostgreSQL / Redis / Agent Server，**6 次 native run、4 条报告命令、2 个报告版本**；两次 v1 追问、C1 引用修订、第三次追问故意丢回执；无浏览器 API 拦截。五个自建服务重启后报告/对话/checkpoint 不变，四条回执均回读原 run；撤权后读取、预览、命令列表、核对与导出均拒绝。 |
+| 构建与仓库检查 | Java JAR、TypeScript、Vite 构建通过；active baseline、秘密扫描（1155 文件）和 diff 检查通过。Vite 保留既有大包提示。 |
+
+真实服务复验将初始报告、回答、修订与复核输出替换为明确标记的静态生产者，原生运行工厂、Java 当前授权、真实 `ReviewAction` 节点、报告版本规则、队列/检查点和普通页面均真实执行。身份为测试替身，不代表正式 OIDC/SSO 验收；也不证明专家重研、金融结论、召回质量或吞吐容量通过。**0 次提供方调用**是成本事实，不能解释为真实模型业务已测试。
+
+证据保存在仓库外 `Z:/FIN_Insight_Agent_qualification/20261021_release_acceptance/`：
+
+- `report-actions-native-r2/`：最终普通页面、请求记录、重启记录、`report-actions-result.json`、前端和源码指纹；前后源码一致。
+- `report-actions-native-r1/`：首轮已走完交互和重启，在撤权测试读取资源分页时因测试脚本错误失败；未删证据。修正为读取指定资源的当前权限版本后完整复跑。
+- `java-report-commands-r2.log`、`report-actions-python-final.log`、`report-actions-browser-r1.log`：对应上述分层结果；不累加重叠用例数。
+
+复现入口为 `tests/integration/test_organization_report_actions_stack.py`，显式设置 `FIN_ORGANIZATION_REPORT_ACTIONS_QUALIFICATION=1`，沿用本文件上一节的隔离 Stack 配置，并提供已构建 JAR 和 `FINSIGHT_TEST_NODE`。每次使用新的仓库外输出目录和已核对未占用的子网；无需提供模型密钥。测试结束仅停止自己创建的服务，保留证据和数据库卷，共享部署未切换。
+
 ## 放行前剩余步骤
 
-1. **组织报告追问与局部修订仍未接入。** 需新增 Java 多轮持久命令，绑定当前 checkpoint、报告版本与摘要，沿用原发起人和全部固定资料授权；未知回执只核对原操作。相应 run 进入当前读取授权后，才能验证普通网页操作。
+1. **组织追问/引用修订已完成上述静态工程闭环，但 S1 不能据此直接等同全部发布通过。** 仍需汇总同一发行版本与专用验收部署的清单，按执行计划核对 S1 范围；后续真实研究与专家修订另验，不能把静态生产者的结果当成模型质量证据。
 2. 本次证明新的复核子图可以跨版本、跨进程继续；**不自动迁移旧 per-invocation 子图 checkpoint**。旧研究和进行中的任务保持原冻结部署。专用验收环境需记录代码、镜像、JAR、前端、数据库迁移与回退边界。
 3. 组织业务和展示只完成各节限定验收。S1 尚未放行，main 未合入、共享部署未切换；后续按[第一版执行计划](first_release_acceptance_execution.zh-CN.md)进入产品交互和 RAG，而不是把本次静态图运行称为真实金融研究通过。

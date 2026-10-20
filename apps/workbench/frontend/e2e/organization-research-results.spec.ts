@@ -3,6 +3,55 @@ import {readFile,writeFile} from 'node:fs/promises';
 const project='20000000-0000-4000-8000-000000000002',execution='30000000-0000-4000-8000-000000000003';
 const checkpoint='60000000-0000-4000-8000-000000000006';
 const longMetricRecord=JSON.stringify({source:'historical metric',revision:'fixed',evidence:'source-identity-'.repeat(400)});
+for(const width of [1440,390])test(`organization report commands confirm and reconcile at ${width}`,async({page},info)=>{
+  let pending=false,posts=0,round=0;const commands:any[]=[],conversation:any[]=[];
+  const root=`/api/v1/organization-projects/${project}/research/${execution}`;
+  await page.setViewportSize({width,height:1000});
+  await page.route('**/api/v1/**',async route=>{
+    const r=route.request(),p=new URL(r.url()).pathname;let result:any={};
+    if(p==='/api/v1/business/config')result={organization_projects:true};
+    else if(p==='/api/v1/projects')result={revision:0,projects:[],assignments:{},pinned:[]};
+    else if(p==='/api/v1/research-sessions')result=[];
+    else if(p===`/api/v1/business/workspaces/projects/${project}`)result={id:project,organization_id:'org',name:'静态交互项目',role:'researcher',can_manage:false,archived:false};
+    else if(p.endsWith('/members'))result=[];
+    else if(p.endsWith('/control'))result={can_operate:true,enabled:true,preparation:'received',start:'received',continuation:'received'};
+    else if(p===root+'/report-commands'&&r.method()==='GET')result={enabled:true,items:commands};
+    else if(p===root+'/report-action-preview')result={previous_run_id:'40000000-0000-4000-8000-000000000004',checkpoint_id:checkpoint,state_digest:'sha256:'+'a'.repeat(64),report_version:1,report_digest:'b'.repeat(64)};
+    else if(p===root+'/report-commands'){
+      posts++;const body=r.postDataJSON();expect(body.report_version).toBe(1);expect(body.message).toBe(posts===1?'解释来源':'解释单位');
+      expect(body.action).toBe('ask');expect(body.target).toBeNull();expect(body.answer_mode).toBe('quick');
+      pending=posts===1;commands.unshift({id:body.id,status:pending?'unknown':'received',action:'ask',report_version:1});
+      if(!pending){round++;conversation.push({role:'assistant',content:'第二次回答，报告仍为 v1'});}
+      result=commands[0];
+    }else if(p.endsWith('/reconcile')){
+      expect(posts).toBe(1);commands[0].status='received';pending=false;round++;
+      conversation.push({role:'assistant',content:'第一次回答，报告仍为 v1'});result=commands[0];
+    }else if(p===root)result={title:'组织报告交互',status:'idle',phase:'ready_for_human_review',checkpoint_id:`${checkpoint}-${round}`,
+      report:{title:'静态报告 v1',narrative_markdown:'工程验收正文',citations:{}},conversation};
+    else if(p===`/api/v1/organization-projects/${project}/research`)result={items:[{execution_id:execution,title:'组织报告交互'}],next_offset:null};
+    else throw Error('Unexpected API '+p);
+    await route.fulfill({json:result});
+  });
+  await page.goto(`/workspace/projects?scope=organization&project=${project}&view=results&execution=${execution}`);
+  await page.getByRole('textbox',{name:'问题或修订意见'}).fill('解释来源');
+  await page.getByRole('button',{name:'核对并准备追问',exact:true}).click();
+  expect(posts).toBe(0);
+  await page.getByRole('button',{name:'返回编辑',exact:true}).click();
+  expect(posts).toBe(0);
+  await page.getByRole('button',{name:'核对并准备追问',exact:true}).click();
+  await page.getByRole('button',{name:'确认提交追问',exact:true}).click();
+  await expect(page.getByRole('button',{name:'核对报告操作',exact:true})).toBeVisible();
+  await page.reload();expect(posts).toBe(1);
+  await page.getByRole('button',{name:'核对报告操作',exact:true}).click();
+  await expect(page.getByText('第一次回答，报告仍为 v1',{exact:true})).toBeVisible();
+  await page.getByRole('textbox',{name:'问题或修订意见'}).fill('解释单位');
+  await page.getByRole('button',{name:'核对并准备追问',exact:true}).click();
+  await page.getByRole('button',{name:'确认提交追问',exact:true}).click();
+  await expect(page.getByText('第二次回答，报告仍为 v1',{exact:true})).toBeVisible();
+  expect(posts).toBe(2);expect(pending).toBe(false);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.screenshot({path:info.outputPath(`organization-report-actions-${width}.png`),fullPage:true});
+});
 for(const width of [1440,390])test(`organization results read and revoked source clear at ${width}`,async({page},info)=>{
   let revoked=false,exportFailure='',missingCheckpoint=false;const calls:string[]=[],downloads:string[]=[];
   page.on('download',d=>downloads.push(d.suggestedFilename()));
@@ -87,6 +136,7 @@ for(const width of [1440,390])test(`organization browser start unknown reconcile
     else if(p.endsWith('/members'))result=[];
     else if(p===`/api/v1/organization-projects/${project}/research`)result={items:[{execution_id:execution,title:'算力扩张能否带来持续现金流？',run_id:stage==='prepared'?null:run}],next_offset:null};
     else if(p.endsWith('/control'))result={can_operate:true,enabled:true,preparation:'received',start:stage==='prepared'?'absent':stage==='unknown'?'unknown':'received',continuation:['full','report'].includes(stage)?'received':'absent'};
+    else if(p.endsWith('/report-commands'))result={enabled:false,items:[]};
     else if(p.endsWith('/start')&&!p.includes('/reconcile/')){starts++;stage='unknown';result={status:'unknown'};}
     else if(p.endsWith('/reconcile/start')){stage='orientation';result={status:'received',run_id:run};}
     else if(p.endsWith('/continuation-preview'))result=preview;

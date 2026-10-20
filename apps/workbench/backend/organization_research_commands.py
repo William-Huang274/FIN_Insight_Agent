@@ -13,6 +13,8 @@ from .business_transport import space_business_request
 from .organization_research_reads import OrganizationReadScope
 from sec_agent.agent_runtime.execution_options import ExecutionOptions
 from sec_agent.agent_runtime.organization_continuation_contract import baseline_digest, validate_baseline
+from sec_agent.agent_runtime.organization_report_action_contract import ReportCommand, review_interrupts
+from sec_agent.agent_runtime.targeted_revision import report_digest
 
 
 class Prepare(BaseModel):
@@ -113,3 +115,41 @@ def install_organization_command_routes(router, service, browser_write):
         browser_write(request)
         suffix = {'preparation': 'reconcile', 'start': 'start-reconcile', 'continuation': 'continuation-reconcile'}[stage]
         return response(await java(project_id, execution_id, 'POST', suffix, {}))
+
+    @router.get(prefix + '/report-commands')
+    async def report_commands(project_id: UUID, execution_id: UUID):
+        result = await java(project_id, execution_id, 'GET', 'report-commands')
+        result['enabled'] = bool(result['enabled'] and os.getenv('FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED') == '1')
+        return response(result)
+
+    @router.get(prefix + '/report-action-preview')
+    async def report_preview(project_id: UUID, execution_id: UUID):
+        commands = await java(project_id, execution_id, 'GET', 'report-commands')
+        if not commands['enabled'] or os.getenv('FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED') != '1':
+            raise HTTPException(503, '组织报告交互尚未启用')
+        if commands['items'] and commands['items'][0]['status'] in {'ready', 'dispatching', 'unknown'}:
+            raise HTTPException(409, '请先核对上一条报告操作')
+        scope = await OrganizationReadScope(service, project_id, execution_id).open()
+        from .organization_report_actions import completed_predecessor
+        await completed_predecessor(service, scope.thread, scope.grant['run_id'])
+        state = await scope.state()
+        values = state.get('values') or {}
+        if not values.get('report') or not review_interrupts(state) or tuple(state.get('next') or ()) != ('human_review',):
+            raise HTTPException(409, '当前没有可交互的报告审阅检查点')
+        result = {'previous_run_id': scope.grant['run_id'], 'checkpoint_id': state['checkpoint']['checkpoint_id'],
+                  'state_digest': baseline_digest(state), 'report_version': values['report_version'],
+                  'report_digest': report_digest(values['report'])}
+        await java(project_id, execution_id, 'GET', 'report-commands')
+        return await scope.response(result)
+
+    @router.post(prefix + '/report-commands')
+    async def report_command(project_id: UUID, execution_id: UUID, body: ReportCommand, request: Request):
+        browser_write(request)
+        if os.getenv('FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED') != '1':
+            raise HTTPException(503, '组织报告交互尚未启用')
+        return response(await java(project_id, execution_id, 'POST', 'report-commands', body.model_dump(mode='json')))
+
+    @router.post(prefix + '/report-commands/{command_id}/reconcile')
+    async def report_reconcile(project_id: UUID, execution_id: UUID, command_id: UUID, request: Request):
+        browser_write(request)
+        return response(await java(project_id, execution_id, 'POST', f'report-commands/{command_id}/reconcile', {}))

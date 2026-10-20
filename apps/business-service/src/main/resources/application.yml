@@ -17,6 +17,7 @@ spring:
     log-request-details: false
 finsight:
   organization-start-enabled: ${FINSIGHT_ORGANIZATION_START_ENABLED:false}
+  organization-report-actions-enabled: ${FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED:false}
   runtime-secret: ${FINSIGHT_ORGANIZATION_RUNTIME_SECRET:}
   shared-secret: ${FINSIGHT_BUSINESS_SHARED_SECRET}
   python-url: ${FINSIGHT_PYTHON_INTAKE_URL:http://127.0.0.1:8765}

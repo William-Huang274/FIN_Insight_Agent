@@ -314,8 +314,11 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                 if isinstance(reviewed, dict):
                     conditions.extend(reviewed.get('research_limitations', []))
             body = report_authoring_input(question, current, human_feedback=human_feedback,
-                report=state.get('report'), review=state.get('report_review'), material_conditions=conditions)
-            # Binding/review archives stay in state, not in the writing assignment.
+                report=state.get('report'), review=state.get('report_review'),
+                synthesis=state.get('synthesis'), synthesis_review=state.get('synthesis_review'),
+                material_conditions=conditions)
+            # Only the current synthesis/review cross this handoff, not historical
+            # review journals or another author's private conversation.
             body['authoring_basis_digest'] = canonical_sha256(writing_basis(state, current))
         value["messages"] = [HumanMessage(content=json.dumps(body, ensure_ascii=False))]
         # An explicitly retried parent can reach a child whose native loop ended
@@ -323,11 +326,15 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         # the documented Command API; retain its own messages and accepted peers.
         saved = await agent.aget_state(config)
         same_authoring_basis = role != 'writer' and (not authoring_stages or role != 'prepare')
-        if role == 'writer' or (authoring_stages and role == 'prepare'):
+        if role == 'writer':
+            from .report_authoring import report_authoring_message_update
+            value['messages'], same_authoring_basis = report_authoring_message_update(
+                body, saved.values.get('messages', []))
+        elif authoring_stages and role == 'prepare':
             # Re-enter with this version's public state, not old research/writing turns.
             # Previous checkpoint snapshots and provider audits remain available.
             value['messages'] = [RemoveMessage(id=REMOVE_ALL_MESSAGES), *value['messages']]
-            basis_key = 'authoring_basis_digest' if role == 'writer' else 'writing_basis'
+            basis_key = 'writing_basis'
             for message in reversed(saved.values.get('messages', [])):
                 if isinstance(message, HumanMessage) and isinstance(message.content, str):
                     try:
@@ -338,7 +345,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                         same_authoring_basis = previous_input[basis_key] == body[basis_key]
                         break
         if same_authoring_basis and saved.values.get("messages") and not saved.next and not saved.values.get("output"):
-            value = Command(goto="model", update={"messages": [HumanMessage(content=
+            refreshed_assignment = value["messages"] if role == "writer" else []
+            value = Command(goto="model", update={"messages": [*refreshed_assignment, HumanMessage(content=
                 "The previous attempt ended without an accepted structured submission. It did NOT complete this role. "
                 "Continue from your retained source reads, correct the rejected submission and call your submission tool. "
                 "The host has restarted only this failed role; do not repeat unrelated research.")]})

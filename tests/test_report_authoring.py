@@ -310,6 +310,61 @@ def test_fresh_report_and_local_review_have_different_inputs(artifacts):
     assert edited['revision_request']['findings'] == review['findings']
 
 
+def test_current_synthesis_and_review_cross_first_writing_handoff_unchanged(artifacts):
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    synthesis = {'title': 'Current interpretation', 'narrative_markdown': 'Current argument [P01:C1].',
+                 'citations': {'P01:C1': {'original_source': 'retained externally'}}}
+    review = {'summary': 'Current review, not another research answer.',
+              'findings': [{'finding_id': 'SCOPE', 'severity': 'advisory',
+                            'diagnosis': 'Check subject', 'requested_change': 'Author to assess.'}],
+              'research_limitations': ['Preserve this condition.'], 'unresolved_data_requests': [],
+              'completion': 'complete'}
+    original = deepcopy((synthesis, review))
+    body = report_authoring_input('Question', artifacts, synthesis=synthesis, synthesis_review=review,
+                                 material_conditions=['Preserve this condition.', 'Other retained condition.'])
+    assert body['authoring_view'] == 'current_synthesis.v1'
+    assert body['research_synthesis']['narrative_markdown'] == synthesis['narrative_markdown']
+    assert body['synthesis_review'] == review
+    assert body['material_conditions'] == ['Other retained condition.']
+    assert body['synthesis_digest'] == canonical_sha256(synthesis)
+    assert body['synthesis_review_digest'] == canonical_sha256(review)
+    assert 'citations' not in body['research_synthesis']  # Original bindings stay in artifacts.
+    body['synthesis_review']['findings'][0]['severity'] = 'changed copy'
+    assert (synthesis, review) == original
+    revised = report_authoring_input('Question', artifacts, synthesis=synthesis, synthesis_review=review,
+        report={'title': 'Actual report', 'narrative_markdown': 'Current report'}, review={'findings': []})
+    assert 'research_synthesis' not in revised and 'synthesis_review' not in revised
+    assert revised['report']['narrative_markdown'] == 'Current report'
+
+
+def test_authoring_refresh_preserves_reads_proposals_and_failed_receipts():
+    from langchain_core.messages import HumanMessage
+    from langgraph.graph.message import add_messages
+    from sec_agent.agent_runtime.report_authoring import report_authoring_message_update
+    body = {'question': 'Task', 'authoring_basis_digest': 'same'}
+    messages = [HumanMessage(content=json.dumps(body), id='assignment'),
+        AIMessage(content='', id='proposal', additional_kwargs={'reasoning_content': 'unchanged'},
+                  tool_calls=[call('read_current_source', {'source_id': 'S1'}, 'read')]),
+        ToolMessage(content='exact source', id='receipt', tool_call_id='read',
+                    name='read_current_source', status='success'),
+        HumanMessage(content='User follow-up must survive', id='followup')]
+    original = deepcopy(messages)
+    refreshed = {**body, 'research_synthesis': {'narrative_markdown': 'Current synthesis'},
+                 'synthesis_review': {'findings': [{'finding_id': 'F1'}]}}
+    updates, same = report_authoring_message_update(refreshed, messages)
+    result = add_messages(messages, updates)
+    assert same and len(result) == len(messages) and result[1:] == messages[1:]
+    assert json.loads(result[0].content) == refreshed and messages == original
+    # Re-applying a projection must not append another assignment or duplicate reads.
+    assert add_messages(result, report_authoring_message_update(refreshed, result)[0]) == result
+    new_updates, same = report_authoring_message_update({**refreshed, 'authoring_basis_digest': 'changed'}, messages)
+    assert not same and len(add_messages(messages, new_updates)) == 1
+    # Failed/unknown outcomes are not discarded by a same-basis refresh either.
+    failed = [*messages[:-1], ToolMessage(content='unresolved error', id='error',
+              tool_call_id='other-read', name='read_current_source', status='error')]
+    assert add_messages(failed, report_authoring_message_update(refreshed, failed)[0])[1:] == failed[1:]
+
+
 def test_exact_read_dedup_retains_latest_versions_windows_errors_and_pairs():
     messages = []
     for i, (text, status, offset) in enumerate([('same', 'success', 0), ('same', 'success', 0),

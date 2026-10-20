@@ -169,7 +169,8 @@ def test_known_research_limits_reach_writer_and_final_review_without_becoming_bl
     assert result['synthesis_review']['research_limitations'] == limits
     assert result['report_review']['research_limitations'] == limits
     writer_input = json.loads(models[('writer', None, 0)].contexts[0][1].content)
-    assert writer_input['material_conditions'] == limits
+    assert writer_input['synthesis_review']['research_limitations'] == limits
+    assert not writer_input.get('material_conditions')
     assert 'research_review' not in writer_input
     assert result['report_review']['unresolved_data_requests'] == []
     assert [s[0] for s in sequence].count('writer') == 1
@@ -222,7 +223,8 @@ def test_lead_actual_method_read_and_revised_papers_enter_writer_without_private
     assert any(getattr(m, "name", "") == "get_research_method" for m in lead.contexts[-1])
     assert result["revisions"]["P02"]["workpaper"]["thesis"] in str(lead.contexts[0])
     writer_input = json.loads(models[("writer", None, 0)].contexts[0][1].content)
-    assert 'research_synthesis' not in writer_input
+    assert writer_input['research_synthesis']['narrative_markdown'] == result['synthesis']['narrative_markdown']
+    assert writer_input['synthesis_review']['findings'] == result['synthesis_review']['findings']
     assert writer_input['authoring_basis_digest']
     from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
     assert next(p['version'] for p in writer_input['catalog']['papers'] if p['paper_id'] == 'P02') == canonical_sha256(result['revisions']['P02']['workpaper'])

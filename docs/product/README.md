@@ -1,5 +1,7 @@
 # 产品文档
 
+- [第一版复杂投研工作台验收包](first_release_acceptance.zh-CN.md)：固定范围、六步收口、后续交互与完成条件；[执行计划](../engineering/first_release_acceptance_execution.zh-CN.md)。
+
 - [v0.1.3 版本说明](version_0_1_3.zh-CN.md)
 - [后续路线图](roadmap.zh-CN.md)
 - [v0.1.4 PRD（草案）](fin_0_1_4_prd.zh-CN.md)

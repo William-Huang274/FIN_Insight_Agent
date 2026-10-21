@@ -1,6 +1,6 @@
 # 第一版复杂投研工作台验收包
 
-状态：2026-10-21 登记，工程联调进行中；尚未完成本验收包。起始代码基线、执行顺序和证据登记见[执行计划](../engineering/first_release_acceptance_execution.zh-CN.md)。
+状态：2026-10-21；S1 共同工程基线已按无付费范围收口，S2–S6 尚未通过，本验收包未完成。真实研究执行保持关闭。起始代码基线、S1 最终范围矩阵、实际组件与后续门槛见[执行计划](../engineering/first_release_acceptance_execution.zh-CN.md)。
 
 ## 目标与边界
 

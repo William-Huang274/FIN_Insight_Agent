@@ -1,0 +1,8 @@
+# Only the isolated serial source-intake stack. Durability stays enabled.
+services:
+  postgres:
+    mem_limit: 256m
+    cpus: 1.0
+    command: [postgres, -c, shared_buffers=32MB, -c, work_mem=2MB,
+              -c, maintenance_work_mem=16MB, -c, max_connections=20,
+              -c, max_parallel_workers=0, -c, jit=off]

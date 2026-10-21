@@ -27,7 +27,7 @@ from sec_agent.research_foundation.organization_execution_access import Organiza
 from sec_agent.research_foundation.organization_hybrid_retrieval import preparation_nodes, publish_prepared_index
 from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation, build_organization_source_server
 from sec_agent.research_foundation.organization_source_projection import PROJECTION, validate_source_cutoff
-from tests.integration.test_organization_graph_native import OrganizationGraphStack
+from tests.integration.source_intake_runtime import CompleteSourceStack
 from tests.integration.test_java_intake_native import wait_for
 from tests.integration.source_intake_diagnostics import SourceBundles, SourceVectors, PhaseDiagnostics, file_sha256, source_coverage
 
@@ -104,7 +104,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             saved=cache.get(client.key('embedding',[q['query']]))
             assert saved and saved['status']=='completed' and saved['result']['model']==model
             queries[q['query']]=saved['result']['values'][0]
-    s=OrganizationGraphStack()
+    s=CompleteSourceStack()
     diagnostic=PhaseDiagnostics(s.save)
     indices=s.output/'indices'
     s.env['FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT']=str(indices)
@@ -137,6 +137,12 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         with psycopg.connect(host='127.0.0.1',port=s.pg_port,dbname='probe',user='probe',password=s.password,autocommit=True) as db:
             db.execute('CREATE DATABASE business')
         s.boot('java');s.boot('bff')
+        with psycopg.connect(host='127.0.0.1',port=s.pg_port,dbname='business',user='probe',password=s.password) as db:
+            settings={name:db.execute('SHOW '+name).fetchone()[0] for name in (
+                'shared_buffers','work_mem','maintenance_work_mem','max_connections','max_parallel_workers',
+                'fsync','synchronous_commit','full_page_writes')}
+            assert all(settings[name]=='on' for name in ('fsync','synchronous_commit','full_page_writes'))
+            s.save('postgres-settings',settings)
         org,space,project,private=[str(uuid4()) for _ in range(4)]
         api('POST','/organizations',{'id':org,'name':'Complete source intake','display_name':'Owner'})
         api('POST','/spaces',{'id':space,'organization_id':org,'name':'Full parsed disclosures'})
@@ -333,6 +339,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                           'phase_diagnostics':'phase-diagnostics.json','provider_calls':0})
         raise
     finally:
+        try:s.postgres_memory_evidence()
+        except Exception as exc:s.save('postgres-memory',{'status':'unavailable','error_type':type(exc).__name__})
         for process in s.processes:
             if process.poll() is None: process.terminate();process.wait(timeout=20)
         for log in s.logs: log.close()

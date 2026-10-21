@@ -4,6 +4,8 @@
 
 ## 低内存条件下的逐源分批验收
 
+串行启动可显式启用 `FIN_COMPLETE_SOURCE_SERIAL_PROFILE=1`：仅本轮 JVM 使用 32/256 MiB 初始/最大堆、Serial GC、48 MiB code cache、160 MiB metaspace 和 32 MiB direct memory 上限，Tomcat 1–8 工作线程，Hikari 1–2 连接；同一个完整 BFF 应用使用单 worker、8 并发连接限制和 16 backlog。独立 PostgreSQL 使用 32 MiB shared buffers、2 MiB work memory、16 MiB maintenance memory、20 连接、禁用并行查询与 JIT，容器 256 MiB/1 CPU。未启动原生研究图；不改变共享服务或生产默认配置，不移除路由、鉴权或资料检查。运行时读取并断言 fsync、synchronous_commit、full_page_writes 均开启；保留 Flyway 迁移和真实事务。小资源配置只验串行正确性，不得作为并发容量结果。新配置属于新执行基线，不复用旧基线成功收据；800 MiB 运行中止线不变，低于常规 4 GiB 余量的首批属于资源诊断，需记录实际峰值、剩余内存和失败。
+
 `scripts/engineering/source_intake_batches.py` 将完整已核验清单按原顺序划分为可续跑批次，默认每批最多 32 份、输入文件合计预算 16 MiB。超过预算的单份来源独立成批，禁止裁剪正文、分段或向量。文件预算不是进程 RSS 上限；服务启动内存和单份超大原件仍需实际观测。
 
 该入口分开保留两项验收义务：

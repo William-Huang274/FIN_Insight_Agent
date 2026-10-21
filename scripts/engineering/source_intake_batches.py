@@ -117,6 +117,7 @@ def baseline():
     configuration = {key: os.environ.get(key) for key in (
         'FIN_COMPLETE_SOURCE_QUESTIONS', 'FIN_COMPLETE_SOURCE_LIBRARY', 'FIN_COMPLETE_SOURCE_QUERY_CACHE',
         'FIN_PROBE_IMAGE', 'FINSIGHT_LIBRARY_NODE_CATALOG', 'FINSIGHT_LIBRARY_RECOVERY_CATALOG',
+        'FIN_COMPLETE_SOURCE_SERIAL_PROFILE',
         'FINSIGHT_LIBRARY_NODE_SHA256', 'FINSIGHT_LIBRARY_RECOVERY_SHA256')}
     file_hashes = {key: digest(value) for key, value in configuration.items()
                    if value and key in ('FIN_COMPLETE_SOURCE_QUESTIONS',

@@ -53,6 +53,7 @@ def direct_java():
 
 
 class Stack:
+    bff_arguments = ()
     compose_files = (COMPOSE,)
     graph_fixture = ROOT / 'tests/integration/fixtures/intake_native_graph.py'
     synthetic_components = ['research graph', 'library binding', 'local identity']
@@ -156,7 +157,8 @@ class Stack:
 
     def boot(self, which):
         args = [self.java, '-jar', str(self.jar)] if which == 'java' else [sys.executable, '-m', 'uvicorn',
-            'tests.integration.fixtures.intake_native_web:app', '--host', '127.0.0.1', '--port', str(self.bff_port)]
+            'tests.integration.fixtures.intake_native_web:app', '--host', '127.0.0.1', '--port', str(self.bff_port),
+            *self.bff_arguments]
         log = (self.output / f'{which}-{len(self.logs)}.log').open('w', encoding='utf-8')
         self.logs.append(log)
         # The BFF/Java do not need even the development license key.

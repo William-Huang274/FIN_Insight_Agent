@@ -143,11 +143,14 @@ class OrganizationExecutionReader:
             raise _unavailable()
         binding = inputs[resource_id]
         try:
-            result = self.workspace.read('organization:' + manifest['organization_id'], binding['ref'])
+            result = self.workspace.read_source('organization:' + manifest['organization_id'], binding['ref'])
             if result['version']['ref'] != binding['ref']:
                 raise _unavailable()
             from .project_source_captures import validate_metric_cutoff, financial_capture_text
             capture = result.get('capture') or {}
+            if capture.get('kind') == 'library_source':
+                from .organization_source_projection import validate_source_cutoff
+                validate_source_cutoff(result['source_bundle'], manifest['research_as_of'])
             validate_metric_cutoff(capture, manifest['research_as_of'])
             if capture.get('kind') == 'financial':
                 text = financial_capture_text(capture)

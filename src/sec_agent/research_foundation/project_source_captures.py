@@ -32,6 +32,14 @@ class FinancialSelection(BaseModel):
     row_ids: list[Annotated[str, Field(pattern=r'^[a-f0-9]{64}$')]] = Field(min_length=1, max_length=100)
 
 
+class LibrarySourceSelection(BaseModel):
+    """Select one complete source from the server's immutable public release."""
+    model_config = ConfigDict(extra='forbid')
+    kind: Literal['library_source']
+    document_id: str = Field(min_length=1, max_length=250)
+    snapshot: str = Field(pattern=r'^[a-f0-9]{64}$')
+
+
 class MetricSelection(BaseModel):
     model_config = ConfigDict(extra='forbid')
     kind: Literal['metric']
@@ -65,11 +73,30 @@ class CaptureRequest(BaseModel):
     project_id: UUID
     title: str = Field(min_length=1, max_length=120)
     note: str = Field(default='', max_length=10000)
-    selection: Annotated[SourceSelection | FinancialSelection | MetricSelection, Field(discriminator='kind')]
+    selection: Annotated[SourceSelection | FinancialSelection | MetricSelection | LibrarySourceSelection, Field(discriminator='kind')]
 
 
 def source_snapshot(selection, attachments_root, fact_mart, research_library=None):
-    if selection.kind == 'metric':
+    if selection.kind == 'library_source':
+        from contextlib import closing
+        import sqlite3
+        from retrieval.library_source_bundle import build_source_bundle
+        from .research_library import open_library
+        if research_library is None:
+            raise ValueError('complete_source_library_not_configured')
+        library = open_library(research_library)
+        if library.manifest['sha256'] != selection.snapshot:
+            raise AssetConflict('来源库版本已变化，请重新选择完整来源。')
+        with closing(sqlite3.connect(library.path.resolve().as_uri()+'?mode=ro', uri=True)) as db:
+            db.row_factory = sqlite3.Row
+            db.execute('BEGIN')
+            bundle = build_source_bundle(db, selection.document_id, selection.snapshot)
+        # Recheck the maintained release identity before saving the snapshot.
+        if open_library(research_library).manifest['sha256'] != selection.snapshot:
+            raise AssetConflict('完整来源保存期间资料库版本变化。')
+        payload = {'schema_version':'project_library_source_snapshot.v1', 'kind':'library_source',
+                   'selection_mode':'complete_parsed_source', 'bundle':bundle}
+    elif selection.kind == 'metric':
         if research_library is None:
             raise ValueError('metric_capture_library_not_configured')
         payload, _ = metric_capture_snapshot(research_library, entity_id=selection.entity_id,
@@ -100,15 +127,24 @@ def source_snapshot(selection, attachments_root, fact_mart, research_library=Non
         payload = {'schema_version':'project_source_snapshot.v1', 'kind':'financial',
                    'query':page['selection_query'], 'query_digest':page['snapshot'],
                    'matching_count':page['total'], 'selection_mode':'explicit_rows', 'rows':rows}
-    if len(json.dumps(payload, ensure_ascii=False).encode()) > 2*1024*1024:
-        raise ValueError('选择内容超过单份快照2MiB，请减少章节后再保存；未截断原文。')
+    maximum = 20*1024*1024 if selection.kind == 'library_source' else 2*1024*1024
+    if len(json.dumps(payload, ensure_ascii=False).encode()) > maximum:
+        raise ValueError('所选内容超过当前快照保存上限，尚未保存；原文未截断。')
     return payload
 
 
 def capture_manifest(snapshot):
     result = {'schema_version':snapshot['schema_version'], 'kind':snapshot['kind'],
               'snapshot_digest':content_digest(snapshot), 'selection_mode':snapshot['selection_mode']}
-    if snapshot['kind'] == 'library':
+    if snapshot['kind'] == 'library_source':
+        bundle = snapshot['bundle']
+        source = bundle['source']
+        result.update(library_digest=bundle['library_sha256'], source_id=source['id'],
+                      source_digest=source['digest'], projection=bundle['projection'],
+                      origin={'title':source['title'], 'stable_url':source['url'],
+                              'publication_date':source['published_at'],
+                              'metadata':json.loads(source['metadata'])})
+    elif snapshot['kind'] == 'library':
         result.update(origin=snapshot['origin'], library_digest=snapshot['library_digest'],
                       section_ids=[s['node_id'] for s in snapshot['sections']])
     else:
@@ -119,6 +155,12 @@ def capture_manifest(snapshot):
 
 def render_capture(snapshot, note):
     """Source bytes and user opinion have explicit, stable boundaries in tool reads."""
+    if snapshot['kind'] == 'library_source':
+        bundle = snapshot['bundle']
+        source = bundle['source']
+        return '\n\n'.join(['# '+source['title'], '完整已解析正文；图片、布局及历史解析限制仍以原来源声明为准。',
+            '来源快照校验：'+content_digest(snapshot), '原始来源：'+source['url'], bundle['text'],
+            '# 用户批注（非来源事实）', note or '（暂无批注）'])
     lines = ['# 固定来源快照', '这是用户明确选择的保存范围，不代表完整披露或全部查询结果。原始资料仍需结合期间与上下文核验。',
              '来源快照校验：'+content_digest(snapshot)]
     if snapshot['kind'] == 'library':

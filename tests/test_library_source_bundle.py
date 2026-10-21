@@ -201,3 +201,23 @@ def test_offline_export_is_readonly_failures_retained_no_overwrite(tmp_path, mon
     assert result['status'] == 'failed'
     assert [r['status'] for r in result['sources']] == ['verified', 'failed']
     assert result['sources'][1]['error'] == 'source_missing'
+
+
+def test_scope_inventory_preserves_failed_and_excluded_sources(tmp_path):
+    from scripts.data_retrieval.audit_library_source_intake import audit
+    folder=tmp_path/'source'
+    folder.mkdir()
+    path=folder/'library.sqlite'
+    database(path,'Original source. '*800)
+    with closing(sqlite3.connect(path)) as db, db:
+        row=db.execute('SELECT * FROM sources').fetchone()
+        db.execute('INSERT INTO sources VALUES(?,?,?,?,?,?,?,?)',('broken',*row[1:]))
+        excluded=list(row);excluded[0]='old';excluded[3]='superseded_parse'
+        db.execute('INSERT INTO sources VALUES(?,?,?,?,?,?,?,?)',excluded)
+    before=digest(path)
+    report=audit(path,tmp_path/'inventory.json')
+    assert report['source_count']==3
+    assert report['intake_statuses']=={'parsed_text_recoverable':1,'requires_adapter_or_source_repair':1,'source_not_currently_readable':1}
+    assert report['repair_reasons']=={'source_not_readable_or_empty':1}
+    assert report['access_states']=={'readable':2,'superseded_parse':1}
+    assert not report['full_scope_retrieval_accepted'] and digest(path)==before

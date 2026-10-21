@@ -181,7 +181,8 @@ class AssetWorkspace:
             captured = read_capture(self.library.documents, row)
             if captured:
                 snapshot = captured['snapshot']
-                text = '\n\n'.join(s['content'] or '' for s in snapshot.get('sections',[]))
+                text = (snapshot['bundle']['text'] if snapshot['kind'] == 'library_source' else
+                        '\n\n'.join(s['content'] or '' for s in snapshot.get('sections',[])))
                 return {'version':version,'editable':False,'text':text[:100000], 'truncated':len(text)>100000,
                         'needs_vision':False, 'capture':{**version['capture'],'note':captured['note'],
                             **({'rows':snapshot['rows']} if snapshot['kind']=='financial' else {})}}
@@ -197,6 +198,17 @@ class AssetWorkspace:
         data = self.sec.observations(owner, ref.project_id, ref.version_id)
         return {'version': version, 'editable': False, 'concepts': data['concepts'][:100],
                 'concept_total': len(data['concepts']), 'text': '', 'truncated': False}
+
+    def read_source(self, owner, ref):
+        """Internal source projection. UI preview remains bounded; ACL is upstream."""
+        result = self.read(owner, ref)
+        if (result.get('capture') or {}).get('kind') != 'library_source':
+            return result
+        from .project_source_captures import read_capture
+        _, row = self.resolve(owner, ref)
+        captured = read_capture(self.library.documents, row)
+        bundle = captured['snapshot']['bundle']
+        return {**result, 'text':bundle['text'], 'truncated':False, 'source_bundle':bundle}
 
     def create_context(self, owner, request):
         versions = [self.resolve(owner, ref)[0] for ref in request.refs]

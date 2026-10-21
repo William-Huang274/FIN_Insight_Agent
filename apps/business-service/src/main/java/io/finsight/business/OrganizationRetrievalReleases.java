@@ -21,7 +21,7 @@ class OrganizationRetrievalReleases {
         @NotNull @Pattern(regexp="[a-f0-9]{64}") String matrix_sha256,
         @NotNull @Pattern(regexp="text-embedding-v4|qwen3\\.7-text-embedding") String model,
         @Min(1024) @Max(1024) int dimensions,
-        @NotNull @Pattern(regexp="organization-text-6000\\.v1") String projection) {}
+        @NotNull @Pattern(regexp="organization-(text-6000|library-chunks)\\.v1") String projection) {}
     private final JdbcTemplate db;
     private final OrganizationProjects projects;
     private final ObjectMapper json;

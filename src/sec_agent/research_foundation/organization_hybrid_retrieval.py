@@ -45,6 +45,12 @@ def preparation_nodes(reader, *, workbench_url):
     nodes = []
     for item in manifest['inputs']:
         document = nav._identity(item)
+        result = reader._read(item['resource_id'])
+        if result.get('source_bundle'):
+            from .organization_source_projection import source_nodes
+            nodes.extend(row for row in source_nodes(result['source_bundle'], document, item, workbench_url)
+                         if row['node_kind'] == 'text')
+            continue
         offset = 0
         while True:
             outline = nav.navigate({'source_space':'organization', 'operation':'outline',
@@ -65,7 +71,8 @@ def preparation_nodes(reader, *, workbench_url):
     return manifest['organization_id'], nodes
 
 
-def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, model, provenance, release_id=None):
+def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, model, provenance, release_id=None,
+                           projection='organization-text-6000.v1'):
     """Host-side publication of exact prepared content/query embeddings.
 
     Caller must verify embedding text/model provenance before publication.
@@ -78,11 +85,19 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
     if dimensions < 1 or dimensions > 8192:
         raise ValueError('organization_retrieval_invalid_dimensions')
     records = []
+    from .organization_index_release import PROJECTIONS, CHUNK_PROJECTION
+    if projection not in PROJECTIONS or (release_id is None and projection == CHUNK_PROJECTION):
+        raise ValueError('organization_retrieval_projection_requires_supported_release')
     for i, row in enumerate(nodes):
         if row['node_kind'] == 'section' or sha256(row['content'].encode()).hexdigest() != row['content_sha256']:
             raise ValueError('organization_retrieval_preparation_content_mismatch')
         records.append({'node_id': row['node_id'], 'document_id': row['parent_document_id'],
             'content_sha256': row['content_sha256'], 'vector_index': i})
+        if row.get('embedding_input_sha256') is not None:
+            if (projection != CHUNK_PROJECTION
+                    or sha256(row['embedding_content'].encode()).hexdigest() != row['embedding_input_sha256']):
+                raise ValueError('organization_embedding_projection_mismatch')
+            records[-1]['embedding_input_sha256'] = row['embedding_input_sha256']
     if len({r['node_id'] for r in records}) != len(records):
         raise ValueError('organization_retrieval_duplicate_node')
     matrix = np.stack([vector(v, dimensions) for v in vectors])
@@ -99,8 +114,8 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
         'matrix_sha256': sha256((directory/'vectors.npy').read_bytes()).hexdigest(),
         'queries': {sha256(q.encode()).hexdigest(): vector(v, dimensions).tolist() for q, v in queries.items()}}
     if release_id is not None:
-        from .organization_index_release import FORMAT as RELEASE_FORMAT, PROJECTION
-        manifest.update(format=RELEASE_FORMAT, release_id=release_id, projection=PROJECTION)
+        from .organization_index_release import FORMAT as RELEASE_FORMAT
+        manifest.update(format=RELEASE_FORMAT, release_id=release_id, projection=projection)
     (directory/'index.json').write_text(json.dumps(manifest, ensure_ascii=False), encoding='utf8')
     return digest(manifest)
 
@@ -152,6 +167,8 @@ class OrganizationHybridRetrieval:
                     or record['content_sha256'] != sha256(row['content'].encode()).hexdigest()
                     or record['content_sha256'] != row['content_sha256']):
                 raise ValueError('organization_retrieval_version_not_prepared')
+            if record.get('embedding_input_sha256') != row.get('embedding_input_sha256'):
+                raise ValueError('organization_retrieval_embedding_projection_mismatch')
             position = record['vector_index']
             if type(position) is not int or not 0 <= position < len(matrix):
                 raise ValueError('organization_retrieval_invalid_vector_position')

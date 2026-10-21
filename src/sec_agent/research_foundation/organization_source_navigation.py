@@ -48,7 +48,7 @@ class OrganizationSourceNavigation:
             if request.document_id not in selected:
                 raise OrganizationExecutionUnavailable('所选原文不属于本次固定组织输入。')
             selected = {request.document_id: selected[request.document_id]}
-        nodes, provenance = [], {}
+        nodes, provenance, originals = [], {}, {}
         for document_id, item in selected.items():
             result = self.reader._read(item['resource_id'])
             if result.get('needs_vision'):
@@ -62,6 +62,16 @@ class OrganizationSourceNavigation:
                 'source_truncated': result['truncated'],
                 'capture': {k: deepcopy(v) for k, v in (result.get('capture') or {}).items() if k != 'rows'}}
             provenance[document_id] = origin
+            if result.get('source_bundle'):
+                from .organization_source_projection import source_nodes, PROJECTION
+                pinned = manifest.get('retrieval_index')
+                if pinned is not None and pinned['projection'] != PROJECTION:
+                    raise ValueError('organization_complete_source_requires_chunk_projection')
+                projected = source_nodes(result['source_bundle'], document_id, item,
+                    self.workbench_url + f"/api/v1/asset-workspace/organization-projects/{manifest['project_id']}/resources/{item['resource_id']}")
+                nodes.extend(projected)
+                originals.update({row['node_id']:row['original_source'] for row in projected})
+                continue
             for index, offset in enumerate(range(0, len(text), 6000)):
                 chunk = text[offset:offset + 6000]
                 node = {'node_id': document_id.replace('ORGDOC::', 'ORGSECTION::') + ':' + str(index),
@@ -80,7 +90,8 @@ class OrganizationSourceNavigation:
             allowed_space='organization', hybrid_enabled=False,
             ranker=self.hybrid.rank if self.hybrid is not None else None)
         result = result.model_copy(update={'items': tuple({**item,
-            'organization_source': provenance[item['document_id']]} for item in result.items),
+            'organization_source': provenance[item['document_id']],
+            **({'original_source':originals[item['node_id']]} if item['node_id'] in originals else {})} for item in result.items),
             'notice': result.notice + ' Organization originals only; no external embedding/rerank. '
                 'The source projection may be truncated (organization_source.source_truncated). '
                 'Offsets identify projected text, not original PDF pages. Adjacent windows/tables require review. '

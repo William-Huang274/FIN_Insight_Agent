@@ -91,8 +91,8 @@ def verify_release_inputs(workspace, org, inputs, contract, root, research_as_of
     actual = {r['node_id']:(r['document_id'], r['content_sha256'], r.get('embedding_input_sha256')) for r in index['records']}
     if actual != expected:
         raise ValueError('organization_index_original_projection_mismatch')
-    if (not np.isfinite(matrix).all()
-            or not np.allclose(np.linalg.norm(matrix.astype(np.float64), axis=1), 1., rtol=1e-5, atol=1e-6)):
+    from .organization_vector_math import unit_vectors
+    if not unit_vectors(matrix):
         raise ValueError('organization_index_invalid_prepared_vectors')
 
 

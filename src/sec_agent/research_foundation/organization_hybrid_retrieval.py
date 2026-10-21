@@ -186,9 +186,8 @@ class OrganizationHybridRetrieval:
             if type(position) is not int or not 0 <= position < len(matrix):
                 raise ValueError('organization_retrieval_invalid_vector_position')
             selected.append(position)
-        subset = matrix[selected]
-        if (not np.isfinite(subset).all()
-                or not np.allclose(np.linalg.norm(subset.astype(np.float64), axis=1), 1., rtol=1e-5, atol=1e-6)):
+        from .organization_vector_math import unit_vectors, cosine_scores
+        if not unit_vectors(matrix, selected):
             raise ValueError('organization_retrieval_invalid_prepared_vectors')
         query_hash = sha256(query.encode()).hexdigest()
         query_receipt = {'provider_calls': 0, 'cache_hit': True, 'source': 'prepared_index'}
@@ -215,7 +214,7 @@ class OrganizationHybridRetrieval:
             if saved:
                 entry = json.loads(saved[0])
             else:
-                scores = subset @ query_vector
+                scores = cosine_scores(matrix, selected, query_vector)
                 dense = [rows[i]['node_id'] for i in sorted(range(len(rows)),
                     key=lambda i: (-float(scores[i]), rows[i]['node_id']))[:24]]
                 lexical = [r['node_id'] for r in literal[:12]]

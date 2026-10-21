@@ -240,3 +240,18 @@ S1 尚需恢复并验证上述容器授权路径、完成共同工程范围与�
 - 实际业务库 Flyway V1–V11 全部成功；专用原生库仍为 6 threads、0 runs；416 个冻结源码/配置摘要一致。本批模型调用 0 次。
 
 仓库外证据：`normal-deployment-r1/docker-recovery-audit.json`、`multisource-r2/acceptance-container-recovered-r1/result.json` 及 `state/calls/multisource-<原执行 ID>-acceptance-container-recovered-r1/result.json`。原失败记录及私有本机诊断日志保留；没有上传诊断包。部署 manifest 已解除组织授权连接降级，启动开关仍关闭，整版 deployed/evaluated baseline 仍为空。S1 共同范围/部署核对、S2 完整候选与检索质量及后续有预算研究验收仍独立待办。
+
+### 2026-10-21：保留数据升级及恢复验收
+
+在用户授权、共享任务确认无在途运行后，完成 Docker Desktop 4.76.0.228118 → 4.96.0.243774 原位升级，Engine 为 29.9.1。升级前停止原 9 个服务，对原 353 个本地卷制作 18 份冷备归档，共 6,016,009,937 字节，逐份校验 gzip 完整性和 SHA256，并保留容器、卷、镜像及配置清单。这是卷与配置备份，不是整块虚拟机、镜像或容器可写层备份；原虚拟磁盘保留原路径、文件 ID 和长度。
+
+首轮安装因 `ProgramData/DockerDesktop` 的所有者不满足安装器要求而退出，未替换旧程序。用户手动执行管理员脚本后，仅该目录根的所有者改为 Administrators，访问规则不变、不递归、不删除，安装返回 0。升级后完成一次正常 Desktop 退出再启动，没有手动清理残留端点；不据此宣称睡眠恢复、强制终止或长期运行已稳定。
+
+恢复核对与实际业务读取结果：
+
+- 原 364 个容器 ID、镜像、挂载、环境及启动命令保持一致，原 353 个卷的身份元数据及原清单中 41 个镜像保留。另有备份阶段最后三次辅助容器留下的 3 个匿名卷，创建时间早于安装且无原服务引用，明确记录并保留；当前总卷数为 356，不把额外卷掩盖为“完全无变化”。
+- 仅按原 ID 启动原 9 个服务：8 个有健康检查的容器均 healthy，Keycloak running，并通过真实登录验证。启动预热期间原生服务健康检查曾未通过，待其就绪后重新核对通过，未放宽健康标准。
+- 18165/18865 原生服务、18443 OIDC discovery、18866 工作台均 HTTP 200；业务库 Flyway V1–V11 成功，416 个冻结源码/配置摘要、Java JAR 及原生镜像不变。专用原生服务保留 6 个 thread、0 个 run，执行开关仍关闭。
+- 两名真实账号通过 HTTPS 授权码登录，身份与原项目成员关系保持一致；不重新创建项目或修改成员。原准备单在生产 native 容器通过 MCP 向现有 Java 核权，检索并回读两份原文，引用状态与原文 SHA256 一致；本轮不重复撤权操作，模型调用、ACL 变更及新增研究运行均为 0。
+
+仓库外证据位于同批验收根的 `docker-upgrade-4.96.0/`：`upgrade-status.json`、`upgrade-audit.json`、`business-recovery-audit.json`、`oidc-recovery-r1/result.json`、`backup-summary.json`；原文读取证据在 `normal-deployment-r1/state/calls/docker-upgrade-readcheck/result.json`。部署 manifest 追加本次实际基础设施版本与证据，保留历史故障记录、原组件版本和整版 baseline 空值。本次通过的是升级后恢复验收，不替代 S1 共同范围、S2 完整候选检索质量或金融研究质量验收。

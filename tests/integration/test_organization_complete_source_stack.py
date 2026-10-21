@@ -46,6 +46,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     dataset=Path(os.environ['FIN_COMPLETE_SOURCE_QUESTIONS'])
     questions=json.loads(dataset.read_text(encoding='utf8'))['questions']
     storage_probe=os.getenv('FIN_COMPLETE_SOURCE_STORAGE_PROBE')=='1'
+    unified_scope=os.getenv('FIN_COMPLETE_SOURCE_UNIFIED_SCOPE')=='1'
     if not storage_probe:
         assert {row['source_id'] for row in intake['sources']}=={e['source_id'] for q in questions for e in q['evidence']}
     library=Path(os.environ['FIN_COMPLETE_SOURCE_LIBRARY']).resolve()
@@ -163,6 +164,9 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     assert not response.is_error
                     found=response.structured_content['items']
                     assert found and all(r['original_source']['source_id']==sid for r in found)
+                    if unified_scope:
+                        expected='selected' if sid in list(batch)[:2] else 'retrieval_candidate'
+                        assert all(r['organization_source']['input_role']==expected for r in found)
                     cached=await client.call_tool('read_source_document',{'request':query})
                     assert cached.structured_content['items'][0]['retrieval']['cache_hit']
                     request={'source_space':'organization','operation':'read','document_id':tail['parent_document_id'],
@@ -203,10 +207,16 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                         'index_digest':found[0]['retrieval']['index_digest'],'provider_calls':found[0]['retrieval']['provider_calls']})
                     s.save('complete-source-progress',{'sources':results,'status':'running'})
         ids=list(bundles)
-        for start in range(0,len(ids),12):
-            batch={sid:bundles[sid] for sid in ids[start:start+12]}
+        batch_size=len(ids) if unified_scope else 12
+        if unified_scope:assert len(ids)>12
+        global_searches=[]
+        for start in range(0,len(ids),batch_size):
+            batch={sid:bundles[sid] for sid in ids[start:start+batch_size]}
             payload={'id':str(uuid4()),'title':'Complete inputs','question':'Read the selected complete disclosures.',
                      'research_as_of':'2026-09-23','resource_ids':[resources[sid] for sid in batch]}
+            if unified_scope:
+                payload['retrieval_resource_ids']=payload['resource_ids']
+                payload['resource_ids']=payload['resource_ids'][:2]
             original=api('POST',f'/projects/{project}/research-drafts',payload)
             reader=bind(project,original)
             _,nodes=preparation_nodes(reader,workbench_url='http://localhost')
@@ -222,21 +232,38 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             assert api('GET',f'/projects/{project}/research-drafts/{original["id"]}')==original
             reader=bind(project,frozen)
             nav=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
+            if unified_scope:
+                assert len(frozen['manifest']['input_selection']['selected_resource_ids'])==2
+                assert len(frozen['manifest']['inputs'])==len(batch)
+                query={'source_space':'organization','operation':'search','query':next(iter(queries))}
+                found=nav.navigate(query)
+                assert found.items
+                assert all(r['original_source']['source_id'] in batch for r in found.items)
+                cached=nav.navigate(query)
+                assert cached.items[0]['retrieval']['cache_hit']
+                global_searches.append({'query':query,'retrieval':found.items[0]['retrieval'],
+                    'returned_sources':list({r['original_source']['source_id'] for r in found.items}),
+                    'authorized_sources':len(batch),'indexed_chunks':len(nodes),'cache_hit':True})
             first_result=len(results)
             asyncio.run(exercise(batch,nodes,nav,reader))
-            first=resources[next(iter(batch))]
+            # Revoke a candidate that was NOT explicitly selected; all current
+            # dependencies must still protect cached search, reports and reads.
+            revoke_sid=list(batch)[-1] if unified_scope else next(iter(batch))
+            first=resources[revoke_sid]
             current=s.request(s.bff,'GET',f'/api/v1/asset-workspace/spaces/resources/{first}')
             api('POST',f'/resources/{first}/revoke',{'revision':current['permission_revision']})
             with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(results[first_result]['readback'])
             with pytest.raises(OrganizationExecutionUnavailable):nav.navigate({'source_space':'organization','operation':'search','query':next(iter(queries))})
-            if 'node_recovery' in next(iter(batch.values())):
-                original=next(iter(batch.values()))['node_recovery']['nodes'][0]
+            if 'node_recovery' in batch[revoke_sid]:
+                original=batch[revoke_sid]['node_recovery']['nodes'][0]
                 with pytest.raises(OrganizationExecutionUnavailable):reader.read_text(first,node_id=original['node_id'])
             contracts.append(contract)
         s.save('complete-source-result',{'status':'passed','sources':results,'frozen_contracts':contracts,
             'revoked_cache_and_readback_denied':True,'provider_calls':0,'research_runs':0,
             'recall_or_capacity_evaluation':False,'candidate_chunks':len(vectors),'identity':'qualification login',
-            'max_sources_per_draft':12,'separate_index_batches':len(contracts),'corpus_wide_retrieval':False,
+            'max_explicit_sources_per_draft':12,'separate_index_batches':len(contracts),
+            'corpus_wide_retrieval':unified_scope,'corpus_scope':'selected intake artifact only',
+            'global_searches':global_searches,'non_selected_candidate_revocation_tested':unified_scope,
             'captures':captures,'node_reads':node_reads,'date_denials':date_denials,'query_is_storage_probe':storage_probe})
     finally:
         for process in s.processes:

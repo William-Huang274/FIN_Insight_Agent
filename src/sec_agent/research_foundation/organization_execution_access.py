@@ -95,7 +95,9 @@ def validate_execution_grant(grant, execution_id, manifest_digest):
             validate_contract(manifest['retrieval_index'])
         selected = {str(UUID(item['resource_id'])): item for item in manifest['inputs']}
         inputs = grant['inputs']
-        if not 1 <= len(inputs) <= 12 or len(selected) != len(manifest['inputs']) or len(inputs) != len(selected):
+        from .organization_input_selection import validate_input_selection
+        validate_input_selection(manifest)
+        if len(selected) != len(manifest['inputs']) or len(inputs) != len(selected):
             raise ValueError('input_count')
         seen = set()
         for item in inputs:
@@ -135,7 +137,8 @@ class OrganizationExecutionReader:
         _, manifest, _ = self._grant()
         # Does not return principals, storage addresses, secrets or hidden source provenance.
         return {'execution_id': self.authority.execution_id, 'manifest_digest': self.authority.manifest_digest,
-                'research_as_of': manifest['research_as_of'], 'items': manifest['inputs']}
+                'research_as_of': manifest['research_as_of'], 'items': manifest['inputs'],
+                **({'input_selection':manifest['input_selection']} if 'input_selection' in manifest else {})}
 
     def _read(self, resource_id):
         before, manifest, inputs = self._grant()

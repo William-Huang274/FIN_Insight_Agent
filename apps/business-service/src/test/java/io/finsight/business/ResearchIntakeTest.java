@@ -669,6 +669,50 @@ class ResearchIntakeTest {
         assertThat(workspace(f.researcher(),"GET",releases,null,200).path("items").size()).isZero();
         workspace(f.researcher(),"GET",drafts+"/"+preparedId,null,404);
     }
+    @Test void focal_inputs_and_searchable_scope_are_separate_current_dependencies() throws Exception {
+        var f=executionFixture();String base="/projects/"+f.project()+"/research-drafts";
+        var legacy=workspace(f.researcher(),"GET",base+"/"+f.draft(),null,200);
+        var ids=new ArrayList<UUID>();ids.add(f.resource());
+        for(int n=0;n<18;n++) {
+            UUID id=UUID.randomUUID();ids.add(id);
+            workspace(f.admin(),"POST","/resources",Map.of("id",id,"space_id",f.space(),"title","候选资料"+n,"resource_type","knowledge",
+                "binding",Map.of("organization_id",f.org(),"space_id",f.space(),"ref",Map.of("project_id",f.space(),"kind","document","asset_id","UPLOAD::candidate"+n,"version_id","UPLOAD::v1-"+n,"digest","b".repeat(64)))),200);
+            int revision=workspace(f.admin(),"GET","/projects/"+f.project(),null,200).path("revision").asInt();
+            workspace(f.admin(),"POST","/projects/"+f.project()+"/resources/"+id,Map.of("revision",revision,"linked",true),200);
+        }
+        var body=new HashMap<String,Object>(Map.of("id",UUID.randomUUID(),"title","两份重点资料与19份检索范围",
+            "question","核对重点披露并在候选资料中寻找补充证据。","research_as_of","2026-10-12",
+            "resource_ids",ids.subList(0,2),"retrieval_resource_ids",ids));
+        var prepared=workspace(f.researcher(),"POST",base,body,200);
+        assertThat(prepared.path("manifest").path("inputs")).hasSize(19);
+        assertThat(prepared.path("manifest").path("input_selection").path("selected_resource_ids")).hasSize(2);
+        assertThat(workspace(f.researcher(),"POST",base,body,200)).isEqualTo(prepared);
+        assertThat(workspace(f.researcher(),"GET",base+"/"+f.draft(),null,200)).isEqualTo(legacy);
+        var invalid=new HashMap<>(body);invalid.put("id",UUID.randomUUID());invalid.put("resource_ids",ids);
+        workspace(f.researcher(),"POST",base,invalid,400);
+        invalid.put("resource_ids",ids.subList(0,2));invalid.put("retrieval_resource_ids",ids.subList(2,19));
+        workspace(f.researcher(),"POST",base,invalid,422);
+        invalid.put("retrieval_resource_ids",List.of(ids.getFirst(),ids.getFirst()));
+        workspace(f.researcher(),"POST",base,invalid,422);
+        invalid.put("retrieval_resource_ids",List.of(ids.get(0),ids.get(1),UUID.randomUUID()));
+        workspace(f.researcher(),"POST",base,invalid,404);
+        var large=new ArrayList<>(ids.subList(0,2));
+        while(large.size()<2048)large.add(UUID.randomUUID());
+        invalid.put("retrieval_resource_ids",large);
+        // >64 KiB must reach source authorization, not the old transport cap.
+        workspace(f.researcher(),"POST",base,invalid,404);
+        large.add(UUID.randomUUID());workspace(f.researcher(),"POST",base,invalid,400);
+        var changed=new HashMap<>(body);changed.put("resource_ids",ids.subList(0,1));
+        workspace(f.researcher(),"POST",base,changed,409);
+        UUID execution=UUID.randomUUID();String saved=prepared.path("id").asText(),digest=prepared.path("manifest_digest").asText();
+        workspace(f.researcher(),"POST",base+"/"+saved+"/execution-bindings",Map.of("id",execution,"manifest_digest",digest),200);
+        assertThat(runtimeAccess(execution,digest,200).path("inputs")).hasSize(19);
+        workspace(f.admin(),"POST","/resources/"+ids.getLast()+"/revoke",Map.of("revision",1),200);
+        workspace(f.researcher(),"GET",base+"/"+saved,null,404);
+        workspace(f.researcher(),"POST",base,body,404);
+        runtimeAccess(execution,digest,404);
+        assertThat(workspace(f.researcher(),"GET",base+"/"+f.draft(),null,200)).isEqualTo(legacy);
+    }
     HttpResponse<String> runtimeRequest(String path,String body,String signedPath,String signingKey) throws Exception {
         var now=Instant.now();
         var claims=new JWTClaimsSet.Builder().issuer("finsight-agent-runtime").audience("finsight-java-organization-runtime").subject("finsight-agent-runtime")

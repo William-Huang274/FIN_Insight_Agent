@@ -20,8 +20,11 @@ final class IdentityFilter extends OncePerRequestFilter {
         if(!rawPath.matches("/v1/[A-Za-z0-9/_-]+")||rawPath.contains("//")) {
             response.setStatus(400);return;
         }
-        byte[] bytes = request.getInputStream().readNBytes(65537);
-        if (bytes.length > 65536) { response.sendError(413); return; }
+        // A frozen retrieval scope may carry up to 2,048 UUIDs plus the question.
+        // Other routes retain their existing bound, including runtime commands.
+        int limit=request.getMethod().equals("POST") && rawPath.matches("/v1/workspaces/projects/[0-9a-f-]{36}/research-drafts")?262144:65536;
+        byte[] bytes = request.getInputStream().readNBytes(limit+1);
+        if (bytes.length > limit) { response.sendError(413); return; }
         String path = request.getRequestURI() + (request.getQueryString() == null ? "" : "?" + request.getQueryString());
         String owner;
         try {

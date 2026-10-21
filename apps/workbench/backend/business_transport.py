@@ -181,9 +181,11 @@ def build_business_gateway():
             if origin and origin not in {str(request.base_url).rstrip('/'), 'http://localhost:5173', 'http://127.0.0.1:5173'}:
                 raise HTTPException(403, '拒绝跨站点写入')
         chunks = bytearray()
+        limit = (262144 if request.method == 'POST' and re.fullmatch(
+            r'workspaces/projects/[0-9a-f-]{36}/research-drafts', path) else 65536)
         async for part in request.stream():
             chunks.extend(part)
-            if len(chunks) > 65536:
+            if len(chunks) > limit:
                 raise HTTPException(413, '研究提交过大')
         body = bytes(chunks)
         target = '/v1/' + path + ('?' + request.url.query if request.url.query else '')

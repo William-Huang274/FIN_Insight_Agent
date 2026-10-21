@@ -62,6 +62,9 @@ class OrganizationSourceNavigation:
                 'source_truncated': result['truncated'],
                 'capture': {k: deepcopy(v) for k, v in (result.get('capture') or {}).items() if k != 'rows'}}
             provenance[document_id] = origin
+            if 'input_selection' in manifest:
+                origin['input_role'] = ('selected' if item['resource_id'] in
+                    manifest['input_selection']['selected_resource_ids'] else 'retrieval_candidate')
             if result.get('source_bundle'):
                 from .organization_source_projection import source_nodes, PROJECTION
                 pinned = manifest.get('retrieval_index')

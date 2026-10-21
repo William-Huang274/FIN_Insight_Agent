@@ -18,7 +18,7 @@ async function fixture(page:Page,role='researcher'){
         if(role==='viewer')throw Error('viewer attempted mutation');
         state.posts.push(b);
         if(state.drafts[b.id])expect(b).toEqual(state.posts.find(p=>p.id===b.id));
-        state.saved={...b,created_at:'2026-10-13T10:00:00Z',status:'inputs_saved',execution_enabled:false,manifest_digest:'sha256:'+'a'.repeat(64),manifest:{...(b.retrieval_release_id?{retrieval_index:state.releases.find(x=>x.release_id===b.retrieval_release_id)}:{}),research_as_of:b.research_as_of,inputs:[{resource_id:resource,title:'季度资料固定副本',resource_type:'files',ref:{version_id:'frozen-v1',digest:'b'.repeat(64)}}]}};
+        state.saved={...b,created_at:'2026-10-13T10:00:00Z',status:'inputs_saved',execution_enabled:false,manifest_digest:'sha256:'+'a'.repeat(64),manifest:{...(b.retrieval_release_id?{retrieval_index:state.releases.find(x=>x.release_id===b.retrieval_release_id)}:{}),research_as_of:b.research_as_of,...(b.retrieval_resource_ids?{input_selection:{selected_resource_ids:b.resource_ids,retrieval_resource_ids:b.retrieval_resource_ids}}:{}),inputs:(b.retrieval_resource_ids||b.resource_ids).map((rid:string)=>({resource_id:rid,title:rid===resource?'季度资料固定副本':'补充检索资料',resource_type:'files',ref:{version_id:'frozen-v1',digest:'b'.repeat(64)}}))}};
         state.drafts[b.id]=state.saved;
         if(state.drop){state.drop=false;await route.fulfill({status:503,json:{detail:'提交响应丢失'}});return;}result=state.saved;
       }else result={items:state.revoked?[]:Object.values(state.drafts),next_offset:null};
@@ -77,6 +77,27 @@ test('selected release survives response loss and copying while source changes r
   await expect(page.getByRole('status')).toContainText('资料选择已变化');
   expect(state.posts).toHaveLength(2);
 });
+test('one focal document uses a published nineteen-source scope and copying keeps both sets',async({page})=>{
+  const state=await fixture(page),release='40000000-0000-4000-8000-000000000004';
+  const ids=[resource,...Array.from({length:18},(_,i)=>`50000000-0000-4000-8000-${String(i).padStart(12,'0')}`)];
+  state.releases=[{release_id:release,model:'qwen3.7-text-embedding',index_digest:'c'.repeat(64),published_at:'2026-10-20T10:00:00Z',resource_ids:ids}];
+  await page.goto(url);
+  await page.getByLabel('准备单标题',{exact:true}).fill('范围独立的研究');
+  await page.getByLabel('研究问题',{exact:true}).fill('研究重点披露并检索其他资料中的补充证据。');
+  await page.getByLabel('研究截止日期',{exact:true}).fill('2026-10-12');
+  await page.getByRole('checkbox',{name:/季度资料固定副本/}).check();
+  await page.getByLabel('检索版本',{exact:true}).selectOption(release);
+  await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
+  await expect(page.getByText(/可检索资料范围：19/)).toBeVisible();
+  expect(state.posts[0].resource_ids).toEqual([resource]);
+  expect(state.posts[0].retrieval_resource_ids).toEqual(ids);
+  await page.getByRole('button',{name:'复制为新准备单',exact:true}).click();
+  await expect(page.getByText(/已选 1\/12/)).toBeVisible();
+  await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
+  await expect(page.getByText(/可检索资料范围：19/)).toBeVisible();
+  expect(state.posts[1].resource_ids).toEqual([resource]);
+  expect(state.posts[1].retrieval_resource_ids).toEqual(ids);
+});
 for(const width of [1440,390])test(`frozen preparation, explicit verify and withdrawal at ${width}`,async({page},info)=>{
   await page.setViewportSize({width,height:960});const state=await fixture(page);
   await page.goto(url);await expect(page.getByRole('checkbox',{name:/季度资料固定副本/})).toBeVisible();
@@ -85,7 +106,7 @@ for(const width of [1440,390])test(`frozen preparation, explicit verify and with
   await fill(page);
   await expect(page.getByRole('heading',{name:'资本开支与现金流研究',exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:/启动研究/})).toHaveCount(0);
-  await page.getByText('版本核对信息',{exact:true}).click();await expect(page.getByText(/frozen-v1/)).toBeVisible();
+  await page.getByText('全部固定版本与核对信息',{exact:true}).click();await expect(page.getByText(/frozen-v1/)).toBeVisible();
   await page.getByRole('button',{name:'重新校验权限与原件'}).click();await expect(page.getByRole('status')).toContainText('本次权限与原件校验通过');
   await page.screenshot({path:info.outputPath(`organization-inputs-${width}.png`),fullPage:true});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

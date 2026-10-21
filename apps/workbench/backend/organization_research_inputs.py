@@ -23,7 +23,9 @@ def validate_grant(grant, project_id, draft_id):
             raise ValueError('grant_scope')
         inputs = grant['inputs']
         frozen = {str(UUID(item['resource_id'])): item for item in manifest['inputs']}
-        if not 1 <= len(inputs) <= 12 or len(frozen) != len(manifest['inputs']) or len(inputs) != len(frozen):
+        from sec_agent.research_foundation.organization_input_selection import validate_input_selection
+        validate_input_selection(manifest)
+        if len(frozen) != len(manifest['inputs']) or len(inputs) != len(frozen):
             raise ValueError('input_count')
         seen = set()
         for item in inputs:

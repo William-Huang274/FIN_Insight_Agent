@@ -20,7 +20,8 @@ class OrganizationResearchDrafts {
     record Create(@NotNull UUID id,@NotBlank @Size(max=120) String title,
                   @NotBlank @Size(min=10,max=16000) String question,@NotNull LocalDate research_as_of,
                   @NotNull @Size(min=1,max=12) List<@NotNull UUID> resource_ids,
-                  UUID retrieval_release_id) {}
+                  UUID retrieval_release_id,
+                  @Size(min=1,max=2048) List<@NotNull UUID> retrieval_resource_ids) {}
     private final JdbcTemplate db;
     private final OrganizationProjects projects;
     private final ObjectMapper json;
@@ -72,6 +73,10 @@ class OrganizationResearchDrafts {
     Object create(HttpServletRequest request,@PathVariable UUID projectId,@Valid @RequestBody Create body) {
         String actor=actor(request);
         if(new HashSet<>(body.resource_ids()).size()!=body.resource_ids().size())throw new ApiFailure(422,"不能重复选择资料");
+        if(body.retrieval_resource_ids()!=null &&
+            (new HashSet<>(body.retrieval_resource_ids()).size()!=body.retrieval_resource_ids().size()
+             ||!body.retrieval_resource_ids().containsAll(body.resource_ids())))
+            throw new ApiFailure(422,"检索范围必须唯一且包含全部重点资料");
         String digest=Delegation.digest((byte[])request.getAttribute("originalBody"));
         return tx.execute(status->{
             var project=projects.researchPreparation(actor,projectId,true);
@@ -81,7 +86,7 @@ class OrganizationResearchDrafts {
                 if(!projectId.equals(row.get("project_id"))||!actor.equals(row.get("created_by"))||!digest.equals(row.get("request_digest")))throw new ApiFailure(409,"准备凭证已用于其他提交，请核对原准备单");
                 return view(draft(actor,projectId,body.id())); // Replay never refreshes frozen versions or bypasses current ACL.
             }
-            var ids=body.resource_ids().stream().sorted().toList();
+            var ids=(body.retrieval_resource_ids()==null?body.resource_ids():body.retrieval_resource_ids()).stream().sorted().toList();
             // Serialize against source membership/revoke changes, without holding a lock across HTTP.
             var spaces=new TreeSet<UUID>();
             for(UUID id:ids)spaces.add((UUID)one("SELECT space_id FROM space_resource WHERE id=?",id).get("space_id"));
@@ -102,6 +107,13 @@ class OrganizationResearchDrafts {
                 .put("draft_id",body.id().toString()).put("project_id",projectId.toString()).put("organization_id",project.get("organization_id").toString())
                 .put("research_as_of",body.research_as_of().toString()).put("visibility_policy","current_project_and_all_inputs");
             manifest.set("inputs",inputs);
+            if(body.retrieval_resource_ids()!=null) {
+                var selection=manifest.putObject("input_selection").put("contract_version","organization_input_selection.v1");
+                var selected=selection.putArray("selected_resource_ids");
+                body.resource_ids().stream().sorted().forEach(id->selected.add(id.toString()));
+                var searchable=selection.putArray("retrieval_resource_ids");
+                ids.forEach(id->searchable.add(id.toString()));
+            }
             if(body.retrieval_release_id()!=null)
                 manifest.set("retrieval_index",releases.freeze(projectId,body.retrieval_release_id(),inputs));
             String encoded=manifest.toString(),hash=Delegation.digest(encoded.getBytes(java.nio.charset.StandardCharsets.UTF_8));

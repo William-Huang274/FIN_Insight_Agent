@@ -4,7 +4,9 @@ from hashlib import sha256
 import json
 import sqlite3
 from uuid import uuid4
+from io import BytesIO
 
+import numpy as np
 import pytest
 
 from sec_agent.research_foundation.organization_hybrid_retrieval import (
@@ -35,6 +37,36 @@ def prepare(root, org, nodes, *, other=True):
 
 def search(nav, query='revenue', **extra):
     return nav.navigate({'source_space':'organization', 'operation':'search', 'query':query, **extra})
+
+
+def test_streamed_publication_preserves_exact_matrix_and_late_failure_is_unpublished(tmp_path):
+    from sec_agent.research_foundation.organization_hybrid_retrieval import vector
+    org=str(uuid4())
+    nodes=[{'node_id':str(i),'parent_document_id':'doc','node_kind':'text',
+            'content':'body','content_sha256':sha256(b'body').hexdigest()} for i in range(3)]
+    raw=[[.6,.8],[1.,2.],[-3.,4.]]
+    expected=BytesIO()
+    np.save(expected,np.stack([vector(row,2) for row in raw]),allow_pickle=False)
+    class LazyVectors:
+        def __len__(self):return len(raw)
+        def __getitem__(self,index):return raw[index]
+        def __iter__(self):raise AssertionError('must not materialize all vectors')
+    publish_prepared_index(tmp_path/'good',org,nodes,LazyVectors(),{'query':[1.,0.]},
+        model='synthetic',provenance={'scope':'deterministic vectors'})
+    matrix=tmp_path/'good'/org/'vectors.npy'
+    assert matrix.read_bytes()==expected.getvalue()
+    manifest=json.loads((matrix.parent/'index.json').read_text(encoding='utf8'))
+    assert manifest['matrix_sha256']==sha256(expected.getvalue()).hexdigest()
+    raw[-1]=[float('nan'),1.]
+    with pytest.raises(ValueError,match='invalid_vector'):
+        publish_prepared_index(tmp_path/'failed',org,nodes,LazyVectors(),{'query':[1.,0.]},
+            model='synthetic',provenance={'scope':'late invalid vector'})
+    assert (tmp_path/'failed'/org/'vectors.npy').exists()
+    assert not (tmp_path/'failed'/org/'index.json').exists()
+    raw[-1]=[-3.,4.]
+    with pytest.raises(FileExistsError):
+        publish_prepared_index(tmp_path/'failed',org,nodes,LazyVectors(),{'query':[1.,0.]},
+            model='synthetic',provenance={'scope':'cannot overwrite failed attempt'})
 
 
 def test_dense_prefilter_preview_readback_and_cache_hit_reauthorize(tmp_path):

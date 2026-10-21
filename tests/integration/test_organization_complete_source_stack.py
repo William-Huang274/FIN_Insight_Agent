@@ -10,10 +10,10 @@ import os
 from pathlib import Path
 import socket
 from types import SimpleNamespace
+from time import perf_counter
 from uuid import uuid4
 
 import httpx
-import numpy as np
 import psycopg
 import pytest
 from mcp import Client
@@ -29,6 +29,7 @@ from sec_agent.research_foundation.organization_source_navigation import Organiz
 from sec_agent.research_foundation.organization_source_projection import PROJECTION, validate_source_cutoff
 from tests.integration.test_organization_graph_native import OrganizationGraphStack
 from tests.integration.test_java_intake_native import wait_for
+from tests.integration.source_intake_diagnostics import SourceBundles, SourceVectors, PhaseDiagnostics, file_sha256
 
 pytestmark = pytest.mark.skipif(not os.getenv('FIN_COMPLETE_SOURCE_INTAKE'), reason='explicit full-source intake artifacts required')
 
@@ -47,18 +48,37 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     questions=json.loads(dataset.read_text(encoding='utf8'))['questions']
     storage_probe=os.getenv('FIN_COMPLETE_SOURCE_STORAGE_PROBE')=='1'
     unified_scope=os.getenv('FIN_COMPLETE_SOURCE_UNIFIED_SCOPE')=='1'
+    global_probe=os.getenv('FIN_COMPLETE_SOURCE_GLOBAL_PROBE')=='1'
+    if global_probe:
+        assert unified_scope and storage_probe
     if not storage_probe:
         assert {row['source_id'] for row in intake['sources']}=={e['source_id'] for q in questions for e in q['evidence']}
     library=Path(os.environ['FIN_COMPLETE_SOURCE_LIBRARY']).resolve()
-    bundles, vectors = {}, {}
-    for row in intake['sources']:
+    attempt=Path(os.environ['FIN_NATIVE_ATTEMPT_DIR']).resolve()
+    if attempt.exists():
+        raise FileExistsError('qualification_requires_new_attempt_directory')
+    preflight=attempt.with_name(attempt.name+'-input-check.json')
+    if preflight.exists():
+        raise FileExistsError('qualification_requires_new_input_check_record')
+    def input_progress(count,status):
+        preflight.write_text(json.dumps({'status':status,'verified_source_files':count,
+            'expected_sources':len(intake['sources']),'services_started':False}),encoding='utf8')
+    input_progress(0,'running')
+    def verify_intake_files():
+        for row in intake['sources']:
+            folder=root/row['directory']
+            assert all(file_sha256(folder/name)==value for name,value in row['files'].items())
+    bundles, vectors = SourceBundles(), SourceVectors()
+    for ordinal,row in enumerate(intake['sources'],1):
         folder=root/row['directory']
-        assert all(sha256((folder/name).read_bytes()).hexdigest()==value for name,value in row['files'].items())
-        bundle=json.loads((folder/'source.json').read_text(encoding='utf8'))
-        matrix=np.load(folder/'vectors.npy',allow_pickle=False)
+        assert all(file_sha256(folder/name)==value for name,value in row['files'].items())
         mapping=json.loads((folder/'vector-map.json').read_text(encoding='utf8'))
-        bundles[row['source_id']]=bundle
-        vectors.update({r['chunk_id']:matrix[r['vector_index']] for r in mapping})
+        bundles[row['source_id']]=folder/'source.json'
+        for r in mapping:
+            vectors[r['chunk_id']]=(folder/'vectors.npy',r['vector_index'])
+        if ordinal % 100 == 0:
+            input_progress(ordinal,'running')
+    input_progress(len(intake['sources']),'passed')
     model=intake['source_index']['embedding_model']
     namespace=sha256(json.dumps(['index-query.v1','public-recall-qualification',
         intake['source_index']['matrix_sha256'],model,1024],separators=(',',':')).encode()).hexdigest()
@@ -71,6 +91,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             assert saved and saved['status']=='completed' and saved['result']['model']==model
             queries[q['query']]=saved['result']['values'][0]
     s=OrganizationGraphStack()
+    diagnostic=PhaseDiagnostics(s.save)
     indices=s.output/'indices'
     s.env['FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT']=str(indices)
     monkeypatch.setenv('FINSIGHT_BUSINESS_SHARED_SECRET',s.shared)
@@ -110,6 +131,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         assets.library.save('oidc:alice',0,{'projects':[{'id':private,'name':'Public originals'}],'assignments':{},'pinned':[]})
         resources={};captures=[];date_denials=[]
         for sid,bundle in bundles.items():
+            source_started=perf_counter()
             # Same maintained capture service as POST /captures; no payload supplied as source facts.
             request=CaptureRequest(project_id=private,title=bundle['source']['title'][:120],selection={
                 'kind':'library_source','document_id':sid,'snapshot':intake['library_sha256']})
@@ -125,10 +147,13 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             with assets.library.documents.connect() as db:
                 raw=db.execute('SELECT snapshot FROM attachment_captures WHERE object_id=?',(saved['document_id'],)).fetchone()[0]
             captures.append({'source_id':sid,'snapshot_bytes':len(raw.encode()),'text_characters':len(bundle['text']),
-                             'schema_version':json.loads(raw)['schema_version'],'repeat_save_same_version':True})
+                             'schema_version':json.loads(raw)['schema_version'],'repeat_save_same_version':True,
+                             'save_publish_link_verify_seconds':perf_counter()-source_started})
+            s.save('complete-source-publication-progress',{'status':'running','sources':captures})
         # All originals were saved/published unchanged. Unknown availability
         # must still fail at the real authorized runtime read boundary.
-        for sid,bundle in list(bundles.items()):
+        for sid in list(bundles):
+            bundle=bundles[sid]
             try:
                 validate_source_cutoff(bundle,'2026-09-23')
             except ValueError:
@@ -211,21 +236,28 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         if unified_scope:assert len(ids)>12
         global_searches=[]
         for start in range(0,len(ids),batch_size):
-            batch={sid:bundles[sid] for sid in ids[start:start+batch_size]}
+            batch=bundles.subset(ids[start:start+batch_size])
             payload={'id':str(uuid4()),'title':'Complete inputs','question':'Read the selected complete disclosures.',
                      'research_as_of':'2026-09-23','resource_ids':[resources[sid] for sid in batch]}
             if unified_scope:
                 payload['retrieval_resource_ids']=payload['resource_ids']
                 payload['resource_ids']=payload['resource_ids'][:2]
-            original=api('POST',f'/projects/{project}/research-drafts',payload)
+            with diagnostic.phase('prepare_all_candidates'):
+                original=api('POST',f'/projects/{project}/research-drafts',payload)
             reader=bind(project,original)
-            _,nodes=preparation_nodes(reader,workbench_url='http://localhost')
+            with diagnostic.phase('authorized_original_projection',profile=global_probe):
+                _,nodes=preparation_nodes(reader,workbench_url='http://localhost')
             assert len(nodes)==sum(len(bundle['chunks']) for bundle in batch.values())
             release=str(uuid4())
-            publish_prepared_index(indices,org,nodes,[vectors[n['original_source']['id']] for n in nodes],queries,
-                model=model,provenance={'source_intake_sha256':sha256((root/'result.json').read_bytes()).hexdigest()},
-                release_id=release,projection=PROJECTION)
-            contract=s.request(s.bff,'POST',f'/api/v1/asset-workspace/organization-projects/{project}/research-drafts/{original["id"]}/retrieval-releases/{release}/register',json={})
+            with diagnostic.phase('publish_index'):
+                # Memory-mapped test inputs must still be the exact verified
+                # successful receipts at publication; they are not ACL caches.
+                verify_intake_files()
+                publish_prepared_index(indices,org,nodes,vectors.projected(nodes),queries,
+                    model=model,provenance={'source_intake_sha256':sha256((root/'result.json').read_bytes()).hexdigest()},
+                    release_id=release,projection=PROJECTION)
+            with diagnostic.phase('register_index_against_all_originals'):
+                contract=s.request(s.bff,'POST',f'/api/v1/asset-workspace/organization-projects/{project}/research-drafts/{original["id"]}/retrieval-releases/{release}/register',json={})
             payload.update(id=str(uuid4()),retrieval_release_id=release)
             frozen=api('POST',f'/projects/{project}/research-drafts',payload)
             assert frozen['manifest']['retrieval_index']==contract
@@ -236,16 +268,29 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 assert len(frozen['manifest']['input_selection']['selected_resource_ids'])==2
                 assert len(frozen['manifest']['inputs'])==len(batch)
                 query={'source_space':'organization','operation':'search','query':next(iter(queries))}
-                found=nav.navigate(query)
+                with diagnostic.phase('global_search_cold',profile=global_probe):
+                    found=nav.navigate(query)
                 assert found.items
                 assert all(r['original_source']['source_id'] in batch for r in found.items)
-                cached=nav.navigate(query)
+                with diagnostic.phase('global_search_warm',profile=global_probe):
+                    cached=nav.navigate(query)
                 assert cached.items[0]['retrieval']['cache_hit']
                 global_searches.append({'query':query,'retrieval':found.items[0]['retrieval'],
                     'returned_sources':list({r['original_source']['source_id'] for r in found.items}),
                     'authorized_sources':len(batch),'indexed_chunks':len(nodes),'cache_hit':True})
             first_result=len(results)
-            asyncio.run(exercise(batch,nodes,nav,reader))
+            # Global plumbing probe still publishes/verifies every original and
+            # ranks the entire scope. Per-source filtered search is sampled by
+            # original contract; prior type-specific acceptance remains separate.
+            read_batch=batch
+            if global_probe:
+                samples={}
+                for sid,bundle in batch.items():
+                    kind=('node' if 'node_recovery' in bundle else 'archive' if 'archive_recovery' in bundle else 'text')
+                    samples.setdefault(kind,sid)
+                read_batch=batch.subset(list(dict.fromkeys([*list(batch)[:2],*samples.values(),list(batch)[-1]])))
+            with diagnostic.phase('sampled_original_readback',profile=global_probe):
+                asyncio.run(exercise(read_batch,nodes,nav,reader))
             # Revoke a candidate that was NOT explicitly selected; all current
             # dependencies must still protect cached search, reports and reads.
             revoke_sid=list(batch)[-1] if unified_scope else next(iter(batch))
@@ -258,13 +303,20 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 original=batch[revoke_sid]['node_recovery']['nodes'][0]
                 with pytest.raises(OrganizationExecutionUnavailable):reader.read_text(first,node_id=original['node_id'])
             contracts.append(contract)
+        verify_intake_files()
         s.save('complete-source-result',{'status':'passed','sources':results,'frozen_contracts':contracts,
             'revoked_cache_and_readback_denied':True,'provider_calls':0,'research_runs':0,
             'recall_or_capacity_evaluation':False,'candidate_chunks':len(vectors),'identity':'qualification login',
             'max_explicit_sources_per_draft':12,'separate_index_batches':len(contracts),
             'corpus_wide_retrieval':unified_scope,'corpus_scope':'selected intake artifact only',
+            'global_probe':global_probe,'published_sources':len(bundles),'searched_sources':len(bundles),
+            'per_source_filtered_readback_count':len(results),
             'global_searches':global_searches,'non_selected_candidate_revocation_tested':unified_scope,
             'captures':captures,'node_reads':node_reads,'date_denials':date_denials,'query_is_storage_probe':storage_probe})
+    except BaseException as exc:
+        s.save('failure',{'error_type':type(exc).__name__,'published_sources':len(captures) if 'captures' in locals() else 0,
+                          'phase_diagnostics':'phase-diagnostics.json','provider_calls':0})
+        raise
     finally:
         for process in s.processes:
             if process.poll() is None: process.terminate();process.wait(timeout=20)

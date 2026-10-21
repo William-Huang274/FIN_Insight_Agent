@@ -100,7 +100,7 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
             records[-1]['embedding_input_sha256'] = row['embedding_input_sha256']
     if len({r['node_id'] for r in records}) != len(records):
         raise ValueError('organization_retrieval_duplicate_node')
-    matrix = np.stack([vector(v, dimensions) for v in vectors])
+    prepared_queries = {sha256(q.encode()).hexdigest(): vector(v, dimensions).tolist() for q, v in queries.items()}
     directory = Path(root) / organization_id
     if release_id is not None:
         release_id = str(UUID(str(release_id)))
@@ -108,11 +108,24 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
         if dimensions != 1024 or model not in {'text-embedding-v4', 'qwen3.7-text-embedding'}:
             raise ValueError('organization_release_requires_supported_provider_model')
     directory.mkdir(parents=True, exist_ok=False)
-    np.save(directory/'vectors.npy', matrix, allow_pickle=False)
+    # Validate/normalize one row at a time, avoiding two extra corpus-sized
+    # arrays. index.json is the publication marker and is written only after
+    # every vector succeeds. A failed directory is retained and never reused.
+    matrix = np.lib.format.open_memmap(directory/'vectors.npy', mode='w+', dtype=np.float32,
+                                      shape=(len(nodes), dimensions))
+    try:
+        for position in range(len(nodes)):
+            matrix[position] = vector(vectors[position], dimensions)
+        matrix.flush()
+    finally:
+        del matrix
+    with (directory/'vectors.npy').open('rb') as stream:
+        from hashlib import file_digest
+        matrix_sha256 = file_digest(stream, 'sha256').hexdigest()
     manifest = {'format': FORMAT, 'organization_id': organization_id, 'model': model,
         'dimensions': dimensions, 'records': records, 'provenance': provenance,
-        'matrix_sha256': sha256((directory/'vectors.npy').read_bytes()).hexdigest(),
-        'queries': {sha256(q.encode()).hexdigest(): vector(v, dimensions).tolist() for q, v in queries.items()}}
+        'matrix_sha256': matrix_sha256,
+        'queries': prepared_queries}
     if release_id is not None:
         from .organization_index_release import FORMAT as RELEASE_FORMAT
         manifest.update(format=RELEASE_FORMAT, release_id=release_id, projection=projection)

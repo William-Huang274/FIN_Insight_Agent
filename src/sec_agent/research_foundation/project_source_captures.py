@@ -82,6 +82,7 @@ def source_snapshot(selection, attachments_root, fact_mart, research_library=Non
         import sqlite3
         from retrieval.library_source_bundle import build_source_bundle, compact_source_bundle
         from retrieval.library_archive_recovery import configured_catalog
+        from retrieval.library_node_recovery import configured_node_catalog
         from .research_library import open_library
         if research_library is None:
             raise ValueError('complete_source_library_not_configured')
@@ -91,12 +92,13 @@ def source_snapshot(selection, attachments_root, fact_mart, research_library=Non
         with closing(sqlite3.connect(library.path.resolve().as_uri()+'?mode=ro', uri=True)) as db:
             db.row_factory = sqlite3.Row
             db.execute('BEGIN')
-            bundle = build_source_bundle(db, selection.document_id, selection.snapshot, configured_catalog())
+            bundle = build_source_bundle(db, selection.document_id, selection.snapshot, configured_catalog(), configured_node_catalog())
         # Recheck the maintained release identity before saving the snapshot.
         if open_library(research_library).manifest['sha256'] != selection.snapshot:
             raise AssetConflict('完整来源保存期间资料库版本变化。')
         payload = {'schema_version':'project_library_source_snapshot.v2', 'kind':'library_source',
-                   'selection_mode':'complete_parsed_source', 'bundle':compact_source_bundle(bundle)}
+                   'selection_mode':'indexed_node_set' if 'node_recovery' in bundle else 'complete_parsed_source',
+                   'bundle':compact_source_bundle(bundle)}
     elif selection.kind == 'metric':
         if research_library is None:
             raise ValueError('metric_capture_library_not_configured')
@@ -150,7 +152,7 @@ def complete_source_pages(snapshot, note):
     validate_bundle_text(bundle)
     pages=[]
     for chunk in bundle['chunks']:
-        if (bundle['text'][chunk['source_char_start']:chunk['source_char_end']] != chunk['body']
+        if (('node_recovery' not in bundle and bundle['text'][chunk['source_char_start']:chunk['source_char_end']] != chunk['body'])
                 or text_digest(chunk['body']) != chunk['digest']):
             raise ValueError('complete_source_chunk_digest_mismatch')
         pages.append({'page':chunk.get('original_page'),'heading':chunk['locator'],'text':chunk['body'],
@@ -187,7 +189,9 @@ def render_capture(snapshot, note):
     if snapshot['kind'] == 'library_source':
         bundle = snapshot['bundle']
         source = bundle['source']
-        return '\n\n'.join(['# '+source['title'], '完整已解析正文；图片、布局及历史解析限制仍以原来源声明为准。',
+        scope=('已导入节点集合；目录不是全文，原章节、表格、正文按节点分别读取。' if 'node_recovery' in bundle
+               else '完整已解析正文；图片、布局及历史解析限制仍以原来源声明为准。')
+        return '\n\n'.join(['# '+source['title'], scope,
             '来源快照校验：'+content_digest(snapshot), '原始来源：'+source['url'], bundle['text'],
             '# 用户批注（非来源事实）', note or '（暂无批注）'])
     lines = ['# 固定来源快照', '这是用户明确选择的保存范围，不代表完整披露或全部查询结果。原始资料仍需结合期间与上下文核验。',

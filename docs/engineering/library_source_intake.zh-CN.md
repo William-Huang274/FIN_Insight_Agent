@@ -153,3 +153,15 @@ python -m scripts.data_retrieval.prepare_library_source_bundles \
 最终 r3 全流程 81.00 秒（非查询延迟），171 项相关回归通过；其中包括原件变化、错库/错源、缺段/重复、正文/定位/页摘要篡改、未知日期拒绝、旧快照兼容，以及删除测试原归档和 catalog 后仍可从已保存快照精确回读。HTML 的 `original_page=1` 表示历史导入的单文本块编号，不能解释为浏览器打印或 PDF 物理页码。
 
 `archive-inclusive-inventory.json` 最终全清单复验：3,225 条来源原状态不变；1,779 可读来源的 114,900 个旧向量精确匹配，验证失败 0；1,700 完整解析正文可恢复、快照超限 0、其中 1,663 日期资格通过。其余 79 份仍明确标记待适配。这个全清单不是 1,700 份真实组织发布证明，全面召回/并发放行仍为 false。
+
+### 优先 SEC 披露的节点集合接入
+
+按用户优先级，先处理 16 条 10-K、7 条 10-Q、10 条 8-K，共 33 条历史来源（31 个 URL）。`prepare_indexed_node_recovery` 接受显式节点文件及预期 SHA256，核对选定来源全部原节点、父章节、页范围、正文摘要、旧父段定位和原始来源摘要，产出独立固定 catalog。两对 Dell 重复导入只记录同 URL／原摘要关系，不合并 ID，不删除旧引用，不把重复来源当独立证据。
+
+这些材料使用 `library-indexed-node-bundle.v1`／紧凑 `library-indexed-node-references.v1`，保存范围为 `indexed_node_set`。章节、表格、正文叶子可能是不同的已解析表示，不要求伪造跨节点连续位置，也不把它们拼接成完整全文。完整原节点 payload 和关系保留；父段正文引用原节点，子块按父段内位置恢复，旧 embedding 输入不变。`text` 明确是节点目录，不能作为完整原文；全清单独立计为 `indexed_node_set_recoverable`，不计入 `parsed_text_recoverable`。
+
+服务器保存时配置 `FINSIGHT_LIBRARY_NODE_CATALOG`／`FINSIGHT_LIBRARY_NODE_SHA256`；未配置或摘要、来源、节点集合不匹配均拒绝。CLI `prepare_library_source_bundles` 与 `audit_library_source_intake` 对应支持 `--node-catalog`／`--node-sha256`。组织快照存入节点正文，不在研究运行时访问历史节点文件。
+
+组织搜索继续返回旧分段精确正文，`original_source` 增加原 node／parent_section／页范围／节点集合摘要，并声明位置为原节点内字符、`complete_original_document=false`。`read_organization_evidence` 默认返回有明确范围提示的节点目录；提供新增可选 `node_id` 可分页读取完整原章节、表格或正文节点。节点必须属于当前授权的固定资源，不能跨来源寻址；每次目录、检索、分页和引用读取继续核验当前权限。旧文本资料调用保持兼容；节点中的数值不自动成为结构化财务事实。
+
+`s2-sec-node-intake-r1`：33 来源、7,007 原节点、9,176 旧分段/向量离线精确匹配。`s2-sec-node-organization-r1`：全部保存发布，按 12+12+9 独立准备单/索引完成搜索、缓存、末段块回读、旧准备单不变及撤权拒绝；另以正式 MCP 验证 124 个完整原节点，含 22 个需多页读取的长节点，覆盖 section/table/chunk/mixed_prose_span。最大保存快照 4,372,917 字节。187 项相关回归和 1 项真实 PG/Java/BFF/MCP 集成通过；225.65 秒为整轮流程，非查询延迟。资格身份、0 Agent/0 提供方调用、未切现有部署。剩余 46 条来源继续处理，全库候选范围及正式召回/并发仍未放行。

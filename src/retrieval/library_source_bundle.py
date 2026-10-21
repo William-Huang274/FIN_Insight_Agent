@@ -25,6 +25,10 @@ def text_digest(text):
 
 
 def validate_bundle_text(bundle):
+    if 'node_recovery' in bundle:
+        from .library_node_recovery import validate_bundle
+        validate_bundle(bundle)
+        return
     recovery = bundle.get('archive_recovery')
     expected = bundle['source']['digest']
     if recovery is not None:
@@ -51,6 +55,12 @@ def validate_bundle_text(bundle):
 
 def compact_source_bundle(bundle):
     """Store each source character once; original row IDs/digests stay intact."""
+    from .library_node_recovery import FORMAT as NODE_FORMAT, compact_bundle
+    if bundle['format'] == NODE_FORMAT:
+        compact=compact_bundle(bundle)
+        if expand_source_bundle(compact)!=bundle:
+            raise ValueError('indexed_node_roundtrip_mismatch')
+        return compact
     if bundle['format'] != FORMAT:
         raise ValueError('source_bundle_format_invalid')
     compact = {**bundle, 'format':COMPACT_FORMAT}
@@ -67,6 +77,11 @@ def compact_source_bundle(bundle):
 
 
 def expand_source_bundle(bundle):
+    from .library_node_recovery import COMPACT as NODE_COMPACT, FORMAT as NODE_FORMAT, expand_bundle, validate_bundle
+    if bundle['format']==NODE_COMPACT:return expand_bundle(bundle)
+    if bundle['format']==NODE_FORMAT:
+        validate_bundle(bundle)
+        return bundle
     if bundle['format'] == FORMAT:
         return bundle  # Existing immutable snapshots keep their original shape.
     if bundle['format'] != COMPACT_FORMAT:
@@ -187,15 +202,21 @@ def validated_stored_chunks(db, source_id, parents):
     return chunks
 
 
-def build_source_bundle(db, source_id, library_sha256, recovery_catalog=None):
+def build_source_bundle(db, source_id, library_sha256, recovery_catalog=None, node_catalog=None):
     """Read a full selected source, never a relevance-label-selected subset."""
     found = db.execute('SELECT * FROM sources WHERE id=?', (source_id,)).fetchone()
     if found is None:
         raise ValueError('source_missing')
     source = dict(found)
     parents = [dict(row) for row in db.execute('SELECT * FROM passages WHERE source_id=?', (source_id,))]
-    recovery = None
-    if parents and all(re.fullmatch(r'(HTML text|PDF page [1-9][0-9]*) chars [0-9]+-[0-9]+', p['locator']) for p in parents):
+    recovery = None; node_recovery = None
+    import json
+    if json.loads(source['metadata']).get('origin')=='existing_library':
+        if node_catalog is None:raise ValueError('indexed_node_catalog_required')
+        from .library_node_recovery import directory
+        node_recovery=node_catalog.recover(source,parents,library_sha256)
+        text=directory(node_recovery['nodes'])
+    elif parents and all(re.fullmatch(r'(HTML text|PDF page [1-9][0-9]*) chars [0-9]+-[0-9]+', p['locator']) for p in parents):
         if recovery_catalog is None:
             raise ValueError('archive_recovery_catalog_required')
         text, parents, recovery = recovery_catalog.recover(source, parents, library_sha256)
@@ -204,6 +225,9 @@ def build_source_bundle(db, source_id, library_sha256, recovery_catalog=None):
     by_parent = {row['id']: row for row in parents}
     chunks = validated_stored_chunks(db,source_id,parents)
     for row in chunks:
+        if node_recovery is not None:
+            row['embedding_input_sha256']=text_digest(row['context']+'\n'+row['body'])
+            continue
         start = by_parent[row['parent_id']]['source_char_start']
         row.update(source_char_start=start+row['char_start'], source_char_end=start+row['char_end'],
                    embedding_input_sha256=text_digest(row['context']+'\n'+row['body']))
@@ -230,12 +254,14 @@ def build_source_bundle(db, source_id, library_sha256, recovery_catalog=None):
         'WHERE e.source_id=? ORDER BY c.edge_id', (source_id,))]
     if {row['edge_id'] for row in coverage} != {row['id'] for row in edges}:
         raise ValueError('edge_coverage_record_missing')
-    return dict(format=FORMAT, projection=PROJECTION, library_sha256=library_sha256,
+    from .library_node_recovery import FORMAT as NODE_FORMAT
+    return dict(format=NODE_FORMAT if node_recovery is not None else FORMAT, projection=PROJECTION, library_sha256=library_sha256,
                 source=source, text=text, parents=parents, chunks=chunks, edges=edges,
                 edge_chunk_links=links, edge_chunk_coverage=coverage,
-                scope='complete stored parsed text; original binary/graphics not recovered',
+                scope=(node_recovery['scope'] if node_recovery is not None else 'complete stored parsed text; original binary/graphics not recovered'),
                 numeric_fact_authority=False, organization_authorization=False,
-                **({'archive_recovery':recovery} if recovery is not None else {}))
+                **({'archive_recovery':recovery} if recovery is not None else {}),
+                **({'node_recovery':node_recovery} if node_recovery is not None else {}))
 
 
 def reusable_vectors(bundle, manifest, matrix, mapping, cache):

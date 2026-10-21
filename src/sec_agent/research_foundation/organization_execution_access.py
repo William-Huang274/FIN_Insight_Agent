@@ -165,17 +165,33 @@ class OrganizationExecutionReader:
         if type(offset) is not int or type(limit) is not int or offset < 0 or not 1 <= limit <= maximum:
             raise ValueError('invalid_evidence_page')
 
-    def read_text(self, resource_id, offset=0, limit=8000):
+    def read_text(self, resource_id, offset=0, limit=8000, node_id=None):
         self._page(offset, limit, 16000)
         result = self._read(resource_id)
         text = result['text']
+        node_scope = {}
+        recovery = (result.get('source_bundle') or {}).get('node_recovery')
+        if recovery is not None:
+            node_scope={'text_scope':'indexed_node_directory','complete_original_document':False,
+                        'node_count':len(recovery['nodes']),
+                        'read_hint':'Use read_organization_evidence with resource_id and node_id from this directory or a search original_node_id.'}
+            if node_id is not None:
+                node=next((n for n in recovery['nodes'] if n['node_id']==node_id),None)
+                if node is None:raise ValueError('node_not_in_selected_source')
+                from retrieval.library_node_recovery import node_body
+                text=node_body(node)
+                node_scope.update(text_scope='original_indexed_node',
+                                  original_node={k:v for k,v in node.items() if k not in {'content','model_text'}},
+                                  node_set_sha256=recovery['node_set_sha256'])
+        elif node_id is not None:
+            raise ValueError('selected_source_has_no_indexed_nodes')
         end = min(len(text), offset + limit)
         capture = result.get('capture') or {}
         return {'resource_id': resource_id, 'version': result['version'], 'text': text[offset:end],
                 'offset': offset, 'next_offset': end if end < len(text) else None,
                 'source_truncated': result['truncated'], 'needs_vision': result.get('needs_vision', False),
                 'capture': {k: v for k, v in capture.items() if k != 'rows'},
-                'structured_rows_available': 'rows' in capture}
+                'structured_rows_available': 'rows' in capture, **node_scope}
 
     def read_rows(self, resource_id, offset=0, limit=30):
         self._page(offset, limit, 100)
@@ -203,9 +219,9 @@ def build_organization_evidence_server(reader):
         return await asyncio.to_thread(reader.catalog)
 
     @server.tool(name='read_organization_evidence', structured_output=True)
-    async def read(resource_id: str, offset: int = 0, limit: int = 8000) -> dict[str, Any]:
-        """Read a fixed original's text; offset is a character offset, with explicit truncation."""
-        return await asyncio.to_thread(reader.read_text, resource_id, offset, limit)
+    async def read(resource_id: str, offset: int = 0, limit: int = 8000, node_id: str | None = None) -> dict[str, Any]:
+        """Read fixed text. Indexed sources return a directory; pass node_id for exact chapter/table/body text. Offset is local to the selected text, not a PDF page."""
+        return await asyncio.to_thread(reader.read_text, resource_id, offset, limit, node_id)
 
     @server.tool(name='read_organization_evidence_rows', structured_output=True)
     async def rows(resource_id: str, offset: int = 0, limit: int = 30) -> dict[str, Any]:

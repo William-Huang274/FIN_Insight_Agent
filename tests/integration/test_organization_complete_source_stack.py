@@ -23,7 +23,7 @@ from retrieval.source_hybrid import CachedRetrieval
 from scripts.data_retrieval.replay_cached_library_scenarios import ReadOnlyReceipts
 from sec_agent.research_foundation.asset_workspace import AssetWorkspace
 from sec_agent.research_foundation.project_source_captures import CaptureRequest, save_capture
-from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionAuthority, OrganizationExecutionReader, OrganizationExecutionUnavailable
+from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionAuthority, OrganizationExecutionReader, OrganizationExecutionUnavailable, build_organization_evidence_server
 from sec_agent.research_foundation.organization_hybrid_retrieval import preparation_nodes, publish_prepared_index
 from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation, build_organization_source_server
 from sec_agent.research_foundation.organization_source_projection import PROJECTION, validate_source_cutoff
@@ -144,17 +144,19 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 del bundles[sid];del resources[sid]
         assert bundles, 'no eligible source for real organization retrieval'
         s.save('complete-source-date-denials',date_denials)
-        results=[];contracts=[]
+        results=[];contracts=[];node_reads=[]
         # Existing product limit is 12 explicitly selected resources per draft.
         # Batch intake qualification does not establish corpus-wide retrieval.
-        async def exercise(batch,nodes,nav):
+        async def exercise(batch,nodes,nav,reader):
             async with Client(build_organization_source_server(nav), raise_exceptions=False) as client:
                 for sid,bundle in batch.items():
                     leaves=[n for n in nodes if n['original_source']['source_id']==sid]
-                    tail=max(leaves,key=lambda n:n['original_source']['source_char_end'])
-                    if len(bundle['text'])>110000:
-                        assert tail['original_source']['source_char_start']>100000
-                    assert not bundle['text'][tail['original_source']['source_char_end']:].strip()
+                    indexed='node_recovery' in bundle
+                    tail=max(leaves,key=lambda n:n['original_source']['char_end' if indexed else 'source_char_end'])
+                    if not indexed:
+                        if len(bundle['text'])>110000:
+                            assert tail['original_source']['source_char_start']>100000
+                        assert not bundle['text'][tail['original_source']['source_char_end']:].strip()
                     query={'source_space':'organization','operation':'search','document_id':tail['parent_document_id'],
                            'query':selected_questions[sid]['query']}
                     response=await client.call_tool('read_source_document',{'request':query})
@@ -170,7 +172,30 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     passage=read.structured_content['items'][0]
                     assert passage['passage']==tail['content'] and not passage['truncated']
                     assert passage['original_source']==tail['original_source']
-                    results.append({'source_id':sid,'candidate_chunks':len(leaves),'tail_char_start':tail['original_source']['source_char_start'],
+                    if indexed:
+                        from retrieval.library_node_recovery import node_body
+                        async with Client(build_organization_evidence_server(reader),raise_exceptions=False) as original_client:
+                            directory=await original_client.call_tool('read_organization_evidence',{'resource_id':resources[sid]})
+                            assert not directory.is_error and directory.structured_content['text_scope']=='indexed_node_directory'
+                            originals=bundle['node_recovery']['nodes']
+                            for kind in sorted({n['node_kind'] for n in originals}):
+                                original=next(n for n in originals if n['node_kind']==kind)
+                                offset=0;parts=[]
+                                while True:
+                                    response=await original_client.call_tool('read_organization_evidence',{
+                                        'resource_id':resources[sid],'node_id':original['node_id'],'offset':offset,'limit':16000})
+                                    assert not response.is_error
+                                    data=response.structured_content
+                                    assert data['original_node']=={k:v for k,v in original.items() if k not in {'content','model_text'}}
+                                    assert not data['complete_original_document'] and data['text_scope']=='original_indexed_node'
+                                    parts.append(data['text']);offset=data['next_offset']
+                                    if offset is None:break
+                                assert ''.join(parts)==node_body(original)
+                                node_reads.append({'source_id':sid,'node_id':original['node_id'],'kind':kind,
+                                                   'characters':len(node_body(original)),'read_pages':len(parts)})
+                    results.append({'source_id':sid,'candidate_chunks':len(leaves),
+                        'tail_char_start':None if indexed else tail['original_source']['source_char_start'],
+                        'position_basis':'original_indexed_node_characters' if indexed else 'parsed_source_text',
                         'tail_sha256':passage['content_sha256'],'readback':passage['readback'],'cache_hit':True,
                         'index_digest':found[0]['retrieval']['index_digest'],'provider_calls':found[0]['retrieval']['provider_calls']})
                     s.save('complete-source-progress',{'sources':results,'status':'running'})
@@ -195,18 +220,21 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             reader=bind(project,frozen)
             nav=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
             first_result=len(results)
-            asyncio.run(exercise(batch,nodes,nav))
+            asyncio.run(exercise(batch,nodes,nav,reader))
             first=resources[next(iter(batch))]
             current=s.request(s.bff,'GET',f'/api/v1/asset-workspace/spaces/resources/{first}')
             api('POST',f'/resources/{first}/revoke',{'revision':current['permission_revision']})
             with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(results[first_result]['readback'])
             with pytest.raises(OrganizationExecutionUnavailable):nav.navigate({'source_space':'organization','operation':'search','query':next(iter(queries))})
+            if 'node_recovery' in next(iter(batch.values())):
+                original=next(iter(batch.values()))['node_recovery']['nodes'][0]
+                with pytest.raises(OrganizationExecutionUnavailable):reader.read_text(first,node_id=original['node_id'])
             contracts.append(contract)
         s.save('complete-source-result',{'status':'passed','sources':results,'frozen_contracts':contracts,
             'revoked_cache_and_readback_denied':True,'provider_calls':0,'research_runs':0,
             'recall_or_capacity_evaluation':False,'candidate_chunks':len(vectors),'identity':'qualification login',
             'max_sources_per_draft':12,'separate_index_batches':len(contracts),'corpus_wide_retrieval':False,
-            'captures':captures,'date_denials':date_denials,'query_is_storage_probe':storage_probe})
+            'captures':captures,'node_reads':node_reads,'date_denials':date_denials,'query_is_storage_probe':storage_probe})
     finally:
         for process in s.processes:
             if process.poll() is None: process.terminate();process.wait(timeout=20)

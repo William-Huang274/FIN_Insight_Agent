@@ -34,7 +34,7 @@ def source_protocol(source, parents):
     return 'unrecognized', 'unconfirmed'
 
 
-def audit(library, output, index=None, as_of=None, recovery_catalog=None):
+def audit(library, output, index=None, as_of=None, recovery_catalog=None, node_catalog=None):
     if as_of is not None:
         from datetime import date
         date.fromisoformat(as_of)
@@ -74,23 +74,29 @@ def audit(library, output, index=None, as_of=None, recovery_catalog=None):
                 row['chunks'] = db.execute('SELECT count(*) FROM retrieval_chunks WHERE source_id=?',(source['id'],)).fetchone()[0]
                 row['parent_protocol'], row['source_digest_basis'] = source_protocol(source, parents)
                 try:
-                    if recovery_catalog is not None and row['parent_protocol'] in {'html_extraction_windows','pdf_page_windows'}:
+                    if node_catalog is not None and row['parent_protocol']=='hierarchical_indexed_nodes':
+                        recovered=node_catalog.recover(source,parents,library_sha)
+                        row.update(intake_status='indexed_node_set_recoverable',indexed_nodes=len(recovered['nodes']),
+                                   indexed_node_characters=sum(len(p['body']) for p in parents),complete_original_document=False)
+                    elif recovery_catalog is not None and row['parent_protocol'] in {'html_extraction_windows','pdf_page_windows'}:
                         text, _, _ = recovery_catalog.recover(source,parents,library_sha)
+                        row.update(intake_status='parsed_text_recoverable', parsed_characters=len(text))
                     else:
                         text, _ = recover_source(source, parents)
-                    row.update(intake_status='parsed_text_recoverable', parsed_characters=len(text))
+                        row.update(intake_status='parsed_text_recoverable', parsed_characters=len(text))
                 except (ValueError, KeyError, TypeError) as exc:
                     row.update(intake_status='requires_adapter_or_source_repair', reason=str(exc))
-                if verifier is not None and row['intake_status'] == 'parsed_text_recoverable':
+                if verifier is not None and row['intake_status'] in {'parsed_text_recoverable','indexed_node_set_recoverable'}:
                     stage = 'chunks_and_graph'
                     try:
-                        bundle = build_source_bundle(db, source['id'], library_sha, recovery_catalog)
+                        bundle = build_source_bundle(db, source['id'], library_sha, recovery_catalog,node_catalog)
                         row['chunks_and_graph_verified'] = True
                         stage = 'vectors'
                         records, _ = verifier.verify(bundle)
                         row.update(vector_compatibility_verified=True, reused_vectors=len(records))
                         payload = {'schema_version':'project_library_source_snapshot.v2',
-                                   'kind':'library_source','selection_mode':'complete_parsed_source','bundle':compact_source_bundle(bundle)}
+                                   'kind':'library_source','selection_mode':'indexed_node_set' if 'node_recovery' in bundle else 'complete_parsed_source',
+                                   'bundle':compact_source_bundle(bundle)}
                         size = len(json.dumps(payload, ensure_ascii=False).encode())
                         row.update(capture_payload_bytes=size, capture_size_within_limit=size<=20*1024*1024)
                         if as_of is not None:
@@ -151,12 +157,17 @@ def main():
     parser.add_argument('--as-of',help='Check organization strict-as-of eligibility independently of physical readability')
     parser.add_argument('--recovery-catalog',type=Path)
     parser.add_argument('--recovery-sha256')
+    parser.add_argument('--node-catalog',type=Path)
+    parser.add_argument('--node-sha256')
     args=parser.parse_args()
     from retrieval.library_archive_recovery import ArchiveRecoveryCatalog
     if bool(args.recovery_catalog) != bool(args.recovery_sha256):
         parser.error('recovery catalog and SHA256 must be supplied together')
     catalog=ArchiveRecoveryCatalog(args.recovery_catalog,args.recovery_sha256) if args.recovery_catalog else None
-    result=audit(args.library,args.output,args.index,args.as_of,catalog)
+    from retrieval.library_node_recovery import NodeRecoveryCatalog
+    if bool(args.node_catalog)!=bool(args.node_sha256):parser.error('node catalog and SHA256 must be supplied together')
+    nodes=NodeRecoveryCatalog(args.node_catalog,args.node_sha256) if args.node_catalog else None
+    result=audit(args.library,args.output,args.index,args.as_of,catalog,nodes)
     print(json.dumps({k:v for k,v in result.items() if k!='sources'},ensure_ascii=False))
 
 

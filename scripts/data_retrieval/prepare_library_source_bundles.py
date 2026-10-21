@@ -15,7 +15,7 @@ def dump(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
-def prepare(library, index, source_ids, output, recovery_catalog=None):
+def prepare(library, index, source_ids, output, recovery_catalog=None, node_catalog=None):
     if not source_ids or len(source_ids) != len(set(source_ids)):
         raise ValueError('unique_nonempty_source_selection_required')
     library, index, output = Path(library).resolve(), Path(index).resolve(), Path(output).resolve()
@@ -24,7 +24,7 @@ def prepare(library, index, source_ids, output, recovery_catalog=None):
     # No overwrite: failed batches remain inspectable and require a new directory.
     output.mkdir(parents=True, exist_ok=False)
     report = dict(status='incomplete', provider_calls=0, sources=[], organization_published=False,
-                  scope='complete selected parsed sources; not full-corpus or retrieval acceptance')
+                  scope='selected parsed texts or indexed node sets as typed per source; not full-corpus or retrieval acceptance')
     dump(output / 'result.json', report)
     try:
         library_sha = digest(library)
@@ -41,7 +41,7 @@ def prepare(library, index, source_ids, output, recovery_catalog=None):
             for source_id in source_ids:
                 record = dict(source_id=source_id, status='failed')
                 try:
-                    bundle = build_source_bundle(db, source_id, library_sha, recovery_catalog)
+                    bundle = build_source_bundle(db, source_id, library_sha, recovery_catalog, node_catalog)
                     rows, vectors = verifier.verify(bundle)
                     folder = output / text_digest(source_id)[:32]
                     folder.mkdir()
@@ -49,7 +49,10 @@ def prepare(library, index, source_ids, output, recovery_catalog=None):
                     dump(folder / 'vector-map.json', rows)
                     np.save(folder / 'vectors.npy', vectors, allow_pickle=False)
                     record.update(status='verified', directory=folder.name,
-                                  title=bundle['source']['title'], parsed_characters=len(bundle['text']),
+                                  text_scope='indexed_node_directory' if 'node_recovery' in bundle else 'parsed_source_text',
+                                  indexed_node_characters=sum(len(p['body']) for p in bundle['parents']) if 'node_recovery' in bundle else None,
+                                  title=bundle['source']['title'], parsed_characters=None if 'node_recovery' in bundle else len(bundle['text']),
+                                  directory_characters=len(bundle['text']) if 'node_recovery' in bundle else None,
                                   source_digest=bundle['source']['digest'], parents=len(bundle['parents']),
                                   chunks=len(bundle['chunks']), edges=len(bundle['edges']),
                                   edge_links=len(bundle['edge_chunk_links']),
@@ -82,12 +85,17 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--recovery-catalog', type=Path)
     parser.add_argument('--recovery-sha256')
+    parser.add_argument('--node-catalog',type=Path)
+    parser.add_argument('--node-sha256')
     args = parser.parse_args()
     from retrieval.library_archive_recovery import ArchiveRecoveryCatalog
     if bool(args.recovery_catalog) != bool(args.recovery_sha256):
         parser.error('recovery catalog and SHA256 must be supplied together')
     catalog = ArchiveRecoveryCatalog(args.recovery_catalog, args.recovery_sha256) if args.recovery_catalog else None
-    result = prepare(args.library, args.index, args.source_id, args.output, catalog)
+    from retrieval.library_node_recovery import NodeRecoveryCatalog
+    if bool(args.node_catalog)!=bool(args.node_sha256):parser.error('node catalog and SHA256 must be supplied together')
+    nodes=NodeRecoveryCatalog(args.node_catalog,args.node_sha256) if args.node_catalog else None
+    result = prepare(args.library, args.index, args.source_id, args.output, catalog, nodes)
     print(json.dumps({k: v for k, v in result.items() if k != 'source_index'}, ensure_ascii=False))
     if result['status'] != 'verified':
         raise SystemExit(1)

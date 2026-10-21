@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 import sqlite3
 
-from retrieval.library_source_bundle import recover_source, build_source_bundle, VectorReuseVerifier, validated_stored_chunks
+from retrieval.library_source_bundle import recover_source, build_source_bundle, VectorReuseVerifier, validated_stored_chunks, compact_source_bundle
 from retrieval.library_vectors import digest, ready_index
 
 
@@ -86,8 +86,8 @@ def audit(library, output, index=None, as_of=None):
                         stage = 'vectors'
                         records, _ = verifier.verify(bundle)
                         row.update(vector_compatibility_verified=True, reused_vectors=len(records))
-                        payload = {'schema_version':'project_library_source_snapshot.v1',
-                                   'kind':'library_source','selection_mode':'complete_parsed_source','bundle':bundle}
+                        payload = {'schema_version':'project_library_source_snapshot.v2',
+                                   'kind':'library_source','selection_mode':'complete_parsed_source','bundle':compact_source_bundle(bundle)}
                         size = len(json.dumps(payload, ensure_ascii=False).encode())
                         row.update(capture_payload_bytes=size, capture_size_within_limit=size<=20*1024*1024)
                         if as_of is not None:

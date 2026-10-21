@@ -9,6 +9,7 @@ import pytest
 
 from retrieval.library_chunks import split_parent
 from retrieval.library_source_bundle import build_source_bundle, recover_source, reusable_vectors, text_digest, VectorReuseVerifier
+from retrieval.library_source_bundle import compact_source_bundle, expand_source_bundle
 from retrieval.library_vectors import DIM, digest, vector_key
 from scripts.data_retrieval.prepare_library_source_bundles import prepare
 
@@ -331,3 +332,19 @@ def test_unrecovered_document_can_verify_stored_vectors_without_becoming_complet
     row=report['sources'][0]
     assert 'capture_size_within_limit' not in row and 'organization_time_eligible' not in row
     assert not report['organization_publication_verified'] and not report['full_scope_retrieval_accepted']
+
+
+def test_compact_source_roundtrip_and_offset_tampering(tmp_path):
+    path=tmp_path/'library.sqlite'
+    sid=database(path,('Original 中文 😀\r\n'*800))
+    bundle=bundle_at(path,sid)
+    compact=compact_source_bundle(bundle)
+    assert expand_source_bundle(compact)==bundle
+    assert all('body' not in r for r in compact['parents']+compact['chunks'])
+    assert len(json.dumps(compact)) < len(json.dumps(bundle))
+    assert expand_source_bundle(bundle) is bundle
+    for table in ('parents','chunks'):
+        wrong=deepcopy(compact);wrong[table][0]['source_char_start']+=1
+        with pytest.raises(ValueError,match='source_bundle_offset_content_mismatch'):expand_source_bundle(wrong)
+    wrong=deepcopy(compact);wrong['text']+='changed'
+    with pytest.raises(ValueError,match='recovered_source_digest_mismatch'):expand_source_bundle(wrong)

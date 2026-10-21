@@ -45,7 +45,9 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     assert intake['status']=='verified'
     dataset=Path(os.environ['FIN_COMPLETE_SOURCE_QUESTIONS'])
     questions=json.loads(dataset.read_text(encoding='utf8'))['questions']
-    assert {row['source_id'] for row in intake['sources']}=={e['source_id'] for q in questions for e in q['evidence']}
+    storage_probe=os.getenv('FIN_COMPLETE_SOURCE_STORAGE_PROBE')=='1'
+    if not storage_probe:
+        assert {row['source_id'] for row in intake['sources']}=={e['source_id'] for q in questions for e in q['evidence']}
     library=Path(os.environ['FIN_COMPLETE_SOURCE_LIBRARY']).resolve()
     bundles, vectors = {}, {}
     for row in intake['sources']:
@@ -60,7 +62,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     namespace=sha256(json.dumps(['index-query.v1','public-recall-qualification',
         intake['source_index']['matrix_sha256'],model,1024],separators=(',',':')).encode()).hexdigest()
     queries={}
-    selected_questions={sid:next(q for q in questions if q['evidence'][0]['source_id']==sid) for sid in bundles}
+    selected_questions={sid:(questions[0] if storage_probe else next(q for q in questions if q['evidence'][0]['source_id']==sid)) for sid in bundles}
     with ReadOnlyReceipts(Path(os.environ['FIN_COMPLETE_SOURCE_QUERY_CACHE'])) as cache:
         client=CachedRetrieval(cache,SimpleNamespace(embedding_model=model,rerank_model='qwen3-rerank'),namespace)
         for q in selected_questions.values():
@@ -74,7 +76,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     s.save('complete-source-scope',dict(sources=list(bundles),candidate_chunks=len(vectors),
         login='qualification identity; not real OIDC validation',services=['BFF','Java','PostgreSQL'],
         tools='production organization MCP on host; native Agent run not started',
-        recall_or_capacity_evaluation=False,provider_calls=0))
+        recall_or_capacity_evaluation=False,provider_calls=0,
+        query_scope='reused query for storage/authorization plumbing, no relevance assertion' if storage_probe else 'historical source queries'))
     def api(method,path,body=None):
         return s.request(s.bff,method,'/api/v1/business/workspaces'+path,**({'json':body} if body is not None else {}))
     def bind(project,prepared):
@@ -104,18 +107,24 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         api('POST','/projects',{'id':project,'organization_id':org,'name':'Source compatibility','description':'No recall claim'})
         assets=AssetWorkspace(s.state/'project-library')
         assets.library.save('oidc:alice',0,{'projects':[{'id':private,'name':'Public originals'}],'assignments':{},'pinned':[]})
-        resources={}
+        resources={};captures=[]
         for sid,bundle in bundles.items():
             # Same maintained capture service as POST /captures; no payload supplied as source facts.
             request=CaptureRequest(project_id=private,title=bundle['source']['title'],selection={
                 'kind':'library_source','document_id':sid,'snapshot':intake['library_sha256']})
             saved=save_capture(assets,'oidc:alice',request,None,None,library)
+            assert save_capture(assets,'oidc:alice',request,None,None,library)['document_id']==saved['document_id']
             ref=next(v['ref'] for a in assets.catalog('oidc:alice',private)['items'] for v in a['versions'] if v['ref']['version_id']==saved['document_id'])
             rid=str(uuid4())
             s.request(s.bff,'POST','/api/v1/asset-workspace/spaces/publish',json={'id':rid,'space_id':space,'ref':ref})
             revision=api('GET',f'/projects/{project}')['revision']
             api('POST',f'/projects/{project}/resources/{rid}',{'revision':revision,'linked':True})
             resources[sid]=rid
+            assert assets.read_source('oidc:alice',ref)['source_bundle']==bundle
+            with assets.library.documents.connect() as db:
+                raw=db.execute('SELECT snapshot FROM attachment_captures WHERE object_id=?',(saved['document_id'],)).fetchone()[0]
+            captures.append({'source_id':sid,'snapshot_bytes':len(raw.encode()),'text_characters':len(bundle['text']),
+                             'schema_version':json.loads(raw)['schema_version'],'repeat_save_same_version':True})
         payload={'id':str(uuid4()),'title':'Complete inputs','question':'Read the selected complete disclosures.',
                  'research_as_of':'2026-09-23','resource_ids':list(resources.values())}
         original=api('POST',f'/projects/{project}/research-drafts',payload)
@@ -167,7 +176,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         with pytest.raises(OrganizationExecutionUnavailable): nav.navigate({'source_space':'organization','operation':'search','query':next(iter(queries))})
         s.save('complete-source-result',{'status':'passed','sources':results,'frozen_contract':contract,
             'revoked_cache_and_readback_denied':True,'provider_calls':0,'research_runs':0,
-            'recall_or_capacity_evaluation':False,'candidate_chunks':len(nodes),'identity':'qualification login'})
+            'recall_or_capacity_evaluation':False,'candidate_chunks':len(nodes),'identity':'qualification login',
+            'captures':captures,'query_is_storage_probe':storage_probe})
     finally:
         for process in s.processes:
             if process.poll() is None: process.terminate();process.wait(timeout=20)

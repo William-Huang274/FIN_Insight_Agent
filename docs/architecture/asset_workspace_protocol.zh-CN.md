@@ -102,6 +102,8 @@ uv run --no-sync python -m sec_agent.research_foundation.asset_set_backup restor
 - 使用原附件事务原子保存正文/查找文本、紧凑来源manifest及`attachment_captures`中的来源负载和批注；相同项目/标题/正文/父版本的重复保存幂等。大段来源不进入任务目录与交接prompt，沿现有资料工具按需读取。
 - `PUT /asset-workspace/captures/note` 使用完整base_ref乐观并发。只允许修改用户批注，生成新附件版本；原始快照摘要保持不变。普通文本修订/上传修订均不能改写固定来源快照。历史批注、旧任务副本及旧引用保持可回读。
 - 原文与用户批注在工具正文中明确分区；任务副本的provenance保留原来源manifest。原始记录可读不等于金融判断已验证，上传资料工具不因此获得numeric_fact_authority。
+
+完整已解析来源新增 `project_library_source_snapshot.v2`，在同一附件事务内保存正文与原分段的紧凑偏移合同；读取时无损还原并校验摘要。已验证来源沿用已有分段入库，避免再次触发普通上传的解析长度限制。普通上传解析限制、单附件 20 MiB、项目配额和授权规则不变，旧快照不重写。实际大文档保存及组织权限验收见[完整来源接入](../engineering/library_source_intake.zh-CN.md)。
 - 两区使用同一项目版本库。项目页与研究侧栏显示固定来源范围、批注和财务表格；“浏览当前来源”返回当前知识库文档/财务筛选，“下载此版本”保留原快照。当前来源后来更新/移除，不覆盖已保存快照。
 - 项目库的既有SQLite online backup覆盖新增表，无宿主来源路径依赖；新目录恢复后验证固定内容、批注、版本和交接仍可读。这不替代原生任务checkpoint联合恢复。
 

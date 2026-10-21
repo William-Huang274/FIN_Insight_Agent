@@ -207,7 +207,8 @@ class AssetWorkspace:
         from .project_source_captures import read_capture
         _, row = self.resolve(owner, ref)
         captured = read_capture(self.library.documents, row)
-        bundle = captured['snapshot']['bundle']
+        from retrieval.library_source_bundle import expand_source_bundle
+        bundle = expand_source_bundle(captured['snapshot']['bundle'])
         return {**result, 'text':bundle['text'], 'truncated':False, 'source_bundle':bundle}
 
     def create_context(self, owner, request):

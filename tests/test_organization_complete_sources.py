@@ -20,8 +20,8 @@ from sec_agent.research_foundation.organization_source_projection import PROJECT
 from sec_agent.research_foundation.organization_source_projection import validate_source_cutoff
 
 
-def complete_fixture(root, monkeypatch):
-    text = ('Historical disclosure paragraph. 单位 USD millions.\r\n' * 2600) + '\nTAIL_EVIDENCE_ZYX final source paragraph.'
+def complete_fixture(root, monkeypatch, repeats=2600):
+    text = ('Historical disclosure paragraph. 单位 USD millions.\r\n' * repeats) + '\nTAIL_EVIDENCE_ZYX final source paragraph.'
     path = root/'library.sqlite'
     sid = database(path, text)
     bundle = bundle_at(path, sid)
@@ -139,3 +139,40 @@ def test_complete_source_time_policy_matches_strict_library(vintage,published,kn
     else:
         with pytest.raises(ValueError,match='complete_source_not_available_at_research_cutoff'):
             validate_source_cutoff(bundle,'2025-02-01')
+
+
+def test_large_preparsed_capture_keeps_ordinary_upload_limit_and_exact_tail(tmp_path,monkeypatch):
+    from sec_agent.research_foundation.task_attachments import parse_document, MAX_TEXT
+    source,ref,_,grant,reader,state,bundle,text=complete_fixture(tmp_path,monkeypatch,repeats=45000)
+    assert len(text)>MAX_TEXT
+    with pytest.raises(ValueError,match='document_empty_or_extracted_text_limit'):
+        parse_document('ordinary.md',text.encode())
+    with source.library.documents.connect() as db:
+        saved=db.execute('SELECT snapshot FROM attachment_captures WHERE object_id=?',(ref['version_id'],)).fetchone()
+        snapshot=json.loads(saved[0])
+    assert snapshot['schema_version']=='project_library_source_snapshot.v2'
+    assert all('body' not in p for p in snapshot['bundle']['parents'])
+    assert source.read_source('alice',ref)['source_bundle']==bundle
+    rid=grant['manifest']['inputs'][0]['resource_id']
+    tail=reader.read_text(rid,len(text)-100,100)
+    assert tail['text']==text[-100:] and tail['next_offset'] is None and not tail['source_truncated']
+    state['status']=404
+    with pytest.raises(OrganizationExecutionUnavailable):reader.read_text(rid,len(text)-100,100)
+
+
+def test_existing_v1_capture_is_read_without_rewriting_snapshot(tmp_path,monkeypatch):
+    from sec_agent.research_foundation.project_source_captures import render_capture
+    source,ref,_,_,_,_,bundle,text=complete_fixture(tmp_path,monkeypatch)
+    snapshot={'schema_version':'project_library_source_snapshot.v1','kind':'library_source',
+              'selection_mode':'complete_parsed_source','bundle':bundle}
+    scope=source.library.scope('alice',ref['project_id'])
+    saved=source.library.documents.add(scope,'legacy.md',render_capture(snapshot,'Old note').encode(),
+        source_capture={'snapshot':snapshot,'note':'Old note'})
+    oldref=next(v['ref'] for a in source.catalog('alice',ref['project_id'])['items'] for v in a['versions']
+                if v['ref']['version_id']==saved['document_id'])
+    with source.library.documents.connect() as db:
+        before=db.execute('SELECT snapshot FROM attachment_captures WHERE object_id=?',(saved['document_id'],)).fetchone()[0]
+    assert source.read_source('alice',oldref)['source_bundle']==bundle
+    assert source.read_source('alice',oldref)['text']==text
+    with source.library.documents.connect() as db:
+        assert db.execute('SELECT snapshot FROM attachment_captures WHERE object_id=?',(saved['document_id'],)).fetchone()[0]==before

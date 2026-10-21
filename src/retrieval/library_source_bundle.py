@@ -14,6 +14,7 @@ import numpy as np
 from retrieval.library_vectors import DIM, vector_key
 
 FORMAT = 'library-source-bundle.v1'
+COMPACT_FORMAT = 'library-source-offset-bundle.v1'
 PROJECTION = 'library-context-body.v1'
 STEP = 5200
 OVERLAP = 250
@@ -21,6 +22,43 @@ OVERLAP = 250
 
 def text_digest(text):
     return sha256(text.encode('utf-8')).hexdigest()
+
+
+def compact_source_bundle(bundle):
+    """Store each source character once; original row IDs/digests stay intact."""
+    if bundle['format'] != FORMAT:
+        raise ValueError('source_bundle_format_invalid')
+    compact = {**bundle, 'format':COMPACT_FORMAT}
+    for table in ('parents','chunks'):
+        compact[table] = []
+        for row in bundle[table]:
+            lo,hi=row['source_char_start'],row['source_char_end']
+            if bundle['text'][lo:hi] != row['body'] or text_digest(row['body']) != row['digest']:
+                raise ValueError('source_bundle_offset_content_mismatch')
+            compact[table].append({k:v for k,v in row.items() if k!='body'})
+    if expand_source_bundle(compact) != bundle:
+        raise ValueError('source_bundle_lossless_roundtrip_failed')
+    return compact
+
+
+def expand_source_bundle(bundle):
+    if bundle['format'] == FORMAT:
+        return bundle  # Existing immutable snapshots keep their original shape.
+    if bundle['format'] != COMPACT_FORMAT:
+        raise ValueError('source_bundle_format_invalid')
+    text = bundle['text']
+    if text_digest(text) != bundle['source']['digest']:
+        raise ValueError('recovered_source_digest_mismatch')
+    result = {**bundle, 'format':FORMAT}
+    for table in ('parents','chunks'):
+        result[table] = []
+        for row in bundle[table]:
+            lo,hi=row['source_char_start'],row['source_char_end']
+            if ('body' in row or type(lo) is not int or type(hi) is not int
+                    or not 0 <= lo < hi <= len(text) or text_digest(text[lo:hi]) != row['digest']):
+                raise ValueError('source_bundle_offset_content_mismatch')
+            result[table].append({**row,'body':text[lo:hi]})
+    return result
 
 
 def recover_source(source, parents):

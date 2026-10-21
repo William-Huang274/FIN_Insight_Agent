@@ -155,19 +155,23 @@ class TaskAttachmentStore:
             raise ValueError("unsupported_or_unsafe_filename")
         if not 0 < len(body) <= MAX_BYTES:
             raise ValueError("upload_size_limit_20MiB")
-        pages, kind = parse_document(filename, body)
+        pages = None
         object_id = "UPLOAD::" + uuid4().hex
         if deduplicate:
             if research_origin or revision or source_capture:
                 raise ValueError('plain_immutable_snapshot_required')
             object_id = 'UPLOAD::' + _digest(json.dumps([thread_id, filename, _digest(body)], sort_keys=True).encode())[:32]
         if source_capture:
-            from .project_source_captures import capture_manifest, render_capture
+            from .project_source_captures import capture_manifest, render_capture, complete_source_pages
             manifest = capture_manifest(source_capture['snapshot'])
             if research_origin or render_capture(source_capture['snapshot'], source_capture['note']).encode() != body:
                 raise ValueError('source_capture_body_mismatch')
+            if source_capture['snapshot'].get('kind') == 'library_source':
+                pages, kind = complete_source_pages(source_capture['snapshot'],source_capture['note']), 'document'
             # A repeated save of exactly the same selection/note is idempotent.
             object_id = 'UPLOAD::' + _digest(json.dumps([thread_id, filename, _digest(body), revision], sort_keys=True).encode())[:32]
+        if pages is None:
+            pages, kind = parse_document(filename, body)
         if research_origin:
             # A fixed report version is an immutable export, not a new revision
             # authority. Native checkpoints continue to own report history.

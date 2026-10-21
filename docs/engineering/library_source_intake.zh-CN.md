@@ -18,6 +18,8 @@ python scripts/engineering/source_intake_batches.py plan --intake <完整输入�
 python scripts/engineering/source_intake_batches.py run --plan <计划.json> --output <独立执行目录>
 ```
 
+首批资源观测使用 `run ... --max-new-batches 1`；成功收据保存后，在启动下一批之前记录 `paused_batch_review` 并退出。检查首批结果和内存后，用同一命令去掉此选项继续；已过批次不消耗本次批数额度。每五秒记录宿主可用内存及本轮验收进程、Java／BFF 等宿主子进程的 PID、创建时间、RSS 和 Windows private commit，不读取其他任务的进程内容。RSS 包含共享页，不可相加冒充独占物理内存；private commit 也不是驻留内存。Docker 内部 PostgreSQL 不属于宿主子进程，需单独观测本轮容器，不能声称该记录已经包含数据库或 WSL 全部占用。
+
 继续使用全量验收的 `FIN_COMPLETE_SOURCE_QUESTIONS`、`FIN_COMPLETE_SOURCE_LIBRARY`、`FIN_COMPLETE_SOURCE_QUERY_CACHE`、`FINSIGHT_INTAKE_TEST_JAR`、`FINSIGHT_TEST_JAVA`、`FINSIGHT_TEST_DOCKER`、`FIN_NATIVE_LICENSE_ENV`、`FIN_PROBE_IMAGE` 及恢复目录环境配置；不继承共享服务状态。每批选择不重叠的 Docker 子网、随机端口和新卷，结束后停止自己的服务，保留证据和数据。默认启动前连续三次检查至少 4 GiB 可用内存；`--min-available-gib` 可用于明确的较低余量诊断（最低 2 GiB），不是已测得的最低需求。运行时保持连续两次低于 800 MiB 则中断的保护，不降低底线强跑。
 
 续跑要求干净的同一 Git 提交、相同 Java 包和完整清单摘要；每次重新核验全部输入文件摘要。只有来源集合、逐源分段数、完整逐源回读数、缓存／撤权结果、零模型调用和结果文件摘要全部匹配的成功批次才能跳过。失败批次需要显式 `--retry-failed`，新建尝试目录，不覆盖失败证据。独占 `runner.lock` 防止两个窗口同时执行同一目录；异常退出留下的锁只能在确认对应进程已结束后处理。

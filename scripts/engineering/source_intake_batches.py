@@ -138,6 +138,24 @@ def unused_subnet(docker):
     raise ValueError('no_unused_qualification_subnet')
 
 
+def process_memory_sample(process, psutil_module):
+    """Own process tree only; RSS includes shared pages and is not additive RAM."""
+    rows = []
+    try:
+        children = process.children(recursive=True)
+    except psutil_module.Error:
+        children = []
+    for current in [process, *children]:
+        try:
+            memory = current.memory_info()
+            rows.append({'pid': current.pid, 'created': current.create_time(),
+                         'name': current.name(), 'rss_bytes': memory.rss,
+                         'private_commit_bytes': getattr(memory, 'private', None)})
+        except psutil_module.Error:
+            continue  # Short-lived child exited during this sample, not a zero.
+    return rows
+
+
 def worker(attempt):
     # Run the guardian in the pytest process so KeyboardInterrupt unwinds the
     # harness finally block. Never terminate a shared process by name.
@@ -146,7 +164,9 @@ def worker(attempt):
     import time
     import psutil
     stop = threading.Event()
-    state = {'status': 'running', 'floor_bytes': 800 * 2**20, 'samples': []}
+    state = {'status': 'running', 'floor_bytes': 800 * 2**20, 'samples': [],
+             'memory_scope': 'driver_and_host_descendants; Docker memory excluded',
+             'rss_is_not_exclusive_physical_memory': True}
     record = Path(str(attempt) + '-memory.json')
 
     def watch():
@@ -159,7 +179,7 @@ def worker(attempt):
                 return
             available = psutil.virtual_memory().available
             state['samples'].append({'time': time.time(), 'available_bytes': available,
-                                     'driver_rss_bytes': psutil.Process().memory_info().rss})
+                                     'processes': process_memory_sample(psutil.Process(), psutil)})
             write(record, state)
             low = low + 1 if available < state['floor_bytes'] else 0
             if low >= 2:
@@ -183,7 +203,7 @@ def worker(attempt):
         write(record, state)
 
 
-def run(plan_path, output, *, retry_failed=False, min_available_gib=4):
+def run(plan_path, output, *, retry_failed=False, min_available_gib=4, max_new_batches=None):
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     # A crashed runner leaves its lock for explicit inspection, never stealing
@@ -193,7 +213,8 @@ def run(plan_path, output, *, retry_failed=False, min_available_gib=4):
         handle.write(str(os.getpid()))
     release_lock = True
     try:
-        return _run(plan_path, output, retry_failed=retry_failed, min_available_gib=min_available_gib)
+        return _run(plan_path, output, retry_failed=retry_failed, min_available_gib=min_available_gib,
+                    max_new_batches=max_new_batches)
     except WorkerCleanupPending:
         release_lock = False
         raise
@@ -202,11 +223,13 @@ def run(plan_path, output, *, retry_failed=False, min_available_gib=4):
             lock.unlink()
 
 
-def _run(plan_path, output, *, retry_failed=False, min_available_gib=4):
+def _run(plan_path, output, *, retry_failed=False, min_available_gib=4, max_new_batches=None):
     import psutil
     plan_path, output = Path(plan_path).resolve(), Path(output).resolve()
     if min_available_gib < 2:
         raise ValueError('startup_headroom_must_be_at_least_2_gib')
+    if max_new_batches is not None and max_new_batches < 1:
+        raise ValueError('max_new_batches_must_be_positive')
     plan = json.loads(plan_path.read_text(encoding='utf8'))
     intake_path = Path(plan['intake_root']) / 'result.json'
     intake = json.loads(intake_path.read_text(encoding='utf8'))
@@ -224,6 +247,7 @@ def _run(plan_path, output, *, retry_failed=False, min_available_gib=4):
     write(output/'input-check.json', {'status': 'passed', 'files_checked': checked,
                                     'sources_checked': len(intake['sources']), **identity})
     passed = []
+    newly_passed = 0
     def progress(status, **extra):
         write(output / 'progress.json', {'status': status, 'passed_batches': passed,
               'total_batches': len(plan['batches']), 'total_sources': len(plan['source_ids']),
@@ -240,6 +264,9 @@ def _run(plan_path, output, *, retry_failed=False, min_available_gib=4):
             validate_result(plan, number, json.loads(result_path.read_text(encoding='utf8')), binding)
             passed.append(number)
             continue
+        if max_new_batches is not None and newly_passed >= max_new_batches:
+            progress('paused_batch_review', next_batch=number)
+            return 0
         attempts = list(output.glob(f'batch-{number:04d}-r*.log'))
         if attempts and not retry_failed:
             progress('failed_attempt_requires_explicit_retry', next_batch=number)
@@ -288,6 +315,7 @@ def _run(plan_path, output, *, retry_failed=False, min_available_gib=4):
         validate_result(plan, number, json.loads(result_path.read_text(encoding='utf8')), binding)
         write(receipt, {'result_path': str(result_path.relative_to(output)), 'result_sha256': digest(result_path)})
         passed.append(number)
+        newly_passed += 1
         progress('running')
     progress('per_source_passed_unified_scope_pending')
     return 0
@@ -306,6 +334,7 @@ def main():
     execute.add_argument('--output', required=True)
     execute.add_argument('--retry-failed', action='store_true')
     execute.add_argument('--min-available-gib', type=float, default=4)
+    execute.add_argument('--max-new-batches', type=int)
     child = sub.add_parser('worker')
     child.add_argument('--attempt', required=True)
     args = parser.parse_args()
@@ -317,7 +346,8 @@ def main():
         return 0
     if args.command == 'worker':
         return worker(args.attempt)
-    return run(args.plan, args.output, retry_failed=args.retry_failed, min_available_gib=args.min_available_gib)
+    return run(args.plan, args.output, retry_failed=args.retry_failed, min_available_gib=args.min_available_gib,
+               max_new_batches=args.max_new_batches)
 
 
 if __name__ == '__main__':

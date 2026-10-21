@@ -149,6 +149,12 @@ def test_serial_worker_results_are_saved_then_skipped_on_resume(tmp_path, monkey
         return SimpleNamespace(wait=lambda: 0)
     monkeypatch.setattr(batches.subprocess, 'Popen', launch)
     output = tmp_path/'output'
+    assert batches.run(plan_path, output, max_new_batches=1) == 0
+    assert seen == [0]
+    progress = json.loads((output/'progress.json').read_text())
+    assert progress['status'] == 'paused_batch_review'
+    assert progress['next_batch'] == 1 and progress['verified_sources'] == 2
+    assert progress['S2_passed'] is False
     assert batches.run(plan_path, output) == 0
     assert seen == [0, 1]
     assert batches.run(plan_path, output) == 0
@@ -178,3 +184,17 @@ def test_original_file_change_invalidates_resume_even_if_manifest_is_unchanged(t
     (root/'3'/'source.json').write_text('changed')
     with pytest.raises(ValueError, match='intake_file_changed'):
         batches.verify_inputs(root, intake)
+
+
+def test_memory_sample_handles_exited_children_without_inspecting_shared_processes():
+    class Gone(Exception): pass
+    def gone(): raise Gone()
+    child = SimpleNamespace(pid=2, memory_info=lambda: SimpleNamespace(rss=30, private=50),
+                            create_time=lambda: 2.0, name=lambda: 'java.exe')
+    exited = SimpleNamespace(memory_info=gone)
+    parent = SimpleNamespace(pid=1, children=lambda recursive: [child, exited],
+                             memory_info=lambda: SimpleNamespace(rss=10),
+                             create_time=lambda: 1.0, name=lambda: 'python.exe')
+    rows = batches.process_memory_sample(parent, SimpleNamespace(Error=Gone))
+    assert rows == [dict(pid=1, created=1.0, name='python.exe', rss_bytes=10, private_commit_bytes=None),
+                    dict(pid=2, created=2.0, name='java.exe', rss_bytes=30, private_commit_bytes=50)]

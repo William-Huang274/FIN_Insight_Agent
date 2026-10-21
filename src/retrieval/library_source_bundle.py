@@ -211,7 +211,9 @@ def build_source_bundle(db, source_id, library_sha256, recovery_catalog=None, no
     parents = [dict(row) for row in db.execute('SELECT * FROM passages WHERE source_id=?', (source_id,))]
     recovery = None; node_recovery = None
     import json
-    if json.loads(source['metadata']).get('origin')=='existing_library':
+    metadata=json.loads(source['metadata'])
+    if (metadata.get('origin')=='existing_library'
+            or metadata.get('import_origin') in {'existing_public_library','094 frozen public survey originals'}):
         if node_catalog is None:raise ValueError('indexed_node_catalog_required')
         from .library_node_recovery import directory
         node_recovery=node_catalog.recover(source,parents,library_sha256)

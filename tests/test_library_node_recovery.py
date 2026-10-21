@@ -1,5 +1,6 @@
 from contextlib import closing
 from copy import deepcopy
+from hashlib import sha256
 import json
 import sqlite3
 from types import SimpleNamespace
@@ -154,3 +155,76 @@ def test_node_catalog_requires_pinned_original_and_library(tmp_path):
     with closing(sqlite3.connect(path)) as db:
         db.row_factory=sqlite3.Row
         with pytest.raises(ValueError,match='catalog_required'):build_source_bundle(db,sid,digest(path))
+
+
+def test_public_import_wrapped_parent_identity_survives_snapshot(tmp_path):
+    path,sid,nfile,source,parents,nodes=original_fixture(tmp_path)
+    with closing(sqlite3.connect(path)) as db,db:
+        db.execute('UPDATE sources SET metadata=?',(json.dumps({'import_origin':'existing_public_library'}),))
+        for n in nodes:
+            wrapped='PASSAGE::'+n['node_id']+'::'+n['content_sha256'][:16]
+            db.execute('UPDATE passages SET id=?,locator=? WHERE id=?',(wrapped,str(n['section_path']),n['node_id']))
+            db.execute('UPDATE retrieval_chunks SET parent_id=? WHERE parent_id=?',(wrapped,n['node_id']))
+    empty=tmp_path/'originals/empty.jsonl';empty.write_text('',encoding='utf8')
+    prepare(path,empty,digest(empty),[sid],tmp_path/'recovery',[(nfile,digest(nfile))])
+    catalog=NodeRecoveryCatalog(tmp_path/'recovery/catalog.json',digest(tmp_path/'recovery/catalog.json'))
+    with closing(sqlite3.connect(path)) as db:
+        db.row_factory=sqlite3.Row
+        bundle=build_source_bundle(db,sid,digest(path),node_catalog=catalog)
+    assert expand_source_bundle(compact_source_bundle(bundle))==bundle
+    assert bundle['node_recovery']['nodes']==nodes
+    assert all(p['id'].startswith('PASSAGE::') for p in bundle['parents'])
+    assert bundle['node_recovery']['original_node_file_sha256']==digest(nfile)
+
+
+def survey_fixture(root):
+    path,sid,nfile,source,parents,nodes=original_fixture(root)
+    survey_id='SURVEY:'+sha256(source['url'].encode()).hexdigest()[:16]
+    items=[dict(id='survey-'+str(i),body=n['content'],digest=n['content_sha256'],locator='Page '+str(i),unit='percent')
+           for i,n in enumerate(nodes[:2])]
+    envelope={'status':'readable','source':{'url':source['url']},'items':items}
+    metadata={'import_origin':'094 frozen public survey originals',
+              'document_coverage':{'scope':'Provided pages only','unread_scope':'Other chapters'}}
+    parents=[dict(id=i['id'],source_id=survey_id,locator=i['locator'],body=i['body'],digest=i['digest']) for i in items]
+    with closing(sqlite3.connect(path)) as db,db:
+        db.execute('UPDATE sources SET id=?,digest=?,metadata=?',
+                   (survey_id,sha256(json.dumps(envelope,sort_keys=True).encode()).hexdigest(),json.dumps(metadata)))
+        db.execute('DELETE FROM passages');db.execute('DELETE FROM retrieval_chunks')
+        db.executemany('INSERT INTO passages VALUES(:id,:source_id,:locator,:body,:digest)',parents)
+        db.executemany('INSERT INTO retrieval_chunks VALUES(:id,:source_id,:parent_id,:ordinal,:char_start,:char_end,:body,:digest,:locator,:context,:kind,:flags)',
+                       [c for p in parents for c in split_parent(p,'Survey')])
+    survey=root/'originals/survey.json';survey.write_text(json.dumps({'reads':[envelope]}),encoding='utf8')
+    return path,survey_id,nfile,survey,envelope
+
+
+def test_survey_original_read_envelope_is_retained_and_not_called_raw_file(tmp_path):
+    path,sid,nfile,survey,envelope=survey_fixture(tmp_path)
+    prepare(path,nfile,digest(nfile),[sid],tmp_path/'recovery',survey_file=survey,survey_file_sha256=digest(survey))
+    catalog=NodeRecoveryCatalog(tmp_path/'recovery/catalog.json',digest(tmp_path/'recovery/catalog.json'))
+    with closing(sqlite3.connect(path)) as db:
+        db.row_factory=sqlite3.Row
+        bundle=build_source_bundle(db,sid,digest(path),node_catalog=catalog)
+    assert expand_source_bundle(compact_source_bundle(bundle))==bundle
+    recovery=bundle['node_recovery']
+    assert recovery['original_read_envelope']==envelope and recovery['original_node_file_sha256'] is None
+    assert recovery['original_read_file_sha256']==digest(survey)
+    assert all(n['node_kind']=='read_item' and 'raw_body_sha256' not in n for n in recovery['nodes'])
+    assert recovery['nodes'][0]['document_coverage']['unread_scope']=='Other chapters'
+    assert recovery['nodes'][0]['original_read_item_metadata']['unit']=='percent'
+    damaged=compact_source_bundle(bundle)
+    damaged['node_recovery']['original_read_envelope']['items'][0]['locator']='changed'
+    with pytest.raises(ValueError,match='envelope_identity'):expand_source_bundle(damaged)
+
+
+@pytest.mark.parametrize('fault',['body','url','status','missing_item','duplicate_item'])
+def test_survey_input_corruption_fails_before_publication(tmp_path,fault):
+    path,sid,nfile,survey,envelope=survey_fixture(tmp_path)
+    if fault=='body':envelope['items'][0]['body']='different'
+    if fault=='url':envelope['source']['url']='https://other.test/'
+    if fault=='status':envelope['status']='failed'
+    if fault=='missing_item':envelope['items'].pop()
+    if fault=='duplicate_item':envelope['items'].append(envelope['items'][0])
+    survey.write_text(json.dumps({'reads':[envelope]}),encoding='utf8')
+    with pytest.raises(ValueError):
+        prepare(path,nfile,digest(nfile),[sid],tmp_path/'recovery',survey_file=survey,survey_file_sha256=digest(survey))
+    assert json.loads((tmp_path/'recovery/catalog.json').read_text())['status']=='failed'

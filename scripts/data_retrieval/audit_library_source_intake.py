@@ -74,7 +74,7 @@ def audit(library, output, index=None, as_of=None, recovery_catalog=None, node_c
                 row['chunks'] = db.execute('SELECT count(*) FROM retrieval_chunks WHERE source_id=?',(source['id'],)).fetchone()[0]
                 row['parent_protocol'], row['source_digest_basis'] = source_protocol(source, parents)
                 try:
-                    if node_catalog is not None and row['parent_protocol']=='hierarchical_indexed_nodes':
+                    if node_catalog is not None and row['parent_protocol'] in {'hierarchical_indexed_nodes','survey_read_envelope'}:
                         recovered=node_catalog.recover(source,parents,library_sha)
                         row.update(intake_status='indexed_node_set_recoverable',indexed_nodes=len(recovered['nodes']),
                                    indexed_node_characters=sum(len(p['body']) for p in parents),complete_original_document=False)

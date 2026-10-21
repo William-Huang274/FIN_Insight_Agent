@@ -7,6 +7,7 @@ import re
 from retrieval.library_source_bundle import text_digest
 
 RECEIPT = 'library-indexed-node-recovery.v1'
+SURVEY_RECEIPT = 'library-survey-read-recovery.v1'
 CATALOG = 'library-indexed-node-catalog.v1'
 FORMAT = 'library-indexed-node-bundle.v1'
 COMPACT = 'library-indexed-node-references.v1'
@@ -20,6 +21,38 @@ def node_body(node):
     return node.get('content') or node.get('model_text') or ''
 
 
+def parent_identity(source,node):
+    if json.loads(source['metadata']).get('import_origin')=='existing_public_library':
+        return 'PASSAGE::'+node['node_id']+'::'+node['content_sha256'][:16]
+    return node['node_id']
+
+
+def parent_locator(source,node):
+    origin=json.loads(source['metadata']).get('import_origin')
+    if origin=='existing_public_library':return str(node.get('section_path') or node['node_id'])
+    if origin=='094 frozen public survey originals':return node['original_locator']
+    return str(node['section_path'])+' / '+str(node.get('page_start'))
+
+
+def survey_nodes(source,envelope):
+    # This historical digest is of the read envelope, not PDF/HTML bytes.
+    if (sha256(json.dumps(envelope,sort_keys=True).encode()).hexdigest()!=source['digest']
+            or envelope['status']!='readable' or envelope['source']['url']!=source['url']):
+        raise ValueError('survey_read_envelope_identity_mismatch')
+    nodes=[]
+    for item in envelope['items']:
+        if not item['body'] or text_digest(item['body'])!=item['digest']:
+            raise ValueError('survey_read_item_digest_mismatch')
+        nodes.append(dict(node_id=item['id'],node_kind='read_item',parent_document_id=source['id'],
+                          parent_section_id=item['id'],section_path=[item['locator']],
+                          original_locator=item['locator'],content=item['body'],content_sha256=item['digest'],
+                          stable_url=source['url'],read_envelope_sha256=source['digest'],
+                          publication_date=source['published_at'],numeric_authority=False,
+                          original_read_item_metadata={k:v for k,v in item.items() if k!='body'},
+                          document_coverage=json.loads(source['metadata'])['document_coverage']))
+    return nodes
+
+
 def directory(nodes):
     lines = ['已导入节点目录（不是完整原文）；按 node_id 读取正文、表格和章节。']
     for n in nodes:
@@ -30,23 +63,26 @@ def directory(nodes):
 
 def validate_nodes(source, parents, nodes):
     by_id={n['node_id']:n for n in nodes}
+    by_parent={parent_identity(source,n):n for n in nodes}
+    survey=json.loads(source['metadata']).get('import_origin')=='094 frozen public survey originals'
     if (source['access_state']!='readable' or not nodes or len(by_id)!=len(nodes)
-            or len(parents)!=len(nodes) or {p['id'] for p in parents}!=set(by_id)):
+            or len(parents)!=len(nodes) or {p['id'] for p in parents}!=set(by_parent)):
         raise ValueError('indexed_node_coverage_mismatch')
     for p in parents:
-        n=by_id[p['id']]; body=node_body(n)
+        n=by_parent[p['id']]; body=node_body(n)
         if (n['parent_document_id']!=source['id'] or p['source_id']!=source['id']
-                or (n.get('raw_body_sha256') or n.get('content_sha256'))!=source['digest']
+                or (n.get('read_envelope_sha256') if survey else (n.get('raw_body_sha256') or n.get('content_sha256')))!=source['digest']
                 or n.get('stable_url')!=source['url'] or not body
                 or text_digest(body)!=n['content_sha256'] or p['body']!=body
                 or p['digest']!=text_digest(body)
-                or p['locator']!=str(n['section_path'])+' / '+str(n.get('page_start'))):
+                or p['locator']!=parent_locator(source,n)):
             raise ValueError('indexed_node_original_mismatch')
         parent=by_id.get(n['parent_section_id'])
-        if (parent is None or parent['node_kind']!='section'
+        if (parent is None or parent['node_kind']!=('read_item' if survey else 'section')
                 or (n['node_kind']=='section' and parent['node_id']!=n['node_id'])):
             raise ValueError('indexed_node_section_relation_invalid')
-    return by_id
+        if survey and parent['node_id']!=n['node_id']:raise ValueError('survey_read_item_relation_invalid')
+    return by_parent
 
 
 class NodeRecoveryCatalog:
@@ -71,19 +107,30 @@ class NodeRecoveryCatalog:
         raw=path.read_bytes()
         if sha256(raw).hexdigest()!=digest:raise ValueError('node_receipt_digest_mismatch')
         receipt=json.loads(raw)
-        if (receipt['format']!=RECEIPT or receipt['source_id']!=source['id']
+        if (receipt['format'] not in {RECEIPT,SURVEY_RECEIPT} or receipt['source_id']!=source['id']
                 or receipt['library_sha256']!=library_sha256 or receipt['source_digest']!=source['digest']):
             raise ValueError('node_receipt_identity_mismatch')
+        survey=json.loads(source['metadata']).get('import_origin')=='094 frozen public survey originals'
+        if survey!=(receipt['format']==SURVEY_RECEIPT):raise ValueError('node_receipt_source_contract_mismatch')
         nodes=receipt['nodes']
+        extra={}
+        if receipt['format']==SURVEY_RECEIPT:
+            if nodes!=survey_nodes(source,receipt['original_read_envelope']):raise ValueError('survey_node_projection_mismatch')
+            extra={'original_read_envelope':receipt['original_read_envelope'],
+                   'original_read_file_sha256':receipt['original_read_file_sha256']}
         validate_nodes(source,parents,nodes)
         return dict(nodes=nodes, node_set_sha256=canonical_digest(nodes),
                     catalog_sha256=self.sha256,receipt_sha256=digest,
-                    original_node_file_sha256=receipt['original_node_file_sha256'],
-                    scope='complete imported node set; original document completeness not established')
+                    original_node_file_sha256=receipt.get('original_node_file_sha256'),
+                    scope='complete imported node set; original document completeness not established',**extra)
 
 
 def validate_bundle(bundle):
     recovery=bundle['node_recovery']
+    survey=json.loads(bundle['source']['metadata']).get('import_origin')=='094 frozen public survey originals'
+    if survey!=('original_read_envelope' in recovery):raise ValueError('node_bundle_source_contract_mismatch')
+    if 'original_read_envelope' in recovery and recovery['nodes']!=survey_nodes(bundle['source'],recovery['original_read_envelope']):
+        raise ValueError('survey_node_projection_mismatch')
     if (canonical_digest(recovery['nodes'])!=recovery['node_set_sha256']
             or directory(recovery['nodes'])!=bundle['text']):
         raise ValueError('indexed_node_set_digest_mismatch')
@@ -108,7 +155,7 @@ def compact_bundle(bundle):
 
 
 def expand_bundle(bundle):
-    nodes={n['node_id']:n for n in bundle['node_recovery']['nodes']}
+    nodes={parent_identity(bundle['source'],n):n for n in bundle['node_recovery']['nodes']}
     if any('body' in r for table in ('parents','chunks') for r in bundle[table]):
         raise ValueError('indexed_compact_duplicate_body')
     parents=[{**p,'body':node_body(nodes[p['id']])} for p in bundle['parents']]

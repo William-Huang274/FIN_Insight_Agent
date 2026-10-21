@@ -178,8 +178,11 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                             directory=await original_client.call_tool('read_organization_evidence',{'resource_id':resources[sid]})
                             assert not directory.is_error and directory.structured_content['text_scope']=='indexed_node_directory'
                             originals=bundle['node_recovery']['nodes']
-                            for kind in sorted({n['node_kind'] for n in originals}):
-                                original=next(n for n in originals if n['node_kind']==kind)
+                            selected_originals=(originals if all(n['node_kind']=='read_item' for n in originals)
+                                                else [next(n for n in originals if n['node_kind']==kind)
+                                                      for kind in sorted({n['node_kind'] for n in originals})])
+                            for original in selected_originals:
+                                kind=original['node_kind']
                                 offset=0;parts=[]
                                 while True:
                                     response=await original_client.call_tool('read_organization_evidence',{

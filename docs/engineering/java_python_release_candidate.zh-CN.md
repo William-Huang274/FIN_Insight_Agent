@@ -225,3 +225,18 @@ python -m pytest tests/integration/test_report_review_persistence.py -q
 只读部署复核确认：实际 native 镜像与清单一致，416 个冻结源码/配置摘要及 Java JAR 摘要一致；业务数据库 Flyway V1–V11 全部成功；专用三服务、业务库及共享原生服务健康。现有 6 个 thread 均零 run，native 无模型提供方凭据，启动/报告动作开关仍关闭。证据为 `multisource-r2/container-connectivity-audit.json`，失败探针保留结构化异常叶类型/栈位置而不序列化授权头。部署 manifest 已明确改为组织授权连接降级状态，整版 deployed/evaluated baseline 继续为空。
 
 S1 尚需恢复并验证上述容器授权路径、完成共同工程范围与部署清单复核。S2 则另有已核实的接入边界：组织工厂仅允许 `organization_fixed_inputs_only`，没有直接读取宿主公共全库的授权入口；当前 `organization-text-6000.v1` 每 6,000 字符切片，截断或超过 100,000 字符的单原件不能注册该索引。旧公共库 `context + body` 子 chunk 向量通常不等于这些新切片，不能静默套用。完整候选范围、完整原文发布与旧 source/chunk → 新授权 node 的无损映射要单独收口；本批未裁剪 gold 摘录来冒充完整候选池，也未批量上传、重嵌全库或启动新付费。
+
+### 2026-10-21：Docker 恢复与原准备单容器授权复验
+
+本节更新上节的连接阻断状态，保留失败证据。用户要求排障后，先与共享任务协调，确认两套原生服务均无 busy thread、没有在途模型请求，再正常停止原 9 个容器并重启 Desktop。启动分别被 Windows 无法移除的 `Docker/run/dockerInference` 与 `docker-secrets-engine/engine.sock` 阻断；检查父目录仅有零字节运行端点后，停机保留原目录、改名并重新创建空目录，随后启动成功。未恢复出厂设置、删除容器/卷或重建数据库。
+
+这确认了两个故障层：原先 Desktop 控制代理与宿主转发路径失去响应，底层 engine 仍可用；后续启动又被残留 AF_UNIX 端点阻断。后者有明确本机日志及 [Docker 问题 #460](https://github.com/docker/desktop-feedback/issues/460) 的同类报告。维护者称 4.92 及以后版本包含修复；本机仍为 4.76.0.228118，本轮未升级，不能据一次恢复声称永久消除复发。控制/转发失响应的内部原因仍未确认；曾观察到 Dashboard 对大量已停止容器密集请求 stats，但没有因果验证，不据此删除历史容器。
+
+恢复后实测：
+
+- 原 9 个容器 ID、镜像 ID、挂载和命名卷与停机前一致；8 个带探针服务 healthy，Keycloak running 且 discovery HTTP 200。核对使用同一底层 engine 端点；Desktop 代理会改写 bind 源路径的 Windows/Linux 表示，不能把表示差异误报为卷迁移。
+- 默认 Docker CLI 恢复；18165/18865 健康、18443 OIDC discovery、18866 工作台均 HTTP 200。容器到既有宿主 Java/BFF 连接恢复，未更改监听、防火墙或授权规则。
+- 真实 OIDC 浏览器复用原 `acceptance-r4/prepared.json`、原 frozen execution 与索引，在实际 native 容器同一 MCP 会话内通过缓存预热、两个原文回读、空间撤权、项目撤权及恢复。两类撤权共 6 次 MCP 受控拒绝；资料标题和准备入口也遵守当前授权。未重新发布或新建研究运行。
+- 实际业务库 Flyway V1–V11 全部成功；专用原生库仍为 6 threads、0 runs；416 个冻结源码/配置摘要一致。本批模型调用 0 次。
+
+仓库外证据：`normal-deployment-r1/docker-recovery-audit.json`、`multisource-r2/acceptance-container-recovered-r1/result.json` 及 `state/calls/multisource-<原执行 ID>-acceptance-container-recovered-r1/result.json`。原失败记录及私有本机诊断日志保留；没有上传诊断包。部署 manifest 已解除组织授权连接降级，启动开关仍关闭，整版 deployed/evaluated baseline 仍为空。S1 共同范围/部署核对、S2 完整候选与检索质量及后续有预算研究验收仍独立待办。

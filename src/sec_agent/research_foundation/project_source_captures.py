@@ -81,6 +81,7 @@ def source_snapshot(selection, attachments_root, fact_mart, research_library=Non
         from contextlib import closing
         import sqlite3
         from retrieval.library_source_bundle import build_source_bundle, compact_source_bundle
+        from retrieval.library_archive_recovery import configured_catalog
         from .research_library import open_library
         if research_library is None:
             raise ValueError('complete_source_library_not_configured')
@@ -90,7 +91,7 @@ def source_snapshot(selection, attachments_root, fact_mart, research_library=Non
         with closing(sqlite3.connect(library.path.resolve().as_uri()+'?mode=ro', uri=True)) as db:
             db.row_factory = sqlite3.Row
             db.execute('BEGIN')
-            bundle = build_source_bundle(db, selection.document_id, selection.snapshot)
+            bundle = build_source_bundle(db, selection.document_id, selection.snapshot, configured_catalog())
         # Recheck the maintained release identity before saving the snapshot.
         if open_library(research_library).manifest['sha256'] != selection.snapshot:
             raise AssetConflict('完整来源保存期间资料库版本变化。')
@@ -139,21 +140,20 @@ def complete_source_pages(snapshot, note):
     This is only for the server-created typed capture. Ordinary uploads still
     use the maintained parsers and their existing limits.
     """
-    from retrieval.library_source_bundle import expand_source_bundle, text_digest
+    from retrieval.library_source_bundle import expand_source_bundle, text_digest, validate_bundle_text
     if snapshot['kind'] != 'library_source' or snapshot['schema_version'] not in {
             'project_library_source_snapshot.v1','project_library_source_snapshot.v2'}:
         raise ValueError('complete_source_snapshot_contract_invalid')
     if len(json.dumps(snapshot,ensure_ascii=False).encode()) > 20*1024*1024:
         raise ValueError('complete_source_snapshot_size_limit')
     bundle=expand_source_bundle(snapshot['bundle'])
-    if text_digest(bundle['text']) != bundle['source']['digest']:
-        raise ValueError('complete_source_text_digest_mismatch')
+    validate_bundle_text(bundle)
     pages=[]
     for chunk in bundle['chunks']:
         if (bundle['text'][chunk['source_char_start']:chunk['source_char_end']] != chunk['body']
                 or text_digest(chunk['body']) != chunk['digest']):
             raise ValueError('complete_source_chunk_digest_mismatch')
-        pages.append({'page':None,'heading':chunk['locator'],'text':chunk['body'],
+        pages.append({'page':chunk.get('original_page'),'heading':chunk['locator'],'text':chunk['body'],
                       'needs_vision':False,'original_chunk_id':chunk['id']})
     if not pages:
         raise ValueError('complete_source_chunks_missing')

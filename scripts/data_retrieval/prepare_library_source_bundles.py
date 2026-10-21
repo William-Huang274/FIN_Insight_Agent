@@ -15,7 +15,7 @@ def dump(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
-def prepare(library, index, source_ids, output):
+def prepare(library, index, source_ids, output, recovery_catalog=None):
     if not source_ids or len(source_ids) != len(set(source_ids)):
         raise ValueError('unique_nonempty_source_selection_required')
     library, index, output = Path(library).resolve(), Path(index).resolve(), Path(output).resolve()
@@ -41,7 +41,7 @@ def prepare(library, index, source_ids, output):
             for source_id in source_ids:
                 record = dict(source_id=source_id, status='failed')
                 try:
-                    bundle = build_source_bundle(db, source_id, library_sha)
+                    bundle = build_source_bundle(db, source_id, library_sha, recovery_catalog)
                     rows, vectors = verifier.verify(bundle)
                     folder = output / text_digest(source_id)[:32]
                     folder.mkdir()
@@ -80,8 +80,14 @@ def main():
     parser.add_argument('--index', type=Path, required=True)
     parser.add_argument('--source-id', action='append', required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--recovery-catalog', type=Path)
+    parser.add_argument('--recovery-sha256')
     args = parser.parse_args()
-    result = prepare(args.library, args.index, args.source_id, args.output)
+    from retrieval.library_archive_recovery import ArchiveRecoveryCatalog
+    if bool(args.recovery_catalog) != bool(args.recovery_sha256):
+        parser.error('recovery catalog and SHA256 must be supplied together')
+    catalog = ArchiveRecoveryCatalog(args.recovery_catalog, args.recovery_sha256) if args.recovery_catalog else None
+    result = prepare(args.library, args.index, args.source_id, args.output, catalog)
     print(json.dumps({k: v for k, v in result.items() if k != 'source_index'}, ensure_ascii=False))
     if result['status'] != 'verified':
         raise SystemExit(1)

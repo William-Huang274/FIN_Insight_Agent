@@ -34,7 +34,7 @@ def source_protocol(source, parents):
     return 'unrecognized', 'unconfirmed'
 
 
-def audit(library, output, index=None, as_of=None):
+def audit(library, output, index=None, as_of=None, recovery_catalog=None):
     if as_of is not None:
         from datetime import date
         date.fromisoformat(as_of)
@@ -74,14 +74,17 @@ def audit(library, output, index=None, as_of=None):
                 row['chunks'] = db.execute('SELECT count(*) FROM retrieval_chunks WHERE source_id=?',(source['id'],)).fetchone()[0]
                 row['parent_protocol'], row['source_digest_basis'] = source_protocol(source, parents)
                 try:
-                    text, _ = recover_source(source, parents)
+                    if recovery_catalog is not None and row['parent_protocol'] in {'html_extraction_windows','pdf_page_windows'}:
+                        text, _, _ = recovery_catalog.recover(source,parents,library_sha)
+                    else:
+                        text, _ = recover_source(source, parents)
                     row.update(intake_status='parsed_text_recoverable', parsed_characters=len(text))
                 except (ValueError, KeyError, TypeError) as exc:
                     row.update(intake_status='requires_adapter_or_source_repair', reason=str(exc))
                 if verifier is not None and row['intake_status'] == 'parsed_text_recoverable':
                     stage = 'chunks_and_graph'
                     try:
-                        bundle = build_source_bundle(db, source['id'], library_sha)
+                        bundle = build_source_bundle(db, source['id'], library_sha, recovery_catalog)
                         row['chunks_and_graph_verified'] = True
                         stage = 'vectors'
                         records, _ = verifier.verify(bundle)
@@ -146,8 +149,14 @@ def main():
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--index',type=Path,help='Also verify every recoverable source against this existing index; no provider calls')
     parser.add_argument('--as-of',help='Check organization strict-as-of eligibility independently of physical readability')
+    parser.add_argument('--recovery-catalog',type=Path)
+    parser.add_argument('--recovery-sha256')
     args=parser.parse_args()
-    result=audit(args.library,args.output,args.index,args.as_of)
+    from retrieval.library_archive_recovery import ArchiveRecoveryCatalog
+    if bool(args.recovery_catalog) != bool(args.recovery_sha256):
+        parser.error('recovery catalog and SHA256 must be supplied together')
+    catalog=ArchiveRecoveryCatalog(args.recovery_catalog,args.recovery_sha256) if args.recovery_catalog else None
+    result=audit(args.library,args.output,args.index,args.as_of,catalog)
     print(json.dumps({k:v for k,v in result.items() if k!='sources'},ensure_ascii=False))
 
 

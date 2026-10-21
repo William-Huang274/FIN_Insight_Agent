@@ -124,3 +124,32 @@ python -m scripts.data_retrieval.audit_library_source_intake \
 `s2-large-source-organization-r1` 使用真实招股书与一份既有 AMD 年报，共 2,900 个原分段，独立 PostgreSQL/Java/BFF、正式组织 MCP：保存、再次保存返回同一版本、独立组织发布、冻结索引的新准备单、旧准备单不变、文档范围检索/缓存、尾部精确回读、撤权拒绝均通过。0 提供方调用、0 Agent 研究；65.01 秒为整轮验收时间，不是查询延迟。检索复用既有成功查询向量，只验证存储和权限连接，不断言这条问法与招股书的语义相关性，不计入召回率。现有部署未切换。
 
 原本待查的 6 份增补层级文档已与两份历史公开节点包核对：129 个节点的来源、正文、摘要及定位全部匹配。至此 76 份层级文档均找到对应原节点材料，但它们以及 32 份 HTML/PDF、3 份调查仍需保留各自结构合同接入组织通道，不能通过拼接重复层级节点来宣称已完成全文适配。
+
+### HTML/PDF 原件重放与独立组织存取
+
+`retrieval.library_archive_recovery` 为后续 32 份 HTML/PDF 接入提供固定解析记录。离线生产者只读取明确指定的归档根目录内文件，先核对原始字节 SHA256，再按旧 HTML 表格文本／pypdf 页文本规则重放。全部预期父段 ID、定位和正文必须与只读库逐项相等；缺段、重复段、额外正文、原件变化均失败。新目录不覆盖原库、旧索引或历史结果；失败留下 failed，中断留下 incomplete。
+
+```bash
+python -m scripts.data_retrieval.prepare_archive_recovery \
+  --library <published-library.sqlite> --source-id <source-id> \
+  --archive-root <explicit-local-archive-root> --output <new-recovery-directory>
+
+python -m scripts.data_retrieval.prepare_library_source_bundles \
+  --library <published-library.sqlite> --index <existing-vector-index> \
+  --source-id <source-id> --output <new-bundle-directory> \
+  --recovery-catalog <recovery-directory/catalog.json> --recovery-sha256 <catalog-sha256>
+```
+
+全清单工具 `audit_library_source_intake` 也支持这两个 recovery 参数。BFF 保存入口使用服务器环境变量 `FINSIGHT_LIBRARY_RECOVERY_CATALOG` 与 `FINSIGHT_LIBRARY_RECOVERY_SHA256`；两个值必须同时配置，目录版本及每源记录摘要均须匹配。浏览器仍只提交来源 ID 和资料库版本，不能指定归档路径、正文或恢复目录。读取路径不使用历史 metadata 中的任意归档路径；解析只在离线构建发生。
+
+原 `source.digest` 始终代表原 HTML/PDF 字节，新增 `archive_recovery.parsed_text_sha256` 代表解析文本，不互相替换。PDF 每页包括空页分别保留页码、字符跨度、摘要，页间使用明确的 form-feed；旧 parent/chunk、页内 locator、正文、向量输入完全不变。快照记录解析配置、解析器包版本、目录及单份记录摘要，原文回读返回原页码与两种摘要。保存后的组织副本包含完整解析正文，脱离原归档和恢复目录仍能回读；这不证明扫描图片、版面和未提取视觉信息已覆盖。
+
+`s2-archive-source-intake-r1`：18 HTML、14 PDF，共 1,768,993 个解析字符（含页间分隔）、818 个旧检索块/向量精确匹配，0 提供方调用。最终带目录/记录溯源的输入包为 `bundles-with-provenance`，较早 `bundles` 保留作过程证据。完整可恢复来源由 1,668 增至 1,700；尚余 76 层级文档、3 调查回执共 79 份待接入，不改变 1,779 可读来源分母。
+
+组织服务验收仍使用独立 PostgreSQL、Java、BFF 和正式宿主 MCP。32 份全部保存及发布；以 2026-09-23 为截止日，19 份日期合格、294 个块进入授权检索，13 份 unknown 保持拒绝运行时读取和索引输入，不自动以抓取时间补齐。检索问法复用成功缓存，仅验证连接和权限，不计相关性或召回率。
+
+本次真实暴露的范围限制：Java 准备单 `resource_ids` 上限为 12，19 份一起提交返回 400。r1 保留此失败；r2 按 12/7 两批通过，最终溯源字段复验见 r3。分批各自固定索引、保持旧准备单不变，逐源检索/缓存/末段原文回读和撤权拒绝；不能将两个索引的结果说成一次全库搜索。该附件选择上限与全库候选范围目前耦合，必须在全面召回测试前明确分离并验证；本次没有简单提高上限。资格登录、0 Agent 研究、0 模型请求，不替代真实 OIDC 或现有部署切换验收。
+
+最终 r3 全流程 81.00 秒（非查询延迟），171 项相关回归通过；其中包括原件变化、错库/错源、缺段/重复、正文/定位/页摘要篡改、未知日期拒绝、旧快照兼容，以及删除测试原归档和 catalog 后仍可从已保存快照精确回读。HTML 的 `original_page=1` 表示历史导入的单文本块编号，不能解释为浏览器打印或 PDF 物理页码。
+
+`archive-inclusive-inventory.json` 最终全清单复验：3,225 条来源原状态不变；1,779 可读来源的 114,900 个旧向量精确匹配，验证失败 0；1,700 完整解析正文可恢复、快照超限 0、其中 1,663 日期资格通过。其余 79 份仍明确标记待适配。这个全清单不是 1,700 份真实组织发布证明，全面召回/并发放行仍为 false。

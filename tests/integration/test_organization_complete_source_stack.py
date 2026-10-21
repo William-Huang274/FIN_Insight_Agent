@@ -26,7 +26,7 @@ from sec_agent.research_foundation.project_source_captures import CaptureRequest
 from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionAuthority, OrganizationExecutionReader, OrganizationExecutionUnavailable
 from sec_agent.research_foundation.organization_hybrid_retrieval import preparation_nodes, publish_prepared_index
 from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation, build_organization_source_server
-from sec_agent.research_foundation.organization_source_projection import PROJECTION
+from sec_agent.research_foundation.organization_source_projection import PROJECTION, validate_source_cutoff
 from tests.integration.test_organization_graph_native import OrganizationGraphStack
 from tests.integration.test_java_intake_native import wait_for
 
@@ -107,10 +107,10 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         api('POST','/projects',{'id':project,'organization_id':org,'name':'Source compatibility','description':'No recall claim'})
         assets=AssetWorkspace(s.state/'project-library')
         assets.library.save('oidc:alice',0,{'projects':[{'id':private,'name':'Public originals'}],'assignments':{},'pinned':[]})
-        resources={};captures=[]
+        resources={};captures=[];date_denials=[]
         for sid,bundle in bundles.items():
             # Same maintained capture service as POST /captures; no payload supplied as source facts.
-            request=CaptureRequest(project_id=private,title=bundle['source']['title'],selection={
+            request=CaptureRequest(project_id=private,title=bundle['source']['title'][:120],selection={
                 'kind':'library_source','document_id':sid,'snapshot':intake['library_sha256']})
             saved=save_capture(assets,'oidc:alice',request,None,None,library)
             assert save_capture(assets,'oidc:alice',request,None,None,library)['document_id']==saved['document_id']
@@ -125,30 +125,36 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 raw=db.execute('SELECT snapshot FROM attachment_captures WHERE object_id=?',(saved['document_id'],)).fetchone()[0]
             captures.append({'source_id':sid,'snapshot_bytes':len(raw.encode()),'text_characters':len(bundle['text']),
                              'schema_version':json.loads(raw)['schema_version'],'repeat_save_same_version':True})
-        payload={'id':str(uuid4()),'title':'Complete inputs','question':'Read the selected complete disclosures.',
-                 'research_as_of':'2026-09-23','resource_ids':list(resources.values())}
-        original=api('POST',f'/projects/{project}/research-drafts',payload)
-        reader=bind(project,original)
-        _,nodes=preparation_nodes(reader,workbench_url='http://localhost')
-        assert len(nodes)==len(vectors)
-        release=str(uuid4())
-        publish_prepared_index(indices,org,nodes,[vectors[n['original_source']['id']] for n in nodes],queries,
-            model=model,provenance={'source_intake_sha256':sha256((root/'result.json').read_bytes()).hexdigest()},
-            release_id=release,projection=PROJECTION)
-        contract=s.request(s.bff,'POST',f'/api/v1/asset-workspace/organization-projects/{project}/research-drafts/{original["id"]}/retrieval-releases/{release}/register',json={})
-        payload.update(id=str(uuid4()),retrieval_release_id=release)
-        frozen=api('POST',f'/projects/{project}/research-drafts',payload)
-        assert frozen['manifest']['retrieval_index']==contract
-        assert api('GET',f'/projects/{project}/research-drafts/{original["id"]}')==original
-        reader=bind(project,frozen)
-        nav=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
-        results=[]
-        async def exercise():
+        # All originals were saved/published unchanged. Unknown availability
+        # must still fail at the real authorized runtime read boundary.
+        for sid,bundle in list(bundles.items()):
+            try:
+                validate_source_cutoff(bundle,'2026-09-23')
+            except ValueError:
+                assert storage_probe, 'historical evaluation unexpectedly includes unavailable source'
+                rejected=api('POST',f'/projects/{project}/research-drafts',{
+                    'id':str(uuid4()),'title':'Unavailable source','question':'Must not read undated material.',
+                    'research_as_of':'2026-09-23','resource_ids':[resources[sid]]})
+                blocked=bind(project,rejected)
+                with pytest.raises(OrganizationExecutionUnavailable):blocked.read_text(resources[sid])
+                with pytest.raises(OrganizationExecutionUnavailable):preparation_nodes(blocked,workbench_url='http://localhost')
+                date_denials.append({'source_id':sid,'original_vintage':bundle['source']['vintage'],
+                                    'published_at':bundle['source']['published_at'],'runtime_read_denied':True})
+                for chunk in bundle['chunks']:vectors.pop(chunk['id'])
+                del bundles[sid];del resources[sid]
+        assert bundles, 'no eligible source for real organization retrieval'
+        s.save('complete-source-date-denials',date_denials)
+        results=[];contracts=[]
+        # Existing product limit is 12 explicitly selected resources per draft.
+        # Batch intake qualification does not establish corpus-wide retrieval.
+        async def exercise(batch,nodes,nav):
             async with Client(build_organization_source_server(nav), raise_exceptions=False) as client:
-                for sid,bundle in bundles.items():
+                for sid,bundle in batch.items():
                     leaves=[n for n in nodes if n['original_source']['source_id']==sid]
                     tail=max(leaves,key=lambda n:n['original_source']['source_char_end'])
-                    assert tail['original_source']['source_char_start']>100000
+                    if len(bundle['text'])>110000:
+                        assert tail['original_source']['source_char_start']>100000
+                    assert not bundle['text'][tail['original_source']['source_char_end']:].strip()
                     query={'source_space':'organization','operation':'search','document_id':tail['parent_document_id'],
                            'query':selected_questions[sid]['query']}
                     response=await client.call_tool('read_source_document',{'request':query})
@@ -168,16 +174,39 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                         'tail_sha256':passage['content_sha256'],'readback':passage['readback'],'cache_hit':True,
                         'index_digest':found[0]['retrieval']['index_digest'],'provider_calls':found[0]['retrieval']['provider_calls']})
                     s.save('complete-source-progress',{'sources':results,'status':'running'})
-        asyncio.run(exercise())
-        first=next(iter(resources.values()))
-        current=s.request(s.bff,'GET',f'/api/v1/asset-workspace/spaces/resources/{first}')
-        api('POST',f'/resources/{first}/revoke',{'revision':current['permission_revision']})
-        with pytest.raises(OrganizationExecutionUnavailable): nav.navigate(results[0]['readback'])
-        with pytest.raises(OrganizationExecutionUnavailable): nav.navigate({'source_space':'organization','operation':'search','query':next(iter(queries))})
-        s.save('complete-source-result',{'status':'passed','sources':results,'frozen_contract':contract,
+        ids=list(bundles)
+        for start in range(0,len(ids),12):
+            batch={sid:bundles[sid] for sid in ids[start:start+12]}
+            payload={'id':str(uuid4()),'title':'Complete inputs','question':'Read the selected complete disclosures.',
+                     'research_as_of':'2026-09-23','resource_ids':[resources[sid] for sid in batch]}
+            original=api('POST',f'/projects/{project}/research-drafts',payload)
+            reader=bind(project,original)
+            _,nodes=preparation_nodes(reader,workbench_url='http://localhost')
+            assert len(nodes)==sum(len(bundle['chunks']) for bundle in batch.values())
+            release=str(uuid4())
+            publish_prepared_index(indices,org,nodes,[vectors[n['original_source']['id']] for n in nodes],queries,
+                model=model,provenance={'source_intake_sha256':sha256((root/'result.json').read_bytes()).hexdigest()},
+                release_id=release,projection=PROJECTION)
+            contract=s.request(s.bff,'POST',f'/api/v1/asset-workspace/organization-projects/{project}/research-drafts/{original["id"]}/retrieval-releases/{release}/register',json={})
+            payload.update(id=str(uuid4()),retrieval_release_id=release)
+            frozen=api('POST',f'/projects/{project}/research-drafts',payload)
+            assert frozen['manifest']['retrieval_index']==contract
+            assert api('GET',f'/projects/{project}/research-drafts/{original["id"]}')==original
+            reader=bind(project,frozen)
+            nav=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
+            first_result=len(results)
+            asyncio.run(exercise(batch,nodes,nav))
+            first=resources[next(iter(batch))]
+            current=s.request(s.bff,'GET',f'/api/v1/asset-workspace/spaces/resources/{first}')
+            api('POST',f'/resources/{first}/revoke',{'revision':current['permission_revision']})
+            with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(results[first_result]['readback'])
+            with pytest.raises(OrganizationExecutionUnavailable):nav.navigate({'source_space':'organization','operation':'search','query':next(iter(queries))})
+            contracts.append(contract)
+        s.save('complete-source-result',{'status':'passed','sources':results,'frozen_contracts':contracts,
             'revoked_cache_and_readback_denied':True,'provider_calls':0,'research_runs':0,
-            'recall_or_capacity_evaluation':False,'candidate_chunks':len(nodes),'identity':'qualification login',
-            'captures':captures,'query_is_storage_probe':storage_probe})
+            'recall_or_capacity_evaluation':False,'candidate_chunks':len(vectors),'identity':'qualification login',
+            'max_sources_per_draft':12,'separate_index_batches':len(contracts),'corpus_wide_retrieval':False,
+            'captures':captures,'date_denials':date_denials,'query_is_storage_probe':storage_probe})
     finally:
         for process in s.processes:
             if process.poll() is None: process.terminate();process.wait(timeout=20)

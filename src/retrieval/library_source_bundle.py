@@ -24,6 +24,31 @@ def text_digest(text):
     return sha256(text.encode('utf-8')).hexdigest()
 
 
+def validate_bundle_text(bundle):
+    recovery = bundle.get('archive_recovery')
+    expected = bundle['source']['digest']
+    if recovery is not None:
+        if (recovery['format'] != 'library-archive-recovery.v1'
+                or recovery['parser'] not in {'legacy-html-table-text.v1','legacy-pypdf-pages.v1'}
+                or recovery['raw_sha256'] != expected or recovery['separator'] != '\f'
+                or not recovery['pages']):
+            raise ValueError('archive_recovery_contract_invalid')
+        cursor = 0
+        for number, page in enumerate(recovery['pages'], 1):
+            lo, hi = page['source_char_start'], page['source_char_end']
+            if (page['number'] != number or type(lo) is not int or type(hi) is not int
+                    or lo != cursor or not lo <= hi <= len(bundle['text'])
+                    or text_digest(bundle['text'][lo:hi]) != page['sha256']
+                    or (number < len(recovery['pages']) and bundle['text'][hi:hi+1] != '\f')):
+                raise ValueError('archive_page_span_mismatch')
+            cursor = hi+1
+        if cursor-1 != len(bundle['text']):
+            raise ValueError('archive_page_coverage_mismatch')
+        expected = recovery['parsed_text_sha256']
+    if text_digest(bundle['text']) != expected:
+        raise ValueError('recovered_source_digest_mismatch')
+
+
 def compact_source_bundle(bundle):
     """Store each source character once; original row IDs/digests stay intact."""
     if bundle['format'] != FORMAT:
@@ -47,8 +72,7 @@ def expand_source_bundle(bundle):
     if bundle['format'] != COMPACT_FORMAT:
         raise ValueError('source_bundle_format_invalid')
     text = bundle['text']
-    if text_digest(text) != bundle['source']['digest']:
-        raise ValueError('recovered_source_digest_mismatch')
+    validate_bundle_text(bundle)
     result = {**bundle, 'format':FORMAT}
     for table in ('parents','chunks'):
         result[table] = []
@@ -163,20 +187,28 @@ def validated_stored_chunks(db, source_id, parents):
     return chunks
 
 
-def build_source_bundle(db, source_id, library_sha256):
+def build_source_bundle(db, source_id, library_sha256, recovery_catalog=None):
     """Read a full selected source, never a relevance-label-selected subset."""
     found = db.execute('SELECT * FROM sources WHERE id=?', (source_id,)).fetchone()
     if found is None:
         raise ValueError('source_missing')
     source = dict(found)
     parents = [dict(row) for row in db.execute('SELECT * FROM passages WHERE source_id=?', (source_id,))]
-    text, parents = recover_source(source, parents)
+    recovery = None
+    if parents and all(re.fullmatch(r'(HTML text|PDF page [1-9][0-9]*) chars [0-9]+-[0-9]+', p['locator']) for p in parents):
+        if recovery_catalog is None:
+            raise ValueError('archive_recovery_catalog_required')
+        text, parents, recovery = recovery_catalog.recover(source, parents, library_sha256)
+    else:
+        text, parents = recover_source(source, parents)
     by_parent = {row['id']: row for row in parents}
     chunks = validated_stored_chunks(db,source_id,parents)
     for row in chunks:
         start = by_parent[row['parent_id']]['source_char_start']
         row.update(source_char_start=start+row['char_start'], source_char_end=start+row['char_end'],
                    embedding_input_sha256=text_digest(row['context']+'\n'+row['body']))
+        if recovery is not None:
+            row['original_page'] = by_parent[row['parent_id']]['original_page']
         if text[row['source_char_start']:row['source_char_end']] != row['body']:
             raise ValueError('chunk_source_offset_mismatch')
     by_chunk = {row['id']:row for row in chunks}
@@ -202,7 +234,8 @@ def build_source_bundle(db, source_id, library_sha256):
                 source=source, text=text, parents=parents, chunks=chunks, edges=edges,
                 edge_chunk_links=links, edge_chunk_coverage=coverage,
                 scope='complete stored parsed text; original binary/graphics not recovered',
-                numeric_fact_authority=False, organization_authorization=False)
+                numeric_fact_authority=False, organization_authorization=False,
+                **({'archive_recovery':recovery} if recovery is not None else {}))
 
 
 def reusable_vectors(bundle, manifest, matrix, mapping, cache):

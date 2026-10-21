@@ -35,6 +35,10 @@ def source_nodes(bundle, document_id, item, url):
                   'source_char_start','source_char_end','embedding_input_sha256')}
         origin.update(source_id=source['id'], source_digest=source['digest'],
                       library_sha256=bundle['library_sha256'], source_url=source['url'])
+        if 'archive_recovery' in bundle:
+            origin.update(original_page=chunk['original_page'],
+                          parsed_text_sha256=bundle['archive_recovery']['parsed_text_sha256'],
+                          parser=bundle['archive_recovery']['parser'])
         row = dict(node_id=identifier, parent_document_id=document_id, parent_section_id=document_id,
                    title=item['title'], section_path=[chunk['locator']], document_kind='document',
                    source_role='organization_complete_parsed_source', company=metadata.get('entity_id'),

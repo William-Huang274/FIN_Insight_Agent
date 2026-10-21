@@ -1,6 +1,6 @@
 # 第一版验收包：共同基线与执行计划
 
-状态：2026-10-21；**S1 工程证据已归并接受，但最终环境交接因容器到宿主授权连接再次超时而阻断，尚不能宣布 S1 全部收口；S2–S6 待验。** 研究执行保持关闭，真实模型研究与整版产品尚未通过。产品范围与通过条件以[验收指导](../product/first_release_acceptance.zh-CN.md)为准。当前结论见下文“S1 最终范围矩阵”；后续进展段保留各批次当时的状态，不覆盖原失败证据。
+状态：2026-10-21；**S1 无付费工程范围已收口：九项工程证据接受，环境恢复与当前授权读取通过；S2–S6 待验。** 研究执行保持关闭，真实模型研究与整版产品尚未通过。产品范围与通过条件以[验收指导](../product/first_release_acceptance.zh-CN.md)为准。当前结论见下文“S1 最终范围矩阵”；后续进展段保留各批次当时的状态，不覆盖原失败证据。
 
 ## 起始基线 B0（不可回填）
 
@@ -33,7 +33,7 @@
 
 | 步骤 | 责任/依赖 | 当前状态 | 放行证据 |
 | --- | --- | --- | --- |
-| S1 共同工程基线 | 集成窗口；B0 + 本计划 | 工程证据接受；当前环境交接阻断 | `s1-closeout-r1/matrix.json` 的 9 项历史工程结论保留；当前 native→Java 超时，须恢复后补实际授权读取再放行 |
+| S1 共同工程基线 | 集成窗口；B0 + 本计划 | 无付费工程范围已收口 | `s1-closeout-r2/matrix.json` 继承原 9 项证据并引用 Docker 恢复附录；原 blocked 矩阵保留，当前授权与原文回读通过 |
 | S2 RAG 质量与性能 | 验收窗口；S1 确认的工具路径 | 待验，可先离线盘点 | 题集/缓存/索引身份、分层对照与失败清单；已知关键资料可达，待研究问题无未解决检索阻断 |
 | S3 新完整研究 A | 验收窗口；S1/S2 | 待验 | 页面起点到报告/引用/导出，质量人工审阅，费用与介入记录 |
 | S4 多轮交互 I1–I6 | 两方按模块处理；S3 | 待验 | 正常用户输入、模型实际动作、报告差异/新任务、来源与费用 |
@@ -44,9 +44,13 @@
 
 ## S1 最终范围矩阵（2026-10-21）
 
-S1 的九项工程证据及版本对应已按原合同归并，但最终交接只读核对又发现环境故障，**当前放行仍阻断**。可继续 S2 离线资料/兼容性准备，不启动实际组织检索验收或真实研究。本批读取原回执、核对部署及测试指纹，并对发现的 Java 环境问题做受影响路径复验；不表示生产容量、金融质量或整个验收包通过。新模型调用、新研究 run、ACL 修改均为 0。以下“通过”均指对应原回执，不覆盖下述当前失败。
+S1 的九项工程证据及版本对应已按原合同归并，随后环境恢复已完成原服务身份及实际授权读取验证，**S1 无付费工程范围现已收口**。`s1-closeout-r2/matrix.json` 继承原九项结果并引用恢复附录；`s1-closeout-r1/matrix.json` 的当时 blocked 状态及原失败回执保留不改。本轮只核对既有证据和摘要，不重跑整套工程测试；新模型调用、新研究 run、ACL 修改均为 0。S1 收口不表示生产容量、金融质量或整个验收包通过，S2 仍须满足完整来源及评测前置条件。
 
-**最终停点（2026-10-21 14:10–14:11，Asia/Shanghai）：**默认 Docker `ps` 30 秒超时，再查 8 秒仍超时；直连同一本机底层引擎约 0.313 秒返回原九服务（8 healthy、Keycloak running），宿主 18165/18865 健康接口 200、Java 匿名请求正常拒绝。但实际 native 容器访问 `host.docker.internal:18895` 在 5 秒内 ConnectTimeout，故不是单纯管理界面异常，组织工具当前无法取得 Java 授权。没有重启共享服务、改变监听/权限、使用代理绕过或调用模型。该故障在升级后复发，升级成功及先前授权复验成功都保留，不能宣称根因已消除。恢复后只补当前授权读取及必要身份/数据检查，不重跑全部历史工程测试。
+**历史阻断（2026-10-21 14:10–14:11，Asia/Shanghai）：**默认 Docker `ps` 30 秒超时，再查 8 秒仍超时；直连同一本机底层引擎约 0.313 秒返回原九服务（8 healthy、Keycloak running），宿主 18165/18865 健康接口 200、Java 匿名请求正常拒绝。但实际 native 容器访问 `host.docker.internal:18895` 在 5 秒内 ConnectTimeout，故不是单纯管理界面异常，当时组织工具无法取得 Java 授权。该次只读核对没有重启共享服务、改变监听/权限、使用代理绕过或调用模型。此历史故障在升级后复发，升级成功及先前授权复验成功不能覆盖它。
+
+**恢复附录与当前结论：**`docker-diagnosis-20261021-r1` 通过 Windows 线程/管道证据及限时疏通对照，确认 Desktop 后端 stderr 日志背压会阻塞管理接口和容器到宿主转发；父进程停止消费的上游触发仍未知。原九容器正常停机后恢复，364 个原容器、353 个原卷、41 个原镜像及此前另存的三个匿名卷保留。原准备单在实际 native MCP 中经 Java 当前授权读回两份原文，SHA256 一致，零提供方调用/权限修改。14:56:28–14:57:42 四次探针管理接口与容器到 Java 均响应，后端日志持续更新。该附录解决当前环境阻断，不改写历史失败或宣称长期稳定。
+
+Docker Containers 列表窗口触发的全量统计已确认是日志压力来源，本机交接保持该窗口关闭、引擎继续运行；不把它认定为唯一触发原因。保留这个运维前提和未知上游风险，不新增无限期稳定性等待，不重复原 S1 全套验收。若实际业务路径再次失联，按新的故障时点暂停受影响操作并保留现场。
 
 | 项目 | 结论与证据批次 | 必须保留的范围限制 |
 | --- | --- | --- |
@@ -64,7 +68,7 @@ S1 的九项工程证据及版本对应已按原合同归并，但最终交接�
 
 本机可选证据根为 `Z:/FIN_Insight_Agent_qualification/20261021_release_acceptance/s1-closeout-r1`，不作为安装或 CI 依赖。`engineering-baseline.json` 固定已核对组件集合，摘要为 `25ba521212e873442798f99889eae848652459d04ef08eb7c36103d7d9e0647b`；文件自身 SHA256 另存于 `matrix.json`。其中 `acceptance_starting_baseline=0a57e891` 与 `deployment_source_base=8ee6946e` 分列，不回填 B0。所有矩阵 evidence 和索引文件 path 统一相对于明确的 `evidence_base` 验收根；baseline_file 相对于矩阵目录。元数据修正前四份清单保存在 `review-draft-r1`，不覆盖原测试回执。
 
-`evidence-index.json` 固定原回执摘要，`source-correspondence.json` 记录源码对应，`live-components.json` 保存本次成功检查时的开关及凭据存在性，不保存值，也不是持续在线状态。当前故障记录为 `docker-recheck-timeout.json`、`current-container-host-connectivity.json`；矩阵明确分开 `engineering_evidence_status=accepted` 与 `current_deployment_status=blocked_container_to_host_authority_timeout`。
+`evidence-index.json` 固定原回执摘要，`source-correspondence.json` 记录源码对应，`live-components.json` 保存该次成功检查时的开关及凭据存在性，不保存值，也不是持续在线状态。历史故障记录为 `docker-recheck-timeout.json`、`current-container-host-connectivity.json`；原矩阵的 `engineering_evidence_status=accepted` 与 `current_deployment_status=blocked_container_to_host_authority_timeout` 保留。最终 `s1-closeout-r2` 使用同一工程基线，另行固定原矩阵、原 17 项证据和恢复附录的摘要，以 `scoped_engineering_pass` / `recovered_bounded_validation_passed` 表达最新范围结论。
 
 | 组件 | 当前身份与状态 |
 | --- | --- |
@@ -81,7 +85,7 @@ S1 的九项工程证据及版本对应已按原合同归并，但最终交接�
 
 ### 放行边界与下一阶段
 
-部署清单新增 `s1_engineering_baseline`，记录范围、基线引用及摘要、矩阵、关闭的执行开关和当前部署阻断；整版 `deployed_baseline` / `evaluated_baseline` 保持 null。B0 不回填。先前普通页面登录、资料准备及受控读取成功不能覆盖当前容器授权故障；组织工具的实时读取须待连接恢复，真实启动、接续、报告动作及新付费查询保持关闭。
+部署清单的 `s1_engineering_baseline` 指向最终 `s1-closeout-r2` 矩阵及恢复附录，保留同一基线文件与组件摘要；整版 `deployed_baseline` / `evaluated_baseline` 保持 null，B0 不回填。当前环境恢复条件已满足，可以交接 S2 工程准备及满足其前置条件后的组织路径评测；这不等于 S2 已通过，也不自动授权新付费请求。真实启动、接续、报告动作和新付费查询的运行开关不因文档收口而改变，启用仍按对应阶段的范围、提供方配置及预算预检执行。
 
 S2 承接完整来源发布与原 source/chunk→组织 resource/node 的对应、100,000 字符原件限额、6,000 字符投影与旧 `context + body` 向量兼容、119 条成功查询缓存的适用范围、全库/选定范围对照及组织实际路径质量与性能。两段权限摘录不能充当召回候选库。这些问题不否定已验证工程合同，但阻止将当前环境用于声称已通过的完整真实研究。
 

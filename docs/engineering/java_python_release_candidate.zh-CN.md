@@ -213,3 +213,15 @@ python -m pytest tests/integration/test_report_review_persistence.py -q
 3. `python scripts/engineering/prepare_multisource_acceptance.py publish --deployment <部署根> --case <案例目录>`，根据当前 Java 授权读取精确节点并发布新索引。
 4. 设置 `FIN_MULTISOURCE_PROBE` 为本仓库 `scripts/engineering/probe_multisource_authority.py` 的绝对路径、`FIN_DOCKER_EXECUTABLE` 为实际 Docker CLI，执行 `node e2e/oidc-live-multisource.mjs acceptance`。默认容器探针；每次 `FIN_MULTISOURCE_ATTEMPT` 使用全新输出名。
 5. 若已有准备单而容器控制面不可用，可显式指定 `FIN_MULTISOURCE_PREPARED=<原尝试>/prepared.json`、`FIN_MULTISOURCE_TRANSPORT=host` 和 `FIN_MULTISOURCE_PYTHON`，只核对原准备并验当前授权。宿主方式会核对冻结源码，清除模型/追踪密钥并记录运行方式，不会自动降级或冒称容器复验通过。临时移除的本案例成员资格在结束或断言失败时尝试恢复；恢复失败会明确输出，不能静默忽略。
+
+### 容器复验与 S1 清单核对：连接阻断仍保留
+
+2026-10-21 后续复验复用了 `acceptance-r4/prepared.json` 的原准备单、索引与执行，没有新增 thread 或 run。发现默认 `desktop-linux` 对应的 `dockerDesktopLinuxEngine` 及 `docker_engine` 命名管道 `_ping` 超时，但底层 `docker_engine_linux` 返回 HTTP 200；Docker CLI 单次指定 `--host npipe:////./pipe/docker_engine_linux` 能正常 inspect/exec。验收脚本支持显式 `FIN_MULTISOURCE_DOCKER_HOST` 选择这一固定本机端点，不修改全局 context，不接受远程 daemon，也不重启共享服务。
+
+`acceptance-container-r1/r2` 已真正进入生产 native 容器，但第一次检索取得当前 Java 授权时失败。独立有界连接检查确认 `host.docker.internal` 解析到 `192.168.65.254`，访问 Java 18895 以及专用 BFF 18867、18866 均 `ConnectTimeout`。宿主 Java 仍由同一进程自 09:21 起运行，源码配置明确绑定 `127.0.0.1`；私有配置文件 09:43 修改，早于 09:47 已成功的单资料容器探针。未发现本批修改监听/绑定的证据。当前 Docker/Java 入站规则为启用的 Allow，但没有历史防火墙快照，不能声称规则从未变化，也不能据此确定 Desktop 内部根因。
+
+因此这是 **容器到宿主授权服务的连接阻断，不是缓存撤权断言失败**。空间/项目撤权阶段尚未进入，不能增加通过计数。没有修改授权白名单、公开 Java 外网监听、加临时测试代理或改生产 runtime。默认控制管道与宿主网关均异常只定位到 Desktop 控制/转发路径；其内部具体故障原因仍未知。最低恢复目标是先让同一容器可连接既有 `host.docker.internal:18895`，再以原执行和新 attempt 复验。若需重启 Desktop 网络/后端，应先协调全部共享容器及在途任务；只直连底层 engine 管道并不能恢复宿主网关。本批未执行该重启。
+
+只读部署复核确认：实际 native 镜像与清单一致，416 个冻结源码/配置摘要及 Java JAR 摘要一致；业务数据库 Flyway V1–V11 全部成功；专用三服务、业务库及共享原生服务健康。现有 6 个 thread 均零 run，native 无模型提供方凭据，启动/报告动作开关仍关闭。证据为 `multisource-r2/container-connectivity-audit.json`，失败探针保留结构化异常叶类型/栈位置而不序列化授权头。部署 manifest 已明确改为组织授权连接降级状态，整版 deployed/evaluated baseline 继续为空。
+
+S1 尚需恢复并验证上述容器授权路径、完成共同工程范围与部署清单复核。S2 则另有已核实的接入边界：组织工厂仅允许 `organization_fixed_inputs_only`，没有直接读取宿主公共全库的授权入口；当前 `organization-text-6000.v1` 每 6,000 字符切片，截断或超过 100,000 字符的单原件不能注册该索引。旧公共库 `context + body` 子 chunk 向量通常不等于这些新切片，不能静默套用。完整候选范围、完整原文发布与旧 source/chunk → 新授权 node 的无损映射要单独收口；本批未裁剪 gold 摘录来冒充完整候选池，也未批量上传、重嵌全库或启动新付费。

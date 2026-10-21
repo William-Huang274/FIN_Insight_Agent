@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import time
+import traceback
 
 from mcp import Client
 from sec_agent.research_foundation.asset_workspace import AssetWorkspace
@@ -91,5 +92,13 @@ if __name__ == '__main__':
     try:
         asyncio.run(probe(args.directory))
     except Exception as error:
-        (args.directory / 'failure.json').write_text(json.dumps({'error': type(error).__name__, 'summary': str(error).split('\n')[0][:300]}), encoding='utf8')
+        def leaves(exc):
+            if isinstance(exc, BaseExceptionGroup):
+                return [leaf for child in exc.exceptions for leaf in leaves(child)]
+            return [{'error': type(exc).__name__,
+                'frames': [{'file': Path(frame.filename).name, 'line': frame.lineno, 'function': frame.name}
+                           for frame in traceback.extract_tb(exc.__traceback__)]}]
+        # Structural traceback only: never serialize request headers or credentials.
+        (args.directory / 'failure.json').write_text(json.dumps({'error': type(error).__name__,
+            'summary': str(error).split('\n')[0][:300], 'leaves': leaves(error)}), encoding='utf8')
         raise

@@ -162,8 +162,12 @@ try{
    child=spawn(process.env.FIN_MULTISOURCE_PYTHON,[hostProbe+'/probe.py','--directory',hostProbe],{windowsHide:true,env,stdio:['ignore','pipe','pipe']});
   }else if(transport==='container'){
    if(!process.env.FIN_DOCKER_EXECUTABLE)throw Error('explicit_docker_executable_required');
-   state.probe_runtime={transport:'container',container:'finsight-release-native-langgraph-api-1'};
-   child=spawn(process.env.FIN_DOCKER_EXECUTABLE,['exec','finsight-release-native-langgraph-api-1','python',containerProbe+'/probe.py','--directory',containerProbe],{windowsHide:true,stdio:['ignore','pipe','pipe']});
+   // A per-client local pipe can bypass an unresponsive Desktop API proxy.
+   // Never switch the global context or allow a remote daemon for this case.
+   const dockerHost=process.env.FIN_MULTISOURCE_DOCKER_HOST;
+   if(dockerHost&&dockerHost!=='npipe:////./pipe/docker_engine_linux')throw Error('only_explicit_local_linux_pipe_supported');
+   state.probe_runtime={transport:'container',container:'finsight-release-native-langgraph-api-1',docker_endpoint:dockerHost||'default_context'};
+   child=spawn(process.env.FIN_DOCKER_EXECUTABLE,[...(dockerHost?['--host',dockerHost]:[]),'exec','finsight-release-native-langgraph-api-1','python',containerProbe+'/probe.py','--directory',containerProbe],{windowsHide:true,stdio:['ignore','pipe','pipe']});
   }else throw Error('unknown_probe_transport');
   // Never forward raw process output or request headers into user-visible logs.
   child.stdout.resume();child.stderr.resume();let childDone=false,childCode;

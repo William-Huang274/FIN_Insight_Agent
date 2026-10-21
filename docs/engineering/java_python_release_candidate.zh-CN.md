@@ -180,3 +180,36 @@ python -m pytest tests/integration/test_report_review_persistence.py -q
 证据位于 `normal-deployment-r1/`：`publication-r1/result.json`、`frozen-preparation-r1/result.json`、`public-excerpt/provenance.json`、`organization-release.json`、`state/calls/native-retrieval-r1.json`、`native-deployment-audit.json`。后者核对 416 个部署文件/补丁摘要、真实注册图、两 thread 身份和零 run；模型凭据未进入 native 容器。截图为 `frozen-preparation-r1/project-sources.png`。生成文件和凭据均在 Git 外。
 
 浏览器复现入口 `e2e/oidc-live-preparation.mjs` 分发布和冻结两个阶段；原件和向量在两阶段之间经受控主机发布，不能由浏览器指定服务器路径。容器只读检索入口 `scripts/engineering/probe_organization_retrieval.py` 使用浏览器产生的绑定文件和当前 Java 授权，拒绝启用付费查询提供方的环境。正式启用前仍需共同 S1 范围复核、S2 多资料/当前权限/检索质量、明确预算下的 S3/S4 模型研究与修订验收。
+
+## 2026-10-21：多空间资料的页面准备与当前权限复核
+
+本批沿用真实本机 OIDC、HTTPS BFF、Java/PostgreSQL 和专用 Agent Server。新建独立验收项目及 NVIDIA、AMD 两个资料空间，原件分别为历史公开库的精确摘录；只复用成功生成的对应原文向量与一个 NVIDIA 查询向量。普通研究成员操作页面，管理员只负责发布和调整权限。没有使用浏览器接口拦截、测试身份、模型替身或新模型调用。
+
+| 验证范围 | 观察结果 |
+| --- | --- |
+| 普通页面 → Java → 原生草稿 | 实际勾选两份资料、选择已发布索引、填写截止日期、保存准备单、校验原件并选择标准协作。Java 保存的 `standard/default/[]` 及缺省 `continuation_scope=original_question`、`require_all_branches=false` 与原生冻结配置相同，配置摘要也相同，零 run。 |
+| 同一生产 MCP 会话的混合检索与原文回读 | 两份候选均返回，第二轮命中排名缓存；候选不能引用，原文回读后才可引用，两个原文字节摘要均与旧向量来源对应。 |
+| 撤销 AMD 空间成员资格 | 页面 API 隐藏 AMD 资料标题/原文，NVIDIA 仍可独立阅读；包含两份资料的冻结准备单整体不可读。已预热的搜索、原先看到的 NVIDIA 原文地址、AMD 原文地址均拒绝，3 次操作未返回 source items。该结果体现“准备单所有选定输入均须当前有权读取”的规则。 |
+| 恢复空间权限、再撤销项目成员资格 | 重新授权后原 ID 可读；随后保留空间权限但移除项目资格，同一执行的缓存搜索和两个旧原文地址再次全部拒绝。恢复项目研究成员后，原准备单/索引/执行/引用身份保持不变。 |
+| 定向回归 | 组织混合检索、来源导航、原生草稿共 **39 项通过，26.44 秒**；active baseline、Node 语法、秘密扫描（1166 文件）与 diff 检查通过。 |
+
+**运行范围必须区分：页面准备确实进入了容器中的正式 Agent Server；本批两种撤权的持续 MCP 会话最终在宿主进程完成。** 首轮 `docker exec` 在 150 秒内未进入探针，`docker top` 同样挂起，但专用 18865 和共享 18165 HTTP 健康均正常。只结束本次挂起的 Docker 客户端，没有重启 daemon 或共享容器。之后以同一准备单及执行 ID、同一冻结源码（核对 315 个 `src` 文件摘要）、同一组织存储与真实 Java 授权完成宿主复验；没有重新提交研究。容器网络中的这组多资料撤权复验仍待 Docker 控制面恢复，不能用本结果替代。
+
+本批结果为 **2 份公开摘录、2 类撤权、6 次受控拒绝、0 次模型提供方调用**，不是召回率、吞吐量、完整原文覆盖或金融质量指标。没有更改产品运行代码，也没有放开研究执行或修改整版 deployed/evaluated baseline。
+
+证据位于仓库外 `normal-deployment-r1/multisource-r2/`：
+
+- `publication/result.json`、`release.json`、`excerpts/manifest.json`：真实发布、原向量来源、索引身份。
+- `acceptance-r4/prepared.json`、`selected-inputs.png`、`prepared-execution.png`：实际页面操作、Java 回执、配置摘要；同目录 `failure.json` 保留随后 Docker 超时，不能将整轮标为通过。
+- `acceptance-host-r2/result.json`、`revoked-preparation.png`：复用上述准备单的最终宿主验收。对应 `state/calls/multisource-<execution>-acceptance-host-r2/result.json` 保留同一 MCP 会话各阶段结果。
+- `python-regression.log`、`multisource-audit.json`：回归和正常服务/原生 thread 的无运行记录。
+
+失败保留：`multisource-r1` 的 AMD 摘录因 Windows 文本写入将 LF 改为 CRLF，与旧向量对应的原文摘要不一致，被发布前检查拒绝；修复工具为原始字节写入，并在上传前检查摘要后，新建 `multisource-r2`。r2 的前两次页面尝试因测试选择器把包含选项文本的 label 当作精确标签而失败；第三次因测试未考虑 Java 的已定义默认字段而失败，随后明确核对两个缺省值及 Java/原生配置一致性，没有放宽产品规则。`acceptance-host-r1` 使用了未对浏览器开放的内部准备回执路由，被 404 拒绝；改走已有的正常“核对准备”入口，未新增绕过授权的接口。
+
+复现顺序（需要专用本机部署及已核验的历史向量；不是安装/CI 前提）：
+
+1. `python scripts/engineering/prepare_multisource_acceptance.py excerpts --deployment <部署根> --case <全新案例目录> --library <只读资料库> --vectors <已发布向量目录>`；该固定场景选择公开库中指定 AMD chunk，与前次 NVIDIA 摘录组成权限用例，不能换用任意文本的向量。
+2. 设置 `FIN_NORMAL_DEPLOYMENT_ROOT`、`FIN_MULTISOURCE_CASE`、`FINSIGHT_PUBLIC_ORIGIN=https://localhost:18866`、`NODE_EXTRA_CA_CERTS=<部署根>/private/identity/tls/ca.pem`，从 frontend 目录运行 `node e2e/oidc-live-multisource.mjs publication`。
+3. `python scripts/engineering/prepare_multisource_acceptance.py publish --deployment <部署根> --case <案例目录>`，根据当前 Java 授权读取精确节点并发布新索引。
+4. 设置 `FIN_MULTISOURCE_PROBE` 为本仓库 `scripts/engineering/probe_multisource_authority.py` 的绝对路径、`FIN_DOCKER_EXECUTABLE` 为实际 Docker CLI，执行 `node e2e/oidc-live-multisource.mjs acceptance`。默认容器探针；每次 `FIN_MULTISOURCE_ATTEMPT` 使用全新输出名。
+5. 若已有准备单而容器控制面不可用，可显式指定 `FIN_MULTISOURCE_PREPARED=<原尝试>/prepared.json`、`FIN_MULTISOURCE_TRANSPORT=host` 和 `FIN_MULTISOURCE_PYTHON`，只核对原准备并验当前授权。宿主方式会核对冻结源码，清除模型/追踪密钥并记录运行方式，不会自动降级或冒称容器复验通过。临时移除的本案例成员资格在结束或断言失败时尝试恢复；恢复失败会明确输出，不能静默忽略。

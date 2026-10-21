@@ -154,8 +154,29 @@ python -m pytest tests/integration/test_report_review_persistence.py -q
 
 用户随后明确本机没有现成 OIDC，并授权部署。**身份与业务部分已启动**：独立 Keycloak / PostgreSQL、HTTPS BFF `https://localhost:18866`、Java 18895 及新业务库 V11。两名真实账号经授权码 + PKCE 登录，9 个浏览器身份/成员检查和 2 个重启恢复检查通过，未使用测试身份或 API 拦截。部署说明、复现与退出范围见[本机 OIDC 部署](local_oidc_deployment.zh-CN.md)。
 
-专用 Agent Server 18865 **尚未启动**，执行仍关闭，真实资料发布/索引注册尚未完成；不能把身份部署称为整个 S1 放行。仓库外 `normal-deployment-r1/manifest.json` 分组件记录已部署/已验的固定源版本，整版 deployed/evaluated baseline 保持空。既有共享 18165 和三个容器健康、未切换。现有启动 helper 固定使用共享 Compose 项目名，不能原样用于专用环境。
+后续专用 Agent Server 18865 **已启动**，生产图和三服务独立持久化就绪；一份历史公开披露摘录已通过真实账号发布，索引注册、Java 固定准备单及原生草稿已联通，详见下节。执行仍关闭，不能把入口冒烟称为整个 S1/S2 放行。仓库外 `normal-deployment-r1/manifest.json` 分组件记录版本、部署源码补丁与配置摘要，整版 deployed/evaluated baseline 在共同验收收口前保持空。既有共享 18165 和三个容器健康、未切换。现有启动 helper 固定使用共享 Compose 项目名，不能原样用于专用环境。
 
 1. **组织追问/引用修订已完成上述静态工程闭环，但 S1 不能据此直接等同全部发布通过。** 仍需汇总同一发行版本与专用验收部署的清单，按执行计划核对 S1 范围；后续真实研究与专家修订另验，不能把静态生产者的结果当成模型质量证据。
 2. 本次证明新的复核子图可以跨版本、跨进程继续；**不自动迁移旧 per-invocation 子图 checkpoint**。旧研究和进行中的任务保持原冻结部署。专用验收环境需记录代码、镜像、JAR、前端、数据库迁移与回退边界。
 3. 组织业务和展示只完成各节限定验收。S1 尚未放行，main 未合入、共享部署未切换；后续按[第一版执行计划](first_release_acceptance_execution.zh-CN.md)进入产品交互和 RAG，而不是把本次静态图运行称为真实金融研究通过。
+
+## 2026-10-21：正常运行栈与组织资料准备
+
+新增 `deploy/agent_server/compose.business-workbench.yaml`，使用独立 Compose 项目、子网和卷。复用既有 PostgreSQL 分角色初始化/生命周期迁移合同，并通过测试核对与原部署配置一致；配置不再要求旧案例报告、旧答案或旧资料目录。正常研究、通用对话、历史只读三图的 schema 加载通过。实际镜像仍为已核对的 LangGraph API 0.13.3 / LangGraph 1.2.11；原生服务 18865 正常，原来的共享 18165 保持健康。
+
+部署发现并修复一个配置耦合：关闭研究执行时，原先 BFF 也没有组织草稿所需的研究配置。新增显式 `FINSIGHT_ORGANIZATION_PREPARATION_ENABLED=1`，只为组织准备加载配置；个人 `fresh_research_enabled` 仍为 false，Java 和原生启动开关仍关闭。Java 可固定准备请求并创建原生 thread，不能因此派发 run。业务资料、BFF host-settings 的父目录与容器挂载统一到本部署 state，避免读到另一份空资料库。
+
+| 实际路径 | 证据和范围 |
+| --- | --- |
+| 真实 OIDC 浏览器 → BFF → Java → 发布存储 | 上传一份 NVIDIA 10-K 2026 历史公开披露摘录，发布到组织空间，关联项目，固定输入并准备；原文 3,053 字符，字节摘要与历史公开库的 context + body 完全一致。不是整份年报，也不作为金融结论金标。 |
+| 项目与源权限 | 第二个真实账号已有项目成员资格，但读源资料仍 404；明确加入源空间后，读取正文与上传字节一致。 |
+| 检索发布与固定准备 | 重新生成本组织/资源/版本的索引身份，经正常 BFF 登记到 Java。新准备单固定 release/model/dimensions/projection/两类摘要；旧准备单未覆盖。复用核验过的原文向量和成功查询回执，未复制旧主体、权限、排名缓存或缓存命名空间。 |
+| Java → 内部 BFF → 正式 Agent Server | 两份准备单各创建一个 thread，回执 received；**2 threads、0 runs**。固定索引版本由同一 manifest digest 绑定到原生草稿，显式尝试启动仍返回 503。 |
+| 实际 native 容器中的生产 MCP 工具 | 对固定来源执行两轮搜索→原文回读，第二轮命中该新组织发布版本的排名缓存；候选不能引用，回读原文才可引用，原文摘要一致。未准备的新问题明确报错，未回退公共库或调用 embedding。MCP 使用 SDK 进程内传输；不是完整研究图执行或外部 MCP 网络压测。 |
+| 定向回归 | 部署/组织准备/命令/索引/混合检索 **42 项通过，28.97 秒**；源码启动与身份回归 **23 项通过，5.90 秒**。早前 14 项准备检查与 42 项重叠，不另累加。 |
+
+本批 **0 次模型提供方调用**。向量复用范围仅 1 个原文叶节点、1 个已保存查询，模型 `qwen3.7-text-embedding`、1024 维。原查询历史 token 与 request ID 保留来源，但不记为本批新增费用。不能据此推断全库召回、并发容量、多资料覆盖、实时新查询可用或研究质量。
+
+证据位于 `normal-deployment-r1/`：`publication-r1/result.json`、`frozen-preparation-r1/result.json`、`public-excerpt/provenance.json`、`organization-release.json`、`state/calls/native-retrieval-r1.json`、`native-deployment-audit.json`。后者核对 416 个部署文件/补丁摘要、真实注册图、两 thread 身份和零 run；模型凭据未进入 native 容器。截图为 `frozen-preparation-r1/project-sources.png`。生成文件和凭据均在 Git 外。
+
+浏览器复现入口 `e2e/oidc-live-preparation.mjs` 分发布和冻结两个阶段；原件和向量在两阶段之间经受控主机发布，不能由浏览器指定服务器路径。容器只读检索入口 `scripts/engineering/probe_organization_retrieval.py` 使用浏览器产生的绑定文件和当前 Java 授权，拒绝启用付费查询提供方的环境。正式启用前仍需共同 S1 范围复核、S2 多资料/当前权限/检索质量、明确预算下的 S3/S4 模型研究与修订验收。

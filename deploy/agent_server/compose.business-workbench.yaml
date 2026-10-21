@@ -1,0 +1,176 @@
+# Dedicated normal-path runtime. Persistence entries mirror compose.yaml and are contract-tested.
+# Use a distinct -p project; no old reports, fixture graphs or provider credentials.
+services:
+  langgraph-postgres:
+    restart: ${FINSIGHT_SERVICE_RESTART_POLICY:-no}
+    image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD:?set FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD in the repository
+        .env}
+      FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD: ${FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD:?set FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD
+        in the repository .env}
+      FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD: ${FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD:?set FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD
+        in the repository .env}
+      FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD: ${FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD:?set FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD
+        in the repository .env}
+    command:
+    - postgres
+    - -c
+    - shared_preload_libraries=vector
+    volumes:
+    - langgraph-data:/var/lib/postgresql/data
+    - type: bind
+      source: ./postgres-init/010-create-runtime-roles.sh
+      target: /docker-entrypoint-initdb.d/010-create-runtime-roles.sh
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ./postgres-init/025-install-fin-runtime-lifecycle-v1-1.sh
+      target: /docker-entrypoint-initdb.d/025-install-fin-runtime-lifecycle-v1-1.sh
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ./postgres-init/031-runtime-readiness-v1-1.sh
+      target: /usr/local/bin/fin-postgres-runtime-readiness
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ../../src/sec_agent/agent_runtime/sql/001_agent_server_identity_v1_0.sql
+      target: /opt/fin-insight/001_dell_agent_server_identity_v1_0.sql
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ../../src/sec_agent/agent_runtime/sql/002_agent_server_remote_create_lifecycle_v1_1.sql
+      target: /opt/fin-insight/002_dell_agent_server_remote_create_lifecycle_v1_1.sql
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ./postgres-init/040-fin-runtime-schema-fingerprint.sql
+      target: /opt/fin-insight/040-fin-runtime-schema-fingerprint.sql
+      read_only: true
+      bind:
+        create_host_path: false
+    healthcheck:
+      test:
+      - CMD
+      - /bin/sh
+      - /usr/local/bin/fin-postgres-runtime-readiness
+      start_period: 10s
+      timeout: 5s
+      retries: 12
+      interval: 5s
+  langgraph-redis:
+    restart: ${FINSIGHT_SERVICE_RESTART_POLICY:-no}
+    image: redis:6@sha256:143f7bfc2358911d6b36138eabfbfffea46273c5d4b5696d90e5cbf23d633cf8
+    healthcheck:
+      test:
+      - CMD
+      - redis-cli
+      - ping
+      interval: 5s
+      timeout: 1s
+      retries: 5
+  langgraph-api:
+    image: ${FINSIGHT_RUNTIME_IMAGE:?pinned qualified native image required}
+    restart: ${FINSIGHT_SERVICE_RESTART_POLICY:-no}
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    ports:
+    - 127.0.0.1:${FINSIGHT_AGENT_SERVER_HOST_PORT:?dedicated unused port}:8000
+    depends_on:
+      langgraph-postgres:
+        condition: service_healthy
+      langgraph-redis:
+        condition: service_healthy
+    environment:
+      POSTGRES_URI: postgres://langgraph_runtime:${FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD}@langgraph-postgres:5432/postgres?sslmode=disable
+      FIN_RUNTIME_POSTGRES_URI: postgres://fin_runtime_app:${FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD}@langgraph-postgres:5432/postgres?sslmode=disable
+      REDIS_URI: redis://langgraph-redis:6379
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:?development license required}
+      LANGSMITH_TRACING: 'true'
+      LANGSMITH_PROJECT: fin-insight-dell-reference-vertical
+      LANGSMITH_HIDE_INPUTS: 'true'
+      LANGSMITH_HIDE_OUTPUTS: 'true'
+      LANGSERVE_GRAPHS: '{"research_session":{"path":"sec_agent.agent_runtime.research_session_runtime:research_session_graph"},"conversation_session":{"path":"sec_agent.agent_runtime.conversation_runtime:conversation_session_graph"},"dell_report_session":{"path":"sec_agent.agent_runtime.report_session:archived_report_session_graph"}}'
+      PYTHONPATH: /deps/FIN_Insight_Agent/src
+      PYTHONDONTWRITEBYTECODE: '1'
+      FIN_REPO_ROOT: /deps/FIN_Insight_Agent
+      FINSIGHT_REPORT_SESSION_SETTINGS: /run/finsight/settings.json
+      FINSIGHT_TASK_ATTACHMENTS_ROOT: /run/finsight/attachments
+      FINSIGHT_ORGANIZATION_ASSETS_ROOT: /run/finsight/organization-assets
+      FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT: /run/finsight/organization-indexes
+      FINSIGHT_ORGANIZATION_AUTHORITY_NETWORK: docker-desktop-host
+      FINSIGHT_BUSINESS_API_URL: http://host.docker.internal:${FINSIGHT_BUSINESS_PORT:?dedicated Java port}
+      FINSIGHT_ORGANIZATION_RUNTIME_SECRET: ${FINSIGHT_ORGANIZATION_RUNTIME_SECRET:?dedicated authority secret}
+      FINSIGHT_RESEARCH_SESSION_ENABLED: '0'
+      FINSIGHT_ORGANIZATION_START_ENABLED: '0'
+      FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED: '0'
+      FINSIGHT_TASK_VISION_ENABLED: '0'
+      N_JOBS_PER_WORKER: '2'
+      OPENAI_API_KEY: ''
+      DEEPSEEK_API_KEY: ''
+      DASHSCOPE_API_KEY: ''
+    volumes:
+    - type: bind
+      source: ${FINSIGHT_RUNTIME_SOURCE_ROOT:?frozen source root}/src
+      target: /deps/FIN_Insight_Agent/src
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${FINSIGHT_RUNTIME_SOURCE_ROOT}/configs
+      target: /deps/FIN_Insight_Agent/configs
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${FINSIGHT_NORMAL_STATE_ROOT:?dedicated state directory}/container-settings.json
+      target: /run/finsight/settings.json
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${FINSIGHT_NORMAL_STATE_ROOT}/attachments
+      target: /run/finsight/attachments
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${FINSIGHT_NORMAL_STATE_ROOT}/project-library/organization-assets
+      target: /run/finsight/organization-assets
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${FINSIGHT_NORMAL_STATE_ROOT}/calls
+      target: /run/finsight/calls
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${FINSIGHT_NORMAL_STATE_ROOT}/organization-indexes
+      target: /run/finsight/organization-indexes
+      bind:
+        create_host_path: false
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - /api/healthcheck.py
+      interval: 20s
+      start_period: 20s
+      timeout: 5s
+      retries: 12
+volumes:
+  langgraph-data: null
+networks:
+  default:
+    ipam:
+      config:
+      - subnet: ${FINSIGHT_NORMAL_SUBNET:?dedicated unused subnet}

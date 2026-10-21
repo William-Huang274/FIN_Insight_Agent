@@ -475,7 +475,8 @@ def create_report_session_app(frontend_dist_root=None):
     if settings.get("bundle_path") or settings.get("report_path"):
         artifacts, _ = load_session_materials(settings)
     research_profile = None
-    if os.environ.get("FINSIGHT_RESEARCH_SESSION_ENABLED") == "1":
+    if (os.environ.get("FINSIGHT_RESEARCH_SESSION_ENABLED") == "1"
+            or os.environ.get('FINSIGHT_ORGANIZATION_PREPARATION_ENABLED') == '1'):
         from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
         runtime_profile, case = load_research_runtime_profile(os.environ.get("FIN_REPO_ROOT", CODE_ROOT))
         research_profile = {"title": case["title"], "default_question": case["question"], "branch_topics": case["branch_topics"],
@@ -484,8 +485,12 @@ def create_report_session_app(frontend_dist_root=None):
     from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
     attachment_store = TaskAttachmentStore((Path(settings_path).parent if settings_path else state_root) / "attachments")
     service = ReportSessionService(os.environ["FINSIGHT_REPORT_SESSION_API_URL"], artifacts, audit_root=settings.get("audit_root", str(state_root / "calls")),
-        research_profile=research_profile, attachment_store=attachment_store,
+        research_profile=research_profile if os.environ.get('FINSIGHT_RESEARCH_SESSION_ENABLED') == '1' else None,
+        attachment_store=attachment_store,
         attachment_archive_roots=settings.get('attachment_archive_roots', ()))
+    # Organization preparation freezes inputs/configuration without granting
+    # personal research or native execution. Admission retains its own flags.
+    service.organization_research_profile = research_profile
     @asynccontextmanager
     async def lifespan(app):
         yield

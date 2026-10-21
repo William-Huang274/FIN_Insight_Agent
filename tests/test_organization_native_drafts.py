@@ -90,6 +90,17 @@ def test_org_thread_is_atomic_frozen_and_not_a_personal_research(organization, m
         assert prepare(c, s).json() == saved.json() and s.state['creates'] == 1
 
 
+def test_organization_can_prepare_while_personal_execution_is_disabled(organization):
+    s = organization
+    s.intake.service.organization_research_profile = s.intake.service.research_profile
+    s.intake.service.research_profile = None
+    with TestClient(s.intake.app()) as c:
+        assert prepare(c, s).status_code == 200
+        headers = {'Authorization': 'Bearer synthetic', 'X-Workbench-Request': '1'}
+        assert c.get('/api/v1/research-session-config', headers=headers).json()['fresh_research_enabled'] is False
+        assert not s.intake.runs
+
+
 @pytest.mark.parametrize('fault', ['lost_reply', 'revoke_after_create'])
 def test_uncertain_native_create_only_reconciles_original_thread(organization, fault):
     s = organization

@@ -19,6 +19,10 @@ from .organization_research_inputs import verify_storage
 SURFACE = 'organization_research_workbench'
 
 
+def preparation_profile(service):
+    return getattr(service, 'organization_research_profile', None) or service.research_profile
+
+
 async def preparation_authority(service, project_id, execution_id, *, raw_body=None, operation_id=None):
     from .business_transport import space_business_request
     project_id, execution_id = str(UUID(str(project_id))), str(UUID(str(execution_id)))
@@ -43,14 +47,14 @@ async def preparation_authority(service, project_id, execution_id, *, raw_body=N
             raise ValueError('question')
     except (KeyError, ValueError, TypeError, OrganizationExecutionUnavailable):
         raise HTTPException(409, '组织草稿授权与固定准备请求不匹配') from None
-    if not service.attachment_store or not service.research_profile:
+    if not service.attachment_store or not preparation_profile(service):
         raise HTTPException(503, '组织草稿需要已配置的原件存储和研究配置')
     return grant
 
 
 def metadata_for(grant, service):
     manifest = json.loads(grant['manifest_text'])
-    ExecutionOptions.model_validate(grant['prepare_request']['execution']).validate_catalog(service.research_profile.get('branch_topics', []))
+    ExecutionOptions.model_validate(grant['prepare_request']['execution']).validate_catalog(preparation_profile(service).get('branch_topics', []))
     # Validate with current defaults, but freeze exactly the Java command's
     # representation. Re-serializing a model would add new defaults to old commands.
     config = {'configurable': {'finsight_execution': deepcopy(grant['prepare_request']['execution']),

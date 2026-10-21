@@ -152,7 +152,9 @@ python -m pytest tests/integration/test_report_review_persistence.py -q
 
 2026-10-21 普通生产路径部署预检：以共同文档版本 `8ee6946e`（运行实现仍为 `b1f807b6`）在仓库外冻结 415 个源码/前端文件和已验 JAR，未复制测试生产者入口。发现默认角色配置仍混用 Pro/low，因此只在专用配置副本中将十个研究角色对齐约定的 wire `deepseek-flash` / thinking enabled / high，保留各角色限额，离线加载校验通过；这不是新的付费预算，也没有改动仓库默认配置。公开资料库、向量矩阵和映射实际字节摘要均匹配原发布清单，尚不等于组织授权发布或缓存命名空间可复用。
 
-专用环境**尚未启动**：已检查的项目 `.env`、进程环境和共享容器没有 OIDC 配置，正常浏览器入口要求真实 OIDC 与 HTTPS。已向用户询问接已有登录服务还是部署本地真实登录服务，未用测试身份替代。候选 18865/18866/18895 检查时空闲，但没有作为实际 URL 交付。仓库外 `normal-deployment-r1/manifest.json` 的 deployed/evaluated baseline 保持空；`OPERATIONS.md` 记录配置缺项、开关值、正常资料发布步骤和仅停止新环境且保留卷/新记录的回退边界。现有启动 helper 固定使用共享 Compose 项目名，不能原样用于本次专用环境。
+用户随后明确本机没有现成 OIDC，并授权部署。**身份与业务部分已启动**：独立 Keycloak / PostgreSQL、HTTPS BFF `https://localhost:18866`、Java 18895 及新业务库 V11。两名真实账号经授权码 + PKCE 登录，9 个浏览器身份/成员检查和 2 个重启恢复检查通过，未使用测试身份或 API 拦截。部署说明、复现与退出范围见[本机 OIDC 部署](local_oidc_deployment.zh-CN.md)。
+
+专用 Agent Server 18865 **尚未启动**，执行仍关闭，真实资料发布/索引注册尚未完成；不能把身份部署称为整个 S1 放行。仓库外 `normal-deployment-r1/manifest.json` 分组件记录已部署/已验的固定源版本，整版 deployed/evaluated baseline 保持空。既有共享 18165 和三个容器健康、未切换。现有启动 helper 固定使用共享 Compose 项目名，不能原样用于专用环境。
 
 1. **组织追问/引用修订已完成上述静态工程闭环，但 S1 不能据此直接等同全部发布通过。** 仍需汇总同一发行版本与专用验收部署的清单，按执行计划核对 S1 范围；后续真实研究与专家修订另验，不能把静态生产者的结果当成模型质量证据。
 2. 本次证明新的复核子图可以跨版本、跨进程继续；**不自动迁移旧 per-invocation 子图 checkpoint**。旧研究和进行中的任务保持原冻结部署。专用验收环境需记录代码、镜像、JAR、前端、数据库迁移与回退边界。

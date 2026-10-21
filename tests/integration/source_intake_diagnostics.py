@@ -43,6 +43,24 @@ def file_sha256(path):
         return file_digest(handle, 'sha256').hexdigest()
 
 
+def source_coverage(captures, eligible_sources, results, global_searches):
+    """Separate publication, global ranking scope and individual readback proof."""
+    published = {row['source_id'] for row in captures}
+    eligible = set(eligible_sources)
+    searched = {row['source_id'] for row in results}
+    if (len(published) != len(captures) or len(searched) != len(results)
+            or not searched <= eligible <= published
+            or any(row['authorized_sources'] != len(eligible) for row in global_searches)):
+        raise ValueError('source_coverage_evidence_mismatch')
+    return {
+        'published_sources': len(published),
+        'eligible_sources': len(eligible),
+        'searched_sources': len(searched),
+        'per_source_filtered_readback_count': len(searched),
+        'globally_ranked_sources': len(eligible) if global_searches else 0,
+    }
+
+
 class SourceVectors(MutableMapping):
     """Only one source matrix is open; row returns own their small vector data."""
     def __init__(self):

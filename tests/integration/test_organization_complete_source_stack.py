@@ -29,7 +29,7 @@ from sec_agent.research_foundation.organization_source_navigation import Organiz
 from sec_agent.research_foundation.organization_source_projection import PROJECTION, validate_source_cutoff
 from tests.integration.test_organization_graph_native import OrganizationGraphStack
 from tests.integration.test_java_intake_native import wait_for
-from tests.integration.source_intake_diagnostics import SourceBundles, SourceVectors, PhaseDiagnostics, file_sha256
+from tests.integration.source_intake_diagnostics import SourceBundles, SourceVectors, PhaseDiagnostics, file_sha256, source_coverage
 
 pytestmark = pytest.mark.skipif(not os.getenv('FIN_COMPLETE_SOURCE_INTAKE'), reason='explicit full-source intake artifacts required')
 
@@ -309,8 +309,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             'recall_or_capacity_evaluation':False,'candidate_chunks':len(vectors),'identity':'qualification login',
             'max_explicit_sources_per_draft':12,'separate_index_batches':len(contracts),
             'corpus_wide_retrieval':unified_scope,'corpus_scope':'selected intake artifact only',
-            'global_probe':global_probe,'published_sources':len(bundles),'searched_sources':len(bundles),
-            'per_source_filtered_readback_count':len(results),
+            'global_probe':global_probe,
+            **source_coverage(captures,bundles,results,global_searches),
             'global_searches':global_searches,'non_selected_candidate_revocation_tested':unified_scope,
             'captures':captures,'node_reads':node_reads,'date_denials':date_denials,'query_is_storage_probe':storage_probe})
     except BaseException as exc:

@@ -44,11 +44,25 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     root=Path(os.environ['FIN_COMPLETE_SOURCE_INTAKE']).resolve()
     intake=json.loads((root/'result.json').read_text(encoding='utf8'))
     assert intake['status']=='verified'
+    batch_binding=None
+    full_intake_sources=len(intake['sources'])
+    if os.getenv('FIN_COMPLETE_SOURCE_BATCH_PLAN'):
+        from scripts.engineering.source_intake_batches import select_batch
+        plan_path=Path(os.environ['FIN_COMPLETE_SOURCE_BATCH_PLAN'])
+        plan=json.loads(plan_path.read_text(encoding='utf8'))
+        batch_binding=json.loads(os.environ['FIN_COMPLETE_SOURCE_BATCH_BINDING'])
+        number=int(os.environ['FIN_COMPLETE_SOURCE_BATCH_NUMBER'])
+        assert batch_binding['batch_number']==number
+        assert batch_binding['plan_sha256']==file_sha256(plan_path)
+        assert Path(plan['intake_root']).resolve()==root
+        intake['sources']=select_batch(plan,intake,number,file_sha256(root/'result.json'))
     dataset=Path(os.environ['FIN_COMPLETE_SOURCE_QUESTIONS'])
     questions=json.loads(dataset.read_text(encoding='utf8'))['questions']
     storage_probe=os.getenv('FIN_COMPLETE_SOURCE_STORAGE_PROBE')=='1'
     unified_scope=os.getenv('FIN_COMPLETE_SOURCE_UNIFIED_SCOPE')=='1'
     global_probe=os.getenv('FIN_COMPLETE_SOURCE_GLOBAL_PROBE')=='1'
+    if batch_binding:
+        assert storage_probe and not unified_scope and not global_probe
     if global_probe:
         assert unified_scope and storage_probe
     if not storage_probe:
@@ -305,6 +319,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             contracts.append(contract)
         verify_intake_files()
         s.save('complete-source-result',{'status':'passed','sources':results,'frozen_contracts':contracts,
+            'batch_binding':batch_binding,'full_intake_sources':full_intake_sources,
             'revoked_cache_and_readback_denied':True,'provider_calls':0,'research_runs':0,
             'recall_or_capacity_evaluation':False,'candidate_chunks':len(vectors),'identity':'qualification login',
             'max_explicit_sources_per_draft':12,'separate_index_batches':len(contracts),

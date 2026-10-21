@@ -2,6 +2,28 @@
 
 本组件服务于[第一版验收 S2](first_release_acceptance_execution.zh-CN.md)的来源可达性前置：把选定来源的全部已解析正文、原分段及其向量准备为独立输入包，避免只发布命中答案的摘录。它不授予组织访问权、不注册 Java 索引发布、不切换运行时投影，也不代表组织检索质量验收通过。
 
+## 低内存条件下的逐源分批验收
+
+`scripts/engineering/source_intake_batches.py` 将完整已核验清单按原顺序划分为可续跑批次，默认每批最多 32 份、输入文件合计预算 16 MiB。超过预算的单份来源独立成批，禁止裁剪正文、分段或向量。文件预算不是进程 RSS 上限；服务启动内存和单份超大原件仍需实际观测。
+
+该入口分开保留两项验收义务：
+
+1. **全部来源的独立链路**：每批启动自己的 BFF／Java／PostgreSQL，经原有生产捕获、组织发布、准备单、索引、MCP 搜索、缓存、原文回读和撤权路径执行。批内索引仍按现有 12 条重点资料合同分组，每个来源都执行独立搜索和回读；沿用正文、归档和节点来源各自的读取边界，不把节点目录称为整份原文。
+2. **同一组织的统一候选范围**：全部来源还要在同一授权准备单／索引下验证全局排序、跨批来源缓存及非重点候选撤权。批次各用隔离组织，不能拼成统一范围通过证明。现有 `FIN_COMPLETE_SOURCE_GLOBAL_PROBE=1` 入口保留；其全局后回读是合同抽样，逐源覆盖由第一项独立提供。两项均完成前不得宣布 S2 收口。
+
+用法（路径由执行环境提供，产物放在仓库外）：
+
+```powershell
+python scripts/engineering/source_intake_batches.py plan --intake <完整输入包> --output <新计划.json>
+python scripts/engineering/source_intake_batches.py run --plan <计划.json> --output <独立执行目录>
+```
+
+继续使用全量验收的 `FIN_COMPLETE_SOURCE_QUESTIONS`、`FIN_COMPLETE_SOURCE_LIBRARY`、`FIN_COMPLETE_SOURCE_QUERY_CACHE`、`FINSIGHT_INTAKE_TEST_JAR`、`FINSIGHT_TEST_JAVA`、`FINSIGHT_TEST_DOCKER`、`FIN_NATIVE_LICENSE_ENV`、`FIN_PROBE_IMAGE` 及恢复目录环境配置；不继承共享服务状态。每批选择不重叠的 Docker 子网、随机端口和新卷，结束后停止自己的服务，保留证据和数据。默认启动前连续三次检查至少 4 GiB 可用内存；`--min-available-gib` 可用于明确的较低余量诊断（最低 2 GiB），不是已测得的最低需求。运行时保持连续两次低于 800 MiB 则中断的保护，不降低底线强跑。
+
+续跑要求干净的同一 Git 提交、相同 Java 包和完整清单摘要；每次重新核验全部输入文件摘要。只有来源集合、逐源分段数、完整逐源回读数、缓存／撤权结果、零模型调用和结果文件摘要全部匹配的成功批次才能跳过。失败批次需要显式 `--retry-failed`，新建尝试目录，不覆盖失败证据。独占 `runner.lock` 防止两个窗口同时执行同一目录；异常退出留下的锁只能在确认对应进程已结束后处理。
+
+`progress.json` 分别记录总来源、已验来源、成功批次、暂停／失败原因，批次全部通过也只标记 `per_source_passed_unified_scope_pending`，保持 `S2_passed=false`。此实现的确定性测试不替代真实服务执行，不提供性能或金融质量结论。
+
 ## 恢复与校验
 
 历史 `build_industry_foundation.py` 把正文按 5,200 字符步长保存为 `text-part:N`，除首段外每段包含前 250 字符重叠。`retrieval.library_source_bundle` 按数字序号恢复完整文本，逐项校验：

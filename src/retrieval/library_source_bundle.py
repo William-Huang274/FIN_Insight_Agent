@@ -1,11 +1,12 @@
 """Lossless intake of legacy parsed sources, without granting runtime access.
 
-Only the historical 5200/250 text-part projection is supported. Source digests
-prove recovery of parsed UTF-8 text, not the original HTML/PDF or its graphics.
+Recovery supports explicit text windows whose complete UTF-8 digest can be
+verified. Binary-document and read-envelope digests are not text digests.
 """
 from __future__ import annotations
 
 from hashlib import sha256
+from collections import defaultdict
 import re
 
 import numpy as np
@@ -26,6 +27,8 @@ def recover_source(source, parents):
     """Recover exact parsed text; reject gaps, unsupported locators or drift."""
     if source['access_state'] != 'readable' or not parents:
         raise ValueError('source_not_readable_or_empty')
+    if all(re.fullmatch(r'raw text chars (0|[1-9][0-9]*)-([1-9][0-9]*)', p['locator']) for p in parents):
+        return _recover_raw_text(source, parents)
     positions = {}
     ids = set()
     for parent in parents:
@@ -61,15 +64,47 @@ def recover_source(source, parents):
                   for i in range(len(parents))]
 
 
-def build_source_bundle(db, source_id, library_sha256):
-    """Read a full selected source, never a relevance-label-selected subset."""
-    found = db.execute('SELECT * FROM sources WHERE id=?', (source_id,)).fetchone()
-    if found is None:
-        raise ValueError('source_missing')
-    source = dict(found)
-    parents = [dict(row) for row in db.execute('SELECT * FROM passages WHERE source_id=?', (source_id,))]
-    text, parents = recover_source(source, parents)
+def _recover_raw_text(source, parents):
+    """Legacy external UTF-8 snapshots: explicit contiguous, nonoverlap spans.
+
+    This accepts neither HTML/PDF extraction nor source archive paths. The
+    final digest proves that no original byte/text tail or newline was lost.
+    """
+    ordered, ids = [], set()
+    for parent in parents:
+        match = re.fullmatch(r'raw text chars (0|[1-9][0-9]*)-([1-9][0-9]*)', parent['locator'])
+        lo, hi = int(match[1]), int(match[2])
+        if parent['id'] in ids or parent['source_id'] != source['id']:
+            raise ValueError('parent_identity_mismatch')
+        if text_digest(parent['body']) != parent['digest']:
+            raise ValueError('parent_digest_mismatch')
+        if hi <= lo or hi-lo != len(parent['body']):
+            raise ValueError('parent_window_length_mismatch')
+        ids.add(parent['id'])
+        ordered.append(dict(parent, source_char_start=lo, source_char_end=hi))
+    ordered.sort(key=lambda p: p['source_char_start'])
+    end = 0
+    for parent in ordered:
+        if parent['source_char_start'] != end:
+            raise ValueError('parent_sequence_gap_or_overlap')
+        end = parent['source_char_end']
+    text = ''.join(p['body'] for p in ordered)
+    if text_digest(text) != source['digest']:
+        raise ValueError('recovered_source_digest_mismatch')
+    return text, ordered
+
+
+def validated_stored_chunks(db, source_id, parents):
+    """Verify local parent coverage only; never claim complete document recovery.
+
+    Hierarchical parents may overlap. Their bytes and IDs are preserved here;
+    this function neither concatenates them nor invents document offsets.
+    """
     by_parent = {row['id']: row for row in parents}
+    if not parents or len(by_parent) != len(parents) or any(p['source_id'] != source_id for p in parents):
+        raise ValueError('parent_identity_mismatch')
+    if any(text_digest(p['body']) != p['digest'] for p in parents):
+        raise ValueError('parent_digest_mismatch')
     chunks = [dict(row) for row in db.execute(
         'SELECT * FROM retrieval_chunks WHERE source_id=? ORDER BY parent_id,char_start,id', (source_id,))]
     by_chunk = {}
@@ -84,14 +119,29 @@ def build_source_bundle(db, source_id, library_sha256):
         if parent['body'][cursors[parent['id']]:lo].strip():
             raise ValueError('chunk_coverage_gap')
         cursors[parent['id']] = max(cursors[parent['id']], hi)
-        row.update(source_char_start=parent['source_char_start'] + lo,
-                   source_char_end=parent['source_char_start'] + hi,
-                   embedding_input_sha256=text_digest(row['context'] + '\n' + row['body']))
-        if text[row['source_char_start']:row['source_char_end']] != row['body']:
-            raise ValueError('chunk_source_offset_mismatch')
         by_chunk[row['id']] = row
     if any(parent['body'][cursors[parent['id']]:].strip() for parent in parents):
         raise ValueError('chunk_coverage_tail_missing')
+    return chunks
+
+
+def build_source_bundle(db, source_id, library_sha256):
+    """Read a full selected source, never a relevance-label-selected subset."""
+    found = db.execute('SELECT * FROM sources WHERE id=?', (source_id,)).fetchone()
+    if found is None:
+        raise ValueError('source_missing')
+    source = dict(found)
+    parents = [dict(row) for row in db.execute('SELECT * FROM passages WHERE source_id=?', (source_id,))]
+    text, parents = recover_source(source, parents)
+    by_parent = {row['id']: row for row in parents}
+    chunks = validated_stored_chunks(db,source_id,parents)
+    for row in chunks:
+        start = by_parent[row['parent_id']]['source_char_start']
+        row.update(source_char_start=start+row['char_start'], source_char_end=start+row['char_end'],
+                   embedding_input_sha256=text_digest(row['context']+'\n'+row['body']))
+        if text[row['source_char_start']:row['source_char_end']] != row['body']:
+            raise ValueError('chunk_source_offset_mismatch')
+    by_chunk = {row['id']:row for row in chunks}
     edges = [dict(row) for row in db.execute('SELECT * FROM edges WHERE source_id=? ORDER BY id', (source_id,))]
     links = [dict(row) for row in db.execute(
         'SELECT l.* FROM edge_chunk_links l JOIN edges e ON e.id=l.edge_id '
@@ -124,6 +174,34 @@ def reusable_vectors(bundle, manifest, matrix, mapping, cache):
     normalized cache value also catches a valid-shaped map pointing at wrong rows.
     No call to a provider and no cache mutation is possible here.
     """
+    return VectorReuseVerifier(manifest, matrix, mapping, cache).verify(bundle)
+
+
+class VectorReuseVerifier:
+    """Batch immutable receipt/map lookup, never a runtime authorization cache.
+
+    The caller owns a read-only transaction for the lifetime of this object.
+    Values are still checked against each exact input and matrix row.
+    """
+    def __init__(self, manifest, matrix, mapping, cache):
+        self.manifest, self.matrix, self.mapping, self.cache = manifest, matrix, mapping, cache
+        self.completed = {r[0] for r in cache.execute(
+            "SELECT DISTINCT i.key FROM request_items i JOIN requests r ON r.id=i.request_id "
+            "WHERE r.status='completed'")}
+        self.by_source, self.by_id = defaultdict(set), defaultdict(set)
+        for i, row in enumerate(mapping):
+            self.by_source[row['source_id']].add(i)
+            self.by_id[row['id']].add(i)
+
+    def verify(self, bundle):
+        positions = set(self.by_source.get(bundle['source']['id'], ()))
+        for chunk in bundle['chunks']:
+            positions.update(self.by_id.get(chunk['id'], ()))
+        rows = [self.mapping[i] for i in sorted(positions)]
+        return _verify_vectors(bundle, self.manifest, self.matrix, rows, self.cache, self.completed)
+
+
+def _verify_vectors(bundle, manifest, matrix, mapping, cache, completed_keys):
     if bundle['library_sha256'] != manifest['library_sha256'] or manifest['dimensions'] != DIM:
         raise ValueError('vector_source_version_mismatch')
     selected = {row['id']: row for row in bundle['chunks']}
@@ -145,10 +223,7 @@ def reusable_vectors(bundle, manifest, matrix, mapping, cache):
         text = chunk['context'] + '\n' + chunk['body']
         key = vector_key(text, manifest['embedding_model'])
         saved = cache.execute('SELECT vector FROM vectors WHERE key=?', (key,)).fetchone()
-        completed = cache.execute(
-            "SELECT 1 FROM request_items i JOIN requests r ON r.id=i.request_id "
-            "WHERE i.key=? AND r.status='completed' LIMIT 1", (key,)).fetchone()
-        if saved is None or completed is None:
+        if saved is None or key not in completed_keys:
             raise ValueError('exact_embedding_input_receipt_missing')
         vector = np.frombuffer(saved[0], dtype=np.float32)
         actual = matrix[position]

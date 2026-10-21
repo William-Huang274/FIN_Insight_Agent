@@ -7,7 +7,7 @@ import sqlite3
 
 import numpy as np
 
-from retrieval.library_source_bundle import build_source_bundle, reusable_vectors, text_digest
+from retrieval.library_source_bundle import build_source_bundle, VectorReuseVerifier, text_digest
 from retrieval.library_vectors import digest, ready_index
 
 
@@ -37,11 +37,12 @@ def prepare(library, index, source_ids, output):
             # Keep a coherent read snapshot. Source hash is checked again before success.
             db.execute('BEGIN')
             cache.execute('BEGIN')
+            verifier = VectorReuseVerifier(manifest, matrix, mapping, cache)
             for source_id in source_ids:
                 record = dict(source_id=source_id, status='failed')
                 try:
                     bundle = build_source_bundle(db, source_id, library_sha)
-                    rows, vectors = reusable_vectors(bundle, manifest, matrix, mapping, cache)
+                    rows, vectors = verifier.verify(bundle)
                     folder = output / text_digest(source_id)[:32]
                     folder.mkdir()
                     dump(folder / 'source.json', bundle)

@@ -17,6 +17,7 @@ from sec_agent.research_foundation.organization_hybrid_retrieval import preparat
 from sec_agent.research_foundation.organization_index_release import load_release, verify_release_inputs
 from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
 from sec_agent.research_foundation.organization_source_projection import PROJECTION
+from sec_agent.research_foundation.organization_source_projection import validate_source_cutoff
 
 
 def complete_fixture(root, monkeypatch):
@@ -123,3 +124,18 @@ def test_stored_complete_snapshot_corruption_is_not_trusted(tmp_path, monkeypatc
         data=json.loads(saved[0]);data['bundle']['text']+='tampered'
         db.execute('UPDATE attachment_captures SET snapshot=? WHERE object_id=?',(json.dumps(data),ref['version_id']))
     with pytest.raises(AssetConflict): source.read_source('alice',ref)
+
+
+@pytest.mark.parametrize('vintage,published,known,accepted',[
+    ('dated_original','2025-02-01T12:30:00Z',None,True),
+    ('known_as_of','2024-01-01','2026-01-01',False),
+    ('known_as_of','2024-01-01','2025-01-31T08:00:00Z',True),
+    ('unknown','2024-01-01',None,False),
+    ('current_revised','2024-01-01','2024-01-02',False),
+    ('dated_original',None,'2024-01-01',False)])
+def test_complete_source_time_policy_matches_strict_library(vintage,published,known,accepted):
+    bundle={'source':{'vintage':vintage,'published_at':published,'metadata':json.dumps({'known_at':known})}}
+    if accepted: validate_source_cutoff(bundle,'2025-02-01')
+    else:
+        with pytest.raises(ValueError,match='complete_source_not_available_at_research_cutoff'):
+            validate_source_cutoff(bundle,'2025-02-01')

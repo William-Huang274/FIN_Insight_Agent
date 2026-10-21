@@ -9,8 +9,12 @@ PROJECTION = 'organization-library-chunks.v1'
 def validate_source_cutoff(bundle, as_of):
     source = bundle['source']
     metadata = json.loads(source['metadata'])
-    available = source['published_at'] or metadata.get('known_at')
-    if not available or date.fromisoformat(available) > date.fromisoformat(as_of):
+    vintage = source['vintage']
+    available = (metadata.get('known_at') or source['published_at']) if vintage == 'known_as_of' else source['published_at']
+    # Match the public library's strict, day-granular source contract. A capture
+    # timestamp does not make an unknown/current-revised source historical.
+    if (vintage not in {'dated_original','known_as_of'} or not available
+            or date.fromisoformat(str(available)[:10]) > date.fromisoformat(as_of)):
         raise ValueError('complete_source_not_available_at_research_cutoff')
 
 

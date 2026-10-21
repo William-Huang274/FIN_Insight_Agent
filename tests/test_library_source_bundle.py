@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 from retrieval.library_chunks import split_parent
-from retrieval.library_source_bundle import build_source_bundle, recover_source, reusable_vectors, text_digest
+from retrieval.library_source_bundle import build_source_bundle, recover_source, reusable_vectors, text_digest, VectorReuseVerifier
 from retrieval.library_vectors import DIM, digest, vector_key
 from scripts.data_retrieval.prepare_library_source_bundles import prepare
 
@@ -101,6 +101,41 @@ def test_long_unicode_source_preserves_text_positions_metadata_and_graph(tmp_pat
 def test_boundary_lengths_and_unordered_storage(length):
     source, parents = source_rows('数' * length)
     assert recover_source(source, list(reversed(parents)))[0] == '数' * length
+
+
+def raw_rows():
+    text = '{"单位":"USD million","value":"12.3400"}\r\n' * 200
+    source, _ = source_rows(text)
+    parents = [dict(id=f'RAW:{i}',source_id=source['id'],locator=f'raw text chars {i}-{min(i+3500,len(text))}',
+                    body=text[i:i+3500],digest=text_digest(text[i:i+3500])) for i in range(0,len(text),3500)]
+    return text, source, parents
+
+
+def test_raw_text_exact_offsets_and_original_digest():
+    text, source, parents = raw_rows()
+    actual, ordered = recover_source(source,list(reversed(parents)))
+    assert actual == text
+    for p in ordered:
+        assert actual[p['source_char_start']:p['source_char_end']] == p['body']
+
+
+@pytest.mark.parametrize('mutation,error',[
+    ('gap','parent_sequence_gap_or_overlap'),('tail','recovered_source_digest_mismatch'),
+    ('duplicate','parent_identity_mismatch'),('span','parent_window_length_mismatch'),
+    ('content','parent_digest_mismatch'),('source','parent_identity_mismatch'),
+    ('binary','recovered_source_digest_mismatch'),('html','unsupported_parent_projection')])
+def test_raw_text_rejects_missing_or_different_original(mutation,error):
+    _, source, parents = raw_rows()
+    if mutation == 'gap': parents.pop(0)
+    elif mutation == 'tail': parents.pop()
+    elif mutation == 'duplicate': parents.append(deepcopy(parents[0]))
+    elif mutation == 'span': parents[0]['locator']='raw text chars 0-3501'
+    elif mutation == 'content': parents[0]['body']='X'+parents[0]['body'][1:]
+    elif mutation == 'source': parents[0]['source_id']='other'
+    elif mutation == 'binary': source['digest']=text_digest('original HTML bytes')
+    elif mutation == 'html':
+        for p in parents: p['locator']=p['locator'].replace('raw text','HTML text')
+    with pytest.raises(ValueError,match=error): recover_source(source,parents)
 
 
 @pytest.mark.parametrize('mutation,error', [
@@ -221,3 +256,78 @@ def test_scope_inventory_preserves_failed_and_excluded_sources(tmp_path):
     assert report['repair_reasons']=={'source_not_readable_or_empty':1}
     assert report['access_states']=={'readable':2,'superseded_parse':1}
     assert not report['full_scope_retrieval_accepted'] and digest(path)==before
+
+
+def test_full_scope_vector_inventory_keeps_failure_denominator(tmp_path):
+    from scripts.data_retrieval.audit_library_source_intake import audit
+    folder=tmp_path/'source'; folder.mkdir()
+    path=folder/'library.sqlite'
+    sid=database(path,'Original source. '*800)
+    with closing(sqlite3.connect(path)) as db, db:
+        row=db.execute('SELECT * FROM sources').fetchone()
+        db.execute('INSERT INTO sources VALUES(?,?,?,?,?,?,?,?)',('missing',*row[1:]))
+    index=tmp_path/'index';vectors_for(bundle_at(path,sid),index)
+    report=audit(path,tmp_path/'inventory.json',index)
+    assert report['source_count']==2 and report['verified_vector_sources']==1
+    assert report['verified_vectors']>1 and not report['full_scope_retrieval_accepted']
+    assert report['repair_reasons']=={'source_not_readable_or_empty':1}
+    with closing(sqlite3.connect(index/'chunk-embeddings.sqlite')) as db, db:
+        db.execute("UPDATE requests SET status='failed_usage_unknown'")
+    report=audit(path,tmp_path/'failed.json',index)
+    assert report['verified_vector_sources']==0
+    assert report['verification_failures']=={'exact_embedding_input_receipt_missing':1,'parent_identity_mismatch':1}
+    with pytest.raises(ValueError,match='audit_output_must_not_change_index_directory'):
+        audit(path,index/'forbidden.json',index)
+
+
+def test_batch_receipts_do_not_hide_cross_source_mapping_or_cache_drift(tmp_path):
+    path=tmp_path/'library.sqlite'
+    sid=database(path,'Annual source. '*800)
+    bundle=bundle_at(path,sid)
+    index=tmp_path/'index';manifest,matrix,mapping=vectors_for(bundle,index)
+    with closing(sqlite3.connect(index/'chunk-embeddings.sqlite')) as cache:
+        statements=[];cache.set_trace_callback(statements.append)
+        verifier=VectorReuseVerifier(manifest,matrix,mapping,cache)
+        verifier.verify(bundle);verifier.verify(bundle)
+        assert sum('JOIN requests' in s for s in statements)==1
+        wrong=deepcopy(mapping);wrong[0]['source_id']='other'
+        with pytest.raises(ValueError,match='vector_mapping_identity_mismatch'):
+            VectorReuseVerifier(manifest,matrix,wrong,cache).verify(bundle)
+        # Receipt batching never replaces exact value checks at use time.
+        cache.execute('DELETE FROM vectors')
+        with pytest.raises(ValueError,match='exact_embedding_input_receipt_missing'):
+            verifier.verify(bundle)
+
+
+@pytest.mark.parametrize('origin,expected',[
+    ({'origin':'existing_library'},'hierarchical_indexed_nodes'),
+    ({'import_origin':'existing_public_library','coverage':'indexed_nodes_only'},'hierarchical_indexed_nodes'),
+    ({'import_origin':'094 frozen public survey originals'},'survey_read_envelope')])
+def test_inventory_names_original_digest_contract_without_claiming_text(origin,expected):
+    from scripts.data_retrieval.audit_library_source_intake import source_protocol
+    source={'metadata':json.dumps(origin)}
+    protocol,basis=source_protocol(source,[{'locator':"['Section'] / 1"}])
+    assert protocol==expected and basis!='parsed_utf8_text'
+
+
+def test_unrecovered_document_can_verify_stored_vectors_without_becoming_complete(tmp_path):
+    from scripts.data_retrieval.audit_library_source_intake import audit
+    from retrieval.library_source_bundle import validated_stored_chunks
+    folder=tmp_path/'source';folder.mkdir();path=folder/'library.sqlite'
+    sid=database(path,'Original source. '*800)
+    with closing(sqlite3.connect(path)) as db, db:
+        db.execute("UPDATE passages SET locator='original indexed section'")
+        db.execute("UPDATE sources SET digest=?,metadata=?",(text_digest('raw HTML bytes'),json.dumps({'origin':'existing_library'})))
+    with closing(sqlite3.connect(path)) as db:
+        db.row_factory=sqlite3.Row
+        parents=[dict(p) for p in db.execute('SELECT * FROM passages')]
+        chunks=validated_stored_chunks(db,sid,parents)
+        assert all('source_char_start' not in c for c in chunks)
+        bundle={'source':dict(db.execute('SELECT * FROM sources').fetchone()),'chunks':chunks,'library_sha256':digest(path)}
+    index=tmp_path/'index';vectors_for(bundle,index)
+    report=audit(path,tmp_path/'inventory.json',index,'2025-03-01')
+    assert report['verified_vector_sources']==1 and report['vector_compatibility_verified']
+    assert report['repair_reasons']=={'unsupported_parent_projection':1}
+    row=report['sources'][0]
+    assert 'capture_size_within_limit' not in row and 'organization_time_eligible' not in row
+    assert not report['organization_publication_verified'] and not report['full_scope_retrieval_accepted']

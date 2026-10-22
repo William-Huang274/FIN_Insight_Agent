@@ -15,9 +15,27 @@ from types import MappingProxyType
 import zlib
 
 
+def pack_terms(text):
+    from collections import Counter
+    from retrieval.text import tokenize
+    tokens = tokenize(text)
+    return zlib.compress(json.dumps([len(tokens), Counter(tokens)], ensure_ascii=False,
+                                    separators=(',', ':')).encode('utf8'), 1)
+
+
+def unpack_terms(encoded):
+    from retrieval.query_bm25 import TokenCounts
+    length, counts = json.loads(zlib.decompress(encoded))
+    return TokenCounts(length, counts)
+
+
 class _PackedNode(Mapping):
-    def __init__(self, metadata, body, compressed):
+    def __init__(self, metadata, body, compressed, terms):
         self.metadata, self.body, self.compressed = metadata, body, compressed
+        self._terms = terms
+
+    def lexical_counts(self):
+        return unpack_terms(self._terms)
 
     def __getitem__(self, key):
         if key == 'content':
@@ -43,12 +61,19 @@ def encode_projection(value):
         else:
             metadata = {k: v for k, v in row.items() if k != 'content'}
             body, compressed, kind = zlib.compress(row['content'].encode('utf8'), 1), True, 'plain'
-        key = (body, compressed)
+        model_text = metadata.get('model_text')
+        key = (body, compressed, model_text)
         position = positions.get(key)
         if position is None:
             position = len(bodies)
             positions[key] = position
-            bodies.append([b64encode(body).decode('ascii'), compressed])
+            terms = pack_terms(str(model_text or row['content'] or ''))
+            bodies.append([b64encode(body).decode('ascii'), compressed,
+                           b64encode(terms).decode('ascii')])
+        else:
+            terms = b64decode(bodies[position][2])
+        if isinstance(row, _SourceNode):
+            row._terms = terms
         # Compact section/leaf pairs share the same metadata and bytes. Retain
         # that layout instead of rebuilding a corpus-sized decoded string heap.
         if (kind == 'text' and records and records[-1][0] == 'section'
@@ -56,24 +81,35 @@ def encode_projection(value):
             records[-1][0] = 'pair'
         else:
             records.append([kind, metadata, position])
-    raw = json.dumps([document, records, origin, originals, bodies], ensure_ascii=False,
+    # Complete sources repeat each node's original_source in a separate lookup.
+    # Store only exceptional entries; reconstruct the exact lookup from nodes.
+    reconstructed = {row['node_id']: row['original_source'] for row in nodes
+                     if 'original_source' in row}
+    remaining = {key: value for key, value in originals.items()
+                 if key not in reconstructed or reconstructed[key] != value}
+    original_keys = list(originals)
+    raw = json.dumps([document, records, origin, remaining, bodies, original_keys], ensure_ascii=False,
                      separators=(',', ':')).encode('utf8')
     return zlib.compress(raw, 1), len(raw)
 
 
 def decode_projection(encoded):
     from .organization_source_projection import _SourceNode
-    document, records, origin, originals, bodies = json.loads(zlib.decompress(encoded))
-    bodies = [(b64decode(body, validate=True), compressed) for body, compressed in bodies]
+    document, records, origin, remaining, bodies, original_keys = json.loads(zlib.decompress(encoded))
+    bodies = [(b64decode(body, validate=True), compressed, b64decode(terms, validate=True))
+              for body, compressed, terms in bodies]
     nodes = []
     for kind, metadata, position in records:
-        body, compressed = bodies[position]
+        body, compressed, terms = bodies[position]
         metadata = MappingProxyType(metadata)
         if kind == 'plain':
-            nodes.append(_PackedNode(metadata, body, compressed))
+            nodes.append(_PackedNode(metadata, body, compressed, terms))
         else:
             for part in (('section', 'text') if kind == 'pair' else (kind,)):
-                nodes.append(_SourceNode(metadata, body, compressed, part))
+                nodes.append(_SourceNode(metadata, body, compressed, part, terms))
+    reconstructed = {row['node_id']: row['original_source'] for row in nodes
+                     if 'original_source' in row}
+    originals = {key: remaining[key] if key in remaining else reconstructed[key] for key in original_keys}
     return document, nodes, origin, originals
 
 

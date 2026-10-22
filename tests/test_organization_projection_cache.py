@@ -126,11 +126,48 @@ def test_complete_chunk_codec_preserves_nodes_without_decoded_corpus(tmp_path, m
     assert [dict(r) for r in actual[1]] == [dict(r) for r in nodes]
     assert actual[1][0]._metadata is actual[1][1]._metadata
     assert actual[1][0]._body is actual[1][1]._body
+    from retrieval.text import tokenize
+    from collections import Counter
+    for row in actual[1]:
+        expected_tokens = tokenize(row['content'])
+        terms = row.lexical_counts()
+        assert terms.length == len(expected_tokens)
+        assert list(terms.counts.items()) == list(Counter(expected_tokens).items())
     cache = OrganizationProjectionCache(tmp_path/'cache', limit=len(packed)-1)
     cache.reset('generation')
     cache.put('resource', value)
     assert cache.get('resource') is None and cache.size == 0
     assert cache.directory is None
+
+
+def test_new_query_reuses_token_counts_without_retokenizing_originals(tmp_path, monkeypatch):
+    nav, _, _, _, request, _, reads, _ = setup(tmp_path, monkeypatch)
+    from sec_agent.research_foundation import organization_projection_cache as module
+    def unexpected_tokenization(_):
+        raise AssertionError('cached projections must not rebuild token counts')
+    monkeypatch.setattr(module, 'pack_terms', unexpected_tokenization)
+    reads.clear()
+    result = nav.navigate({**request, 'query': 'different revenue question'})
+    assert result.items and not reads
+    assert result.items[0]['retrieval']['projection_cache_hits'] > 0
+
+
+@pytest.mark.parametrize('text', ['', '[]', '现金流与收入 收入', 'cash cash flow rare-a'])
+def test_projection_terms_preserve_model_text_and_original_lookup(text):
+    from retrieval.query_bm25 import lexical_document, lexical_scores
+    rows = [{'node_id': 'node', 'content': 'different body', 'model_text': text,
+             'original_source': {'source_id':'source'}}]
+    value = ('document', rows, {}, {'node': {'overridden':True}, 'extra': {'id':'extra'}})
+    encoded, _ = encode_projection(value)
+    actual = decode_projection(encoded)
+    assert [dict(row) for row in actual[1]] == rows
+    assert actual[3] == value[3]
+    import numpy as np
+    for query in (['cash', 'cash'], ['收入'], ['unknown']):
+        expected = lexical_scores([lexical_document(rows[0])], query)
+        result = lexical_scores([lexical_document(actual[1][0])], query)
+        np.testing.assert_array_equal(expected[0], result[0])
+        assert expected[1:] == result[1:]
 
 
 def test_cache_value_mutation_does_not_change_next_query(tmp_path, monkeypatch):

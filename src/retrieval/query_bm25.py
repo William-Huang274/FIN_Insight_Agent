@@ -5,8 +5,24 @@ vocabulary (including non-query terms, needed by Okapi's epsilon floor), but
 only query-term counts per document. Never reuse this object for another query.
 """
 from collections import Counter
+from dataclasses import dataclass
 
 from rank_bm25 import BM25Okapi
+
+
+@dataclass(frozen=True)
+class TokenCounts:
+    """Exact token length and counts in first-occurrence vocabulary order."""
+    length: int
+    counts: dict[str, int]
+
+
+def lexical_document(row):
+    prepared = getattr(row, 'lexical_counts', None)
+    if prepared is not None:
+        return prepared()
+    from .text import tokenize
+    return tokenize(str(row.get('model_text') or row.get('content') or ''))
 
 
 class _QueryBM25(BM25Okapi):
@@ -18,10 +34,10 @@ class _QueryBM25(BM25Okapi):
         document_frequencies = {}
         total_length = 0
         for document in corpus:
-            length = len(document)
+            length = document.length if isinstance(document, TokenCounts) else len(document)
             self.doc_len.append(length)
             total_length += length
-            counts = Counter(document)
+            counts = document.counts if isinstance(document, TokenCounts) else Counter(document)
             # Preserve first-occurrence vocabulary order: the upstream IDF
             # average uses floating-point accumulation in this order.
             for term in counts:

@@ -16,10 +16,21 @@ class _SourceNode(Mapping):
     body cache: retaining it would recreate the corpus-sized string heap.
     Public tool responses still materialize ordinary dictionaries/strings.
     """
-    __slots__ = ('_metadata', '_body', '_compressed', '_kind')
+    __slots__ = ('_metadata', '_body', '_compressed', '_kind', '_terms')
 
-    def __init__(self, metadata, body, compressed, kind):
+    def __init__(self, metadata, body, compressed, kind, terms=None):
         self._metadata, self._body, self._compressed, self._kind = metadata, body, compressed, kind
+        self._terms = terms
+
+    def lexical_counts(self):
+        if self._terms is not None:
+            from .organization_projection_cache import unpack_terms
+            return unpack_terms(self._terms)
+        from collections import Counter
+        from retrieval.query_bm25 import TokenCounts
+        from retrieval.text import tokenize
+        tokens = tokenize(self['content'])
+        return TokenCounts(len(tokens), Counter(tokens))
 
     def __getitem__(self, key):
         if key == 'content':

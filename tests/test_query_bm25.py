@@ -4,7 +4,8 @@ import numpy as np
 import pytest
 from rank_bm25 import BM25Okapi
 
-from retrieval.query_bm25 import lexical_scores
+from retrieval.query_bm25 import lexical_scores, TokenCounts
+from collections import Counter
 from retrieval.text import tokenize
 
 
@@ -36,6 +37,10 @@ def test_randomized_corpus_and_queries_match_upstream_exactly():
         np.testing.assert_array_equal(actual, BM25Okapi(corpus).get_scores(query))
         assert overlap == [i for i, tokens in enumerate(corpus) if set(tokens).intersection(query)]
         assert has_terms
+        prepared = [TokenCounts(len(tokens), Counter(tokens)) for tokens in corpus]
+        prepared_scores, prepared_overlap, prepared_terms = lexical_scores(iter(prepared), query)
+        np.testing.assert_array_equal(prepared_scores, actual)
+        assert prepared_overlap == overlap and prepared_terms
 
 
 @pytest.mark.parametrize('corpus', [[], [[]], [[], []]])

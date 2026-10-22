@@ -14,7 +14,7 @@ from typing import Any, Literal
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer, model_validator
-from retrieval.query_bm25 import lexical_scores
+from retrieval.query_bm25 import lexical_scores, lexical_document
 from retrieval.text import tokenize
 from .research_methods import REPORT_PROCESSING_TOOL_GUIDANCE
 
@@ -252,7 +252,7 @@ def navigate_source_nodes(
         # Reuse the mature retriever. Positive token overlap admits ties when
         # BM25 IDF is zero/negative in a very small document-scoped population.
         scores, overlap, has_terms = lexical_scores(
-            (tokenize(str(r.get("model_text") or r.get("content") or "")) for r in rows), tokens)
+            (lexical_document(r) for r in rows), tokens)
         if has_terms:
             ranked = sorted(overlap, key=lambda i: (-float(scores[i]), str(rows[i]["node_id"])))
             rows = [rows[i] for i in ranked]

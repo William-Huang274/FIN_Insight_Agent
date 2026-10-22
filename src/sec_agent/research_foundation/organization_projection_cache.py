@@ -10,8 +10,10 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import shutil
+import sqlite3
 from tempfile import TemporaryDirectory
 from types import MappingProxyType
+import weakref
 import zlib
 
 
@@ -113,6 +115,13 @@ def decode_projection(encoded):
     return document, nodes, origin, originals
 
 
+def _close_store(db, directory):
+    try:
+        db.close()
+    finally:
+        directory.cleanup()
+
+
 class OrganizationProjectionCache:
     LIMIT = 256 * 1024 * 1024
     MAX_ITEM = 32 * 1024 * 1024
@@ -126,11 +135,20 @@ class OrganizationProjectionCache:
         self.size = 0
         self.hits = 0
         self.admission_disabled = False
+        self.db = None
+        self._cleanup = None
+
+    @property
+    def path(self):
+        return Path(self.directory.name)/'projection.sqlite' if self.directory else None
 
     def reset(self, generation):
         if self.generation != generation:
-            if self.directory is not None:
+            if self._cleanup is not None:
+                self._cleanup()
+            elif self.directory is not None:
                 self.directory.cleanup()
+            self.db = self._cleanup = None
             self.directory, self.entries, self.size = None, {}, 0
             self.generation = generation
             self.admission_disabled = False
@@ -140,17 +158,19 @@ class OrganizationProjectionCache:
         record = self.entries.get(resource_id)
         if record is None:
             return None
-        filename, expected, size = record
-        path = Path(self.directory.name)/filename
+        key, expected, size = record
         try:
-            if path.stat().st_size != size:
-                raise ValueError('organization_projection_cache_integrity_failure')
-            encoded = path.read_bytes()
-        except FileNotFoundError:
+            row = self.db.execute(
+                'SELECT CASE WHEN length(payload)=? THEN payload ELSE NULL END '
+                'FROM projections WHERE resource_id=?', (size, key)).fetchone()
+        except sqlite3.Error as exc:
+            raise ValueError('organization_projection_cache_integrity_failure') from exc
+        if row is None:
             self.entries.pop(resource_id)
             self.size -= size
             return None
-        if sha256(encoded).hexdigest() != expected:
+        encoded = row[0]
+        if not isinstance(encoded, bytes) or len(encoded) != size or sha256(encoded).hexdigest() != expected:
             raise ValueError('organization_projection_cache_integrity_failure')
         result = decode_projection(encoded)
         self.hits += 1
@@ -167,17 +187,23 @@ class OrganizationProjectionCache:
             if self.directory is None:
                 self.root.mkdir(parents=True, exist_ok=True)
                 self.directory = TemporaryDirectory(prefix='projection-', dir=self.root)
+                self.db = sqlite3.connect(self.path, timeout=3, check_same_thread=False)
+                self._cleanup = weakref.finalize(self, _close_store, self.db, self.directory)
+                # Bounded SQLite page cache, no memory mapping of the corpus.
+                # This is a disposable per-instance store, never a business DB.
+                self.db.execute('PRAGMA cache_size=-2048')
+                self.db.execute('PRAGMA mmap_size=0')
+                self.db.execute('CREATE TABLE projections(resource_id TEXT PRIMARY KEY, payload BLOB NOT NULL)')
             # A disposable optimization must not exhaust the original store's
             # disk. Admission can stop; uncached sources keep the normal path.
             if shutil.disk_usage(self.root).free < len(encoded) + 128 * 1024 * 1024:
                 self.admission_disabled = True
                 return
-            filename = sha256(resource_id.encode()).hexdigest() + '.json.z'
-            path = Path(self.directory.name)/filename
-            path.write_bytes(encoded)
-        except OSError:
+            with self.db:
+                self.db.execute('INSERT INTO projections VALUES (?,?)', (resource_id, encoded))
+        except (OSError, sqlite3.Error):
             # No entry/digest is published for a failed or partial write.
             self.admission_disabled = True
             return
-        self.entries[resource_id] = filename, sha256(encoded).hexdigest(), len(encoded)
+        self.entries[resource_id] = resource_id, sha256(encoded).hexdigest(), len(encoded)
         self.size += len(encoded)

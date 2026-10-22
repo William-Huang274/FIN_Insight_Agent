@@ -1,5 +1,6 @@
 """New-query reuse keeps fresh authorization, exact ranking and live readback."""
 from copy import deepcopy
+from contextlib import closing
 from pathlib import Path
 import sqlite3
 
@@ -105,15 +106,66 @@ def test_change_while_reusing_projection_never_returns_result(tmp_path, monkeypa
 def test_cached_bytes_cannot_be_changed_or_carried_to_another_generation(tmp_path, monkeypatch):
     nav, _, _, _, request, _, _, api = setup(tmp_path, monkeypatch)
     cache = nav._projection_cache
-    filename, _, size = next(iter(cache.entries.values()))
-    path = Path(cache.directory.name)/filename
-    path.write_bytes(b'x' * size)
+    key, _, size = next(iter(cache.entries.values()))
+    with closing(sqlite3.connect(cache.path)) as db, db:
+        db.execute('UPDATE projections SET payload=? WHERE resource_id=?', (b'x' * size, key))
     with pytest.raises(ValueError, match='projection_cache_integrity'):
         nav.navigate({**request, 'query': 'new question'})
     assert api.calls == 1
     directory = Path(cache.directory.name)
     cache.reset(('new authority', 'new storage'))
     assert not directory.exists() and not cache.entries and cache.size == 0
+
+
+def test_deleted_cache_row_rebuilds_from_live_authorized_original(tmp_path, monkeypatch):
+    nav, _, _, _, request, _, reads, _ = setup(tmp_path, monkeypatch)
+    cache = nav._projection_cache
+    resource = next(iter(cache.entries))
+    with closing(sqlite3.connect(cache.path)) as db, db:
+        db.execute('DELETE FROM projections WHERE resource_id=?', (resource,))
+    reads.clear()
+    result = nav.navigate({**request, 'query':'new question'})
+    assert result.items and reads
+    assert resource in cache.entries
+
+
+def test_cache_corruption_fails_before_query_provider(tmp_path, monkeypatch):
+    nav, _, _, _, request, _, _, api = setup(tmp_path, monkeypatch)
+    with closing(sqlite3.connect(nav._projection_cache.path)) as db, db:
+        db.execute('DROP TABLE projections')
+    calls = api.calls
+    with pytest.raises(ValueError, match='projection_cache_integrity'):
+        nav.navigate({**request, 'query':'new question'})
+    assert api.calls == calls
+
+
+def test_projection_database_handles_close_before_directory_cleanup(tmp_path, monkeypatch):
+    import gc
+    import weakref
+    nav, _, _, _, _, _, _, _ = setup(tmp_path, monkeypatch)
+    cache = nav._projection_cache
+    directory = Path(cache.directory.name)
+    assert cache.db.execute('PRAGMA cache_size').fetchone()[0] == -2048
+    assert cache.db.execute('PRAGMA mmap_size').fetchone()[0] == 0
+    reference = weakref.ref(cache)
+    nav._projection_cache = None
+    del cache
+    gc.collect()
+    assert reference() is None and not directory.exists()
+
+
+def test_failed_cache_insert_does_not_publish_an_entry(tmp_path, monkeypatch):
+    nav, _, _, _, request, _, reads, _ = setup(tmp_path, monkeypatch)
+    cache = nav._projection_cache
+    with closing(sqlite3.connect(cache.path)) as db, db:
+        db.execute('DELETE FROM projections')
+        db.execute("CREATE TRIGGER refuse_insert BEFORE INSERT ON projections BEGIN SELECT RAISE(ABORT, 'fixture'); END")
+    cache.entries.clear()
+    cache.size = 0
+    reads.clear()
+    result = nav.navigate({**request, 'query':'new question'})
+    assert result.items and reads and cache.admission_disabled
+    assert not cache.entries and cache.size == 0
 
 
 def test_complete_chunk_codec_preserves_nodes_without_decoded_corpus(tmp_path, monkeypatch):

@@ -61,6 +61,30 @@ def source_coverage(captures, eligible_sources, results, global_searches):
     }
 
 
+def source_readback_targets(nodes):
+    """Keep only independent tail expectations after full index publication.
+
+    The service still reads/ranks all originals. This removes the test driver's
+    redundant corpus while preserving exact expected content, origin and count.
+    Ties retain the first node, matching the earlier per-source max() selection.
+    """
+    targets = {}
+    for node in nodes:
+        if node['node_kind'] != 'text':
+            raise ValueError('readback_targets_require_projected_leaves')
+        origin = node['original_source']
+        sid = origin['source_id']
+        key = 'source_char_end' if 'source_char_end' in origin else 'char_end'
+        record = targets.setdefault(sid, {'candidate_chunks': 0, 'position_key': key, 'tail': None})
+        if record['position_key'] != key:
+            raise ValueError('readback_source_position_basis_changed')
+        record['candidate_chunks'] += 1
+        if record['tail'] is None or origin[key] > record['tail']['original_source'][key]:
+            record['tail'] = {field: node[field] for field in
+                              ('node_id', 'parent_document_id', 'content', 'original_source')}
+    return targets
+
+
 class SourceVectors(MutableMapping):
     """Only one source matrix is open; row returns own their small vector data."""
     def __init__(self):

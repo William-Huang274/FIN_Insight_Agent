@@ -29,7 +29,7 @@ from sec_agent.research_foundation.organization_source_navigation import Organiz
 from sec_agent.research_foundation.organization_source_projection import PROJECTION, validate_source_cutoff
 from tests.integration.source_intake_runtime import CompleteSourceStack
 from tests.integration.test_java_intake_native import wait_for
-from tests.integration.source_intake_diagnostics import SourceBundles, SourceVectors, PhaseDiagnostics, file_sha256, source_coverage
+from tests.integration.source_intake_diagnostics import SourceBundles, SourceVectors, PhaseDiagnostics, file_sha256, source_coverage, source_readback_targets
 
 pytestmark = pytest.mark.skipif(not os.getenv('FIN_COMPLETE_SOURCE_INTAKE'), reason='explicit full-source intake artifacts required')
 
@@ -193,12 +193,12 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         results=[];contracts=[];node_reads=[]
         # Existing product limit is 12 explicitly selected resources per draft.
         # Batch intake qualification does not establish corpus-wide retrieval.
-        async def exercise(batch,nodes,nav,reader):
+        async def exercise(batch,targets,nav,reader):
             async with Client(build_organization_source_server(nav), raise_exceptions=False) as client:
                 for sid,bundle in batch.items():
-                    leaves=[n for n in nodes if n['original_source']['source_id']==sid]
                     indexed='node_recovery' in bundle
-                    tail=max(leaves,key=lambda n:n['original_source']['char_end' if indexed else 'source_char_end'])
+                    tail=targets[sid]['tail']
+                    assert targets[sid]['position_key']==('char_end' if indexed else 'source_char_end')
                     if not indexed:
                         if len(bundle['text'])>110000:
                             assert tail['original_source']['source_char_start']>100000
@@ -245,7 +245,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                                 assert ''.join(parts)==node_body(original)
                                 node_reads.append({'source_id':sid,'node_id':original['node_id'],'kind':kind,
                                                    'characters':len(node_body(original)),'read_pages':len(parts)})
-                    results.append({'source_id':sid,'candidate_chunks':len(leaves),
+                    results.append({'source_id':sid,'candidate_chunks':targets[sid]['candidate_chunks'],
                         'tail_char_start':None if indexed else tail['original_source']['source_char_start'],
                         'position_basis':'original_indexed_node_characters' if indexed else 'parsed_source_text',
                         'tail_sha256':passage['content_sha256'],'readback':passage['readback'],'cache_hit':True,
@@ -276,6 +276,13 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 publish_prepared_index(indices,org,nodes,vectors.projected(nodes),queries,
                     model=model,provenance={'source_intake_sha256':sha256((root/'result.json').read_bytes()).hexdigest()},
                     release_id=release,projection=PROJECTION)
+            # Registration and each real search reconstruct all authorized
+            # originals. Do not keep a second full corpus alive in this driver.
+            indexed_chunks=len(nodes)
+            targets=source_readback_targets(nodes)
+            assert set(targets)==set(batch)
+            assert all(targets[sid]['candidate_chunks']==len(bundle['chunks']) for sid,bundle in batch.items())
+            del nodes
             with diagnostic.phase('register_index_against_all_originals'):
                 contract=s.request(s.bff,'POST',f'/api/v1/asset-workspace/organization-projects/{project}/research-drafts/{original["id"]}/retrieval-releases/{release}/register',json={})
             payload.update(id=str(uuid4()),retrieval_release_id=release)
@@ -297,7 +304,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 assert cached.items[0]['retrieval']['cache_hit']
                 global_searches.append({'query':query,'retrieval':found.items[0]['retrieval'],
                     'returned_sources':list({r['original_source']['source_id'] for r in found.items}),
-                    'authorized_sources':len(batch),'indexed_chunks':len(nodes),'cache_hit':True})
+                    'authorized_sources':len(batch),'indexed_chunks':indexed_chunks,'cache_hit':True})
             first_result=len(results)
             # Global plumbing probe still publishes/verifies every original and
             # ranks the entire scope. Per-source filtered search is sampled by
@@ -310,7 +317,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     samples.setdefault(kind,sid)
                 read_batch=batch.subset(list(dict.fromkeys([*list(batch)[:2],*samples.values(),list(batch)[-1]])))
             with diagnostic.phase('sampled_original_readback',profile=global_probe):
-                asyncio.run(exercise(read_batch,nodes,nav,reader))
+                asyncio.run(exercise(read_batch,targets,nav,reader))
             # Revoke a candidate that was NOT explicitly selected; all current
             # dependencies must still protect cached search, reports and reads.
             revoke_sid=list(batch)[-1] if unified_scope else next(iter(batch))

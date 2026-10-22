@@ -98,6 +98,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     namespace=sha256(json.dumps(['index-query.v1','public-recall-qualification',
         intake['source_index']['matrix_sha256'],model,1024],separators=(',',':')).encode()).hexdigest()
     queries={}
+    additional_queries={}
     selected_questions={sid:(questions[0] if storage_probe else next(q for q in questions if q['evidence'][0]['source_id']==sid)) for sid in bundles}
     with ReadOnlyReceipts(Path(os.environ['FIN_COMPLETE_SOURCE_QUERY_CACHE'])) as cache:
         client=CachedRetrieval(cache,SimpleNamespace(embedding_model=model,rerank_model='qwen3-rerank'),namespace)
@@ -111,9 +112,9 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     continue
                 saved=cache.get(client.key('embedding',[q['query']]))
                 if saved and saved['status']=='completed' and saved['result']['model']==model:
-                    queries[q['query']]=saved['result']['values'][0]
+                    additional_queries[q['query']]=saved['result']['values'][0]
                     break
-            assert len(queries)>=2, 'cross-query probe requires two existing successful query vectors'
+            assert additional_queries, 'cross-query probe requires two existing successful query vectors'
     checkpoint_path=os.getenv('FIN_COMPLETE_SOURCE_RESUME')
     pause_after=int(os.getenv('FIN_COMPLETE_SOURCE_PAUSE_AFTER','0'))
     write_checkpoint=os.getenv('FIN_COMPLETE_SOURCE_WRITE_CHECKPOINT')=='1' or pause_after>0
@@ -331,6 +332,15 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                         'tail_sha256':passage['content_sha256'],'readback':passage['readback'],'cache_hit':True,
                         'index_digest':found[0]['retrieval']['index_digest'],'provider_calls':found[0]['retrieval']['provider_calls']})
                     s.save('complete-source-progress',{'sources':results,'status':'running'})
+        # The publication checkpoint retains its exact original query binding.
+        # Additional verification queries belong to this new index/run only,
+        # after restoration and current-authority validation have completed.
+        s.save('retrieval-query-scope',{
+            'publication_queries_sha256':sha256(json.dumps(queries,sort_keys=True).encode()).hexdigest(),
+            'additional_queries':[{ 'query':q, 'vector_sha256':sha256(json.dumps(v).encode()).hexdigest()}
+                                  for q,v in additional_queries.items()],
+            'source':'existing_successful_query_receipts','provider_calls':0})
+        queries.update(additional_queries)
         ids=list(bundles)
         batch_size=len(ids) if unified_scope else 12
         if unified_scope:assert len(ids)>12

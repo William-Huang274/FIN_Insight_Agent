@@ -163,6 +163,11 @@ class AssetWorkspace:
         return _document_version(items[0], project)
 
     def resolve(self, owner, ref):
+        version, row, _ = self._resolve_with_capture(owner, ref)
+        return version, row
+
+    def _resolve_with_capture(self, owner, ref):
+        """Resolve and validate once; verified capture lives only for this call."""
         ref = AssetRef.model_validate(ref)
         scope = self.library.scope(owner, ref.project_id)
         if ref.kind == 'document':
@@ -181,28 +186,33 @@ class AssetWorkspace:
             row = self.library.documents.get(scope, ref.version_id)
             if sha256(row['body']).hexdigest() != ref.digest:
                 raise AssetConflict('资料原件校验失败')
-            if row.get('project_origin', {}).get('asset_capture'):
-                from .project_source_captures import read_capture
-                read_capture(self.library.documents, row)
-            return version, row
-        for kind in ('sec_companyfacts', 'sec_submissions'):
-            self.sec.raw(owner, ref.project_id, ref.version_id, kind)
-        return version, None
-
-    def read(self, owner, ref):
-        ref = AssetRef.model_validate(ref)
-        version, row = self.resolve(owner, ref)
-        if row:
-            pages = json.loads(row['pages'])
             from .project_source_captures import read_capture
             captured = read_capture(self.library.documents, row)
+            return version, row, captured
+        for kind in ('sec_companyfacts', 'sec_submissions'):
+            self.sec.raw(owner, ref.project_id, ref.version_id, kind)
+        return version, None, None
+
+    def read(self, owner, ref):
+        return self._read(owner, ref, complete_source=False)
+
+    def _read(self, owner, ref, *, complete_source):
+        ref = AssetRef.model_validate(ref)
+        version, row, captured = self._resolve_with_capture(owner, ref)
+        if row:
+            pages = json.loads(row['pages'])
             if captured:
                 snapshot = captured['snapshot']
                 text = (snapshot['bundle']['text'] if snapshot['kind'] == 'library_source' else
                         '\n\n'.join(s['content'] or '' for s in snapshot.get('sections',[])))
-                return {'version':version,'editable':False,'text':text[:100000], 'truncated':len(text)>100000,
+                result = {'version':version,'editable':False,'text':text[:100000], 'truncated':len(text)>100000,
                         'needs_vision':False, 'capture':{**version['capture'],'note':captured['note'],
                             **({'rows':snapshot['rows']} if snapshot['kind']=='financial' else {})}}
+                if complete_source and snapshot['kind'] == 'library_source':
+                    from retrieval.library_source_bundle import expand_source_bundle
+                    bundle = expand_source_bundle(snapshot['bundle'])
+                    result.update(text=bundle['text'], truncated=False, source_bundle=bundle)
+                return result
             editable = row['name'].lower().endswith(('.md', '.txt')) and version['role'] != 'report'
             try:
                 raw_text = row['body'].decode('utf-8-sig') if editable else ''
@@ -218,15 +228,16 @@ class AssetWorkspace:
 
     def read_source(self, owner, ref):
         """Internal source projection. UI preview remains bounded; ACL is upstream."""
-        result = self.read(owner, ref)
-        if (result.get('capture') or {}).get('kind') != 'library_source':
-            return result
-        from .project_source_captures import read_capture
-        _, row = self.resolve(owner, ref)
-        captured = read_capture(self.library.documents, row)
-        from retrieval.library_source_bundle import expand_source_bundle
-        bundle = expand_source_bundle(captured['snapshot']['bundle'])
-        return {**result, 'text':bundle['text'], 'truncated':False, 'source_bundle':bundle}
+        result = self._read(owner, ref, complete_source=True)
+        if result.get('source_bundle') is not None:
+            # Keep the former second resolve's local access check without
+            # rereading the blob or parsing its capture again. Organization
+            # callers additionally recheck Java authority after this returns.
+            fixed = result['version']['ref']
+            current = self.document_version(owner, fixed['project_id'], fixed['version_id'])
+            if current != result['version']:
+                raise AssetConflict('资料版本或访问状态在读取期间变化')
+        return result
 
     def create_context(self, owner, request):
         versions = [self.resolve(owner, ref)[0] for ref in request.refs]

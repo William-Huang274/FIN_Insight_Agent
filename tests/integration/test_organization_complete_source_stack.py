@@ -372,6 +372,13 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 assert len(frozen['manifest']['inputs'])==len(batch)
                 query={'source_space':'organization','operation':'search','query':next(iter(queries))}
                 original_reads=[]
+                capture_checks=[]
+                from sec_agent.research_foundation import project_source_captures as capture_module
+                read_capture=capture_module.read_capture
+                def counted_capture(*args):
+                    capture_checks.append(args[1]['id'])
+                    return read_capture(*args)
+                monkeypatch.setattr(capture_module,'read_capture',counted_capture)
                 read_storage=reader._read_storage
                 def counted_read(*args):
                     original_reads.append(args[0])
@@ -382,22 +389,28 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 assert found.items
                 cold_original_reads=len(original_reads)
                 assert cold_original_reads==len(batch)
+                cold_capture_checks=len(capture_checks)
+                assert cold_capture_checks==len(batch)
                 original_reads.clear()
+                capture_checks.clear()
                 assert all(r['original_source']['source_id'] in batch for r in found.items)
                 with diagnostic.phase('global_search_warm',profile=global_probe):
                     cached=nav.navigate(query)
                 assert cached.items[0]['retrieval']['cache_hit']
                 assert cached.items[0]['retrieval']['response_cache_hit']
                 assert not original_reads, 'warm response unexpectedly reread source originals'
+                assert not capture_checks, 'warm response unexpectedly reparsed source captures'
                 # All ranking/source/preview/readback fields remain identical;
                 # only the per-request cache/provider receipt may change.
                 assert [{k:v for k,v in row.items() if k!='retrieval'} for row in found.items]==[
                     {k:v for k,v in row.items() if k!='retrieval'} for row in cached.items]
                 monkeypatch.setattr(reader,'_read_storage',read_storage)
+                monkeypatch.setattr(capture_module,'read_capture',read_capture)
                 global_searches.append({'query':query,'retrieval':found.items[0]['retrieval'],
                     'returned_sources':list({r['original_source']['source_id'] for r in found.items}),
                     'authorized_sources':len(batch),'indexed_chunks':indexed_chunks,'cache_hit':True,
                     'cold_original_reads':cold_original_reads,'warm_original_reads':0,
+                    'cold_capture_checks':cold_capture_checks,'warm_capture_checks':0,
                     'response_cache_hit':True,'warm_result_identity_unchanged':True})
             first_result=len(results)
             # Global plumbing probe still publishes/verifies every original and

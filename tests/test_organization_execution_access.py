@@ -112,7 +112,7 @@ def test_malformed_authority_cannot_read_originals(tmp_path, monkeypatch, fault)
     grant = runtime_grant(preparation)
     reader, state = runtime_at(shared, grant)
     calls = []
-    monkeypatch.setattr(shared.workspace, 'read', lambda *args: calls.append(args))
+    monkeypatch.setattr(shared.workspace, 'read_source', lambda *args: calls.append(args))
     changed = state['grant']
     if fault in {'execution', 'thread', 'project', 'organization'}: changed[fault + '_id'] = str(uuid4())
     if fault == 'manifest': changed['manifest_text'] += ' '
@@ -154,15 +154,15 @@ def test_permission_loss_during_storage_and_original_corruption_never_return_con
     grant = runtime_grant(preparation)
     reader, state = runtime_at(shared, grant)
     resource = grant['inputs'][0]['resource_id']
-    read = shared.workspace.read
+    read = shared.workspace.read_source
     def revoke(*args):
         result = read(*args)
         state['status'] = 404
         return result
-    monkeypatch.setattr(shared.workspace, 'read', revoke)
+    monkeypatch.setattr(shared.workspace, 'read_source', revoke)
     with pytest.raises(OrganizationExecutionUnavailable): reader.read_text(resource)
     assert state['calls'] == 2
-    monkeypatch.setattr(shared.workspace, 'read', read)
+    monkeypatch.setattr(shared.workspace, 'read_source', read)
     state['status'] = 200
     get = shared.workspace.library.documents.get
     monkeypatch.setattr(shared.workspace.library.documents, 'get', lambda *a, **k: {**get(*a, **k), 'body': b'corrupted'})

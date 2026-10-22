@@ -157,6 +157,28 @@ def process_memory_sample(process, psutil_module):
     return rows
 
 
+def host_memory_sample(psutil_module):
+    """Names/identities/counters only, never another task's command line or files."""
+    rows = []
+    inaccessible = 0
+    for process in psutil_module.process_iter():
+        try:
+            info = process.memory_info()
+            rows.append({'pid': process.pid, 'created': process.create_time(),
+                         'name': process.name(), 'rss_bytes': info.rss,
+                         'private_commit_bytes': getattr(info, 'private', None)})
+        except psutil_module.Error:
+            inaccessible += 1
+    top = sorted(rows, key=lambda row: row['rss_bytes'], reverse=True)[:15]
+    picked = {row['pid'] for row in top}
+    infrastructure = [row for row in rows if row['pid'] not in picked and
+                      ('docker' in row['name'].lower() or 'vmmem' in row['name'].lower())]
+    memory = psutil_module.virtual_memory()
+    return {'processes': top + infrastructure, 'unreadable_processes': inaccessible,
+            'total_bytes': memory.total, 'available_bytes': memory.available,
+            'scope': 'host observation, shared RSS is not additive or causal attribution'}
+
+
 def worker(attempt):
     # Run the guardian in the pytest process so KeyboardInterrupt unwinds the
     # harness finally block. Never terminate a shared process by name.
@@ -166,7 +188,7 @@ def worker(attempt):
     import psutil
     stop = threading.Event()
     state = {'status': 'running', 'floor_bytes': 800 * 2**20, 'samples': [],
-             'memory_scope': 'driver_and_host_descendants; Docker memory excluded',
+             'memory_scope': 'own process tree plus host top15 and Docker/WSL processes; no container attribution',
              'rss_is_not_exclusive_physical_memory': True}
     record = Path(str(attempt) + '-memory.json')
 
@@ -180,7 +202,8 @@ def worker(attempt):
                 return
             available = psutil.virtual_memory().available
             state['samples'].append({'time': time.time(), 'available_bytes': available,
-                                     'processes': process_memory_sample(psutil.Process(), psutil)})
+                                     'processes': process_memory_sample(psutil.Process(), psutil),
+                                     'host': host_memory_sample(psutil)})
             write(record, state)
             low = low + 1 if available < state['floor_bytes'] else 0
             if low >= 2:
@@ -196,7 +219,10 @@ def worker(attempt):
         code = int(pytest.main(['-q', 'tests/integration/test_organization_complete_source_stack.py']))
         state['exit_code'] = code
         if state['status'] == 'running':
-            state['status'] = 'completed' if code == 0 else 'failed'
+            if code == 0 and (Path(attempt)/'publication-pause.json').exists():
+                state['status'] = 'publication_checkpoint_only'
+            else:
+                state['status'] = 'completed' if code == 0 else 'failed'
         return code
     finally:
         stop.set()

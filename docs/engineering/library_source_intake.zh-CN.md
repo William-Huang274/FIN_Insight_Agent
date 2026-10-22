@@ -249,3 +249,15 @@ python -m scripts.data_retrieval.prepare_library_source_bundles \
 来源节点继续满足导航器已有的 `Mapping` 接口，内部改用只读视图，章节与检索叶子共享元数据及同一份正文。正文以 UTF-8 字节保存，标准库 zlib 快速无损压缩只在更小时采用；消费单个分段时还原字符串，不保留全库解码缓存。对外仍是普通 JSON 字符串和字典，字符位置按还原原文计算，节点、版本、引用、向量输入及发布合同均不改变。这里调整内存表示，不引入新的持久压缩格式或索引迁移。接口依据为 Python 标准库的 [Mapping 协议](https://docs.python.org/3.11/library/collections.abc.html#collections.abc.Mapping)。
 
 `s2-compact-node-view-r1` 的全量新旧字段对照在第 96 份发现变量复用导致后续分段的公司字段丢失，已修复并新增跨分段公司／期间回归；失败结果保留。r2 在 1,611 来源字段对照无误后触及内存余量保护，未计全量通过。r3 在加入无损正文存储后，全部 1,742 来源／114,028 分段与 `a92f6407` 逐字段相同，同时保留全部 228,056 条章节／叶子视图，完成一次全局 `cash flow revenue` 关键词评分，词项匹配 43,443 段。生成阶段采样峰值 486.06 MiB，整个离线过程峰值 582.34 MiB，耗时 66.53 秒；这不是 Java/BFF 服务内存、查询 P95、混合检索召回率或并发容量。原文、字符分页、中文／组合字符／非 BMP 字符、索引字节兼容与撤权继续沿原测试路径验证。
+
+### 发布快照与隔离恢复验收
+
+完整输入验收可用 `FIN_COMPLETE_SOURCE_PAUSE_AFTER=N` 在第 N 份保存、发布、关联和原文核对成功后停下，生成 `publication-checkpoint`。这次退出只有 `publication_checkpoint_only`，不会写 `complete-source-result.json`，也不是 S2 通过。N 是同一输入范围的累计位置；恢复后必须向前推进。也可用 `FIN_COMPLETE_SOURCE_WRITE_CHECKPOINT=1` 在全部发布后保存快照，再继续后续阶段。
+
+快照先停止本轮 BFF/Java 写入者，使用 PostgreSQL 16 的 [pg_dump 自定义归档](https://www.postgresql.org/docs/16/app-pgdump.html) 保存业务数据库，并逐文件压缩两份静止的原件 SQLite 数据库。存在未清理的 WAL、未知文件、写入中摘要变化或打包失败时，不发布最终 manifest。快照位于显式私有验收输出目录，不包含服务环境变量或凭据，也不进入 Git；它仍包含资料及业务状态，应按原验收数据管理。
+
+新 attempt 设置 `FIN_COMPLETE_SOURCE_RESUME=<checkpoint目录>`。启动前核对精确代码提交、jar、运行配置、输入摘要、来源顺序、查询向量和归档摘要；旧 progress.json 或跨代码版本快照不能恢复。恢复只能写入本轮新建的独立 PostgreSQL 和空原件目录，使用 [pg_restore 的单事务、遇错退出](https://www.postgresql.org/docs/16/app-pgrestore.html)，不接管旧容器、不覆盖旧目录。展开前预留实际原件大小及 512 MiB 磁盘余量；压缩包不能代替恢复所需的物理空间。
+
+恢复后，在继续发布前重新请求 Java 项目、组织成员及逐资源项目授权，比较保存的身份、版本及权限记录，并逐源核对个人原件和组织原件与固定输入完全一致，读取前后再次核权。随后重新执行准备、索引发布/注册、检索、回读与撤权，不复用旧执行身份或成功权限缓存。结果保留 `publication_restored` 与原 attempt；这是隔离测试快照重放，不是生产运行断点续跑，也不能把跨次时长写成一次连续全链性能。
+
+资源守护维持原 800 MiB 连续两次低水位策略，同时记录宿主内存前 15 个进程及 Docker/WSL 的 PID、创建时间、进程名、RSS 和 private commit。不会读取别的任务命令行或文件，也不反复调用 `docker stats --all`。共享 RSS 不能相加为独占内存，进程变化只能用于定位线索，不能单独证明泄漏。

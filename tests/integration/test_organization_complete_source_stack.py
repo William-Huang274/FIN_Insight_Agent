@@ -30,6 +30,7 @@ from sec_agent.research_foundation.organization_source_projection import PROJECT
 from tests.integration.source_intake_runtime import CompleteSourceStack
 from tests.integration.test_java_intake_native import wait_for
 from tests.integration.source_intake_diagnostics import SourceBundles, SourceVectors, PhaseDiagnostics, file_sha256, source_coverage, source_readback_targets
+from tests.integration.source_intake_checkpoint import load_checkpoint, save_checkpoint, restore_checkpoint
 
 pytestmark = pytest.mark.skipif(not os.getenv('FIN_COMPLETE_SOURCE_INTAKE'), reason='explicit full-source intake artifacts required')
 
@@ -104,6 +105,21 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             saved=cache.get(client.key('embedding',[q['query']]))
             assert saved and saved['status']=='completed' and saved['result']['model']==model
             queries[q['query']]=saved['result']['values'][0]
+    checkpoint_path=os.getenv('FIN_COMPLETE_SOURCE_RESUME')
+    pause_after=int(os.getenv('FIN_COMPLETE_SOURCE_PAUSE_AFTER','0'))
+    write_checkpoint=os.getenv('FIN_COMPLETE_SOURCE_WRITE_CHECKPOINT')=='1' or pause_after>0
+    checkpoint_binding=None; restored=None
+    if checkpoint_path or write_checkpoint:
+        from scripts.engineering.source_intake_batches import baseline
+        checkpoint_binding={'baseline':baseline(),'intake_sha256':file_sha256(root/'result.json'),
+            'source_ids':list(bundles),'storage_probe':storage_probe,'unified_scope':unified_scope,
+            'global_probe':global_probe,'batch_binding':batch_binding,
+            'query_vectors_sha256':sha256(json.dumps(queries,sort_keys=True).encode()).hexdigest()}
+        if checkpoint_path:
+            restored=load_checkpoint(checkpoint_path,checkpoint_binding)
+        completed=len(restored['publication']['captures']) if restored else 0
+        if pause_after and not completed<pause_after<=len(bundles):
+            raise ValueError('checkpoint_pause_must_advance_within_full_scope')
     s=CompleteSourceStack()
     diagnostic=PhaseDiagnostics(s.save)
     indices=s.output/'indices'
@@ -136,6 +152,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         wait_for(ready)
         with psycopg.connect(host='127.0.0.1',port=s.pg_port,dbname='probe',user='probe',password=s.password,autocommit=True) as db:
             db.execute('CREATE DATABASE business')
+        if restored:
+            restore_checkpoint(s,checkpoint_path,restored)
         s.boot('java');s.boot('bff')
         with psycopg.connect(host='127.0.0.1',port=s.pg_port,dbname='business',user='probe',password=s.password) as db:
             settings={name:db.execute('SHOW '+name).fetchone()[0] for name in (
@@ -143,14 +161,41 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 'fsync','synchronous_commit','full_page_writes')}
             assert all(settings[name]=='on' for name in ('fsync','synchronous_commit','full_page_writes'))
             s.save('postgres-settings',settings)
-        org,space,project,private=[str(uuid4()) for _ in range(4)]
-        api('POST','/organizations',{'id':org,'name':'Complete source intake','display_name':'Owner'})
-        api('POST','/spaces',{'id':space,'organization_id':org,'name':'Full parsed disclosures'})
-        api('POST','/projects',{'id':project,'organization_id':org,'name':'Source compatibility','description':'No recall claim'})
         assets=AssetWorkspace(s.state/'project-library')
-        assets.library.save('oidc:alice',0,{'projects':[{'id':private,'name':'Public originals'}],'assignments':{},'pinned':[]})
         resources={};captures=[];date_denials=[];source_refs=[]
+        if restored:
+            prior=restored['publication']
+            org,space,project,private=[prior[k] for k in ('org','space','project','private')]
+            assert api('GET',f'/projects/{project}')==prior['project_state']
+            assert api('GET',f'/organizations/{org}/members')==prior['members']
+            shared_assets=AssetWorkspace(s.state/'project-library'/'organization-assets')
+            for row,ref in zip(prior['captures'],prior['source_refs'],strict=True):
+                sid=row['source_id'];rid=prior['resources'][sid]
+                grant=api('POST',f'/projects/{project}/resources/{rid}/access')
+                assert grant==prior['grants'][sid]
+                assert assets.read_source('oidc:alice',ref)['source_bundle']==bundles[sid]
+                assert shared_assets.read_source('organization:'+org,grant['binding']['ref'])['source_bundle']==bundles[sid]
+                assert api('POST',f'/projects/{project}/resources/{rid}/access')==grant
+            resources=dict(prior['resources']);captures=list(prior['captures']);source_refs=list(prior['source_refs'])
+            s.save('publication-restore',{'status':'verified','sources':len(captures),
+                'origin_attempt':restored['origin_attempt'],'manifest_sha256':file_sha256(Path(checkpoint_path)/'manifest.json'),
+                'scope':'restored fixture, not uninterrupted run; all retrieval stages execute again'})
+        else:
+            org,space,project,private=[str(uuid4()) for _ in range(4)]
+            api('POST','/organizations',{'id':org,'name':'Complete source intake','display_name':'Owner'})
+            api('POST','/spaces',{'id':space,'organization_id':org,'name':'Full parsed disclosures'})
+            api('POST','/projects',{'id':project,'organization_id':org,'name':'Source compatibility','description':'No recall claim'})
+            assets.library.save('oidc:alice',0,{'projects':[{'id':private,'name':'Public originals'}],'assignments':{},'pinned':[]})
+        def checkpoint():
+            verify_intake_files()
+            grants={sid:api('POST',f'/projects/{project}/resources/{rid}/access') for sid,rid in resources.items()}
+            payload=dict(org=org,space=space,project=project,private=private,resources=resources,
+                captures=captures,source_refs=source_refs,grants=grants,
+                project_state=api('GET',f'/projects/{project}'),members=api('GET',f'/organizations/{org}/members'))
+            return save_checkpoint(s,checkpoint_binding,payload)
         for sid,bundle in bundles.items():
+            if sid in resources:
+                continue  # Verified again above against restored Java ACL and both original stores.
             source_started=perf_counter()
             # Same maintained capture service as POST /captures; no payload supplied as source facts.
             request=CaptureRequest(project_id=private,title=bundle['source']['title'][:120],selection={
@@ -171,11 +216,19 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                              'schema_version':json.loads(raw)['schema_version'],'repeat_save_same_version':True,
                              'save_publish_link_verify_seconds':perf_counter()-source_started})
             s.save('complete-source-publication-progress',{'status':'running','sources':captures})
+            if pause_after==len(captures):
+                path=checkpoint()
+                s.save('publication-pause',{'status':'publication_checkpoint_only','sources':len(captures),
+                    'required_sources':len(bundles),'checkpoint':str(path),'S2_passed':False,'provider_calls':0})
+                return
         # Still verify complete catalogue visibility, once over the final scope.
         catalog_refs=[v['ref'] for a in assets.catalog('oidc:alice',private)['items'] for v in a['versions']]
         assert len(catalog_refs)==len(captures)
         assert len({ref['version_id'] for ref in catalog_refs})==len(captures)
         assert sorted(catalog_refs,key=lambda ref:ref['version_id'])==sorted(source_refs,key=lambda ref:ref['version_id'])
+        if write_checkpoint:
+            checkpoint()
+            s.boot('java');s.boot('bff')
         # All originals were saved/published unchanged. Unknown availability
         # must still fail at the real authorized runtime read boundary.
         for sid in list(bundles):
@@ -338,6 +391,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             contracts.append(contract)
         verify_intake_files()
         s.save('complete-source-result',{'status':'passed','sources':results,'frozen_contracts':contracts,
+            'publication_restored':bool(restored),
+            'publication_origin_attempt':restored['origin_attempt'] if restored else str(s.output),
             'batch_binding':batch_binding,'full_intake_sources':full_intake_sources,
             'revoked_cache_and_readback_denied':True,'provider_calls':0,'research_runs':0,
             'recall_or_capacity_evaluation':False,'candidate_chunks':len(vectors),'identity':'qualification login',

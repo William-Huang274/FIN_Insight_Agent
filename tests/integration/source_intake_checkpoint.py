@@ -102,12 +102,40 @@ def unpack_assets(archive_path, root, records):
                 raise ValueError('checkpoint_restored_asset_digest_mismatch')
 
 
-def load_checkpoint(path, binding):
+def verify_replay_review(manifest, binding, review, manifest_sha256):
+    """Explicit fixture compatibility review, never a same-baseline pass.
+
+    The local reviewer records exact source/target and a diff digest. Only code
+    and jar identities may change; all data, configuration and query inputs stay
+    identical. The original manifest remains immutable and is rechecked on load.
+    """
+    original = manifest['binding']
+    if (not isinstance(review, dict) or review.get('schema') != 'source-publication-replay-review.v1'
+            or review.get('source_manifest_sha256') != manifest_sha256
+            or review.get('source_baseline') != original['baseline']
+            or review.get('target_baseline') != binding['baseline']
+            or review.get('decision') != 'compatible_fixture_only'
+            or not isinstance(review.get('reason'), str) or not review['reason'].strip()
+            or not isinstance(review.get('changed_paths'), list) or not review['changed_paths']
+            or not isinstance(review.get('git_diff_sha256'), str)
+            or len(review['git_diff_sha256']) != 64
+            or any(c not in '0123456789abcdef' for c in review['git_diff_sha256'])):
+        raise ValueError('checkpoint_replay_review_mismatch')
+    if ({k:v for k,v in original.items() if k!='baseline'} != {k:v for k,v in binding.items() if k!='baseline'}
+            or {k:v for k,v in original['baseline'].items() if k not in ('git_head','jar_sha256')}
+               != {k:v for k,v in binding['baseline'].items() if k not in ('git_head','jar_sha256')}):
+        raise ValueError('checkpoint_replay_data_or_configuration_changed')
+
+
+def load_checkpoint(path, binding, review=None):
     path = Path(path).resolve()
     manifest = json.loads((path/'manifest.json').read_text(encoding='utf8'))
-    if (manifest.get('schema') != 'source-publication-checkpoint.v1'
-            or manifest.get('binding') != binding):
+    if manifest.get('schema') != 'source-publication-checkpoint.v1':
         raise ValueError('checkpoint_baseline_or_scope_mismatch')
+    if manifest.get('binding') != binding:
+        if review is None:
+            raise ValueError('checkpoint_baseline_or_scope_mismatch')
+        verify_replay_review(manifest, binding, review, digest(path/'manifest.json'))
     payload = manifest['publication']
     ids = [row['source_id'] for row in payload['captures']]
     expected = binding['source_ids'][:len(ids)]

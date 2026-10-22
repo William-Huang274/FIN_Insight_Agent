@@ -68,6 +68,14 @@ class OrganizationRetrievalReleases {
             return contract;
         });
     }
+    @GetMapping("/{releaseId}")
+    Object read(HttpServletRequest request,@PathVariable UUID projectId,@PathVariable UUID releaseId) {
+        String actor=actor(request);projects.project(actor,projectId,false);
+        var row=db.queryForList("SELECT * FROM organization_retrieval_release WHERE project_id=? AND id=?",projectId,releaseId)
+            .stream().findFirst().orElseThrow(()->new ApiFailure(404,"索引发布版本不可访问"));
+        visibleDraft(actor,projectId,(UUID)row.get("source_draft_id"));
+        return Map.of("contract",parse(row.get("contract")),"source_draft_id",row.get("source_draft_id"));
+    }
     @GetMapping
     Object list(HttpServletRequest request,@PathVariable UUID projectId) {
         String actor=actor(request);projects.project(actor,projectId,false);

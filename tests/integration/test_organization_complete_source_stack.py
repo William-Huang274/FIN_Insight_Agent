@@ -108,7 +108,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     checkpoint_path=os.getenv('FIN_COMPLETE_SOURCE_RESUME')
     pause_after=int(os.getenv('FIN_COMPLETE_SOURCE_PAUSE_AFTER','0'))
     write_checkpoint=os.getenv('FIN_COMPLETE_SOURCE_WRITE_CHECKPOINT')=='1' or pause_after>0
-    checkpoint_binding=None; restored=None
+    checkpoint_binding=None; restored=None; replay_review=None
     if checkpoint_path or write_checkpoint:
         from scripts.engineering.source_intake_batches import baseline
         checkpoint_binding={'baseline':baseline(),'intake_sha256':file_sha256(root/'result.json'),
@@ -116,7 +116,17 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             'global_probe':global_probe,'batch_binding':batch_binding,
             'query_vectors_sha256':sha256(json.dumps(queries,sort_keys=True).encode()).hexdigest()}
         if checkpoint_path:
-            restored=load_checkpoint(checkpoint_path,checkpoint_binding)
+            review_path=os.getenv('FIN_COMPLETE_SOURCE_REPLAY_REVIEW')
+            if review_path:
+                replay_review=json.loads(Path(review_path).read_text(encoding='utf8'))
+                import subprocess
+                source=replay_review['source_baseline']['git_head']
+                target=checkpoint_binding['baseline']['git_head']
+                diff=subprocess.check_output(['git','diff','--binary',source,target])
+                paths=subprocess.check_output(['git','diff','--name-only',source,target],text=True).splitlines()
+                if sha256(diff).hexdigest()!=replay_review['git_diff_sha256'] or paths!=replay_review['changed_paths']:
+                    raise ValueError('checkpoint_replay_review_diff_mismatch')
+            restored=load_checkpoint(checkpoint_path,checkpoint_binding,replay_review)
         completed=len(restored['publication']['captures']) if restored else 0
         if pause_after and not completed<pause_after<=len(bundles):
             raise ValueError('checkpoint_pause_must_advance_within_full_scope')
@@ -180,6 +190,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             resources=dict(prior['resources']);captures=list(prior['captures']);source_refs=list(prior['source_refs'])
             s.save('publication-restore',{'status':'verified','sources':len(captures),
                 'origin_attempt':restored['origin_attempt'],'manifest_sha256':file_sha256(Path(checkpoint_path)/'manifest.json'),
+                'replay_review':replay_review,
                 'scope':'restored fixture, not uninterrupted run; all retrieval stages execute again'})
         else:
             org,space,project,private=[str(uuid4()) for _ in range(4)]
@@ -344,7 +355,12 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             assert all(targets[sid]['candidate_chunks']==len(bundle['chunks']) for sid,bundle in batch.items())
             del nodes
             with diagnostic.phase('register_index_against_all_originals'):
-                contract=s.request(s.bff,'POST',f'/api/v1/asset-workspace/organization-projects/{project}/research-drafts/{original["id"]}/retrieval-releases/{release}/register',json={})
+                from tests.integration.source_intake_registration import register_index
+                from sec_agent.research_foundation.organization_index_release import load_release
+                expected=load_release(indices,org,release)[3]
+                contract=register_index(s.bff,
+                    f'/api/v1/asset-workspace/organization-projects/{project}/research-drafts/{original["id"]}/retrieval-releases/{release}',
+                    expected=expected,save=s.save)
             payload.update(id=str(uuid4()),retrieval_release_id=release)
             frozen=api('POST',f'/projects/{project}/research-drafts',payload)
             assert frozen['manifest']['retrieval_index']==contract
@@ -393,6 +409,9 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         verify_intake_files()
         s.save('complete-source-result',{'status':'passed','sources':results,'frozen_contracts':contracts,
             'publication_restored':bool(restored),
+            'cross_baseline_fixture_replay':bool(replay_review),
+            'publication_source_baseline':restored['binding']['baseline'] if restored else None,
+            'execution_baseline':checkpoint_binding['baseline'] if checkpoint_binding else None,
             'publication_origin_attempt':restored['origin_attempt'] if restored else str(s.output),
             'batch_binding':batch_binding,'full_intake_sources':full_intake_sources,
             'revoked_cache_and_readback_denied':True,'provider_calls':0,'research_runs':0,

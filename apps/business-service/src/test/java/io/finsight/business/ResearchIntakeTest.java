@@ -648,6 +648,10 @@ class ResearchIntakeTest {
         workspace(f.admin(),"POST",releases,invalidProjection,400);
         workspace(f.researcher(),"POST",releases,publication,403);
         var contract=workspace(f.admin(),"POST",releases,publication,200);
+        var recovered=workspace(f.admin(),"GET",releases+"/"+first,null,200);
+        assertThat(recovered.path("contract")).isEqualTo(contract);
+        assertThat(recovered.path("source_draft_id").asText()).isEqualTo(f.draft().toString());
+        workspace(f.admin(),"GET",releases+"/"+UUID.randomUUID(),null,404);
         assertThat(workspace(f.admin(),"POST",releases,publication,200)).isEqualTo(contract);
         var changed=new HashMap<>(publication);changed.put("index_digest","d".repeat(64));
         workspace(f.admin(),"POST",releases,changed,409);
@@ -663,10 +667,12 @@ class ResearchIntakeTest {
         assertThat(workspace(f.researcher(),"GET",drafts+"/"+f.draft(),null,200)).isEqualTo(legacy);
         assertThat(workspace(f.researcher(),"GET",releases,null,200).path("items").size()).isEqualTo(2);
         var other=executionFixture();
+        workspace(other.admin(),"GET","/projects/"+other.project()+"/retrieval-releases/"+first,null,404);
         var foreign=new HashMap<>(create);foreign.put("id",UUID.randomUUID());foreign.put("resource_ids",List.of(other.resource()));
         workspace(other.researcher(),"POST","/projects/"+other.project()+"/research-drafts",foreign,404);
         workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",f.researcher(),"role","remove"),200);
         assertThat(workspace(f.researcher(),"GET",releases,null,200).path("items").size()).isZero();
+        workspace(f.researcher(),"GET",releases+"/"+first,null,404);
         workspace(f.researcher(),"GET",drafts+"/"+preparedId,null,404);
     }
     @Test void focal_inputs_and_searchable_scope_are_separate_current_dependencies() throws Exception {

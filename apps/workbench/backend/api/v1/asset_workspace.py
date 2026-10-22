@@ -105,6 +105,12 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None,
         from ...organization_research_inputs import verify_inputs
         return await verify_inputs(shared, space_business_request, identity(request, response, True), project_id, draft_id)
 
+    @router.get('/organization-projects/{project_id}/research-drafts/{draft_id}/retrieval-releases/{release_id}/registration')
+    async def read_registration(project_id: UUID, draft_id: UUID, release_id: UUID, request: Request, response: Response):
+        from ...organization_index_registration import registration_status
+        return await registration_status(space_business_request, identity(request, response),
+                                         str(project_id), str(draft_id), str(release_id))
+
     @router.post('/organization-projects/{project_id}/research-drafts/{draft_id}/retrieval-releases/{release_id}/register')
     async def register_index(project_id: UUID, draft_id: UUID, release_id: UUID, request: Request, response: Response):
         import os

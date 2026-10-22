@@ -45,6 +45,37 @@ def test_checkpoint_restores_exact_sqlite_bytes_and_unicode(tmp_path):
             assert '财年🧾' in db.execute('SELECT body FROM original').fetchone()[0]
 
 
+@pytest.mark.parametrize('fault',[None,'missing','source','target','marker','scope','query','config','decision'])
+def test_reviewed_replay_preserves_data_and_reports_original_baseline(tmp_path,fault):
+    from copy import deepcopy
+    root,_,manifest,_=snapshot(tmp_path)
+    original=manifest['binding']
+    original['baseline']={'git_head':'old','jar_sha256':'old-jar','configuration':{'source':'same'}}
+    original['query_vectors_sha256']='fixed-query'
+    (root/'manifest.json').write_text(json.dumps(manifest),encoding='utf8')
+    binding=deepcopy(original)
+    binding['baseline'].update(git_head='new',jar_sha256='new-jar')
+    review={'schema':'source-publication-replay-review.v1','source_manifest_sha256':cp.digest(root/'manifest.json'),
+            'source_baseline':deepcopy(original['baseline']),'target_baseline':deepcopy(binding['baseline']),
+            'decision':'compatible_fixture_only','reason':'No schema or custody changes; readback API added.',
+            'changed_paths':['readback.py'],'git_diff_sha256':'a'*64}
+    if fault=='source':review['source_baseline']['git_head']='wrong'
+    if fault=='target':review['target_baseline']['git_head']='wrong'
+    if fault=='marker':review['source_manifest_sha256']='wrong'
+    if fault=='scope':binding['source_ids']=['other']
+    if fault=='query':binding['query_vectors_sha256']='other'
+    if fault=='config':
+        binding['baseline']['configuration']={'source':'other'}
+        review['target_baseline']=deepcopy(binding['baseline'])
+    if fault=='decision':review['decision']='full_pass'
+    if fault:
+        with pytest.raises(ValueError):cp.load_checkpoint(root,binding,None if fault=='missing' else review)
+    else:
+        restored=cp.load_checkpoint(root,binding,review)
+        assert restored==manifest and restored['binding']['baseline']['git_head']=='old'
+        assert cp.digest(root/'manifest.json')==review['source_manifest_sha256']
+
+
 @pytest.mark.parametrize('change',['baseline','scope','prefix','duplicate','dump','zip','missing_marker'])
 def test_incompatible_or_incomplete_snapshot_is_rejected_before_services(tmp_path,change):
     root,binding,manifest,_=snapshot(tmp_path)

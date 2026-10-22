@@ -8,6 +8,7 @@ from decimal import Decimal
 from hashlib import sha256
 import json
 from urllib.parse import urlsplit
+from threading import RLock
 
 from .source_document_navigation import SourceDocumentRequest, navigate_source_nodes
 from .source_bound_calculator import ObservedSourceRegistry, SourceBoundCalculation, calculate_from_sources
@@ -23,6 +24,8 @@ class OrganizationSourceNavigation:
         self.reader, self.workbench_url = reader, workbench_url.rstrip('/')
         self.observed = ObservedSourceRegistry()
         self.hybrid = None
+        self._search_cache = None
+        self._navigation_lock = RLock()
         if retrieval_root is not None:
             from .organization_hybrid_retrieval import OrganizationHybridRetrieval
             self.hybrid = OrganizationHybridRetrieval(reader, retrieval_root)
@@ -34,6 +37,40 @@ class OrganizationSourceNavigation:
         return f"ORGDOC::{item['resource_id']}:{version}"
 
     def navigate(self, request):
+        request = SourceDocumentRequest.model_validate(request)
+        # One observer connection and one bounded result per navigation session.
+        # Serializing this instance also prevents concurrent cache publication.
+        with self._navigation_lock:
+            if request.operation != 'search' or self.hybrid is None:
+                return self._navigate(request)
+            before, manifest, _ = self.reader._grant()
+            pinned = manifest.get('retrieval_index')
+            if pinned is None or request.source_space != 'organization':
+                return self._navigate(request)
+            from .organization_search_cache import OrganizationSearchCache
+            if self._search_cache is None:
+                self._search_cache = OrganizationSearchCache(self.reader.workspace.library.documents.path)
+            cache = self._search_cache
+            key, epoch = cache.key(before, request), cache.epoch()
+            result = cache.get(key, epoch)
+            if result is not None:
+                # Still hash and validate the EXACT frozen index/matrix. A
+                # response cache must not hide missing or corrupted releases.
+                from .organization_index_release import load_release
+                load_release(self.hybrid.root, manifest['organization_id'], pinned['release_id'], pinned)
+                self.reader._after(before)
+                if cache.epoch() != epoch:
+                    cache.entry = None
+                    raise OrganizationExecutionUnavailable('organization_search_storage_changed_during_cache_read')
+                self.observed.remember('read_source_document', result.model_dump(mode='json'))
+                return result
+            result = self._navigate(request)
+            self.reader._after(before)
+            if cache.epoch() == epoch:
+                cache.put(key, epoch, result)
+            return result
+
+    def _navigate(self, request):
         request = SourceDocumentRequest.model_validate(request)
         if request.source_space != 'organization' or request.operation not in {'catalog', 'outline', 'search', 'read'}:
             raise ValueError('organization_source_supports_catalog_outline_search_read_only')

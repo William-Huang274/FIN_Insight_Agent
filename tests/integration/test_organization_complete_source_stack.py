@@ -347,8 +347,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 publish_prepared_index(indices,org,nodes,vectors.projected(nodes),queries,
                     model=model,provenance={'source_intake_sha256':sha256((root/'result.json').read_bytes()).hexdigest()},
                     release_id=release,projection=PROJECTION)
-            # Registration and each real search reconstruct all authorized
-            # originals. Do not keep a second full corpus alive in this driver.
+            # Registration and cold searches reconstruct authorized originals.
+            # Do not keep a second full corpus alive in this driver.
             indexed_chunks=len(nodes)
             targets=source_readback_targets(nodes)
             assert set(targets)==set(batch)
@@ -371,16 +371,34 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 assert len(frozen['manifest']['input_selection']['selected_resource_ids'])==2
                 assert len(frozen['manifest']['inputs'])==len(batch)
                 query={'source_space':'organization','operation':'search','query':next(iter(queries))}
+                original_reads=[]
+                read_storage=reader._read_storage
+                def counted_read(*args):
+                    original_reads.append(args[0])
+                    return read_storage(*args)
+                monkeypatch.setattr(reader,'_read_storage',counted_read)
                 with diagnostic.phase('global_search_cold',profile=global_probe):
                     found=nav.navigate(query)
                 assert found.items
+                cold_original_reads=len(original_reads)
+                assert cold_original_reads==len(batch)
+                original_reads.clear()
                 assert all(r['original_source']['source_id'] in batch for r in found.items)
                 with diagnostic.phase('global_search_warm',profile=global_probe):
                     cached=nav.navigate(query)
                 assert cached.items[0]['retrieval']['cache_hit']
+                assert cached.items[0]['retrieval']['response_cache_hit']
+                assert not original_reads, 'warm response unexpectedly reread source originals'
+                # All ranking/source/preview/readback fields remain identical;
+                # only the per-request cache/provider receipt may change.
+                assert [{k:v for k,v in row.items() if k!='retrieval'} for row in found.items]==[
+                    {k:v for k,v in row.items() if k!='retrieval'} for row in cached.items]
+                monkeypatch.setattr(reader,'_read_storage',read_storage)
                 global_searches.append({'query':query,'retrieval':found.items[0]['retrieval'],
                     'returned_sources':list({r['original_source']['source_id'] for r in found.items}),
-                    'authorized_sources':len(batch),'indexed_chunks':indexed_chunks,'cache_hit':True})
+                    'authorized_sources':len(batch),'indexed_chunks':indexed_chunks,'cache_hit':True,
+                    'cold_original_reads':cold_original_reads,'warm_original_reads':0,
+                    'response_cache_hit':True,'warm_result_identity_unchanged':True})
             first_result=len(results)
             # Global plumbing probe still publishes/verifies every original and
             # ranks the entire scope. Per-source filtered search is sampled by
@@ -402,6 +420,13 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             api('POST',f'/resources/{first}/revoke',{'revision':current['permission_revision']})
             with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(results[first_result]['readback'])
             with pytest.raises(OrganizationExecutionUnavailable):nav.navigate({'source_space':'organization','operation':'search','query':next(iter(queries))})
+            # exercise() last warmed this exact filtered request. Prove a
+            # resident response cannot outlive revocation, not just a miss.
+            last_sid=list(read_batch)[-1]
+            with pytest.raises(OrganizationExecutionUnavailable):nav.navigate({
+                'source_space':'organization','operation':'search',
+                'document_id':targets[last_sid]['tail']['parent_document_id'],
+                'query':selected_questions[last_sid]['query']})
             if 'node_recovery' in batch[revoke_sid]:
                 original=batch[revoke_sid]['node_recovery']['nodes'][0]
                 with pytest.raises(OrganizationExecutionUnavailable):reader.read_text(first,node_id=original['node_id'])

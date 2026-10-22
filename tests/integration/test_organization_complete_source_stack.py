@@ -131,6 +131,15 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         recall_or_capacity_evaluation=False,provider_calls=0,
         query_scope='reused query for storage/authorization plumbing, no relevance assertion' if storage_probe else 'historical source queries'))
     def api(method,path,body=None):
+        if method == 'POST' and path.endswith('/access'):
+            # Access grants are an internal Java contract, deliberately absent
+            # from the browser BFF allowlist. Use its normal actor delegation.
+            route='/v1/workspaces'+path
+            raw=b'' if body is None else json.dumps(body,separators=(',',':')).encode()
+            with httpx.Client(trust_env=False,timeout=30) as client:
+                return s.request(client,method,f'http://127.0.0.1:{s.java_port}'+route,
+                    content=raw,headers={'Content-Type':'application/json',
+                    'Authorization':'Bearer '+delegate('oidc:alice',method,route,raw)})
         return s.request(s.bff,method,'/api/v1/business/workspaces'+path,**({'json':body} if body is not None else {}))
     def bind(project,prepared):
         execution=str(uuid4())

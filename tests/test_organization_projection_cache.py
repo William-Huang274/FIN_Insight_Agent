@@ -18,6 +18,22 @@ def content(result):
     return [{k: v for k, v in row.items() if k != 'retrieval'} for row in result.items]
 
 
+def test_response_hit_reports_no_projection_reads_for_current_request(tmp_path, monkeypatch):
+    nav, _, state, _, request, _, reads, _ = setup(tmp_path, monkeypatch)
+    query = {**request, 'query': 'different revenue question'}
+    projected = nav.navigate(query)
+    assert projected.items[0]['retrieval']['projection_cache_hits'] > 0
+    reads.clear()
+    calls = state['calls']
+    cached = nav.navigate(query)
+    receipt = cached.items[0]['retrieval']
+    assert receipt['response_cache_hit']
+    assert receipt['projection_cache_hits'] == 0
+    assert receipt['provider_calls'] == 0
+    assert not reads and state['calls'] >= calls + 2
+    assert content(cached) == content(projected)
+
+
 def test_new_query_and_filtered_scope_equal_full_original_path(tmp_path, monkeypatch):
     nav, reader, state, directory, request, first, reads, api = setup(tmp_path, monkeypatch)
     for changes in ({'query': 'different revenue question'},

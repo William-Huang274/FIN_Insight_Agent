@@ -25,6 +25,10 @@ class OrganizationSearchCache:
         def signature(path):
             stat = path.stat()
             return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+        # Let SQLite observe a changed journal mode/open its WAL before taking
+        # file identities. Otherwise the observer itself can create the WAL
+        # after we recorded its absence and falsely report a concurrent write.
+        version = self.db.execute('PRAGMA data_version').fetchone()[0]
         # Missing original DB is an error, never a reusable empty generation.
         database = signature(self.path)
         wal = Path(str(self.path) + '-wal')
@@ -32,7 +36,7 @@ class OrganizationSearchCache:
             journal = signature(wal)
         except FileNotFoundError:
             journal = None
-        return database, journal, self.db.execute('PRAGMA data_version').fetchone()[0]
+        return database, journal, version
 
     @staticmethod
     def key(grant, request):

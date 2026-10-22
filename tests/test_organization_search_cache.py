@@ -106,10 +106,11 @@ def test_cache_hit_cannot_hide_corruption_or_racing_revocation(tmp_path, monkeyp
     assert not reads
 
 
-def test_request_scope_change_and_new_session_do_not_reuse_response(tmp_path, monkeypatch):
+def test_scope_change_reuses_projection_but_new_session_rechecks_originals(tmp_path, monkeypatch):
     nav, reader, _, _, request, first, reads, _ = setup(tmp_path, monkeypatch)
-    nav.navigate({**request, 'document_id': first.items[0]['document_id']})
-    assert reads
+    scoped = nav.navigate({**request, 'document_id': first.items[0]['document_id']})
+    assert not reads and scoped.items[0]['retrieval']['projection_cache_hits'] == 1
+    assert not scoped.items[0]['retrieval'].get('response_cache_hit')
     reads.clear()
     other = OrganizationSourceNavigation(reader, workbench_url='http://localhost', retrieval_root=tmp_path/'indices')
     other.hybrid.query_source = nav.hybrid.query_source

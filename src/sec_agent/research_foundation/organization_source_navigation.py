@@ -25,6 +25,7 @@ class OrganizationSourceNavigation:
         self.observed = ObservedSourceRegistry()
         self.hybrid = None
         self._search_cache = None
+        self._projection_cache = None
         self._navigation_lock = RLock()
         if retrieval_root is not None:
             from .organization_hybrid_retrieval import OrganizationHybridRetrieval
@@ -64,20 +65,32 @@ class OrganizationSourceNavigation:
                     raise OrganizationExecutionUnavailable('organization_search_storage_changed_during_cache_read')
                 self.observed.remember('read_source_document', result.model_dump(mode='json'))
                 return result
-            result = self._navigate(request)
+            from .organization_projection_cache import OrganizationProjectionCache
+            from .organization_hybrid_retrieval import digest
+            if self._projection_cache is None:
+                self._projection_cache = OrganizationProjectionCache(self.hybrid.root/'.session-cache')
+            projection_cache = self._projection_cache
+            projection_cache.reset((digest(before), epoch))
+            def storage_check():
+                if cache.epoch() != epoch:
+                    cache.entry = None
+                    projection_cache.reset(None)
+                    raise OrganizationExecutionUnavailable('organization_search_storage_changed_during_projection')
+            result = self._navigate(request, projection_cache=projection_cache, storage_check=storage_check)
             self.reader._after(before)
-            if cache.epoch() == epoch:
-                cache.put(key, epoch, result)
+            storage_check()
+            cache.put(key, epoch, result)
+            self.observed.remember('read_source_document', result.model_dump(mode='json'))
             return result
 
-    def _navigate(self, request):
+    def _navigate(self, request, *, projection_cache=None, storage_check=None):
         request = SourceDocumentRequest.model_validate(request)
         if request.source_space != 'organization' or request.operation not in {'catalog', 'outline', 'search', 'read'}:
             raise ValueError('organization_source_supports_catalog_outline_search_read_only')
         # Bound projections have character offsets, not invented PDF page labels.
         if request.page_start is not None or request.page_end is not None:
             raise ValueError('organization_projection_has_no_pdf_page_locator')
-        before, manifest, _ = self.reader._grant()
+        before, manifest, bindings = self.reader._grant()
         if request.operation == 'search' and manifest.get('retrieval_index') is not None and self.hybrid is None:
             raise ValueError('organization_frozen_index_requires_configured_storage')
         selected = {self._identity(item): item for item in manifest['inputs']}
@@ -124,15 +137,39 @@ class OrganizationSourceNavigation:
                               {**node, 'node_kind': 'text', 'node_id': node['node_id'] + ':leaf'}])
             return document_id, nodes, origin, {}
         nodes, provenance, originals = [], {}, {}
-        for document_id, projected, origin, source_origins in self.reader._project_sources(by_resource, project):
+        def projections():
+            if projection_cache is None:
+                yield from self.reader._project_sources(by_resource, project)
+                return
+            # Grant covers every dependency, including non-selected candidates.
+            # Cached projections may be used only inside the caller's unchanged
+            # original-DB generation. Nothing is returned before final checks.
+            for resource_id in by_resource:
+                if resource_id not in bindings:
+                    raise OrganizationExecutionUnavailable('organization_projection_scope_mismatch')
+                value = projection_cache.get(resource_id)
+                if value is None:
+                    value = project(resource_id, self.reader._read_storage(resource_id, manifest, bindings))
+                    projection_cache.put(resource_id, value)
+                yield value
+            self.reader._after(before)
+        for document_id, projected, origin, source_origins in projections():
             nodes.extend(projected)
             provenance[document_id] = origin
             originals.update(source_origins)
         if request.operation == 'outline':
             nodes = [row for row in nodes if row['node_kind'] == 'section']
+        if storage_check is not None:
+            storage_check()  # Reject changed originals before a query embedding can be requested.
+        def rank(rows, query, snapshot, literal):
+            ranked, receipt = self.hybrid.rank(rows, query, snapshot, literal)
+            if projection_cache is not None:
+                receipt.update(projection_cache_hits=projection_cache.hits,
+                               projection_cache_bytes=projection_cache.size)
+            return ranked, receipt
         result = navigate_source_nodes(nodes, request, snapshot=self.reader.authority.manifest_digest[7:],
             allowed_space='organization', hybrid_enabled=False,
-            ranker=self.hybrid.rank if self.hybrid is not None else None)
+            ranker=rank if self.hybrid is not None else None)
         result = result.model_copy(update={'items': tuple({**item,
             'organization_source': provenance[item['document_id']],
             **({'original_source':originals[item['node_id']]} if item['node_id'] in originals else {})} for item in result.items),
@@ -142,7 +179,8 @@ class OrganizationSourceNavigation:
                 'Research cutoff records intent; historical availability and financial semantics are not certified.'})
         # Revoking any earlier input while scanning later inputs invalidates the entire result.
         self.reader._after(before)
-        self.observed.remember('read_source_document', result.model_dump(mode='json'))
+        if projection_cache is None:
+            self.observed.remember('read_source_document', result.model_dump(mode='json'))
         return result
 
     def source(self, source_id):

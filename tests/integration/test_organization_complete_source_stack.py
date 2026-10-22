@@ -105,6 +105,15 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             saved=cache.get(client.key('embedding',[q['query']]))
             assert saved and saved['status']=='completed' and saved['result']['model']==model
             queries[q['query']]=saved['result']['values'][0]
+        if global_probe:
+            for q in questions:
+                if q['query'] in queries:
+                    continue
+                saved=cache.get(client.key('embedding',[q['query']]))
+                if saved and saved['status']=='completed' and saved['result']['model']==model:
+                    queries[q['query']]=saved['result']['values'][0]
+                    break
+            assert len(queries)>=2, 'cross-query probe requires two existing successful query vectors'
     checkpoint_path=os.getenv('FIN_COMPLETE_SOURCE_RESUME')
     pause_after=int(os.getenv('FIN_COMPLETE_SOURCE_PAUSE_AFTER','0'))
     write_checkpoint=os.getenv('FIN_COMPLETE_SOURCE_WRITE_CHECKPOINT')=='1' or pause_after>0
@@ -404,6 +413,33 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 # only the per-request cache/provider receipt may change.
                 assert [{k:v for k,v in row.items() if k!='retrieval'} for row in found.items]==[
                     {k:v for k,v in row.items() if k!='retrieval'} for row in cached.items]
+                cross_query=None
+                if global_probe:
+                    second={**query,'query':list(queries)[1]}
+                    with diagnostic.phase('global_new_query_projection_reuse',profile=True):
+                        reused=nav.navigate(second)
+                    assert reused.items and not original_reads and not capture_checks
+                    assert reused.items[0]['retrieval']['projection_cache_hits']==len(batch)
+                    assert not reused.items[0]['retrieval'].get('response_cache_hit')
+                    import sqlite3
+                    # Independent original-path ranking, not a replay of the
+                    # candidate IDs just cached by the implementation under test.
+                    with sqlite3.connect(indices/org/'releases'/release/'rank-cache.sqlite') as ranks:
+                        ranks.execute('DELETE FROM ranks')
+                    reference=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
+                    with diagnostic.phase('global_new_query_original_reference',profile=True):
+                        full=reference._navigate(second)
+                    assert not full.items[0]['retrieval']['cache_hit']
+                    assert len(original_reads)==len(capture_checks)==len(batch)
+                    assert [{k:v for k,v in row.items() if k!='retrieval'} for row in reused.items]==[
+                        {k:v for k,v in row.items() if k!='retrieval'} for row in full.items]
+                    for field in ('dense_node_ids','lexical_node_ids','candidate_node_ids'):
+                        assert reused.items[0]['retrieval'][field]==full.items[0]['retrieval'][field]
+                    cross_query={'query':second['query'],'original_reads':0,'capture_checks':0,
+                        'projection_hits':len(batch),'projection_bytes':nav._projection_cache.size,
+                        'same_version_reference_original_reads':len(original_reads),
+                        'ranks_and_items_equal':True,'provider_calls':0}
+                    original_reads.clear();capture_checks.clear()
                 monkeypatch.setattr(reader,'_read_storage',read_storage)
                 monkeypatch.setattr(capture_module,'read_capture',read_capture)
                 global_searches.append({'query':query,'retrieval':found.items[0]['retrieval'],
@@ -411,6 +447,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     'authorized_sources':len(batch),'indexed_chunks':indexed_chunks,'cache_hit':True,
                     'cold_original_reads':cold_original_reads,'warm_original_reads':0,
                     'cold_capture_checks':cold_capture_checks,'warm_capture_checks':0,
+                    'cross_query_projection':cross_query,
                     'response_cache_hit':True,'warm_result_identity_unchanged':True})
             first_result=len(results)
             # Global plumbing probe still publishes/verifies every original and
@@ -433,6 +470,9 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             api('POST',f'/resources/{first}/revoke',{'revision':current['permission_revision']})
             with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(results[first_result]['readback'])
             with pytest.raises(OrganizationExecutionUnavailable):nav.navigate({'source_space':'organization','operation':'search','query':next(iter(queries))})
+            if global_probe:
+                with pytest.raises(OrganizationExecutionUnavailable):nav.navigate({
+                    'source_space':'organization','operation':'search','query':list(queries)[1]})
             # exercise() last warmed this exact filtered request. Prove a
             # resident response cannot outlive revocation, not just a miss.
             last_sid=list(read_batch)[-1]

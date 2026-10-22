@@ -48,9 +48,10 @@ class OrganizationSourceNavigation:
             if request.document_id not in selected:
                 raise OrganizationExecutionUnavailable('所选原文不属于本次固定组织输入。')
             selected = {request.document_id: selected[request.document_id]}
-        nodes, provenance, originals = [], {}, {}
-        for document_id, item in selected.items():
-            result = self.reader._read(item['resource_id'])
+        by_resource = {item['resource_id']: (document_id, item) for document_id, item in selected.items()}
+        def project(resource_id, result):
+            document_id, item = by_resource[resource_id]
+            nodes = []
             if result.get('needs_vision'):
                 raise ValueError('organization_original_requires_vision_not_enabled')
             text = result['text']
@@ -61,7 +62,6 @@ class OrganizationSourceNavigation:
                 'manifest_digest': self.reader.authority.manifest_digest,
                 'source_truncated': result['truncated'],
                 'capture': {k: deepcopy(v) for k, v in (result.get('capture') or {}).items() if k != 'rows'}}
-            provenance[document_id] = origin
             if 'input_selection' in manifest:
                 origin['input_role'] = ('selected' if item['resource_id'] in
                     manifest['input_selection']['selected_resource_ids'] else 'retrieval_candidate')
@@ -72,9 +72,7 @@ class OrganizationSourceNavigation:
                     raise ValueError('organization_complete_source_requires_chunk_projection')
                 projected = source_nodes(result['source_bundle'], document_id, item,
                     self.workbench_url + f"/api/v1/asset-workspace/organization-projects/{manifest['project_id']}/resources/{item['resource_id']}")
-                nodes.extend(projected)
-                originals.update({row['node_id']:row['original_source'] for row in projected})
-                continue
+                return document_id, projected, origin, {row['node_id']:row['original_source'] for row in projected}
             for index, offset in enumerate(range(0, len(text), 6000)):
                 chunk = text[offset:offset + 6000]
                 node = {'node_id': document_id.replace('ORGDOC::', 'ORGSECTION::') + ':' + str(index),
@@ -87,6 +85,12 @@ class OrganizationSourceNavigation:
                 # The maintained navigator uses section rows for reading and leaves for search.
                 nodes.extend([{**node, 'node_kind': 'section'},
                               {**node, 'node_kind': 'text', 'node_id': node['node_id'] + ':leaf'}])
+            return document_id, nodes, origin, {}
+        nodes, provenance, originals = [], {}, {}
+        for document_id, projected, origin, source_origins in self.reader._project_sources(by_resource, project):
+            nodes.extend(projected)
+            provenance[document_id] = origin
+            originals.update(source_origins)
         if request.operation == 'outline':
             nodes = [row for row in nodes if row['node_kind'] == 'section']
         result = navigate_source_nodes(nodes, request, snapshot=self.reader.authority.manifest_digest[7:],

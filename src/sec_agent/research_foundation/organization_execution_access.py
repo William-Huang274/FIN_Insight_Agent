@@ -142,6 +142,30 @@ class OrganizationExecutionReader:
 
     def _read(self, resource_id):
         before, manifest, inputs = self._grant()
+        result = self._read_storage(resource_id, manifest, inputs)
+        self._after(before)  # An authorization response is never a lease across storage I/O.
+        return result
+
+    def _project_sources(self, resource_ids, project):
+        """One internal, all-or-nothing projection, never a streaming tool result.
+
+        Check the entire current dependency set before I/O and again before
+        returning projections. The callback is server-owned and must not publish
+        intermediate results. No grant is reused by the next operation.
+        """
+        resource_ids = tuple(resource_ids)
+        before, manifest, inputs = self._grant()
+        if len(set(resource_ids)) != len(resource_ids) or any(rid not in inputs for rid in resource_ids):
+            raise _unavailable()
+        projected = []
+        for resource_id in resource_ids:
+            value = self._read_storage(resource_id, manifest, inputs)
+            projected.append(project(resource_id, value))
+        self._after(before)
+        return projected
+
+    def _read_storage(self, resource_id, manifest, inputs):
+        """Private exact-version I/O inside a checked single/bulk operation."""
         if resource_id not in inputs:
             raise _unavailable()
         binding = inputs[resource_id]
@@ -160,7 +184,6 @@ class OrganizationExecutionReader:
                 result = {**result, 'text': text[:100000], 'truncated': len(text) > 100000}
         except (KeyError, OSError, ValueError, AssetConflict, sqlite3.Error):
             raise _unavailable() from None
-        self._after(before)  # An authorization response is never a lease across storage I/O.
         return result
 
     @staticmethod

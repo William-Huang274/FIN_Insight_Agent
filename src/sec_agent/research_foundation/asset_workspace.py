@@ -55,6 +55,16 @@ def _digest(value):
     return sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
+def _document_version(item, project):
+    return {'ref': {'project_id': str(project), 'kind': 'document', 'asset_id': item['version_info']['family'],
+        'version_id': item['document_id'], 'digest': item['digest']}, 'title': item['name'],
+        'sequence': item['version_info']['sequence'], 'created_at': item['created_at'],
+        'access_status': item['access_status'], 'status': 'complete',
+        'role': 'report' if item.get('project_origin', {}).get('research_origin') else
+            'database' if item.get('project_origin', {}).get('asset_capture',{}).get('kind') == 'financial' else 'document',
+        **({'capture':item['project_origin']['asset_capture']} if item.get('project_origin',{}).get('asset_capture') else {})}
+
+
 class AssetWorkspace:
     def __init__(self, root):
         self.library = ProjectLibrary(root)
@@ -98,13 +108,7 @@ class AssetWorkspace:
         for item in document_versions(self.library.documents, scope):
             family = item['version_info']['family']
             entry = groups.setdefault(('document', family), {'asset_id': family, 'kind': 'document', 'versions': []})
-            entry['versions'].append({'ref': {'project_id': str(project), 'kind': 'document', 'asset_id': family,
-                'version_id': item['document_id'], 'digest': item['digest']}, 'title': item['name'],
-                'sequence': item['version_info']['sequence'], 'created_at': item['created_at'],
-                'access_status': item['access_status'], 'status': 'complete',
-                'role': 'report' if item.get('project_origin', {}).get('research_origin') else
-                    'database' if item.get('project_origin', {}).get('asset_capture',{}).get('kind') == 'financial' else 'document',
-                **({'capture':item['project_origin']['asset_capture']} if item.get('project_origin',{}).get('asset_capture') else {})})
+            entry['versions'].append(_document_version(item, project))
         for item in reversed(self.sec.versions(owner, project)['items']):
             entry = groups.setdefault(('sec', item['cik']), {'asset_id': item['cik'], 'kind': 'sec', 'versions': []})
             entry['versions'].append({'ref': {'project_id': str(project), 'kind': 'sec', 'asset_id': item['cik'],
@@ -150,12 +154,25 @@ class AssetWorkspace:
                             'project_revision':index['revision']}
         return {'items':matches,'next_offset':None,'offset':offset,'project_revision':index['revision']}
 
+    def document_version(self, owner, project, version_id):
+        """Resolve exact owner/project metadata without listing unrelated assets."""
+        scope = self.library.scope(owner, project)
+        items = document_versions(self.library.documents, scope, ids=[version_id])
+        if len(items) != 1:
+            raise KeyError('资产或版本不存在')
+        return _document_version(items[0], project)
+
     def resolve(self, owner, ref):
         ref = AssetRef.model_validate(ref)
         scope = self.library.scope(owner, ref.project_id)
-        catalog = self.catalog(owner, ref.project_id)['items']
-        group = next((r for r in catalog if r['kind'] == ref.kind and r['asset_id'] == ref.asset_id), None)
-        version = next((v for v in group['versions'] if v['ref']['version_id'] == ref.version_id), None) if group else None
+        if ref.kind == 'document':
+            version = self.document_version(owner, ref.project_id, ref.version_id)
+            if version['ref']['asset_id'] != ref.asset_id:
+                raise KeyError('资产或版本不存在')
+        else:
+            catalog = self.catalog(owner, ref.project_id)['items']
+            group = next((r for r in catalog if r['kind'] == ref.kind and r['asset_id'] == ref.asset_id), None)
+            version = next((v for v in group['versions'] if v['ref']['version_id'] == ref.version_id), None) if group else None
         if not version:
             raise KeyError('资产或版本不存在')
         if version['ref']['digest'] != ref.digest:

@@ -149,7 +149,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         api('POST','/projects',{'id':project,'organization_id':org,'name':'Source compatibility','description':'No recall claim'})
         assets=AssetWorkspace(s.state/'project-library')
         assets.library.save('oidc:alice',0,{'projects':[{'id':private,'name':'Public originals'}],'assignments':{},'pinned':[]})
-        resources={};captures=[];date_denials=[]
+        resources={};captures=[];date_denials=[];source_refs=[]
         for sid,bundle in bundles.items():
             source_started=perf_counter()
             # Same maintained capture service as POST /captures; no payload supplied as source facts.
@@ -157,7 +157,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 'kind':'library_source','document_id':sid,'snapshot':intake['library_sha256']})
             saved=save_capture(assets,'oidc:alice',request,None,None,library)
             assert save_capture(assets,'oidc:alice',request,None,None,library)['document_id']==saved['document_id']
-            ref=next(v['ref'] for a in assets.catalog('oidc:alice',private)['items'] for v in a['versions'] if v['ref']['version_id']==saved['document_id'])
+            ref=assets.document_version('oidc:alice',private,saved['document_id'])['ref']
+            source_refs.append(ref)
             rid=str(uuid4())
             s.request(s.bff,'POST','/api/v1/asset-workspace/spaces/publish',json={'id':rid,'space_id':space,'ref':ref})
             revision=api('GET',f'/projects/{project}')['revision']
@@ -170,6 +171,11 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                              'schema_version':json.loads(raw)['schema_version'],'repeat_save_same_version':True,
                              'save_publish_link_verify_seconds':perf_counter()-source_started})
             s.save('complete-source-publication-progress',{'status':'running','sources':captures})
+        # Still verify complete catalogue visibility, once over the final scope.
+        catalog_refs=[v['ref'] for a in assets.catalog('oidc:alice',private)['items'] for v in a['versions']]
+        assert len(catalog_refs)==len(captures)
+        assert len({ref['version_id'] for ref in catalog_refs})==len(captures)
+        assert sorted(catalog_refs,key=lambda ref:ref['version_id'])==sorted(source_refs,key=lambda ref:ref['version_id'])
         # All originals were saved/published unchanged. Unknown availability
         # must still fail at the real authorized runtime read boundary.
         for sid in list(bundles):

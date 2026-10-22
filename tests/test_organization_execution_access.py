@@ -49,6 +49,63 @@ def runtime_at(shared, grant):
     return OrganizationExecutionReader(shared.workspace, authority), state
 
 
+def projection_fixture(tmp_path):
+    shared, preparation = fixture(tmp_path)
+    original = deepcopy(preparation['manifest']['inputs'][0])
+    binding = deepcopy(preparation['inputs'][0])
+    for _ in range(5):
+        identifier = str(uuid4())
+        preparation['manifest']['inputs'].append({**original, 'resource_id': identifier})
+        preparation['inputs'].append({**binding, 'resource_id': identifier})
+    reader, state = runtime_at(shared, runtime_grant(preparation))
+    return reader, state, [item['resource_id'] for item in preparation['inputs']]
+
+
+def test_projection_checks_whole_scope_before_and_after_and_never_reuses_grant(tmp_path):
+    reader, state, ids = projection_fixture(tmp_path)
+    values = reader._project_sources(ids, lambda rid, source: (rid, source['text']))
+    assert [rid for rid, _ in values] == ids and all(text for _, text in values)
+    assert state['calls'] == 2
+    state['status'] = 404
+    with pytest.raises(OrganizationExecutionUnavailable):
+        reader._project_sources(ids, lambda *a: pytest.fail('revoked operation cannot read'))
+    assert state['calls'] == 3
+
+
+@pytest.mark.parametrize('fault', ['revoked', 'timeout', 'changed_manifest'])
+def test_mid_projection_authority_change_never_returns_partial_results(tmp_path, fault):
+    reader, state, ids = projection_fixture(tmp_path)
+    returned = None
+    def project(rid, source):
+        if fault == 'revoked': state['status'] = 404
+        elif fault == 'timeout': state['timeout'] = True
+        else: state['grant']['manifest_text'] += ' '
+        return {'resource_id': rid, 'text': source['text']}
+    with pytest.raises(OrganizationExecutionUnavailable):
+        returned = reader._project_sources(ids, project)
+    assert returned is None and state['calls'] == 2
+
+
+@pytest.mark.parametrize('fault', ['outside', 'duplicate'])
+def test_invalid_projection_selection_cannot_touch_storage(tmp_path, monkeypatch, fault):
+    reader, state, ids = projection_fixture(tmp_path)
+    monkeypatch.setattr(reader.workspace, 'read_source', lambda *a: pytest.fail('invalid scope reached storage'))
+    with pytest.raises(OrganizationExecutionUnavailable):
+        reader._project_sources([*ids, str(uuid4()) if fault == 'outside' else ids[0]], lambda *a: None)
+    assert state['calls'] == 1
+
+
+def test_projection_failure_cannot_return_earlier_success(tmp_path):
+    reader, _, ids = projection_fixture(tmp_path)
+    returned = None
+    def project(rid, source):
+        if rid == ids[1]: raise ValueError('projection_failed')
+        return source['text']
+    with pytest.raises(ValueError, match='projection_failed'):
+        returned = reader._project_sources(ids, project)
+    assert returned is None
+
+
 @pytest.mark.parametrize('fault', ['execution', 'thread', 'manifest', 'digest', 'project', 'duplicate', 'missing', 'ref', 'organization'])
 def test_malformed_authority_cannot_read_originals(tmp_path, monkeypatch, fault):
     shared, preparation = fixture(tmp_path)

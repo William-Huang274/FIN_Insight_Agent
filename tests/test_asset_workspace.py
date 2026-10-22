@@ -29,6 +29,36 @@ def selection(workspace, project):
     return workspace.catalog('local-pilot', project)['items'][0]['current']['ref']
 
 
+def test_exact_version_resolution_keeps_catalog_contract_without_full_listing(tmp_path, monkeypatch):
+    client, _, _, _, workspace, project = setup(tmp_path)
+    ref = selection(workspace, project)
+    changed = client.post('/api/v1/asset-workspace/documents', headers=WRITE, json={
+        'project_id': project, 'base_ref': ref, 'title': 'Changed.md', 'text': 'Changed body'})
+    assert changed.status_code == 200
+    expected = [v for a in workspace.catalog('local-pilot', project)['items'] for v in a['versions']]
+    monkeypatch.setattr(workspace, 'catalog', lambda *a: pytest.fail('exact version must not scan full catalog'))
+    original_list = workspace.library.documents.list
+    selected = []
+    def scoped_list(scope, *, ids=None):
+        assert ids is not None and len(ids) == 1
+        selected.extend(ids)
+        return original_list(scope, ids=ids)
+    monkeypatch.setattr(workspace.library.documents, 'list', scoped_list)
+    for version in expected:
+        assert workspace.document_version('local-pilot', project, version['ref']['version_id']) == version
+        assert workspace.resolve('local-pilot', version['ref'])[0] == version
+    assert set(selected) == {v['ref']['version_id'] for v in expected}
+    with pytest.raises(KeyError):
+        workspace.resolve('local-pilot', {**ref, 'asset_id': 'wrong-family'})
+    with pytest.raises(ValueError):
+        workspace.resolve('local-pilot', {**ref, 'digest': '0' * 64})
+    with pytest.raises(KeyError):
+        workspace.document_version('another-owner', project, ref['version_id'])
+    workspace.library.set_access('local-pilot', project, 'document', ref['version_id'], True)
+    with pytest.raises((KeyError, ValueError)):
+        workspace.read('local-pilot', ref)
+
+
 def context(client, ref, version=0):
     response=client.post('/api/v1/asset-workspace/contexts',headers=WRITE,json={
         'schema_version':'asset_context.v1','question':'Read this saved asset and identify what still needs verification.',

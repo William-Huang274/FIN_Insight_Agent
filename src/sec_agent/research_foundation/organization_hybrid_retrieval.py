@@ -43,14 +43,15 @@ def preparation_nodes(reader, *, workbench_url):
     before, manifest, _ = reader._grant()
     nav = OrganizationSourceNavigation(reader, workbench_url=workbench_url)
     nodes = []
-    for item in manifest['inputs']:
+    by_resource = {item['resource_id']: item for item in manifest['inputs']}
+    def project(resource_id, result):
+        item = by_resource[resource_id]
         document = nav._identity(item)
-        result = reader._read(item['resource_id'])
         if result.get('source_bundle'):
             from .organization_source_projection import source_nodes
-            nodes.extend(row for row in source_nodes(result['source_bundle'], document, item, workbench_url)
-                         if row['node_kind'] == 'text')
-            continue
+            return [row for row in source_nodes(result['source_bundle'], document, item, workbench_url)
+                    if row['node_kind'] == 'text']
+        projected = []
         offset = 0
         while True:
             outline = nav.navigate({'source_space':'organization', 'operation':'outline',
@@ -62,11 +63,14 @@ def preparation_nodes(reader, *, workbench_url):
                 passage = result.items[0]
                 if passage['result_state'] != 'source_bound_passage' or passage.get('truncated'):
                     raise ValueError('organization_retrieval_requires_complete_projection')
-                nodes.append({'node_id':node_id, 'parent_document_id':document, 'node_kind':'text',
+                projected.append({'node_id':node_id, 'parent_document_id':document, 'node_kind':'text',
                     'content':passage['passage'], 'content_sha256':passage['content_sha256']})
             if outline.next_offset is None:
                 break
             offset = outline.next_offset
+        return projected
+    for projected in reader._project_sources(by_resource, project):
+        nodes.extend(projected)
     reader._after(before)
     return manifest['organization_id'], nodes
 

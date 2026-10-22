@@ -83,10 +83,10 @@ def test_source_identity_changes_with_publication_version(navigation):
 
 def test_character_window_and_projection_truncation_remain_explicit(navigation, monkeypatch):
     nav, _, _ = navigation
-    read = nav.reader._read
-    def longer(identifier):
-        return {**read(identifier), 'text': 'Revenue 123.40 USD; period 2025. ' * 300, 'truncated': True}
-    monkeypatch.setattr(nav.reader, '_read', longer)
+    read = nav.reader.workspace.read_source
+    def longer(*args):
+        return {**read(*args), 'text': 'Revenue 123.40 USD; period 2025. ' * 300, 'truncated': True}
+    monkeypatch.setattr(nav.reader.workspace, 'read_source', longer)
     document = nav.navigate(request('catalog')).items[0]['document_id']
     outlined = nav.navigate(request('outline', document_id=document))
     assert len(outlined.items) == 2
@@ -136,8 +136,8 @@ def test_real_mcp_and_existing_langchain_adapter_consume_scoped_tools(navigation
 
 def test_calculation_remains_source_bound_and_revocation_blocks_cached_results(navigation, monkeypatch):
     nav, state, _ = navigation
-    read = nav.reader._read
-    monkeypatch.setattr(nav.reader, '_read', lambda identifier: {**read(identifier), 'text': 'Revenue 123.40 USD in 2025.'})
+    read = nav.reader.workspace.read_source
+    monkeypatch.setattr(nav.reader.workspace, 'read_source', lambda *args: {**read(*args), 'text': 'Revenue 123.40 USD in 2025.'})
     source = read_first(nav).items[0]['passage_id']
     calc = SourceBoundCalculation(expression='revenue * 2', operands={'revenue': {'source_id': source,
         'quote': 'Revenue 123.40 USD in 2025.', 'literal': '123.40'}}, result_unit='USD', rationale='Synthetic arithmetic only')
@@ -223,3 +223,19 @@ def test_permission_change_after_navigation_drops_entire_response(navigation, mo
         return result
     monkeypatch.setattr(module, 'navigate_source_nodes', revoke_after_navigation)
     with pytest.raises(OrganizationExecutionUnavailable): nav.navigate(request('catalog'))
+
+
+def test_mid_projection_revocation_cannot_publish_observations(navigation, monkeypatch):
+    nav, state, _ = navigation
+    document = nav.navigate(request('catalog')).items[0]['document_id']
+    read = nav.reader.workspace.read_source
+    published = []
+    def revoke_after_storage(*args):
+        result = read(*args)
+        state['status'] = 404
+        return result
+    monkeypatch.setattr(nav.reader.workspace, 'read_source', revoke_after_storage)
+    monkeypatch.setattr(nav.observed, 'remember', lambda *args, **kwargs: published.append(args))
+    with pytest.raises(OrganizationExecutionUnavailable):
+        nav.navigate(request('read', document_id=document))
+    assert published == []

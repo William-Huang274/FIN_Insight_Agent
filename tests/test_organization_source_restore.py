@@ -130,12 +130,12 @@ def test_permissions_and_original_storage_are_rechecked_before_atomic_publish(ar
         get = shared.workspace.library.documents.get
         monkeypatch.setattr(shared.workspace.library.documents, 'get', lambda *a, **k: {**get(*a, **k), 'body':b'Corrupt'})
     else:
-        read = nav.reader._read
-        def revoke_after_read(identifier):
-            result = read(identifier)
+        read = nav.reader.workspace.read_source
+        def revoke_after_read(*args):
+            result = read(*args)
             state['status'] = 404
             return result
-        monkeypatch.setattr(nav.reader, '_read', revoke_after_read)
+        monkeypatch.setattr(nav.reader.workspace, 'read_source', revoke_after_read)
     with pytest.raises(OrganizationExecutionUnavailable): restored.restore(observations(passage, calc))
     assert restored.observed.get(passage['passage_id']) is None
     assert restored.observed.get(calc['calculation_id']) is None

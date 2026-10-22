@@ -204,6 +204,30 @@ def test_new_query_reuses_token_counts_without_retokenizing_originals(tmp_path, 
     assert result.items[0]['retrieval']['projection_cache_hits'] > 0
 
 
+def test_new_query_reuses_statistics_but_storage_generation_discards_them(tmp_path, monkeypatch):
+    nav, reader, _, _, request, _, reads, _ = setup(tmp_path, monkeypatch)
+    stats = nav._projection_cache.lexical_statistics
+    assert stats.entry is not None and not stats.hit
+    result = nav.navigate({**request, 'query': 'different revenue question'})
+    assert result.items and stats.hit and not reads
+    # A real unrelated commit changes the observer epoch even if the Java
+    # grant and all original rows stay unchanged. Rebuild rather than reuse.
+    with closing(sqlite3.connect(reader.workspace.library.documents.path)) as db, db:
+        db.execute('CREATE TABLE statistics_epoch_probe(value INTEGER)')
+    nav.navigate({**request, 'query': 'next revenue question'})
+    assert reads and not stats.hit
+
+
+def test_lexical_statistics_does_not_authorize_revoked_query(tmp_path, monkeypatch):
+    nav, _, state, _, request, _, reads, api = setup(tmp_path, monkeypatch)
+    assert nav._projection_cache.lexical_statistics.entry is not None
+    calls = api.calls
+    state['status'] = 404
+    with pytest.raises(OrganizationExecutionUnavailable):
+        nav.navigate({**request, 'query': 'new revenue query'})
+    assert not reads and api.calls == calls
+
+
 @pytest.mark.parametrize('text', ['', '[]', '现金流与收入 收入', 'cash cash flow rare-a'])
 def test_projection_terms_preserve_model_text_and_original_lookup(text):
     from retrieval.query_bm25 import lexical_document, lexical_scores

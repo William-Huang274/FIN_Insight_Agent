@@ -161,6 +161,18 @@ class OrganizationSourceNavigation:
             nodes = [row for row in nodes if row['node_kind'] == 'section']
         if storage_check is not None:
             storage_check()  # Reject changed originals before a query embedding can be requested.
+        def lexical_score(rows, tokens):
+            from retrieval.query_bm25 import lexical_document
+            # Called after navigation filters. Projection payloads were checked
+            # above; their generation binds current grant + original DB epoch.
+            # Length-framed IDs preserve population order without ambiguities.
+            key = sha256()
+            for row in rows:
+                identity = str(row['node_id']).encode()
+                key.update(len(identity).to_bytes(8, 'big'))
+                key.update(identity)
+            return projection_cache.lexical_statistics.scores(
+                (lexical_document(row) for row in rows), tokens, corpus_key=key.digest())
         def rank(rows, query, snapshot, literal):
             ranked, receipt = self.hybrid.rank(rows, query, snapshot, literal)
             if projection_cache is not None:
@@ -169,7 +181,8 @@ class OrganizationSourceNavigation:
             return ranked, receipt
         result = navigate_source_nodes(nodes, request, snapshot=self.reader.authority.manifest_digest[7:],
             allowed_space='organization', hybrid_enabled=False,
-            ranker=rank if self.hybrid is not None else None)
+            ranker=rank if self.hybrid is not None else None,
+            lexical_scorer=lexical_score if projection_cache is not None else None)
         result = result.model_copy(update={'items': tuple({**item,
             'organization_source': provenance[item['document_id']],
             **({'original_source':originals[item['node_id']]} if item['node_id'] in originals else {})} for item in result.items),

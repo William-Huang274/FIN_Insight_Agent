@@ -431,6 +431,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     assert reused.items and not original_reads and not capture_checks
                     assert reused.items[0]['retrieval']['projection_cache_hits']==len(batch)
                     assert not reused.items[0]['retrieval'].get('response_cache_hit')
+                    assert nav._projection_cache.lexical_statistics.hit
+                    statistics_bytes=len(nav._projection_cache.lexical_statistics.entry[1])
                     import sqlite3
                     # Independent original-path ranking, not a replay of the
                     # candidate IDs just cached by the implementation under test.
@@ -447,6 +449,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                         assert reused.items[0]['retrieval'][field]==full.items[0]['retrieval'][field]
                     cross_query={'query':second['query'],'original_reads':0,'capture_checks':0,
                         'projection_hits':len(batch),'projection_bytes':nav._projection_cache.size,
+                        'lexical_statistics_hit':True,'lexical_statistics_bytes':statistics_bytes,
                         'same_version_reference_original_reads':len(original_reads),
                         'ranks_and_items_equal':True,'provider_calls':0}
                     original_reads.clear();capture_checks.clear()

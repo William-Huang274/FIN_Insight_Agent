@@ -204,7 +204,7 @@ class SourceDocumentResult(BaseModel):
 
 def navigate_source_nodes(
     nodes: Sequence[Mapping[str, Any]], request: SourceDocumentRequest, *, snapshot: str, allowed_space: str = "local",
-    hybrid_enabled: bool | None = None, ranker=None,
+    hybrid_enabled: bool | None = None, ranker=None, lexical_scorer=None,
 ) -> SourceDocumentResult:
     if request.source_space != allowed_space:
         raise ValueError("live_web_source_read_not_enabled_use_local_or_request_live_capability")
@@ -251,8 +251,8 @@ def navigate_source_nodes(
         tokens = tokenize(request.query)
         # Reuse the mature retriever. Positive token overlap admits ties when
         # BM25 IDF is zero/negative in a very small document-scoped population.
-        scores, overlap, has_terms = lexical_scores(
-            (lexical_document(r) for r in rows), tokens)
+        scores, overlap, has_terms = (lexical_scorer(rows, tokens) if lexical_scorer is not None
+            else lexical_scores((lexical_document(r) for r in rows), tokens))
         if has_terms:
             ranked = sorted(overlap, key=lambda i: (-float(scores[i]), str(rows[i]["node_id"])))
             rows = [rows[i] for i in ranked]

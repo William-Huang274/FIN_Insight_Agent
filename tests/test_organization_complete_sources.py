@@ -107,6 +107,37 @@ def test_complete_projection_frozen_release_hashes_cache_and_legacy_rejection(tm
     with pytest.raises(OrganizationExecutionUnavailable): nav.navigate({'source_space':'organization','operation':'search','query':query})
 
 
+def test_statistics_population_tracks_real_organization_document_filter(tmp_path, monkeypatch):
+    source, ref, shared, grant, _, _, _, _ = complete_fixture(tmp_path, monkeypatch, repeats=80)
+    resource = str(uuid4())
+    first_input = grant['manifest']['inputs'][0]
+    binding = shared.publish(source, 'alice', resource, grant['organization_id'], first_input['space_id'], ref)
+    grant['manifest']['inputs'].append({**first_input, 'resource_id':resource, 'ref':binding['ref']})
+    grant['inputs'].append({'resource_id':resource, 'binding':binding})
+    reader, _ = runtime_at(shared, runtime_grant(grant))
+    org, nodes = preparation_nodes(reader, workbench_url='http://localhost')
+    release = str(uuid4())
+    vector = [1.] + [0.] * 1023  # Deterministic fixture, no provider request.
+    publish_prepared_index(tmp_path/'indices', org, nodes, [vector]*len(nodes),
+        {'disclosure':vector}, model='qwen3.7-text-embedding', provenance={'synthetic_fixture':True},
+        release_id=release, projection=PROJECTION)
+    grant['manifest']['retrieval_index'] = load_release(tmp_path/'indices', org, release)[3]
+    reader, _ = runtime_at(shared, runtime_grant(grant))
+    nav = OrganizationSourceNavigation(reader, workbench_url='http://localhost', retrieval_root=tmp_path/'indices')
+    query = {'source_space':'organization', 'operation':'search', 'query':'disclosure'}
+    first = nav.navigate(query)
+    statistics = nav._projection_cache.lexical_statistics
+    global_key = statistics.entry[0]
+    scoped = {**query, 'document_id':first.items[0]['document_id']}
+    result = nav.navigate(scoped)
+    assert result.items and not statistics.hit and statistics.entry[0] != global_key
+    nav.navigate({**scoped, 'limit':1})
+    assert statistics.hit
+    again = nav.navigate(query)
+    assert not statistics.hit and statistics.entry[0] == global_key
+    assert again.items[0]['retrieval']['lexical_node_ids'] == first.items[0]['retrieval']['lexical_node_ids']
+
+
 def test_split_embedding_input_keeps_release_bytes_and_rejects_changed_context(tmp_path, monkeypatch):
     _, _, _, _, reader, _, bundle, _ = complete_fixture(tmp_path, monkeypatch, repeats=80)
     org, nodes = preparation_nodes(reader, workbench_url='http://localhost')

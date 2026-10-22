@@ -14,7 +14,7 @@ from typing import Any, Literal
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer, model_validator
-from rank_bm25 import BM25Okapi
+from retrieval.query_bm25 import lexical_scores
 from retrieval.text import tokenize
 from .research_methods import REPORT_PROCESSING_TOOL_GUIDANCE
 
@@ -251,11 +251,11 @@ def navigate_source_nodes(
         tokens = tokenize(request.query)
         # Reuse the mature retriever. Positive token overlap admits ties when
         # BM25 IDF is zero/negative in a very small document-scoped population.
-        corpus = [tokenize(str(r.get("model_text") or r.get("content") or "")) for r in rows]
-        if any(corpus):
-            scores = BM25Okapi(corpus).get_scores(tokens)
-            ranked = sorted(range(len(rows)), key=lambda i: (-float(scores[i]), str(rows[i]["node_id"])))
-            rows = [rows[i] for i in ranked if set(tokens).intersection(corpus[i])]
+        scores, overlap, has_terms = lexical_scores(
+            (tokenize(str(r.get("model_text") or r.get("content") or "")) for r in rows), tokens)
+        if has_terms:
+            ranked = sorted(overlap, key=lambda i: (-float(scores[i]), str(rows[i]["node_id"])))
+            rows = [rows[i] for i in ranked]
         else:
             # An archived API response such as [] is readable but contributes
             # no lexical terms. Keep the authorized dense scope and exact

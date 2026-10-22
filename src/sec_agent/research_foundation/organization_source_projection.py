@@ -58,7 +58,7 @@ def source_nodes(bundle, document_id, item, url):
                    source_role='organization_indexed_node_set' if indexed else 'organization_complete_parsed_source', company=metadata.get('entity_id'),
                    publication_date=source['published_at'], fiscal_period=metadata.get('fiscal_period') or metadata.get('period_end'),
                    content=text, content_sha256=chunk['digest'], raw_body_sha256=item['ref']['digest'],
-                   stable_url=url, embedding_content=embedding_text,
+                   stable_url=url, embedding_context=chunk['context'],
                    embedding_input_sha256=chunk['embedding_input_sha256'], original_source=origin)
         nodes.extend([{**row,'node_kind':'section'}, {**row,'node_kind':'text','node_id':identifier+':leaf'}])
     return nodes

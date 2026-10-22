@@ -98,8 +98,14 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
         records.append({'node_id': row['node_id'], 'document_id': row['parent_document_id'],
             'content_sha256': row['content_sha256'], 'vector_index': i})
         if row.get('embedding_input_sha256') is not None:
+            # Keep the body once in a full-corpus projection. Reconstruct only
+            # this row's provider input while validating its pinned digest.
+            embedding_text = (row['embedding_context'] + '\n' + row['content']
+                              if 'embedding_context' in row else row['embedding_content'])
+            if 'embedding_context' in row and 'embedding_content' in row and row['embedding_content'] != embedding_text:
+                raise ValueError('organization_embedding_projection_mismatch')
             if (projection != CHUNK_PROJECTION
-                    or sha256(row['embedding_content'].encode()).hexdigest() != row['embedding_input_sha256']):
+                    or sha256(embedding_text.encode()).hexdigest() != row['embedding_input_sha256']):
                 raise ValueError('organization_embedding_projection_mismatch')
             records[-1]['embedding_input_sha256'] = row['embedding_input_sha256']
     if len({r['node_id'] for r in records}) != len(records):
@@ -115,14 +121,14 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
     # Validate/normalize one row at a time, avoiding two extra corpus-sized
     # arrays. index.json is the publication marker and is written only after
     # every vector succeeds. A failed directory is retained and never reused.
-    matrix = np.lib.format.open_memmap(directory/'vectors.npy', mode='w+', dtype=np.float32,
-                                      shape=(len(nodes), dimensions))
-    try:
+    # A writable mmap still accumulates a corpus-sized resident working set on
+    # Windows. Write the same NumPy format sequentially without mapping it.
+    with (directory/'vectors.npy').open('xb') as stream:
+        np.lib.format.write_array_header_1_0(stream, {
+            'descr': np.lib.format.dtype_to_descr(np.dtype(np.float32)),
+            'fortran_order': False, 'shape': (len(nodes), dimensions)})
         for position in range(len(nodes)):
-            matrix[position] = vector(vectors[position], dimensions)
-        matrix.flush()
-    finally:
-        del matrix
+            stream.write(vector(vectors[position], dimensions).tobytes(order='C'))
     with (directory/'vectors.npy').open('rb') as stream:
         from hashlib import file_digest
         matrix_sha256 = file_digest(stream, 'sha256').hexdigest()

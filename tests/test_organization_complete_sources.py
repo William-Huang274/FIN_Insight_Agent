@@ -107,6 +107,37 @@ def test_complete_projection_frozen_release_hashes_cache_and_legacy_rejection(tm
     with pytest.raises(OrganizationExecutionUnavailable): nav.navigate({'source_space':'organization','operation':'search','query':query})
 
 
+def test_split_embedding_input_keeps_release_bytes_and_rejects_changed_context(tmp_path, monkeypatch):
+    _, _, _, _, reader, _, bundle, _ = complete_fixture(tmp_path, monkeypatch, repeats=80)
+    org, nodes = preparation_nodes(reader, workbench_url='http://localhost')
+    chunks = {row['id']: row for row in bundle['chunks']}
+    legacy = []
+    for row in nodes:
+        chunk = chunks[row['original_source']['id']]
+        assert 'embedding_content' not in row
+        assert row['embedding_context'] == chunk['context']
+        assert row['content'] == chunk['body']
+        old = {key: value for key, value in row.items() if key != 'embedding_context'}
+        old['embedding_content'] = chunk['context'] + '\n' + chunk['body']
+        legacy.append(old)
+    vectors = [[1.] + [0.] * 1023 for _ in nodes]
+    release = str(uuid4())
+    options = dict(model='qwen3.7-text-embedding', provenance={'fixture': True},
+                   release_id=release, projection=PROJECTION)
+    for name, values in [('compact', nodes), ('legacy', legacy)]:
+        publish_prepared_index(tmp_path/name, org, values, vectors, {}, **options)
+    for name in ['index.json', 'vectors.npy']:
+        assert (tmp_path/'compact'/org/'releases'/release/name).read_bytes() == (
+            tmp_path/'legacy'/org/'releases'/release/name).read_bytes()
+    for name, replacement in [('changed', {'embedding_context': 'different context'}),
+                              ('ambiguous', {'embedding_content': 'different combined input'})]:
+        bad = [dict(row) for row in nodes]
+        bad[-1].update(replacement)
+        with pytest.raises(ValueError, match='embedding_projection'):
+            publish_prepared_index(tmp_path/name, org, bad, vectors, {}, **options)
+        assert not (tmp_path/name/org/'releases'/release/'index.json').exists()
+
+
 def test_new_capture_rejects_stale_snapshot_and_future_source(tmp_path, monkeypatch):
     source, ref, shared, grant, reader, state, bundle, text = complete_fixture(tmp_path, monkeypatch)
     request=CaptureRequest(project_id=ref['project_id'],title='Bad version',selection={

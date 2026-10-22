@@ -1,9 +1,42 @@
 """Versioned original chunk projection; resource identity and ACL stay outside."""
 from datetime import date
+from collections.abc import Mapping
 from hashlib import sha256
 import json
+import zlib
+from types import MappingProxyType
 
 PROJECTION = 'organization-library-chunks.v1'
+
+
+class _SourceNode(Mapping):
+    """Internal read-only view; decode one exact body only while consuming it.
+
+    A section and its search leaf share metadata and lossless UTF-8 bytes. No decoded
+    body cache: retaining it would recreate the corpus-sized string heap.
+    Public tool responses still materialize ordinary dictionaries/strings.
+    """
+    __slots__ = ('_metadata', '_body', '_compressed', '_kind')
+
+    def __init__(self, metadata, body, compressed, kind):
+        self._metadata, self._body, self._compressed, self._kind = metadata, body, compressed, kind
+
+    def __getitem__(self, key):
+        if key == 'content':
+            return (zlib.decompress(self._body) if self._compressed else self._body).decode('utf-8')
+        if key == 'node_kind':
+            return self._kind
+        if key == 'node_id' and self._kind == 'text':
+            return self._metadata[key] + ':leaf'
+        return self._metadata[key]
+
+    def __iter__(self):
+        yield from self._metadata
+        yield 'content'
+        yield 'node_kind'
+
+    def __len__(self):
+        return len(self._metadata) + 2
 
 
 def validate_source_cutoff(bundle, as_of):
@@ -57,8 +90,14 @@ def source_nodes(bundle, document_id, item, url):
                    title=item['title'], section_path=[chunk['locator']], document_kind='document',
                    source_role='organization_indexed_node_set' if indexed else 'organization_complete_parsed_source', company=metadata.get('entity_id'),
                    publication_date=source['published_at'], fiscal_period=metadata.get('fiscal_period') or metadata.get('period_end'),
-                   content=text, content_sha256=chunk['digest'], raw_body_sha256=item['ref']['digest'],
+                   content_sha256=chunk['digest'], raw_body_sha256=item['ref']['digest'],
                    stable_url=url, embedding_context=chunk['context'],
                    embedding_input_sha256=chunk['embedding_input_sha256'], original_source=origin)
-        nodes.extend([{**row,'node_kind':'section'}, {**row,'node_kind':'text','node_id':identifier+':leaf'}])
+        row_metadata = MappingProxyType(row)
+        body = text.encode('utf-8')
+        packed = zlib.compress(body, level=1)
+        compressed = len(packed) < len(body)
+        stored = packed if compressed else body
+        nodes.extend([_SourceNode(row_metadata, stored, compressed, 'section'),
+                      _SourceNode(row_metadata, stored, compressed, 'text')])
     return nodes

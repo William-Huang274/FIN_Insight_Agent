@@ -138,6 +138,35 @@ def test_split_embedding_input_keeps_release_bytes_and_rejects_changed_context(t
         assert not (tmp_path/name/org/'releases'/release/'index.json').exists()
 
 
+def test_compact_nodes_preserve_unicode_offsets_and_public_wire_shape(tmp_path):
+    from sec_agent.research_foundation.organization_source_projection import source_nodes
+    from sec_agent.research_foundation.source_document_navigation import navigate_source_nodes, SourceDocumentRequest
+    text = 'Revenue 123.40 USD.\r\n中文 e\u0301 é 🧾\n' * 300
+    path = tmp_path/'library.sqlite'
+    sid = database(path, text)
+    bundle = bundle_at(path, sid)
+    bundle['source']['metadata'] = json.dumps({'entity_id': 'COMPANY::unicode', 'fiscal_period': '2025'})
+    nodes = source_nodes(bundle, 'ORGDOC::unicode',
+        {'title': 'Unicode original', 'ref': {'digest': 'a'*64}}, 'http://localhost')
+    plain = [dict(row) for row in nodes]
+    assert len(nodes) > 2
+    assert all(row['company'] == 'COMPANY::unicode' and row['fiscal_period'] == '2025' for row in nodes)
+    for row in nodes:
+        assert row.get('absent') is None
+        assert len(row) == len(set(row)) == len(dict(row))
+        with pytest.raises(TypeError):
+            row['content'] = 'changed'
+    requests = [SourceDocumentRequest(source_space='organization', operation=op, document_id='ORGDOC::unicode',
+                **({'query': 'Revenue'} if op == 'search' else {})) for op in ('catalog','outline','search')]
+    requests.append(SourceDocumentRequest(source_space='organization', operation='read',
+        document_id='ORGDOC::unicode', node_id=nodes[0]['node_id'], character_offset=23, max_characters=2000))
+    for request in requests:
+        expected = navigate_source_nodes(plain, request, snapshot='fixed', allowed_space='organization', hybrid_enabled=False)
+        actual = navigate_source_nodes(nodes, request, snapshot='fixed', allowed_space='organization', hybrid_enabled=False)
+        assert actual.model_dump(mode='json') == expected.model_dump(mode='json')
+    assert actual.items[0]['passage'] == nodes[0]['content'][23:2023]
+
+
 def test_new_capture_rejects_stale_snapshot_and_future_source(tmp_path, monkeypatch):
     source, ref, shared, grant, reader, state, bundle, text = complete_fixture(tmp_path, monkeypatch)
     request=CaptureRequest(project_id=ref['project_id'],title='Bad version',selection={

@@ -252,27 +252,34 @@ def navigate_source_nodes(
         # Reuse the mature retriever. Positive token overlap admits ties when
         # BM25 IDF is zero/negative in a very small document-scoped population.
         corpus = [tokenize(str(r.get("model_text") or r.get("content") or "")) for r in rows]
-        scores = BM25Okapi(corpus).get_scores(tokens)
-        ranked = sorted(range(len(rows)), key=lambda i: (-float(scores[i]), str(rows[i]["node_id"])))
-        rows = [rows[i] for i in ranked if set(tokens).intersection(corpus[i])]
+        if any(corpus):
+            scores = BM25Okapi(corpus).get_scores(tokens)
+            ranked = sorted(range(len(rows)), key=lambda i: (-float(scores[i]), str(rows[i]["node_id"])))
+            rows = [rows[i] for i in ranked if set(tokens).intersection(corpus[i])]
+        else:
+            # An archived API response such as [] is readable but contributes
+            # no lexical terms. Keep the authorized dense scope and exact
+            # readback intact; BM25 cannot initialize an empty vocabulary.
+            rows = []
+            retrieval_notice = ' Scoped source text has no lexical terms; no keyword matches. An empty API response is not evidence of business absence.'
         import os
         use_hybrid = hybrid_enabled if hybrid_enabled is not None else os.environ.get('FINSIGHT_SOURCE_HYBRID') == '1'
         if ranker is not None:
             rows, receipt = ranker(eligible_rows, request.query, snapshot, rows)
             scoped_retrieval = receipt
-            retrieval_notice = ' Retrieval: ' + str(receipt)
+            retrieval_notice += ' Retrieval: ' + str(receipt)
         elif use_hybrid:
             from retrieval.source_hybrid import cache_path, rank_sources
             path = cache_path()
             try:
                 rows, receipt = rank_sources(eligible_rows, request.query, snapshot, rows, path=path)
-                retrieval_notice = ' Retrieval: '+str(receipt)
+                retrieval_notice += ' Retrieval: '+str(receipt)
             except (RuntimeError, ValueError, KeyError, OSError) as exc:
-                retrieval_notice = ' Hybrid unavailable; BM25 results retained. '+str(exc)[:160]
+                retrieval_notice += ' Hybrid unavailable; BM25 results retained. '+str(exc)[:160]
             except Exception:
                 # Provider failures must not turn an available source into a gap.
                 # Private transport details are not exposed in source results.
-                retrieval_notice = ' Hybrid provider unavailable; BM25 results retained; no automatic retry.'
+                retrieval_notice += ' Hybrid provider unavailable; BM25 results retained; no automatic retry.'
     items: list[dict[str, Any]] = []
     used = 0
     notice = "Use returned IDs to read complete sections/tables; search previews cannot be cited."

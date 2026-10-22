@@ -4,6 +4,8 @@
 
 ## 低内存条件下的逐源分批验收
 
+来源可读、摘要及原向量匹配，仅证明历史输入可恢复。例如原始 API 响应 `[]` 可以原样保存和回读，但不是有效的业务事实或“该公司没有相关产品”的证据。导航在授权范围内无任何分词词项时返回空的关键词结果并明确提示；仍允许已授权、已固定的向量候选导航和精确原文回读，不扩大范围、不制造正文、不因空词表初始化 BM25 而崩溃。普通非空语料沿原有 BM25 计算，不删除混合语料中的空节点以改变评分统计。此类输入需在后续召回评测的数据质量清单中单独列明，不能将存储链路通过当作语义召回正确。
+
 串行启动可显式启用 `FIN_COMPLETE_SOURCE_SERIAL_PROFILE=1`：仅本轮 JVM 使用 32/256 MiB 初始/最大堆、Serial GC、48 MiB code cache、160 MiB metaspace 和 32 MiB direct memory 上限，Tomcat 1–8 工作线程，Hikari 1–2 连接；同一个完整 BFF 应用使用单 worker、8 并发连接限制和 16 backlog。独立 PostgreSQL 使用 32 MiB shared buffers、2 MiB work memory、16 MiB maintenance memory、20 连接、禁用并行查询与 JIT，容器 256 MiB/1 CPU。未启动原生研究图；不改变共享服务或生产默认配置，不移除路由、鉴权或资料检查。运行时读取并断言 fsync、synchronous_commit、full_page_writes 均开启；保留 Flyway 迁移和真实事务。小资源配置只验串行正确性，不得作为并发容量结果。新配置属于新执行基线，不复用旧基线成功收据；800 MiB 运行中止线不变，低于常规 4 GiB 余量的首批属于资源诊断，需记录实际峰值、剩余内存和失败。
 
 `scripts/engineering/source_intake_batches.py` 将完整已核验清单按原顺序划分为可续跑批次，默认每批最多 32 份、输入文件合计预算 16 MiB。超过预算的单份来源独立成批，禁止裁剪正文、分段或向量。文件预算不是进程 RSS 上限；服务启动内存和单份超大原件仍需实际观测。

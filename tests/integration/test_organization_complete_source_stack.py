@@ -30,7 +30,7 @@ from sec_agent.research_foundation.organization_source_projection import PROJECT
 from tests.integration.source_intake_runtime import CompleteSourceStack
 from tests.integration.test_java_intake_native import wait_for
 from tests.integration.source_intake_diagnostics import SourceBundles, SourceVectors, PhaseDiagnostics, file_sha256, source_coverage, source_readback_targets
-from tests.integration.source_intake_checkpoint import load_checkpoint, save_checkpoint, restore_checkpoint
+from tests.integration.source_intake_checkpoint import load_checkpoint, save_checkpoint, restore_checkpoint, verify_restored_publication
 
 pytestmark = pytest.mark.skipif(not os.getenv('FIN_COMPLETE_SOURCE_INTAKE'), reason='explicit full-source intake artifacts required')
 
@@ -166,16 +166,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         if restored:
             prior=restored['publication']
             org,space,project,private=[prior[k] for k in ('org','space','project','private')]
-            assert api('GET',f'/projects/{project}')==prior['project_state']
-            assert api('GET',f'/organizations/{org}/members')==prior['members']
             shared_assets=AssetWorkspace(s.state/'project-library'/'organization-assets')
-            for row,ref in zip(prior['captures'],prior['source_refs'],strict=True):
-                sid=row['source_id'];rid=prior['resources'][sid]
-                grant=api('POST',f'/projects/{project}/resources/{rid}/access')
-                assert grant==prior['grants'][sid]
-                assert assets.read_source('oidc:alice',ref)['source_bundle']==bundles[sid]
-                assert shared_assets.read_source('organization:'+org,grant['binding']['ref'])['source_bundle']==bundles[sid]
-                assert api('POST',f'/projects/{project}/resources/{rid}/access')==grant
+            verify_restored_publication(api,assets,shared_assets,bundles,prior)
             resources=dict(prior['resources']);captures=list(prior['captures']);source_refs=list(prior['source_refs'])
             s.save('publication-restore',{'status':'verified','sources':len(captures),
                 'origin_attempt':restored['origin_attempt'],'manifest_sha256':file_sha256(Path(checkpoint_path)/'manifest.json'),

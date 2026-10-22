@@ -14,6 +14,27 @@ import zipfile
 FILES = ('attachments.sqlite', 'organization-assets/attachments.sqlite')
 
 
+def verify_restored_publication(api, assets, shared_assets, bundles, prior):
+    """Re-authorize the restored fixture; never use the manifest as an ACL cache."""
+    org, project = prior['org'], prior['project']
+    if (api('GET', f'/projects/{project}') != prior['project_state']
+            or api('GET', f'/organizations/{org}/members') != prior['members']):
+        raise ValueError('checkpoint_restored_project_or_members_changed')
+    for row, ref in zip(prior['captures'], prior['source_refs'], strict=True):
+        sid = row['source_id']
+        rid = prior['resources'][sid]
+        endpoint = f'/projects/{project}/resources/{rid}/access'
+        grant = api('POST', endpoint)
+        if (grant != prior['grants'][sid] or str(grant['id']) != rid
+                or str(grant['project_id']) != project or str(grant['organization_id']) != org):
+            raise ValueError('checkpoint_restored_resource_grant_changed')
+        if (assets.read_source('oidc:alice', ref)['source_bundle'] != bundles[sid]
+                or shared_assets.read_source('organization:'+org, grant['binding']['ref'])['source_bundle'] != bundles[sid]):
+            raise ValueError('checkpoint_restored_original_changed')
+        if api('POST', endpoint) != grant:
+            raise ValueError('checkpoint_restored_grant_changed_during_read')
+
+
 def digest(path):
     with Path(path).open('rb') as handle:
         return file_digest(handle, 'sha256').hexdigest()

@@ -138,3 +138,32 @@ def test_foreign_or_ambiguous_container_is_never_dumped(tmp_path,monkeypatch,ids
         return json.dumps([{'Id':'a','Config':{'Labels':labels}}]) if 'inspect' in args else ids
     monkeypatch.setattr(cp.subprocess,'check_output',output)
     with pytest.raises(ValueError):cp.own_postgres(SimpleNamespace(docker='docker',project='fin-intake-native-own'))
+
+
+@pytest.mark.parametrize('change',[None,'project','members','revoked','grant','original','organization_original','during_read'])
+def test_restored_authority_and_originals_are_checked_again(change):
+    reads=[];access=[]
+    bundle={'company':'A','period':'FY2025','unit':'USD','revision':2}
+    grant={'id':'r','project_id':'p','organization_id':'o','revision':1,'binding':{'ref':{'version_id':'ov'}}}
+    prior={'org':'o','project':'p','project_state':{'revision':1},'members':[{'active':True}],
+           'captures':[{'source_id':'s'}],'source_refs':[{'version_id':'v'}],
+           'resources':{'s':'r'},'grants':{'s':grant}}
+    def api(method,path):
+        if path.endswith('/members'):return [] if change=='members' else prior['members']
+        if path=='/projects/p':return {} if change=='project' else prior['project_state']
+        access.append(path)
+        if change=='revoked':raise PermissionError('resource_revoked')
+        if change=='grant' or (change=='during_read' and len(access)>1):return {**grant,'revision':2}
+        return grant
+    def original(owner,ref):
+        reads.append(owner)
+        corrupt=(change=='original' and owner=='oidc:alice') or (change=='organization_original' and owner=='organization:o')
+        return {'source_bundle':{**bundle,'revision':3} if corrupt else bundle}
+    storage=SimpleNamespace(read_source=original)
+    if change:
+        with pytest.raises((ValueError,PermissionError)):
+            cp.verify_restored_publication(api,storage,storage,{'s':bundle},prior)
+        if change in ('project','members','revoked','grant'):assert not reads
+    else:
+        cp.verify_restored_publication(api,storage,storage,{'s':bundle},prior)
+        assert reads==['oidc:alice','organization:o'] and len(access)==2

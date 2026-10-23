@@ -121,6 +121,28 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     additional_queries[q['query']]=saved['result']['values'][0]
                     break
             assert additional_queries, 'cross-query probe requires two existing successful query vectors'
+    semantic_rows = []
+    semantic_dataset = None
+    if os.getenv('FIN_COMPLETE_SOURCE_SEMANTIC_DATASET'):
+        from scripts.engineering.organization_recall_evaluation import validate_questions
+        semantic_path = Path(os.environ['FIN_COMPLETE_SOURCE_SEMANTIC_DATASET'])
+        semantic_dataset = json.loads(semantic_path.read_text(encoding='utf8'))
+        validate_questions(semantic_dataset, bundles)
+        semantic_split = os.environ['FIN_COMPLETE_SOURCE_SEMANTIC_SPLIT']
+        assert semantic_split in {'development', 'heldout'}
+        semantic_rows = [row for row in semantic_dataset['questions'] if row['split'] == semantic_split]
+        assert unified_scope and global_probe and lifecycle_probe and graph_probe and semantic_rows
+        assert semantic_dataset['intake_sha256'] == file_sha256(root/'result.json')
+        assert semantic_dataset['scope']['candidate_sources'] == len(bundles)
+        assert semantic_dataset['scope']['candidate_chunks'] == len(vectors)
+        # Successful receipts are prepared separately under an explicit budget.
+        # This service test remains loopback-only and cannot submit paid calls.
+        with ReadOnlyReceipts(Path(os.environ['FIN_COMPLETE_SOURCE_SEMANTIC_CACHE'])) as cache:
+            client = CachedRetrieval(cache, SimpleNamespace(embedding_model=model, rerank_model='qwen3-rerank'), namespace)
+            for row in semantic_rows:
+                saved = cache.get(client.key('embedding', [row['query']]))
+                assert saved and saved['status'] == 'completed' and saved['result']['model'] == model
+                additional_queries[row['query']] = saved['result']['values'][0]
     checkpoint_path=os.getenv('FIN_COMPLETE_SOURCE_RESUME')
     pause_after=int(os.getenv('FIN_COMPLETE_SOURCE_PAUSE_AFTER','0'))
     write_checkpoint=os.getenv('FIN_COMPLETE_SOURCE_WRITE_CHECKPOINT')=='1' or pause_after>0
@@ -156,6 +178,13 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         tools='production organization MCP on host; native Agent run not started',
         recall_or_capacity_evaluation=False,provider_calls=0,
         query_scope='reused query for storage/authorization plumbing, no relevance assertion' if storage_probe else 'historical source queries'))
+    if semantic_rows:
+        s.save('semantic-scope', {'dataset_sha256': file_sha256(semantic_path),
+            'evaluation_role': semantic_dataset['evaluation_role'], 'split': semantic_split,
+            'question_ids': [r['id'] for r in semantic_rows], 'sources': len(bundles), 'chunks': len(vectors),
+            'scope': 'complete frozen organization grant; no document prefilter',
+            'provider_calls_in_service_run': 0, 'label_validation': 'original_digest_and_quote',
+            'financial_answer_quality_assessed': False, 'capacity_assessed': False})
     def api(method,path,body=None):
         if method == 'POST' and path.endswith('/access'):
             # Access grants are an internal Java contract, deliberately absent
@@ -572,6 +601,15 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     kind=('node' if 'node_recovery' in bundle else 'archive' if 'archive_recovery' in bundle else 'text')
                     samples.setdefault(kind,sid)
                 read_batch=batch.subset(list(dict.fromkeys([*list(batch)[:2],*samples.values(),list(batch)[-1]])))
+            if semantic_rows:
+                from scripts.engineering.organization_recall_evaluation import bind_labels, evaluate
+                labels = bind_labels(semantic_rows, frozen['manifest'], resources,
+                                     nav.hybrid.load_frozen(frozen['manifest'])[1])
+                s.save('semantic-label-bindings', labels)
+                with diagnostic.phase('semantic_hybrid_development' if semantic_split == 'development' else 'semantic_hybrid_heldout'):
+                    evaluate(semantic_rows, labels, nav, index_digest=contract['index_digest'], save=s.save)
+                with diagnostic.phase('semantic_graph_development' if semantic_split == 'development' else 'semantic_graph_heldout'):
+                    evaluate(semantic_rows, labels, nav, index_digest=contract['index_digest'], save=s.save, graph=True)
             with diagnostic.phase('sampled_original_readback',profile=global_probe):
                 asyncio.run(exercise(read_batch,targets,nav,reader))
             # Revoke a candidate that was NOT explicitly selected; all current

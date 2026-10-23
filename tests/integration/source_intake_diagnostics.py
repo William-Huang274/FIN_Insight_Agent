@@ -152,5 +152,5 @@ class PhaseDiagnostics:
                     primitive_calls=value[0], calls=value[1], self_seconds=value[2], cumulative_seconds=value[3])
                     for key, value in stats.items() if any(part in key[0] for part in (
                         'organization_', 'asset_workspace', 'project_source_captures',
-                        'source_document_navigation', 'query_bm25', 'source_hybrid', 'library_source_bundle', 'research_library'))]
+                        'source_document_navigation', 'query_bm25', 'lexical_postings', 'source_hybrid', 'library_source_bundle', 'research_library'))]
             self.save('phase-diagnostics', self.rows)

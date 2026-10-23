@@ -28,9 +28,10 @@ def lexical_document(row):
 
 
 class _QueryBM25(BM25Okapi):
-    def __init__(self, corpus, query, statistics=None):
+    def __init__(self, corpus, query, statistics=None, posting_builder=None):
         self.query_terms = frozenset(query)
         self.statistics = statistics
+        self.posting_builder = posting_builder
         super().__init__(corpus)
 
     def _initialize(self, corpus):
@@ -41,6 +42,8 @@ class _QueryBM25(BM25Okapi):
             self.doc_len.append(length)
             total_length += length
             counts = document.counts if isinstance(document, TokenCounts) else Counter(document)
+            if self.posting_builder is not None:
+                self.posting_builder.add(self.corpus_size, counts)
             # Preserve first-occurrence vocabulary order: the upstream IDF
             # average uses floating-point accumulation in this order.
             if self.statistics is None:
@@ -84,25 +87,41 @@ class LexicalStatisticsCache:
 
     The caller must bind corpus_key to the exact ordered, immutable input scope
     and reset this cache when its authorization/storage generation changes.
-    Counts still come from verified projections on EVERY query. No postings,
-    positive permission decisions, or expanded corpus are retained here.
+    By default counts come from verified projections on every query. Optional
+    postings may be reused only when the caller verifies the full population
+    before each call. No positive permission decisions are retained here.
     """
     MAX_RAW = 32 * 1024 * 1024
 
-    def __init__(self, limit=8 * 1024 * 1024):
+    def __init__(self, limit=8 * 1024 * 1024, *, postings_limit=0):
         self.limit = limit
+        self.postings_limit = postings_limit
+        self.clear()
+
+    def clear(self):
         self.entry = None
         self.hit = False
+        self.postings = None
+        self.postings_bytes = 0
+        self.postings_hit = False
 
-    def scores(self, corpus, query, *, corpus_key):
+    def scores(self, corpus, query, *, corpus_key, verified_population=False):
         query = tuple(query)
         self.hit = self.entry is not None and self.entry[0] == corpus_key
         statistics = json.loads(zlib.decompress(self.entry[1])) if self.hit else None
         # A key change drops the previous population even if the new one is
         # too large to admit. Never use global IDF for a document-only search.
         if not self.hit:
-            self.entry = None
-        index = _QueryBM25(corpus, query, statistics)
+            self.clear()
+        self.postings_hit = bool(verified_population and self.hit and self.postings is not None)
+        builder = None
+        if self.postings_hit:
+            from .lexical_postings import query_counts
+            corpus = query_counts(self.postings, query, statistics[0])
+        elif verified_population and self.postings_limit and not self.hit:
+            from .lexical_postings import PostingBuilder
+            builder = PostingBuilder(self.postings_limit)
+        index = _QueryBM25(corpus, query, statistics, builder)
         result = _scores(index, query)
         if not self.hit:
             raw = json.dumps([index.doc_len, index.idf,
@@ -112,4 +131,6 @@ class LexicalStatisticsCache:
                 packed = zlib.compress(raw, level=1)
                 if len(packed) <= self.limit:
                     self.entry = corpus_key, packed
+                    if builder is not None:
+                        self.postings, self.postings_bytes = builder.finish()
         return result

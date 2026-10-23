@@ -165,6 +165,7 @@ class OrganizationSourceNavigation:
             from retrieval.query_bm25 import lexical_document
             # Called after navigation filters. Projection payloads were checked
             # above; their generation binds current grant + original DB epoch.
+            # Full projection digests have been verified, including term bytes.
             # Length-framed IDs preserve population order without ambiguities.
             key = sha256()
             for row in rows:
@@ -172,7 +173,8 @@ class OrganizationSourceNavigation:
                 key.update(len(identity).to_bytes(8, 'big'))
                 key.update(identity)
             return projection_cache.lexical_statistics.scores(
-                (lexical_document(row) for row in rows), tokens, corpus_key=key.digest())
+                (lexical_document(row) for row in rows), tokens, corpus_key=key.digest(),
+                verified_population=True)
         def rank(rows, query, snapshot, literal):
             ranked, receipt = self.hybrid.rank(rows, query, snapshot, literal)
             if projection_cache is not None:

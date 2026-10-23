@@ -138,7 +138,7 @@ class OrganizationProjectionCache:
         self.db = None
         self._cleanup = None
         from retrieval.query_bm25 import LexicalStatisticsCache
-        self.lexical_statistics = LexicalStatisticsCache()
+        self.lexical_statistics = LexicalStatisticsCache(postings_limit=64 * 1024 * 1024)
 
     @property
     def path(self):
@@ -154,8 +154,7 @@ class OrganizationProjectionCache:
             self.directory, self.entries, self.size = None, {}, 0
             self.generation = generation
             self.admission_disabled = False
-            self.lexical_statistics.entry = None
-            self.lexical_statistics.hit = False
+            self.lexical_statistics.clear()
         self.hits = 0
 
     def get(self, resource_id):

@@ -210,12 +210,23 @@ def test_new_query_reuses_statistics_but_storage_generation_discards_them(tmp_pa
     assert stats.entry is not None and not stats.hit
     result = nav.navigate({**request, 'query': 'different revenue question'})
     assert result.items and stats.hit and not reads
+    assert stats.postings_hit and stats.postings is not None
     # A real unrelated commit changes the observer epoch even if the Java
     # grant and all original rows stay unchanged. Rebuild rather than reuse.
     with closing(sqlite3.connect(reader.workspace.library.documents.path)) as db, db:
         db.execute('CREATE TABLE statistics_epoch_probe(value INTEGER)')
     nav.navigate({**request, 'query': 'next revenue question'})
     assert reads and not stats.hit
+    assert not stats.postings_hit
+
+
+def test_verified_new_query_does_not_unpack_any_node_terms(tmp_path, monkeypatch):
+    nav, _, _, _, request, _, reads, _ = setup(tmp_path, monkeypatch)
+    def unexpected(*args):
+        raise AssertionError('query should decode requested posting columns only')
+    monkeypatch.setattr('sec_agent.research_foundation.organization_projection_cache.unpack_terms', unexpected)
+    result = nav.navigate({**request, 'query':'different revenue question'})
+    assert result.items and not reads and nav._projection_cache.lexical_statistics.postings_hit
 
 
 def test_lexical_statistics_does_not_authorize_revoked_query(tmp_path, monkeypatch):

@@ -62,6 +62,10 @@ def validate_source_cutoff(bundle, as_of):
         raise ValueError('complete_source_not_available_at_research_cutoff')
 
 
+def chunk_node_id(document_id, chunk_id):
+    return document_id.replace('ORGDOC::', 'ORGSECTION::') + ':chunk-' + sha256(chunk_id.encode()).hexdigest()[:32]
+
+
 def source_nodes(bundle, document_id, item, url):
     """Body is evidence; embedding context stays a separate navigation field."""
     source = bundle['source']
@@ -73,7 +77,7 @@ def source_nodes(bundle, document_id, item, url):
         originals=validate_bundle(bundle)
     nodes = []
     for chunk in bundle['chunks']:
-        identifier = document_id.replace('ORGDOC::', 'ORGSECTION::') + ':chunk-' + sha256(chunk['id'].encode()).hexdigest()[:32]
+        identifier = chunk_node_id(document_id, chunk['id'])
         text = chunk['body']
         embedding_text = chunk['context'] + '\n' + text
         if ((not indexed and bundle['text'][chunk['source_char_start']:chunk['source_char_end']] != text)

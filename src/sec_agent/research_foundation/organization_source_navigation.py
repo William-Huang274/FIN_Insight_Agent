@@ -138,8 +138,19 @@ class OrganizationSourceNavigation:
             ((row['node_id'],row['content_sha256'],row['lexical_input_sha256']) for row in rows),
             tokenize(request.query))
         literal = [rows[i] for i in sorted(overlap, key=lambda i:(-float(scores[i]),rows[i]['node_id']))]
+        graph=None
+        graph_evidence=[]
+        if request.entity_id:
+            _,index,_,_=self.hybrid.load_frozen(manifest)
+            if 'graph_index' not in index:
+                raise ValueError('organization_graph_not_published')
+            from .organization_graph_index import candidates as graph_candidates
+            graph,graph_evidence=graph_candidates(candidates.directory/'graph.sqlite',rows,request,
+                                                 manifest['research_as_of'],literal)
         ranked, receipt = self.hybrid.rank(rows, request.query, self.reader.authority.manifest_digest[7:],
-                                          literal, source_verifier=candidates)
+                                          literal, source_verifier=candidates,graph=graph)
+        if graph is not None:
+            receipt.update(graph_evidence=graph_evidence,graph_scope='frozen_one_hop_source_bound_candidates')
         materialized = candidates.materialize(ranked, manifest)
         receipt.update(lexical_source='published_release', candidate_only=True,
                        source_generation_original_reads=candidates.original_reads,
@@ -154,6 +165,8 @@ class OrganizationSourceNavigation:
 
     def _navigate(self, request, *, projection_cache=None, storage_check=None):
         request = SourceDocumentRequest.model_validate(request)
+        if request.source_space=='organization' and request.entity_id:
+            raise ValueError('organization_graph_requires_published_candidate_navigation')
         if request.source_space != 'organization' or request.operation not in {'catalog', 'outline', 'search', 'read'}:
             raise ValueError('organization_source_supports_catalog_outline_search_read_only')
         # Bound projections have character offsets, not invented PDF page labels.

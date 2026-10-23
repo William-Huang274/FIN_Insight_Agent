@@ -105,7 +105,7 @@ class SourceDocumentRequest(BaseModel):
                 or self.operation != 'read' or not self.node_id or self.offset):
             raise ValueError('character_window_requires_local_or_upload_node_read_without_row_offset')
         if {'graph_predicates','graph_direction','graph_review'} & self.model_fields_set:
-            if self.source_space!='library' or self.operation not in {'related','search'} or not self.entity_id:
+            if self.source_space not in {'library','organization'} or self.operation not in {'related','search'} or not self.entity_id:
                 raise ValueError('graph_filters_require_library_entity_search_or_related')
         if any(not p or len(p)>100 for p in self.graph_predicates) or len(set(self.graph_predicates))!=len(self.graph_predicates):
             raise ValueError('invalid_graph_predicates')
@@ -127,7 +127,8 @@ class SourceDocumentRequest(BaseModel):
             raise ValueError('account_path_requires_library_financial_data')
         if self.data_group and (self.operation!='data' or self.source_space!='library' or self.data_kind!='financial'):
             raise ValueError('data_group_requires_library_financial_data')
-        if (self.operation in {'related','observations','company','data'} or self.entity_id or self.graph_depth != 1) and self.source_space != 'library':
+        organization_search = self.source_space=='organization' and self.operation=='search' and self.graph_depth==1
+        if (self.operation in {'related','observations','company','data'} or self.entity_id or self.graph_depth != 1) and self.source_space != 'library' and not organization_search:
             raise ValueError('graph_navigation_requires_library')
         if self.operation in {'related','observations','company','data'} and not self.entity_id:
             raise ValueError('relation_or_observation_requires_entity_id_from_catalog')

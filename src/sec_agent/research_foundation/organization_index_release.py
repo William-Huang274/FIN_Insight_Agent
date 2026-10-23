@@ -81,6 +81,18 @@ def _load_release(root, organization_id, release_id, expected=None):
             with (directory/'navigation.sqlite').open('rb') as stream:
                 if file_digest(stream, 'sha256').hexdigest() != navigation['sha256']:
                     raise ValueError('organization_index_release_navigation_integrity_failure')
+        if 'graph_index' in index:
+            from .organization_graph_index import FORMAT as GRAPH_FORMAT
+            graph=index['graph_index']
+            if ('navigation_index' not in index or set(graph)!={'format','sha256','documents','edges','links'}
+                    or graph['format']!=GRAPH_FORMAT
+                    or any(type(graph[k]) is not int or graph[k]<0 for k in ('documents','edges','links'))):
+                raise ValueError('organization_graph_release_contract_invalid')
+            if any((directory/('graph.sqlite'+suffix)).exists() for suffix in ('-wal','-journal')):
+                raise ValueError('organization_graph_release_unsealed')
+            with (directory/'graph.sqlite').open('rb') as stream:
+                if file_digest(stream,'sha256').hexdigest()!=graph['sha256']:
+                    raise ValueError('organization_graph_release_integrity_failure')
         matrix = np.load(directory/'vectors.npy', mmap_mode='r', allow_pickle=False)
         records = index['records']
         if (matrix.dtype != np.float32 or matrix.shape != (len(records), 1024)
@@ -109,12 +121,12 @@ class ReleaseLoadCache:
     @staticmethod
     def _signature(directory):
         values = []
-        for name in ('index.json', 'vectors.npy', 'lexical.sqlite', 'navigation.sqlite'):
+        for name in ('index.json', 'vectors.npy', 'lexical.sqlite', 'navigation.sqlite', 'graph.sqlite'):
             path = directory/name
             try:
                 stat = path.stat()
             except FileNotFoundError:
-                if name in {'lexical.sqlite', 'navigation.sqlite'}:
+                if name in {'lexical.sqlite', 'navigation.sqlite', 'graph.sqlite'}:
                     values.append(None)
                     continue
                 raise ValueError('organization_index_release_unavailable') from None
@@ -125,6 +137,8 @@ class ReleaseLoadCache:
             raise ValueError('organization_index_release_lexical_unsealed')
         if any((directory/('navigation.sqlite'+suffix)).exists() for suffix in ('-wal', '-journal')):
             raise ValueError('organization_index_release_navigation_unsealed')
+        if any((directory/('graph.sqlite'+suffix)).exists() for suffix in ('-wal', '-journal')):
+            raise ValueError('organization_graph_release_unsealed')
         return tuple(values)
 
     def check(self):

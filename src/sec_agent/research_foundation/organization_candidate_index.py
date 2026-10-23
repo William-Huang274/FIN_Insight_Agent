@@ -81,6 +81,9 @@ class VerifiedCandidateIndex:
                 raise ValueError('organization_candidate_index_requires_complete_source')
             url = self.workbench_url + f"/api/v1/asset-workspace/organization-projects/{manifest['project_id']}/resources/{item['resource_id']}"
             projected = source_nodes(result['source_bundle'], document, item, url)
+            if 'graph_index' in index:
+                from .organization_graph_index import verify_source
+                verify_source(directory/'graph.sqlite',result['source_bundle'],document)
             for row in projected:
                 if row['node_kind'] != 'text':
                     continue

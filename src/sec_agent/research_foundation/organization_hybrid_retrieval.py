@@ -76,7 +76,8 @@ def preparation_nodes(reader, *, workbench_url):
 
 
 def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, model, provenance, release_id=None,
-                           projection='organization-text-6000.v1', publish_lexical=True, publish_navigation=True):
+                           projection='organization-text-6000.v1', publish_lexical=True, publish_navigation=True,
+                           graph_sources=None):
     """Host-side publication of exact prepared content/query embeddings.
 
     Caller must verify embedding text/model provenance before publication.
@@ -92,6 +93,8 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
     from .organization_index_release import PROJECTIONS, CHUNK_PROJECTION
     navigation = bool(release_id is not None and publish_lexical and publish_navigation
                       and projection == CHUNK_PROJECTION)
+    if graph_sources is not None and not navigation:
+        raise ValueError('organization_graph_requires_candidate_release')
     if projection not in PROJECTIONS or (release_id is None and projection == CHUNK_PROJECTION):
         raise ValueError('organization_retrieval_projection_requires_supported_release')
     for i, row in enumerate(nodes):
@@ -160,6 +163,13 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
         with navigation_path.open('rb') as stream:
             navigation_sha256 = file_digest(stream, 'sha256').hexdigest()
         manifest['navigation_index'] = {'format':NAVIGATION_FORMAT, 'sha256':navigation_sha256, 'nodes':len(nodes)}
+    if graph_sources is not None:
+        from .organization_graph_index import build as build_graph, FORMAT as GRAPH_FORMAT
+        graph_path=directory/'graph.sqlite'
+        counts=build_graph(graph_path,graph_sources,records)
+        with graph_path.open('rb') as stream:
+            graph_sha256=file_digest(stream,'sha256').hexdigest()
+        manifest['graph_index']={'format':GRAPH_FORMAT,'sha256':graph_sha256,**counts}
     # Publish the marker only after every file and its digest are complete.
     # The directory is newly reserved; a failed build is never overwritten.
     import os
@@ -186,9 +196,11 @@ class OrganizationHybridRetrieval:
         return load_release(self.root, manifest['organization_id'], pinned['release_id'], pinned,
                             cache=self.release_cache)
 
-    def rank(self, rows, query, snapshot, literal, *, source_verifier=None):
+    def rank(self, rows, query, snapshot, literal, *, source_verifier=None, graph=None):
         from .organization_source_navigation import OrganizationSourceNavigation
         before, manifest, _ = self.reader._grant()
+        if graph is not None and source_verifier is None:
+            raise OrganizationExecutionUnavailable('organization_graph_requires_verified_sources')
         if source_verifier is not None:
             from .organization_candidate_index import VerifiedCandidateIndex
             if not isinstance(source_verifier, VerifiedCandidateIndex) or source_verifier.hybrid is not self:
@@ -259,6 +271,10 @@ class OrganizationHybridRetrieval:
         # cannot occupy quotas, produce previews, or influence lexical ranks.
         scope = {'policy': POLICY, 'grant': digest(before), 'index': sha256(encoded).hexdigest(),
             'query': query_hash, 'nodes': [(r['node_id'], r['content_sha256']) for r in rows]}
+        if graph is not None:
+            if 'graph_index' not in index or len(graph)>12 or len(set(graph))!=len(graph) or any(n not in by_id for n in graph):
+                raise OrganizationExecutionUnavailable('organization_graph_candidate_outside_scope')
+            scope.update(policy='organization-cosine-bm25-graph-rrf.v1',graph=graph)
         key = digest(scope)
         self.reader._after(before)
         with closing(sqlite3.connect(directory/'rank-cache.sqlite', timeout=10)) as db, db:
@@ -272,14 +288,18 @@ class OrganizationHybridRetrieval:
                     key=lambda i: (-float(scores[i]), rows[i]['node_id']))[:24]]
                 lexical = [r['node_id'] for r in literal[:12]]
                 from retrieval.rank_fusion import reciprocal_rank_fusion
-                for channel in (dense, lexical):
+                channels=[dense,lexical]+([graph] if graph is not None else [])
+                for channel in channels:
                     for node_id in channel:
                         if node_id not in by_id:
                             raise OrganizationExecutionUnavailable('organization_retrieval_candidate_outside_scope')
-                entry = {'ordered': reciprocal_rank_fusion([dense, lexical]), 'dense': dense, 'lexical': lexical}
+                entry = {'ordered': reciprocal_rank_fusion(channels), 'dense': dense, 'lexical': lexical}
+                if graph is not None:entry['graph']=graph
                 self.reader._after(before)
                 db.execute('INSERT OR IGNORE INTO ranks VALUES (?,?)', (key, json.dumps(entry)))
-            for channel in ('ordered', 'dense', 'lexical'):
+            if graph is not None and entry.get('graph')!=graph:
+                raise OrganizationExecutionUnavailable('organization_graph_cache_scope_mismatch')
+            for channel in ('ordered', 'dense', 'lexical', *(['graph'] if graph is not None else [])):
                 ids = entry[channel]
                 if (not isinstance(ids, list) or len(set(ids)) != len(ids)
                         or any(n not in by_id for n in ids)):
@@ -289,7 +309,8 @@ class OrganizationHybridRetrieval:
             self.release_cache.check()
         if source_verifier is not None:
             source_verifier.check()
-        return [by_id[n] for n in entry['ordered']], {'mode': POLICY, 'cache_hit': bool(saved),
+        return [by_id[n] for n in entry['ordered']], {'mode': scope['policy'], 'cache_hit': bool(saved),
+            **({'graph_node_ids':entry['graph']} if graph is not None else {}),
             'index_digest': scope['index'], 'dense_node_ids': entry['dense'], 'lexical_node_ids': entry['lexical'],
             'candidate_node_ids': entry['ordered'], 'provider_calls': query_receipt['provider_calls'],
             'query_embedding': query_receipt, 'rerank': 'local_rrf_no_provider'}

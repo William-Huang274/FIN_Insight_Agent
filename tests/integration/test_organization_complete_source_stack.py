@@ -63,6 +63,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     unified_scope=os.getenv('FIN_COMPLETE_SOURCE_UNIFIED_SCOPE')=='1'
     global_probe=os.getenv('FIN_COMPLETE_SOURCE_GLOBAL_PROBE')=='1'
     lifecycle_probe=os.getenv('FIN_COMPLETE_SOURCE_LIFECYCLE_PROBE')=='1'
+    graph_probe=os.getenv('FIN_COMPLETE_SOURCE_GRAPH_PROBE')=='1'
+    graph_checks=[]
     lifecycles=[]
     if lifecycle_probe:
         assert global_probe and unified_scope
@@ -363,13 +365,17 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 _,nodes=preparation_nodes(reader,workbench_url='http://localhost')
             assert len(nodes)==sum(len(bundle['chunks']) for bundle in batch.values())
             release=str(uuid4())
+            graph_sources=None
+            if graph_probe:
+                from sec_agent.research_foundation.organization_graph_index import preparation_graph
+                graph_sources=preparation_graph(reader)
             with diagnostic.phase('publish_index'):
                 # Memory-mapped test inputs must still be the exact verified
                 # successful receipts at publication; they are not ACL caches.
                 verify_intake_files()
                 publish_prepared_index(indices,org,nodes,vectors.projected(nodes),queries,
                     model=model,provenance={'source_intake_sha256':sha256((root/'result.json').read_bytes()).hexdigest()},
-                    release_id=release,projection=PROJECTION)
+                    release_id=release,projection=PROJECTION,graph_sources=graph_sources)
             # Registration and cold searches reconstruct authorized originals.
             # Do not keep a second full corpus alive in this driver.
             indexed_chunks=len(nodes)
@@ -518,6 +524,32 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     'cold_capture_checks':cold_capture_checks,'warm_capture_checks':0,
                     'cross_query_projection':cross_query,
                     'response_cache_hit':True,'warm_result_identity_unchanged':True})
+            graph_request=None
+            if graph_probe:
+                eligible_edges=[edge for source in graph_sources for edge in source['edges']
+                    if edge['id'] in {link['edge_id'] for link in source['links']}
+                    and edge['status']!='needs_semantic_review' and edge['published_at'][:10]<=payload['research_as_of']
+                    and (not edge.get('valid_from') or edge['valid_from'][:10]<=payload['research_as_of'])
+                    and (not edge.get('valid_to') or edge['valid_to'][:10]>=payload['research_as_of'])]
+                assert eligible_edges,'explicit graph probe needs a dated source-bound edge'
+                graph_request={'source_space':'organization','operation':'search','query':next(iter(queries)),
+                               'entity_id':eligible_edges[0]['subject']}
+                with diagnostic.phase('organization_graph_search_and_readback',profile=True):
+                    graph_found=nav.navigate(graph_request)
+                    receipt=graph_found.items[0]['retrieval']
+                    assert receipt['graph_node_ids'] and len(receipt['graph_node_ids'])<=12
+                    assert receipt['candidate_body_reads']<=48
+                    evidence=receipt['graph_evidence'][0]
+                    read=nav.navigate({'source_space':'organization','operation':'read',
+                        'document_id':evidence['document'],'node_id':evidence['node']})
+                    assert read.items[0]['result_state']=='source_bound_passage'
+                    scoped=nav.navigate({**graph_request,'document_id':evidence['document']})
+                    assert all(e['document']==evidence['document'] for e in scoped.items[0]['retrieval']['graph_evidence'])
+                    assert nav.navigate(graph_request).items
+                    assert nav.navigate(graph_request).items[0]['retrieval']['response_cache_hit']
+                graph_checks.append({'request':graph_request,'graph_candidates':len(receipt['graph_node_ids']),
+                    'candidate_bodies':receipt['candidate_body_reads'],'original_readback':True,'scope_filter':True,
+                    'frozen_graph':contract,'provider_calls':receipt['provider_calls']})
             first_result=len(results)
             # Global plumbing probe still publishes/verifies every original and
             # ranks the entire scope. Per-source filtered search is sampled by
@@ -537,6 +569,9 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             first=resources[revoke_sid]
             current=s.request(s.bff,'GET',f'/api/v1/asset-workspace/spaces/resources/{first}')
             api('POST',f'/resources/{first}/revoke',{'revision':current['permission_revision']})
+            if graph_request is not None:
+                with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(graph_request)
+                graph_checks[-1]['revoked_cached_graph_denied']=True
             with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(results[first_result]['readback'])
             with pytest.raises(OrganizationExecutionUnavailable):nav.navigate({'source_space':'organization','operation':'search','query':next(iter(queries))})
             if global_probe:
@@ -565,7 +600,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             'recall_or_capacity_evaluation':False,'candidate_chunks':len(vectors),'identity':'qualification login',
             'max_explicit_sources_per_draft':12,'separate_index_batches':len(contracts),
             'corpus_wide_retrieval':unified_scope,'corpus_scope':'selected intake artifact only',
-            'global_probe':global_probe,
+            'global_probe':global_probe,'graph_checks':graph_checks,
             **source_coverage(captures,bundles,results,global_searches),
             'global_searches':global_searches,'non_selected_candidate_revocation_tested':unified_scope,
             'captures':captures,'node_reads':node_reads,'date_denials':date_denials,'query_is_storage_probe':storage_probe})

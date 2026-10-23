@@ -58,6 +58,8 @@ class OrganizationSearchCache:
                 receipt.update(cache_hit=True, response_cache_hit=True, provider_calls=0)
                 if 'projection_cache_hits' in receipt:
                     receipt['projection_cache_hits'] = 0
+                if receipt.get('candidate_only'):
+                    receipt.update(source_generation_original_reads=0, candidate_body_reads=0)
                 receipt['query_embedding'] = {'provider_calls': 0, 'cache_hit': True,
                                               'source': 'validated_response_cache'}
                 notice = notice.replace(str(old), str(receipt))

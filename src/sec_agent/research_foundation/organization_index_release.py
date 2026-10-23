@@ -66,6 +66,21 @@ def _load_release(root, organization_id, release_id, expected=None):
             with (directory/'lexical.sqlite').open('rb') as stream:
                 if file_digest(stream, 'sha256').hexdigest() != lexical['sha256']:
                     raise ValueError('organization_index_release_lexical_integrity_failure')
+        if 'navigation_index' in index:
+            from .organization_candidate_index import FORMAT as NAVIGATION_FORMAT
+            navigation = index['navigation_index']
+            if (index.get('projection') != CHUNK_PROJECTION or 'lexical_index' not in index
+                    or set(navigation) != {'format', 'sha256', 'nodes'}
+                    or navigation['format'] != NAVIGATION_FORMAT or navigation['nodes'] != len(index['records'])
+                    or any(not all(isinstance(row.get(field), str) and len(row[field]) == 64
+                        for field in ('navigation_sha256','lexical_input_sha256','embedding_input_sha256'))
+                        for row in index['records'])):
+                raise ValueError('organization_index_release_navigation_contract_invalid')
+            if any((directory/('navigation.sqlite'+suffix)).exists() for suffix in ('-wal', '-journal')):
+                raise ValueError('organization_index_release_navigation_unsealed')
+            with (directory/'navigation.sqlite').open('rb') as stream:
+                if file_digest(stream, 'sha256').hexdigest() != navigation['sha256']:
+                    raise ValueError('organization_index_release_navigation_integrity_failure')
         matrix = np.load(directory/'vectors.npy', mmap_mode='r', allow_pickle=False)
         records = index['records']
         if (matrix.dtype != np.float32 or matrix.shape != (len(records), 1024)
@@ -94,12 +109,12 @@ class ReleaseLoadCache:
     @staticmethod
     def _signature(directory):
         values = []
-        for name in ('index.json', 'vectors.npy', 'lexical.sqlite'):
+        for name in ('index.json', 'vectors.npy', 'lexical.sqlite', 'navigation.sqlite'):
             path = directory/name
             try:
                 stat = path.stat()
             except FileNotFoundError:
-                if name == 'lexical.sqlite':
+                if name in {'lexical.sqlite', 'navigation.sqlite'}:
                     values.append(None)
                     continue
                 raise ValueError('organization_index_release_unavailable') from None
@@ -108,6 +123,8 @@ class ReleaseLoadCache:
         # journals so a base-file digest cannot hide unvalidated sidecar writes.
         if any((directory/('lexical.sqlite'+suffix)).exists() for suffix in ('-wal', '-journal')):
             raise ValueError('organization_index_release_lexical_unsealed')
+        if any((directory/('navigation.sqlite'+suffix)).exists() for suffix in ('-wal', '-journal')):
+            raise ValueError('organization_index_release_navigation_unsealed')
         return tuple(values)
 
     def check(self):

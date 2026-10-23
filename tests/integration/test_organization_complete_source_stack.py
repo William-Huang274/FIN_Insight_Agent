@@ -429,12 +429,20 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     with diagnostic.phase('global_new_query_projection_reuse',profile=True):
                         reused=nav.navigate(second)
                     assert reused.items and not original_reads and not capture_checks
-                    assert reused.items[0]['retrieval']['projection_cache_hits']==len(batch)
+                    candidate_only = reused.items[0]['retrieval'].get('candidate_only',False)
+                    if candidate_only:
+                        assert nav._projection_cache is None
+                        assert reused.items[0]['retrieval']['source_generation_original_reads']==0
+                        assert 0 < reused.items[0]['retrieval']['candidate_body_reads'] <= 36
+                        assert len(nav._candidate_index.rows)==len(vectors)
+                    else:
+                        assert reused.items[0]['retrieval']['projection_cache_hits']==len(batch)
                     assert not reused.items[0]['retrieval'].get('response_cache_hit')
                     published_lexical = reused.items[0]['retrieval']['lexical_source']=='published_release'
                     if published_lexical:
-                        assert nav._projection_cache.lexical_statistics.entry is None
-                        assert not nav._projection_cache.include_terms
+                        if not candidate_only:
+                            assert nav._projection_cache.lexical_statistics.entry is None
+                            assert not nav._projection_cache.include_terms
                         statistics_bytes=postings_bytes=0
                     else:
                         assert nav._projection_cache.lexical_statistics.hit
@@ -456,7 +464,10 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     for field in ('dense_node_ids','lexical_node_ids','candidate_node_ids'):
                         assert reused.items[0]['retrieval'][field]==full.items[0]['retrieval'][field]
                     cross_query={'query':second['query'],'original_reads':0,'capture_checks':0,
-                        'projection_hits':len(batch),'projection_bytes':nav._projection_cache.size,
+                        'projection_hits':0 if candidate_only else len(batch),
+                        'projection_bytes':0 if candidate_only else nav._projection_cache.size,
+                        'candidate_only':candidate_only,
+                        'candidate_body_reads':reused.items[0]['retrieval'].get('candidate_body_reads'),
                         'published_lexical':published_lexical,
                         'lexical_statistics_hit':not published_lexical,'lexical_statistics_bytes':statistics_bytes,
                         'lexical_postings_hit':not published_lexical,'lexical_postings_bytes':postings_bytes,

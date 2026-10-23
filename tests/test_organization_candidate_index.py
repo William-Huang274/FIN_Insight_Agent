@@ -1,0 +1,152 @@
+from copy import deepcopy
+import sqlite3
+from uuid import uuid4
+
+import pytest
+
+from test_organization_complete_sources import complete_fixture
+from test_organization_execution_access import runtime_at, runtime_grant
+from sec_agent.research_foundation.organization_hybrid_retrieval import preparation_nodes, publish_prepared_index
+from sec_agent.research_foundation.organization_index_release import load_release
+from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
+from sec_agent.research_foundation.organization_source_projection import PROJECTION
+from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionUnavailable
+
+
+def prepared(tmp_path, monkeypatch):
+    source, ref, shared, grant, reader, _, _, _ = complete_fixture(tmp_path, monkeypatch, repeats=1000)
+    first = grant['manifest']['inputs'][0]
+    resource = str(uuid4())
+    binding = shared.publish(source, 'alice', resource, grant['organization_id'], first['space_id'], ref)
+    grant['manifest']['inputs'].append({**first, 'resource_id':resource, 'ref':binding['ref']})
+    grant['inputs'].append({'resource_id':resource, 'binding':binding})
+    reader, _ = runtime_at(shared, runtime_grant(grant))
+    org, nodes = preparation_nodes(reader, workbench_url='http://preparation.example.test')
+    release = str(uuid4())
+    vector = [1.] + [0.]*1023
+    publish_prepared_index(tmp_path/'indices', org, nodes, [vector]*len(nodes),
+        {'disclosure':vector, 'USD millions':vector, 'missing query':vector},
+        model='qwen3.7-text-embedding', provenance={'fixture':True}, release_id=release, projection=PROJECTION)
+    directory, _, _, contract = load_release(tmp_path/'indices', org, release)
+    grant['manifest']['retrieval_index'] = contract
+    reader, state = runtime_at(shared, runtime_grant(grant))
+    nav = OrganizationSourceNavigation(reader, workbench_url='http://localhost', retrieval_root=tmp_path/'indices')
+    return nav, reader, state, directory, grant
+
+
+def query(**changes):
+    return {'source_space':'organization', 'operation':'search', 'query':'disclosure', **changes}
+
+
+def items(result):
+    return [{k:v for k,v in row.items() if k != 'retrieval'} for row in result.items]
+
+
+def test_new_queries_only_read_candidates_and_match_independent_original_ranking(tmp_path, monkeypatch):
+    nav, reader, _, directory, _ = prepared(tmp_path, monkeypatch)
+    reads = []
+    original = reader._read_storage
+    def counted(*args):
+        reads.append(args[0])
+        return original(*args)
+    monkeypatch.setattr(reader, '_read_storage', counted)
+    first = nav.navigate(query())
+    assert len(reads) == 2 and nav._projection_cache is None
+    assert len(nav._candidate_index.rows) > 36
+    assert 0 < first.items[0]['retrieval']['candidate_body_reads'] <= 36
+    for request in (query(query='USD millions'), query(document_id=first.items[0]['document_id']),
+                    query(query='missing query',offset=3,limit=2)):
+        reads.clear()
+        actual = nav.navigate(request)
+        receipt = actual.items[0]['retrieval']
+        assert not reads and receipt['source_generation_original_reads'] == 0
+        assert receipt['candidate_only'] and receipt['candidate_body_reads'] <= 36
+        with sqlite3.connect(directory/'rank-cache.sqlite') as db:
+            db.execute('DELETE FROM ranks')
+        reference = OrganizationSourceNavigation(reader, workbench_url='http://localhost',retrieval_root=tmp_path/'indices')
+        expected = reference._navigate(request)
+        assert reads and items(actual) == items(expected)
+        assert actual.total_matches == expected.total_matches and actual.next_offset == expected.next_offset
+        for key in ('dense_node_ids','lexical_node_ids','candidate_node_ids'):
+            assert receipt[key] == expected.items[0]['retrieval'][key]
+    reads.clear()
+    cached = nav.navigate(request)
+    assert not reads
+    assert cached.items[0]['retrieval']['candidate_body_reads'] == 0
+    assert cached.items[0]['retrieval']['source_generation_original_reads'] == 0
+    nav.navigate(first.items[0]['readback'])
+    assert reads  # Original citation reads remain live.
+
+
+@pytest.mark.parametrize('fault', ['java_revoke','local_revoke','body','delete'])
+def test_non_candidate_source_changes_deny_filtered_query(tmp_path, monkeypatch, fault):
+    nav, reader, state, _, grant = prepared(tmp_path, monkeypatch)
+    document = nav._identity(grant['manifest']['inputs'][0])
+    request = query(document_id=document)
+    nav.navigate(request)
+    if fault == 'java_revoke':
+        state['status'] = 404
+    elif fault == 'local_revoke':
+        second = grant['manifest']['inputs'][1]
+        reader.workspace.library.set_access('organization:'+grant['organization_id'], second['space_id'],
+                                            'document',second['ref']['version_id'],True)
+    else:
+        second = grant['manifest']['inputs'][1]
+        with sqlite3.connect(reader.workspace.library.documents.path) as db:
+            if fault == 'delete':
+                db.execute('DELETE FROM attachments WHERE id=?',(second['ref']['version_id'],))
+            else:
+                db.execute('UPDATE attachments SET body=? WHERE id=?',(b'corrupt',second['ref']['version_id']))
+    with pytest.raises((OrganizationExecutionUnavailable,KeyError)):
+        nav.navigate({**request,'query':'USD millions'})
+
+
+def test_warmup_and_storage_change_revalidate_all_originals(tmp_path, monkeypatch):
+    nav, reader, _, _, grant = prepared(tmp_path, monkeypatch)
+    nav.warm_release()
+    assert nav._candidate_index.original_reads == 2
+    def unexpected(*args):
+        raise AssertionError('unchanged warm generation must not read original bodies')
+    original = reader._read_storage
+    monkeypatch.setattr(reader,'_read_storage',unexpected)
+    nav.navigate(query())
+    with sqlite3.connect(reader.workspace.library.documents.path) as db:
+        db.execute('CREATE TABLE unrelated_committed_change (value INTEGER)')
+    with pytest.raises(AssertionError,match='warm generation'):
+        nav.navigate(query(query='USD millions'))
+    monkeypatch.setattr(reader,'_read_storage',original)
+    result = nav.navigate(query(query='USD millions'))
+    assert result.items[0]['retrieval']['source_generation_original_reads'] == len(grant['inputs'])
+
+
+@pytest.mark.parametrize('fault', ['file','body_race','revoke_race'])
+def test_published_body_corruption_and_races_cannot_return_candidates(tmp_path, monkeypatch, fault):
+    nav, reader, state, directory, _ = prepared(tmp_path,monkeypatch)
+    nav.warm_release()
+    if fault == 'file':
+        with sqlite3.connect(directory/'navigation.sqlite') as db:
+            db.execute('UPDATE nodes SET payload=?',(b'corrupt',))
+    else:
+        materialize = nav._candidate_index.materialize
+        def race(*args):
+            result = materialize(*args)
+            if fault == 'revoke_race':
+                state['status'] = 404
+            else:
+                with sqlite3.connect(reader.workspace.library.documents.path) as db:
+                    db.execute('UPDATE attachments SET body=?',(b'changed after read',))
+            return result
+        monkeypatch.setattr(nav._candidate_index,'materialize',race)
+    with pytest.raises((ValueError,OrganizationExecutionUnavailable)):
+        nav.navigate(query())
+
+
+def test_unverified_or_copied_rows_cannot_skip_original_identity_checks(tmp_path,monkeypatch):
+    nav, reader, _, _, _ = prepared(tmp_path,monkeypatch)
+    nav.warm_release()
+    proof = nav._candidate_index
+    rows = [deepcopy(next(iter(proof.rows.values())))]
+    with pytest.raises(OrganizationExecutionUnavailable,match='unverified_population'):
+        nav.hybrid.rank(rows,'disclosure',reader.authority.manifest_digest[7:],[],source_verifier=proof)
+    with pytest.raises(OrganizationExecutionUnavailable,match='invalid_verifier'):
+        nav.hybrid.rank(rows,'disclosure',reader.authority.manifest_digest[7:],[],source_verifier=True)

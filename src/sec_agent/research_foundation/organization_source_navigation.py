@@ -27,6 +27,7 @@ class OrganizationSourceNavigation:
         self.hybrid = None
         self._search_cache = None
         self._projection_cache = None
+        self._candidate_index = None
         self._navigation_lock = RLock()
         if retrieval_root is not None:
             from .organization_hybrid_retrieval import OrganizationHybridRetrieval
@@ -41,14 +42,19 @@ class OrganizationSourceNavigation:
     def warm_release(self):
         """Host-invoked index warm-up; no query, embedding or permission lease.
 
-        Does not claim the service is ready: source projection/candidate-only
-        loading and deployment readiness are separate integration work.
+        Candidate-enabled releases also verify every frozen original once.
+        Deployment readiness and process startup remain separate integration.
         """
         with self._navigation_lock:
             before, manifest, _ = self.reader._grant()
             if self.hybrid is None or manifest.get('retrieval_index') is None:
                 raise ValueError('organization_frozen_index_requires_configured_storage')
-            _, _, _, contract = self.hybrid.load_frozen(manifest)
+            _, index, _, contract = self.hybrid.load_frozen(manifest)
+            if 'navigation_index' in index:
+                if self._search_cache is None:
+                    from .organization_search_cache import OrganizationSearchCache
+                    self._search_cache = OrganizationSearchCache(self.reader.workspace.library.documents.path)
+                self._warm_candidates(before, manifest, self._search_cache.epoch())
             self.reader._after(before)
             self.hybrid.release_cache.check()
             return dict(contract)
@@ -79,6 +85,15 @@ class OrganizationSourceNavigation:
                     raise OrganizationExecutionUnavailable('organization_search_storage_changed_during_cache_read')
                 self.observed.remember('read_source_document', result.model_dump(mode='json'))
                 return result
+            if 'navigation_index' in release_index:
+                result = self._search_candidates(request, before, manifest, epoch)
+                self.reader._after(before)
+                self.hybrid.release_cache.check()
+                if cache.epoch() != epoch:
+                    raise OrganizationExecutionUnavailable('organization_candidate_source_generation_changed')
+                cache.put(key, epoch, result)
+                self.observed.remember('read_source_document', result.model_dump(mode='json'))
+                return result
             from .organization_projection_cache import OrganizationProjectionCache
             from .organization_hybrid_retrieval import digest
             if self._projection_cache is None:
@@ -98,6 +113,37 @@ class OrganizationSourceNavigation:
             cache.put(key, epoch, result)
             self.observed.remember('read_source_document', result.model_dump(mode='json'))
             return result
+
+    def _warm_candidates(self, before, manifest, epoch):
+        if self._candidate_index is None:
+            from .organization_candidate_index import VerifiedCandidateIndex
+            self._candidate_index = VerifiedCandidateIndex(self.reader, self.hybrid, self._search_cache,
+                                                           self.workbench_url)
+        self._candidate_index.prepare(before, manifest, epoch)
+        return self._candidate_index
+
+    def _search_candidates(self, request, before, manifest, epoch):
+        from retrieval.published_lexical_index import scores_from_identities
+        from retrieval.text import tokenize
+        candidates = self._warm_candidates(before, manifest, epoch)
+        rows = candidates.select(request)
+        scores, overlap, has_terms = scores_from_identities(candidates.directory/'lexical.sqlite',
+            ((row['node_id'],row['content_sha256'],row['lexical_input_sha256']) for row in rows),
+            tokenize(request.query))
+        literal = [rows[i] for i in sorted(overlap, key=lambda i:(-float(scores[i]),rows[i]['node_id']))]
+        ranked, receipt = self.hybrid.rank(rows, request.query, self.reader.authority.manifest_digest[7:],
+                                          literal, source_verifier=candidates)
+        materialized = candidates.materialize(ranked, manifest)
+        receipt.update(lexical_source='published_release', candidate_only=True,
+                       source_generation_original_reads=candidates.original_reads,
+                       candidate_body_reads=candidates.candidate_reads, projection_cache_hits=0)
+        result = navigate_source_nodes(materialized, request, snapshot=self.reader.authority.manifest_digest[7:],
+            allowed_space='organization', hybrid_enabled=False,
+            ranker=lambda *_:(materialized,receipt),
+            lexical_scorer=lambda rows,tokens:([0.]*len(rows),list(range(len(rows))),has_terms))
+        candidates.check()
+        return self._decorate(result, candidates.origins,
+            {row['node_id']:row['original_source'] for row in materialized if 'original_source' in row})
 
     def _navigate(self, request, *, projection_cache=None, storage_check=None):
         request = SourceDocumentRequest.model_validate(request)
@@ -210,18 +256,22 @@ class OrganizationSourceNavigation:
             allowed_space='organization', hybrid_enabled=False,
             ranker=rank if self.hybrid is not None else None,
             lexical_scorer=lexical_score if projection_cache is not None else None)
-        result = result.model_copy(update={'items': tuple({**item,
+        result = self._decorate(result, provenance, originals)
+        # Revoking any earlier input while scanning later inputs invalidates the entire result.
+        self.reader._after(before)
+        if projection_cache is None:
+            self.observed.remember('read_source_document', result.model_dump(mode='json'))
+        return result
+
+    @staticmethod
+    def _decorate(result, provenance, originals):
+        return result.model_copy(update={'items': tuple({**item,
             'organization_source': provenance[item['document_id']],
             **({'original_source':originals[item['node_id']]} if item['node_id'] in originals else {})} for item in result.items),
             'notice': result.notice + ' Organization originals only; query embeddings follow the frozen release and server configuration; no external rerank. '
                 'The source projection may be truncated (organization_source.source_truncated). '
                 'Offsets identify projected text, not original PDF pages. Adjacent windows/tables require review. '
                 'Research cutoff records intent; historical availability and financial semantics are not certified.'})
-        # Revoking any earlier input while scanning later inputs invalidates the entire result.
-        self.reader._after(before)
-        if projection_cache is None:
-            self.observed.remember('read_source_document', result.model_dump(mode='json'))
-        return result
 
     def source(self, source_id):
         self.reader.check()

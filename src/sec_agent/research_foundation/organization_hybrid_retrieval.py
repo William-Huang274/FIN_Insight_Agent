@@ -76,7 +76,7 @@ def preparation_nodes(reader, *, workbench_url):
 
 
 def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, model, provenance, release_id=None,
-                           projection='organization-text-6000.v1', publish_lexical=True):
+                           projection='organization-text-6000.v1', publish_lexical=True, publish_navigation=True):
     """Host-side publication of exact prepared content/query embeddings.
 
     Caller must verify embedding text/model provenance before publication.
@@ -90,6 +90,8 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
         raise ValueError('organization_retrieval_invalid_dimensions')
     records = []
     from .organization_index_release import PROJECTIONS, CHUNK_PROJECTION
+    navigation = bool(release_id is not None and publish_lexical and publish_navigation
+                      and projection == CHUNK_PROJECTION)
     if projection not in PROJECTIONS or (release_id is None and projection == CHUNK_PROJECTION):
         raise ValueError('organization_retrieval_projection_requires_supported_release')
     for i, row in enumerate(nodes):
@@ -108,6 +110,11 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
                     or sha256(embedding_text.encode()).hexdigest() != row['embedding_input_sha256']):
                 raise ValueError('organization_embedding_projection_mismatch')
             records[-1]['embedding_input_sha256'] = row['embedding_input_sha256']
+        if navigation:
+            from .organization_candidate_index import encoded
+            from retrieval.published_lexical_index import lexical_digest
+            records[-1].update(navigation_sha256=sha256(encoded(row)).hexdigest(),
+                               lexical_input_sha256=lexical_digest(row))
     if len({r['node_id'] for r in records}) != len(records):
         raise ValueError('organization_retrieval_duplicate_node')
     prepared_queries = {sha256(q.encode()).hexdigest(): vector(v, dimensions).tolist() for q, v in queries.items()}
@@ -146,6 +153,13 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
         with lexical_path.open('rb') as stream:
             lexical_sha256 = file_digest(stream, 'sha256').hexdigest()
         manifest['lexical_index'] = {'format': LEXICAL_FORMAT, 'sha256': lexical_sha256, 'nodes': count}
+    if navigation:
+        from .organization_candidate_index import build as build_navigation, FORMAT as NAVIGATION_FORMAT
+        navigation_path = directory/'navigation.sqlite'
+        build_navigation(navigation_path, nodes)
+        with navigation_path.open('rb') as stream:
+            navigation_sha256 = file_digest(stream, 'sha256').hexdigest()
+        manifest['navigation_index'] = {'format':NAVIGATION_FORMAT, 'sha256':navigation_sha256, 'nodes':len(nodes)}
     # Publish the marker only after every file and its digest are complete.
     # The directory is newly reserved; a failed build is never overwritten.
     import os
@@ -172,9 +186,14 @@ class OrganizationHybridRetrieval:
         return load_release(self.root, manifest['organization_id'], pinned['release_id'], pinned,
                             cache=self.release_cache)
 
-    def rank(self, rows, query, snapshot, literal):
+    def rank(self, rows, query, snapshot, literal, *, source_verifier=None):
         from .organization_source_navigation import OrganizationSourceNavigation
         before, manifest, _ = self.reader._grant()
+        if source_verifier is not None:
+            from .organization_candidate_index import VerifiedCandidateIndex
+            if not isinstance(source_verifier, VerifiedCandidateIndex) or source_verifier.hybrid is not self:
+                raise OrganizationExecutionUnavailable('organization_candidate_invalid_verifier')
+            source_verifier.verify_rows(rows, before)
         if snapshot != before['manifest_digest'][7:]:
             raise OrganizationExecutionUnavailable('organization_retrieval_snapshot_mismatch')
         allowed = {OrganizationSourceNavigation._identity(item) for item in manifest['inputs']}
@@ -209,7 +228,7 @@ class OrganizationHybridRetrieval:
         for row in rows:
             record = records.get(row['node_id'])
             if (record is None or record['document_id'] != row['parent_document_id']
-                    or record['content_sha256'] != sha256(row['content'].encode()).hexdigest()
+                    or (source_verifier is None and record['content_sha256'] != sha256(row['content'].encode()).hexdigest())
                     or record['content_sha256'] != row['content_sha256']):
                 raise ValueError('organization_retrieval_version_not_prepared')
             if record.get('embedding_input_sha256') != row.get('embedding_input_sha256'):
@@ -228,6 +247,8 @@ class OrganizationHybridRetrieval:
         elif pinned is not None:
             from .organization_index_release import ConfiguredQuerySource
             self.reader._after(before)  # Recheck before any billable request.
+            if source_verifier is not None:
+                source_verifier.check()
             source = self.query_source or ConfiguredQuerySource(self.root/'query-cache')
             values, query_receipt = source.embed(query, scope='organization:'+manifest['organization_id'],
                 index_digest=pinned['index_digest'], model=pinned['model'], dimensions=pinned['dimensions'])
@@ -266,6 +287,8 @@ class OrganizationHybridRetrieval:
         self.reader._after(before)
         if pinned is not None:
             self.release_cache.check()
+        if source_verifier is not None:
+            source_verifier.check()
         return [by_id[n] for n in entry['ordered']], {'mode': POLICY, 'cache_hit': bool(saved),
             'index_digest': scope['index'], 'dense_node_ids': entry['dense'], 'lexical_node_ids': entry['lexical'],
             'candidate_node_ids': entry['ordered'], 'provider_calls': query_receipt['provider_calls'],

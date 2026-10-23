@@ -120,7 +120,7 @@ def test_statistics_population_tracks_real_organization_document_filter(tmp_path
     vector = [1.] + [0.] * 1023  # Deterministic fixture, no provider request.
     publish_prepared_index(tmp_path/'indices', org, nodes, [vector]*len(nodes),
         {'disclosure':vector}, model='qwen3.7-text-embedding', provenance={'synthetic_fixture':True},
-        release_id=release, projection=PROJECTION)
+        release_id=release, projection=PROJECTION, publish_lexical=False)
     grant['manifest']['retrieval_index'] = load_release(tmp_path/'indices', org, release)[3]
     reader, _ = runtime_at(shared, runtime_grant(grant))
     nav = OrganizationSourceNavigation(reader, workbench_url='http://localhost', retrieval_root=tmp_path/'indices')

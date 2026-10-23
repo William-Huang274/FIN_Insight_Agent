@@ -1,6 +1,7 @@
 """Fixed organization originals through the maintained Agent source protocol.
 
-No host library, personal uploads, embedding, reranking, web or model calls.
+No host library, personal uploads or web fallback. Configured query embeddings
+are delegated to the frozen-release retriever; no generation or remote rerank.
 This adapter does not grant native-run admission or financial fact authority.
 """
 from copy import deepcopy
@@ -37,6 +38,21 @@ class OrganizationSourceNavigation:
         version = sha256(json.dumps(item['ref'], sort_keys=True, separators=(',', ':')).encode()).hexdigest()[:24]
         return f"ORGDOC::{item['resource_id']}:{version}"
 
+    def warm_release(self):
+        """Host-invoked index warm-up; no query, embedding or permission lease.
+
+        Does not claim the service is ready: source projection/candidate-only
+        loading and deployment readiness are separate integration work.
+        """
+        with self._navigation_lock:
+            before, manifest, _ = self.reader._grant()
+            if self.hybrid is None or manifest.get('retrieval_index') is None:
+                raise ValueError('organization_frozen_index_requires_configured_storage')
+            _, _, _, contract = self.hybrid.load_frozen(manifest)
+            self.reader._after(before)
+            self.hybrid.release_cache.check()
+            return dict(contract)
+
     def navigate(self, request):
         request = SourceDocumentRequest.model_validate(request)
         # One observer connection and one bounded result per navigation session.
@@ -53,13 +69,11 @@ class OrganizationSourceNavigation:
                 self._search_cache = OrganizationSearchCache(self.reader.workspace.library.documents.path)
             cache = self._search_cache
             key, epoch = cache.key(before, request), cache.epoch()
+            _, release_index, _, _ = self.hybrid.load_frozen(manifest)
             result = cache.get(key, epoch)
             if result is not None:
-                # Still hash and validate the EXACT frozen index/matrix. A
-                # response cache must not hide missing or corrupted releases.
-                from .organization_index_release import load_release
-                load_release(self.hybrid.root, manifest['organization_id'], pinned['release_id'], pinned)
                 self.reader._after(before)
+                self.hybrid.release_cache.check()
                 if cache.epoch() != epoch:
                     cache.entry = None
                     raise OrganizationExecutionUnavailable('organization_search_storage_changed_during_cache_read')
@@ -70,6 +84,7 @@ class OrganizationSourceNavigation:
             if self._projection_cache is None:
                 self._projection_cache = OrganizationProjectionCache(self.hybrid.root/'.session-cache')
             projection_cache = self._projection_cache
+            projection_cache.include_terms = 'lexical_index' not in release_index
             projection_cache.reset((digest(before), epoch))
             def storage_check():
                 if cache.epoch() != epoch:
@@ -78,6 +93,7 @@ class OrganizationSourceNavigation:
                     raise OrganizationExecutionUnavailable('organization_search_storage_changed_during_projection')
             result = self._navigate(request, projection_cache=projection_cache, storage_check=storage_check)
             self.reader._after(before)
+            self.hybrid.release_cache.check()
             storage_check()
             cache.put(key, epoch, result)
             self.observed.remember('read_source_document', result.model_dump(mode='json'))
@@ -161,7 +177,15 @@ class OrganizationSourceNavigation:
             nodes = [row for row in nodes if row['node_kind'] == 'section']
         if storage_check is not None:
             storage_check()  # Reject changed originals before a query embedding can be requested.
+        lexical_source = 'query_prepared'
         def lexical_score(rows, tokens):
+            nonlocal lexical_source
+            if self.hybrid is not None and manifest.get('retrieval_index') is not None:
+                directory, index, _, _ = self.hybrid.load_frozen(manifest)
+                if 'lexical_index' in index:
+                    from retrieval.published_lexical_index import scores
+                    lexical_source = 'published_release'
+                    return scores(directory/'lexical.sqlite', rows, tokens)
             from retrieval.query_bm25 import lexical_document
             # Called after navigation filters. Projection payloads were checked
             # above; their generation binds current grant + original DB epoch.
@@ -177,6 +201,7 @@ class OrganizationSourceNavigation:
                 verified_population=True)
         def rank(rows, query, snapshot, literal):
             ranked, receipt = self.hybrid.rank(rows, query, snapshot, literal)
+            receipt['lexical_source'] = lexical_source
             if projection_cache is not None:
                 receipt.update(projection_cache_hits=projection_cache.hits,
                                projection_cache_bytes=projection_cache.size)
@@ -188,7 +213,7 @@ class OrganizationSourceNavigation:
         result = result.model_copy(update={'items': tuple({**item,
             'organization_source': provenance[item['document_id']],
             **({'original_source':originals[item['node_id']]} if item['node_id'] in originals else {})} for item in result.items),
-            'notice': result.notice + ' Organization originals only; no external embedding/rerank. '
+            'notice': result.notice + ' Organization originals only; query embeddings follow the frozen release and server configuration; no external rerank. '
                 'The source projection may be truncated (organization_source.source_truncated). '
                 'Offsets identify projected text, not original PDF pages. Adjacent windows/tables require review. '
                 'Research cutoff records intent; historical availability and financial semantics are not certified.'})

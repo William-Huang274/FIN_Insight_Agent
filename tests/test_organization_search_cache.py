@@ -10,8 +10,8 @@ from sec_agent.research_foundation.organization_execution_access import Organiza
 from test_organization_index_release import prepared, Api, MODEL
 
 
-def setup(tmp_path, monkeypatch):
-    reader, state, _, _, directory, _ = prepared(tmp_path)
+def setup(tmp_path, monkeypatch, *, publish_lexical=True):
+    reader, state, _, _, directory, _ = prepared(tmp_path, publish_lexical=publish_lexical)
     nav = OrganizationSourceNavigation(reader, workbench_url='http://localhost', retrieval_root=tmp_path/'indices')
     api = Api()
     nav.hybrid.query_source = QueryEmbeddingSource(tmp_path/'query-cache', api, model=MODEL)

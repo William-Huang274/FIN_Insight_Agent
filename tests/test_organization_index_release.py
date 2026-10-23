@@ -33,11 +33,12 @@ class Api:
         return RetrievalResponse([[1.] + [0.] * 1023], {'total_tokens': 10}, 'synthetic-receipt', MODEL)
 
 
-def prepared(root):
+def prepared(root, *, publish_lexical=True):
     reader, _, org, nodes = setup(root/'source')
     release = str(uuid4())
     publish_prepared_index(root/'indices', org, nodes, [[1.] + [0.] * 1023 for _ in nodes], {},
-        model=MODEL, provenance={'kind':'synthetic embedding fixture'}, release_id=release)
+        model=MODEL, provenance={'kind':'synthetic embedding fixture'}, release_id=release,
+        publish_lexical=publish_lexical)
     directory, _, _, contract = load_release(root/'indices', org, release)
     grant = deepcopy(reader.authority())
     manifest = json.loads(grant['manifest_text'])

@@ -205,7 +205,7 @@ def test_new_query_reuses_token_counts_without_retokenizing_originals(tmp_path, 
 
 
 def test_new_query_reuses_statistics_but_storage_generation_discards_them(tmp_path, monkeypatch):
-    nav, reader, _, _, request, _, reads, _ = setup(tmp_path, monkeypatch)
+    nav, reader, _, _, request, _, reads, _ = setup(tmp_path, monkeypatch, publish_lexical=False)
     stats = nav._projection_cache.lexical_statistics
     assert stats.entry is not None and not stats.hit
     result = nav.navigate({**request, 'query': 'different revenue question'})
@@ -221,7 +221,7 @@ def test_new_query_reuses_statistics_but_storage_generation_discards_them(tmp_pa
 
 
 def test_verified_new_query_does_not_unpack_any_node_terms(tmp_path, monkeypatch):
-    nav, _, _, _, request, _, reads, _ = setup(tmp_path, monkeypatch)
+    nav, _, _, _, request, _, reads, _ = setup(tmp_path, monkeypatch, publish_lexical=False)
     def unexpected(*args):
         raise AssertionError('query should decode requested posting columns only')
     monkeypatch.setattr('sec_agent.research_foundation.organization_projection_cache.unpack_terms', unexpected)
@@ -230,7 +230,7 @@ def test_verified_new_query_does_not_unpack_any_node_terms(tmp_path, monkeypatch
 
 
 def test_lexical_statistics_does_not_authorize_revoked_query(tmp_path, monkeypatch):
-    nav, _, state, _, request, _, reads, api = setup(tmp_path, monkeypatch)
+    nav, _, state, _, request, _, reads, api = setup(tmp_path, monkeypatch, publish_lexical=False)
     assert nav._projection_cache.lexical_statistics.entry is not None
     calls = api.calls
     state['status'] = 404

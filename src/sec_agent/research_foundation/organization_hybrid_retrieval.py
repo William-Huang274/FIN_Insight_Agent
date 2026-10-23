@@ -76,7 +76,7 @@ def preparation_nodes(reader, *, workbench_url):
 
 
 def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, model, provenance, release_id=None,
-                           projection='organization-text-6000.v1'):
+                           projection='organization-text-6000.v1', publish_lexical=True):
     """Host-side publication of exact prepared content/query embeddings.
 
     Caller must verify embedding text/model provenance before publication.
@@ -139,7 +139,22 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
     if release_id is not None:
         from .organization_index_release import FORMAT as RELEASE_FORMAT
         manifest.update(format=RELEASE_FORMAT, release_id=release_id, projection=projection)
-    (directory/'index.json').write_text(json.dumps(manifest, ensure_ascii=False), encoding='utf8')
+    if release_id is not None and publish_lexical:
+        from retrieval.published_lexical_index import build, FORMAT as LEXICAL_FORMAT
+        lexical_path = directory/'lexical.sqlite'
+        count = build(lexical_path, nodes)
+        with lexical_path.open('rb') as stream:
+            lexical_sha256 = file_digest(stream, 'sha256').hexdigest()
+        manifest['lexical_index'] = {'format': LEXICAL_FORMAT, 'sha256': lexical_sha256, 'nodes': count}
+    # Publish the marker only after every file and its digest are complete.
+    # The directory is newly reserved; a failed build is never overwritten.
+    import os
+    pending = directory/'index.json.pending'
+    with pending.open('x', encoding='utf8') as stream:
+        json.dump(manifest, stream, ensure_ascii=False)
+        stream.flush()
+        os.fsync(stream.fileno())
+    pending.rename(directory/'index.json')
     return digest(manifest)
 
 
@@ -147,6 +162,15 @@ class OrganizationHybridRetrieval:
     def __init__(self, reader, root, query_source=None):
         self.reader, self.root = reader, Path(root)
         self.query_source = query_source
+        from .organization_index_release import ReleaseLoadCache
+        self.release_cache = ReleaseLoadCache()
+
+    def load_frozen(self, manifest):
+        """Explicit warm-up and query entry share one verified release lifetime."""
+        from .organization_index_release import load_release
+        pinned = manifest['retrieval_index']
+        return load_release(self.root, manifest['organization_id'], pinned['release_id'], pinned,
+                            cache=self.release_cache)
 
     def rank(self, rows, query, snapshot, literal):
         from .organization_source_navigation import OrganizationSourceNavigation
@@ -158,9 +182,7 @@ class OrganizationHybridRetrieval:
             raise OrganizationExecutionUnavailable('organization_retrieval_scope_mismatch')
         pinned = manifest.get('retrieval_index')
         if pinned is not None:
-            from .organization_index_release import load_release
-            directory, index, matrix, _ = load_release(
-                self.root, manifest['organization_id'], pinned['release_id'], pinned)
+            directory, index, matrix, _ = self.load_frozen(manifest)
             encoded = json.dumps(index, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()
         else:
             directory = self.root / str(UUID(manifest['organization_id']))
@@ -242,6 +264,8 @@ class OrganizationHybridRetrieval:
                         or any(n not in by_id for n in ids)):
                     raise OrganizationExecutionUnavailable('organization_retrieval_cache_scope_mismatch')
         self.reader._after(before)
+        if pinned is not None:
+            self.release_cache.check()
         return [by_id[n] for n in entry['ordered']], {'mode': POLICY, 'cache_hit': bool(saved),
             'index_digest': scope['index'], 'dense_node_ids': entry['dense'], 'lexical_node_ids': entry['lexical'],
             'candidate_node_ids': entry['ordered'], 'provider_calls': query_receipt['provider_calls'],

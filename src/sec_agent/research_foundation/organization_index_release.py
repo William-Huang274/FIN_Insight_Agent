@@ -3,6 +3,7 @@ from hashlib import sha256
 import json
 from pathlib import Path
 from uuid import UUID
+from threading import RLock
 
 import numpy as np
 from .organization_source_projection import PROJECTION as CHUNK_PROJECTION
@@ -31,7 +32,13 @@ def validate_contract(contract):
     return contract
 
 
-def load_release(root, organization_id, release_id, expected=None):
+def load_release(root, organization_id, release_id, expected=None, *, cache=None):
+    if cache is not None:
+        return cache.load(root, organization_id, release_id, expected)
+    return _load_release(root, organization_id, release_id, expected)
+
+
+def _load_release(root, organization_id, release_id, expected=None):
     """No implicit latest selection. Full integrity is checked before use."""
     org, identifier = str(UUID(organization_id)), str(UUID(release_id))
     directory = Path(root)/org/'releases'/identifier
@@ -48,6 +55,17 @@ def load_release(root, organization_id, release_id, expected=None):
             from hashlib import file_digest
             if file_digest(stream, 'sha256').hexdigest() != contract['matrix_sha256']:
                 raise ValueError('organization_index_release_matrix_integrity_failure')
+        if 'lexical_index' in index:
+            from retrieval.published_lexical_index import FORMAT as LEXICAL_FORMAT
+            lexical = index['lexical_index']
+            if (set(lexical) != {'format', 'sha256', 'nodes'} or lexical['format'] != LEXICAL_FORMAT
+                    or lexical['nodes'] != len(index['records'])):
+                raise ValueError('organization_index_release_lexical_contract_invalid')
+            if any((directory/('lexical.sqlite'+suffix)).exists() for suffix in ('-wal', '-journal')):
+                raise ValueError('organization_index_release_lexical_unsealed')
+            with (directory/'lexical.sqlite').open('rb') as stream:
+                if file_digest(stream, 'sha256').hexdigest() != lexical['sha256']:
+                    raise ValueError('organization_index_release_lexical_integrity_failure')
         matrix = np.load(directory/'vectors.npy', mmap_mode='r', allow_pickle=False)
         records = index['records']
         if (matrix.dtype != np.float32 or matrix.shape != (len(records), 1024)
@@ -58,6 +76,72 @@ def load_release(root, organization_id, release_id, expected=None):
         return directory, index, matrix, contract
     except (OSError, KeyError, TypeError, json.JSONDecodeError):
         raise ValueError('organization_index_release_unavailable') from None
+
+
+class ReleaseLoadCache:
+    """One verified host-owned release, not an authorization cache.
+
+    Immutable publication is the storage contract. File identities before and
+    after every use detect ordinary replacement, mutation, deletion and races;
+    full hashes remain mandatory on first load. This is not protection against
+    a malicious host able to forge filesystem metadata or mutate this process.
+    Never rewrite a published release, even while the service is stopped.
+    """
+    def __init__(self):
+        self._lock = RLock()
+        self._entry = None
+
+    @staticmethod
+    def _signature(directory):
+        values = []
+        for name in ('index.json', 'vectors.npy', 'lexical.sqlite'):
+            path = directory/name
+            try:
+                stat = path.stat()
+            except FileNotFoundError:
+                if name == 'lexical.sqlite':
+                    values.append(None)
+                    continue
+                raise ValueError('organization_index_release_unavailable') from None
+            values.append((stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns))
+        # A published SQLite artifact is sealed, never a WAL database. Reject
+        # journals so a base-file digest cannot hide unvalidated sidecar writes.
+        if any((directory/('lexical.sqlite'+suffix)).exists() for suffix in ('-wal', '-journal')):
+            raise ValueError('organization_index_release_lexical_unsealed')
+        return tuple(values)
+
+    def check(self):
+        with self._lock:
+            if self._entry is None:
+                raise ValueError('organization_index_release_not_loaded')
+            _, signature, value = self._entry
+            if self._signature(value[0]) != signature:
+                self._entry = None
+                raise ValueError('organization_index_release_changed_after_load')
+
+    def load(self, root, organization_id, release_id, expected):
+        if expected is None:
+            raise ValueError('organization_index_cache_requires_frozen_contract')
+        validate_contract(expected)
+        directory = Path(root).resolve()/str(UUID(organization_id))/'releases'/str(UUID(release_id))
+        key = (str(directory), tuple(sorted(expected.items())))
+        with self._lock:
+            if self._entry is not None and self._entry[0] == key:
+                self.check()
+                directory, index, _, contract = self._entry[2]
+                return directory, index, np.load(directory/'vectors.npy', mmap_mode='r', allow_pickle=False), contract
+            # New releases never inherit another release's verification. Failed
+            # warm-up does not publish a partially validated value.
+            self._entry = None
+            before = self._signature(directory)
+            value = _load_release(root, organization_id, release_id, expected)
+            if self._signature(directory) != before:
+                raise ValueError('organization_index_release_changed_during_load')
+            # Do not retain a corpus-sized mapped working set between calls.
+            # Reopening an already verified read-only mapping is cheap; the
+            # immutable index metadata, not the mapped pages, is cached.
+            self._entry = key, before, (value[0], value[1], None, value[3])
+            return value
 
 
 def verify_release_inputs(workspace, org, inputs, contract, root, research_as_of):

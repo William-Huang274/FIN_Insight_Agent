@@ -62,6 +62,12 @@ class _PackedNode(Mapping):
         self._terms = terms
 
     def lexical_counts(self):
+        if not self._terms:
+            from collections import Counter
+            from retrieval.query_bm25 import TokenCounts
+            from retrieval.text import tokenize
+            tokens = tokenize(str(self.get('model_text') or self['content'] or ''))
+            return TokenCounts(len(tokens), Counter(tokens))
         return unpack_terms(self._terms)
 
     def __getitem__(self, key):
@@ -77,7 +83,7 @@ class _PackedNode(Mapping):
         return len(self.metadata) + 1
 
 
-def encode_projection(value):
+def encode_projection(value, *, include_terms=True):
     from .organization_source_projection import _SourceNode
     document, nodes, origin, originals = value
     records, bodies, positions = [], [], {}
@@ -94,12 +100,12 @@ def encode_projection(value):
         if position is None:
             position = len(bodies)
             positions[key] = position
-            terms = pack_terms(str(model_text or row['content'] or ''))
+            terms = pack_terms(str(model_text or row['content'] or '')) if include_terms else b''
             bodies.append((body, compressed, terms))
         else:
             terms = bodies[position][2]
         if isinstance(row, _SourceNode):
-            row._terms = terms
+            row._terms = terms or None
         # Compact section/leaf pairs share the same metadata and bytes. Retain
         # that layout instead of rebuilding a corpus-sized decoded string heap.
         if (kind == 'text' and records and records[-1][0] == 'section'
@@ -154,7 +160,7 @@ def decode_projection(encoded):
             nodes.append(_PackedNode(metadata, body, compressed, terms))
         else:
             for part in (('section', 'text') if kind == 'pair' else (kind,)):
-                nodes.append(_SourceNode(metadata, body, compressed, part, terms))
+                nodes.append(_SourceNode(metadata, body, compressed, part, terms or None))
     reconstructed = {row['node_id']: row['original_source'] for row in nodes
                      if 'original_source' in row}
     originals = {key: remaining[key] if key in remaining else reconstructed[key] for key in original_keys}
@@ -173,7 +179,8 @@ class OrganizationProjectionCache:
     MAX_ITEM = 32 * 1024 * 1024
     MAX_DECODED_ITEM = 128 * 1024 * 1024
 
-    def __init__(self, root, *, limit=LIMIT):
+    def __init__(self, root, *, limit=LIMIT, include_terms=True):
+        self.include_terms = include_terms
         self.root, self.limit = Path(root), limit
         self.directory = None
         self.generation = None
@@ -228,7 +235,7 @@ class OrganizationProjectionCache:
     def put(self, resource_id, value):
         if self.admission_disabled or resource_id in self.entries or self.size >= self.limit:
             return
-        encoded, raw_size = encode_projection(value)
+        encoded, raw_size = encode_projection(value, include_terms=self.include_terms)
         if (len(encoded) > self.MAX_ITEM or raw_size > self.MAX_DECODED_ITEM
                 or self.size + len(encoded) > self.limit):
             return  # Oversized sources use ordinary authorized storage reads.

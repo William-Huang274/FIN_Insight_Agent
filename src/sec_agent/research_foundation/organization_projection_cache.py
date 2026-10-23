@@ -4,17 +4,24 @@ Only in-memory digests confer validity on these temporary files. No cache can
 survive a navigation instance or a storage/grant generation change. SQLite's
 live generation observer and current Java authority are owned by the caller.
 """
-from base64 import b64encode, b64decode
 from collections.abc import Mapping
 from hashlib import sha256
 import json
 from pathlib import Path
 import shutil
 import sqlite3
+import struct
 from tempfile import TemporaryDirectory
 from types import MappingProxyType
 import weakref
 import zlib
+
+
+# Disposable, process-local format: JSON identities followed by binary bodies.
+# Keep one outer compression stream so repeated metadata/body fragments still
+# compress together. The cache verifies the entire encoded payload before decode.
+_FRAME = struct.Struct('>5sI')
+_MAGIC = b'OPRJ1'
 
 
 def pack_terms(text):
@@ -70,10 +77,9 @@ def encode_projection(value):
             position = len(bodies)
             positions[key] = position
             terms = pack_terms(str(model_text or row['content'] or ''))
-            bodies.append([b64encode(body).decode('ascii'), compressed,
-                           b64encode(terms).decode('ascii')])
+            bodies.append((body, compressed, terms))
         else:
-            terms = b64decode(bodies[position][2])
+            terms = bodies[position][2]
         if isinstance(row, _SourceNode):
             row._terms = terms
         # Compact section/leaf pairs share the same metadata and bytes. Retain
@@ -90,18 +96,40 @@ def encode_projection(value):
     remaining = {key: value for key, value in originals.items()
                  if key not in reconstructed or reconstructed[key] != value}
     original_keys = list(originals)
-    raw = json.dumps([document, records, origin, remaining, bodies, original_keys], ensure_ascii=False,
-                     separators=(',', ':')).encode('utf8')
+    descriptors = [(len(body), compressed, len(terms)) for body, compressed, terms in bodies]
+    metadata = json.dumps([document, records, origin, remaining, descriptors, original_keys],
+                          ensure_ascii=False, separators=(',', ':')).encode('utf8')
+    raw = b''.join([_FRAME.pack(_MAGIC, len(metadata)), metadata,
+                    *(part for body, _, terms in bodies for part in (body, terms))])
     return zlib.compress(raw, 1), len(raw)
 
 
 def decode_projection(encoded):
     from .organization_source_projection import _SourceNode
-    document, records, origin, remaining, bodies, original_keys = json.loads(zlib.decompress(encoded))
-    bodies = [(b64decode(body, validate=True), compressed, b64decode(terms, validate=True))
-              for body, compressed, terms in bodies]
+    raw = zlib.decompress(encoded)
+    if len(raw) < _FRAME.size:
+        raise ValueError('organization_projection_cache_invalid_frame')
+    magic, length = _FRAME.unpack_from(raw)
+    offset = _FRAME.size + length
+    if magic != _MAGIC or offset > len(raw):
+        raise ValueError('organization_projection_cache_invalid_frame')
+    document, records, origin, remaining, descriptors, original_keys = json.loads(raw[_FRAME.size:offset])
+    bodies = []
+    for body_size, compressed, terms_size in descriptors:
+        if (type(body_size) is not int or type(terms_size) is not int
+                or type(compressed) is not bool or min(body_size, terms_size) < 0
+                or offset + body_size + terms_size > len(raw)):
+            raise ValueError('organization_projection_cache_invalid_frame')
+        body_end = offset + body_size
+        end = body_end + terms_size
+        bodies.append((raw[offset:body_end], compressed, raw[body_end:end]))
+        offset = end
+    if offset != len(raw):
+        raise ValueError('organization_projection_cache_invalid_frame')
     nodes = []
     for kind, metadata, position in records:
+        if type(position) is not int or not 0 <= position < len(bodies):
+            raise ValueError('organization_projection_cache_invalid_frame')
         body, compressed, terms = bodies[position]
         metadata = MappingProxyType(metadata)
         if kind == 'plain':

@@ -266,6 +266,39 @@ def test_cache_value_mutation_does_not_change_next_query(tmp_path, monkeypatch):
     assert nav._projection_cache.get(resource)[2] == original
 
 
+@pytest.mark.parametrize('fault', ['magic', 'header_length', 'negative_body', 'short_body',
+                                  'trailing_bytes', 'negative_position', 'short_header'])
+def test_binary_projection_frame_rejects_inconsistent_boundaries(fault):
+    import json
+    import zlib
+    from sec_agent.research_foundation.organization_projection_cache import _FRAME, _MAGIC
+    value = ('document', [{'node_id': 'node', 'content': '现金流 🧾'}], {}, {})
+    encoded, _ = encode_projection(value)
+    raw = zlib.decompress(encoded)
+    _, length = _FRAME.unpack_from(raw)
+    end = _FRAME.size + length
+    metadata, binary = json.loads(raw[_FRAME.size:end]), raw[end:]
+    if fault == 'magic':
+        raw = b'WRONG' + raw[5:]
+    elif fault == 'header_length':
+        raw = _FRAME.pack(_MAGIC, len(raw) + 1) + raw[_FRAME.size:]
+    elif fault == 'short_body':
+        raw = raw[:-1]
+    elif fault == 'trailing_bytes':
+        raw += b'x'
+    elif fault == 'short_header':
+        raw = b'OP'
+    else:
+        if fault == 'negative_body':
+            metadata[4][0][0] = -1
+        else:
+            metadata[1][0][2] = -1
+        header = json.dumps(metadata).encode()
+        raw = _FRAME.pack(_MAGIC, len(header)) + header + binary
+    with pytest.raises(ValueError, match='projection_cache_invalid_frame'):
+        decode_projection(zlib.compress(raw))
+
+
 def test_cache_disk_pressure_disables_admission_without_losing_original_path(tmp_path, monkeypatch):
     nav, _, _, _, request, _, reads, _ = setup(tmp_path, monkeypatch)
     cache = nav._projection_cache

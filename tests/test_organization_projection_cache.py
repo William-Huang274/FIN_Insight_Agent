@@ -299,6 +299,23 @@ def test_binary_projection_frame_rejects_inconsistent_boundaries(fault):
         decode_projection(zlib.compress(raw))
 
 
+def test_projection_shares_immutable_values_but_not_mutable_metadata():
+    title = 'Repeated long source identity with unicode 组织资料'
+    rows = [{'node_id': str(i), 'content': 'cash flow', 'title': title,
+             'original_source': {'source_id': title}} for i in range(4100)]
+    value = ('doc', rows, {}, {})
+    packed, _ = encode_projection(value)
+    first = decode_projection(packed)
+    second = decode_projection(packed)
+    assert [dict(row) for row in first[1]] == rows
+    assert first[1][0]['title'] is first[1][-1]['title']
+    assert first[1][0]['title'] is first[1][-1]['original_source']['source_id']
+    assert first[1][0]['title'] is not second[1][0]['title']
+    first[1][0]['original_source']['source_id'] = 'mutated'
+    assert first[1][-1]['original_source']['source_id'] == title
+    assert second[1][0]['original_source']['source_id'] == title
+
+
 def test_cache_disk_pressure_disables_admission_without_losing_original_path(tmp_path, monkeypatch):
     nav, _, _, _, request, _, reads, _ = setup(tmp_path, monkeypatch)
     cache = nav._projection_cache

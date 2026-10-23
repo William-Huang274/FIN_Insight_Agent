@@ -24,6 +24,24 @@ _FRAME = struct.Struct('>5sI')
 _MAGIC = b'OPRJ1'
 
 
+def _metadata_from_json(encoded):
+    # JSON memoizes object keys, but repeated document/source *values* become
+    # separate strings for every chunk. Restore immutable sharing within this
+    # one projection only; never intern globally or share mutable mappings.
+    values = {}
+
+    def share(row):
+        for key, value in row.items():
+            if isinstance(value, str):
+                if len(values) < 4096:
+                    row[key] = values.setdefault(value, value)
+                else:
+                    row[key] = values.get(value, value)
+        return row
+
+    return json.loads(encoded, object_hook=share)
+
+
 def pack_terms(text):
     from collections import Counter
     from retrieval.text import tokenize
@@ -113,7 +131,7 @@ def decode_projection(encoded):
     offset = _FRAME.size + length
     if magic != _MAGIC or offset > len(raw):
         raise ValueError('organization_projection_cache_invalid_frame')
-    document, records, origin, remaining, descriptors, original_keys = json.loads(raw[_FRAME.size:offset])
+    document, records, origin, remaining, descriptors, original_keys = _metadata_from_json(raw[_FRAME.size:offset])
     bodies = []
     for body_size, compressed, terms_size in descriptors:
         if (type(body_size) is not int or type(terms_size) is not int

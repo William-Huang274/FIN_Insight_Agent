@@ -5,7 +5,8 @@ from types import SimpleNamespace
 import pytest
 
 from scripts.engineering.organization_recall_evaluation import (
-    POLICY, bind_labels, evaluate, score_response, summarize, validate_questions,
+    POLICY, bind_labels, evaluate, evidence_group_metrics, score_response, summarize,
+    validate_questions, verify_equivalent_quote,
 )
 from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
 from sec_agent.research_foundation.organization_source_projection import chunk_node_id
@@ -136,3 +137,36 @@ def test_failure_persisted_without_retry_or_document_prefilter(fixture):
     assert calls[0]['entity_id'] == 'COMPANY::alpha' and calls[0]['limit'] == 20
     assert saved[0]['samples'][0]['status'] == 'failed'
     assert saved[0]['summary']['metrics'] is None
+
+
+def test_equivalent_copies_count_once_but_other_required_fact_stays_missing():
+    groups = [['old', 'new'], ['other-fact']]
+    measured = evidence_group_metrics(['new', 'new', 'old'], groups)
+    assert measured['known_recall@5'] == .5 and measured['all_known_hit@5'] == 0
+    assert evidence_group_metrics(['new', 'other-fact'], groups)['all_known_hit@5'] == 1
+    with pytest.raises(ValueError, match='positive_evidence_groups'):
+        evidence_group_metrics(['new'], [[]])
+
+
+@pytest.mark.parametrize('fault', [None, 'url', 'published_at', 'known_at', 'quote', 'digest'])
+def test_equivalence_requires_original_version_and_exact_quote(fixture, fault):
+    dataset, bundles, *_ = fixture
+    anchor = dataset['questions'][0]['evidence'][0]
+    original = bundles['source']; original['source']['url'] = 'https://example.test/annual'
+    candidate = deepcopy(original); candidate['source']['id'] = 'other'
+    candidate['chunks'][0]['id'] = 'other-chunk'
+    candidate['chunks'][0]['body'] = original['chunks'][0]['body'].replace(' ', '\n')
+    candidate['chunks'][0]['digest'] = sha256(candidate['chunks'][0]['body'].encode()).hexdigest()
+    alternative = dict(source_id='other', chunk_id='other-chunk', body_sha256=candidate['chunks'][0]['digest'])
+    if fault == 'url': candidate['source']['url'] = 'https://example.test/quarter'
+    if fault == 'published_at': candidate['source']['published_at'] = '2026-04-01'
+    if fault == 'known_at': candidate['source']['metadata'] = '{"known_at":"2026-04-01"}'
+    if fault == 'quote':
+        candidate['chunks'][0]['body'] = candidate['chunks'][0]['body'].replace('2', '20')
+        candidate['chunks'][0]['digest'] = alternative['body_sha256'] = sha256(candidate['chunks'][0]['body'].encode()).hexdigest()
+    if fault == 'digest': alternative['body_sha256'] = 'wrong'
+    if fault:
+        with pytest.raises(ValueError, match='equivalent_evidence'):
+            verify_equivalent_quote(anchor, original, alternative, candidate)
+    else:
+        verify_equivalent_quote(anchor, original, alternative, candidate)

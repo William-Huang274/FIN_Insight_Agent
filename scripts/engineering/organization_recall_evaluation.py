@@ -6,6 +6,7 @@ and current authorization. Large datasets and results stay outside Git.
 """
 from collections import defaultdict
 from hashlib import sha256
+import json
 from time import perf_counter
 
 from scripts.engineering.qualify_retrieval_recall import ranking_metrics
@@ -14,6 +15,49 @@ from sec_agent.research_foundation.organization_source_projection import chunk_n
 
 POLICY = {'dense_candidates': 24, 'lexical_candidates': 12, 'graph_candidates': 12,
           'fusion': 'rrf_k60', 'returned_limit': 20}
+
+
+def verify_equivalent_quote(anchor, original, alternative, candidate):
+    """Conservative label equivalence, never inferred from retrieval ranks.
+
+    Require the same exact nonempty original URL, publication/availability,
+    snapshot, and full quoted text (only whitespace may differ). Matching facts
+    in another quarter's report or a later revision do not satisfy this rule.
+    """
+    left, right = original['source'], candidate['source']
+    if (not left['url'] or left['url'] != right['url']
+            or original['library_sha256'] != candidate['library_sha256']
+            or any(left[k] != right[k] for k in ('published_at', 'vintage'))
+            or json.loads(left['metadata']).get('known_at') != json.loads(right['metadata']).get('known_at')):
+        raise ValueError('equivalent_evidence_source_version_mismatch')
+    quote = ' '.join(anchor['quote'].split())
+    if not quote:
+        raise ValueError('equivalent_evidence_empty_quote')
+    for label, bundle in ((anchor, original), (alternative, candidate)):
+        if label['source_id'] != bundle['source']['id']:
+            raise ValueError('equivalent_evidence_source_identity_mismatch')
+        chunks = [c for c in bundle['chunks'] if c['id'] == label['chunk_id']]
+        if len(chunks) != 1:
+            raise ValueError('equivalent_evidence_chunk_missing')
+        chunk = chunks[0]
+        actual = sha256(chunk['body'].encode()).hexdigest()
+        if actual != label['body_sha256'] or actual != chunk['digest']:
+            raise ValueError('equivalent_evidence_body_changed')
+        if quote not in ' '.join(chunk['body'].split()):
+            raise ValueError('equivalent_evidence_quote_not_identical')
+
+
+def evidence_group_metrics(ranked, groups, ks=(5, 10, 20, 40)):
+    """OR within verified equivalent copies, AND across required evidence units."""
+    if not groups or any(not group for group in groups):
+        raise ValueError('positive_evidence_groups_required')
+    positions = {node: rank for rank, node in enumerate(dict.fromkeys(ranked), 1)}
+    ranks = [min((positions[node] for node in set(group) if node in positions), default=None) for group in groups]
+    hits = [rank for rank in ranks if rank is not None]
+    return {**{f'known_recall@{k}': sum(rank <= k for rank in hits)/len(groups) for k in ks},
+            **{f'known_hit@{k}': float(any(rank <= k for rank in hits)) for k in ks},
+            **{f'all_known_hit@{k}': float(sum(rank <= k for rank in hits) == len(groups)) for k in ks},
+            'mrr@40': 1/min(hits) if hits and min(hits) <= 40 else 0.}
 
 
 def validate_questions(dataset, bundles):

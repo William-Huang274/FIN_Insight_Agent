@@ -1,0 +1,84 @@
+from hashlib import sha256
+import json
+from types import SimpleNamespace
+from uuid import uuid4
+
+import pytest
+
+from scripts.engineering.diagnose_organization_retrieval_candidates import main
+from retrieval.query_embeddings import QueryEmbeddingSource
+from retrieval.qwen_api import RetrievalResponse
+from sec_agent.research_foundation.organization_graph_index import project
+from sec_agent.research_foundation.organization_hybrid_retrieval import publish_prepared_index
+from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
+from sec_agent.research_foundation.organization_source_projection import source_nodes, PROJECTION
+
+
+def setup(tmp_path, monkeypatch, receipt):
+    intake = tmp_path/'intake'; intake.mkdir()
+    checkpoint = tmp_path/'checkpoint'; checkpoint.mkdir()
+    def write(path, value): path.write_text(json.dumps(value), encoding='utf8')
+    body = 'Alpha cash revenue improved during the fiscal year.'
+    digest = sha256(body.encode()).hexdigest()
+    item = {'resource_id': str(uuid4()), 'title': 'Alpha annual report', 'ref': {'digest': digest}}
+    bundle = {'library_sha256': 'snapshot', 'text': body, 'source': {'id': 'source', 'digest': digest,
+        'url': 'https://example.test/report', 'metadata': '{}', 'vintage': 'dated_original', 'published_at': '2026-01-01'},
+        'chunks': [{'id': 'chunk', 'body': body, 'digest': digest, 'context': '', 'parent_id': 'parent',
+            'locator': 'text-part:1', 'char_start': 0, 'char_end': len(body), 'source_char_start': 0,
+            'source_char_end': len(body), 'embedding_input_sha256': sha256(('\n'+body).encode()).hexdigest()}],
+        'edges': [], 'edge_chunk_links': []}
+    write(intake/'source.json', bundle)
+    write(intake/'result.json', {'status': 'verified', 'library_sha256': 'snapshot',
+        'sources': [{'source_id': 'source', 'directory': '.', 'chunks': 1}],
+        'source_index': {'embedding_model': 'qwen3.7-text-embedding', 'matrix_sha256': 'a'*64}})
+    document = OrganizationSourceNavigation._identity(item)
+    nodes = [r for r in source_nodes(bundle, document, item, 'http://localhost') if r['node_kind'] == 'text']
+    organization, release = str(uuid4()), str(uuid4())
+    publish_prepared_index(tmp_path/'indices', organization, nodes, [[1.]+[0.]*1023],
+        {'Alpha cash': [1.]+[0.]*1023}, model='qwen3.7-text-embedding',
+        provenance={'source_intake_sha256': sha256((intake/'result.json').read_bytes()).hexdigest()},
+        release_id=release, projection=PROJECTION, graph_sources=[project(bundle, document)])
+    directory = tmp_path/'indices'/organization/'releases'/release
+    write(checkpoint/'manifest.json', {'publication': {'resources': {'source': item['resource_id']},
+        'grants': {'source': {'id': item['resource_id'], 'binding': {'ref': item['ref']}}}}})
+    write(tmp_path/'questions.json', {'evaluation_role': 'historical_regression', 'library_sha256': 'snapshot',
+        'questions': [{'id': 'q1', 'family': 'f1', 'split': 'development', 'query': 'Alpha cash',
+            'as_of': '2026-09-23', 'evidence': [{'source_id': 'source', 'chunk_id': 'chunk',
+                'body_sha256': digest, 'quote': 'cash revenue improved'}]}]})
+    class Api:
+        embedding_model = 'qwen3.7-text-embedding'
+        rerank_model = 'qwen3-rerank'
+        def embed(self, texts):
+            return RetrievalResponse([[1.]+[0.]*1023], {}, 'fixture', self.embedding_model)
+    source = QueryEmbeddingSource(tmp_path/'query-cache', Api(), model=Api.embedding_model)
+    source.embed('Alpha cash' if receipt else 'a different question', scope='public-recall-qualification',
+                 index_digest='a'*64, model=Api.embedding_model, dimensions=1024)
+    args = ['offline', '--intake', str(intake), '--dataset', str(tmp_path/'questions.json'),
+        '--index-directory', str(directory), '--matrix', str(directory/'vectors.npy'),
+        '--publication-checkpoint', str(checkpoint), '--query-cache', str(tmp_path/'query-cache'),
+        '--output', str(tmp_path/'output'), '--split', 'all']
+    monkeypatch.setattr('sys.argv', args)
+    monkeypatch.setattr('psutil.virtual_memory', lambda: SimpleNamespace(available=2*2**30))
+    return tmp_path/'output', tmp_path/'query-cache/records-v1.sqlite'
+
+
+def test_offline_full_scope_uses_immutable_index_and_readonly_receipt(tmp_path, monkeypatch):
+    output, cache = setup(tmp_path, monkeypatch, True)
+    before = sha256(cache.read_bytes()).hexdigest()
+    main()
+    result = json.loads((output/'result.json').read_text(encoding='utf8'))
+    assert result['status'] == 'completed' and result['provider_calls'] == 0
+    assert result['candidate_sources'] == result['candidate_chunks'] == 1
+    assert result['samples'][0]['metrics']['fused_candidates']['known_hit@5'] == 1
+    assert not result['S2_passed'] and sha256(cache.read_bytes()).hexdigest() == before
+
+
+def test_missing_receipt_is_recorded_failure_without_network_fallback(tmp_path, monkeypatch):
+    output, cache = setup(tmp_path, monkeypatch, False)
+    before = sha256(cache.read_bytes()).hexdigest()
+    with pytest.raises(ValueError, match='successful_query_receipt_required'):
+        main()
+    result = json.loads((output/'result.json').read_text(encoding='utf8'))
+    assert result['status'] == result['samples'][0]['status'] == 'failed'
+    assert 'summary' not in result and result['provider_calls'] == 0
+    assert sha256(cache.read_bytes()).hexdigest() == before

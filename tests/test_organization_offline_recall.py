@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 
-from scripts.engineering.diagnose_organization_retrieval_candidates import main
+from scripts.engineering.diagnose_organization_retrieval_candidates import frozen_cosine_scores, main
 from retrieval.query_embeddings import QueryEmbeddingSource
 from retrieval.qwen_api import RetrievalResponse
 from sec_agent.research_foundation.organization_graph_index import project
@@ -82,3 +82,26 @@ def test_missing_receipt_is_recorded_failure_without_network_fallback(tmp_path, 
     assert result['status'] == result['samples'][0]['status'] == 'failed'
     assert 'summary' not in result and result['provider_calls'] == 0
     assert sha256(cache.read_bytes()).hexdigest() == before
+
+
+def test_scoring_releases_mapping_and_keeps_exact_owned_scores(tmp_path, monkeypatch):
+    import gc
+    import weakref
+    import numpy as np
+    from sec_agent.research_foundation.organization_vector_math import cosine_scores
+    matrix = np.zeros((3, 1024), dtype=np.float32)
+    matrix[0, 0] = 1; matrix[1, 0] = -1; matrix[2, 1] = 1
+    path = tmp_path/'vectors.npy'; np.save(path, matrix)
+    original = np.load
+    references = []
+    def tracked(*args, **kwargs):
+        mapped = original(*args, **kwargs)
+        references.append(weakref.ref(mapped))
+        return mapped
+    monkeypatch.setattr(np, 'load', tracked)
+    scores = frozen_cosine_scores(path, [2, 0, 1], matrix[0], 3)
+    np.testing.assert_array_equal(scores, cosine_scores(matrix, [2, 0, 1], matrix[0]))
+    gc.collect()
+    assert references[0]() is None and scores.flags.owndata
+    with pytest.raises(ValueError, match='matrix_shape_mismatch'):
+        frozen_cosine_scores(path, [0], matrix[0], 1)

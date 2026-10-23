@@ -35,6 +35,19 @@ def digest(path):
         return file_digest(handle, 'sha256').hexdigest()
 
 
+def frozen_cosine_scores(path, positions, query, count):
+    """Do not retain mapped corpus pages between diagnostic requests.
+
+    cosine_scores returns its own small array and keeps no matrix views. The
+    local mapping therefore becomes unreachable when this call returns; the
+    next request's collection/guard runs before another mapping is opened.
+    """
+    matrix = np.load(path, mmap_mode='r', allow_pickle=False)
+    if matrix.shape != (count, 1024) or matrix.dtype != np.float32:
+        raise ValueError('offline_matrix_shape_mismatch')
+    return cosine_scores(matrix, positions, query)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('intake', 'dataset', 'index-directory', 'matrix', 'publication-checkpoint', 'query-cache', 'output'):
@@ -101,9 +114,6 @@ def main():
         if sorted(positions) != list(range(len(records))):
             raise ValueError('offline_matrix_positions_mismatch')
         del publication, manifest
-        matrix = np.load(args.matrix, mmap_mode='r', allow_pickle=False)
-        if matrix.shape != (len(records), 1024) or matrix.dtype != np.float32:
-            raise ValueError('offline_matrix_shape_mismatch')
         namespace = sha256(json.dumps(['index-query.v1', 'public-recall-qualification',
             intake['source_index']['matrix_sha256'], index['model'], 1024], separators=(',', ':')).encode()).hexdigest()
         report.update(status='running', evaluation_role=dataset['evaluation_role'], split=args.split,
@@ -127,7 +137,7 @@ def main():
                         ((r['node_id'], r['content_sha256'], r['lexical_input_sha256']) for r in records), tokenize(row['query']))
                     lexical_positions = sorted(overlap, key=lambda i: (-float(scores[i]), records[i]['node_id']))
                     lexical = [records[i]['node_id'] for i in lexical_positions[:12]]
-                    scores = cosine_scores(matrix, positions, query)
+                    scores = frozen_cosine_scores(args.matrix, positions, query, len(records))
                     dense = [records[i]['node_id'] for i in sorted(range(len(records)),
                         key=lambda i: (-float(scores[i]), records[i]['node_id']))[:24]]
                     ranked = {'dense_candidates': dense, 'lexical_candidates': lexical,

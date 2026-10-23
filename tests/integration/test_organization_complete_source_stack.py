@@ -452,7 +452,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     second={**query,'query':list(queries)[1]}
                     reference=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
                     with diagnostic.phase('global_new_query_original_reference',profile=True):
-                        full=reference._navigate(second)
+                        from tests.integration.source_intake_reference import original_reference
+                        full=original_reference(reference,second,s.output/f'original-reference-{release}.sqlite')
                     assert not full.items[0]['retrieval']['cache_hit']
                     reference_original_reads=len(original_reads)
                     assert reference_original_reads==len(capture_checks)==len(batch)

@@ -442,6 +442,27 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     original_reads.append(args[0])
                     return read_storage(*args)
                 monkeypatch.setattr(reader,'_read_storage',counted_read)
+                if global_probe:
+                    # Run the independent full-original reference before the
+                    # optimized lifecycle retains its full-scope metadata.
+                    # Only bounded response/candidate IDs survive this phase;
+                    # both paths still read the same frozen index and grant.
+                    import gc
+                    import sqlite3
+                    second={**query,'query':list(queries)[1]}
+                    reference=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
+                    with diagnostic.phase('global_new_query_original_reference',profile=True):
+                        full=reference._navigate(second)
+                    assert not full.items[0]['retrieval']['cache_hit']
+                    reference_original_reads=len(original_reads)
+                    assert reference_original_reads==len(capture_checks)==len(batch)
+                    del reference
+                    gc.collect()
+                    # Do not let reference scoring prepopulate production
+                    # ranking caches and turn the new-query check into a hit.
+                    with sqlite3.connect(indices/org/'releases'/release/'rank-cache.sqlite') as ranks:
+                        ranks.execute('DELETE FROM ranks')
+                    original_reads.clear();capture_checks.clear()
                 prewarm_original_reads=0
                 lifecycle=None
                 if lifecycle_probe:
@@ -477,7 +498,6 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     {k:v for k,v in row.items() if k!='retrieval'} for row in cached.items]
                 cross_query=None
                 if global_probe:
-                    second={**query,'query':list(queries)[1]}
                     if lifecycle is not None:
                         nav=lifecycle.navigation()  # A distinct research-stage observation scope.
                     with diagnostic.phase('global_new_query_projection_reuse',profile=True):
@@ -503,16 +523,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                         assert nav._projection_cache.lexical_statistics.postings_hit
                         statistics_bytes=len(nav._projection_cache.lexical_statistics.entry[1])
                         postings_bytes=nav._projection_cache.lexical_statistics.postings_bytes
-                    import sqlite3
-                    # Independent original-path ranking, not a replay of the
-                    # candidate IDs just cached by the implementation under test.
-                    with sqlite3.connect(indices/org/'releases'/release/'rank-cache.sqlite') as ranks:
-                        ranks.execute('DELETE FROM ranks')
-                    reference=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
-                    with diagnostic.phase('global_new_query_original_reference',profile=True):
-                        full=reference._navigate(second)
-                    assert not full.items[0]['retrieval']['cache_hit']
-                    assert len(original_reads)==len(capture_checks)==len(batch)
+                    assert not reused.items[0]['retrieval']['cache_hit']
                     assert [{k:v for k,v in row.items() if k!='retrieval'} for row in reused.items]==[
                         {k:v for k,v in row.items() if k!='retrieval'} for row in full.items]
                     for field in ('dense_node_ids','lexical_node_ids','candidate_node_ids'):
@@ -525,7 +536,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                         'published_lexical':published_lexical,
                         'lexical_statistics_hit':not published_lexical,'lexical_statistics_bytes':statistics_bytes,
                         'lexical_postings_hit':not published_lexical,'lexical_postings_bytes':postings_bytes,
-                        'same_version_reference_original_reads':len(original_reads),
+                        'same_version_reference_original_reads':reference_original_reads,
                         'ranks_and_items_equal':True,'provider_calls':0}
                     original_reads.clear();capture_checks.clear()
                     if lifecycle is not None:

@@ -62,6 +62,10 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     storage_probe=os.getenv('FIN_COMPLETE_SOURCE_STORAGE_PROBE')=='1'
     unified_scope=os.getenv('FIN_COMPLETE_SOURCE_UNIFIED_SCOPE')=='1'
     global_probe=os.getenv('FIN_COMPLETE_SOURCE_GLOBAL_PROBE')=='1'
+    lifecycle_probe=os.getenv('FIN_COMPLETE_SOURCE_LIFECYCLE_PROBE')=='1'
+    lifecycles=[]
+    if lifecycle_probe:
+        assert global_probe and unified_scope
     if batch_binding:
         assert storage_probe and not unified_scope and not global_probe
     if global_probe:
@@ -403,13 +407,26 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     original_reads.append(args[0])
                     return read_storage(*args)
                 monkeypatch.setattr(reader,'_read_storage',counted_read)
+                prewarm_original_reads=0
+                lifecycle=None
+                if lifecycle_probe:
+                    from sec_agent.research_foundation.organization_retrieval_lifecycle import OrganizationRetrievalLifecycle
+                    lifecycle=OrganizationRetrievalLifecycle(reader,workbench_url='http://localhost',
+                        retrieval_root=indices,grant=reader._grant()[0])
+                    lifecycles.append(lifecycle)
+                    with diagnostic.phase('global_retrieval_prepare',profile=True):
+                        lifecycle.prepare()
+                    prewarm_original_reads=len(original_reads)
+                    assert prewarm_original_reads==len(capture_checks)==len(batch)
+                    original_reads.clear();capture_checks.clear()
+                    nav=lifecycle.navigation()
                 with diagnostic.phase('global_search_cold',profile=global_probe):
                     found=nav.navigate(query)
                 assert found.items
                 cold_original_reads=len(original_reads)
-                assert cold_original_reads==len(batch)
+                assert cold_original_reads==(0 if lifecycle_probe else len(batch))
                 cold_capture_checks=len(capture_checks)
-                assert cold_capture_checks==len(batch)
+                assert cold_capture_checks==(0 if lifecycle_probe else len(batch))
                 original_reads.clear()
                 capture_checks.clear()
                 assert all(r['original_source']['source_id'] in batch for r in found.items)
@@ -426,6 +443,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 cross_query=None
                 if global_probe:
                     second={**query,'query':list(queries)[1]}
+                    if lifecycle is not None:
+                        nav=lifecycle.navigation()  # A distinct research-stage observation scope.
                     with diagnostic.phase('global_new_query_projection_reuse',profile=True):
                         reused=nav.navigate(second)
                     assert reused.items and not original_reads and not capture_checks
@@ -474,11 +493,27 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                         'same_version_reference_original_reads':len(original_reads),
                         'ranks_and_items_equal':True,'provider_calls':0}
                     original_reads.clear();capture_checks.clear()
+                    if lifecycle is not None:
+                        with sqlite3.connect(reader.workspace.library.documents.path) as db:
+                            db.execute('CREATE TABLE lifecycle_unrelated_write (value INTEGER)')
+                        with diagnostic.phase('global_background_refresh',profile=False):
+                            with pytest.raises(OrganizationExecutionUnavailable,match='refresh_pending'):
+                                nav.navigate(second)
+                            assert lifecycle.wait_for_refresh(60)['generation']==2
+                        assert len(original_reads)==len(capture_checks)==len(batch)
+                        original_reads.clear();capture_checks.clear()
+                        refreshed=nav.navigate(second)
+                        assert not original_reads and not capture_checks
+                        assert [{k:v for k,v in row.items() if k!='retrieval'} for row in refreshed.items]==[
+                            {k:v for k,v in row.items() if k!='retrieval'} for row in full.items]
+                        cross_query['background_refresh_original_reads']=len(batch)
+                        cross_query['background_refresh_generation']=2
                 monkeypatch.setattr(reader,'_read_storage',read_storage)
                 monkeypatch.setattr(capture_module,'read_capture',read_capture)
                 global_searches.append({'query':query,'retrieval':found.items[0]['retrieval'],
                     'returned_sources':list({r['original_source']['source_id'] for r in found.items}),
                     'authorized_sources':len(batch),'indexed_chunks':indexed_chunks,'cache_hit':True,
+                    'prewarm_original_reads':prewarm_original_reads,'lifecycle_probe':lifecycle_probe,
                     'cold_original_reads':cold_original_reads,'warm_original_reads':0,
                     'cold_capture_checks':cold_capture_checks,'warm_capture_checks':0,
                     'cross_query_projection':cross_query,
@@ -539,6 +574,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                           'phase_diagnostics':'phase-diagnostics.json','provider_calls':0})
         raise
     finally:
+        for lifecycle in lifecycles:
+            lifecycle.close()
         try:s.postgres_memory_evidence()
         except Exception as exc:s.save('postgres-memory',{'status':'unavailable','error_type':type(exc).__name__})
         for process in s.processes:

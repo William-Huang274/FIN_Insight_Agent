@@ -28,6 +28,7 @@ class OrganizationSourceNavigation:
         self._search_cache = None
         self._projection_cache = None
         self._candidate_index = None
+        self._retrieval_lifecycle = None
         self._navigation_lock = RLock()
         if retrieval_root is not None:
             from .organization_hybrid_retrieval import OrganizationHybridRetrieval
@@ -60,6 +61,12 @@ class OrganizationSourceNavigation:
             return dict(contract)
 
     def navigate(self, request):
+        if self._retrieval_lifecycle is not None:
+            with self._retrieval_lifecycle.access(self):
+                return self._navigate_ready(request)
+        return self._navigate_ready(request)
+
+    def _navigate_ready(self, request):
         request = SourceDocumentRequest.model_validate(request)
         # One observer connection and one bounded result per navigation session.
         # Serializing this instance also prevents concurrent cache publication.

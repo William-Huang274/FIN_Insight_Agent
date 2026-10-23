@@ -146,7 +146,7 @@ def test_native_admission_checks_actual_run_before_host_resources(starting,fault
         assert asyncio.run(admit(native,config,thread,Authority())) == grant
 
 
-@pytest.mark.parametrize('fault',[None,'input','revoked','second_run'])
+@pytest.mark.parametrize('fault',[None,'input','revoked','second_run','retrieval'])
 def test_actual_native_factory_runs_scoped_orientation_only(starting,tmp_path,monkeypatch,fault):
     from pathlib import Path
     from sec_agent.agent_runtime import research_session_runtime as runtime
@@ -194,6 +194,11 @@ def test_actual_native_factory_runs_scoped_orientation_only(starting,tmp_path,mo
         if fault=='revoked':state['revoked']=True
         return result
     monkeypatch.setattr(runtime.DeepSeekStructuredAgentAdapter,'from_config',lambda **k:SimpleNamespace(lead_research_turn=model,specialist_model_turn=forbidden))
+    if fault=='retrieval':
+        from sec_agent.agent_runtime.organization_data_composition import OrganizationDataFactory
+        def preparation_failure(self):
+            raise OrganizationExecutionUnavailable('retrieval preparation failed before model access')
+        monkeypatch.setattr(OrganizationDataFactory,'prepare_retrieval',preparation_failure)
     async def exercise():
         async with runtime.research_session_graph(config,SimpleNamespace(execution_runtime=True)) as graph:
             incoming = deepcopy(args['input'])

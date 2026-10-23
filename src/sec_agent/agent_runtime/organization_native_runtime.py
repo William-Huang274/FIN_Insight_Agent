@@ -140,28 +140,35 @@ async def organization_graph(config, native, thread):
     organization = OrganizationDataFactory(reader, foundation=foundation, research_as_of=cutoff,
         workbench_url=settings['workbench_url'],
         retrieval_root=os.getenv('FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT'))
-    public, private = host.session_audit_sinks(Path(settings['audit_root']) / thread_id / run_id)
-    budget = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,
-        metadata=thread['metadata'], environment=os.environ)
-    phases = host.create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
-        thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ['DEEPSEEK_API_KEY']),
-        public_sink=public, private_sink=private, studio=studio, execution=execution,
-        budget_scope=budget, organization_data_factory=organization, run_access_check=check,
-        environment={**os.environ, 'FINSIGHT_RESEARCH_AS_OF':cutoff})
-    expected = None if reporting else (continuation_request if continuing else run_request)(thread, grant)['input']
-    async def input_guard(value):
-        await asyncio.to_thread(check)
-        if value != expected:
-            raise ValueError('organization_start_input_mismatch')
-        return value
-    def unavailable(_):
-        raise ValueError('organization_continuation_not_enabled')
-    phases = {key:(phase if key == 'hierarchical' else RunnableLambda(input_guard) | phase if key == 'research' else phase if continuing or reporting else RunnableLambda(unavailable))
-              for key, phase in phases.items()}
-    def action_check(values, action):
+    try:
+        # Full retrieval preparation is admission work, before model/tool access.
+        # The same factory owns verified state across lead/expert/review stages.
+        await asyncio.to_thread(organization.prepare_retrieval)
         check()
-        if not reporting:
-            raise ValueError('organization_report_requires_independent_command')
-        check_resumed_action(values, action, grant)
-    yield host.build_research_session_graph(**phases, promote_orientation=continuing,
-        review_action_check=action_check).compile(name='research_session').with_config({'recursion_limit':280})
+        public, private = host.session_audit_sinks(Path(settings['audit_root']) / thread_id / run_id)
+        budget = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,
+            metadata=thread['metadata'], environment=os.environ)
+        phases = host.create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
+            thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ['DEEPSEEK_API_KEY']),
+            public_sink=public, private_sink=private, studio=studio, execution=execution,
+            budget_scope=budget, organization_data_factory=organization, run_access_check=check,
+            environment={**os.environ, 'FINSIGHT_RESEARCH_AS_OF':cutoff})
+        expected = None if reporting else (continuation_request if continuing else run_request)(thread, grant)['input']
+        async def input_guard(value):
+            await asyncio.to_thread(check)
+            if value != expected:
+                raise ValueError('organization_start_input_mismatch')
+            return value
+        def unavailable(_):
+            raise ValueError('organization_continuation_not_enabled')
+        phases = {key:(phase if key == 'hierarchical' else RunnableLambda(input_guard) | phase if key == 'research' else phase if continuing or reporting else RunnableLambda(unavailable))
+                  for key, phase in phases.items()}
+        def action_check(values, action):
+            check()
+            if not reporting:
+                raise ValueError('organization_report_requires_independent_command')
+            check_resumed_action(values, action, grant)
+        yield host.build_research_session_graph(**phases, promote_orientation=continuing,
+            review_action_check=action_check).compile(name='research_session').with_config({'recursion_limit':280})
+    finally:
+        await asyncio.to_thread(organization.close)

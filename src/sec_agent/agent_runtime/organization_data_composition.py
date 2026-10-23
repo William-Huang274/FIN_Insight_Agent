@@ -83,6 +83,19 @@ class OrganizationDataFactory:
         self.workbench_url = workbench_url
         self.retrieval_root = retrieval_root
         self.grant = grant
+        self.retrieval = None
+        if manifest.get('retrieval_index') is not None:
+            from sec_agent.research_foundation.organization_retrieval_lifecycle import OrganizationRetrievalLifecycle
+            self.retrieval = OrganizationRetrievalLifecycle(reader, workbench_url=workbench_url,
+                retrieval_root=retrieval_root, grant=grant)
+
+    def prepare_retrieval(self):
+        self.reader._after(self.grant)
+        return self.retrieval.prepare() if self.retrieval is not None else {'state':'not_configured'}
+
+    def close(self):
+        if self.retrieval is not None:
+            self.retrieval.close()
 
     @contextmanager
     def __call__(self, *, run_invocation_id, environment=None, source_read_enabled=False,
@@ -98,8 +111,9 @@ class OrganizationDataFactory:
         catalog = {'schema_version':'organization_source_routes.v1', 'source_spaces':['organization'],
                    'manifest_digest':self.reader.authority.manifest_digest, 'routes':[]}
         catalog['catalog_digest'] = canonical_sha256(catalog)
-        navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url,
-            retrieval_root=self.retrieval_root)
+        navigation = (self.retrieval.navigation() if self.retrieval is not None else
+            OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url,
+                                         retrieval_root=self.retrieval_root))
         artifact_sources = {}
         if case_artifacts is not None:
             from .case_artifacts import CaseArtifacts

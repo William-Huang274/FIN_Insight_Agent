@@ -68,6 +68,11 @@ def test_write_refreshes_once_in_background_without_blocking_or_serving_stale(tm
         with pytest.raises(OrganizationExecutionUnavailable,match='refresh_pending'):
             stage.navigate(query())
         assert started.wait(5)
+        with pytest.raises(TimeoutError):
+            manager.wait_for_refresh(0)
+        # A host drain timeout neither publishes a partial generation nor
+        # starts a second worker. Queries remain denied until completion.
+        assert manager.status()=={'state':'refreshing','generation':1,'failure_type':None}
         for _ in range(3):
             with pytest.raises(OrganizationExecutionUnavailable,match='refreshing'):
                 stage.navigate(query())

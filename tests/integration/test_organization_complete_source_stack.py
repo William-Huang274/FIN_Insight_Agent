@@ -505,7 +505,18 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                         with diagnostic.phase('global_background_refresh',profile=False):
                             with pytest.raises(OrganizationExecutionUnavailable,match='refresh_pending'):
                                 nav.navigate(second)
-                            assert lifecycle.wait_for_refresh(60)['generation']==2
+                            # This is a host-side drain of a full corpus scan,
+                            # not a query latency SLO. Record timeout/progress
+                            # independently; ordinary queries still fail closed.
+                            refresh_timeout=float(os.getenv('FIN_COMPLETE_SOURCE_REFRESH_TIMEOUT_SECONDS','300'))
+                            assert 0 < refresh_timeout <= 600
+                            try:
+                                refresh_status=lifecycle.wait_for_refresh(refresh_timeout)
+                            finally:
+                                s.save('retrieval-refresh',{'timeout_seconds':refresh_timeout,
+                                    **lifecycle.status(),'original_reads':len(original_reads),
+                                    'capture_checks':len(capture_checks),'expected_sources':len(batch)})
+                            assert refresh_status['state']=='ready' and refresh_status['generation']==2
                         assert len(original_reads)==len(capture_checks)==len(batch)
                         original_reads.clear();capture_checks.clear()
                         refreshed=nav.navigate(second)

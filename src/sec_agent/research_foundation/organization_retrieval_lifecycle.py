@@ -114,8 +114,8 @@ class OrganizationRetrievalLifecycle:
 
     def navigation(self):
         self.prepare()
-        navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url,
-                                                  retrieval_root=self.retrieval_root)
+        # Stage-local observations only; access() lends the run-owned retriever.
+        navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url)
         navigation._retrieval_lifecycle = self
         return navigation
 
@@ -135,6 +135,12 @@ class OrganizationRetrievalLifecycle:
                 # sources and calculations always remain private to each stage.
                 for field in ('_search_cache', '_projection_cache', '_candidate_index'):
                     setattr(shared, field, getattr(navigation, field))
+                # Stage objects may survive for the entire research graph. They
+                # must not pin an obsolete full-corpus generation after refresh
+                # or keep it alive after lifecycle.close(). The next access
+                # attaches the current generation under this same lock.
+                for field in ('hybrid', '_search_cache', '_projection_cache', '_candidate_index'):
+                    setattr(navigation, field, None)
 
     def close(self):
         with self._lock:

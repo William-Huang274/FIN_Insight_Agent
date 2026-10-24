@@ -509,7 +509,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                         assert nav._projection_cache is None
                         assert reused.items[0]['retrieval']['source_generation_original_reads']==0
                         assert 0 < reused.items[0]['retrieval']['candidate_body_reads'] <= 36
-                        assert len(nav._candidate_index.rows)==len(vectors)
+                        assert len((lifecycle._navigation if lifecycle is not None else nav)._candidate_index.rows)==len(vectors)
                     else:
                         assert reused.items[0]['retrieval']['projection_cache_hits']==len(batch)
                     assert not reused.items[0]['retrieval'].get('response_cache_hit')
@@ -616,7 +616,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             if semantic_rows:
                 from scripts.engineering.organization_recall_evaluation import bind_labels, evaluate
                 labels = bind_labels(semantic_rows, frozen['manifest'], resources,
-                                     nav.hybrid.load_frozen(frozen['manifest'])[1])
+                                     (lifecycle._navigation if lifecycle is not None else nav).hybrid.load_frozen(frozen['manifest'])[1])
                 s.save('semantic-label-bindings', labels)
                 with diagnostic.phase('semantic_hybrid_development' if semantic_split == 'development' else 'semantic_hybrid_heldout'):
                     evaluate(semantic_rows, labels, nav, index_digest=contract['index_digest'], save=s.save)

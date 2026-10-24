@@ -45,7 +45,8 @@ def test_parallel_stage_open_warms_once_and_keeps_observations_separate(tmp_path
         assert first.items[0]['retrieval']['source_generation_original_reads']==0
         assert second.items[0]['retrieval']['candidate_body_reads']<=36
         assert stages[0].observed is not stages[1].observed
-        assert stages[0]._candidate_index is stages[1]._candidate_index
+        assert all(stage._candidate_index is None for stage in stages)
+        assert manager._navigation._candidate_index is not None
     finally:
         manager.close()
 
@@ -194,7 +195,7 @@ def test_new_publication_never_moves_an_existing_frozen_run(tmp_path,monkeypatch
             model='qwen3.7-text-embedding',provenance={'fixture':True},release_id=new_release,projection=PROJECTION)
         after=stage.navigate(query())
         assert items(before)==items(after)
-        assert stage._candidate_index.directory==directory
+        assert manager._navigation._candidate_index.directory==directory
         assert directory.name!=new_release and manager.status()['generation']==1
     finally:manager.close()
 
@@ -228,3 +229,30 @@ def test_readiness_observable_during_initial_prepare_and_close_cancels_publicati
         with pytest.raises(OrganizationExecutionUnavailable,match='closed'):
             initial.result(timeout=10)
     assert manager.status()['generation']==0
+
+
+def test_idle_stages_do_not_pin_replaced_generation_or_closed_caches(tmp_path, monkeypatch):
+    import gc
+    import weakref
+    manager, reader, _, _, _ = lifecycle(tmp_path, monkeypatch)
+    stages = [manager.navigation() for _ in range(3)]
+    try:
+        expected = stages[0].navigate(query())
+        stages[1].navigate(query())
+        old = weakref.ref(manager._navigation._candidate_index)
+        old_loader = weakref.ref(manager._navigation.hybrid.release_cache)
+        change_store(reader)
+        with pytest.raises(OrganizationExecutionUnavailable, match='refresh_pending'):
+            stages[2].navigate(query())
+        manager.wait_for_refresh(10)
+        gc.collect()
+        assert old() is None and old_loader() is None
+        assert items(stages[0].navigate(query())) == items(expected)
+        current = weakref.ref(manager._navigation._candidate_index)
+    finally:
+        manager.close()
+    gc.collect()
+    assert current() is None
+    assert all(stage.hybrid is None and stage._candidate_index is None for stage in stages)
+    with pytest.raises(OrganizationExecutionUnavailable, match='closed'):
+        stages[1].navigate(query())

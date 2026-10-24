@@ -213,8 +213,11 @@ class OrganizationHybridRetrieval:
             raise OrganizationExecutionUnavailable('organization_retrieval_scope_mismatch')
         pinned = manifest.get('retrieval_index')
         if pinned is not None:
-            directory, index, matrix, _ = self.load_frozen(manifest)
-            encoded = json.dumps(index, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()
+            directory, index, matrix, verified_contract = self.load_frozen(manifest)
+            # The loader already hashes the full canonical manifest, checks the
+            # pinned contract and verifies immutable file identities on reuse.
+            # Do not allocate another whole-manifest string/bytes per query.
+            index_digest = verified_contract['index_digest']
         else:
             directory = self.root / str(UUID(manifest['organization_id']))
             try:
@@ -229,6 +232,7 @@ class OrganizationHybridRetrieval:
                 raise ValueError('organization_retrieval_index_integrity_failure')
             from io import BytesIO
             matrix = np.load(BytesIO(matrix_bytes), allow_pickle=False)
+            index_digest = sha256(encoded).hexdigest()
         records = {r['node_id']: r for r in index['records']}
         if (len(records) != len(index['records']) or matrix.dtype != np.float32
                 or matrix.shape != (len(records), index['dimensions'])):
@@ -269,7 +273,7 @@ class OrganizationHybridRetrieval:
             raise ValueError('organization_retrieval_query_not_prepared_no_provider_fallback')
         # Selection happens before cosine scoring/top-K. Unselected documents
         # cannot occupy quotas, produce previews, or influence lexical ranks.
-        scope = {'policy': POLICY, 'grant': digest(before), 'index': sha256(encoded).hexdigest(),
+        scope = {'policy': POLICY, 'grant': digest(before), 'index': index_digest,
             'query': query_hash, 'nodes': [(r['node_id'], r['content_sha256']) for r in rows]}
         if graph is not None:
             if 'graph_index' not in index or len(graph)>12 or len(set(graph))!=len(graph) or any(n not in by_id for n in graph):

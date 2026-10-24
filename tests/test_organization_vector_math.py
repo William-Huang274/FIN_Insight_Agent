@@ -39,6 +39,44 @@ def test_final_block_corruption_rejects_validation_and_scoring(bad):
         cosine_scores(values,list(range(len(values))),np.array([1.,0.],dtype=np.float32))
 
 
+def test_readonly_mapping_blocks_own_data_and_match_original_arithmetic(tmp_path, monkeypatch):
+    import weakref
+    import sec_agent.research_foundation.organization_vector_math as math
+    rng = np.random.default_rng(913)
+    values = rng.normal(size=(BLOCK_ROWS + 17, 23)).astype(np.float32)
+    values /= np.linalg.norm(values.astype(np.float64), axis=1)[:, None]
+    np.save(tmp_path/'vectors.npy', values, allow_pickle=False)
+    matrix = np.load(tmp_path/'vectors.npy', mmap_mode='r', allow_pickle=False)
+    positions = list(range(len(values)-1, 0, -1))
+    query = values[0].copy()
+    refs = []
+    original = math._mapped_block
+    def counted(*args):
+        block = original(*args)
+        refs.append(weakref.ref(block))
+        assert not np.shares_memory(block, matrix)
+        assert not isinstance(block, np.memmap)
+        return block
+    monkeypatch.setattr(math, '_mapped_block', counted)
+    actual = cosine_scores(matrix, positions, query)
+    np.testing.assert_array_equal(actual, cosine_scores(values, positions, query))
+    assert unit_vectors(matrix) and all(ref() is None for ref in refs)
+    # A sliced memmap retains the parent's offset: don't reopen it as a root.
+    np.testing.assert_array_equal(cosine_scores(matrix[5:], [2, 0], query),
+                                  cosine_scores(values[5:], [2, 0], query))
+
+
+def test_readonly_mapping_keeps_full_scope_and_rejects_last_corrupt_row(tmp_path):
+    values = np.zeros((BLOCK_ROWS + 1, 3), dtype=np.float32)
+    values[:, 0] = 1.
+    values[-1, 0] = float('nan')
+    np.save(tmp_path/'bad.npy', values, allow_pickle=False)
+    matrix = np.load(tmp_path/'bad.npy', mmap_mode='r', allow_pickle=False)
+    assert not unit_vectors(matrix)
+    with pytest.raises(ValueError, match='invalid_prepared_vectors'):
+        cosine_scores(matrix, list(range(len(values))), np.array([1., 0., 0.], dtype=np.float32))
+
+
 @pytest.mark.parametrize('corrupt_late',[False,True])
 def test_offline_replay_preserves_successful_sources_on_late_failure(tmp_path,corrupt_late):
     import json

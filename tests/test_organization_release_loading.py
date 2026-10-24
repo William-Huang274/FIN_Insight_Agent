@@ -147,3 +147,49 @@ def test_failed_lexical_publication_never_becomes_a_valid_release(tmp_path, monk
     assert (directory/'lexical.sqlite').read_bytes() == b'partial build'
     with pytest.raises(ValueError, match='unavailable'):
         releases.load_release(tmp_path/'indices', org, release)
+
+
+@pytest.mark.parametrize('value', [
+    {'unicode': '中文😀', 'control': '\n\t\\"', 'nested': [None, True, -0., 1e-20, {'b': 2, 'a': 1}]},
+    {'records': [{'node_id': str(i), 'title': '报告', 'digest': 'ab' * 32} for i in range(1500)]},
+])
+def test_streamed_digest_preserves_existing_canonical_identity(value, monkeypatch):
+    from hashlib import sha256
+    expected = sha256(json.dumps(value, sort_keys=True, ensure_ascii=False,
+                                separators=(',', ':')).encode()).hexdigest()
+    def forbidden(*args, **kwargs):
+        raise AssertionError('canonical digest must not materialize the full JSON string')
+    monkeypatch.setattr(json, 'dumps', forbidden)
+    assert releases.canonical_digest(value) == expected
+
+
+def test_frozen_queries_reuse_verified_digest_and_release_mapping(tmp_path, monkeypatch):
+    import weakref
+    from sec_agent.research_foundation.organization_hybrid_retrieval import OrganizationHybridRetrieval
+    from test_organization_index_release import Api, MODEL
+    from retrieval.query_embeddings import QueryEmbeddingSource
+    reader, state, _, nodes, _, contract = prepared(tmp_path)
+    ranker = OrganizationHybridRetrieval(reader, tmp_path/'indices',
+        query_source=QueryEmbeddingSource(tmp_path/'cache', Api(), model=MODEL))
+    snapshot = reader.authority.manifest_digest[7:]
+    mappings = []
+    original_load = ranker.load_frozen
+    def load(manifest):
+        value = original_load(manifest)
+        mappings.append(weakref.ref(value[2]))
+        return value
+    monkeypatch.setattr(ranker, 'load_frozen', load)
+    original_dumps = json.dumps
+    def reject_manifest(value, *args, **kwargs):
+        if isinstance(value, dict) and value.get('format') == releases.FORMAT:
+            raise AssertionError('frozen query serialized full manifest again')
+        return original_dumps(value, *args, **kwargs)
+    monkeypatch.setattr(json, 'dumps', reject_manifest)
+    first = ranker.rank(nodes, 'query', snapshot, [])
+    second = ranker.rank(nodes, 'query', snapshot, [])
+    assert first[0] == second[0] and second[1]['cache_hit']
+    assert first[1]['index_digest'] == second[1]['index_digest'] == contract['index_digest']
+    assert all(ref() is None for ref in mappings)
+    state['status'] = 404
+    with pytest.raises(OrganizationExecutionUnavailable):
+        ranker.rank(nodes, 'query', snapshot, [])

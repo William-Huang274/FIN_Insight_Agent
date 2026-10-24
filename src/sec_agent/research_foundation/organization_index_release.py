@@ -15,7 +15,17 @@ FIELDS = {'release_id', 'index_digest', 'matrix_sha256', 'model', 'dimensions', 
 
 
 def canonical_digest(value):
-    return sha256(json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
+    """Same canonical bytes as before, without a corpus-sized str/bytes pair."""
+    hasher = sha256()
+    pending = bytearray()
+    encoder = json.JSONEncoder(sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+    for part in encoder.iterencode(value):
+        pending.extend(part.encode())
+        if len(pending) >= 65536:
+            hasher.update(pending)
+            pending.clear()
+    hasher.update(pending)
+    return hasher.hexdigest()
 
 
 def validate_contract(contract):

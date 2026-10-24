@@ -4,16 +4,36 @@ The caller owns authorization, immutable release integrity and candidate IDs.
 Blocks preserve the authorized row order; there is no sampling or ANN shortcut.
 """
 import numpy as np
+import mmap
 
 
 BLOCK_ROWS = 4096
 
 
+def _mapped_block(matrix, positions, start, stop):
+    """Return owned selected data; don't pin all scanned pages in one mapping.
+
+    A root read-only np.load mapping supplies validated shape/dtype/offset. Each
+    temporary mapping dies before the caller validates/scores its owned block.
+    Subviews and mutable mappings deliberately retain the ordinary NumPy path.
+    """
+    mapped = np.memmap(matrix.filename, mode='r', dtype=matrix.dtype,
+                       offset=matrix.offset, shape=matrix.shape, order='C')
+    if positions is None:
+        return np.array(mapped[start:stop], copy=True)
+    # Advanced integer indexing owns a copy, never a view of the mapped file.
+    return mapped[positions[start:stop]]
+
+
 def _blocks(matrix, positions=None):
     count = len(matrix) if positions is None else len(positions)
+    remap = (isinstance(matrix, np.memmap) and isinstance(matrix.base, mmap.mmap)
+             and matrix.mode == 'r' and matrix.flags.c_contiguous)
     for start in range(0, count, BLOCK_ROWS):
         stop = min(start + BLOCK_ROWS, count)
-        yield start, matrix[start:stop] if positions is None else matrix[positions[start:stop]]
+        block = (_mapped_block(matrix, positions, start, stop) if remap else
+                 matrix[start:stop] if positions is None else matrix[positions[start:stop]])
+        yield start, block
 
 
 def _unit(block):

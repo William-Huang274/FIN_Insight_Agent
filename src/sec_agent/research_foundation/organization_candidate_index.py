@@ -58,6 +58,16 @@ class VerifiedCandidateIndex:
         self.verification_hits = 0
 
     def prepare(self, before, manifest, epoch):
+        from filelock import FileLock
+        from .organization_hybrid_retrieval import digest
+        # SQLite owns receipts; a maintained OS file lock serializes cold
+        # verification across workers. A timeout never starts a second scan.
+        lock_key = digest([str(self.observer.path), manifest['organization_id'],
+                           manifest['retrieval_index']['release_id']])
+        with FileLock(str(self.hybrid.root/f'.source-verify-{lock_key}.lock'), timeout=60):
+            self._prepare(before, manifest, epoch)
+
+    def _prepare(self, before, manifest, epoch):
         from .organization_hybrid_retrieval import digest
         from .organization_source_navigation import OrganizationSourceNavigation
         from .organization_source_projection import source_nodes

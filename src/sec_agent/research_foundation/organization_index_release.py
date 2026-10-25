@@ -168,7 +168,11 @@ class ReleaseLoadCache:
         validate_contract(expected)
         directory = Path(root).resolve()/str(UUID(organization_id))/'releases'/str(UUID(release_id))
         key = (str(directory), tuple(sorted(expected.items())))
-        with self._lock:
+        if not Path(root).is_dir():
+            raise ValueError('organization_index_release_unavailable')
+        from filelock import FileLock
+        lock_path = Path(root)/('.release-verify-'+sha256(str(directory).encode()).hexdigest()+'.lock')
+        with self._lock, FileLock(str(lock_path), timeout=60):
             if self._entry is not None and self._entry[0] == key:
                 self.check()
                 directory, index, _, contract = self._entry[2]
@@ -192,6 +196,8 @@ class ReleaseLoadCache:
             if not verified:
                 with closing(sqlite3.connect(Path(root)/'verified-releases.sqlite', timeout=10)) as db, db:
                     db.execute('INSERT OR IGNORE INTO verified VALUES(?)', (receipt_key,))
+                    db.execute('DELETE FROM verified WHERE rowid IN '
+                               '(SELECT rowid FROM verified ORDER BY rowid DESC LIMIT -1 OFFSET 32)')
             # Do not retain a corpus-sized mapped working set between calls.
             # Reopening an already verified read-only mapping is cheap; the
             # immutable index metadata, not the mapped pages, is cached.

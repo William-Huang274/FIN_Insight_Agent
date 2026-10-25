@@ -85,3 +85,17 @@ class ScopedReranker:
                 or any(type(r.get('relevance_score')) not in (int,float)
                        or not math.isfinite(r['relevance_score']) for r in rows)):
             raise ValueError('rerank_invalid_provider_or_cached_response')
+
+
+class ConfiguredReranker:
+    """Server-configured provider, never selected by an Agent/tool argument."""
+    def __init__(self,path):self.path=path
+
+    def rank(self,*args,**kwargs):
+        from contextlib import closing
+        import os
+        from retrieval.qwen_api import QwenRetrieval
+        if not os.environ.get('QWEN_API_KEY'):
+            raise ValueError('organization_rerank_not_configured')
+        with closing(QwenRetrieval(os.environ['QWEN_API_KEY'],embedding_model='qwen3.7-text-embedding')) as api:
+            return ScopedReranker(self.path,api).rank(*args,**kwargs)

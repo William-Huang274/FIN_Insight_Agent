@@ -109,3 +109,7 @@ class SourceVerificationCache:
         raw = json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
         with closing(sqlite3.connect(self.path, timeout=10)) as db, db:
             db.execute('INSERT OR IGNORE INTO receipts VALUES(?,?,?)', (key, raw, sha256(raw.encode()).hexdigest()))
+            # Bounded FIFO metadata cache. Eviction only loses an optimization:
+            # an evicted source must pass full validation before reuse.
+            db.execute('DELETE FROM receipts WHERE rowid IN '
+                       '(SELECT rowid FROM receipts ORDER BY rowid DESC LIMIT -1 OFFSET 8192)')

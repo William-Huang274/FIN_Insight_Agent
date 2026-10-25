@@ -1,7 +1,7 @@
 """Fixed organization originals through the maintained Agent source protocol.
 
 No host library, personal uploads or web fallback. Configured query embeddings
-are delegated to the frozen-release retriever; no generation or remote rerank.
+are delegated to the frozen-release retriever; remote rerank is server opt-in.
 This adapter does not grant native-run admission or financial fact authority.
 """
 from copy import deepcopy
@@ -185,6 +185,17 @@ class OrganizationSourceNavigation:
         if graph is not None:
             receipt.update(graph_evidence=graph_evidence,graph_scope='frozen_one_hop_source_bound_candidates')
         materialized = candidates.materialize(ranked, manifest)
+        if self.hybrid.reranker is not None:
+            def check_access():
+                self.reader._after(before)
+                candidates.check()
+            materialized, rerank_receipt = self.hybrid.reranker.rank(request.query, materialized,
+                scope='organization:'+manifest['organization_id'], index_digest=receipt['index_digest'],
+                check_access=check_access)
+            receipt.update(mode=receipt['mode'].replace('-rrf.v1', '-qwen-rerank.v1'),
+                rerank=rerank_receipt['model'], rerank_response=rerank_receipt,
+                reranked_node_ids=[r['node_id'] for r in materialized],
+                provider_calls=receipt['provider_calls']+rerank_receipt['provider_calls'])
         receipt.update(lexical_source='published_release', candidate_only=True,
                        source_generation_original_reads=candidates.original_reads,
                        candidate_body_reads=candidates.candidate_reads, projection_cache_hits=0)

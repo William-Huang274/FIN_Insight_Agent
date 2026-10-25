@@ -41,7 +41,7 @@ print('cross_process_receipts_and_fresh_authority_passed')
 '''
     env = {**os.environ, 'PYTHONDONTWRITEBYTECODE':'1'}
     root = Path(__file__).resolve().parents[1]
-    env['PYTHONPATH'] = os.pathsep.join(map(str, (root/'src', root/'tests', root)))
+    env['PYTHONPATH'] = os.pathsep.join([*map(str, (root/'src', root/'tests', root)), os.environ.get('PYTHONPATH','')])
     child = subprocess.run([sys.executable, '-c', script, str(payload)], env=env,
                            capture_output=True, text=True, timeout=45)
     assert child.returncode == 0, child.stderr
@@ -118,3 +118,32 @@ def test_new_loader_reuses_file_hashes_but_mutation_is_rejected(tmp_path, monkey
     with pytest.raises(ValueError,match='matrix_integrity'):
         ReleaseLoadCache().load(tmp_path/'indices',manifest['organization_id'],pinned['release_id'],pinned)
     assert seen
+
+
+def test_parallel_run_warmups_validate_once_and_keep_execution_state_private(tmp_path, monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+    nav, reader, _, _, _ = prepared(tmp_path, monkeypatch)
+    other=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=tmp_path/'indices')
+    calls=[]; original=reader._read_storage
+    def count(*args):calls.append(args[0]); return original(*args)
+    monkeypatch.setattr(reader,'_read_storage',count)
+    start=Barrier(2)
+    def warm(n):start.wait(); return n.warm_release()
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        contracts=list(executor.map(warm,[nav,other]))
+    assert contracts[0]==contracts[1]
+    assert len(calls)==2  # one cold verification for the two bindings
+    assert sorted(n._candidate_index.verification_hits for n in (nav,other))==[0,2]
+    assert nav.observed is not other.observed and nav._candidate_index is not other._candidate_index
+
+
+def test_receipt_capacity_eviction_only_forgets_optimization(tmp_path):
+    from sec_agent.research_foundation.source_verification_cache import SourceVerificationCache
+    cache=SourceVerificationCache(tmp_path)
+    with sqlite3.connect(cache.path) as db:
+        db.executemany('INSERT INTO receipts VALUES(?,?,?)',[(str(i),'{}','unused') for i in range(8192)])
+    cache.put('new',{'verified':'fixture'})
+    assert cache.get('0') is None and cache.get('new')=={'verified':'fixture'}
+    with sqlite3.connect(cache.path) as db:
+        assert db.execute('SELECT count(*) FROM receipts').fetchone()[0]==8192

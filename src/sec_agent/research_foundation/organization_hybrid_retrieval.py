@@ -186,6 +186,12 @@ class OrganizationHybridRetrieval:
     def __init__(self, reader, root, query_source=None):
         self.reader, self.root = reader, Path(root)
         self.query_source = query_source
+        import os
+        rerank = os.environ.get('FINSIGHT_ORGANIZATION_RERANK', '')
+        if rerank not in ('', 'qwen'):
+            raise ValueError('organization_rerank_configuration_invalid')
+        from retrieval.scoped_reranking import ConfiguredReranker
+        self.reranker = ConfiguredReranker(self.root/'rerank-cache') if rerank == 'qwen' else None
         from .organization_index_release import ReleaseLoadCache
         self.release_cache = ReleaseLoadCache()
 

@@ -62,6 +62,8 @@ class OrganizationSearchCache:
                     receipt.update(source_generation_original_reads=0, candidate_body_reads=0)
                 receipt['query_embedding'] = {'provider_calls': 0, 'cache_hit': True,
                                               'source': 'validated_response_cache'}
+                if 'rerank_response' in receipt:
+                    receipt['rerank_response'].update(provider_calls=0, cache_hit=True, newly_reported_usage={})
                 notice = notice.replace(str(old), str(receipt))
                 item['retrieval'] = receipt
             items.append(item)

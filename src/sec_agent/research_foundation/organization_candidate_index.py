@@ -51,6 +51,7 @@ class VerifiedCandidateIndex:
         self.generation = None
         self.rows = {}
         self.origins = {}
+        self.source_metadata = {}
         self.original_reads = 0
         self.candidate_reads = 0
 
@@ -64,7 +65,7 @@ class VerifiedCandidateIndex:
             self.original_reads = 0
             return
         self.generation = None
-        self.rows, self.origins = {}, {}
+        self.rows, self.origins, self.source_metadata = {}, {}, {}
         directory, index, _, _ = self.hybrid.load_frozen(manifest)
         if 'navigation_index' not in index:
             raise ValueError('organization_candidate_index_not_published')
@@ -72,13 +73,15 @@ class VerifiedCandidateIndex:
         bindings = {entry['resource_id']:entry['binding'] for entry in before['inputs']}
         allowed = {OrganizationSourceNavigation._identity(item):item for item in manifest['inputs']}
         expected = {node_id for node_id, record in records.items() if record['document_id'] in allowed}
-        rows, origins = {}, {}
+        rows, origins, metadata = {}, {}, {}
         self.original_reads = 0
         for document, item in allowed.items():
             result = self.reader._read_storage(item['resource_id'], manifest, bindings)
             self.original_reads += 1
             if result.get('needs_vision') or result.get('truncated') or not result.get('source_bundle'):
                 raise ValueError('organization_candidate_index_requires_complete_source')
+            from .organization_source_filter import source_metadata
+            metadata[document] = source_metadata(result['source_bundle'])
             url = self.workbench_url + f"/api/v1/asset-workspace/organization-projects/{manifest['project_id']}/resources/{item['resource_id']}"
             projected = source_nodes(result['source_bundle'], document, item, url)
             if 'graph_index' in index:
@@ -115,6 +118,7 @@ class VerifiedCandidateIndex:
             raise OrganizationExecutionUnavailable('organization_candidate_storage_changed_during_warmup')
         # No partially checked source generation becomes usable.
         self.rows, self.origins = rows, origins
+        self.source_metadata = metadata
         self.before, self.epoch, self.directory = before, epoch, directory
         self.generation = key
 

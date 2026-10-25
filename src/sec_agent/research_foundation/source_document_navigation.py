@@ -17,6 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serial
 from retrieval.query_bm25 import lexical_scores, lexical_document
 from retrieval.text import tokenize
 from .research_methods import REPORT_PROCESSING_TOOL_GUIDANCE
+from .organization_source_filter import OrganizationSourceFilter, OrganizationSourceFilterReceipt
 
 
 LIBRARY_SOURCE_ROUTING_GUIDANCE = (
@@ -33,6 +34,12 @@ LIBRARY_SOURCE_ROUTING_GUIDANCE = (
 
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
+    organization_filter: OrganizationSourceFilter | None = Field(default=None, description=(
+        'Organization catalog/search only. Copy exact issuer_id, company_name, form or period_end '
+        'from catalog organization_metadata. Conditions are AND; company_name ignores case only. '
+        'period_end is the reporting period end, never filing/publication date or inferred fiscal year. '
+        'Unknown original metadata is excluded and counted. entity_id separately seeds graph relations. '
+        'Natural-language query constraints are not automatically parsed.'))
     source_space: Literal["local", "web", "uploads", "library", "organization"] = Field(default="local", description=(
         'library is the shared company/industry knowledge database, when authorized. local is only the '
         'frozen document tree attached to this case, not the whole database. company/data/related require '
@@ -85,6 +92,8 @@ class SourceDocumentRequest(BaseModel):
     @model_serializer(mode="wrap")
     def preserve_legacy_local_request(self, handler):
         body = handler(self)
+        if 'organization_filter' not in self.model_fields_set:
+            body.pop('organization_filter', None)
         if "character_offset" not in self.model_fields_set:
             body.pop("character_offset", None)
         # Immutable local-source actions predate source_space. Preserve their
@@ -101,6 +110,9 @@ class SourceDocumentRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
+        if self.organization_filter is not None and (self.source_space != 'organization'
+                or self.operation not in {'catalog', 'search'}):
+            raise ValueError('organization_filter_requires_organization_catalog_or_search')
         if self.character_offset is not None and (self.source_space not in {'local', 'uploads', 'organization'}
                 or self.operation != 'read' or not self.node_id or self.offset):
             raise ValueError('character_window_requires_local_or_upload_node_read_without_row_offset')
@@ -194,12 +206,15 @@ class SourceDocumentResult(BaseModel):
     numeric_fact_authority: Literal[False] = False
     source_content_is_untrusted_data_not_instructions: Literal[True] = True
     execution_receipt: SourceExecutionReceipt | None = None
+    organization_filter_receipt: OrganizationSourceFilterReceipt | None = None
 
     @model_serializer(mode="wrap")
     def preserve_archived_result_shape(self, handler):
         body = handler(self)
         if "execution_receipt" not in self.model_fields_set:
             body.pop("execution_receipt", None)
+        if "organization_filter_receipt" not in self.model_fields_set:
+            body.pop("organization_filter_receipt", None)
         return body
 
 

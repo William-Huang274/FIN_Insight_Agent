@@ -14,6 +14,7 @@ from threading import RLock
 from .source_document_navigation import SourceDocumentRequest, navigate_source_nodes
 from .source_bound_calculator import ObservedSourceRegistry, SourceBoundCalculation, calculate_from_sources
 from .organization_execution_access import OrganizationExecutionUnavailable
+from .organization_source_filter import OrganizationSourceFilterReceipt
 
 
 class OrganizationSourceNavigation:
@@ -134,6 +135,23 @@ class OrganizationSourceNavigation:
         from retrieval.text import tokenize
         candidates = self._warm_candidates(before, manifest, epoch)
         rows = candidates.select(request)
+        if request.entity_id:
+            _, index, _, _ = self.hybrid.load_frozen(manifest)
+            if 'graph_index' not in index:
+                raise ValueError('organization_graph_not_published')
+        filter_receipt = None
+        if request.organization_filter is not None:
+            from .organization_source_filter import select_documents, filter_notice
+            metadata = candidates.source_metadata
+            if request.document_id:
+                metadata = {request.document_id: metadata[request.document_id]}
+            documents, filter_receipt = select_documents(metadata, request.organization_filter)
+            rows = [row for row in rows if row['parent_document_id'] in documents]
+            if not rows:
+                from .source_document_navigation import SourceDocumentResult
+                return SourceDocumentResult(operation='search', items=(), next_offset=None, total_matches=0,
+                    organization_filter_receipt=OrganizationSourceFilterReceipt.model_validate(filter_receipt),
+                    notice=filter_notice(filter_receipt), source_snapshot_sha256=self.reader.authority.manifest_digest[7:])
         scores, overlap, has_terms = scores_from_identities(candidates.directory/'lexical.sqlite',
             ((row['node_id'],row['content_sha256'],row['lexical_input_sha256']) for row in rows),
             tokenize(request.query))
@@ -141,9 +159,6 @@ class OrganizationSourceNavigation:
         graph=None
         graph_evidence=[]
         if request.entity_id:
-            _,index,_,_=self.hybrid.load_frozen(manifest)
-            if 'graph_index' not in index:
-                raise ValueError('organization_graph_not_published')
             from .organization_graph_index import candidates as graph_candidates
             graph,graph_evidence=graph_candidates(candidates.directory/'graph.sqlite',rows,request,
                                                  manifest['research_as_of'],literal)
@@ -159,12 +174,17 @@ class OrganizationSourceNavigation:
             allowed_space='organization', hybrid_enabled=False,
             ranker=lambda *_:(materialized,receipt),
             lexical_scorer=lambda rows,tokens:([0.]*len(rows),list(range(len(rows))),has_terms))
+        if filter_receipt is not None:
+            result = result.model_copy(update={'notice': result.notice + filter_notice(filter_receipt),
+                'organization_filter_receipt': OrganizationSourceFilterReceipt.model_validate(filter_receipt)})
         candidates.check()
         return self._decorate(result, candidates.origins,
             {row['node_id']:row['original_source'] for row in materialized if 'original_source' in row})
 
     def _navigate(self, request, *, projection_cache=None, storage_check=None):
         request = SourceDocumentRequest.model_validate(request)
+        if request.organization_filter is not None and request.operation == 'search':
+            raise ValueError('organization_filtered_search_requires_prepared_candidate_index')
         if request.source_space=='organization' and request.entity_id:
             raise ValueError('organization_graph_requires_published_candidate_navigation')
         if request.source_space != 'organization' or request.operation not in {'catalog', 'outline', 'search', 'read'}:
@@ -181,8 +201,12 @@ class OrganizationSourceNavigation:
                 raise OrganizationExecutionUnavailable('所选原文不属于本次固定组织输入。')
             selected = {request.document_id: selected[request.document_id]}
         by_resource = {item['resource_id']: (document_id, item) for document_id, item in selected.items()}
+        routing = {}
         def project(resource_id, result):
             document_id, item = by_resource[resource_id]
+            if request.operation == 'catalog':
+                from .organization_source_filter import source_metadata
+                routing[document_id] = source_metadata(result.get('source_bundle'))
             nodes = []
             if result.get('needs_vision'):
                 raise ValueError('organization_original_requires_vision_not_enabled')
@@ -239,6 +263,17 @@ class OrganizationSourceNavigation:
             nodes.extend(projected)
             provenance[document_id] = origin
             originals.update(source_origins)
+        filter_receipt = None
+        if request.operation == 'catalog' and request.organization_filter is not None:
+            from .organization_source_filter import select_documents, filter_notice
+            documents, filter_receipt = select_documents(routing, request.organization_filter)
+            nodes = [row for row in nodes if row['parent_document_id'] in documents]
+            if request.document_id and not nodes:
+                from .source_document_navigation import SourceDocumentResult
+                self.reader._after(before)
+                return SourceDocumentResult(operation='catalog', items=(), next_offset=None, total_matches=0,
+                    organization_filter_receipt=OrganizationSourceFilterReceipt.model_validate(filter_receipt),
+                    notice=filter_notice(filter_receipt), source_snapshot_sha256=self.reader.authority.manifest_digest[7:])
         if request.operation == 'outline':
             nodes = [row for row in nodes if row['node_kind'] == 'section']
         if storage_check is not None:
@@ -277,6 +312,12 @@ class OrganizationSourceNavigation:
             ranker=rank if self.hybrid is not None else None,
             lexical_scorer=lexical_score if projection_cache is not None else None)
         result = self._decorate(result, provenance, originals)
+        if request.operation == 'catalog':
+            result = result.model_copy(update={'items': tuple({**row, 'organization_metadata': routing[row['document_id']]}
+                for row in result.items)})
+        if filter_receipt is not None:
+            result = result.model_copy(update={'notice': result.notice + filter_notice(filter_receipt),
+                'organization_filter_receipt': OrganizationSourceFilterReceipt.model_validate(filter_receipt)})
         # Revoking any earlier input while scanning later inputs invalidates the entire result.
         self.reader._after(before)
         if projection_cache is None:

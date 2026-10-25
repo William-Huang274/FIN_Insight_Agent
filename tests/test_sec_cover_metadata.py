@@ -67,6 +67,26 @@ def test_conflicting_metadata_is_not_silently_overwritten():
     assert source_metadata_details(bundle(form='10-K'))[1]['status'] == 'confirmed'
 
 
+def test_calendar_annual_year_requires_exact_cover_and_matching_period():
+    text=HEADER+'FORM\n10-K\nFor the fiscal year ended\nDecember 31\n, 2025\n'
+    source=bundle(text,period_end='2025-12-31')
+    descriptor, proof=source_metadata_details(source)
+    assert descriptor['calendar_annual_year']=='2025'
+    year=proof['calendar_annual_year']
+    assert source['text'][year['char_start']:year['char_end']]==year['quote']
+    for period in ('2024-12-31', None, '2025-06-30'):
+        assert 'calendar_annual_year' not in source_metadata_details(bundle(text,period_end=period))[0]
+    assert 'calendar_annual_year' not in source_metadata_details(bundle(text,form='10-Q',period_end='2025-12-31'))[0]
+    assert 'calendar_annual_year' not in source_metadata_details(bundle(COVER,period_end='2026-06-30'))[0]
+
+
+def test_calendar_annual_year_ignores_body_reference_and_multiple_dates():
+    text=HEADER+'FORM 10-K\n'+('x'*2050)+'\nFor the fiscal year ended December 31, 2025'
+    assert 'calendar_annual_year' not in source_metadata_details(bundle(text,period_end='2025-12-31'))[0]
+    text=HEADER+'FORM 10-K\nFor the fiscal year ended December 31, 2025\nFor the fiscal year ended December 31, 2024'
+    assert 'calendar_annual_year' not in source_metadata_details(bundle(text,period_end='2025-12-31'))[0]
+
+
 def test_actual_capture_warmup_filter_and_readback_use_same_recovered_cover(tmp_path, monkeypatch):
     import test_organization_complete_sources as fixtures
     original = fixtures.database

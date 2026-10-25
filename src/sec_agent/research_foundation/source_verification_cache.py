@@ -69,7 +69,7 @@ def implementation_digest():
     # A stale receipt cannot bypass changed projection/cutoff/metadata rules.
     root = Path(__file__).parent
     files = [root/name for name in ('source_verification_cache.py', 'organization_candidate_index.py',
-        'organization_source_projection.py', 'organization_source_filter.py', 'organization_graph_index.py',
+        'organization_source_projection.py', 'organization_source_filter.py', 'sec_cover_metadata.py', 'organization_graph_index.py',
         'organization_execution_access.py', 'project_source_captures.py', 'asset_workspace.py',
         'task_attachments.py', 'project_asset_versions.py', 'project_asset_access.py')]
     files.append(root.parents[1]/'retrieval'/'library_source_bundle.py')

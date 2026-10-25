@@ -91,6 +91,17 @@ def plan_query(query, metadata):
         evidence.append({'field': 'report_kind', 'basis': 'explicit_report_kind_not_fiscal_calendar'})
     elif len(kinds) > 1:
         unresolved.append('multiple_report_kinds_no_kind_filter')
+    report_years = set(re.findall(r'(?<!\d)((?:19|20)\d{2})\s*(?:财年|年)?\s*'
+        r'(?:annual\s+reports?|年报|年度报告|(?:Form\s+)?10-?K(?:\s*/A)?)(?![A-Za-z0-9/-])', query, re.I))
+    for years in re.findall(r'((?:19|20)\d{2})\s*(?:and|versus|vs|to|[、/–—-]|与|和|及|至)\s*'
+        r'((?:19|20)\d{2})\s*(?:财年|年)?\s*(?:annual\s+reports?|年报|年度报告|(?:Form\s+)?10-?K)', query, re.I):
+        report_years.update(years)
+    if len(report_years) == 1:
+        constraint['annual_report_year'] = next(iter(report_years))
+        evidence.append({'field':'annual_report_year', 'basis':'explicit_report_year_with_calendar_cover_validation',
+                         'unknown_noncalendar_reports_retained':True})
+    elif report_years:
+        unresolved.append('multiple_annual_report_years_no_year_filter')
     periods = re.findall(r'(?:period\s+end(?:ing)?|报告期末|期末)\s*[:：]?\s*(\d{4}-\d{2}-\d{2})(?!\d)', query, re.IGNORECASE)
     if len(set(periods)) == 1:
         try:
@@ -127,6 +138,9 @@ def select_planned(metadata, plan):
         if 'report_kind' in wanted:
             kind = REPORT_KINDS.get(row.get('form'))
             checks.append(kind == wanted['report_kind'] if kind else None)
+        if 'annual_report_year' in wanted:
+            year = row.get('calendar_annual_year')
+            checks.append(year == wanted['annual_report_year'] if year else None)
         if False in checks:
             continue
         accepted.add(document)

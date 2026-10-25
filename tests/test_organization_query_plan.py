@@ -81,6 +81,21 @@ def test_old_wire_shape_and_invalid_combined_scope():
             SourceDocumentRequest(**{**plain, **extra}, organization_query_planning='conservative.v1')
 
 
+def test_report_year_filters_only_cover_verified_calendar_annuals():
+    data = {'current':{'calendar_annual_year':'2025'}, 'old':{'calendar_annual_year':'2024'},
+            'fiscal':{'period_end':'2025-01-31'}, 'unknown':{}}
+    for query in ("Acme's 2025 annual report expected 2026 spending", 'Acme 2025 财年年报收入',
+                  'Acme 2025 10-K revenue'):
+        plan=plan_query(query,data)
+        assert plan['constraint']['annual_report_year']=='2025'
+        assert 'period_end' not in plan['constraint']
+        assert select_planned(data,plan)[0]=={'current','fiscal','unknown'}
+    for query in ('Acme FY2025 revenue', 'February 2025 investment announcement',
+                  'Acme 2025 annual report versus 2024 annual report',
+                  'Acme 2024 and 2025 annual reports', 'Acme 2024 与 2025 年年报'):
+        assert 'annual_report_year' not in plan_query(query,data)['constraint']
+
+
 def test_real_navigation_plan_cache_and_current_revoke(tmp_path, monkeypatch):
     from test_organization_source_filter import scoped_fixture, query
     text = 'Acme 10-K disclosure'

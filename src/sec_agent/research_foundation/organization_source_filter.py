@@ -79,7 +79,7 @@ def source_metadata_details(bundle):
     descriptor = original_source_metadata(bundle)
     proof = None
     if bundle:
-        from .sec_cover_metadata import cover_form
+        from .sec_cover_metadata import cover_form, calendar_annual_year
         evidence = cover_form(bundle, json.loads(bundle['source']['metadata']))
         if evidence:
             previous = descriptor['form']
@@ -87,6 +87,10 @@ def source_metadata_details(bundle):
             descriptor['form'] = None if conflict else evidence['form']
             proof = {**evidence, 'metadata_form': previous,
                 'status': 'conflict' if conflict else 'confirmed' if previous else 'recovered'}
+            annual = calendar_annual_year(bundle, descriptor, evidence)
+            if annual is not None:
+                descriptor['calendar_annual_year'] = annual['year']
+                proof['calendar_annual_year'] = annual
     return descriptor, proof
 
 

@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 
 from sec_agent.research_foundation.organization_vector_math import BLOCK_ROWS, unit_vectors, cosine_scores
+from sec_agent.research_foundation.organization_vector_math import verified_cosine_scores
 
 
 def test_permuted_subset_matches_full_cosine_and_never_reads_unselected_rows():
@@ -26,6 +27,7 @@ def test_permuted_subset_matches_full_cosine_and_never_reads_unselected_rows():
     values[0]=float('nan')
     assert unit_vectors(matrix,positions)
     np.testing.assert_array_equal(cosine_scores(matrix,positions,query),actual)
+    np.testing.assert_array_equal(verified_cosine_scores(matrix,positions,query),actual)
 
 
 @pytest.mark.parametrize('bad',[0.,float('nan'),float('inf'),2.])

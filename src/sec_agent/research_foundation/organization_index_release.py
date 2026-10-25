@@ -110,6 +110,10 @@ def _load_release(root, organization_id, release_id, expected=None, *, verified_
                 or any(type(r['vector_index']) is not int for r in records)
                 or sorted(r['vector_index'] for r in records) != list(range(len(records)))):
             raise ValueError('organization_index_release_shape_mismatch')
+        if not verified_files:
+            from .organization_vector_math import unit_vectors
+            if not unit_vectors(matrix):
+                raise ValueError('organization_index_invalid_prepared_vectors')
         return directory, index, matrix, contract
     except (OSError, KeyError, TypeError, json.JSONDecodeError):
         raise ValueError('organization_index_release_unavailable') from None
@@ -185,8 +189,10 @@ class ReleaseLoadCache:
             import sqlite3
             # A host-owned receipt only: no data or positive authorization is
             # stored here. SQLite serializes publication across processes.
+            from . import organization_vector_math
             receipt_key = canonical_digest({'directory':str(directory), 'signature':before,
-                'expected':expected, 'loader':sha256(Path(__file__).read_bytes()).hexdigest()})
+                'expected':expected, 'loader':sha256(Path(__file__).read_bytes()).hexdigest(),
+                'vector_validator':sha256(Path(organization_vector_math.__file__).read_bytes()).hexdigest()})
             with closing(sqlite3.connect(Path(root)/'verified-releases.sqlite', timeout=10)) as db, db:
                 db.execute('CREATE TABLE IF NOT EXISTS verified(key TEXT PRIMARY KEY)')
                 verified = db.execute('SELECT 1 FROM verified WHERE key=?', (receipt_key,)).fetchone()

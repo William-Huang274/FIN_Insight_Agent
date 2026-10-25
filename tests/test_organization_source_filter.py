@@ -183,6 +183,22 @@ def test_empty_filter_cache_and_nonmatching_source_still_require_authority(tmp_p
         nav.navigate(request)
 
 
+def test_different_query_reuses_subset_statistics_but_never_revoked_scope(tmp_path, monkeypatch):
+    nav, reader, state, _, grant = scoped_fixture(tmp_path, monkeypatch, queries=['disclosure','disclosure cash'])
+    constraint = {'issuer_id':'ISSUER::A','form':'10-K'}
+    first = nav.navigate(query(organization_filter=constraint))
+    assert not first.items[0]['retrieval']['lexical_subset_statistics_hit']
+    second = nav.navigate(query(query='disclosure cash',organization_filter=constraint))
+    assert second.items[0]['retrieval']['lexical_subset_statistics_hit']
+    assert not second.items[0]['retrieval'].get('response_cache_hit',False)
+    # A non-selected resource revocation still blocks the frozen input grant.
+    other = grant['manifest']['inputs'][2]
+    reader.workspace.library.set_access('organization:'+grant['organization_id'], other['space_id'],
+                                        'document', other['ref']['version_id'], True)
+    with pytest.raises(OrganizationExecutionUnavailable):
+        nav.navigate(query(organization_filter=constraint))
+
+
 def test_unsupported_legacy_search_and_graph_do_not_silently_ignore_filter(tmp_path, monkeypatch):
     nav, reader, *_ = prepared(tmp_path, monkeypatch)
     legacy = OrganizationSourceNavigation(reader, workbench_url='http://localhost')

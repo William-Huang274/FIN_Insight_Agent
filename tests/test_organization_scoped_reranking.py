@@ -24,6 +24,8 @@ def test_only_current_filtered_candidates_sent_and_response_cache_no_double_usag
     nav,reader,state,calls,api=setup(tmp_path,monkeypatch)
     request=query(organization_filter={'company_name':'Acme','form':'10-K'},entity_id='COUNTERPARTY::X',limit=20)
     result=nav.navigate(request)
+    assert 'no external rerank' not in result.notice
+    assert 'inspect the retrieval receipt' in result.notice
     receipt=result.items[0]['retrieval']
     assert receipt['mode']=='organization-cosine-bm25-graph-qwen-rerank.v1'
     assert receipt['reranked_node_ids']==list(reversed(receipt['candidate_node_ids']))

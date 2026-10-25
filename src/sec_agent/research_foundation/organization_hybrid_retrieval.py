@@ -262,8 +262,8 @@ class OrganizationHybridRetrieval:
             if type(position) is not int or not 0 <= position < len(matrix):
                 raise ValueError('organization_retrieval_invalid_vector_position')
             selected.append(position)
-        from .organization_vector_math import unit_vectors, cosine_scores
-        if not unit_vectors(matrix, selected):
+        from .organization_vector_math import unit_vectors, cosine_scores, verified_cosine_scores
+        if pinned is None and not unit_vectors(matrix, selected):
             raise ValueError('organization_retrieval_invalid_prepared_vectors')
         query_hash = sha256(query.encode()).hexdigest()
         query_receipt = {'provider_calls': 0, 'cache_hit': True, 'source': 'prepared_index'}
@@ -300,7 +300,7 @@ class OrganizationHybridRetrieval:
             if saved:
                 entry = json.loads(saved[0])
             else:
-                scores = cosine_scores(matrix, selected, query_vector)
+                scores = (verified_cosine_scores if pinned is not None else cosine_scores)(matrix, selected, query_vector)
                 dense = [rows[i]['node_id'] for i in sorted(range(len(rows)),
                     key=lambda i: (-float(scores[i]), rows[i]['node_id']))[:limits['dense']]]
                 lexical = [r['node_id'] for r in literal[:limits['lexical']]]
@@ -328,6 +328,7 @@ class OrganizationHybridRetrieval:
         if source_verifier is not None:
             source_verifier.check()
         return [by_id[n] for n in entry['ordered']], {'mode': scope['policy'], 'cache_hit': bool(saved),
+            'vector_validation':'immutable_release_receipt' if pinned is not None else 'selected_rows_per_request',
             **({'candidate_policy':self.candidate_policy, 'candidate_limits':limits}
                if self.candidate_policy != 'balanced.v1' else {}),
             **({'graph_node_ids':entry['graph']} if graph is not None else {}),

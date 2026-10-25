@@ -12,9 +12,9 @@ def test_only_first_load_hashes_entire_release_and_expected_contract_never_chang
     _, _, org, _, _, contract = prepared(tmp_path)
     calls = []
     original = releases._load_release
-    def counted(*args):
+    def counted(*args, **kwargs):
         calls.append(True)
-        return original(*args)
+        return original(*args, **kwargs)
     monkeypatch.setattr(releases, '_load_release', counted)
     cache = releases.ReleaseLoadCache()
     for _ in range(3):
@@ -74,8 +74,8 @@ def test_new_query_uses_published_postings_without_query_time_preparation(tmp_pa
 def test_mutation_during_initial_hash_and_sidecar_are_rejected(tmp_path, monkeypatch):
     _, _, org, _, directory, contract = prepared(tmp_path)
     original = releases._load_release
-    def race(*args):
-        result = original(*args)
+    def race(*args, **kwargs):
+        result = original(*args, **kwargs)
         (directory/'index.json').write_bytes(b'changed during load')
         return result
     monkeypatch.setattr(releases, '_load_release', race)
@@ -101,9 +101,9 @@ def test_concurrent_first_load_validates_once_and_new_loader_revalidates(tmp_pat
     _, _, org, _, _, contract = prepared(tmp_path)
     calls = []
     original = releases._load_release
-    def counted(*args):
-        calls.append(True)
-        return original(*args)
+    def counted(*args, **kwargs):
+        calls.append(kwargs.get('verified_files'))
+        return original(*args, **kwargs)
     monkeypatch.setattr(releases, '_load_release', counted)
     cache = releases.ReleaseLoadCache()
     def load(_):
@@ -114,6 +114,7 @@ def test_concurrent_first_load_validates_once_and_new_loader_revalidates(tmp_pat
     releases.load_release(tmp_path/'indices', org, contract['release_id'], contract,
                           cache=releases.ReleaseLoadCache())
     assert len(calls) == 2
+    assert calls == [False, True]  # The second loader reuses immutable-file proof.
 
 
 def test_explicit_warmup_checks_rights_without_query_or_original_reads(tmp_path, monkeypatch):

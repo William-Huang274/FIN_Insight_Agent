@@ -13,12 +13,52 @@ import sqlite3
 import struct
 import zlib
 
-from .query_bm25 import TokenCounts, _QueryBM25, _scores, lexical_document, lexical_scores
+from .query_bm25 import TokenCounts, _QueryBM25, _scores, lexical_document
 
 
 FORMAT = 'published-bm25-postings.v1'
 PAIR = struct.Struct('<QQ')
 SHARD_BYTES = 8 * 1024 * 1024
+IDENTITY_BATCH = 256
+COUNTS_BATCH = 256
+
+
+class PublishedLexicalStatistics:
+    """One bounded subset's statistics, no text, grants or query result cache.
+
+    The caller serializes access. File identity and the exact ordered content
+    identities bind reuse; current authorization is still checked by serving.
+    """
+    def __init__(self, limit=2 * 1024 * 1024):
+        self.limit = limit
+        self.entry = None
+        self.hit = False
+
+    def get(self, key):
+        self.hit = self.entry is not None and self.entry[0] == key
+        if not self.hit:
+            self.entry = None
+            return None
+        return _unpack(self.entry[1])
+
+    def put(self, key, index):
+        raw = json.dumps([index.doc_len, index.idf, getattr(index, 'average_idf', 0), index.avgdl],
+                         ensure_ascii=False, separators=(',', ':'), allow_nan=False).encode()
+        if len(raw) <= 32 * 1024 * 1024:
+            packed = zlib.compress(raw, 1)
+            if len(packed) <= self.limit:
+                self.entry = key, packed
+
+
+def _population_key(path, identities):
+    resolved = Path(path).resolve()
+    stat = resolved.stat()
+    hasher = sha256(repr((str(resolved), stat.st_dev, stat.st_ino, stat.st_size,
+                         stat.st_mtime_ns, stat.st_ctime_ns)).encode())
+    for identity in identities:
+        hasher.update(json.dumps(identity, separators=(',', ':'), ensure_ascii=False).encode())
+        hasher.update(b'\n')
+    return hasher.hexdigest()
 
 
 def _pack(value):
@@ -96,18 +136,34 @@ def scores(path, rows, query):
                                         for row in rows), query)
 
 
-def scores_from_identities(path, identities, query):
+def scores_from_identities(path, identities, query, *, population_cache=None):
     """Score already verified (node ID, body SHA, lexical input SHA) identities.
 
     This lower-level entry does not prove originals or permissions. Published
     artifact integrity and the supplied scope must be verified by its caller.
     """
     query = tuple(query)
+    identities = list(identities)
+    if population_cache is not None:
+        population_cache.hit = False
+    key = _population_key(path, identities) if population_cache is not None else None
     uri = Path(path).resolve().as_uri() + '?mode=ro'
     with closing(sqlite3.connect(uri, uri=True)) as db:
         if db.execute("SELECT value FROM metadata WHERE key='format'").fetchone() != (FORMAT.encode(),):
             raise ValueError('published_lexical_format_mismatch')
-        entries = db.execute('SELECT position,node_id,content_digest,lexical_digest,length FROM nodes ORDER BY position').fetchall()
+        total = db.execute('SELECT COUNT(*) FROM nodes').fetchone()[0]
+        columns = 'position,node_id,content_digest,lexical_digest,length'
+        if len(identities) >= total or len(identities) > 256:
+            entries = db.execute(f'SELECT {columns} FROM nodes ORDER BY position').fetchall()
+        else:
+            # Small document scopes benefit from indexed lookup. For larger
+            # scopes one sequential identity scan avoids many SQL round trips.
+            # Restore caller order below; SQL IN order is not ranking order.
+            entries = []
+            for start in range(0, len(identities), IDENTITY_BATCH):
+                ids = [row[0] for row in identities[start:start+IDENTITY_BATCH]]
+                placeholders = ','.join('?' for _ in ids)
+                entries.extend(db.execute(f'SELECT {columns} FROM nodes WHERE node_id IN ({placeholders})', ids))
         by_id = {entry[1]: entry for entry in entries}
         selected = []
         for node_id, content_digest, input_digest in identities:
@@ -117,21 +173,44 @@ def scores_from_identities(path, identities, query):
             selected.append(entry[0])
         if len(selected) != len(set(selected)):
             raise ValueError('published_lexical_duplicate_population')
-        if selected != list(range(len(entries))):
+        if selected != list(range(total)):
             # Unusual document/node filters retain exact scope semantics. They
             # decode only that population's saved counts, not full originals.
             def corpus():
-                for position in selected:
-                    length, value = db.execute('SELECT length,counts FROM nodes WHERE position=?', (position,)).fetchone()
-                    yield TokenCounts(length, _unpack(value))
-            return lexical_scores(corpus(), query)
-        statistics = _unpack(db.execute("SELECT value FROM metadata WHERE key='statistics'").fetchone()[0])
+                for start in range(0,len(selected),COUNTS_BATCH):
+                    positions = selected[start:start+COUNTS_BATCH]
+                    placeholders = ','.join('?' for _ in positions)
+                    saved = {position:(length,value) for position,length,value in db.execute(
+                        f'SELECT position,length,counts FROM nodes WHERE position IN ({placeholders})',positions)}
+                    if len(saved)!=len(positions):
+                        raise ValueError('published_lexical_population_changed')
+                    for position in positions:
+                        length,value = saved[position]
+                        yield TokenCounts(length,_unpack(value))
+            statistics = population_cache.get(key) if population_cache is not None else None
+            if statistics is None:
+                index = _QueryBM25(corpus(), query)
+                if population_cache is not None:
+                    if key != _population_key(path, identities):
+                        raise ValueError('published_lexical_changed_during_query')
+                    population_cache.put(key, index)
+                return _scores(index, query)
+        else:
+            statistics = _unpack(db.execute("SELECT value FROM metadata WHERE key='statistics'").fetchone()[0])
+        # For a warmed subset use the same global term postings, selecting only
+        # its positions and retaining subset IDF. Never substitute global IDF.
+        positions = set(selected)
         matched = {}
         for term in dict.fromkeys(query):
             for (packed,) in db.execute('SELECT value FROM postings WHERE term=? ORDER BY shard', (term,)):
                 for position, count in PAIR.iter_unpack(zlib.decompress(packed)):
-                    if position >= len(entries) or count < 1 or term in matched.get(position, {}):
+                    if position >= total or count < 1 or term in matched.get(position, {}):
                         raise ValueError('published_lexical_invalid_posting')
-                    matched.setdefault(position, {})[term] = count
-        corpus = (TokenCounts(entry[4], matched.get(entry[0], {})) for entry in entries)
-        return _scores(_QueryBM25(corpus, query, statistics), query)
+                    if position in positions:
+                        matched.setdefault(position, {})[term] = count
+        lengths = {entry[0]:entry[4] for entry in entries}
+        corpus = (TokenCounts(lengths[position], matched.get(position, {})) for position in selected)
+        result = _scores(_QueryBM25(corpus, query, statistics), query)
+        if population_cache is not None and key != _population_key(path, identities):
+            raise ValueError('published_lexical_changed_during_query')
+        return result

@@ -2,6 +2,7 @@ from copy import deepcopy
 from hashlib import sha256
 import random
 import sqlite3
+import zlib
 
 import numpy as np
 import pytest
@@ -78,3 +79,74 @@ def test_full_population_reads_postings_not_per_document_counts(tmp_path):
     actual = published.scores(path, rows, ['cash'])
     np.testing.assert_array_equal(actual[0], expected[0])
     assert actual[1:] == expected[1:]
+
+
+def test_filtered_population_fetches_only_selected_identities_in_bounded_batches(tmp_path, monkeypatch):
+    rows = nodes(['cash '+str(i) for i in range(100)])
+    path = tmp_path/'lexical.sqlite'
+    published.build(path, rows)
+    connect = sqlite3.connect
+    statements = []
+    def traced(*args, **kwargs):
+        db = connect(*args, **kwargs)
+        db.set_trace_callback(statements.append)
+        return db
+    monkeypatch.setattr(published.sqlite3, 'connect', traced)
+    monkeypatch.setattr(published, 'IDENTITY_BATCH', 2)
+    monkeypatch.setattr(published, 'COUNTS_BATCH', 2)
+    selected = [rows[99], rows[3], rows[60]]
+    actual = published.scores(path, selected, ['cash','60'])
+    expected = lexical_scores((lexical_document(row) for row in selected), ['cash','60'])
+    np.testing.assert_array_equal(actual[0], expected[0])
+    reads = [sql for sql in statements if sql.startswith('SELECT position,node_id')]
+    assert len(reads) == 2 and all('WHERE node_id IN' in sql for sql in reads)
+    assert all('ORDER BY position' not in sql for sql in reads)
+    count_reads = [sql for sql in statements if sql.startswith('SELECT position,length,counts')]
+    assert len(count_reads)==2 and all('WHERE position IN' in sql for sql in count_reads)
+    # A wrong digest in a small scope still fails before any scoring.
+    broken = deepcopy(selected); broken[0]['content_sha256'] = 'wrong'
+    with pytest.raises(ValueError, match='source_mismatch'):
+        published.scores(path, broken, ['cash'])
+
+
+def test_subset_statistics_reuse_reads_postings_and_keeps_scope_order(tmp_path, monkeypatch):
+    rows = nodes(['cash equity equity','cash debt','rare cash','cash']*5)
+    path = tmp_path/'lexical.sqlite'
+    published.build(path, rows)
+    selected = [rows[19],rows[1],rows[2]]
+    cache = published.PublishedLexicalStatistics()
+    identities = lambda selection: [(r['node_id'],r['content_sha256'],published.lexical_digest(r)) for r in selection]
+    statements = []
+    connect = sqlite3.connect
+    def traced(*args, **kwargs):
+        db = connect(*args, **kwargs); db.set_trace_callback(statements.append); return db
+    monkeypatch.setattr(published.sqlite3,'connect',traced)
+    for i, query in enumerate((['cash'],['rare','rare'],['absent'],['debt'])):
+        statements.clear()
+        actual = published.scores_from_identities(path,identities(selected),query,population_cache=cache)
+        expected = lexical_scores((lexical_document(row) for row in selected),query)
+        np.testing.assert_array_equal(actual[0],expected[0]); assert actual[1:] == expected[1:]
+        assert cache.hit == bool(i)
+        assert any('SELECT position,length,counts' in sql for sql in statements) == (i==0)
+    for other in (selected[::-1],selected[:1],rows):
+        actual = published.scores_from_identities(path,identities(other),['cash'],population_cache=cache)
+        expected = lexical_scores((lexical_document(row) for row in other),['cash'])
+        np.testing.assert_array_equal(actual[0],expected[0]); assert not cache.hit
+
+
+def test_subset_cache_invalidates_on_file_change_and_respects_memory_bound(tmp_path):
+    rows = nodes(['cash equity','cash debt','rare'])
+    path = tmp_path/'lexical.sqlite'; published.build(path,rows)
+    selected = [(r['node_id'],r['content_sha256'],published.lexical_digest(r)) for r in rows[:2]]
+    cache = published.PublishedLexicalStatistics()
+    published.scores_from_identities(path,selected,['cash'],population_cache=cache)
+    assert cache.entry
+    with sqlite3.connect(path) as db:
+        db.execute('UPDATE nodes SET counts=? WHERE position=0',(b'invalid',))
+    with pytest.raises(zlib.error):
+        published.scores_from_identities(path,selected,['cash'],population_cache=cache)
+    assert not cache.hit
+    other = tmp_path/'other.sqlite'; published.build(other,rows)
+    tiny = published.PublishedLexicalStatistics(limit=1)
+    published.scores_from_identities(other,selected,['cash'],population_cache=tiny)
+    assert tiny.entry is None

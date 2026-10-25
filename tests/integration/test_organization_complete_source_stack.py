@@ -480,6 +480,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 with diagnostic.phase('global_search_cold',profile=global_probe):
                     found=nav.navigate(query)
                 assert found.items
+                assert found.items[0]['retrieval']['vector_validation']=='immutable_release_receipt'
                 cold_original_reads=len(original_reads)
                 assert cold_original_reads==(0 if lifecycle_probe else len(batch))
                 cold_capture_checks=len(capture_checks)
@@ -491,6 +492,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     cached=nav.navigate(query)
                 assert cached.items[0]['retrieval']['cache_hit']
                 assert cached.items[0]['retrieval']['response_cache_hit']
+                assert cached.items[0]['retrieval']['vector_validation']=='immutable_release_receipt'
                 assert not original_reads, 'warm response unexpectedly reread source originals'
                 assert not capture_checks, 'warm response unexpectedly reparsed source captures'
                 # All ranking/source/preview/readback fields remain identical;
@@ -648,6 +650,23 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     evaluate(semantic_rows, labels, nav, index_digest=contract['index_digest'], save=s.save)
                 with diagnostic.phase('semantic_graph_development' if semantic_split == 'development' else 'semantic_graph_heldout'):
                     evaluate(semantic_rows, labels, nav, index_digest=contract['index_digest'], save=s.save, graph=True)
+            subset_statistics_requests=[]
+            if global_probe and candidate_only:
+                document=targets[next(iter(read_batch))]['tail']['parent_document_id']
+                # Different prepared queries against the same document: this
+                # exercises statistics reuse, not the identical-response cache.
+                for text in list(queries)[:2]:
+                    subset_statistics_requests.append({'source_space':'organization','operation':'search',
+                        'document_id':document,'query':text})
+                assert len(subset_statistics_requests)==2
+                with diagnostic.phase('subset_statistics_cross_query'):
+                    subset_results=[nav.navigate(request) for request in subset_statistics_requests]
+                assert all(result.items and all(row['document_id']==document for row in result.items)
+                           for result in subset_results)
+                assert subset_results[-1].items[0]['retrieval']['lexical_subset_statistics_hit']
+                assert not subset_results[-1].items[0]['retrieval'].get('response_cache_hit',False)
+                s.save('subset-statistics',{'status':'passed','queries':2,'financial_quality_assessed':False,
+                    'receipts':[result.items[0]['retrieval'] for result in subset_results]})
             with diagnostic.phase('sampled_original_readback',profile=global_probe):
                 asyncio.run(exercise(read_batch,targets,nav,reader))
             # Revoke a candidate that was NOT explicitly selected; all current
@@ -664,6 +683,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             if global_probe:
                 with pytest.raises(OrganizationExecutionUnavailable):nav.navigate({
                     'source_space':'organization','operation':'search','query':list(queries)[1]})
+            for request in subset_statistics_requests:
+                with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(request)
             # exercise() last warmed this exact filtered request. Prove a
             # resident response cannot outlive revocation, not just a miss.
             last_sid=list(read_batch)[-1]

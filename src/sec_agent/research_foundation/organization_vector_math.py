@@ -54,3 +54,18 @@ def cosine_scores(matrix, positions, query):
             raise ValueError('organization_retrieval_invalid_prepared_vectors')
         scores[start:start + len(block)] = block @ query
     return scores
+
+
+def verified_cosine_scores(matrix, positions, query):
+    """Score a release already checked for unit vectors and immutable identity.
+
+    Only the frozen-release loader's caller may use this path. It must check
+    file identity before and after scoring. Unverified/legacy inputs continue
+    to use cosine_scores; no tool argument can select this function.
+    """
+    scores = np.empty(len(positions), dtype=np.float32)
+    for start, block in _blocks(matrix, positions):
+        scores[start:start + len(block)] = block @ query
+    if not np.isfinite(scores).all():
+        raise ValueError('organization_retrieval_invalid_prepared_vectors')
+    return scores

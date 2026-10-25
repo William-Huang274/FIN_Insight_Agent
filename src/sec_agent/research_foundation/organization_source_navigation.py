@@ -29,6 +29,8 @@ class OrganizationSourceNavigation:
         self._search_cache = None
         self._projection_cache = None
         self._candidate_index = None
+        from retrieval.published_lexical_index import PublishedLexicalStatistics
+        self._lexical_statistics = PublishedLexicalStatistics()
         self._retrieval_lifecycle = None
         self._navigation_lock = RLock()
         if retrieval_root is not None:
@@ -172,7 +174,7 @@ class OrganizationSourceNavigation:
                     notice=filter_notice(filter_receipt), source_snapshot_sha256=self.reader.authority.manifest_digest[7:])
         scores, overlap, has_terms = scores_from_identities(candidates.directory/'lexical.sqlite',
             ((row['node_id'],row['content_sha256'],row['lexical_input_sha256']) for row in rows),
-            tokenize(request.query))
+            tokenize(request.query), population_cache=self._lexical_statistics)
         literal = [rows[i] for i in sorted(overlap, key=lambda i:(-float(scores[i]),rows[i]['node_id']))]
         graph=None
         graph_evidence=[]
@@ -197,6 +199,7 @@ class OrganizationSourceNavigation:
                 reranked_node_ids=[r['node_id'] for r in materialized],
                 provider_calls=receipt['provider_calls']+rerank_receipt['provider_calls'])
         receipt.update(lexical_source='published_release', candidate_only=True,
+                       lexical_subset_statistics_hit=self._lexical_statistics.hit,
                        source_generation_original_reads=candidates.original_reads,
                        candidate_body_reads=candidates.candidate_reads, projection_cache_hits=0)
         result = navigate_source_nodes(materialized, request, snapshot=self.reader.authority.manifest_digest[7:],
@@ -368,7 +371,7 @@ class OrganizationSourceNavigation:
         return result.model_copy(update={'items': tuple({**item,
             'organization_source': provenance[item['document_id']],
             **({'original_source':originals[item['node_id']]} if item['node_id'] in originals else {})} for item in result.items),
-            'notice': result.notice + ' Organization originals only; query embeddings follow the frozen release and server configuration; no external rerank. '
+            'notice': result.notice + ' Organization originals only; query embeddings and optional reranking follow server configuration; inspect the retrieval receipt for actual provider calls. '
                 'The source projection may be truncated (organization_source.source_truncated). '
                 'Offsets identify projected text, not original PDF pages. Adjacent windows/tables require review. '
                 'Research cutoff records intent; historical availability and financial semantics are not certified.'})

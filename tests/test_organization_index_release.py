@@ -113,3 +113,49 @@ def test_unconfigured_query_source_never_falls_back_to_lexical(tmp_path, monkeyp
     with pytest.raises(ValueError, match='not_configured'):
         OrganizationHybridRetrieval(reader, tmp_path/'indices').rank(
             nodes, 'a query absent from the release', reader.authority.manifest_digest[7:], nodes)
+
+
+def test_frozen_validation_once_across_queries_instances_and_current_revocation(tmp_path, monkeypatch):
+    import sec_agent.research_foundation.organization_vector_math as math
+    reader, state, _, nodes, directory, _ = prepared(tmp_path)
+    original=math.unit_vectors; validations=[]
+    def counted(matrix, positions=None):
+        validations.append(len(matrix))
+        return original(matrix,positions)
+    monkeypatch.setattr(math,'unit_vectors',counted)
+    def unexpected(*args):
+        raise AssertionError('frozen scoring must not renormalize the whole population')
+    monkeypatch.setattr(math,'cosine_scores',unexpected)
+    api=Api(); source=QueryEmbeddingSource(tmp_path/'cache',api,model=MODEL)
+    for i in range(2):
+        ranker=OrganizationHybridRetrieval(reader,tmp_path/'indices',query_source=source)
+        for query in ('query one','query two','query one'):
+            _, receipt=ranker.rank(nodes,query,reader.authority.manifest_digest[7:],[])
+            assert receipt['vector_validation']=='immutable_release_receipt'
+    assert validations==[len(nodes)] and api.calls==2
+    state['status']=404
+    with pytest.raises(OrganizationExecutionUnavailable):
+        ranker.rank(nodes,'query one',reader.authority.manifest_digest[7:],[])
+    assert validations==[len(nodes)]
+    state['status']=200
+    # Ordinary file mutation is still rejected even when rank/query receipts exist.
+    with (directory/'vectors.npy').open('ab') as stream:stream.write(b'changed')
+    with pytest.raises(ValueError,match='changed_after_load'):
+        ranker.rank(nodes,'query one',reader.authority.manifest_digest[7:],[])
+    assert api.calls==2
+
+
+@pytest.mark.parametrize('bad',[0.,float('nan'),float('inf'),2.])
+def test_matching_file_digest_cannot_certify_invalid_vector_values(tmp_path,bad):
+    import numpy as np
+    from sec_agent.research_foundation.organization_index_release import canonical_digest, ReleaseLoadCache
+    _,_,org,_,directory,contract=prepared(tmp_path)
+    values=np.load(directory/'vectors.npy',allow_pickle=False)
+    values[-1,0]=bad
+    np.save(directory/'vectors.npy',values,allow_pickle=False)
+    index=json.loads((directory/'index.json').read_bytes())
+    index['matrix_sha256']=sha256((directory/'vectors.npy').read_bytes()).hexdigest()
+    (directory/'index.json').write_text(json.dumps(index),encoding='utf8')
+    expected={**contract,'matrix_sha256':index['matrix_sha256'],'index_digest':canonical_digest(index)}
+    with pytest.raises(ValueError,match='invalid_prepared_vectors'):
+        load_release(tmp_path/'indices',org,contract['release_id'],expected,cache=ReleaseLoadCache())

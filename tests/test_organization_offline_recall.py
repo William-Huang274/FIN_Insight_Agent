@@ -29,7 +29,8 @@ def setup(tmp_path, monkeypatch, receipt):
         'edges': [], 'edge_chunk_links': []}
     write(intake/'source.json', bundle)
     write(intake/'result.json', {'status': 'verified', 'library_sha256': 'snapshot',
-        'sources': [{'source_id': 'source', 'directory': '.', 'chunks': 1}],
+        'sources': [{'source_id': 'source', 'directory': '.', 'chunks': 1,
+                     'files': {'source.json': sha256((intake/'source.json').read_bytes()).hexdigest()}}],
         'source_index': {'embedding_model': 'qwen3.7-text-embedding', 'matrix_sha256': 'a'*64}})
     document = OrganizationSourceNavigation._identity(item)
     nodes = [r for r in source_nodes(bundle, document, item, 'http://localhost') if r['node_kind'] == 'text']
@@ -105,3 +106,40 @@ def test_scoring_releases_mapping_and_keeps_exact_owned_scores(tmp_path, monkeyp
     assert references[0]() is None and scores.flags.owndata
     with pytest.raises(ValueError, match='matrix_shape_mismatch'):
         frozen_cosine_scores(path, [0], matrix[0], 1)
+
+
+def test_filter_diagnostic_retains_baseline_and_reports_excluded_evidence(tmp_path, monkeypatch):
+    import sys
+    output, cache = setup(tmp_path, monkeypatch, True)
+    plan = {'role': 'development_query_only_manual_constraints', 'queries': {'q1': {
+        'query_sha256': sha256(b'Alpha cash').hexdigest(),
+        'variants': [{'name': 'explicit-form', 'constraint': {'form': '10-K'},
+                      'basis': 'Manual scenario; not an automatic parser', 'unresolved': ['fiscal year']}]}}}
+    path = tmp_path/'plan.json'
+    path.write_text(json.dumps(plan), encoding='utf8')
+    monkeypatch.setattr(sys, 'argv', [*sys.argv, '--source-filter-plan', str(path)])
+    before = sha256(cache.read_bytes()).hexdigest()
+    main()
+    report = json.loads((output/'result.json').read_text(encoding='utf8'))
+    sample = report['samples'][0]
+    assert sample['metrics']['fused_candidates']['known_hit@5'] == 1
+    assert len(sample['filter_diagnostics']) == 2
+    for variant in sample['filter_diagnostics']:
+        assert variant['coverage']['unknown_sources'] == 1 and variant['candidate_chunks'] == 0
+        assert variant['known_evidence_excluded'] == sample['gold']
+        assert variant['metrics']['fused_candidates']['known_hit@5'] == 0
+    assert sha256(cache.read_bytes()).hexdigest() == before
+
+
+@pytest.mark.parametrize('fault', ['query', 'heldout', 'answer_id'])
+def test_filter_plan_rejects_changed_query_heldout_or_answer_identity(fault):
+    from scripts.engineering.organization_filter_diagnosis import validate_plan
+    row = {'id': 'q', 'split': 'development', 'query': 'Example query'}
+    variant = {'name': 'issuer', 'constraint': {'issuer_id': 'ISSUER'}, 'basis': 'query text', 'unresolved': []}
+    plan = {'role': 'development_query_only_manual_constraints', 'queries': {'q': {
+        'query_sha256': sha256(row['query'].encode()).hexdigest(), 'variants': [variant]}}}
+    assert validate_plan(plan, [row])
+    if fault == 'query': row['query'] = 'changed'
+    elif fault == 'heldout': row['split'] = 'heldout'
+    else: variant['constraint'] = {'source_id': 'answer-source'}
+    with pytest.raises(ValueError): validate_plan(plan, [row])

@@ -34,6 +34,9 @@ LIBRARY_SOURCE_ROUTING_GUIDANCE = (
 
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
+    organization_metadata_policy: Literal['original.v1', 'sec_cover.v2'] = Field(default='original.v1',
+        description='Organization catalog/search only. original.v1 preserves original metadata; '
+        'sec_cover.v2 explicitly enables conservative SEC cover form recovery and conflict detection.')
     organization_filter: OrganizationSourceFilter | None = Field(default=None, description=(
         'Organization catalog/search only. Copy exact issuer_id, company_name, form or period_end '
         'from catalog organization_metadata. Conditions are AND; company_name ignores case only. '
@@ -94,6 +97,8 @@ class SourceDocumentRequest(BaseModel):
         body = handler(self)
         if 'organization_filter' not in self.model_fields_set:
             body.pop('organization_filter', None)
+        if 'organization_metadata_policy' not in self.model_fields_set:
+            body.pop('organization_metadata_policy', None)
         if "character_offset" not in self.model_fields_set:
             body.pop("character_offset", None)
         # Immutable local-source actions predate source_space. Preserve their
@@ -110,6 +115,9 @@ class SourceDocumentRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
+        if 'organization_metadata_policy' in self.model_fields_set and (self.source_space != 'organization'
+                or self.operation not in {'catalog', 'search'}):
+            raise ValueError('organization_metadata_policy_requires_organization_catalog_or_search')
         if self.organization_filter is not None and (self.source_space != 'organization'
                 or self.operation not in {'catalog', 'search'}):
             raise ValueError('organization_filter_requires_organization_catalog_or_search')

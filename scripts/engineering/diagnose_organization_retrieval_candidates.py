@@ -48,11 +48,40 @@ def frozen_cosine_scores(path, positions, query, count):
     return cosine_scores(matrix, positions, query)
 
 
+def rank_scope(records, directory, matrix, total_count, query_vector, row):
+    """Use production score/fusion functions on an explicit, label-free scope."""
+    ranked = {'dense_candidates': [], 'lexical_candidates': [], 'fused_candidates': []}
+    evidence = []
+    if row.get('entity_id'):
+        ranked.update(graph_candidates=[], graph_fused_candidates=[])
+    if not records:
+        return ranked, evidence
+    scores, overlap, _ = scores_from_identities(directory/'lexical.sqlite',
+        ((r['node_id'], r['content_sha256'], r['lexical_input_sha256']) for r in records), tokenize(row['query']))
+    lexical_positions = sorted(overlap, key=lambda i: (-float(scores[i]), records[i]['node_id']))
+    lexical = [records[i]['node_id'] for i in lexical_positions[:12]]
+    scores = frozen_cosine_scores(matrix, [r['vector_index'] for r in records], query_vector, total_count)
+    dense = [records[i]['node_id'] for i in sorted(range(len(records)),
+        key=lambda i: (-float(scores[i]), records[i]['node_id']))[:24]]
+    ranked.update(dense_candidates=dense, lexical_candidates=lexical,
+                  fused_candidates=reciprocal_rank_fusion([dense, lexical]))
+    if row.get('entity_id'):
+        candidate_rows = [dict(node_id=r['node_id'], parent_document_id=r['document_id'],
+                              content_sha256=r['content_sha256']) for r in records]
+        request = SourceDocumentRequest(source_space='organization', operation='search',
+            query=row['query'], entity_id=row['entity_id'], limit=20)
+        graph, evidence = candidates(directory/'graph.sqlite', candidate_rows, request, row['as_of'],
+                                     [candidate_rows[i] for i in lexical_positions])
+        ranked.update(graph_candidates=graph, graph_fused_candidates=reciprocal_rank_fusion([dense, lexical, graph]))
+    return ranked, evidence
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('intake', 'dataset', 'index-directory', 'matrix', 'publication-checkpoint', 'query-cache', 'output'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--split', choices=('development', 'heldout', 'all'), required=True)
+    parser.add_argument('--source-filter-plan', type=Path, help='Development-only manual constraints; never automatic query routing')
     args = parser.parse_args()
     args.output.mkdir(exist_ok=False, parents=True)
     memory = []
@@ -81,6 +110,11 @@ def main():
         rows = [r for r in dataset['questions'] if args.split == 'all' or r['split'] == args.split]
         if not rows:
             raise ValueError('empty_evaluation_split')
+        filters = None
+        if args.source_filter_plan is not None:
+            from scripts.engineering.organization_filter_diagnosis import validate_plan, metadata_maps, scope_records
+            filters = validate_plan(json.loads(args.source_filter_plan.read_text(encoding='utf8')), rows)
+            report['filter_plan_sha256'] = digest(args.source_filter_plan)
         directory = args.index_directory
         index = json.loads((directory/'index.json').read_text(encoding='utf8'))
         if (index['provenance']['source_intake_sha256'] != digest(args.intake/'result.json')
@@ -105,11 +139,12 @@ def main():
         manifest = {'research_as_of': next(iter(cutoff)), 'inputs': [
             {'resource_id': g['id'], 'ref': g['binding']['ref']} for g in publication['grants'].values()]}
         labels = bind_labels(rows, manifest, publication['resources'], index)
+        if filters is not None:
+            raw_metadata, resolved_metadata, proofs = metadata_maps(args.intake, intake, publication, manifest, guard)
+            save('source-metadata', {'raw': raw_metadata, 'resolved': resolved_metadata, 'proofs': proofs})
         records = index['records']
         if len({r['document_id'] for r in records}) != len(bundles):
             raise ValueError('offline_index_document_scope_mismatch')
-        candidate_rows = [dict(node_id=r['node_id'], parent_document_id=r['document_id'],
-            content_sha256=r['content_sha256']) for r in records] if any(r.get('entity_id') for r in rows) else None
         positions = [r['vector_index'] for r in records]
         if sorted(positions) != list(range(len(records))):
             raise ValueError('offline_matrix_positions_mismatch')
@@ -133,25 +168,25 @@ def main():
                     if not saved or saved['status'] != 'completed' or saved['result']['model'] != index['model']:
                         raise ValueError('offline_successful_query_receipt_required')
                     query = vector(saved['result']['values'][0], 1024)
-                    scores, overlap, _ = scores_from_identities(directory/'lexical.sqlite',
-                        ((r['node_id'], r['content_sha256'], r['lexical_input_sha256']) for r in records), tokenize(row['query']))
-                    lexical_positions = sorted(overlap, key=lambda i: (-float(scores[i]), records[i]['node_id']))
-                    lexical = [records[i]['node_id'] for i in lexical_positions[:12]]
-                    scores = frozen_cosine_scores(args.matrix, positions, query, len(records))
-                    dense = [records[i]['node_id'] for i in sorted(range(len(records)),
-                        key=lambda i: (-float(scores[i]), records[i]['node_id']))[:24]]
-                    ranked = {'dense_candidates': dense, 'lexical_candidates': lexical,
-                              'fused_candidates': reciprocal_rank_fusion([dense, lexical])}
+                    ranked, evidence = rank_scope(records, directory, args.matrix, len(records), query, row)
                     if row.get('entity_id'):
-                        request = SourceDocumentRequest(source_space='organization', operation='search',
-                            query=row['query'], entity_id=row['entity_id'], limit=20)
-                        graph, evidence = candidates(directory/'graph.sqlite', candidate_rows, request, row['as_of'],
-                                                     [candidate_rows[i] for i in lexical_positions])
-                        ranked.update(graph_candidates=graph, graph_fused_candidates=reciprocal_rank_fusion([dense, lexical, graph]))
                         sample['graph_evidence'] = evidence
                     sample.update(status='completed', gold=labels[row['id']], rankings=ranked,
                         metrics={k: ranking_metrics(v, labels[row['id']]) for k, v in ranked.items()})
-                    del scores, overlap, lexical_positions
+                    if filters is not None:
+                        sample['filter_diagnostics'] = []
+                        for variant in filters[row['id']]['variants']:
+                            for policy, metadata in (('raw_metadata', raw_metadata), ('sec_cover_resolved', resolved_metadata)):
+                                guard('filter:'+row['id']+':'+variant['name']+':'+policy)
+                                scoped, receipt = scope_records(records, metadata, variant['constraint'])
+                                ranks, proof = rank_scope(scoped, directory, args.matrix, len(records), query, row)
+                                population = {r['node_id'] for r in scoped}
+                                sample['filter_diagnostics'].append({**variant, 'metadata_policy': policy,
+                                    'coverage': receipt, 'candidate_chunks': len(scoped),
+                                    'known_evidence_excluded': [n for n in labels[row['id']] if n not in population],
+                                    'rankings': ranks, 'graph_evidence': proof,
+                                    'metrics': {k: ranking_metrics(v, labels[row['id']]) for k, v in ranks.items()}})
+                                del scoped, population
                 except Exception as exc:
                     sample.update(status='failed', error_type=type(exc).__name__)
                     raise

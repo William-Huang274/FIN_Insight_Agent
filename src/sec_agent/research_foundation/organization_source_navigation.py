@@ -142,10 +142,12 @@ class OrganizationSourceNavigation:
         filter_receipt = None
         if request.organization_filter is not None:
             from .organization_source_filter import select_documents, filter_notice
-            metadata = candidates.source_metadata
+            metadata = (candidates.source_metadata if request.organization_metadata_policy == 'sec_cover.v2'
+                        else candidates.original_source_metadata)
             if request.document_id:
                 metadata = {request.document_id: metadata[request.document_id]}
             documents, filter_receipt = select_documents(metadata, request.organization_filter)
+            filter_receipt['metadata_policy'] = request.organization_metadata_policy
             rows = [row for row in rows if row['parent_document_id'] in documents]
             if not rows:
                 from .source_document_navigation import SourceDocumentResult
@@ -183,7 +185,7 @@ class OrganizationSourceNavigation:
 
     def _navigate(self, request, *, projection_cache=None, storage_check=None):
         request = SourceDocumentRequest.model_validate(request)
-        if request.organization_filter is not None and request.operation == 'search':
+        if (request.organization_filter is not None or request.organization_metadata_policy != 'original.v1') and request.operation == 'search':
             raise ValueError('organization_filtered_search_requires_prepared_candidate_index')
         if request.source_space=='organization' and request.entity_id:
             raise ValueError('organization_graph_requires_published_candidate_navigation')
@@ -201,12 +203,15 @@ class OrganizationSourceNavigation:
                 raise OrganizationExecutionUnavailable('所选原文不属于本次固定组织输入。')
             selected = {request.document_id: selected[request.document_id]}
         by_resource = {item['resource_id']: (document_id, item) for document_id, item in selected.items()}
-        routing = {}
+        routing, routing_evidence = {}, {}
         def project(resource_id, result):
             document_id, item = by_resource[resource_id]
             if request.operation == 'catalog':
-                from .organization_source_filter import source_metadata
-                routing[document_id] = source_metadata(result.get('source_bundle'))
+                from .organization_source_filter import source_metadata_details, original_source_metadata
+                if request.organization_metadata_policy == 'sec_cover.v2':
+                    routing[document_id], routing_evidence[document_id] = source_metadata_details(result.get('source_bundle'))
+                else:
+                    routing[document_id] = original_source_metadata(result.get('source_bundle'))
             nodes = []
             if result.get('needs_vision'):
                 raise ValueError('organization_original_requires_vision_not_enabled')
@@ -267,6 +272,7 @@ class OrganizationSourceNavigation:
         if request.operation == 'catalog' and request.organization_filter is not None:
             from .organization_source_filter import select_documents, filter_notice
             documents, filter_receipt = select_documents(routing, request.organization_filter)
+            filter_receipt['metadata_policy'] = request.organization_metadata_policy
             nodes = [row for row in nodes if row['parent_document_id'] in documents]
             if request.document_id and not nodes:
                 from .source_document_navigation import SourceDocumentResult
@@ -313,7 +319,9 @@ class OrganizationSourceNavigation:
             lexical_scorer=lexical_score if projection_cache is not None else None)
         result = self._decorate(result, provenance, originals)
         if request.operation == 'catalog':
-            result = result.model_copy(update={'items': tuple({**row, 'organization_metadata': routing[row['document_id']]}
+            result = result.model_copy(update={'items': tuple({**row, 'organization_metadata': routing[row['document_id']],
+                **({'organization_metadata_evidence': routing_evidence[row['document_id']]}
+                   if row['document_id'] in routing_evidence else {})}
                 for row in result.items)})
         if filter_receipt is not None:
             result = result.model_copy(update={'notice': result.notice + filter_notice(filter_receipt),

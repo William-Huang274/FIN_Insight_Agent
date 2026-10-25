@@ -54,9 +54,10 @@ class OrganizationSourceFilterReceipt(BaseModel):
     unknown_sources: int = Field(ge=0)
     mismatched_sources: int = Field(ge=0)
     metadata_missing_is_not_source_absence: Literal[True] = True
+    metadata_policy: Literal['original.v1', 'sec_cover.v2'] = 'original.v1'
 
 
-def source_metadata(bundle):
+def original_source_metadata(bundle):
     """A small descriptor derived from the already verified source bundle."""
     metadata = json.loads(bundle['source']['metadata']) if bundle else {}
     def text(key):
@@ -71,6 +72,26 @@ def source_metadata(bundle):
     form = text('form')
     return {'issuer_id': text('entity_id'), 'company_name': text('company'),
             'form': form.upper() if form else None, 'period_end': period}
+
+
+def source_metadata_details(bundle):
+    """Resolve only an explicit original cover, retaining conflicts as unknown."""
+    descriptor = original_source_metadata(bundle)
+    proof = None
+    if bundle:
+        from .sec_cover_metadata import cover_form
+        evidence = cover_form(bundle, json.loads(bundle['source']['metadata']))
+        if evidence:
+            previous = descriptor['form']
+            conflict = previous is not None and previous != evidence['form']
+            descriptor['form'] = None if conflict else evidence['form']
+            proof = {**evidence, 'metadata_form': previous,
+                'status': 'conflict' if conflict else 'confirmed' if previous else 'recovered'}
+    return descriptor, proof
+
+
+def source_metadata(bundle):
+    return source_metadata_details(bundle)[0]
 
 
 def select_documents(metadata, constraint):

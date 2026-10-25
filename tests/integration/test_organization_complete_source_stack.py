@@ -558,14 +558,40 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                                     **lifecycle.status(),'original_reads':len(original_reads),
                                     'capture_checks':len(capture_checks),'expected_sources':len(batch)})
                             assert refresh_status['state']=='ready' and refresh_status['generation']==2
-                        assert len(original_reads)==len(capture_checks)==len(batch)
+                        # Database epoch changed, but no source revision did:
+                        # refresh rechecks authority/metadata, reuses content proofs.
+                        assert not original_reads and not capture_checks
                         original_reads.clear();capture_checks.clear()
                         refreshed=nav.navigate(second)
                         assert not original_reads and not capture_checks
                         assert [{k:v for k,v in row.items() if k!='retrieval'} for row in refreshed.items]==[
                             {k:v for k,v in row.items() if k!='retrieval'} for row in full.items]
-                        cross_query['background_refresh_original_reads']=len(batch)
+                        cross_query['background_refresh_original_reads']=0
                         cross_query['background_refresh_generation']=2
+                        target_version=frozen['manifest']['inputs'][0]['ref']['version_id']
+                        affected=sum(item['ref']['version_id']==target_version for item in frozen['manifest']['inputs'])
+                        with sqlite3.connect(reader.workspace.library.documents.path) as db:
+                            changed=db.execute('UPDATE attachments SET name=name WHERE id=?',(target_version,))
+                            assert changed.rowcount==1
+                        with diagnostic.phase('single_source_revision_refresh',profile=False):
+                            with pytest.raises(OrganizationExecutionUnavailable,match='refresh_pending'):
+                                nav.navigate(second)
+                            refreshed_status=lifecycle.wait_for_refresh(refresh_timeout)
+                            assert refreshed_status['state']=='ready' and refreshed_status['generation']==3
+                        assert len(original_reads)==len(capture_checks)==affected
+                        cross_query['source_revision_refresh']={'affected_resources':affected,
+                            'original_reads':len(original_reads),'capture_checks':len(capture_checks),
+                            'generation':3,'mutation':'one source update event; content/version unchanged'}
+                        original_reads.clear();capture_checks.clear()
+                        another=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
+                        with diagnostic.phase('new_navigation_receipt_reuse',profile=False):
+                            another.warm_release()
+                            reopened=another.navigate(second)
+                        assert not original_reads and not capture_checks
+                        assert [{k:v for k,v in row.items() if k!='retrieval'} for row in reopened.items]==[
+                            {k:v for k,v in row.items() if k!='retrieval'} for row in full.items]
+                        cross_query['new_navigation_original_reads']=0
+                        del another
                 monkeypatch.setattr(reader,'_read_storage',read_storage)
                 monkeypatch.setattr(capture_module,'read_capture',read_capture)
                 global_searches.append({'query':query,'retrieval':found.items[0]['retrieval'],

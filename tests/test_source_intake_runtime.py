@@ -36,3 +36,16 @@ def test_bff_launcher_keeps_same_app_and_passes_only_instance_arguments(tmp_path
     assert args[-4:] == ['--workers', '1', '--limit-concurrency', '8']
     assert 'LANGSMITH_API_KEY' not in options['env']
     for log in stack.logs: log.close()
+
+
+def test_optional_dependencies_do_not_modify_shared_interpreter_or_parent_environment(tmp_path, monkeypatch):
+    def initialize(self):
+        self.output = tmp_path
+        self.env = {'PYTHONPATH':'repository-source'}
+    monkeypatch.setattr(OrganizationGraphStack, '__init__', initialize)
+    monkeypatch.setenv('PYTHONPATH','parent-source')
+    monkeypatch.setenv('FIN_QUALIFICATION_DEPENDENCY_ROOT', str(tmp_path))
+    stack = CompleteSourceStack()
+    import os
+    assert stack.env['PYTHONPATH'] == os.pathsep.join(['repository-source',str(tmp_path.resolve())])
+    assert os.environ['PYTHONPATH'] == 'parent-source'

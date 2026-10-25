@@ -2,6 +2,7 @@
 import json
 import os
 import subprocess
+from pathlib import Path
 
 from tests.integration.test_organization_graph_native import OrganizationGraphStack
 from tests.integration.test_java_intake_native import ROOT
@@ -24,12 +25,19 @@ SERIAL_ENV = {
 class CompleteSourceStack(OrganizationGraphStack):
     def __init__(self):
         super().__init__()
+        dependency_root = os.getenv('FIN_QUALIFICATION_DEPENDENCY_ROOT')
+        if dependency_root:
+            dependency_root = Path(dependency_root).resolve(strict=True)
+            if not dependency_root.is_dir():
+                raise ValueError('qualification_dependency_root_must_be_directory')
+            self.env['PYTHONPATH'] = os.pathsep.join(filter(None, [self.env.get('PYTHONPATH'), str(dependency_root)]))
         self.serial_profile = os.getenv('FIN_COMPLETE_SOURCE_SERIAL_PROFILE') == '1'
         if self.serial_profile:
             self.compose_files = (*self.compose_files, ROOT/'deploy/qualification/source_intake_serial.compose.yaml')
             self.env.update(SERIAL_ENV)
             self.bff_arguments = ('--workers', '1', '--limit-concurrency', '8', '--backlog', '16')
         self.save('source-intake-runtime', {'serial_profile': self.serial_profile,
+                  'optional_dependency_root': str(dependency_root) if dependency_root else None,
                   'limits': SERIAL_ENV if self.serial_profile else {},
                   'bff_app': 'tests.integration.fixtures.intake_native_web:app',
                   'production_routes_unchanged': True, 'capacity_evaluation': False})

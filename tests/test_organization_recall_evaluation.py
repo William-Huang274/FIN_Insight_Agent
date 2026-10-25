@@ -111,6 +111,41 @@ def test_response_must_obey_frozen_policy_and_quotas():
         score_response(response, ['gold'], index_digest='index')
 
 
+def test_expanded_reranking_strategy_is_verified_on_actual_response(fixture):
+    strategy = {'candidate_policy': 'dense_expanded.v1', 'query_planning': 'conservative.v1',
+                'metadata_policy':'sec_cover.v2', 'reranker': 'qwen3-rerank', 'returned_limit': 20}
+    response = result()
+    receipt = response.items[0]['retrieval']
+    receipt.update(mode='organization-cosine-bm25-qwen-rerank.v1',
+                   candidate_policy='dense_expanded.v1',
+                   rerank_response={'model':'qwen3-rerank'}, reranked_node_ids=['gold','wrong'])
+    response.organization_query_plan = {'policy':'conservative.v1','metadata_policy':'sec_cover.v2'}
+    requests, saved = [], []
+    class Navigation:
+        def navigate(self, request):
+            requests.append(request)
+            return response
+    rows = fixture[0]['questions']
+    samples = evaluate(rows, {'q1':['gold']}, Navigation(), index_digest='index',
+                       strategy=strategy, save=lambda name,data:saved.append(data))
+    assert requests[0]['organization_query_planning'] == 'conservative.v1'
+    assert requests[0]['organization_metadata_policy'] == 'sec_cover.v2'
+    assert saved[0]['strategy'] == strategy
+    assert samples[0]['metrics']['reranked_candidates']['mrr@40'] == 1
+    assert samples[0]['metrics']['returned']['known_hit@10'] == 0
+    for field, value, error in (
+        ('candidate_policy','balanced.v1','candidate_policy_mismatch'),
+        ('rerank_response',{'model':'other'},'rerank_model_mismatch'),
+        ('reranked_node_ids',['gold'],'differ_from_union'),
+    ):
+        broken = deepcopy(response); broken.items[0]['retrieval'][field] = value
+        with pytest.raises(ValueError, match=error):
+            score_response(broken, ['gold'], index_digest='index', strategy=strategy)
+    response.organization_query_plan = None
+    with pytest.raises(ValueError, match='query_plan_mismatch'):
+        score_response(response, ['gold'], index_digest='index', strategy=strategy)
+
+
 def test_family_average_and_incomplete_runs():
     def sample(identity, family, score):
         return {'id': identity, 'family': family, 'status': 'completed', 'metrics': {'returned': {'hit': score}}}

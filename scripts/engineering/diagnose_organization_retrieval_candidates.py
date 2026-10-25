@@ -24,6 +24,7 @@ from retrieval.source_hybrid import CachedRetrieval
 from retrieval.text import tokenize
 from scripts.data_retrieval.replay_cached_library_scenarios import ReadOnlyReceipts
 from scripts.engineering.organization_recall_evaluation import bind_labels, summarize, validate_questions
+from scripts.engineering.retrieval_evaluation_freeze import validate_heldout_freeze
 from scripts.engineering.qualify_retrieval_recall import ranking_metrics
 from sec_agent.research_foundation.organization_graph_index import candidates
 from sec_agent.research_foundation.organization_hybrid_retrieval import vector
@@ -114,6 +115,10 @@ def main():
     try:
         guard('start')
         dataset = json.loads(args.dataset.read_text(encoding='utf8'))
+        validate_heldout_freeze(dataset, args.split, candidate_policy=args.candidate_policy,
+            query_planning=args.query_planning, check_runtime=True,
+            metadata_policy='sec_cover.v2' if args.query_planning else 'original.v1',
+            manual_plan=args.source_filter_plan is not None)
         if args.split == 'all' and dataset['evaluation_role'] != 'historical_regression':
             raise ValueError('independent_evaluation_requires_one_explicit_split')
         intake = json.loads((args.intake/'result.json').read_text(encoding='utf8'))
@@ -132,7 +137,15 @@ def main():
             filters = validate_plan(json.loads(args.source_filter_plan.read_text(encoding='utf8')), rows)
             report['filter_plan_sha256'] = digest(args.source_filter_plan)
         directory = args.index_directory
+        if args.split == 'heldout' and dataset['evaluation_role'] == 'independent_source_first':
+            if digest(directory/'index.json') != dataset['index_file_sha256']:
+                raise ValueError('heldout_frozen_index_mismatch')
         index = json.loads((directory/'index.json').read_text(encoding='utf8'))
+        from sec_agent.research_foundation.organization_index_release import canonical_digest
+        contract_digest = canonical_digest(index)
+        if args.split == 'heldout' and dataset['evaluation_role'] == 'independent_source_first':
+            if contract_digest != dataset['index_digest']:
+                raise ValueError('heldout_frozen_contract_mismatch')
         if (index['provenance']['source_intake_sha256'] != digest(args.intake/'result.json')
                 or index['model'] != intake['source_index']['embedding_model'] or index['dimensions'] != 1024
                 or len(index['records']) != sum(r['chunks'] for r in intake['sources'])):
@@ -171,6 +184,7 @@ def main():
         report.update(status='running', evaluation_role=dataset['evaluation_role'], split=args.split,
             candidate_sources=len(bundles), candidate_chunks=len(records), expected_questions=len(rows),
             dataset_sha256=digest(args.dataset), index_sha256=digest(directory/'index.json'),
+            index_digest=contract_digest,
             matrix_sha256=index['matrix_sha256'], source_intake_sha256=digest(args.intake/'result.json'),
             query_planning=args.query_planning,
             candidate_policy=args.candidate_policy,

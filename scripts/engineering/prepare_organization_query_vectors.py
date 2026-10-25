@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 
 from scripts.engineering.organization_recall_evaluation import validate_questions
+from scripts.engineering.retrieval_evaluation_freeze import validate_heldout_freeze
 from tests.integration.source_intake_diagnostics import SourceBundles
 from retrieval.qwen_api import QwenRetrieval
 from retrieval.query_embeddings import QueryEmbeddingSource
@@ -24,6 +25,7 @@ def main():
         raise ValueError('query_preparation_source_snapshot_mismatch')
     if args.split=='heldout' and dataset.get('freeze',{}).get('status')!='frozen':
         raise ValueError('heldout_requires_frozen_dataset_and_policy')
+    validate_heldout_freeze(dataset, args.split)
     bundles=SourceBundles((r['source_id'],args.intake/r['directory']/'source.json') for r in intake['sources'])
     rows=[r for r in validate_questions(dataset,bundles) if r['split']==args.split]
     if not rows or len(rows)>200:raise ValueError('query_preparation_scope_outside_budget')

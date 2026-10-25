@@ -10,6 +10,7 @@ import argparse
 import json
 from pathlib import Path
 import random
+from scripts.engineering.retrieval_evaluation_freeze import validate_heldout_freeze
 
 SLICES=('numeric_unit','actual_guidance_period','deal_revision','multi_issuer',
         'relationship_evidence','multiple_evidence')
@@ -29,6 +30,42 @@ def interval(rows,field):
     rng=random.Random(260026)
     samples=sorted(sum(rng.choices(values,k=len(values)))/len(values) for _ in range(2000))
     return [samples[49],samples[1949]]
+
+
+def source_cluster_interval(rows, field):
+    """Bootstrap source-connected families, keeping bilingual variants together.
+
+    Multiple questions from one filing are correlated. Multi-source questions
+    join their source groups transitively; do not count those as independent
+    draws. The point estimate remains family macro, not source macro.
+    """
+    parents = {row['family']: row['family'] for row in rows}
+    def root(key):
+        while parents[key] != key:
+            parents[key] = parents[parents[key]]
+            key = parents[key]
+        return key
+    owners = {}
+    for row in rows:
+        for source in row.get('source_groups', []):
+            previous = owners.setdefault(source, row['family'])
+            parents[root(row['family'])] = root(previous)
+    families = defaultdict(list)
+    for row in rows:
+        families[row['family']].append(row[field])
+    clusters = defaultdict(list)
+    for family, values in families.items():
+        clusters[root(family)].append(sum(values)/len(values))
+    values = list(clusters.values())
+    if not values:
+        return {'clusters': 0, 'interval': [0., 0.]}
+    rng = random.Random(260026)
+    samples = []
+    for _ in range(2000):
+        draws = rng.choices(values, k=len(values))
+        samples.append(sum(sum(group) for group in draws)/sum(map(len, draws)))
+    samples.sort()
+    return {'clusters': len(values), 'interval': [samples[49], samples[1949]]}
 
 
 def score(candidates,returned,groups):
@@ -54,10 +91,18 @@ def evaluate(dataset,report,*,dataset_digest):
     final={q['family'] for q in positive if q['split']=='heldout'}
     require(dataset.get('evaluation_role')=='independent_source_first','independent_dataset_required')
     require(dataset.get('freeze',{}).get('status')=='frozen','dataset_not_frozen')
-    require(dataset.get('freeze',{}).get('prior_results_exposed') is False,'independent_status_unconfirmed')
+    freeze = dataset.get('freeze', {})
+    try:
+        validate_heldout_freeze(dataset,'heldout')
+    except (ValueError,TypeError):
+        require(False,'invalid_dataset_or_strategy_freeze')
+    require(freeze.get('heldout_prior_results_exposed', freeze.get('prior_results_exposed')) is False,
+            'independent_status_unconfirmed')
     require(report.get('dataset_sha256')==dataset_digest,'dataset_digest_mismatch')
     require(bool(dataset.get('index_digest')) and report.get('index_digest')==dataset.get('index_digest'),
             'frozen_index_mismatch')
+    require(bool(dataset.get('index_file_sha256')) and report.get('index_file_sha256')==dataset.get('index_file_sha256'),
+            'frozen_index_file_mismatch')
     require(bool(dataset.get('freeze',{}).get('ranking_policy_sha256')) and
             report.get('ranking_policy_sha256')==dataset.get('freeze',{}).get('ranking_policy_sha256'),
             'frozen_ranking_policy_mismatch')
@@ -104,9 +149,14 @@ def evaluate(dataset,report,*,dataset_digest):
             except ValueError:
                 require(False,'required_evidence_groups_missing');metrics={k:0. for k in ('candidate_recall48','recall10','mrr10','all_required10')}
         else:metrics={k:0. for k in ('candidate_recall48','recall10','mrr10','all_required10')}
-        scored.append({'id':q['id'],'family':q['family'],'language':q['language'],'topic':q['topic'],**metrics})
+        scored.append({'id':q['id'],'family':q['family'],'language':q['language'],'topic':q['topic'],
+                       'source_groups':q.get('source_groups',[]),**metrics})
     measures={key:{'family_macro':macro(scored,key),'family_bootstrap_95ci':interval(scored,key)}
               for key in ('candidate_recall48','recall10','mrr10','all_required10')}
+    for key, measure in measures.items():
+        clustered = source_cluster_interval(scored, key)
+        measure.update(source_connected_clusters=clustered['clusters'],
+                       source_cluster_bootstrap_95ci=clustered['interval'])
     for key,target in [('candidate_recall48',.95),('recall10',.90),('mrr10',.75)]:
         require(measures[key]['family_macro']>=target,'below_target_'+key)
     slices={}

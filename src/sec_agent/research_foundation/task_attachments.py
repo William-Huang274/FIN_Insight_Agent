@@ -126,6 +126,8 @@ class TaskAttachmentStore:
             db.execute("CREATE TABLE IF NOT EXISTS attachments (thread TEXT, id TEXT PRIMARY KEY, name TEXT, kind TEXT, body BLOB, pages TEXT, digest TEXT, created TEXT DEFAULT CURRENT_TIMESTAMP)")
             db.execute("CREATE TABLE IF NOT EXISTS vision (thread TEXT, object_id TEXT, page INTEGER, prompt_hash TEXT, result TEXT, PRIMARY KEY(thread, object_id, page, prompt_hash))")
             db.execute("CREATE TABLE IF NOT EXISTS attachment_origins (object_id TEXT PRIMARY KEY, origin TEXT NOT NULL)")
+            from .source_verification_cache import install
+            install(db)
             db.execute('CREATE INDEX IF NOT EXISTS attachments_thread ON attachments(thread)')
             # Additive, transactional migration; directory reads never load pages/body.
             db.execute('CREATE TABLE IF NOT EXISTS attachment_summaries '

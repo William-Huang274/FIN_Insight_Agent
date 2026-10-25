@@ -1,6 +1,6 @@
 """Verified source generation and candidate-only published navigation reads.
 
-Every original is checked on first warm-up and after any source-store change.
+Each immutable source is checked once per content revision and projection code.
 Subsequent queries rank metadata IDs, loading bodies only for fused candidates.
 This object never grants permission: Java is checked on every operation.
 """
@@ -55,6 +55,7 @@ class VerifiedCandidateIndex:
         self.original_source_metadata = {}
         self.original_reads = 0
         self.candidate_reads = 0
+        self.verification_hits = 0
 
     def prepare(self, before, manifest, epoch):
         from .organization_hybrid_retrieval import digest
@@ -77,29 +78,56 @@ class VerifiedCandidateIndex:
         expected = {node_id for node_id, record in records.items() if record['document_id'] in allowed}
         rows, origins, metadata, original_metadata = {}, {}, {}, {}
         self.original_reads = 0
+        self.verification_hits = 0
+        from .source_verification_cache import SourceVerificationCache, versions
+        proofs = SourceVerificationCache(self.hybrid.root)
+        revision = versions(self.observer)
+        pending = []
         for document, item in allowed.items():
-            result = self.reader._read_storage(item['resource_id'], manifest, bindings)
-            self.original_reads += 1
-            if result.get('needs_vision') or result.get('truncated') or not result.get('source_bundle'):
-                raise ValueError('organization_candidate_index_requires_complete_source')
-            from .organization_source_filter import source_metadata, original_source_metadata
-            metadata[document] = source_metadata(result['source_bundle'])
-            original_metadata[document] = original_source_metadata(result['source_bundle'])
-            url = self.workbench_url + f"/api/v1/asset-workspace/organization-projects/{manifest['project_id']}/resources/{item['resource_id']}"
-            projected = source_nodes(result['source_bundle'], document, item, url)
-            if 'graph_index' in index:
-                from .organization_graph_index import verify_source
-                verify_source(directory/'graph.sqlite',result['source_bundle'],document)
-            for row in projected:
-                if row['node_kind'] != 'text':
-                    continue
-                record = records.get(row['node_id'])
-                if (record is None or row['node_id'] in rows or record['document_id'] != document
-                        or record['navigation_sha256'] != sha256(encoded(row)).hexdigest()
-                        or record['content_sha256'] != row['content_sha256']
-                        or record['embedding_input_sha256'] != row['embedding_input_sha256']):
+            proof_key = proofs.key(revision, item, manifest)
+            saved = proofs.get(proof_key)
+            if saved is not None:
+                # This is a content proof, never a current local/Java grant.
+                version = self.reader.workspace.document_version('organization:'+manifest['organization_id'],
+                    item['ref']['project_id'], item['ref']['version_id'])
+                if version['access_status'] != 'active':
+                    raise OrganizationExecutionUnavailable('organization_candidate_current_local_access_denied')
+                if version != saved['version'] or version['ref'] != item['ref']:
+                    saved = None
+            if saved is None:
+                result = self.reader._read_storage(item['resource_id'], manifest, bindings)
+                self.original_reads += 1
+                if result.get('needs_vision') or result.get('truncated') or not result.get('source_bundle'):
+                    raise ValueError('organization_candidate_index_requires_complete_source')
+                from .organization_source_filter import source_metadata, original_source_metadata
+                url = self.workbench_url + f"/api/v1/asset-workspace/organization-projects/{manifest['project_id']}/resources/{item['resource_id']}"
+                projected = source_nodes(result['source_bundle'], document, item, url)
+                if 'graph_index' in index:
+                    from .organization_graph_index import verify_source
+                    verify_source(directory/'graph.sqlite', result['source_bundle'], document)
+                saved = {'version': result['version'], 'metadata': source_metadata(result['source_bundle']),
+                    'original_metadata': original_source_metadata(result['source_bundle']),
+                    'capture': {k:deepcopy(v) for k,v in (result.get('capture') or {}).items() if k != 'rows'},
+                    'nodes': []}
+                for row in projected:
+                    if row['node_kind'] != 'text':
+                        continue
+                    record = records.get(row['node_id'])
+                    if (record is None or record['document_id'] != document
+                            or record['navigation_sha256'] != sha256(encoded(row)).hexdigest()
+                            or record['content_sha256'] != row['content_sha256']
+                            or record['embedding_input_sha256'] != row['embedding_input_sha256']):
+                        raise ValueError('organization_candidate_original_mismatch')
+                    saved['nodes'].append(row['node_id'])
+                pending.append((proof_key, saved))
+            else:
+                self.verification_hits += 1
+            metadata[document], original_metadata[document] = saved['metadata'], saved['original_metadata']
+            for node_id in saved['nodes']:
+                record = records.get(node_id)
+                if record is None or node_id in rows or record['document_id'] != document:
                     raise ValueError('organization_candidate_original_mismatch')
-                rows[row['node_id']] = {'node_id':row['node_id'], 'parent_document_id':document,
+                rows[node_id] = {'node_id':node_id, 'parent_document_id':document,
                     'content_sha256':record['content_sha256'],
                     'embedding_input_sha256':record['embedding_input_sha256'],
                     'lexical_input_sha256':record['lexical_input_sha256'],
@@ -107,8 +135,7 @@ class VerifiedCandidateIndex:
             origin = {'resource_id':item['resource_id'], 'ref':deepcopy(item['ref']),
                 'execution_id':self.reader.authority.execution_id,
                 'manifest_digest':self.reader.authority.manifest_digest,
-                'source_truncated':result['truncated'],
-                'capture':{k:deepcopy(v) for k,v in (result.get('capture') or {}).items() if k != 'rows'}}
+                'source_truncated':False, 'capture':deepcopy(saved['capture'])}
             if 'input_selection' in manifest:
                 origin['input_role'] = ('selected' if item['resource_id'] in
                     manifest['input_selection']['selected_resource_ids'] else 'retrieval_candidate')
@@ -119,6 +146,8 @@ class VerifiedCandidateIndex:
         self.hybrid.release_cache.check()
         if self.observer.epoch() != epoch:
             raise OrganizationExecutionUnavailable('organization_candidate_storage_changed_during_warmup')
+        for proof_key, saved in pending:
+            proofs.put(proof_key, saved)
         # No partially checked source generation becomes usable.
         self.rows, self.origins = rows, origins
         self.source_metadata = metadata

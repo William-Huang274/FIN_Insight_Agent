@@ -63,7 +63,7 @@ def test_request_compatibility_and_scope():
             SourceDocumentRequest.model_validate(query(organization_filter={'form': '10-K'}, **changes))
 
 
-def scoped_fixture(root, monkeypatch):
+def scoped_fixture(root, monkeypatch, *, queries=None):
     """Real custody/index files, synthetic sources and vector values; no provider."""
     import test_organization_complete_sources as fixtures
     original_database = fixtures.database
@@ -100,7 +100,8 @@ def scoped_fixture(root, monkeypatch):
     graphs = preparation_graph(reader)
     vector = [1.] + [0.]*1023
     release = str(uuid4())
-    publish_prepared_index(root/'indices', org, nodes, [vector]*len(nodes), {'disclosure': vector},
+    publish_prepared_index(root/'indices', org, nodes, [vector]*len(nodes),
+        {text: vector for text in (queries or ['disclosure'])},
         model='qwen3.7-text-embedding', provenance={'synthetic_fixture': True}, release_id=release,
         projection=PROJECTION, graph_sources=graphs)
     directory, _, _, contract = load_release(root/'indices', org, release)

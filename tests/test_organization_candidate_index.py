@@ -101,7 +101,7 @@ def test_non_candidate_source_changes_deny_filtered_query(tmp_path, monkeypatch,
         nav.navigate({**request,'query':'USD millions'})
 
 
-def test_warmup_and_storage_change_revalidate_all_originals(tmp_path, monkeypatch):
+def test_unrelated_write_rechecks_scope_without_reloading_originals(tmp_path, monkeypatch):
     nav, reader, _, _, grant = prepared(tmp_path, monkeypatch)
     nav.warm_release()
     assert nav._candidate_index.original_reads == 2
@@ -112,11 +112,9 @@ def test_warmup_and_storage_change_revalidate_all_originals(tmp_path, monkeypatc
     nav.navigate(query())
     with sqlite3.connect(reader.workspace.library.documents.path) as db:
         db.execute('CREATE TABLE unrelated_committed_change (value INTEGER)')
-    with pytest.raises(AssertionError,match='warm generation'):
-        nav.navigate(query(query='USD millions'))
-    monkeypatch.setattr(reader,'_read_storage',original)
     result = nav.navigate(query(query='USD millions'))
-    assert result.items[0]['retrieval']['source_generation_original_reads'] == len(grant['inputs'])
+    assert result.items[0]['retrieval']['source_generation_original_reads'] == 0
+    assert nav._candidate_index.verification_hits == len(grant['inputs'])
 
 
 @pytest.mark.parametrize('fault', ['file','body_race','revoke_race'])

@@ -52,7 +52,7 @@ def test_parallel_stage_open_warms_once_and_keeps_observations_separate(tmp_path
 
 
 def test_write_refreshes_once_in_background_without_blocking_or_serving_stale(tmp_path,monkeypatch):
-    manager,reader,_,_,_=lifecycle(tmp_path,monkeypatch)
+    manager,reader,_,_,grant=lifecycle(tmp_path,monkeypatch)
     stage=manager.navigation()
     before=stage.navigate(query())
     started,release=Event(),Event()
@@ -64,7 +64,10 @@ def test_write_refreshes_once_in_background_without_blocking_or_serving_stale(tm
         assert release.wait(10)
         return original(*args)
     monkeypatch.setattr(reader,'_read_storage',paused)
-    change_store(reader)
+    # This fixture has two resource bindings to the SAME stored source. Both
+    # proofs must change when that original changes (even an identical write).
+    with sqlite3.connect(reader.workspace.library.documents.path) as db:
+        db.execute('UPDATE attachments SET body=body WHERE id=?', (grant['manifest']['inputs'][0]['ref']['version_id'],))
     try:
         with pytest.raises(OrganizationExecutionUnavailable,match='refresh_pending'):
             stage.navigate(query())
@@ -125,7 +128,7 @@ def test_permission_or_release_failure_never_selects_another_release(tmp_path,mo
         manager.close()
 
 
-def test_failed_initial_warmup_requires_explicit_retry_and_new_manager_rechecks(tmp_path,monkeypatch):
+def test_failed_initial_warmup_requires_explicit_retry_and_new_manager_reuses_proofs(tmp_path,monkeypatch):
     manager,reader,_,_,_=lifecycle(tmp_path,monkeypatch)
     original=reader._read_storage
     def broken(*args):raise ValueError('temporary original read failure')
@@ -142,8 +145,9 @@ def test_failed_initial_warmup_requires_explicit_retry_and_new_manager_rechecks(
         retrieval_root=tmp_path/'indices',grant=reader._grant()[0])
     monkeypatch.setattr(reader,'_read_storage',broken)
     try:
-        with pytest.raises(ValueError,match='temporary'):
-            restarted.prepare()
+        assert restarted.prepare()['state'] == 'ready'
+        assert restarted._navigation._candidate_index.original_reads == 0
+        assert restarted._navigation._candidate_index.verification_hits == 2
     finally:restarted.close()
 
 

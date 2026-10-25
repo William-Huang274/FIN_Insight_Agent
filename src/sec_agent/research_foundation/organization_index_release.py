@@ -48,7 +48,7 @@ def load_release(root, organization_id, release_id, expected=None, *, cache=None
     return _load_release(root, organization_id, release_id, expected)
 
 
-def _load_release(root, organization_id, release_id, expected=None):
+def _load_release(root, organization_id, release_id, expected=None, *, verified_files=False):
     """No implicit latest selection. Full integrity is checked before use."""
     org, identifier = str(UUID(organization_id)), str(UUID(release_id))
     directory = Path(root)/org/'releases'/identifier
@@ -63,7 +63,7 @@ def _load_release(root, organization_id, release_id, expected=None):
             raise ValueError('organization_index_release_frozen_version_mismatch')
         with (directory/'vectors.npy').open('rb') as stream:
             from hashlib import file_digest
-            if file_digest(stream, 'sha256').hexdigest() != contract['matrix_sha256']:
+            if not verified_files and file_digest(stream, 'sha256').hexdigest() != contract['matrix_sha256']:
                 raise ValueError('organization_index_release_matrix_integrity_failure')
         if 'lexical_index' in index:
             from retrieval.published_lexical_index import FORMAT as LEXICAL_FORMAT
@@ -74,7 +74,7 @@ def _load_release(root, organization_id, release_id, expected=None):
             if any((directory/('lexical.sqlite'+suffix)).exists() for suffix in ('-wal', '-journal')):
                 raise ValueError('organization_index_release_lexical_unsealed')
             with (directory/'lexical.sqlite').open('rb') as stream:
-                if file_digest(stream, 'sha256').hexdigest() != lexical['sha256']:
+                if not verified_files and file_digest(stream, 'sha256').hexdigest() != lexical['sha256']:
                     raise ValueError('organization_index_release_lexical_integrity_failure')
         if 'navigation_index' in index:
             from .organization_candidate_index import FORMAT as NAVIGATION_FORMAT
@@ -89,7 +89,7 @@ def _load_release(root, organization_id, release_id, expected=None):
             if any((directory/('navigation.sqlite'+suffix)).exists() for suffix in ('-wal', '-journal')):
                 raise ValueError('organization_index_release_navigation_unsealed')
             with (directory/'navigation.sqlite').open('rb') as stream:
-                if file_digest(stream, 'sha256').hexdigest() != navigation['sha256']:
+                if not verified_files and file_digest(stream, 'sha256').hexdigest() != navigation['sha256']:
                     raise ValueError('organization_index_release_navigation_integrity_failure')
         if 'graph_index' in index:
             from .organization_graph_index import FORMAT as GRAPH_FORMAT
@@ -101,7 +101,7 @@ def _load_release(root, organization_id, release_id, expected=None):
             if any((directory/('graph.sqlite'+suffix)).exists() for suffix in ('-wal','-journal')):
                 raise ValueError('organization_graph_release_unsealed')
             with (directory/'graph.sqlite').open('rb') as stream:
-                if file_digest(stream,'sha256').hexdigest()!=graph['sha256']:
+                if not verified_files and file_digest(stream,'sha256').hexdigest()!=graph['sha256']:
                     raise ValueError('organization_graph_release_integrity_failure')
         matrix = np.load(directory/'vectors.npy', mmap_mode='r', allow_pickle=False)
         records = index['records']
@@ -120,7 +120,9 @@ class ReleaseLoadCache:
 
     Immutable publication is the storage contract. File identities before and
     after every use detect ordinary replacement, mutation, deletion and races;
-    full hashes remain mandatory on first load. This is not protection against
+    full hashes remain mandatory before the first durable verification receipt.
+    A new process may reuse that receipt only for the same frozen contract,
+    implementation and unchanged file identities. This is not protection against
     a malicious host able to forge filesystem metadata or mutate this process.
     Never rewrite a published release, even while the service is stopped.
     """
@@ -175,9 +177,21 @@ class ReleaseLoadCache:
             # warm-up does not publish a partially validated value.
             self._entry = None
             before = self._signature(directory)
-            value = _load_release(root, organization_id, release_id, expected)
+            from contextlib import closing
+            import sqlite3
+            # A host-owned receipt only: no data or positive authorization is
+            # stored here. SQLite serializes publication across processes.
+            receipt_key = canonical_digest({'directory':str(directory), 'signature':before,
+                'expected':expected, 'loader':sha256(Path(__file__).read_bytes()).hexdigest()})
+            with closing(sqlite3.connect(Path(root)/'verified-releases.sqlite', timeout=10)) as db, db:
+                db.execute('CREATE TABLE IF NOT EXISTS verified(key TEXT PRIMARY KEY)')
+                verified = db.execute('SELECT 1 FROM verified WHERE key=?', (receipt_key,)).fetchone()
+            value = _load_release(root, organization_id, release_id, expected, verified_files=bool(verified))
             if self._signature(directory) != before:
                 raise ValueError('organization_index_release_changed_during_load')
+            if not verified:
+                with closing(sqlite3.connect(Path(root)/'verified-releases.sqlite', timeout=10)) as db, db:
+                    db.execute('INSERT OR IGNORE INTO verified VALUES(?)', (receipt_key,))
             # Do not retain a corpus-sized mapped working set between calls.
             # Reopening an already verified read-only mapping is cheap; the
             # immutable index metadata, not the mapped pages, is cached.

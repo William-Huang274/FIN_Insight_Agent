@@ -140,6 +140,22 @@ class OrganizationSourceNavigation:
             if 'graph_index' not in index:
                 raise ValueError('organization_graph_not_published')
         filter_receipt = None
+        query_plan = None
+        if request.organization_query_planning is not None:
+            from .organization_query_plan import plan_query, select_planned
+            metadata = (candidates.source_metadata if request.organization_metadata_policy == 'sec_cover.v2'
+                        else candidates.original_source_metadata)
+            if request.document_id:
+                metadata = {request.document_id: metadata[request.document_id]}
+            selected, query_plan = select_planned(metadata, plan_query(request.query, metadata))
+            query_plan['metadata_policy'] = request.organization_metadata_policy
+            rows = [row for row in rows if row['parent_document_id'] in selected]
+            if not rows:
+                from .source_document_navigation import SourceDocumentResult
+                return SourceDocumentResult(operation='search', items=(), next_offset=None, total_matches=0,
+                    organization_query_plan=query_plan,
+                    notice='No eligible catalog rows under explicit query constraints; not proof of source absence.',
+                    source_snapshot_sha256=self.reader.authority.manifest_digest[7:])
         if request.organization_filter is not None:
             from .organization_source_filter import select_documents, filter_notice
             metadata = (candidates.source_metadata if request.organization_metadata_policy == 'sec_cover.v2'
@@ -179,13 +195,17 @@ class OrganizationSourceNavigation:
         if filter_receipt is not None:
             result = result.model_copy(update={'notice': result.notice + filter_notice(filter_receipt),
                 'organization_filter_receipt': OrganizationSourceFilterReceipt.model_validate(filter_receipt)})
+        if query_plan is not None:
+            result = result.model_copy(update={'organization_query_plan': query_plan,
+                'notice': result.notice + ' Automatic query plan: '+json.dumps(query_plan, ensure_ascii=False)})
         candidates.check()
         return self._decorate(result, candidates.origins,
             {row['node_id']:row['original_source'] for row in materialized if 'original_source' in row})
 
     def _navigate(self, request, *, projection_cache=None, storage_check=None):
         request = SourceDocumentRequest.model_validate(request)
-        if (request.organization_filter is not None or request.organization_metadata_policy != 'original.v1') and request.operation == 'search':
+        if (request.organization_filter is not None or request.organization_metadata_policy != 'original.v1'
+                or request.organization_query_planning is not None) and request.operation == 'search':
             raise ValueError('organization_filtered_search_requires_prepared_candidate_index')
         if request.source_space=='organization' and request.entity_id:
             raise ValueError('organization_graph_requires_published_candidate_navigation')

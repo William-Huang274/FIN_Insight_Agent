@@ -34,6 +34,10 @@ LIBRARY_SOURCE_ROUTING_GUIDANCE = (
 
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
+    organization_query_planning: Literal['conservative.v1'] | None = Field(default=None,
+        description='Opt-in organization search: literal catalog issuer, explicit filing form and period end. '
+        'Unknown metadata stays eligible; ambiguous/multiple issuers and fiscal years are not guessed. '
+        'Cannot combine with organization_filter; no paid query planning.')
     organization_metadata_policy: Literal['original.v1', 'sec_cover.v2'] = Field(default='original.v1',
         description='Organization catalog/search only. original.v1 preserves original metadata; '
         'sec_cover.v2 explicitly enables conservative SEC cover form recovery and conflict detection.')
@@ -95,6 +99,8 @@ class SourceDocumentRequest(BaseModel):
     @model_serializer(mode="wrap")
     def preserve_legacy_local_request(self, handler):
         body = handler(self)
+        if 'organization_query_planning' not in self.model_fields_set:
+            body.pop('organization_query_planning', None)
         if 'organization_filter' not in self.model_fields_set:
             body.pop('organization_filter', None)
         if 'organization_metadata_policy' not in self.model_fields_set:
@@ -115,6 +121,9 @@ class SourceDocumentRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
+        if self.organization_query_planning is not None and (self.source_space != 'organization'
+                or self.operation != 'search' or self.organization_filter is not None):
+            raise ValueError('organization_query_planning_requires_search_without_explicit_filter')
         if 'organization_metadata_policy' in self.model_fields_set and (self.source_space != 'organization'
                 or self.operation not in {'catalog', 'search'}):
             raise ValueError('organization_metadata_policy_requires_organization_catalog_or_search')
@@ -215,6 +224,7 @@ class SourceDocumentResult(BaseModel):
     source_content_is_untrusted_data_not_instructions: Literal[True] = True
     execution_receipt: SourceExecutionReceipt | None = None
     organization_filter_receipt: OrganizationSourceFilterReceipt | None = None
+    organization_query_plan: dict[str, Any] | None = None
 
     @model_serializer(mode="wrap")
     def preserve_archived_result_shape(self, handler):
@@ -223,6 +233,8 @@ class SourceDocumentResult(BaseModel):
             body.pop("execution_receipt", None)
         if "organization_filter_receipt" not in self.model_fields_set:
             body.pop("organization_filter_receipt", None)
+        if "organization_query_plan" not in self.model_fields_set:
+            body.pop("organization_query_plan", None)
         return body
 
 

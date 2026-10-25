@@ -85,6 +85,32 @@ def test_missing_receipt_is_recorded_failure_without_network_fallback(tmp_path, 
     assert sha256(cache.read_bytes()).hexdigest() == before
 
 
+def test_automatic_planner_retains_unknown_sources_without_mutating_receipts(tmp_path, monkeypatch):
+    import sys
+    output, cache = setup(tmp_path, monkeypatch, True)
+    before = sha256(cache.read_bytes()).hexdigest()
+    monkeypatch.setattr(sys, 'argv', [*sys.argv, '--query-planning', 'conservative.v1'])
+    main()
+    report = json.loads((output/'result.json').read_text(encoding='utf8'))
+    sample = report['samples'][0]
+    assert report['query_planning'] == 'conservative.v1'
+    assert sample['query_plan']['selected_sources'] == 1
+    assert sample['known_evidence_excluded'] == []
+    assert sample['metrics']['fused_candidates']['known_hit@5'] == 1
+    assert sha256(cache.read_bytes()).hexdigest() == before
+
+
+def test_planner_scope_depends_on_query_and_catalog_not_labels():
+    from scripts.engineering.diagnose_organization_retrieval_candidates import planned_records
+    records = [{'document_id': x, 'node_id': x} for x in ['a', 'b', 'u']]
+    metadata = {'a': {'issuer_id':'ISSUER::acme', 'company_name':'Acme'},
+                'b': {'issuer_id':'ISSUER::beta', 'company_name':'Beta'}, 'u':{}}
+    selected, receipt = planned_records(records, metadata, 'Acme revenue')
+    assert [r['node_id'] for r in selected] == ['a', 'u']
+    assert receipt['unknown_sources_retained'] == 1
+    assert planned_records(records, metadata, 'Compare Acme and Beta')[0] == records
+
+
 def test_scoring_releases_mapping_and_keeps_exact_owned_scores(tmp_path, monkeypatch):
     import gc
     import weakref

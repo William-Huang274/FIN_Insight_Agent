@@ -27,6 +27,8 @@ def prepare(result_path,dataset_path,index_path,navigation_path=None):
     if saved.get('split')!='development':
         raise ValueError('rerank_requires_development_split')
     dataset_raw=dataset_path.read_bytes(); dataset=json.loads(dataset_raw)
+    if sha256(dataset_raw).hexdigest()!=saved['dataset_sha256']:
+        raise ValueError('rerank_original_query_dataset_mismatch')
     questions={r['id']:r for r in dataset['questions'] if r['split']=='development'}
     records={r['node_id']:r for r in index['records']}
     jobs=[]
@@ -74,6 +76,7 @@ def main():
     parser.add_argument('--execute',action='store_true')
     parser.add_argument('--navigation',type=Path)
     parser.add_argument('--env-file',type=Path)
+    parser.add_argument('--receipt-cache',type=Path,help='Reuse exact successful public development receipts; failed/unknown requests remain blocked')
     args=parser.parse_args()
     jobs,plan=prepare(args.result,args.dataset,args.index,args.navigation)
     args.output.mkdir(parents=True,exist_ok=True)
@@ -90,9 +93,11 @@ def main():
     if not key:raise ValueError('configured_qwen_key_unavailable')
     from retrieval.qwen_api import QwenRetrieval
     api=QwenRetrieval(key,embedding_model='qwen3.7-text-embedding')
-    source=ScopedReranker(args.output/'provider-records',api)
+    receipt_cache=args.receipt_cache or args.output/'provider-records'
+    source=ScopedReranker(receipt_cache,api)
     report={'status':'running','S2_passed':False,'evaluation_role':'development_fixed_candidates',
-            'expected_jobs':len(jobs),'samples':[],'plan_sha256':sha256(planned.read_bytes()).hexdigest()}
+            'expected_jobs':len(jobs),'samples':[],'plan_sha256':sha256(planned.read_bytes()).hexdigest(),
+            'receipt_cache':str(receipt_cache)}
     try:
         for job in jobs:
             start=time.perf_counter()
@@ -105,6 +110,9 @@ def main():
                 candidate_count=len(ranked),ranked_ids=[r['node_id'] for r in ranked],
                 baseline=ranking_metrics([r['node_id'] for r in job['candidates']],job['gold']),
                 reranked=ranking_metrics([r['node_id'] for r in ranked],job['gold']))
+            (args.output/'result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf8')
+            if len(report['samples'])%10==0:
+                print(json.dumps({'completed':len(report['samples']),'expected':len(jobs)}),flush=True)
         report['status']='completed'
     except Exception as error:
         report.update(status='failed',error_type=type(error).__name__,error=str(error))

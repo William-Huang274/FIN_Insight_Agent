@@ -9,6 +9,7 @@ import argparse
 import gc
 from hashlib import file_digest, sha256
 import json
+import os
 from pathlib import Path
 from time import perf_counter
 from types import SimpleNamespace
@@ -18,6 +19,7 @@ import psutil
 
 from retrieval.published_lexical_index import scores_from_identities
 from retrieval.rank_fusion import reciprocal_rank_fusion
+from retrieval.candidate_policy import POLICIES, candidate_limits
 from retrieval.source_hybrid import CachedRetrieval
 from retrieval.text import tokenize
 from scripts.data_retrieval.replay_cached_library_scenarios import ReadOnlyReceipts
@@ -27,6 +29,7 @@ from sec_agent.research_foundation.organization_graph_index import candidates
 from sec_agent.research_foundation.organization_hybrid_retrieval import vector
 from sec_agent.research_foundation.organization_vector_math import cosine_scores
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
+from sec_agent.research_foundation.organization_query_plan import plan_query, select_planned
 from tests.integration.source_intake_diagnostics import SourceBundles
 
 
@@ -48,10 +51,11 @@ def frozen_cosine_scores(path, positions, query, count):
     return cosine_scores(matrix, positions, query)
 
 
-def rank_scope(records, directory, matrix, total_count, query_vector, row):
+def rank_scope(records, directory, matrix, total_count, query_vector, row, *, candidate_policy='balanced.v1'):
     """Use production score/fusion functions on an explicit, label-free scope."""
     ranked = {'dense_candidates': [], 'lexical_candidates': [], 'fused_candidates': []}
     evidence = []
+    limits = candidate_limits(candidate_policy, has_graph=bool(row.get('entity_id')))
     if row.get('entity_id'):
         ranked.update(graph_candidates=[], graph_fused_candidates=[])
     if not records:
@@ -59,10 +63,10 @@ def rank_scope(records, directory, matrix, total_count, query_vector, row):
     scores, overlap, _ = scores_from_identities(directory/'lexical.sqlite',
         ((r['node_id'], r['content_sha256'], r['lexical_input_sha256']) for r in records), tokenize(row['query']))
     lexical_positions = sorted(overlap, key=lambda i: (-float(scores[i]), records[i]['node_id']))
-    lexical = [records[i]['node_id'] for i in lexical_positions[:12]]
+    lexical = [records[i]['node_id'] for i in lexical_positions[:limits['lexical']]]
     scores = frozen_cosine_scores(matrix, [r['vector_index'] for r in records], query_vector, total_count)
     dense = [records[i]['node_id'] for i in sorted(range(len(records)),
-        key=lambda i: (-float(scores[i]), records[i]['node_id']))[:24]]
+        key=lambda i: (-float(scores[i]), records[i]['node_id']))[:limits['dense']]]
     ranked.update(dense_candidates=dense, lexical_candidates=lexical,
                   fused_candidates=reciprocal_rank_fusion([dense, lexical]))
     if row.get('entity_id'):
@@ -76,12 +80,20 @@ def rank_scope(records, directory, matrix, total_count, query_vector, row):
     return ranked, evidence
 
 
+def planned_records(records, metadata, query):
+    """Same conservative planner as serving, never supplied known answer IDs."""
+    documents, receipt = select_planned(metadata, plan_query(query, metadata))
+    return [record for record in records if record['document_id'] in documents], receipt
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('intake', 'dataset', 'index-directory', 'matrix', 'publication-checkpoint', 'query-cache', 'output'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--split', choices=('development', 'heldout', 'all'), required=True)
     parser.add_argument('--source-filter-plan', type=Path, help='Development-only manual constraints; never automatic query routing')
+    parser.add_argument('--query-planning', choices=['conservative.v1'])
+    parser.add_argument('--candidate-policy', choices=POLICIES, default='balanced.v1')
     args = parser.parse_args()
     args.output.mkdir(exist_ok=False, parents=True)
     memory = []
@@ -95,7 +107,9 @@ def main():
         if available < 800 * 2**20:
             raise RuntimeError('offline_memory_guard')
     report = {'scope': 'offline full frozen corpus; no current Java grant or service query',
-              'provider_calls': 0, 'status': 'preflight', 'samples': [], 'S2_passed': False}
+              'provider_calls': 0, 'status': 'preflight', 'samples': [], 'S2_passed': False,
+              'numerical_thread_configuration': {name:os.environ.get(name) for name in
+                  ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS')}}
     save('result', report)
     try:
         guard('start')
@@ -111,6 +125,8 @@ def main():
         if not rows:
             raise ValueError('empty_evaluation_split')
         filters = None
+        if args.query_planning and args.source_filter_plan:
+            raise ValueError('automatic_and_manual_plans_are_separate_experiments')
         if args.source_filter_plan is not None:
             from scripts.engineering.organization_filter_diagnosis import validate_plan, metadata_maps, scope_records
             filters = validate_plan(json.loads(args.source_filter_plan.read_text(encoding='utf8')), rows)
@@ -139,7 +155,8 @@ def main():
         manifest = {'research_as_of': next(iter(cutoff)), 'inputs': [
             {'resource_id': g['id'], 'ref': g['binding']['ref']} for g in publication['grants'].values()]}
         labels = bind_labels(rows, manifest, publication['resources'], index)
-        if filters is not None:
+        if filters is not None or args.query_planning:
+            from scripts.engineering.organization_filter_diagnosis import metadata_maps
             raw_metadata, resolved_metadata, proofs = metadata_maps(args.intake, intake, publication, manifest, guard)
             save('source-metadata', {'raw': raw_metadata, 'resolved': resolved_metadata, 'proofs': proofs})
         records = index['records']
@@ -155,6 +172,11 @@ def main():
             candidate_sources=len(bundles), candidate_chunks=len(records), expected_questions=len(rows),
             dataset_sha256=digest(args.dataset), index_sha256=digest(directory/'index.json'),
             matrix_sha256=index['matrix_sha256'], source_intake_sha256=digest(args.intake/'result.json'),
+            query_planning=args.query_planning,
+            candidate_policy=args.candidate_policy,
+            implementation_sha256={name:digest(Path(module.__file__)) for name,module in [
+                ('query_planner', __import__('sec_agent.research_foundation.organization_query_plan',fromlist=['plan_query'])),
+                ('candidate_policy', __import__('retrieval.candidate_policy',fromlist=['candidate_limits']))]},
             limits='Known evidence only; candidate ranks, not tool-return/readback or online latency/capacity')
         save('result', report)
         with ReadOnlyReceipts(args.query_cache) as cache:
@@ -168,7 +190,16 @@ def main():
                     if not saved or saved['status'] != 'completed' or saved['result']['model'] != index['model']:
                         raise ValueError('offline_successful_query_receipt_required')
                     query = vector(saved['result']['values'][0], 1024)
-                    ranked, evidence = rank_scope(records, directory, args.matrix, len(records), query, row)
+                    scoped = records
+                    if args.query_planning:
+                        scoped, receipt = planned_records(records, resolved_metadata, row['query'])
+                        population = {r['node_id'] for r in scoped}
+                        sample['query_plan'] = receipt
+                        sample['known_evidence_excluded'] = [n for n in labels[row['id']] if n not in population]
+                        del population
+                    ranked, evidence = rank_scope(scoped, directory, args.matrix, len(records), query, row,
+                                                  candidate_policy=args.candidate_policy)
+                    del scoped
                     if row.get('entity_id'):
                         sample['graph_evidence'] = evidence
                     sample.update(status='completed', gold=labels[row['id']], rankings=ranked,
@@ -179,7 +210,8 @@ def main():
                             for policy, metadata in (('raw_metadata', raw_metadata), ('sec_cover_resolved', resolved_metadata)):
                                 guard('filter:'+row['id']+':'+variant['name']+':'+policy)
                                 scoped, receipt = scope_records(records, metadata, variant['constraint'])
-                                ranks, proof = rank_scope(scoped, directory, args.matrix, len(records), query, row)
+                                ranks, proof = rank_scope(scoped, directory, args.matrix, len(records), query, row,
+                                                         candidate_policy=args.candidate_policy)
                                 population = {r['node_id'] for r in scoped}
                                 sample['filter_diagnostics'].append({**variant, 'metadata_policy': policy,
                                     'coverage': receipt, 'candidate_chunks': len(scoped),

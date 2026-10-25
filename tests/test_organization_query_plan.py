@@ -34,12 +34,43 @@ def test_comparison_and_ambiguous_alias_do_not_drop_second_company():
     assert 'issuer_id' not in plan_query('Acme Corporation revenue', data)['constraint']
 
 
+@pytest.mark.parametrize('text',["In Acme's fiscal 2024 annual report, did Beta complete its investment?",
+                                'Acme 2024 年年报中 Beta 的投资是已完成还是计划？'])
+def test_explicit_report_owner_is_not_confused_with_counterparty(text):
+    plan=plan_query(text,catalog())
+    assert plan['constraint']['issuer_id']=='ISSUER::acme'
+    assert 'period_end' not in plan['constraint']
+    assert any(e['basis']=='explicit_report_owner_not_counterparty' for e in plan['evidence'])
+    assert 'issuer_id' not in plan_query('Compare '+text,catalog())['constraint']
+    assert 'issuer_id' not in plan_query('比较 '+text,catalog())['constraint']
+
+
+def test_two_report_owners_and_unknown_issuer_remain_broad():
+    assert 'issuer_id' not in plan_query("Acme's annual report and Beta's annual report sales",catalog())['constraint']
+    assert 'issuer_id' not in plan_query('Unknown fiscal 2024 annual report',catalog())['constraint']
+
+
 def test_revision_and_unknown_metadata_preserved():
     data = catalog(); data['a']['form'] = '10-K/A'
     assert select_planned(data, plan_query('Acme 10-K revenue', data))[0] == {'unknown'}
     assert select_planned(data, plan_query('Acme 10-K/A revenue', data))[0] == {'a', 'unknown'}
     assert 'form' not in plan_query('Acme compare 10-K and 10-Q', data)['constraint']
     assert 'period_end' not in plan_query('Acme period ending 2024-02-30', data)['constraint']
+
+
+@pytest.mark.parametrize('query', ['Acme FY2024 annual report revenue', 'Acme 2024 财年年报收入'])
+def test_annual_report_kind_retains_foreign_annual_forms_and_unknowns(query):
+    data = catalog()
+    data['b'].update(issuer_id='ISSUER::acme', company_name='Acme Corporation')
+    data['foreign'] = {**data['a'], 'form':'20-F'}
+    data['amendment'] = {**data['a'], 'form':'10-K/A'}
+    data['unclassified'] = {**data['a'], 'form':'custom-report'}
+    plan = plan_query(query, data)
+    assert plan['constraint']['report_kind'] == 'annual'
+    assert 'period_end' not in plan['constraint'] and 'form' not in plan['constraint']
+    assert select_planned(data, plan)[0] == {'a', 'unknown', 'foreign', 'amendment', 'unclassified'}
+    assert 'report_kind' not in plan_query('Acme annual report and quarterly report',data)['constraint']
+    assert plan_query('Acme quarterly report', data)['constraint']['report_kind'] == 'quarterly'
 
 
 def test_old_wire_shape_and_invalid_combined_scope():

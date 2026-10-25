@@ -187,6 +187,9 @@ class OrganizationHybridRetrieval:
         self.reader, self.root = reader, Path(root)
         self.query_source = query_source
         import os
+        from retrieval.candidate_policy import candidate_limits
+        self.candidate_policy = os.environ.get('FINSIGHT_ORGANIZATION_CANDIDATE_POLICY', 'balanced.v1')
+        candidate_limits(self.candidate_policy)
         rerank = os.environ.get('FINSIGHT_ORGANIZATION_RERANK', '')
         if rerank not in ('', 'qwen'):
             raise ValueError('organization_rerank_configuration_invalid')
@@ -281,6 +284,10 @@ class OrganizationHybridRetrieval:
         # cannot occupy quotas, produce previews, or influence lexical ranks.
         scope = {'policy': POLICY, 'grant': digest(before), 'index': index_digest,
             'query': query_hash, 'nodes': [(r['node_id'], r['content_sha256']) for r in rows]}
+        from retrieval.candidate_policy import candidate_limits
+        limits = candidate_limits(self.candidate_policy, has_graph=graph is not None)
+        if self.candidate_policy != 'balanced.v1':
+            scope['candidate_policy'] = self.candidate_policy
         if graph is not None:
             if 'graph_index' not in index or len(graph)>12 or len(set(graph))!=len(graph) or any(n not in by_id for n in graph):
                 raise OrganizationExecutionUnavailable('organization_graph_candidate_outside_scope')
@@ -295,8 +302,8 @@ class OrganizationHybridRetrieval:
             else:
                 scores = cosine_scores(matrix, selected, query_vector)
                 dense = [rows[i]['node_id'] for i in sorted(range(len(rows)),
-                    key=lambda i: (-float(scores[i]), rows[i]['node_id']))[:24]]
-                lexical = [r['node_id'] for r in literal[:12]]
+                    key=lambda i: (-float(scores[i]), rows[i]['node_id']))[:limits['dense']]]
+                lexical = [r['node_id'] for r in literal[:limits['lexical']]]
                 from retrieval.rank_fusion import reciprocal_rank_fusion
                 channels=[dense,lexical]+([graph] if graph is not None else [])
                 for channel in channels:
@@ -312,6 +319,7 @@ class OrganizationHybridRetrieval:
             for channel in ('ordered', 'dense', 'lexical', *(['graph'] if graph is not None else [])):
                 ids = entry[channel]
                 if (not isinstance(ids, list) or len(set(ids)) != len(ids)
+                        or len(ids) > (sum(limits.values()) if channel == 'ordered' else limits[channel])
                         or any(n not in by_id for n in ids)):
                     raise OrganizationExecutionUnavailable('organization_retrieval_cache_scope_mismatch')
         self.reader._after(before)
@@ -320,6 +328,8 @@ class OrganizationHybridRetrieval:
         if source_verifier is not None:
             source_verifier.check()
         return [by_id[n] for n in entry['ordered']], {'mode': scope['policy'], 'cache_hit': bool(saved),
+            **({'candidate_policy':self.candidate_policy, 'candidate_limits':limits}
+               if self.candidate_policy != 'balanced.v1' else {}),
             **({'graph_node_ids':entry['graph']} if graph is not None else {}),
             'index_digest': scope['index'], 'dense_node_ids': entry['dense'], 'lexical_node_ids': entry['lexical'],
             'candidate_node_ids': entry['ordered'], 'provider_calls': query_receipt['provider_calls'],

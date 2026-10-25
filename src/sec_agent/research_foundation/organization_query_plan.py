@@ -8,10 +8,30 @@ from datetime import date
 import re
 
 
+REPORT_KINDS = {'10-K': 'annual', '10-K/A': 'annual', '20-F': 'annual', '20-F/A': 'annual',
+                '40-F': 'annual', '40-F/A': 'annual', '10-Q': 'quarterly', '10-Q/A': 'quarterly',
+                '8-K': 'event', '8-K/A': 'event'}
+
+
 def _mentions(query, alias):
     if re.search(r'[\u3400-\u9fff]', alias):
         return alias.casefold() in query.casefold()
     return bool(re.search(r'(?<!\w)' + re.escape(alias) + r'(?!\w)', query, re.IGNORECASE))
+
+
+def _report_owners(query, aliases):
+    # A named report owner is different from counterparties mentioned in the
+    # question. Only explicit report phrases narrow scope; comparison abstains.
+    if re.search(r'\b(?:compare|comparison|versus|vs\.?)\b|对比|比较|相比', query, re.IGNORECASE):
+        return set(), []
+    found=[]; owners=set()
+    for alias, ids in aliases.items():
+        boundary='' if re.search(r'[\u3400-\u9fff]',alias) else r'(?<!\w)'
+        pattern=(boundary+re.escape(alias)+r"(?:['’]s)?\s*(?:fiscal\s*|FY\s*)?"
+                 r'(?:20\d{2}\s*年?\s*)?(?:Form\s+)?(?:annual\s+report|10-?[KQ]|年报|季度报告)(?![A-Za-z])')
+        for match in re.finditer(pattern,query,re.IGNORECASE):
+            owners.update(ids);found.append(match.group())
+    return owners,found
 
 
 def plan_query(query, metadata):
@@ -36,12 +56,17 @@ def plan_query(query, metadata):
     matches = [(a, owners) for a, owners in aliases.items() if _mentions(query, a)]
     owners = set().union(*(v for _, v in matches)) if matches else set()
     unresolved, evidence, constraint = [], [], {}
+    report_owners, report_phrases = _report_owners(query, aliases)
+    if len(report_owners)==1:
+        owners=report_owners
+        evidence.append({'field':'issuer','matched_query_text':report_phrases,
+                         'basis':'explicit_report_owner_not_counterparty'})
     if len(owners) == 1:
         owner = next(iter(owners))
         constraint['company_names'] = sorted(names.get(owner, set()))
         if not owner.startswith('name:'):
             constraint['issuer_id'] = owner
-        evidence.append({'field': 'issuer', 'matched_query_text': sorted(a for a, _ in matches),
+        evidence.append({'field': 'issuer', 'matched_query_text': sorted(a for a, ids in matches if owner in ids),
                          'basis': 'literal_authorized_catalog_identity'})
     elif owners:
         unresolved.append('multiple_or_ambiguous_issuers_no_issuer_filter')
@@ -56,6 +81,16 @@ def plan_query(query, metadata):
         evidence.append({'field': 'form', 'matched_query_text': forms, 'basis': 'explicit_filing_form'})
     elif forms:
         unresolved.append('multiple_forms_no_form_filter')
+    kinds = set()
+    if re.search(r'\bannual\s+reports?\b|年报|年度报告', query, re.IGNORECASE):
+        kinds.add('annual')
+    if re.search(r'\bquarterly\s+reports?\b|季报|季度报告', query, re.IGNORECASE):
+        kinds.add('quarterly')
+    if len(kinds) == 1 and not forms:
+        constraint['report_kind'] = next(iter(kinds))
+        evidence.append({'field': 'report_kind', 'basis': 'explicit_report_kind_not_fiscal_calendar'})
+    elif len(kinds) > 1:
+        unresolved.append('multiple_report_kinds_no_kind_filter')
     periods = re.findall(r'(?:period\s+end(?:ing)?|报告期末|期末)\s*[:：]?\s*(\d{4}-\d{2}-\d{2})(?!\d)', query, re.IGNORECASE)
     if len(set(periods)) == 1:
         try:
@@ -89,6 +124,9 @@ def select_planned(metadata, plan):
         for field in ('form', 'period_end'):
             if field in wanted:
                 checks.append(row.get(field) == wanted[field] if row.get(field) else None)
+        if 'report_kind' in wanted:
+            kind = REPORT_KINDS.get(row.get('form'))
+            checks.append(kind == wanted['report_kind'] if kind else None)
         if False in checks:
             continue
         accepted.add(document)

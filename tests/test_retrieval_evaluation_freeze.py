@@ -42,3 +42,14 @@ def test_incomplete_or_changed_freeze_cannot_expose_holdout(change, error):
 def test_development_and_historical_diagnostics_remain_available():
     validate_heldout_freeze({'evaluation_role': 'independent_source_first'}, 'development')
     validate_heldout_freeze({'evaluation_role': 'historical_regression'}, 'heldout')
+
+
+def test_new_reranker_is_frozen_and_cannot_be_changed_without_new_digest():
+    data=frozen()
+    data['policy']['reranker']='qwen3.7-text-rerank'
+    data['freeze']['ranking_policy']=dict(data['policy'])
+    data['freeze']['ranking_policy_sha256']=policy_digest(data['policy'])
+    validate_heldout_freeze(data,'heldout')
+    data['freeze']['ranking_policy']['reranker']='qwen3-rerank'
+    with pytest.raises(ValueError,match='policy_digest'):
+        validate_heldout_freeze(data,'heldout')

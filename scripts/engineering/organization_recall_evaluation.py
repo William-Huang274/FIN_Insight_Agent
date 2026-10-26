@@ -106,6 +106,11 @@ def validate_questions(dataset, bundles):
                 raise ValueError('label_body_digest_mismatch')
             if not label['quote'].strip() or label['quote'] not in chunk['body']:
                 raise ValueError('label_quote_not_in_original')
+            for alternative in label.get('equivalents', []):
+                other = alternative['source_id']
+                if role == 'independent_source_first' and sources.setdefault(other, split) != split:
+                    raise ValueError('source_crosses_independent_splits')
+                verify_equivalent_quote(label, bundle, alternative, bundles[alternative['source_id']])
             if row.get('entity_id'):
                 # A question's explicit entity must have a source-bound edge
                 # in its gold document, not an unrelated graph plumbing probe.
@@ -137,6 +142,30 @@ def bind_labels(rows, manifest, resources, index):
             labels.append(node)
         mapped[row['id']] = labels
     return mapped
+
+
+def bind_label_groups(rows, manifest, resources, index):
+    """Bind reviewed exact-quote copies as OR; separate required labels as AND.
+
+    validate_questions must verify each alternative against original source
+    versions first. This maps identities, it never discovers equivalence.
+    """
+    expanded_rows, lengths = [], {}
+    for row in rows:
+        expanded, sizes = [], []
+        for label in row['evidence']:
+            copies = [label, *label.get('equivalents', [])]
+            expanded.extend(copies); sizes.append(len(copies))
+        expanded_rows.append({**row, 'evidence': expanded})
+        lengths[row['id']] = sizes
+    mapped = bind_labels(expanded_rows, manifest, resources, index)
+    groups = {}
+    for key, sizes in lengths.items():
+        groups[key] = []; offset = 0
+        for size in sizes:
+            groups[key].append(list(dict.fromkeys(mapped[key][offset:offset+size])))
+            offset += size
+    return groups
 
 
 def score_response(result, gold, *, index_digest, graph=False, strategy=None):

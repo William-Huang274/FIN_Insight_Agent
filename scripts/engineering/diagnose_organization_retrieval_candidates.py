@@ -25,6 +25,7 @@ from retrieval.text import tokenize
 from scripts.data_retrieval.replay_cached_library_scenarios import ReadOnlyReceipts
 from scripts.engineering.organization_recall_evaluation import bind_labels, summarize, validate_questions
 from scripts.engineering.retrieval_evaluation_freeze import validate_heldout_freeze
+from scripts.engineering.retrieval_label_review import validate_heldout_label_reviews
 from scripts.engineering.qualify_retrieval_recall import ranking_metrics
 from sec_agent.research_foundation.organization_graph_index import candidates
 from sec_agent.research_foundation.organization_hybrid_retrieval import vector
@@ -133,6 +134,7 @@ def main():
             query_planning=args.query_planning, check_runtime=True,
             metadata_policy='sec_cover.v2' if args.query_planning else 'original.v1',
             manual_plan=args.source_filter_plan is not None)
+        validate_heldout_label_reviews(dataset,args.split)
         if args.split == 'all' and dataset['evaluation_role'] != 'historical_regression':
             raise ValueError('independent_evaluation_requires_one_explicit_split')
         intake = json.loads((args.intake/'result.json').read_text(encoding='utf8'))
@@ -186,6 +188,7 @@ def main():
             from scripts.engineering.organization_filter_diagnosis import metadata_maps
             raw_metadata, resolved_metadata, proofs = metadata_maps(args.intake, intake, publication, manifest, guard)
             save('source-metadata', {'raw': raw_metadata, 'resolved': resolved_metadata, 'proofs': proofs})
+            report['source_metadata_sha256'] = digest(args.output/'source-metadata.json')
         records = index['records']
         if len({r['document_id'] for r in records}) != len(bundles):
             raise ValueError('offline_index_document_scope_mismatch')

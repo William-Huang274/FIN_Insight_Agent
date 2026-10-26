@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from scripts.engineering.organization_recall_evaluation import (
-    POLICY, bind_labels, evaluate, evidence_group_metrics, score_response, summarize,
+    POLICY, bind_labels, bind_label_groups, evaluate, evidence_group_metrics, score_response, summarize,
     validate_questions, verify_equivalent_quote,
 )
 from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
@@ -181,6 +181,25 @@ def test_equivalent_copies_count_once_but_other_required_fact_stays_missing():
     assert evidence_group_metrics(['new', 'other-fact'], groups)['all_known_hit@5'] == 1
     with pytest.raises(ValueError, match='positive_evidence_groups'):
         evidence_group_metrics(['new'], [[]])
+
+
+def test_reviewed_original_copy_maps_as_alternative_without_replacing_required_label(fixture):
+    dataset, bundles, manifest, index, node = fixture
+    original = bundles['source']; original['source']['url'] = 'https://example.test/annual'
+    copy = deepcopy(original['chunks'][0]); copy['id'] = 'copy'
+    copy['body'] = copy['body'].replace(' ', '\n'); copy['digest'] = sha256(copy['body'].encode()).hexdigest()
+    original['chunks'].append(copy)
+    alternate = {'source_id': 'source', 'chunk_id': 'copy', 'body_sha256': copy['digest']}
+    dataset['questions'][0]['evidence'][0]['equivalents'] = [alternate]
+    document = index['records'][0]['document_id']
+    other_node = chunk_node_id(document, 'copy')+':leaf'
+    index['records'].append({'node_id': other_node, 'document_id': document, 'content_sha256': copy['digest']})
+    rows = validate_questions(dataset, bundles)
+    assert bind_label_groups(rows, manifest, {'source':'resource'}, index) == {'q1': [[node, other_node]]}
+    assert bind_labels(rows, manifest, {'source':'resource'}, index) == {'q1': [node]}
+    alternate['body_sha256'] = 'wrong'
+    with pytest.raises(ValueError, match='equivalent_evidence_body_changed'):
+        validate_questions(dataset, bundles)
 
 
 @pytest.mark.parametrize('fault', [None, 'url', 'published_at', 'known_at', 'quote', 'digest'])

@@ -10,7 +10,8 @@ import re
 
 REPORT_KINDS = {'10-K': 'annual', '10-K/A': 'annual', '20-F': 'annual', '20-F/A': 'annual',
                 '40-F': 'annual', '40-F/A': 'annual', '10-Q': 'quarterly', '10-Q/A': 'quarterly',
-                '8-K': 'event', '8-K/A': 'event'}
+                '8-K': 'event', '8-K/A': 'event', 'DEF 14A': 'proxy',
+                'DEFA14A': 'proxy', 'DEFR14A': 'proxy', 'PRE 14A': 'proxy'}
 
 
 def _mentions(query, alias):
@@ -123,6 +124,11 @@ def select_planned(metadata, plan):
     accepted, unknown = set(), 0
     for document, row in metadata.items():
         checks = []
+        if ('form' in wanted or 'report_kind' in wanted) and row.get('evidence_role') == 'discovery_metadata_only':
+            # Discovery remains available for general/news navigation. It
+            # cannot satisfy an explicit request for an original filing/report,
+            # even if a parent filing form was copied into its metadata.
+            checks.append(False)
         if 'issuer_id' in wanted or wanted.get('company_names'):
             names = {n.casefold() for n in wanted.get('company_names', [])}
             actual_id, actual_name = row.get('issuer_id'), row.get('company_name')

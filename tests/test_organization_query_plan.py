@@ -10,6 +10,29 @@ def catalog():
             'unknown': dict(issuer_id=None, company_name=None, form=None, period_end=None)}
 
 
+@pytest.mark.parametrize('query', ["Acme annual report revenue", 'Acme 年报收入', 'Acme 10-K revenue'])
+def test_explicit_report_search_rejects_known_discovery_but_keeps_unknown(query):
+    data = catalog()
+    data['discovery'] = dict(issuer_id='ISSUER::acme', company_name='Acme Corporation',
+                             form=None, period_end=None, evidence_role='discovery_metadata_only')
+    data['parent_form_on_discovery'] = {**data['discovery'], 'form': '10-K'}
+    selected, receipt = select_planned(data, plan_query(query, data))
+    assert selected == {'a', 'unknown'}
+    assert receipt['unknown_sources_retained'] == 1
+    # The same catalogue is still usable for discovery; no global deletion.
+    assert 'discovery' in select_planned(data, plan_query('Acme news', data))[0]
+
+
+@pytest.mark.parametrize('form', ['DEF 14A', 'DEFA14A', 'DEFR14A', 'PRE 14A'])
+def test_known_proxy_is_not_unknown_annual_report(form):
+    data = catalog()
+    data['proxy'] = {**data['a'], 'form': form}
+    data['future_form'] = {**data['a'], 'form': 'UNRECOGNIZED-FORM'}
+    selected, _ = select_planned(data, plan_query('Acme annual report', data))
+    assert selected == {'a', 'unknown', 'future_form'}
+    assert 'proxy' in select_planned(data, plan_query('Acme voting', data))[0]
+
+
 def test_literal_issuer_form_and_explicit_period_without_answer_ids():
     data = catalog()
     plan = plan_query('Acme 10-K period ending 2024-06-30 revenue', data)

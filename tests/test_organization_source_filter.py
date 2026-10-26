@@ -27,6 +27,17 @@ def descriptor(**metadata):
                                       'title': 'ACME FY2024 10-K', 'published_at': '2025-02-01'}})
 
 
+def test_discovery_role_survives_descriptor_without_title_based_inference():
+    from sec_agent.research_foundation.organization_source_filter import original_source_metadata
+    marked = descriptor(entity_id='ISSUER::acme', evidence_role='discovery_metadata_only')
+    assert marked['evidence_role'] == 'discovery_metadata_only'
+    # Legacy exact metadata filters keep their four-field wire contract.
+    assert 'evidence_role' not in original_source_metadata({'source': {
+        'metadata': json.dumps({'evidence_role': 'discovery_metadata_only'})}})
+    assert 'evidence_role' not in descriptor(category='news_discovery')
+    assert 'evidence_role' not in descriptor(evidence_role='original_document_requires_reading')
+
+
 def test_original_fields_only_and_explicit_unknown_coverage():
     missing = descriptor(parent_form='10-K', fiscal_year=2024, report_date='2024-12-31')
     assert all(value is None for value in missing.values())
@@ -63,11 +74,11 @@ def test_request_compatibility_and_scope():
             SourceDocumentRequest.model_validate(query(organization_filter={'form': '10-K'}, **changes))
 
 
-def scoped_fixture(root, monkeypatch, *, queries=None):
+def scoped_fixture(root, monkeypatch, *, queries=None, variants=None):
     """Real custody/index files, synthetic sources and vector values; no provider."""
     import test_organization_complete_sources as fixtures
     original_database = fixtures.database
-    variants = [dict(entity_id='ISSUER::A', company='Acme', form='10-K', period_end='2024-12-31'),
+    variants = variants if variants is not None else [dict(entity_id='ISSUER::A', company='Acme', form='10-K', period_end='2024-12-31'),
                 dict(entity_id='ISSUER::A', company='Acme', form='10-Q', period_end='2024-09-30'),
                 dict(entity_id='ISSUER::B', company='Beta', form='10-K', period_end='2024-12-31'),
                 dict(company='Acme')]
@@ -109,6 +120,38 @@ def scoped_fixture(root, monkeypatch, *, queries=None):
     reader, state = runtime_at(shared, runtime_grant(grant))
     nav = OrganizationSourceNavigation(reader, workbench_url='http://localhost', retrieval_root=root/'indices')
     return nav, reader, state, directory, grant
+
+
+def test_report_role_is_consumed_before_all_channels_and_does_not_cache_access(tmp_path, monkeypatch):
+    report, general = 'Acme annual report disclosure', 'Acme news disclosure'
+    nav, reader, state, _, _ = scoped_fixture(tmp_path, monkeypatch, queries=[report, general], variants=[
+        dict(entity_id='ISSUER::A', company='Acme', form='10-K'),
+        dict(entity_id='ISSUER::A', company='Acme', form='10-K', evidence_role='discovery_metadata_only'),
+        dict(entity_id='ISSUER::A', company='Acme'),
+    ])
+    nav.warm_release()
+    metadata = nav._candidate_index.source_metadata
+    discovery = next(doc for doc, row in metadata.items() if row.get('evidence_role')=='discovery_metadata_only')
+    allowed = set(metadata)-{discovery}
+    def no_originals(*args):
+        raise AssertionError('role planning must consume verified descriptors without rereading originals')
+    monkeypatch.setattr(reader, '_read_storage', no_originals)
+    request = query(query=report, organization_query_planning='conservative.v1',
+                    organization_metadata_policy='sec_cover.v2', entity_id='COUNTERPARTY::X', limit=20)
+    found = nav.navigate(request)
+    assert found.items and {r['document_id'] for r in found.items}==allowed
+    receipt = found.items[0]['retrieval']
+    for channel in ('dense_node_ids','lexical_node_ids','graph_node_ids','candidate_node_ids'):
+        assert receipt[channel]
+        assert all(nav._candidate_index.rows[node]['parent_document_id'] in allowed for node in receipt[channel])
+    assert nav.navigate(request).items[0]['retrieval']['response_cache_hit']
+    general_request = {**request, 'query': general}
+    assert discovery in {r['document_id'] for r in nav.navigate(general_request).items}
+    assert found.organization_query_plan['unknown_sources_retained']==1
+    state['status']=404
+    for denied in (request, general_request):
+        with pytest.raises(OrganizationExecutionUnavailable):
+            nav.navigate(denied)
 
 
 def test_filter_precedes_dense_lexical_graph_and_preserves_release_and_readback(tmp_path, monkeypatch):

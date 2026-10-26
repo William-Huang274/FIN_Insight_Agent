@@ -80,7 +80,13 @@ def source_metadata_details(bundle):
     proof = None
     if bundle:
         from .sec_cover_metadata import cover_form, calendar_annual_year
-        evidence = cover_form(bundle, json.loads(bundle['source']['metadata']))
+        metadata = json.loads(bundle['source']['metadata'])
+        # A discovery catalogue is a known evidence role, not an unknown
+        # filing form. Keep this original marker; never infer it from a title
+        # or from absence of an article body in an arbitrary document.
+        if metadata.get('evidence_role') == 'discovery_metadata_only':
+            descriptor['evidence_role'] = 'discovery_metadata_only'
+        evidence = cover_form(bundle, metadata)
         if evidence:
             previous = descriptor['form']
             conflict = previous is not None and previous != evidence['form']

@@ -51,8 +51,11 @@ def prepare(result_path,dataset_path,index_path,navigation_path=None):
                     candidate=json.loads(payload)
                     if candidate['node_id']!=node:raise ValueError('rerank_candidate_identity_mismatch')
                     candidates.append(candidate)
-                jobs.append({'id':sample['id'],'family':sample['family'],'query':question['query'],
-                             'channel':channel,'gold':sample['gold'],'candidates':candidates})
+                job={'id':sample['id'],'family':sample['family'],'query':question['query'],
+                     'channel':channel,'gold':sample['gold'],'candidates':candidates}
+                if 'search_needs' in sample:
+                    job['search_needs']=sample['search_needs']
+                jobs.append(job)
     plan={'purpose':'Development fixed-candidate comparison: equal RRF versus Qwen3 rerank',
         'result_sha256':sha256(raw).hexdigest(),'dataset_sha256':sha256(dataset_raw).hexdigest(),
         'index_sha256':sha256(index_raw).hexdigest(),'jobs':len(jobs),
@@ -67,6 +70,15 @@ def prepare(result_path,dataset_path,index_path,navigation_path=None):
             'stop_behavior':'Stop at first error; keep failed/unknown receipts; never resubmit'},
         'samples':[{'id':j['id'],'channel':j['channel'],'query_sha256':sha256(j['query'].encode()).hexdigest(),
                     'candidate_ids':[c['node_id'] for c in j['candidates']]} for j in jobs]}
+    if any('search_needs' in job for job in jobs):
+        from retrieval import organization_search_needs
+        metadata_raw=(result_path.parent/'source-metadata.json').read_bytes()
+        metadata=json.loads(metadata_raw)['resolved']
+        for job in jobs:job['source_metadata']=metadata
+        plan['selection_contract']={'policy':organization_search_needs.POLICY,
+            'implementation_sha256':sha256(Path(organization_search_needs.__file__).read_bytes()).hexdigest(),
+            'metadata_sha256':sha256(metadata_raw).hexdigest(),
+            'scope':'query-derived candidate coverage, not answer sufficiency'}
     return jobs,plan
 
 
@@ -110,6 +122,12 @@ def main():
                 candidate_count=len(ranked),ranked_ids=[r['node_id'] for r in ranked],
                 baseline=ranking_metrics([r['node_id'] for r in job['candidates']],job['gold']),
                 reranked=ranking_metrics([r['node_id'] for r in ranked],job['gold']))
+            if 'search_needs' in job:
+                from retrieval.organization_search_needs import select_coverage
+                needs=job['search_needs']
+                selected,coverage=select_coverage(ranked,needs['search_needs'],needs['lexical_needs'],job['source_metadata'])
+                report['samples'][-1].update(selected_ids=[r['node_id'] for r in selected],
+                    need_coverage=coverage,selected=ranking_metrics([r['node_id'] for r in selected],job['gold']))
             (args.output/'result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf8')
             if len(report['samples'])%10==0:
                 print(json.dumps({'completed':len(report['samples']),'expected':len(jobs)}),flush=True)

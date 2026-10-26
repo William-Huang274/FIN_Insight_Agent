@@ -205,7 +205,7 @@ class OrganizationHybridRetrieval:
         return load_release(self.root, manifest['organization_id'], pinned['release_id'], pinned,
                             cache=self.release_cache)
 
-    def rank(self, rows, query, snapshot, literal, *, source_verifier=None, graph=None):
+    def rank(self, rows, query, snapshot, literal, *, source_verifier=None, graph=None, lexical_policy=None):
         from .organization_source_navigation import OrganizationSourceNavigation
         before, manifest, _ = self.reader._grant()
         if graph is not None and source_verifier is None:
@@ -284,6 +284,9 @@ class OrganizationHybridRetrieval:
         # cannot occupy quotas, produce previews, or influence lexical ranks.
         scope = {'policy': POLICY, 'grant': digest(before), 'index': index_digest,
             'query': query_hash, 'nodes': [(r['node_id'], r['content_sha256']) for r in rows]}
+        if lexical_policy is not None:
+            scope['lexical_policy'] = lexical_policy
+            scope['lexical_order'] = [r['node_id'] for r in literal]
         from retrieval.candidate_policy import candidate_limits
         limits = candidate_limits(self.candidate_policy, has_graph=graph is not None)
         if self.candidate_policy != 'balanced.v1':

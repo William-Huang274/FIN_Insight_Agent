@@ -34,7 +34,7 @@ LIBRARY_SOURCE_ROUTING_GUIDANCE = (
 
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    organization_query_planning: Literal['conservative.v1'] | None = Field(default=None,
+    organization_query_planning: Literal['conservative.v1', 'conservative.v2'] | None = Field(default=None,
         description='Opt-in organization search: literal catalog issuer, explicit filing form and period end. '
         'Unknown metadata stays eligible; ambiguous/multiple issuers and fiscal years are not guessed. '
         'Cannot combine with organization_filter; no paid query planning.')
@@ -388,6 +388,9 @@ def navigate_source_nodes(
         elif request.operation == "search":
             item["preview"] = content[:500]
             item["preview_truncated"] = len(content) > 500
+            if row.get('context_status'):
+                item['context_status'] = row['context_status']
+                item['context_readbacks'] = row['context_readbacks']
             if scoped_retrieval is not None:
                 item['retrieval'] = scoped_retrieval
         items.append(item)

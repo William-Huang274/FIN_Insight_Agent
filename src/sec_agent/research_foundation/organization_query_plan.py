@@ -20,10 +20,10 @@ def _mentions(query, alias):
     return bool(re.search(r'(?<!\w)' + re.escape(alias) + r'(?!\w)', query, re.IGNORECASE))
 
 
-def _report_owners(query, aliases):
+def _report_owners(query, aliases, *, allow_comparison=False):
     # A named report owner is different from counterparties mentioned in the
     # question. Only explicit report phrases narrow scope; comparison abstains.
-    if re.search(r'\b(?:compare|comparison|versus|vs\.?)\b|对比|比较|相比', query, re.IGNORECASE):
+    if not allow_comparison and re.search(r'\b(?:compare|comparison|versus|vs\.?)\b|对比|比较|相比', query, re.IGNORECASE):
         return set(), []
     found=[]; owners=set()
     for alias, ids in aliases.items():
@@ -35,7 +35,9 @@ def _report_owners(query, aliases):
     return owners,found
 
 
-def plan_query(query, metadata):
+def plan_query(query, metadata, *, policy='conservative.v1'):
+    if policy not in {'conservative.v1', 'conservative.v2'}:
+        raise ValueError('unsupported_organization_query_plan')
     aliases, names = {}, {}
     named_issuers = {}
     for row in metadata.values():
@@ -57,7 +59,13 @@ def plan_query(query, metadata):
     matches = [(a, owners) for a, owners in aliases.items() if _mentions(query, a)]
     owners = set().union(*(v for _, v in matches)) if matches else set()
     unresolved, evidence, constraint = [], [], {}
-    report_owners, report_phrases = _report_owners(query, aliases)
+    report_owners, report_phrases = _report_owners(query, aliases, allow_comparison=policy=='conservative.v2')
+    comparison = re.search(r'\b(?:compare|comparison|versus|vs\.?)\b|对比|比较|两家公司|各自', query, re.I)
+    if (policy == 'conservative.v2' and len(owners)>1 and comparison and report_phrases
+            and comparison.start() < min(query.casefold().find(p.casefold()) for p in report_phrases)):
+        # "Compare Alpha and Beta annual report" modifies both owners, not
+        # just the last name adjacent to the report noun.
+        report_owners = set()
     if len(report_owners)==1:
         owners=report_owners
         evidence.append({'field':'issuer','matched_query_text':report_phrases,
@@ -69,6 +77,12 @@ def plan_query(query, metadata):
             constraint['issuer_id'] = owner
         evidence.append({'field': 'issuer', 'matched_query_text': sorted(a for a, ids in matches if owner in ids),
                          'basis': 'literal_authorized_catalog_identity'})
+    elif (policy == 'conservative.v2' and owners and all(len(ids) == 1 for _, ids in matches)
+          and (comparison or len(report_owners)>1)):
+        constraint['issuer_union'] = [dict(issuer_id=None if owner.startswith('name:') else owner,
+            company_names=sorted(names.get(owner, set()))) for owner in sorted(owners)]
+        evidence.append({'field':'issuer_union', 'matched_query_text':sorted(a for a,_ in matches),
+                         'basis':'explicit_comparison_of_unambiguous_catalog_owners'})
     elif owners:
         unresolved.append('multiple_or_ambiguous_issuers_no_issuer_filter')
     else:
@@ -115,8 +129,17 @@ def plan_query(query, metadata):
         unresolved.append('multiple_periods_no_date_filter')
     if re.search(r'(?<!\d)(?:19|20)\d{2}(?!\d)', query) and 'period_end' not in constraint:
         unresolved.append('year_or_publication_date_not_mapped_to_period_end')
-    return {'policy': 'conservative.v1', 'constraint': constraint, 'evidence': evidence,
-            'unresolved': unresolved, 'unknown_metadata_retained': True}
+    result = {'policy': policy, 'constraint': constraint, 'evidence': evidence,
+              'unresolved': unresolved, 'unknown_metadata_retained': True}
+    if policy == 'conservative.v2':
+        # A bare "2025 report" does not establish a filing form or fiscal
+        # endpoint. It can prefer an independently cover-verified report year
+        # when selecting evidence, without excluding uncertain sources.
+        years = set(re.findall(r'(?<!\d)((?:19|20)\d{2})\s*(?:年)?\s*(?:reports?|报告)(?![A-Za-z])', query, re.I))
+        if len(years) == 1 and len(set(re.findall(r'(?<!\d)(?:19|20)\d{2}(?!\d)', query))) == 1:
+            result['preferences'] = {'verified_report_year':next(iter(years)),
+                'basis':'explicit_report_year_soft_preference_no_fiscal_or_form_inference'}
+    return result
 
 
 def select_planned(metadata, plan):
@@ -124,6 +147,17 @@ def select_planned(metadata, plan):
     accepted, unknown = set(), 0
     for document, row in metadata.items():
         checks = []
+        if 'issuer_union' in wanted:
+            actual_id, actual_name = row.get('issuer_id'), row.get('company_name')
+            owners = wanted['issuer_union']
+            ids = {o['issuer_id'] for o in owners if o['issuer_id']}
+            names = {name.casefold() for o in owners for name in o['company_names']}
+            if actual_id and all(o['issuer_id'] for o in owners):
+                checks.append(actual_id in ids)
+            elif actual_name and names:
+                checks.append(actual_name.casefold() in names)
+            else:
+                checks.append(None)
         if ('form' in wanted or 'report_kind' in wanted) and row.get('evidence_role') == 'discovery_metadata_only':
             # Discovery remains available for general/news navigation. It
             # cannot satisfy an explicit request for an original filing/report,

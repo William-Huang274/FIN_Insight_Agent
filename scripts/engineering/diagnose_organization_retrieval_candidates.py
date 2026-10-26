@@ -52,7 +52,7 @@ def frozen_cosine_scores(path, positions, query, count):
     return cosine_scores(matrix, positions, query)
 
 
-def rank_scope(records, directory, matrix, total_count, query_vector, row, *, candidate_policy='balanced.v1'):
+def rank_scope(records, directory, matrix, total_count, query_vector, row, *, candidate_policy='balanced.v1', needs=None, metadata=None):
     """Use production score/fusion functions on an explicit, label-free scope."""
     ranked = {'dense_candidates': [], 'lexical_candidates': [], 'fused_candidates': []}
     evidence = []
@@ -65,6 +65,14 @@ def rank_scope(records, directory, matrix, total_count, query_vector, row, *, ca
         ((r['node_id'], r['content_sha256'], r['lexical_input_sha256']) for r in records), tokenize(row['query']))
     lexical_positions = sorted(overlap, key=lambda i: (-float(scores[i]), records[i]['node_id']))
     lexical = [records[i]['node_id'] for i in lexical_positions[:limits['lexical']]]
+    if needs:
+        from retrieval.organization_search_needs import lexical_candidates
+        prepared = [dict(r, parent_document_id=r['document_id']) for r in records]
+        ids, lanes = lexical_candidates(directory/'lexical.sqlite', prepared, needs, metadata)
+        lexical = ids[:limits['lexical']]
+        positions={r['node_id']:i for i,r in enumerate(records)}
+        lexical_positions=[positions[n] for n in ids]
+        evidence.append({'search_needs':needs, 'lexical_needs':lanes})
     scores = frozen_cosine_scores(matrix, [r['vector_index'] for r in records], query_vector, total_count)
     dense = [records[i]['node_id'] for i in sorted(range(len(records)),
         key=lambda i: (-float(scores[i]), records[i]['node_id']))[:limits['dense']]]
@@ -75,15 +83,16 @@ def rank_scope(records, directory, matrix, total_count, query_vector, row, *, ca
                               content_sha256=r['content_sha256']) for r in records]
         request = SourceDocumentRequest(source_space='organization', operation='search',
             query=row['query'], entity_id=row['entity_id'], limit=20)
-        graph, evidence = candidates(directory/'graph.sqlite', candidate_rows, request, row['as_of'],
+        graph, graph_evidence = candidates(directory/'graph.sqlite', candidate_rows, request, row['as_of'],
                                      [candidate_rows[i] for i in lexical_positions])
+        evidence.extend(graph_evidence)
         ranked.update(graph_candidates=graph, graph_fused_candidates=reciprocal_rank_fusion([dense, lexical, graph]))
     return ranked, evidence
 
 
-def planned_records(records, metadata, query):
+def planned_records(records, metadata, query, *, policy='conservative.v1'):
     """Same conservative planner as serving, never supplied known answer IDs."""
-    documents, receipt = select_planned(metadata, plan_query(query, metadata))
+    documents, receipt = select_planned(metadata, plan_query(query, metadata, policy=policy))
     return [record for record in records if record['document_id'] in documents], receipt
 
 
@@ -93,7 +102,7 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--split', choices=('development', 'heldout', 'all'), required=True)
     parser.add_argument('--source-filter-plan', type=Path, help='Development-only manual constraints; never automatic query routing')
-    parser.add_argument('--query-planning', choices=['conservative.v1'])
+    parser.add_argument('--query-planning', choices=['conservative.v1', 'conservative.v2'])
     parser.add_argument('--candidate-policy', choices=POLICIES, default='balanced.v1')
     args = parser.parse_args()
     args.output.mkdir(exist_ok=False, parents=True)
@@ -111,6 +120,11 @@ def main():
               'provider_calls': 0, 'status': 'preflight', 'samples': [], 'S2_passed': False,
               'numerical_thread_configuration': {name:os.environ.get(name) for name in
                   ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS')}}
+    from retrieval import organization_search_needs
+    implementation_files=[Path(__file__),Path(organization_search_needs.__file__),
+        Path(__import__('sec_agent.research_foundation.organization_query_plan',fromlist=['plan_query']).__file__)]
+    implementation_before={str(p):digest(p) for p in implementation_files}
+    report['diagnostic_implementation_sha256']=implementation_before
     save('result', report)
     try:
         guard('start')
@@ -206,13 +220,20 @@ def main():
                     query = vector(saved['result']['values'][0], 1024)
                     scoped = records
                     if args.query_planning:
-                        scoped, receipt = planned_records(records, resolved_metadata, row['query'])
+                        scoped, receipt = planned_records(records, resolved_metadata, row['query'], policy=args.query_planning)
                         population = {r['node_id'] for r in scoped}
                         sample['query_plan'] = receipt
                         sample['known_evidence_excluded'] = [n for n in labels[row['id']] if n not in population]
                         del population
+                    needs = None
+                    if args.query_planning == 'conservative.v2':
+                        from retrieval.organization_search_needs import compile_needs
+                        needs = compile_needs(row['query'], receipt)
                     ranked, evidence = rank_scope(scoped, directory, args.matrix, len(records), query, row,
-                                                  candidate_policy=args.candidate_policy)
+                                                  candidate_policy=args.candidate_policy, needs=needs,
+                                                  metadata=resolved_metadata if needs else None)
+                    if needs:
+                        sample['search_needs'] = evidence[0]
                     del scoped
                     if row.get('entity_id'):
                         sample['graph_evidence'] = evidence
@@ -245,6 +266,8 @@ def main():
         for path, expected in files.items():
             if digest(path) != expected:
                 raise ValueError('offline_index_changed_during_evaluation')
+        if implementation_before!={str(p):digest(p) for p in implementation_files}:
+            raise ValueError('offline_implementation_changed_during_evaluation')
         report.update(status='completed', summary=summarize(report['samples'], [r['id'] for r in rows]))
         save('result', report)
         guard('finished')

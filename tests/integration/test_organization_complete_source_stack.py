@@ -604,6 +604,37 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     'cold_capture_checks':cold_capture_checks,'warm_capture_checks':0,
                     'cross_query_projection':cross_query,
                     'response_cache_hit':True,'warm_result_identity_unchanged':True})
+            needs_request=None
+            context_links=[]
+            if os.getenv('FIN_COMPLETE_SOURCE_NEEDS_PROBE') == '1':
+                needs_request={'source_space':'organization','operation':'search','query':next(iter(queries)),
+                               'organization_query_planning':'conservative.v2','organization_metadata_policy':'sec_cover.v2'}
+                with diagnostic.phase('query_needs_v2_context_and_cache'):
+                    context_origin=os.getenv('FIN_COMPLETE_SOURCE_CONTEXT_CHUNK')
+                    if context_origin:
+                        suffix=':chunk-'+sha256(context_origin.encode()).hexdigest()[:32]+':leaf'
+                        candidate_nav=lifecycle._navigation if lifecycle is not None else nav
+                        matches=[n for n in candidate_nav._candidate_index.rows if n.endswith(suffix)]
+                        assert len(matches)==1,'requested original fragment must map to exactly one published node'
+                    needs_found=nav.navigate(needs_request)
+                    assert needs_found.items
+                    if context_origin:
+                        assert any(r['node_id']==matches[0] for r in needs_found.items), 'real query must retrieve the incomplete fragment'
+                    needs_receipt=needs_found.items[0]['retrieval']
+                    assert needs_receipt['search_needs']['policy']=='organization-search-needs.v1'
+                    for item in needs_found.items:
+                        context_links.extend(item.get('context_readbacks',[]))
+                    if context_origin:
+                        fragment=next(r for r in needs_found.items if r['node_id']==matches[0])
+                        assert fragment.get('context_readbacks'),'incomplete real original fragment must expose adjacent readback'
+                        context_links=fragment['context_readbacks']
+                    for link in context_links[:4]:
+                        read=nav.navigate(link['readback'])
+                        assert read.items[0]['content_sha256']==link['content_sha256']
+                    nav.navigate(needs_request)
+                    assert nav.navigate(needs_request).items[0]['retrieval']['response_cache_hit']
+                s.save('query-needs-v2',{'status':'pre_revoke_passed','request':needs_request,
+                    'receipt':needs_receipt,'context_links':context_links,'context_reads':min(4,len(context_links))})
             graph_request=None
             if graph_probe:
                 eligible_edges=[edge for source in graph_sources for edge in source['edges']
@@ -675,6 +706,13 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             first=resources[revoke_sid]
             current=s.request(s.bff,'GET',f'/api/v1/asset-workspace/spaces/resources/{first}')
             api('POST',f'/resources/{first}/revoke',{'revision':current['permission_revision']})
+            if needs_request is not None:
+                with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(needs_request)
+                for link in context_links[:4]:
+                    with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(link['readback'])
+                s.save('query-needs-v2',{'status':'passed','request':needs_request,'receipt':needs_receipt,
+                    'context_links':context_links,'context_reads':min(4,len(context_links)),
+                    'revoked_search_and_context_denied':True,'provider_calls':0})
             if graph_request is not None:
                 with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(graph_request)
                 graph_checks[-1]['revoked_cached_graph_denied']=True

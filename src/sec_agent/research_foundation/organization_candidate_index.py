@@ -55,6 +55,7 @@ class VerifiedCandidateIndex:
         self.original_source_metadata = {}
         self.original_reads = 0
         self.candidate_reads = 0
+        self.neighbors = {}
         self.verification_hits = 0
 
     def prepare(self, before, manifest, epoch):
@@ -86,7 +87,7 @@ class VerifiedCandidateIndex:
         bindings = {entry['resource_id']:entry['binding'] for entry in before['inputs']}
         allowed = {OrganizationSourceNavigation._identity(item):item for item in manifest['inputs']}
         expected = {node_id for node_id, record in records.items() if record['document_id'] in allowed}
-        rows, origins, metadata, original_metadata = {}, {}, {}, {}
+        rows, origins, metadata, original_metadata, neighbors = {}, {}, {}, {}, {}
         self.original_reads = 0
         self.verification_hits = 0
         from .source_verification_cache import SourceVerificationCache, versions
@@ -118,7 +119,7 @@ class VerifiedCandidateIndex:
                 saved = {'version': result['version'], 'metadata': source_metadata(result['source_bundle']),
                     'original_metadata': original_source_metadata(result['source_bundle']),
                     'capture': {k:deepcopy(v) for k,v in (result.get('capture') or {}).items() if k != 'rows'},
-                    'nodes': []}
+                    'nodes': [], 'locations': []}
                 for row in projected:
                     if row['node_kind'] != 'text':
                         continue
@@ -129,10 +130,27 @@ class VerifiedCandidateIndex:
                             or record['embedding_input_sha256'] != row['embedding_input_sha256']):
                         raise ValueError('organization_candidate_original_mismatch')
                     saved['nodes'].append(row['node_id'])
+                    origin = row['original_source']
+                    start = origin.get('source_char_start', origin.get('char_start'))
+                    end = origin.get('source_char_end', origin.get('char_end'))
+                    parent = origin.get('original_node_id') if 'source_char_start' not in origin else document
+                    if type(start) is int and type(end) is int and parent and 0 <= start < end:
+                        saved['locations'].append([parent, start, end, row['node_id']])
                 pending.append((proof_key, saved))
             else:
                 self.verification_hits += 1
             metadata[document], original_metadata[document] = saved['metadata'], saved['original_metadata']
+            ordered = sorted(saved.get('locations', []))
+            for position, (parent, start, end, node) in enumerate(ordered):
+                adjacent = []
+                for other in (position - 1, position + 1):
+                    if 0 <= other < len(ordered):
+                        p, a, b, identifier = ordered[other]
+                        # Same immutable original/coordinate system, overlap or
+                        # adjacent whitespace only. Never jump a missing page.
+                        if p == parent and max(start, a) - min(end, b) <= 4:
+                            adjacent.append(identifier)
+                neighbors[node] = adjacent
             for node_id in saved['nodes']:
                 record = records.get(node_id)
                 if record is None or node_id in rows or record['document_id'] != document:
@@ -162,6 +180,7 @@ class VerifiedCandidateIndex:
         self.rows, self.origins = rows, origins
         self.source_metadata = metadata
         self.original_source_metadata = original_metadata
+        self.neighbors = neighbors
         self.before, self.epoch, self.directory = before, epoch, directory
         self.generation = key
 
@@ -217,3 +236,21 @@ class VerifiedCandidateIndex:
                 self.candidate_reads += 1
         self.check()
         return result
+
+    def contextualize(self, rows, manifest):
+        """Attach exact adjacent readbacks, never replace an immutable chunk.
+
+        Context is loaded only for incomplete fragments, from this verified
+        generation. Same-document/source offsets were checked at publication
+        verification. Citation identity and original vector input stay intact.
+        """
+        from retrieval.fragment_context import needs_context, attach_context
+        wanted = {r['node_id']: self.neighbors.get(r['node_id'], []) for r in rows if needs_context(r['content'])}
+        ids = list(dict.fromkeys(n for adjacent in wanted.values() for n in adjacent))
+        before_reads = self.candidate_reads
+        neighbors = self.materialize([self.rows[n] for n in ids], manifest) if ids else []
+        if ids:
+            self.candidate_reads += before_reads
+        by_id = {r['node_id']:r for r in neighbors}
+        return [attach_context(r, [by_id[n] for n in wanted[r['node_id']]])
+                if r['node_id'] in wanted else r for r in rows]

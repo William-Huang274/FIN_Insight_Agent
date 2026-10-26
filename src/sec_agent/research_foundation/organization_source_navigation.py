@@ -149,7 +149,8 @@ class OrganizationSourceNavigation:
                         else candidates.original_source_metadata)
             if request.document_id:
                 metadata = {request.document_id: metadata[request.document_id]}
-            selected, query_plan = select_planned(metadata, plan_query(request.query, metadata))
+            selected, query_plan = select_planned(metadata, plan_query(request.query, metadata,
+                                                     policy=request.organization_query_planning))
             query_plan['metadata_policy'] = request.organization_metadata_policy
             rows = [row for row in rows if row['parent_document_id'] in selected]
             if not rows:
@@ -176,6 +177,14 @@ class OrganizationSourceNavigation:
             ((row['node_id'],row['content_sha256'],row['lexical_input_sha256']) for row in rows),
             tokenize(request.query), population_cache=self._lexical_statistics)
         literal = [rows[i] for i in sorted(overlap, key=lambda i:(-float(scores[i]),rows[i]['node_id']))]
+        needs, lanes = None, []
+        if request.organization_query_planning == 'conservative.v2':
+            from retrieval.organization_search_needs import compile_needs, lexical_candidates
+            needs = compile_needs(request.query, query_plan)
+            ids, lanes = lexical_candidates(candidates.directory/'lexical.sqlite', rows, needs,
+                                           metadata, population_cache=self._lexical_statistics)
+            by_id = {r['node_id']:r for r in rows}
+            literal = [by_id[n] for n in ids]
         graph=None
         graph_evidence=[]
         if request.entity_id:
@@ -183,10 +192,13 @@ class OrganizationSourceNavigation:
             graph,graph_evidence=graph_candidates(candidates.directory/'graph.sqlite',rows,request,
                                                  manifest['research_as_of'],literal)
         ranked, receipt = self.hybrid.rank(rows, request.query, self.reader.authority.manifest_digest[7:],
-                                          literal, source_verifier=candidates,graph=graph)
+                                          literal, source_verifier=candidates,graph=graph,
+                                          **({'lexical_policy':needs['policy']} if needs else {}))
         if graph is not None:
             receipt.update(graph_evidence=graph_evidence,graph_scope='frozen_one_hop_source_bound_candidates')
         materialized = candidates.materialize(ranked, manifest)
+        if needs:
+            materialized = candidates.contextualize(materialized, manifest)
         if self.hybrid.reranker is not None:
             def check_access():
                 self.reader._after(before)
@@ -198,6 +210,11 @@ class OrganizationSourceNavigation:
                 rerank=rerank_receipt['model'], rerank_response=rerank_receipt,
                 reranked_node_ids=[r['node_id'] for r in materialized],
                 provider_calls=receipt['provider_calls']+rerank_receipt['provider_calls'])
+        if needs:
+            from retrieval.organization_search_needs import select_coverage
+            materialized, coverage = select_coverage(materialized, needs, lanes, metadata)
+            receipt.update(search_needs=needs, lexical_needs=lanes, need_coverage=coverage,
+                           selected_node_ids=[r['node_id'] for r in materialized])
         receipt.update(lexical_source='published_release', candidate_only=True,
                        lexical_subset_statistics_hit=self._lexical_statistics.hit,
                        source_generation_original_reads=candidates.original_reads,

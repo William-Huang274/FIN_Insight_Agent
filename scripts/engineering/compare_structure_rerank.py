@@ -15,10 +15,26 @@ from retrieval.scoped_reranking import ScopedReranker
 POLICY='verified-structure-scoring-view.v1'
 
 
-def scoring_view(candidate, original, structure, text):
+def scoring_view(candidate, original, structure, text, *, context_scope='all'):
     if (candidate['content']!=original['body'] or candidate['content_sha256']!=original['digest']
             or candidate['embedding_input_sha256']!=original['embedding_input_sha256']):
         raise ValueError('structure_experiment_original_mismatch')
+    if context_scope not in ('all', 'detached-footnotes'):
+        raise ValueError('structure_experiment_unknown_context_scope')
+    # Select from verified original relationships, never length, gold labels or
+    # relevance scores. A note needs context when its marked table is not fully
+    # contained in the candidate; ordinary prose remains byte-for-byte unchanged.
+    selected_structure = structure
+    if context_scope == 'detached-footnotes':
+        start, end = original.get('source_char_start'), original.get('source_char_end')
+        notes = [note for note in structure['footnotes']
+                 if type(start) is int and type(end) is int
+                 and not (start <= note['table']['source_char_start']
+                          and end >= note['table']['source_char_end'])]
+        selected_structure = {**structure, 'footnotes': notes, 'tables': []}
+        if not notes:
+            selected_structure['section'] = None
+    structure = selected_structure
     additions=[]; windows=[]
     if structure['section']:
         additions.append('Original document section: '+structure['section']['heading'])
@@ -45,7 +61,7 @@ def scoring_view(candidate, original, structure, text):
     # This is a scoring-only copy: original vector input and source are untouched.
     document=(view.get('embedding_context','')+'\n'+view['content']).strip()
     if len(document.encode())>32768:raise ValueError('structure_experiment_document_budget')
-    return view,{'policy':POLICY,'changed':bool(additions),'section':structure['section'],
+    return view,{'policy':POLICY,'context_scope':context_scope,'changed':bool(additions),'section':structure['section'],
                  'table_windows':windows,'document_sha256':sha256(document.encode()).hexdigest(),
                  'document_utf8_bytes':len(document.encode()),'body_sha256':candidate['content_sha256']}
 
@@ -54,6 +70,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('result','dataset','index','intake','output','baseline','receipt-cache'):
         p.add_argument('--'+name,type=Path,required=True)
+    p.add_argument('--context-scope',choices=('all','detached-footnotes'),default='all')
     p.add_argument('--execute',action='store_true');args=p.parse_args()
     jobs,plan=prepare(args.result,args.dataset,args.index)
     baseline=json.loads(args.baseline.read_bytes())
@@ -78,7 +95,8 @@ def main():
         chunks={c['id']:c for c in bundle['chunks']};file_hashes[sid]=digest
         for node,row in candidates.items():
             cid=row['original_source']['id']
-            views[node],audits[node]=scoring_view(row,chunks[cid],structure[cid],bundle.get('text',''))
+            views[node],audits[node]=scoring_view(row,chunks[cid],structure[cid],bundle.get('text',''),
+                                                context_scope=args.context_scope)
         del bundle,structure,chunks
     for job in jobs:
         if job['gold']!=previous[job['id']]['gold']:raise ValueError('structure_baseline_labels_changed')
@@ -88,7 +106,7 @@ def main():
     from retrieval import source_structure as structure_module
     implementations={str(path):sha256(path.read_bytes()).hexdigest() for path in
         (Path(__file__),Path(structure_module.__file__))}
-    plan.update(experiment=POLICY,baseline_sha256=sha256(args.baseline.read_bytes()).hexdigest(),
+    plan.update(experiment=POLICY,context_scope=args.context_scope,baseline_sha256=sha256(args.baseline.read_bytes()).hexdigest(),
         intake_sha256=sha256(intake_raw).hexdigest(),source_files=file_hashes,implementation_sha256=implementations,
         scoring_view={'context_max_characters_per_candidate':4000,'scope':'all40 development questions; same candidate IDs/order, full original bodies; explicit structure only',
             'partial_context_is_labeled':True,'original_embeddings_modified':False},

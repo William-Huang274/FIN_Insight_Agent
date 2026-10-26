@@ -63,11 +63,15 @@ def compile_needs(query, plan):
         routes, matches = lexical_surfaces(text)
         needs.append({'id':f'need-{number}', 'text':text, 'owner':owner,
                       'lexical_routes':routes, 'translations':matches})
-    return {'policy':POLICY, 'needs':needs, 'decomposition':
+    result = {'policy':POLICY, 'needs':needs, 'decomposition':
             'explicit_owner_comparison' if owners else 'explicit_both_clauses' if pieces else 'single_query',
             'preferred_report_year':plan.get('preferences', {}).get('verified_report_year'),
             'coverage_semantics':'candidate_routes_not_answer_sufficiency',
             'translation_scope':'reviewed_glossary_other_terms_remain_literal'}
+    if plan.get('policy') == 'conservative.v4':
+        from .financial_query_needs import compile_financial_needs
+        return compile_financial_needs(query, plan, result)
+    return result
 
 
 def owner_matches(metadata, owner):
@@ -96,7 +100,7 @@ def lexical_candidates(path, records, needs, metadata, *, population_cache=None)
     for need in needs['needs']:
         scoped = [r for r in records if owner_matches(metadata.get(r['parent_document_id'], {}), need['owner'])]
         routes = []
-        for terms in need['lexical_routes']:
+        for route_number, terms in enumerate(need['lexical_routes']):
             if not scoped:
                 continue
             scores, overlap, _ = scores_from_identities(path,
@@ -104,9 +108,25 @@ def lexical_candidates(path, records, needs, metadata, *, population_cache=None)
                 terms, population_cache=population_cache)
             # Bound per-route materialization; equal allocation is across
             # explicit needs, not raw scores from different languages/scopes.
-            ranked = sorted(overlap, key=lambda i:(-float(scores[i]), scoped[i]['node_id']))[:48]
+            complete = None
+            if route_number == 0 and need.get('term_groups'):
+                complete = set(range(len(scoped)))
+                for group in need['term_groups']:
+                    _, group_overlap, _ = scores_from_identities(path,
+                        ((r['node_id'],r['content_sha256'],r['lexical_input_sha256']) for r in scoped),
+                        group, population_cache=population_cache)
+                    complete.intersection_update(group_overlap)
+            ranked = sorted(overlap, key=lambda i:(
+                0 if complete is None or i in complete else 1,
+                -float(scores[i]), scoped[i]['node_id']))[:48]
             routes.append([scoped[i]['node_id'] for i in ranked])
-        merged = interleave(routes, 48)
+        if needs['policy'] == 'organization-financial-needs.v2' and need.get('concept'):
+            # Reserve two of three opportunities for the explicit business
+            # need, one for the unchanged question (dates/unrecognized terms).
+            # Allocation across NEEDS below remains equal and duplicate-free.
+            merged = interleave([routes[0][::2], routes[0][1::2], *routes[1:]], 48) if routes else []
+        else:
+            merged = interleave(routes, 48)
         rankings.append(merged)
         receipts.append({'need_id':need['id'], 'candidate_ids':merged, 'route_ids':routes})
     return interleave(rankings, 48), receipts
@@ -129,7 +149,10 @@ def select_coverage(rows, needs, lane_receipts, metadata):
                 continue
             body_terms = set(tokenize(row['content']))
             surface_terms = {t for route in need['lexical_routes'] for t in route if not t.isdigit()}
-            if body_terms & surface_terms:
+            matches = bool(body_terms & surface_terms)
+            if need.get('term_groups'):
+                matches = all(body_terms & set(group) for group in need['term_groups'])
+            if matches:
                 eligible.append(row)
         # Use the corresponding need's retrieval order, not the combined
         # question's rerank score. This avoids losing the other half of a query.
@@ -137,6 +160,11 @@ def select_coverage(rows, needs, lane_receipts, metadata):
         eligible.sort(key=lambda r:(
             0 if year and metadata.get(r['parent_document_id'], {}).get('calendar_annual_year') == year else 1,
             ranked[r['node_id']]))
+        if needs['policy'] == 'organization-financial-needs.v2' and need.get('concept'):
+            # Preserve the scorer's order within a financial need. Route rank
+            # alone must not promote an old-period paragraph over the reranker.
+            order = {r['node_id']:i for i,r in enumerate(rows)}
+            eligible.sort(key=lambda r:order[r['node_id']])
         picked = eligible[0] if eligible else None
         if picked:
             if picked['node_id'] not in chosen:

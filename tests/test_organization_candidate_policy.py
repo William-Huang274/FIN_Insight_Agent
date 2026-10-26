@@ -12,6 +12,9 @@ def test_expanded_policy_is_bounded_and_retains_graph_quota():
     assert candidate_limits() == {'dense':24, 'lexical':12, 'graph':0}
     assert candidate_limits('dense_expanded.v1') == {'dense':36, 'lexical':12, 'graph':0}
     assert candidate_limits('dense_expanded.v1', has_graph=True) == {'dense':24, 'lexical':12, 'graph':12}
+    assert candidate_limits('needs_balanced.v1') == candidate_limits('dense_expanded.v1')
+    assert candidate_limits('needs_balanced.v1',lexical_policy='organization-financial-needs.v2') == {'dense':24, 'lexical':24, 'graph':0}
+    assert candidate_limits('needs_balanced.v1', has_graph=True,lexical_policy='organization-financial-needs.v2') == {'dense':12, 'lexical':24, 'graph':12}
     with pytest.raises(ValueError, match='candidate_policy_invalid'):
         candidate_limits('unbounded')
 
@@ -38,3 +41,20 @@ def test_policy_has_separate_rank_cache_and_still_rechecks_current_access(tmp_pa
     state['status'] = 404
     with pytest.raises(OrganizationExecutionUnavailable):
         expanded.rank(rows, 'revenue', snapshot, [])
+
+
+def test_needs_budget_has_distinct_cache_same_total_cap_and_rechecks_access(tmp_path, monkeypatch):
+    from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionUnavailable
+    reader,state,org,nodes=setup(tmp_path/'source')
+    rows=[{**deepcopy(nodes[0]),'node_id':'node-'+str(i).zfill(3)} for i in range(60)]
+    prepare(tmp_path/'index',org,rows)
+    snapshot=reader._grant()[0]['manifest_digest'][7:]
+    monkeypatch.setenv('FINSIGHT_ORGANIZATION_CANDIDATE_POLICY','needs_balanced.v1')
+    search=OrganizationHybridRetrieval(reader,tmp_path/'index')
+    kw={'lexical_policy':'organization-financial-needs.v2'}
+    selected,receipt=search.rank(rows,'revenue',snapshot,list(reversed(rows)),**kw)
+    assert len(selected)==48
+    assert len(receipt['lexical_node_ids'])==24 and len(receipt['dense_node_ids'])==24
+    assert search.rank(rows,'revenue',snapshot,list(reversed(rows)),**kw)[1]['cache_hit']
+    state['status']=404
+    with pytest.raises(OrganizationExecutionUnavailable):search.rank(rows,'revenue',snapshot,list(reversed(rows)),**kw)

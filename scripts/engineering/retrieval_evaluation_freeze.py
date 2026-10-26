@@ -12,8 +12,8 @@ def strategy_from_policy(policy=None):
     if policy is None or policy == LEGACY_POLICY:
         return dict(DEFAULT_STRATEGY)
     if (not isinstance(policy,dict) or set(policy)!=set(DEFAULT_STRATEGY)
-        or policy['candidate_policy'] not in {'balanced.v1','dense_expanded.v1'}
-        or policy['query_planning'] not in {None,'conservative.v1','conservative.v2','conservative.v3'}
+        or policy['candidate_policy'] not in {'balanced.v1','dense_expanded.v1','needs_balanced.v1'}
+        or policy['query_planning'] not in {None,'conservative.v1','conservative.v2','conservative.v3','conservative.v4'}
         or policy['metadata_policy'] not in {'original.v1','sec_cover.v2'}
         or policy['reranker'] not in {None,'qwen3-rerank','qwen3.7-text-rerank'}
         or type(policy['returned_limit']) is not int or policy['returned_limit']!=20):

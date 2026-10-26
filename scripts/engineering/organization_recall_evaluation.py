@@ -197,7 +197,8 @@ def score_response(result, gold, *, index_digest, graph=False, strategy=None):
         rankings['graph_candidates'] = list(receipt['graph_node_ids'])
     rankings['returned'] = [item['node_id'] for item in result.items]
     from retrieval.candidate_policy import candidate_limits
-    limits = candidate_limits(strategy['candidate_policy'],has_graph=graph)
+    limits = candidate_limits(strategy['candidate_policy'],has_graph=graph,
+                              lexical_policy=(receipt.get('search_needs') or {}).get('policy'))
     for channel, maximum in (('dense_candidates', limits['dense']), ('lexical_candidates', limits['lexical']),
                              ('graph_candidates', limits['graph']), ('returned', strategy['returned_limit'])):
         if len(rankings.get(channel, [])) > maximum:

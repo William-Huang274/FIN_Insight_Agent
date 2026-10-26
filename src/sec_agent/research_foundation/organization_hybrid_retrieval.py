@@ -288,7 +288,7 @@ class OrganizationHybridRetrieval:
             scope['lexical_policy'] = lexical_policy
             scope['lexical_order'] = [r['node_id'] for r in literal]
         from retrieval.candidate_policy import candidate_limits
-        limits = candidate_limits(self.candidate_policy, has_graph=graph is not None)
+        limits = candidate_limits(self.candidate_policy, has_graph=graph is not None, lexical_policy=lexical_policy)
         if self.candidate_policy != 'balanced.v1':
             scope['candidate_policy'] = self.candidate_policy
         if graph is not None:

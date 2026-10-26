@@ -34,7 +34,7 @@ LIBRARY_SOURCE_ROUTING_GUIDANCE = (
 
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    organization_query_planning: Literal['conservative.v1', 'conservative.v2', 'conservative.v3'] | None = Field(default=None,
+    organization_query_planning: Literal['conservative.v1', 'conservative.v2', 'conservative.v3', 'conservative.v4'] | None = Field(default=None,
         description='Opt-in organization search: literal catalog issuer, explicit filing form and period end. '
         'Unknown metadata stays eligible; ambiguous/multiple issuers and fiscal years are not guessed. '
         'Cannot combine with organization_filter; no paid query planning.')

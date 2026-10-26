@@ -53,14 +53,18 @@ class QwenRetrieval:
         return RetrievalResponse(vectors, result.usage.model_dump(),
                                  getattr(result, "_request_id", None), result.model)
 
-    def rerank(self, query: str, documents: list[str], *, top_n=None) -> RetrievalResponse:
+    def rerank(self, query: str, documents: list[str], *, top_n=None, instruct=None) -> RetrievalResponse:
         if not query.strip() or not 1 <= len(documents) <= 500 or any(not d.strip() for d in documents):
             raise ValueError("rerank_requires_query_and_1_to_500_documents")
         count = len(documents) if top_n is None else top_n
         if not 1 <= count <= len(documents):
             raise ValueError("rerank_invalid_top_n")
-        result = self.reranker.post("/reranks", body={"model": self.rerank_model,
-            "query": query, "documents": documents, "top_n": count}, cast_to=object)
+        body={"model": self.rerank_model, "query": query, "documents": documents, "top_n": count}
+        if instruct is not None:
+            if not isinstance(instruct,str) or not instruct.strip() or len(instruct.encode())>4096:
+                raise ValueError("rerank_instruction_outside_budget")
+            body['instruct']=instruct
+        result = self.reranker.post("/reranks", body=body, cast_to=object)
         rows = result.get("results", [])
         indices = [r.get("index") for r in rows]
         if len(rows) != count or len(set(indices)) != count or any(

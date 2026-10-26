@@ -47,6 +47,25 @@ def test_duplicate_rerank_indices_rejected():
     api.close()
 
 
+def test_rerank_instruction_is_separate_from_unchanged_query_and_documents():
+    import json
+    sent=[]
+    def handler(request):
+        sent.append(json.loads(request.content))
+        return httpx.Response(200,json={'results':[{'index':0,'relevance_score':.8}]})
+    api=client(handler)
+    try:
+        api.rerank('original query',['original document'])
+        api.rerank('original query',['original document'],instruct='Rank answer evidence.')
+        assert 'instruct' not in sent[0]
+        assert sent[1]=={**sent[0],'instruct':'Rank answer evidence.'}
+        for invalid in ('', ' '*2, 'x'*4097, 1):
+            with pytest.raises(ValueError,match='instruction_outside_budget'):
+                api.rerank('original query',['original document'],instruct=invalid)
+        assert len(sent)==2
+    finally:api.close()
+
+
 def test_new_model_batch_limit_and_returned_model_identity():
     def handler(request):
         return httpx.Response(200,json={'object':'list','model':'text-embedding-v4','data':[],

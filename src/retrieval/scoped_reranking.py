@@ -15,12 +15,15 @@ class ScopedReranker:
     def __init__(self, path, api):
         self.path, self.api = path, api
 
-    def rank(self, query, candidates, *, scope, index_digest, check_access):
+    def rank(self, query, candidates, *, scope, index_digest, check_access, instruct=None):
         if (not isinstance(scope, str) or not scope or len(scope)>256
                 or len(index_digest)!=64 or any(c not in '0123456789abcdef' for c in index_digest)):
             raise ValueError('rerank_requires_fixed_server_scope')
         if not query.strip() or len(query.encode())>8192 or not 1<=len(candidates)<=48:
             raise ValueError('rerank_input_outside_budget')
+        if instruct is not None and (not isinstance(instruct,str) or not instruct.strip()
+                                     or len(instruct.encode())>4096):
+            raise ValueError('rerank_instruction_outside_budget')
         ids=[r['node_id'] for r in candidates]
         if len(set(ids))!=len(ids):
             raise ValueError('rerank_duplicate_candidate')
@@ -39,6 +42,10 @@ class ScopedReranker:
         identity={'format':'scoped-rerank.v1','scope':scope,'index':index_digest,
                   'model':self.api.rerank_model,'query':query,'candidates':[
                       [n,sha256(t.encode()).hexdigest()] for n,t in zip(ids,documents)]}
+        # Preserve historical no-instruction keys exactly; a different task
+        # instruction must never reuse the old paid response.
+        if instruct is not None:
+            identity['instruct']=instruct
         key=sha256(json.dumps(identity,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
         basis={'purpose':'Compare and rank the fixed authorized retrieval candidate union',
             'input_scale':{'candidate_count':len(documents),'utf8_bytes':sum(len(x.encode()) for x in documents),
@@ -48,6 +55,8 @@ class ScopedReranker:
             'reasoning_profile':'Qwen relevance reranking only, no Agent or answer generation',
             'limits':{'requests':1,'max_candidates':48,'max_document_bytes':32768,'max_total_bytes':524288},
             'stop_behavior':'Fail closed on current denial; retain failed/unknown usage; no resubmission or truncation'}
+        if instruct is not None:
+            basis['input_scale']['instruction_utf8_bytes']=len(instruct.encode())
         check_access()
         calls=0
         with LocalRecords(self.path) as records:
@@ -62,7 +71,8 @@ class ScopedReranker:
                 try:
                     check_access()
                     calls=1
-                    result=asdict(self.api.rerank(query,documents,top_n=len(documents)))
+                    options={'instruct':instruct} if instruct is not None else {}
+                    result=asdict(self.api.rerank(query,documents,top_n=len(documents),**options))
                     self._validate(result,len(documents))
                     records[key]={'status':'completed','identity':identity,'TokenBudgetBasis':basis,'result':result}
                 except Exception as error:

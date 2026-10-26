@@ -82,6 +82,21 @@ def prepare(result_path,dataset_path,index_path,navigation_path=None):
     return jobs,plan
 
 
+def instruction_plan(plan, path):
+    """Freeze a separately reviewed task instruction without rewriting inputs."""
+    raw=path.read_bytes();instruction=raw.decode('utf8')
+    if not instruction.strip() or len(raw)>4096:
+        raise ValueError('rerank_instruction_outside_budget')
+    from retrieval import qwen_api,scoped_reranking
+    implementations={str(p):sha256(p.read_bytes()).hexdigest() for p in
+        (Path(__file__),Path(qwen_api.__file__),Path(scoped_reranking.__file__))}
+    plan.update(instruction=instruction,instruction_sha256=sha256(raw).hexdigest(),
+                instruction_file=str(path),implementation_sha256=implementations)
+    plan['TokenBudgetBasis']['purpose']='Fixed-candidate development comparison of an explicit evidence-ranking task instruction'
+    plan['TokenBudgetBasis']['input_scale']['instruction_utf8_bytes']=len(raw)
+    return instruction,implementations
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     for name in ('result','dataset','index','output'):parser.add_argument('--'+name,type=Path,required=True)
@@ -89,8 +104,20 @@ def main():
     parser.add_argument('--navigation',type=Path)
     parser.add_argument('--env-file',type=Path)
     parser.add_argument('--receipt-cache',type=Path,help='Reuse exact successful public development receipts; failed/unknown requests remain blocked')
+    parser.add_argument('--instruction-file',type=Path,help='Reviewed UTF-8 ranking task instruction; separate from the unchanged query and documents')
+    parser.add_argument('--rerank-model',choices=('qwen3-rerank','qwen3.7-text-rerank'),default='qwen3-rerank')
     args=parser.parse_args()
     jobs,plan=prepare(args.result,args.dataset,args.index,args.navigation)
+    instruction=None;implementations={}
+    if args.instruction_file:
+        instruction,implementations=instruction_plan(plan,args.instruction_file)
+    if args.rerank_model!='qwen3-rerank':
+        from retrieval import qwen_api,scoped_reranking
+        implementations={str(p):sha256(p.read_bytes()).hexdigest() for p in
+            (Path(__file__),Path(qwen_api.__file__),Path(scoped_reranking.__file__))}
+        plan.update(rerank_model=args.rerank_model,implementation_sha256=implementations)
+        plan['TokenBudgetBasis'].update(purpose='Fixed-candidate development comparison of reranker model version',
+            reasoning_profile=args.rerank_model+' only; no generative model')
     args.output.mkdir(parents=True,exist_ok=True)
     planned=args.output/'plan.json'
     if planned.exists() and json.loads(planned.read_text(encoding='utf8'))!=plan:
@@ -104,7 +131,7 @@ def main():
     else:key=os.environ.get('QWEN_API_KEY')
     if not key:raise ValueError('configured_qwen_key_unavailable')
     from retrieval.qwen_api import QwenRetrieval
-    api=QwenRetrieval(key,embedding_model='qwen3.7-text-embedding')
+    api=QwenRetrieval(key,embedding_model='qwen3.7-text-embedding',rerank_model=args.rerank_model)
     receipt_cache=args.receipt_cache or args.output/'provider-records'
     source=ScopedReranker(receipt_cache,api)
     report={'status':'running','S2_passed':False,'evaluation_role':'development_fixed_candidates',
@@ -116,7 +143,7 @@ def main():
             # Sources are already frozen public qualification inputs. This
             # callback deliberately does NOT claim current organization ACL.
             ranked,receipt=source.rank(job['query'],job['candidates'],scope='qualification:development-rerank',
-                index_digest=plan['index_sha256'],check_access=lambda:None)
+                index_digest=plan['index_sha256'],check_access=lambda:None,instruct=instruction)
             report['samples'].append({k:job[k] for k in ('id','family','channel','gold')})
             report['samples'][-1].update(seconds=time.perf_counter()-start,receipt=receipt,
                 candidate_count=len(ranked),ranked_ids=[r['node_id'] for r in ranked],
@@ -131,6 +158,10 @@ def main():
             (args.output/'result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf8')
             if len(report['samples'])%10==0:
                 print(json.dumps({'completed':len(report['samples']),'expected':len(jobs)}),flush=True)
+        if any(sha256(Path(p).read_bytes()).hexdigest()!=h for p,h in implementations.items()):
+            raise ValueError('rerank_experiment_implementation_changed')
+        if args.instruction_file and sha256(args.instruction_file.read_bytes()).hexdigest()!=plan['instruction_sha256']:
+            raise ValueError('rerank_experiment_instruction_changed')
         report['status']='completed'
     except Exception as error:
         report.update(status='failed',error_type=type(error).__name__,error=str(error))

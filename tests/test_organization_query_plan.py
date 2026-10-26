@@ -119,11 +119,12 @@ def test_report_year_filters_only_cover_verified_calendar_annuals():
         assert 'annual_report_year' not in plan_query(query,data)['constraint']
 
 
-def test_real_navigation_plan_cache_and_current_revoke(tmp_path, monkeypatch):
+@pytest.mark.parametrize('policy', ['conservative.v1', 'conservative.v3'])
+def test_real_navigation_plan_cache_and_current_revoke(tmp_path, monkeypatch, policy):
     from test_organization_source_filter import scoped_fixture, query
     text = 'Acme 10-K disclosure'
     nav, reader, state, _, _ = scoped_fixture(tmp_path, monkeypatch, queries=[text])
-    request = query(query=text, organization_query_planning='conservative.v1', entity_id='COUNTERPARTY::X')
+    request = query(query=text, organization_query_planning=policy, entity_id='COUNTERPARTY::X')
     result = nav.navigate(request)
     # Known Beta and Acme 10-Q are excluded before every candidate channel;
     # Acme with missing form stays eligible. Synthetic vectors test scope only.
@@ -144,3 +145,56 @@ def test_real_navigation_plan_cache_and_current_revoke(tmp_path, monkeypatch):
     monkeypatch.setattr(reader, '_grant', deny)
     with pytest.raises(RuntimeError, match='current_authority_denied'):
         nav.navigate(request)
+
+
+def compact_catalog():
+    return {key: {'issuer_id': 'ISSUER::'+key, 'company_name': None}
+            for key in ('acme', 'acmeservices', 'datarealty', 'beta')}
+
+
+def test_v3_longest_catalog_mention_without_merging_ids():
+    data = compact_catalog()
+    query = 'Acme Services annual report revenue'
+    old = plan_query(query, data, policy='conservative.v2')
+    new = plan_query(query, data, policy='conservative.v3')
+    assert old['constraint']['issuer_id'] == 'ISSUER::acme'
+    assert new['constraint']['issuer_id'] == 'ISSUER::acmeservices'
+    assert select_planned(data, new)[0] == {'acmeservices'}
+    assert new['issuer_mentions'][0]['query_text'] == 'Acme Services'
+    assert data == compact_catalog()
+    separate = plan_query('Compare Acme and Acme Services', data, policy='conservative.v3')
+    assert {r['issuer_id'] for r in separate['constraint']['issuer_union']} == {
+        'ISSUER::acme', 'ISSUER::acmeservices'}
+
+
+@pytest.mark.parametrize('name', ['Data Realty', 'Data\tRealty', 'datarealty'])
+def test_v3_spaced_comparison_retains_both_catalog_owners(name):
+    data = compact_catalog()
+    plan = plan_query(f'Compare {name} and Beta annual reports', data, policy='conservative.v3')
+    assert select_planned(data, plan)[0] == {'datarealty', 'beta'}
+    assert len(plan['constraint']['issuer_union']) == 2
+
+
+def test_v3_incomplete_comparison_abstains_except_explicit_report_owner():
+    data = compact_catalog()
+    for query in ('Compare Unknown and Beta annual reports', 'Beta versus Unknown revenue',
+                  '比较 Unknown 和 Beta 年报'):
+        plan = plan_query(query, data, policy='conservative.v3')
+        assert 'issuer_id' not in plan['constraint']
+        assert select_planned(data, plan)[0] == set(data)
+        assert 'comparison_only_one_catalog_owner_no_issuer_filter' in plan['unresolved']
+    plan = plan_query("In Beta's annual report compare commitments with spending", data,
+                      policy='conservative.v3')
+    assert plan['constraint']['issuer_id'] == 'ISSUER::beta'
+
+
+def test_v3_ambiguous_compact_alias_and_word_boundaries_remain_safe():
+    data = compact_catalog()
+    data['another'] = {'issuer_id': 'ISSUER::another', 'company_name': 'Data Realty'}
+    assert 'issuer_id' not in plan_query('Data Realty revenues', data,
+                                       policy='conservative.v3')['constraint']
+    assert 'issuer_id' not in plan_query('Metabeta revenues', data,
+                                       policy='conservative.v3')['constraint']
+    # A missing owner is not invented from a recognizable partial name.
+    assert 'issuer_union' not in plan_query('Compare Data Holdings and Beta', data,
+                                          policy='conservative.v3')['constraint']

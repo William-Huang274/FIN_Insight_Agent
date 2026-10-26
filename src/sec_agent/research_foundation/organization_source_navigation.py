@@ -178,7 +178,7 @@ class OrganizationSourceNavigation:
             tokenize(request.query), population_cache=self._lexical_statistics)
         literal = [rows[i] for i in sorted(overlap, key=lambda i:(-float(scores[i]),rows[i]['node_id']))]
         needs, lanes = None, []
-        if request.organization_query_planning == 'conservative.v2':
+        if request.organization_query_planning in {'conservative.v2', 'conservative.v3'}:
             from retrieval.organization_search_needs import compile_needs, lexical_candidates
             needs = compile_needs(request.query, query_plan)
             ids, lanes = lexical_candidates(candidates.directory/'lexical.sqlite', rows, needs,

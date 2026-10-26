@@ -20,7 +20,33 @@ def _mentions(query, alias):
     return bool(re.search(r'(?<!\w)' + re.escape(alias) + r'(?!\w)', query, re.IGNORECASE))
 
 
-def _report_owners(query, aliases, *, allow_comparison=False):
+def _alias_pattern(alias, compatible=False):
+    # Only whitespace compatibility for a declared catalog alias. No fuzzy
+    # spelling, suffix removal, inferred ticker, or merging issuer identities.
+    if compatible and alias.isascii():
+        return r'\s*'.join(re.escape(c) for c in alias if not c.isspace())
+    return re.escape(alias)
+
+
+def _compatible_mentions(query, aliases):
+    hits = []
+    for alias, owners in aliases.items():
+        boundary = '' if re.search(r'[\u3400-\u9fff]', alias) else r'(?<!\w)'
+        end = '' if not boundary else r'(?!\w)'
+        for match in re.finditer(boundary+_alias_pattern(alias, True)+end, query, re.I):
+            hits.append((alias, owners, match.start(), match.end()))
+    # A separate short-name mention is still retained. Only a short match
+    # wholly inside a longer declared name at the SAME query location loses.
+    hits = [h for h in hits if not any(
+        other[2] <= h[2] and other[3] >= h[3] and other[3]-other[2] > h[3]-h[2]
+        for other in hits)]
+    active = {h[0] for h in hits}
+    return [(a, ids) for a, ids in aliases.items() if a in active], [
+        {'alias': a, 'query_text': query[lo:hi], 'start': lo, 'end': hi,
+         'issuer_ids': sorted(owners)} for a, owners, lo, hi in hits]
+
+
+def _report_owners(query, aliases, *, allow_comparison=False, compatible=False):
     # A named report owner is different from counterparties mentioned in the
     # question. Only explicit report phrases narrow scope; comparison abstains.
     if not allow_comparison and re.search(r'\b(?:compare|comparison|versus|vs\.?)\b|对比|比较|相比', query, re.IGNORECASE):
@@ -28,7 +54,7 @@ def _report_owners(query, aliases, *, allow_comparison=False):
     found=[]; owners=set()
     for alias, ids in aliases.items():
         boundary='' if re.search(r'[\u3400-\u9fff]',alias) else r'(?<!\w)'
-        pattern=(boundary+re.escape(alias)+r"(?:['’]s)?\s*(?:fiscal\s*|FY\s*)?"
+        pattern=(boundary+_alias_pattern(alias, compatible)+r"(?:['’]s)?\s*(?:fiscal\s*|FY\s*)?"
                  r'(?:20\d{2}\s*年?\s*)?(?:Form\s+)?(?:annual\s+report|10-?[KQ]|年报|季度报告)(?![A-Za-z])')
         for match in re.finditer(pattern,query,re.IGNORECASE):
             owners.update(ids);found.append(match.group())
@@ -36,7 +62,7 @@ def _report_owners(query, aliases, *, allow_comparison=False):
 
 
 def plan_query(query, metadata, *, policy='conservative.v1'):
-    if policy not in {'conservative.v1', 'conservative.v2'}:
+    if policy not in {'conservative.v1', 'conservative.v2', 'conservative.v3'}:
         raise ValueError('unsupported_organization_query_plan')
     aliases, names = {}, {}
     named_issuers = {}
@@ -57,15 +83,29 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
                 names.setdefault(owner, set()).add(name)
                 aliases.setdefault(name.casefold(), set()).add(owner)
     matches = [(a, owners) for a, owners in aliases.items() if _mentions(query, a)]
+    mentions = []
+    if policy == 'conservative.v3':
+        matches, mentions = _compatible_mentions(query, aliases)
     owners = set().union(*(v for _, v in matches)) if matches else set()
     unresolved, evidence, constraint = [], [], {}
-    report_owners, report_phrases = _report_owners(query, aliases, allow_comparison=policy=='conservative.v2')
+    report_owners, report_phrases = _report_owners(query,
+        dict(matches) if policy == 'conservative.v3' else aliases,
+        allow_comparison=policy!='conservative.v1', compatible=policy=='conservative.v3')
     comparison = re.search(r'\b(?:compare|comparison|versus|vs\.?)\b|对比|比较|两家公司|各自', query, re.I)
-    if (policy == 'conservative.v2' and len(owners)>1 and comparison and report_phrases
+    if (policy != 'conservative.v1' and len(owners)>1 and comparison and report_phrases
             and comparison.start() < min(query.casefold().find(p.casefold()) for p in report_phrases)):
         # "Compare Alpha and Beta annual report" modifies both owners, not
         # just the last name adjacent to the report noun.
         report_owners = set()
+    if policy == 'conservative.v3' and comparison and len(owners) == 1:
+        # "In Alpha's report, compare ..." has an explicit owner before the
+        # comparison. "Compare Unknown and Alpha ..." does not justify a
+        # one-company scope, even if only Alpha is present in the catalog.
+        explicit_before = bool(report_phrases) and min(
+            query.casefold().find(p.casefold()) for p in report_phrases) < comparison.start()
+        if not explicit_before:
+            owners, report_owners = set(), set()
+            unresolved.append('comparison_only_one_catalog_owner_no_issuer_filter')
     if len(report_owners)==1:
         owners=report_owners
         evidence.append({'field':'issuer','matched_query_text':report_phrases,
@@ -77,7 +117,7 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
             constraint['issuer_id'] = owner
         evidence.append({'field': 'issuer', 'matched_query_text': sorted(a for a, ids in matches if owner in ids),
                          'basis': 'literal_authorized_catalog_identity'})
-    elif (policy == 'conservative.v2' and owners and all(len(ids) == 1 for _, ids in matches)
+    elif (policy != 'conservative.v1' and owners and all(len(ids) == 1 for _, ids in matches)
           and (comparison or len(report_owners)>1)):
         constraint['issuer_union'] = [dict(issuer_id=None if owner.startswith('name:') else owner,
             company_names=sorted(names.get(owner, set()))) for owner in sorted(owners)]
@@ -131,7 +171,10 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
         unresolved.append('year_or_publication_date_not_mapped_to_period_end')
     result = {'policy': policy, 'constraint': constraint, 'evidence': evidence,
               'unresolved': unresolved, 'unknown_metadata_retained': True}
-    if policy == 'conservative.v2':
+    if policy == 'conservative.v3':
+        result['issuer_mentions'] = mentions
+        result['issuer_matching'] = 'catalog_whitespace_compatibility_longest_mention.v1'
+    if policy != 'conservative.v1':
         # A bare "2025 report" does not establish a filing form or fiscal
         # endpoint. It can prefer an independently cover-verified report year
         # when selecting evidence, without excluding uncertain sources.

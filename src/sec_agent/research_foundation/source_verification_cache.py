@@ -73,6 +73,7 @@ def implementation_digest():
         'organization_execution_access.py', 'project_source_captures.py', 'asset_workspace.py',
         'task_attachments.py', 'project_asset_versions.py', 'project_asset_access.py')]
     files.append(root.parents[1]/'retrieval'/'library_source_bundle.py')
+    files.append(root.parents[1]/'retrieval'/'source_structure.py')
     return sha256(b''.join(path.read_bytes() for path in files)).hexdigest()
 
 

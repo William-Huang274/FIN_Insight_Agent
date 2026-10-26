@@ -56,6 +56,7 @@ class VerifiedCandidateIndex:
         self.original_reads = 0
         self.candidate_reads = 0
         self.neighbors = {}
+        self.structures = {}
         self.verification_hits = 0
 
     def prepare(self, before, manifest, epoch):
@@ -88,6 +89,7 @@ class VerifiedCandidateIndex:
         allowed = {OrganizationSourceNavigation._identity(item):item for item in manifest['inputs']}
         expected = {node_id for node_id, record in records.items() if record['document_id'] in allowed}
         rows, origins, metadata, original_metadata, neighbors = {}, {}, {}, {}, {}
+        structures = {}
         self.original_reads = 0
         self.verification_hits = 0
         from .source_verification_cache import SourceVerificationCache, versions
@@ -113,13 +115,15 @@ class VerifiedCandidateIndex:
                 from .organization_source_filter import source_metadata, original_source_metadata
                 url = self.workbench_url + f"/api/v1/asset-workspace/organization-projects/{manifest['project_id']}/resources/{item['resource_id']}"
                 projected = source_nodes(result['source_bundle'], document, item, url)
+                from retrieval.source_structure import organization_structure
+                structure = organization_structure(result['source_bundle'], document)
                 if 'graph_index' in index:
                     from .organization_graph_index import verify_source
                     verify_source(directory/'graph.sqlite', result['source_bundle'], document)
                 saved = {'version': result['version'], 'metadata': source_metadata(result['source_bundle']),
                     'original_metadata': original_source_metadata(result['source_bundle']),
                     'capture': {k:deepcopy(v) for k,v in (result.get('capture') or {}).items() if k != 'rows'},
-                    'nodes': [], 'locations': []}
+                    'nodes': [], 'locations': [], 'structures':structure}
                 for row in projected:
                     if row['node_kind'] != 'text':
                         continue
@@ -140,6 +144,8 @@ class VerifiedCandidateIndex:
             else:
                 self.verification_hits += 1
             metadata[document], original_metadata[document] = saved['metadata'], saved['original_metadata']
+            # Retain compressed per-source metadata, not 114k expanded dicts.
+            structures[document] = zlib.compress(json.dumps(saved['structures']).encode(), 1)
             ordered = sorted(saved.get('locations', []))
             for position, (parent, start, end, node) in enumerate(ordered):
                 adjacent = []
@@ -181,6 +187,7 @@ class VerifiedCandidateIndex:
         self.source_metadata = metadata
         self.original_source_metadata = original_metadata
         self.neighbors = neighbors
+        self.structures = structures
         self.before, self.epoch, self.directory = before, epoch, directory
         self.generation = key
 
@@ -252,5 +259,12 @@ class VerifiedCandidateIndex:
         if ids:
             self.candidate_reads += before_reads
         by_id = {r['node_id']:r for r in neighbors}
-        return [attach_context(r, [by_id[n] for n in wanted[r['node_id']]])
-                if r['node_id'] in wanted else r for r in rows]
+        result = [attach_context(r, [by_id[n] for n in wanted[r['node_id']]])
+                  if r['node_id'] in wanted else dict(r) for r in rows]
+        selected_structures = {}
+        for row in result:
+            document = row['parent_document_id']
+            if document not in selected_structures:
+                selected_structures[document] = json.loads(zlib.decompress(self.structures[document]))
+            row['source_structure'] = selected_structures[document][row['node_id']]
+        return result

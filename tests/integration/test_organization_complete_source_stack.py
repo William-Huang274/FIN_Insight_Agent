@@ -606,6 +606,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     'response_cache_hit':True,'warm_result_identity_unchanged':True})
             needs_request=None
             context_links=[]
+            structural_readbacks=[]
             if os.getenv('FIN_COMPLETE_SOURCE_NEEDS_PROBE') == '1':
                 needs_request={'source_space':'organization','operation':'search','query':next(iter(queries)),
                                'organization_query_planning':'conservative.v2','organization_metadata_policy':'sec_cover.v2'}
@@ -628,6 +629,16 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                         fragment=next(r for r in needs_found.items if r['node_id']==matches[0])
                         assert fragment.get('context_readbacks'),'incomplete real original fragment must expose adjacent readback'
                         context_links=fragment['context_readbacks']
+                        structure=fragment['source_structure']
+                        assert structure['status']=='verified_original_coordinates'
+                        assert structure['footnotes'], 'explicit numbered note must bind its marked table'
+                        for note in structure['footnotes']:
+                            structural_readbacks.extend(note['table_readbacks'])
+                        for request in structural_readbacks:
+                            original=nav.navigate(request)
+                            assert original.items and original.items[0]['passage']
+                        s.save('source-structure',{'status':'readback_passed','structure':structure,
+                            'table_readbacks':structural_readbacks,'provider_calls':0})
                     for link in context_links[:4]:
                         read=nav.navigate(link['readback'])
                         assert read.items[0]['content_sha256']==link['content_sha256']
@@ -710,6 +721,11 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(needs_request)
                 for link in context_links[:4]:
                     with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(link['readback'])
+                for request in structural_readbacks:
+                    with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(request)
+                if structural_readbacks:
+                    s.save('source-structure',{'status':'passed','structure':structure,
+                        'table_readbacks':structural_readbacks,'revoked_readbacks_denied':True,'provider_calls':0})
                 s.save('query-needs-v2',{'status':'passed','request':needs_request,'receipt':needs_receipt,
                     'context_links':context_links,'context_reads':min(4,len(context_links)),
                     'revoked_search_and_context_denied':True,'provider_calls':0})

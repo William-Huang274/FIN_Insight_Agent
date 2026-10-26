@@ -387,6 +387,8 @@ def navigate_source_nodes(
             used += len(content)
         elif request.operation == "search":
             item["preview"] = content[:500]
+            if 'source_structure' in row:
+                item['source_structure'] = row['source_structure']
             item["preview_truncated"] = len(content) > 500
             if row.get('context_status'):
                 item['context_status'] = row['context_status']

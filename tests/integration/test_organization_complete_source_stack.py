@@ -188,6 +188,11 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     if quality_data:
         from tests.integration.source_intake_quality import PaidCallBudget
         quality_budget = PaidCallBudget(len(quality_data['questions']), s.save)
+        if os.getenv('FIN_COMPLETE_SOURCE_HTTP_QUALITY') == '1':
+            from tests.integration.source_intake_http import RemoteBudget
+            quality_budget = RemoteBudget(s.output)
+            quality_binding.update(transport='BFF HTTP to current Java user and runtime authority',
+                                   table_completion='table-completion.v1')
     indices=reserve_index_output(s.output,os.getenv('FIN_COMPLETE_SOURCE_INDEX_OUTPUT'))
     s.save('source-intake-storage', {'index_output':str(indices), 'state_output':str(s.state),
         'table_period_catalog_sha256':os.getenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256'),
@@ -765,13 +770,26 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     configured.setenv('FINSIGHT_ORGANIZATION_RERANK', 'qwen')
                     configured.setenv('FINSIGHT_ORGANIZATION_RERANK_MODEL', 'qwen3.7-text-rerank')
                     configured.setenv('FINSIGHT_ORGANIZATION_QUERY_EMBEDDING', 'qwen')
-                    configured.setattr(QwenRetrieval, 'embed', quality_budget.wrap('embedding', QwenRetrieval.embed))
-                    configured.setattr(QwenRetrieval, 'rerank', quality_budget.wrap('rerank', QwenRetrieval.rerank))
-                    quality_nav = OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
+                    if os.getenv('FIN_COMPLETE_SOURCE_HTTP_QUALITY') == '1':
+                        from tests.integration.source_intake_http import HttpNavigation
+                        grant, manifest, _ = reader._grant()
+                        quality_nav = HttpNavigation(s, reader, project, manifest['draft_id'])
+                    else:
+                        configured.setattr(QwenRetrieval, 'embed', quality_budget.wrap('embedding', QwenRetrieval.embed))
+                        configured.setattr(QwenRetrieval, 'rerank', quality_budget.wrap('rerank', QwenRetrieval.rerank))
+                        quality_nav = OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
                     nav = quality_nav
                     with diagnostic.phase('frozen_quality_replay_real_authority'):
                         quality_requests = run_quality(quality_data,quality_binding,nav=quality_nav,
                             bundles=bundles,save=s.save,budget=quality_budget)
+                    if os.getenv('FIN_COMPLETE_SOURCE_HTTP_QUALITY') == '1':
+                        from tests.integration.source_intake_http import qualify_concurrency
+                        with diagnostic.phase('fixed_resource_http_concurrency'):
+                            qualify_concurrency(quality_nav, quality_requests, s.save, quality_budget,
+                                                api=api, org=org, project=project, space=space)
+                        quality_nav.navigate(quality_requests[-1])
+                        cached = quality_nav.navigate(quality_requests[-1])
+                        assert cached.items[0]['retrieval']['response_cache_hit']
             # Revoke a candidate that was NOT explicitly selected; all current
             # dependencies must still protect cached search, reports and reads.
             revoke_sid=list(batch)[-1] if unified_scope else next(iter(batch))
@@ -783,8 +801,18 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 # non-selected candidate's revocation still invalidates it.
                 with pytest.raises(OrganizationExecutionUnavailable):
                     quality_nav.navigate(quality_requests[-1])
+                if os.getenv('FIN_COMPLETE_SOURCE_HTTP_QUALITY') == '1':
+                    before_calls = dict(quality_budget.calls)
+                    for file in sorted(s.output.glob('service-quality-question-*.json')):
+                        saved = json.loads(file.read_bytes())
+                        for context in saved.get('verified_contexts', []):
+                            for readback in context['readbacks']:
+                                with pytest.raises(OrganizationExecutionUnavailable):
+                                    quality_nav.navigate(readback)
+                    assert quality_budget.calls == before_calls
                 s.save('service-quality-revocation', {'cached_search_denied': True,
-                    'revoked_resource': first, 'provider_calls_after_revocation': 0})
+                    'revoked_resource': first, 'provider_calls_after_revocation': 0,
+                    'supplemental_readbacks_checked': os.getenv('FIN_COMPLETE_SOURCE_HTTP_QUALITY') == '1'})
             if needs_request is not None:
                 with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(needs_request)
                 for link in context_links[:4]:

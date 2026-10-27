@@ -19,6 +19,7 @@ class PaidCallBudget:
     def __init__(self, limit, save):
         self.limit, self.save = limit, save
         self.calls = {'embedding': 0, 'rerank': 0}
+        self.receipts = []
         self.failed = False
 
     def wrap(self, operation, method):
@@ -36,13 +37,15 @@ class PaidCallBudget:
                 raise
             finally:
                 provider_network.reset(token)
+            self.receipts.append({'operation': operation, 'usage': result.usage,
+                                  'request_id': result.request_id, 'model': result.model})
             self.save('service-quality-provider-budget', self.record('completed'))
             return result
         return call
 
     def record(self, status):
         return {'status': status, 'calls': dict(self.calls), 'failed': self.failed,
-                'per_operation_limit': self.limit, 'automatic_retries': 0}
+                'per_operation_limit': self.limit, 'automatic_retries': 0, 'receipts': self.receipts}
 
 
 def load_frozen_quality(directory, expected_sha256, bundles):
@@ -55,11 +58,21 @@ def load_frozen_quality(directory, expected_sha256, bundles):
     summary = json.loads((root/'summary.json').read_text(encoding='utf8'))
     questions = data['questions']
     policy = data['freeze']['ranking_policy']
+    completed = (summary.get('batch_quality_passed') is True
+        and summary.get('execution_status') == 'completed'
+        and summary.get('executed') == len(questions) and summary.get('expected') == len(questions)
+        and {r['id'] for r in summary.get('rows', [])} == {q['id'] for q in questions})
+    if summary.get('status') == 'completed' and summary.get('raw_quality_gate') is True:
+        # Targeted table-completion evaluation has a separate, explicit schema.
+        result = json.loads((root/'result.json').read_text(encoding='utf8'))
+        samples = result.get('samples', [])
+        completed = (summary.get('augmented_no_regression') is True
+            and result.get('status') == 'completed' and len(samples) == len(questions)
+            and {r['id'] for r in samples} == {q['id'] for q in questions}
+            and sum(g['questions'] for g in summary['metrics'].values()) == len(questions)
+            and plan.get('table_completion', {}).get('policy') == 'table-completion.v1')
     if (plan['dataset_sha256'] != expected_sha256 or data['freeze']['status'] != 'frozen'
-            or summary.get('batch_quality_passed') is not True
-            or summary.get('execution_status') != 'completed'
-            or summary['executed'] != len(questions) or summary['expected'] != len(questions)
-            or {r['id'] for r in summary['rows']} != {q['id'] for q in questions}
+            or not completed
             or len({q['id'] for q in questions}) != len(questions)
             or not 1 <= len(questions) <= 100):
         raise ValueError('service_quality_requires_completed_frozen_batch')
@@ -115,6 +128,12 @@ def run_quality(data, binding, *, nav, bundles, save, budget):
         'limits': {'embedding_requests': budget.limit, 'rerank_requests': budget.limit,
                    'concurrency': 1, 'automatic_retries': 0},
         'stop_behavior': 'Stop at first execution failure; retain failed and unknown usage, never resubmit'}
+    if binding.get('transport'):
+        basis.update(purpose='Frozen HTTP quality replay, exact table context readback and fixed-profile two-user load',
+            input_scale={'quality_queries': len(data['questions']), 'sources': len(bundles),
+                'load_requests': 72, 'second_user_warmup': 1, 'rerank_documents_per_request_max': 500},
+            quality_risk='Service replay reuses a known set; shared host and provider latency are not exclusive capacity')
+        basis['limits'].update(http_concurrency_max=4, provider_concurrency_max=1)
     report = {'status': 'running', 'binding': binding, 'rows': rows, 'TokenBudgetBasis': basis,
               'capacity_assessed': False, 'Agent_answer_quality_assessed': False, 'S2_passed': False}
     save('service-quality', report)
@@ -147,11 +166,14 @@ def run_quality(data, binding, *, nav, bundles, save, budget):
                         or read.items[0].get('result_state') != 'source_bound_passage'):
                     raise ValueError('service_quality_original_readback_mismatch')
                 originals.append(read.items[0])
+            contexts = verify_completion(result.items, nav, bundles) if binding.get('table_completion') else []
             rows.append({'id': q['id'], 'family': q['family'], 'kind': q['question_kind'],
                          'search_seconds': elapsed, 'request': request,
+                         'verified_completion_spans': len(contexts),
                          **score_original_spans(q, originals, bundles)})
             save('service-quality-question-'+q['id'], {
-                'search': result.model_dump(mode='json'), 'originals': originals})
+                'search': result.model_dump(mode='json'), 'originals': originals,
+                'verified_contexts': contexts})
             save('service-quality', report)
         groups = {}
         for kind in {r['kind'] for r in rows}:
@@ -181,3 +203,42 @@ def run_quality(data, binding, *, nav, bundles, save, budget):
     if not passed:
         raise AssertionError('service_quality_frozen_batch_gate_failed')
     return [r['request'] for r in rows]
+
+
+def verify_completion(items, nav, bundles):
+    """Check every unique supplement against immutable source AND live readbacks."""
+    verified = {}
+    for item in items[:10]:
+        completion = item.get('table_completion', {})
+        if completion.get('policy') != 'table-completion.v1':
+            raise ValueError('service_completion_policy_missing')
+        for context in completion['contexts']:
+            key = (context['document_id'], context['source_digest'],
+                   context['source_char_start'], context['source_char_end'])
+            if key in verified: continue
+            bundle = bundles[context['source_id']]
+            lo, hi = context['source_char_start'], context['source_char_end']
+            if (bundle['source']['digest'] != context['source_digest']
+                    or context['text'] != bundle['text'][lo:hi]
+                    or sha256(context['text'].encode()).hexdigest() != context['content_sha256']
+                    or context['document_id'] != item['document_id']
+                    or context['source_digest'] != item['original_source']['source_digest']):
+                raise ValueError('service_completion_original_identity_mismatch')
+            covered = lo
+            for request in context['readbacks']:
+                read = nav.navigate(request)
+                if len(read.items) != 1: raise ValueError('service_completion_readback_missing')
+                row = read.items[0]
+                original = row['original_source']
+                start = original['source_char_start'] + request.get('character_offset', 0)
+                if (row['document_id'] != context['document_id']
+                        or original['source_digest'] != context['source_digest'] or start != covered):
+                    raise ValueError('service_completion_readback_identity_mismatch')
+                text = row['passage']
+                take = min(hi-covered, len(text))
+                if take <= 0 or text[:take] != bundle['text'][covered:covered+take]:
+                    raise ValueError('service_completion_readback_text_mismatch')
+                covered += take
+            if covered != hi: raise ValueError('service_completion_readback_incomplete')
+            verified[key] = context
+    return list(verified.values())

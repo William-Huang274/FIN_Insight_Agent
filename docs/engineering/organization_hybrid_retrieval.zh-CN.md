@@ -979,3 +979,21 @@ BFF 单进程及最多 4 个并行连接、PostgreSQL 容器上限 192 MiB；数
 读取前后与响应缓存命中时仍核验当前授权和数据代次，撤权不能借补充上下文绕过。
 部分原件回读不携带超出读取窗口的表格依赖。
 质量验收分别记录原始前十证据覆盖和“前十＋补充原文”覆盖，不能将后者写成 Recall@10。
+
+### 已绑定组织研究的 HTTP 检索
+
+BFF 显式启用 `FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED=1` 后提供
+`POST /api/v1/asset-workspace/organization-projects/{project}/research-drafts/{draft}/executions/{execution}/navigate`。
+请求使用现有 `SourceDocumentRequest`，只允许 organization 范围的 catalog、outline、search、read。
+它需要现有 Java 准备单与真实执行绑定，不能创建绑定或授权启动 Agent。浏览器身份及同源请求检查
+沿用资产接口；需要配置业务服务、独立 runtime 密钥和固定检索发布目录。
+
+每次读取同时核验当前用户对项目及全部冻结资料的权限、runtime 绑定与准备单身份，并在返回前重验。
+用户范围校验失败时不能借 runtime 服务身份继续读取。原文与补全回读使用同一路径；缓存命中也不能
+绕过当前权限。响应禁止浏览器缓存，不开放跨空间回退或其他用户的观察历史。
+
+当前保守配置为单进程最多保留两个用户独立的检索实例，同一时刻只执行一个导航操作，排队最多
+30 秒；超时返回 429，本次不启动检索。此配置限制重复全库加载，但不代表并行模型吞吐能力。
+服务压测必须计入排队、429、503 和超时，并区分首次索引准备、响应缓存命中、原文回读与混合查询。
+`tests/integration/source_intake_http.py` 将冻结题集经真实 BFF/Java 重放，逐一核对补充区间与原件回读，
+在固定 compact 配置下测量并发 1/2/4；测试登录为合成身份，不替代 OIDC 验收或独占机器容量测试。

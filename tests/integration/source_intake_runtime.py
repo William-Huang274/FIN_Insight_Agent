@@ -57,6 +57,37 @@ class CompleteSourceStack(OrganizationGraphStack):
                   'limits': {**SERIAL_ENV, **(COMPACT_ENV if self.compact_profile else {})} if self.serial_profile else {},
                   'bff_app': 'tests.integration.fixtures.intake_native_web:app',
                   'production_routes_unchanged': True, 'capacity_evaluation': False})
+        if os.getenv('FIN_COMPLETE_SOURCE_HTTP_QUALITY') == '1':
+            if not self.compact_profile:
+                raise ValueError('http_quality_requires_frozen_compact_profile')
+            self.env.update(FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED='1',
+                FINSIGHT_ORGANIZATION_CANDIDATE_POLICY='needs_window.v4',
+                FINSIGHT_ORGANIZATION_TABLE_COMPLETION='bounded.v1',
+                FINSIGHT_ORGANIZATION_QUERY_EMBEDDING='qwen',
+                FINSIGHT_ORGANIZATION_RERANK='qwen',
+                FINSIGHT_ORGANIZATION_RERANK_MODEL='qwen3.7-text-rerank')
+
+    def boot(self, which):
+        # Only the explicitly budgeted BFF receives a provider key. Neither
+        # PostgreSQL nor the Java process or an Agent container needs it.
+        if which == 'bff' and os.getenv('FIN_COMPLETE_SOURCE_HTTP_QUALITY') == '1':
+            self.env['QWEN_API_KEY'] = os.environ['QWEN_API_KEY']
+            try:
+                process = super().boot(which)
+            finally:
+                self.env.pop('QWEN_API_KEY', None)
+        else:
+            process = super().boot(which)
+        if os.getenv('FIN_COMPLETE_SOURCE_HTTP_QUALITY') == '1':
+            import psutil
+            owned = psutil.Process(process.pid)
+            cpus = psutil.Process().cpu_affinity()[:2]
+            owned.cpu_affinity(cpus)
+            self.save(which+'-fixed-process-resources', {'pid': process.pid, 'logical_cpu_affinity': owned.cpu_affinity(),
+                'java_heap_mib': 128 if which == 'java' else None,
+                'python_worker_count': 1 if which == 'bff' else None,
+                'python_memory_hard_cap': False, 'shared_host': True})
+        return process
 
     def postgres_memory_evidence(self):
         """Read only this attempt's cgroup peak, before its container is stopped."""

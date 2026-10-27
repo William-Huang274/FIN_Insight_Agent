@@ -8,6 +8,7 @@ from sec_agent.research_foundation.asset_workspace import AssetWorkspace, AssetR
 from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
 from sec_agent.research_foundation.project_asset_versions import RevisionConflict
 from sec_agent.research_foundation.project_source_captures import CaptureRequest, save_capture, read_capture, render_capture
+from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 
 
 class ProfileEdit(BaseModel):
@@ -43,6 +44,8 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None,
     from ...business_transport import space_business_request
     from starlette.concurrency import run_in_threadpool
     shared = SpaceAssets(root / 'organization-assets')
+    from ...organization_navigation import OrganizationNavigationService
+    navigation_service = OrganizationNavigationService(shared.workspace, space_business_request)
     router = APIRouter(prefix='/asset-workspace')
 
     def identity(request, response, write=False):
@@ -60,6 +63,20 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None,
         except (AssetConflict, ProjectAssetUnavailable, RevisionConflict) as exc: raise HTTPException(409, str(exc)) from None
         except ValueError as exc: raise HTTPException(422, str(exc) if str(exc).startswith('选择内容超过') else '资产内容或版本参数不适用') from None
         except OSError: raise HTTPException(409, '保存的原件暂不可读取，请保留记录并检查存储') from None
+
+    @router.post('/organization-projects/{project_id}/research-drafts/{draft_id}/executions/{execution_id}/navigate')
+    async def organization_navigation(project_id: UUID, draft_id: UUID, execution_id: UUID,
+                                     body: SourceDocumentRequest, request: Request, response: Response):
+        import os
+        from ...organization_research_inputs import validate_grant
+        actor = identity(request, response, True)  # Search may spend on query embeddings/rerank.
+        if os.getenv('FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED') != '1':
+            raise HTTPException(503, '组织检索服务尚未启用')
+        grant = await space_business_request(actor, 'POST',
+            f'projects/{project_id}/research-drafts/{draft_id}/material-access')
+        validate_grant(grant, project_id, draft_id)
+        return await run_in_threadpool(call, navigation_service.navigate, actor, str(project_id),
+            str(draft_id), str(execution_id), grant, str(request.base_url).rstrip('/'), body)
 
     @router.get('/projects/{project_id}')
     def catalog(project_id: UUID, request: Request, response: Response):

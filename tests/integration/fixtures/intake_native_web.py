@@ -86,6 +86,9 @@ async def synthetic_binding(service):
 
 
 research_intake.current_binding = synthetic_binding
+if os.environ.get('FIN_COMPLETE_SOURCE_HTTP_QUALITY') == '1':
+    from tests.integration.source_intake_http import install_provider_budget
+    install_provider_budget()
 logging.getLogger('apps.workbench.backend.research_intake').setLevel(logging.INFO)
 logging.getLogger('apps.workbench.backend.research_intake').addHandler(logging.StreamHandler())
 app = create_report_session_app()

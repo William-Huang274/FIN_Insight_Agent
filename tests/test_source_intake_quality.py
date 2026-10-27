@@ -73,17 +73,20 @@ def test_split_evidence_requires_both_verified_originals(tmp_path):
 def test_network_permit_exists_only_during_counted_provider_call():
     records = []
     budget = PaidCallBudget(1, lambda name, value: records.append(value))
+    from retrieval.qwen_api import RetrievalResponse
+    response = RetrievalResponse([], {'total_tokens': 3}, 'synthetic-id', 'synthetic-model')
     def provider():
         assert provider_network.get()
-        return 'actual response'
+        return response
     wrapped = budget.wrap('embedding', provider)
     assert not provider_network.get()
-    assert wrapped() == 'actual response'
+    assert wrapped() is response
     assert not provider_network.get()
     with pytest.raises(RuntimeError, match='budget_or_failed'):
         wrapped()
     assert budget.calls == {'embedding': 1, 'rerank': 0}
     assert records[0]['status'] == 'submitted' and records[-1]['status'] == 'completed'
+    assert records[-1]['receipts'][0]['usage'] == {'total_tokens': 3}
 
 
 def test_unknown_failure_stops_all_later_calls_and_restores_guard():
@@ -98,6 +101,42 @@ def test_unknown_failure_stops_all_later_calls_and_restores_guard():
     with pytest.raises(RuntimeError, match='budget_or_failed'):
         budget.wrap('embedding', lambda: pytest.fail('must not submit'))()
     assert budget.calls == {'embedding': 0, 'rerank': 1}
+
+
+def test_completion_checks_exact_source_and_live_windows():
+    from tests.integration.source_intake_quality import verify_completion
+    b = bundle()
+    digest = b['source']['digest']
+    context = {'document_id': 'doc', 'source_id': 's', 'source_digest': digest,
+        'source_char_start': 0, 'source_char_end': 9, 'text': b['text'][:9],
+        'content_sha256': sha256(b['text'][:9].encode()).hexdigest(),
+        'readbacks': [{'document_id': 'doc', 'character_offset': 0}]}
+    item = {'document_id': 'doc', 'original_source': {'source_digest': digest},
+        'table_completion': {'policy': 'table-completion.v1', 'contexts': [context]}}
+    live = {'document_id': 'doc', 'original_source': {'source_digest': digest, 'source_char_start': 0},
+            'passage': b['text']}
+    nav = SimpleNamespace(navigate=lambda _: SimpleNamespace(items=[live]))
+    assert verify_completion([item], nav, {'s': b}) == [context]
+    live['passage'] = 'wrong original'
+    with pytest.raises(ValueError, match='readback_text_mismatch'):
+        verify_completion([item], nav, {'s': b})
+    live['original_source']['source_digest'] = 'wrong version'
+    with pytest.raises(ValueError, match='readback_identity_mismatch'):
+        verify_completion([item], nav, {'s': b})
+
+
+def test_completed_table_evaluation_schema_checks_sample_ids(tmp_path):
+    _, b, digest = fixture(tmp_path)
+    plan = json.loads((tmp_path/'plan.json').read_bytes())
+    plan['table_completion'] = {'policy': 'table-completion.v1'}
+    (tmp_path/'plan.json').write_text(json.dumps(plan))
+    (tmp_path/'summary.json').write_text(json.dumps({'status': 'completed',
+        'raw_quality_gate': True, 'augmented_no_regression': True, 'metrics': {'positive': {'questions': 1}}}))
+    (tmp_path/'result.json').write_text(json.dumps({'status': 'completed', 'samples': [{'id': 'split-evidence'}]}))
+    assert load_frozen_quality(tmp_path, digest, {'s': b})[0]['questions'][0]['id'] == 'split-evidence'
+    (tmp_path/'result.json').write_text(json.dumps({'status': 'completed', 'samples': [{'id': 'wrong'}]}))
+    with pytest.raises(ValueError, match='completed_frozen_batch'):
+        load_frozen_quality(tmp_path, digest, {'s': b})
 
 
 @pytest.mark.parametrize('wrong_readback', [False, True])

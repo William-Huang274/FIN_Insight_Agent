@@ -120,6 +120,8 @@ def baseline():
         'FIN_COMPLETE_SOURCE_SERIAL_PROFILE',
         'FINSIGHT_LIBRARY_NODE_SHA256', 'FINSIGHT_LIBRARY_RECOVERY_SHA256')}
     # Keep legacy checkpoint identity unchanged when no enrichment is selected.
+    if os.getenv('FIN_COMPLETE_SOURCE_COMPACT_PROFILE') == '1':
+        configuration['FIN_COMPLETE_SOURCE_COMPACT_PROFILE'] = '1'
     catalog = os.environ.get('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG')
     expected = os.environ.get('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256')
     if catalog or expected:

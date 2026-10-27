@@ -69,6 +69,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     graph_probe=os.getenv('FIN_COMPLETE_SOURCE_GRAPH_PROBE')=='1'
     graph_checks=[]
     lifecycles=[]
+    prepared_stores=[]
     if lifecycle_probe:
         assert global_probe and unified_scope
     if batch_binding:
@@ -411,7 +412,13 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                 original=api('POST',f'/projects/{project}/research-drafts',payload)
             reader=bind(project,original)
             with diagnostic.phase('authorized_original_projection',profile=global_probe):
-                _,nodes=preparation_nodes(reader,workbench_url='http://localhost')
+                if s.compact_profile:
+                    from retrieval.prepared_node_store import PreparedNodeStore
+                    node_store=PreparedNodeStore(indices/('prepared-nodes-'+uuid4().hex+'.sqlite'))
+                    prepared_stores.append(node_store)
+                else:
+                    node_store=None
+                _,nodes=preparation_nodes(reader,workbench_url='http://localhost',node_store=node_store)
             assert len(nodes)==sum(len(bundle['chunks']) for bundle in batch.values())
             release=str(uuid4())
             graph_sources=None
@@ -431,6 +438,9 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             targets=source_readback_targets(nodes)
             assert set(targets)==set(batch)
             assert all(targets[sid]['candidate_chunks']==len(bundle['chunks']) for sid,bundle in batch.items())
+            if node_store is not None:
+                node_store.close()
+                prepared_stores.remove(node_store)
             del nodes
             with diagnostic.phase('register_index_against_all_originals'):
                 from tests.integration.source_intake_registration import register_index
@@ -832,6 +842,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                           'provider_calls':sum(quality_budget.calls.values()) if quality_budget else 0})
         raise
     finally:
+        for node_store in prepared_stores:
+            node_store.close()
         for lifecycle in lifecycles:
             lifecycle.close()
         try:s.postgres_memory_evidence()

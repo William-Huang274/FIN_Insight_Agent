@@ -21,6 +21,14 @@ SERIAL_ENV = {
     'NUMEXPR_MAX_THREADS': '1',
 }
 
+COMPACT_ENV = {
+    'JAVA_TOOL_OPTIONS': '-Xms16m -Xmx128m -XX:+UseSerialGC -XX:ActiveProcessorCount=2 '
+                         '-XX:ReservedCodeCacheSize=32m -XX:MaxMetaspaceSize=128m '
+                         '-XX:MaxDirectMemorySize=16m -Xss512k',
+    'SERVER_TOMCAT_THREADS_MAX': '4',
+    'SERVER_TOMCAT_MAX_CONNECTIONS': '12',
+}
+
 
 class CompleteSourceStack(OrganizationGraphStack):
     def __init__(self):
@@ -32,13 +40,21 @@ class CompleteSourceStack(OrganizationGraphStack):
                 raise ValueError('qualification_dependency_root_must_be_directory')
             self.env['PYTHONPATH'] = os.pathsep.join(filter(None, [self.env.get('PYTHONPATH'), str(dependency_root)]))
         self.serial_profile = os.getenv('FIN_COMPLETE_SOURCE_SERIAL_PROFILE') == '1'
+        self.compact_profile = os.getenv('FIN_COMPLETE_SOURCE_COMPACT_PROFILE') == '1'
+        if self.compact_profile and not self.serial_profile:
+            raise ValueError('compact_source_intake_requires_serial_profile')
         if self.serial_profile:
             self.compose_files = (*self.compose_files, ROOT/'deploy/qualification/source_intake_serial.compose.yaml')
             self.env.update(SERIAL_ENV)
             self.bff_arguments = ('--workers', '1', '--limit-concurrency', '8', '--backlog', '16')
+        if self.compact_profile:
+            self.compose_files = (*self.compose_files, ROOT/'deploy/qualification/source_intake_compact.compose.yaml')
+            self.env.update(COMPACT_ENV)
+            self.bff_arguments = ('--workers', '1', '--limit-concurrency', '4', '--backlog', '8')
         self.save('source-intake-runtime', {'serial_profile': self.serial_profile,
+                  'compact_profile': self.compact_profile,
                   'optional_dependency_root': str(dependency_root) if dependency_root else None,
-                  'limits': SERIAL_ENV if self.serial_profile else {},
+                  'limits': {**SERIAL_ENV, **(COMPACT_ENV if self.compact_profile else {})} if self.serial_profile else {},
                   'bff_app': 'tests.integration.fixtures.intake_native_web:app',
                   'production_routes_unchanged': True, 'capacity_evaluation': False})
 

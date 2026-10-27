@@ -1,5 +1,6 @@
 """Serial resource limits are opt-in and cannot replace the production BFF."""
 from tests.integration.source_intake_runtime import CompleteSourceStack, OrganizationGraphStack, SERIAL_ENV
+import pytest
 
 
 def test_serial_limits_are_local_to_the_opted_in_stack(tmp_path, monkeypatch):
@@ -49,3 +50,21 @@ def test_optional_dependencies_do_not_modify_shared_interpreter_or_parent_enviro
     import os
     assert stack.env['PYTHONPATH'] == os.pathsep.join(['repository-source',str(tmp_path.resolve())])
     assert os.environ['PYTHONPATH'] == 'parent-source'
+
+
+def test_compact_resources_require_explicit_serial_scope(tmp_path, monkeypatch):
+    from tests.integration.source_intake_runtime import COMPACT_ENV
+    def initialize(self):
+        self.output, self.env = tmp_path, {}
+    monkeypatch.setattr(OrganizationGraphStack, '__init__', initialize)
+    monkeypatch.setenv('FIN_COMPLETE_SOURCE_COMPACT_PROFILE', '1')
+    monkeypatch.delenv('FIN_COMPLETE_SOURCE_SERIAL_PROFILE', raising=False)
+    with pytest.raises(ValueError, match='requires_serial_profile'):
+        CompleteSourceStack()
+    monkeypatch.setenv('FIN_COMPLETE_SOURCE_SERIAL_PROFILE', '1')
+    compact = CompleteSourceStack()
+    assert compact.compact_profile
+    assert compact.env['JAVA_TOOL_OPTIONS'] == COMPACT_ENV['JAVA_TOOL_OPTIONS']
+    assert compact.env['SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE'] == '2'
+    assert compact.compose_files[-1].name == 'source_intake_compact.compose.yaml'
+    assert compact.bff_arguments == ('--workers', '1', '--limit-concurrency', '4', '--backlog', '8')

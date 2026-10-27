@@ -34,7 +34,7 @@ def vector(value, dimensions):
     return (result / magnitude).astype(np.float32)
 
 
-def preparation_nodes(reader, *, workbench_url):
+def preparation_nodes(reader, *, workbench_url, node_store=None):
     """Read exact projected leaf text through the same current-authority path.
 
     Host preparation utility, never a model tool or implicit embedding job.
@@ -42,7 +42,9 @@ def preparation_nodes(reader, *, workbench_url):
     from .organization_source_navigation import OrganizationSourceNavigation
     before, manifest, _ = reader._grant()
     nav = OrganizationSourceNavigation(reader, workbench_url=workbench_url)
-    nodes = []
+    if node_store is not None and len(node_store):
+        raise ValueError('organization_preparation_requires_empty_store')
+    nodes = [] if node_store is None else node_store
     by_resource = {item['resource_id']: item for item in manifest['inputs']}
     def project(resource_id, result):
         item = by_resource[resource_id]
@@ -72,6 +74,8 @@ def preparation_nodes(reader, *, workbench_url):
     for projected in reader._project_sources(by_resource, project):
         nodes.extend(projected)
     reader._after(before)
+    if node_store is not None:
+        node_store.seal()
     return manifest['organization_id'], nodes
 
 

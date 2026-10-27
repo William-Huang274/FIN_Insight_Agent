@@ -28,11 +28,11 @@ def _alias_pattern(alias, compatible=False):
     return re.escape(alias)
 
 
-def _compatible_mentions(query, aliases):
+def _compatible_mentions(query, aliases, *, bilingual_boundaries=False):
     hits = []
     for alias, owners in aliases.items():
-        boundary = '' if re.search(r'[\u3400-\u9fff]', alias) else r'(?<!\w)'
-        end = '' if not boundary else r'(?!\w)'
+        boundary = '' if re.search(r'[\u3400-\u9fff]', alias) else (r'(?<![A-Za-z0-9_])' if bilingual_boundaries else r'(?<!\w)')
+        end = '' if not boundary else (r'(?![A-Za-z0-9_])' if bilingual_boundaries else r'(?!\w)')
         for match in re.finditer(boundary+_alias_pattern(alias, True)+end, query, re.I):
             hits.append((alias, owners, match.start(), match.end()))
     # A separate short-name mention is still retained. Only a short match
@@ -46,7 +46,7 @@ def _compatible_mentions(query, aliases):
          'issuer_ids': sorted(owners)} for a, owners, lo, hi in hits]
 
 
-def _report_owners(query, aliases, *, allow_comparison=False, compatible=False):
+def _report_owners(query, aliases, *, allow_comparison=False, compatible=False, dated_reports=False):
     # A named report owner is different from counterparties mentioned in the
     # question. Only explicit report phrases narrow scope; comparison abstains.
     if not allow_comparison and re.search(r'\b(?:compare|comparison|versus|vs\.?)\b|对比|比较|相比', query, re.IGNORECASE):
@@ -58,6 +58,18 @@ def _report_owners(query, aliases, *, allow_comparison=False, compatible=False):
                  r'(?:20\d{2}\s*年?\s*)?(?:Form\s+)?(?:annual\s+report|10-?[KQ]|年报|季度报告)(?![A-Za-z])')
         for match in re.finditer(pattern,query,re.IGNORECASE):
             owners.update(ids);found.append(match.group())
+        if dated_reports:
+            dated = (boundary+_alias_pattern(alias, compatible)+r'\s*截至\s*(?:20\d{2}年\s*\d{1,2}月\s*\d{1,2}日|20\d{2}-\d{2}-\d{2})'
+                     r'\s*的?\s*(?:10-?Q|季度报告|季度披露|季报)(?![A-Za-z])')
+            for match in re.finditer(dated, query, re.I):
+                from retrieval.query_report_period import explicit_report_period
+                if explicit_report_period(match.group()):
+                    owners.update(ids);found.append(match.group())
+            english_dated = (boundary+_alias_pattern(alias, compatible)+r"(?:['’]s|['’])?\s+[A-Za-z]+\s+\d{1,2},?\s+20\d{2}\s+(?:Form\s+)?10-?[KQ](?![A-Za-z])")
+            for match in re.finditer(english_dated, query, re.I):
+                from retrieval.fact_period_matching import dates
+                if dates(match.group()):
+                    owners.update(ids);found.append(match.group())
     return owners,found
 
 
@@ -85,19 +97,24 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
     matches = [(a, owners) for a, owners in aliases.items() if _mentions(query, a)]
     mentions = []
     if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'}:
-        matches, mentions = _compatible_mentions(query, aliases)
+        matches, mentions = _compatible_mentions(query, aliases, bilingual_boundaries=policy=='conservative.v5')
     owners = set().union(*(v for _, v in matches)) if matches else set()
     unresolved, evidence, constraint = [], [], {}
     report_owners, report_phrases = _report_owners(query,
         dict(matches) if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'} else aliases,
-        allow_comparison=policy!='conservative.v1', compatible=policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'})
+        allow_comparison=policy!='conservative.v1', compatible=policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'},
+        dated_reports=policy=='conservative.v5')
     comparison = re.search(r'\b(?:compare|comparison|versus|vs\.?)\b|对比|比较|两家公司|各自', query, re.I)
     if (policy != 'conservative.v1' and len(owners)>1 and comparison and report_phrases
             and comparison.start() < min(query.casefold().find(p.casefold()) for p in report_phrases)):
         # "Compare Alpha and Beta annual report" modifies both owners, not
         # just the last name adjacent to the report noun.
         report_owners = set()
-    if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'} and comparison and len(owners) == 1:
+    from retrieval.query_report_period import comparison_starts_with_date, explicit_report_period
+    temporal_comparison = bool(policy == 'conservative.v5' and comparison and comparison_starts_with_date(query, comparison.end()))
+    if temporal_comparison:
+        evidence.append({'field':'issuer', 'basis':'comparison_object_is_explicit_date_not_another_issuer'})
+    if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'} and comparison and len(owners) == 1 and not temporal_comparison:
         # "In Alpha's report, compare ..." has an explicit owner before the
         # comparison. "Compare Unknown and Alpha ..." does not justify a
         # one-company scope, even if only Alpha is present in the catalog.
@@ -127,8 +144,10 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
         unresolved.append('multiple_or_ambiguous_issuers_no_issuer_filter')
     else:
         unresolved.append('no_unambiguous_literal_catalog_issuer')
+    form_pattern = (r'(?<![A-Za-z0-9_-])(?:10-?[KQ]|8-?K)(?:\s*/A)?(?![A-Za-z0-9_/-])'
+                    if policy == 'conservative.v5' else r'(?<![\w-])(?:10-?[KQ]|8-?K)(?:\s*/A)?(?![\w/-])')
     forms = sorted(set(m.group().upper().replace(' ', '') for m in re.finditer(
-        r'(?<![\w-])(?:10-?[KQ]|8-?K)(?:\s*/A)?(?![\w/-])', query, re.IGNORECASE)))
+        form_pattern, query, re.IGNORECASE)))
     forms = [re.sub(r'^(10|8)([KQ])', r'\1-\2', f) for f in forms]
     forms = sorted(set(forms))
     if len(forms) == 1:
@@ -169,6 +188,10 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
         unresolved.append('multiple_periods_no_date_filter')
     if re.search(r'(?<!\d)(?:19|20)\d{2}(?!\d)', query) and 'period_end' not in constraint:
         unresolved.append('year_or_publication_date_not_mapped_to_period_end')
+    if policy == 'conservative.v5' and 'period_end' not in constraint and (report_period := explicit_report_period(query)):
+        constraint['period_end'] = report_period['value']
+        evidence.append({'field':'period_end', **report_period})
+        unresolved = [v for v in unresolved if v != 'year_or_publication_date_not_mapped_to_period_end']
     result = {'policy': policy, 'constraint': constraint, 'evidence': evidence,
               'unresolved': unresolved, 'unknown_metadata_retained': True}
     if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'}:
@@ -186,6 +209,12 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
 
 
 def select_planned(metadata, plan):
+    if plan['policy'] == 'conservative.v5':
+        from retrieval.filing_document_identity import with_document_issuer_aliases
+        metadata = with_document_issuer_aliases(metadata)
+    else:
+        metadata = {k:{field:value for field,value in row.items() if field != 'same_document_issuer_ids'}
+                    for k,row in metadata.items()}
     wanted = plan['constraint']
     accepted, unknown = set(), 0
     for document, row in metadata.items():
@@ -196,7 +225,7 @@ def select_planned(metadata, plan):
             ids = {o['issuer_id'] for o in owners if o['issuer_id']}
             names = {name.casefold() for o in owners for name in o['company_names']}
             if actual_id and all(o['issuer_id'] for o in owners):
-                checks.append(actual_id in ids)
+                checks.append(actual_id in ids or bool(ids & set(row.get('same_document_issuer_ids', []))))
             elif actual_name and names:
                 checks.append(actual_name.casefold() in names)
             else:
@@ -210,7 +239,7 @@ def select_planned(metadata, plan):
             names = {n.casefold() for n in wanted.get('company_names', [])}
             actual_id, actual_name = row.get('issuer_id'), row.get('company_name')
             if actual_id and wanted.get('issuer_id'):
-                checks.append(actual_id == wanted['issuer_id'])
+                checks.append(actual_id == wanted['issuer_id'] or wanted['issuer_id'] in row.get('same_document_issuer_ids', []))
             elif actual_name and names:
                 checks.append(actual_name.casefold() in names)
             else:

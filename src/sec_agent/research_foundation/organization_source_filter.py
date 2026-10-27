@@ -80,6 +80,9 @@ def source_metadata_details(bundle):
     proof = None
     if bundle:
         from .sec_cover_metadata import cover_form, calendar_annual_year
+        from retrieval.filing_document_identity import original_filing_key
+        if key := original_filing_key(bundle['source'].get('url')):
+            descriptor['original_filing_key'] = key
         metadata = json.loads(bundle['source']['metadata'])
         # A discovery catalogue is a known evidence role, not an unknown
         # filing form. Keep this original marker; never infer it from a title

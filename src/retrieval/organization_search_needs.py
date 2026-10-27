@@ -82,6 +82,8 @@ def compile_needs(query, plan):
 def owner_matches(metadata, owner):
     if owner is None:
         return True
+    if owner.get('issuer_id') in metadata.get('same_document_issuer_ids', []):
+        return True
     if metadata.get('issuer_id') and owner.get('issuer_id'):
         return metadata['issuer_id'] == owner['issuer_id']
     return bool(metadata.get('company_name') and metadata['company_name'].casefold() in

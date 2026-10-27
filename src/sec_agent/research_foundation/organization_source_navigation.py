@@ -180,6 +180,9 @@ class OrganizationSourceNavigation:
         needs, lanes = None, []
         if request.organization_query_planning in {'conservative.v2', 'conservative.v3', 'conservative.v4', 'conservative.v5'}:
             from retrieval.organization_search_needs import compile_needs, lexical_candidates
+            if request.organization_query_planning == 'conservative.v5':
+                from retrieval.filing_document_identity import with_document_issuer_aliases
+                metadata = with_document_issuer_aliases(metadata)
             needs = compile_needs(request.query, query_plan)
             ids, lanes = lexical_candidates(candidates.directory/'lexical.sqlite', rows, needs,
                                            metadata, population_cache=self._lexical_statistics)

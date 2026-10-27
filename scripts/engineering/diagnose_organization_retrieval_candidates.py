@@ -69,6 +69,9 @@ def rank_scope(records, directory, matrix, total_count, query_vector, row, *, ca
     lexical = [records[i]['node_id'] for i in lexical_positions[:limits['lexical']]]
     if needs:
         from retrieval.organization_search_needs import lexical_candidates
+        if needs.get('period_policy'):
+            from retrieval.filing_document_identity import with_document_issuer_aliases
+            metadata = with_document_issuer_aliases(metadata)
         prepared = [dict(r, parent_document_id=r['document_id']) for r in records]
         ids, lanes = lexical_candidates(directory/'lexical.sqlite', prepared, needs, metadata)
         lexical = ids[:limits['lexical']]

@@ -102,7 +102,12 @@ class ScopedReranker:
 
 class ConfiguredReranker:
     """Server-configured provider, never selected by an Agent/tool argument."""
-    def __init__(self,path):self.path=path
+    def __init__(self,path):
+        import os
+        self.path=path
+        self.model=os.environ.get('FINSIGHT_ORGANIZATION_RERANK_MODEL','qwen3-rerank')
+        if self.model not in {'qwen3-rerank','qwen3.7-text-rerank'}:
+            raise ValueError('organization_rerank_model_invalid')
 
     def rank(self,*args,**kwargs):
         from contextlib import closing
@@ -110,5 +115,6 @@ class ConfiguredReranker:
         from retrieval.qwen_api import QwenRetrieval
         if not os.environ.get('QWEN_API_KEY'):
             raise ValueError('organization_rerank_not_configured')
-        with closing(QwenRetrieval(os.environ['QWEN_API_KEY'],embedding_model='qwen3.7-text-embedding')) as api:
+        with closing(QwenRetrieval(os.environ['QWEN_API_KEY'],embedding_model='qwen3.7-text-embedding',
+                                   rerank_model=self.model)) as api:
             return ScopedReranker(self.path,api).rank(*args,**kwargs)

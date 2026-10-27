@@ -6,6 +6,35 @@ from retrieval.qwen_api import RetrievalResponse
 from retrieval.scoped_reranking import ScopedReranker
 
 
+def test_configured_model_is_frozen_per_navigator_and_separates_cache(tmp_path,monkeypatch):
+    from retrieval.scoped_reranking import ConfiguredReranker
+    from retrieval import qwen_api
+    monkeypatch.delenv('FINSIGHT_ORGANIZATION_RERANK_MODEL',raising=False)
+    monkeypatch.setenv('QWEN_API_KEY','fixture-only')
+    calls=[]
+    def client(key,*,embedding_model,rerank_model):
+        assert key=='fixture-only' and embedding_model=='qwen3.7-text-embedding'
+        def rerank(query,docs,**kwargs):
+            calls.append(rerank_model)
+            return RetrievalResponse([{'index':0,'relevance_score':.9},{'index':1,'relevance_score':.1}],
+                {'total_tokens':2},'fixture-'+rerank_model,rerank_model)
+        return SimpleNamespace(rerank_model=rerank_model,rerank=rerank,close=lambda:None)
+    monkeypatch.setattr(qwen_api,'QwenRetrieval',client)
+    _,rows,_=fixture(tmp_path)
+    args=dict(scope='organization:A',index_digest='a'*64,check_access=lambda:None)
+    old=ConfiguredReranker(tmp_path/'receipts')
+    assert old.rank('sales',rows,**args)[1]['model']=='qwen3-rerank'
+    monkeypatch.setenv('FINSIGHT_ORGANIZATION_RERANK_MODEL','qwen3.7-text-rerank')
+    # An existing navigator and its response cache cannot switch providers
+    # midway through their lifetime because the process environment changed.
+    assert old.rank('sales',rows,**args)[1]['cache_hit']
+    new=ConfiguredReranker(tmp_path/'receipts')
+    assert new.rank('sales',rows,**args)[1]['model']=='qwen3.7-text-rerank'
+    assert calls==['qwen3-rerank','qwen3.7-text-rerank']
+    monkeypatch.setenv('FINSIGHT_ORGANIZATION_RERANK_MODEL','unsupported')
+    with pytest.raises(ValueError,match='rerank_model_invalid'):ConfiguredReranker(tmp_path)
+
+
 def fixture(tmp_path):
     calls=[]
     def provider(query,docs,**kw):

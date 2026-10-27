@@ -15,6 +15,7 @@ from retrieval.library_vectors import DIM, vector_key
 
 FORMAT = 'library-source-bundle.v1'
 COMPACT_FORMAT = 'library-source-offset-bundle.v1'
+COMPACT_STRUCTURE_FORMAT = 'library-source-offset-bundle.v2'
 PROJECTION = 'library-context-body.v1'
 STEP = 5200
 OVERLAP = 250
@@ -71,6 +72,10 @@ def compact_source_bundle(bundle):
             if bundle['text'][lo:hi] != row['body'] or text_digest(row['body']) != row['digest']:
                 raise ValueError('source_bundle_offset_content_mismatch')
             compact[table].append({k:v for k,v in row.items() if k!='body'})
+    if 'table_period_context' in compact:
+        from .source_table_storage import pack
+        compact['format'] = COMPACT_STRUCTURE_FORMAT
+        compact['table_period_context_storage'] = pack(compact.pop('table_period_context'))
     if expand_source_bundle(compact) != bundle:
         raise ValueError('source_bundle_lossless_roundtrip_failed')
     return compact
@@ -78,17 +83,28 @@ def compact_source_bundle(bundle):
 
 def expand_source_bundle(bundle):
     from .library_node_recovery import COMPACT as NODE_COMPACT, FORMAT as NODE_FORMAT, expand_bundle, validate_bundle
+    if 'table_period_context_storage' in bundle and bundle['format'] != COMPACT_STRUCTURE_FORMAT:
+        raise ValueError('source_bundle_structure_storage_version_invalid')
     if bundle['format']==NODE_COMPACT:return expand_bundle(bundle)
     if bundle['format']==NODE_FORMAT:
         validate_bundle(bundle)
         return bundle
     if bundle['format'] == FORMAT:
         return bundle  # Existing immutable snapshots keep their original shape.
-    if bundle['format'] != COMPACT_FORMAT:
+    if bundle['format'] not in {COMPACT_FORMAT, COMPACT_STRUCTURE_FORMAT}:
         raise ValueError('source_bundle_format_invalid')
+    structured = bundle['format'] == COMPACT_STRUCTURE_FORMAT
+    if structured:
+        if 'table_period_context' in bundle or 'table_period_context_storage' not in bundle:
+            raise ValueError('source_bundle_structure_storage_invalid')
+    elif 'table_period_context_storage' in bundle:
+        raise ValueError('source_bundle_structure_storage_version_invalid')
     text = bundle['text']
     validate_bundle_text(bundle)
     result = {**bundle, 'format':FORMAT}
+    if structured:
+        from .source_table_storage import unpack
+        result['table_period_context'] = unpack(result.pop('table_period_context_storage'))
     for table in ('parents','chunks'):
         result[table] = []
         for row in bundle[table]:

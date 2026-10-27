@@ -75,6 +75,7 @@ def implementation_digest():
     files.append(root.parents[1]/'retrieval'/'library_source_bundle.py')
     files.append(root.parents[1]/'retrieval'/'source_structure.py')
     files.append(root.parents[1]/'retrieval'/'source_table_periods.py')
+    files.append(root.parents[1]/'retrieval'/'source_table_storage.py')
     files.append(root.parents[1]/'retrieval'/'fact_period_matching.py')
     files.append(root.parents[1]/'retrieval'/'financial_query_needs.py')
     files.append(root.parents[1]/'retrieval'/'filing_document_identity.py')

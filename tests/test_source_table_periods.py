@@ -104,7 +104,8 @@ def test_catalog_requires_digest_library_identity_and_contained_path(tmp_path,mo
     with pytest.raises(ValueError,match='catalog_digest'):enrich_from_catalog(b)
 
 
-def test_capture_publish_readback_consumes_period_overlay(tmp_path,monkeypatch):
+@pytest.mark.parametrize('compact_catalog', [False, True])
+def test_capture_publish_readback_consumes_period_overlay(tmp_path,monkeypatch,compact_catalog):
     from types import SimpleNamespace
     from uuid import uuid4
     from test_library_source_bundle import database,bundle_at
@@ -121,6 +122,10 @@ def test_capture_publish_readback_consumes_period_overlay(tmp_path,monkeypatch):
     dbpath=tmp_path/'library.sqlite';sid=database(dbpath,text);b=bundle_at(dbpath,sid)
     overlay=build_overlay(raw,raw_sha256=digest(raw),source_digest=digest(text))
     path,sha=catalog_at(tmp_path/'catalog',b,overlay)
+    if compact_catalog:
+        from scripts.engineering.compact_source_table_catalog import compact_catalog as compact
+        audit=compact(path,tmp_path/'compact-catalog')
+        path=tmp_path/'compact-catalog'/'catalog.json';sha=audit['catalog_sha256']
     monkeypatch.setenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG',str(path))
     monkeypatch.setenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256',sha)
     monkeypatch.setattr(library_module,'open_library',lambda _:SimpleNamespace(path=dbpath,manifest={'sha256':b['library_sha256']}))

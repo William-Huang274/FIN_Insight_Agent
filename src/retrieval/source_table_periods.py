@@ -216,7 +216,7 @@ def enrich_from_catalog(bundle):
     if digest(raw) != expected:
         raise ValueError('table_period_catalog_digest_mismatch')
     catalog = json.loads(raw)
-    if (catalog.get('format') != 'source-table-period-catalog.v1'
+    if (catalog.get('format') not in {'source-table-period-catalog.v1','source-table-period-catalog.v2'}
             or catalog.get('library_sha256') != bundle['library_sha256']):
         raise ValueError('table_period_catalog_library_mismatch')
     entry = catalog['sources'].get(bundle['source']['id'])
@@ -228,6 +228,15 @@ def enrich_from_catalog(bundle):
     payload = target.read_bytes()
     if digest(payload) != entry['sha256'] or entry['source_digest'] != bundle['source']['digest']:
         raise ValueError('table_period_catalog_source_mismatch')
-    result = {**bundle, 'table_period_context':json.loads(payload)}
+    decoded = json.loads(payload)
+    if catalog['format'] == 'source-table-period-catalog.v2':
+        from .source_table_storage import unpack, FORMAT as STORAGE_FORMAT
+        if (not isinstance(decoded,dict) or entry.get('encoding') != STORAGE_FORMAT
+                or decoded.get('sha256') != entry.get('original_file_sha256')):
+            raise ValueError('table_period_catalog_storage_identity_invalid')
+        decoded = unpack(decoded)
+    elif entry.get('encoding') is not None:
+        raise ValueError('table_period_catalog_storage_version_invalid')
+    result = {**bundle, 'table_period_context':decoded}
     validate_overlay(result)
     return result

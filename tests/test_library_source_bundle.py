@@ -348,3 +348,24 @@ def test_compact_source_roundtrip_and_offset_tampering(tmp_path):
         with pytest.raises(ValueError,match='source_bundle_offset_content_mismatch'):expand_source_bundle(wrong)
     wrong=deepcopy(compact);wrong['text']+='changed'
     with pytest.raises(ValueError,match='recovered_source_digest_mismatch'):expand_source_bundle(wrong)
+
+
+def test_new_geometry_storage_preserves_legacy_and_original_identity(tmp_path):
+    path=tmp_path/'library.sqlite';sid=database(path,'Original disclosure. '*600)
+    original=bundle_at(path,sid)
+    legacy=compact_source_bundle(original)
+    assert legacy['format']=='library-source-offset-bundle.v1'
+    enriched={**original,'table_period_context':{'format':'source-table-periods.v1',
+        'tables':[{'text':'原文', 'cells':['repeated field']*100}]}}
+    compressed=compact_source_bundle(enriched)
+    assert compressed['format']=='library-source-offset-bundle.v2'
+    assert 'table_period_context' not in compressed
+    assert expand_source_bundle(compressed)==enriched
+    assert compressed['text']==original['text'] and compressed['source']==original['source']
+    assert expand_source_bundle(legacy)==original
+    wrong=deepcopy(compressed);wrong['table_period_context_storage']['sha256']='0'*64
+    with pytest.raises(ValueError,match='source_table_storage'):expand_source_bundle(wrong)
+    wrong=deepcopy(compressed);wrong['format']=legacy['format']
+    with pytest.raises(ValueError,match='storage_version_invalid'):expand_source_bundle(wrong)
+    wrong=deepcopy(compressed);wrong['table_period_context']={}
+    with pytest.raises(ValueError,match='structure_storage_invalid'):expand_source_bundle(wrong)

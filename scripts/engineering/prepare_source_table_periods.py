@@ -4,15 +4,31 @@ Input IDs select stored sources, not answers. The output catalog is optional
 capture-time configuration; no existing publication, index or service is changed.
 """
 import argparse
+import gc
 from collections import Counter
 import json
 from pathlib import Path
+import re
 import sqlite3
 import time
 import zlib
 
 from retrieval.library_source_bundle import expand_source_bundle, validate_bundle_text
 from retrieval.source_table_periods import build_overlay, digest, validate_overlay
+
+
+def build_compatible_overlay(raw, *, raw_sha256, source_digest):
+    """Do not build an HTML DOM for a whole non-HTML holdings XML capture.
+
+    Source availability and source retrieval remain independent of this optional
+    overlay. Null-byte encodings abstain from the byte prefilter and retain the
+    existing parser, since their ASCII tag bytes need not be contiguous.
+    """
+    if digest(raw) != raw_sha256:
+        raise ValueError('source_raw_digest_mismatch')
+    if b'\x00' not in raw and not re.search(rb'<table[\s/>]', raw, re.I):
+        raise ValueError('source_original_has_no_html_tables')
+    return build_overlay(raw, raw_sha256=raw_sha256, source_digest=source_digest)
 
 
 def prepare(intake, archive, source_ids, output):
@@ -44,7 +60,7 @@ def prepare(intake, archive, source_ids, output):
                     result.update(status='unavailable_compatible_archive',tables=0,explicit_facts=0)
                 else:
                     try:
-                        overlay=build_overlay(zlib.decompress(captured[2]),raw_sha256=captured[1],source_digest=digest(bundle['text']))
+                        overlay=build_compatible_overlay(zlib.decompress(captured[2]),raw_sha256=captured[1],source_digest=digest(bundle['text']))
                         validate_overlay({**bundle,'table_period_context':overlay})
                     except ValueError as error:
                         result.update(status='unresolved',reason=str(error),tables=0,explicit_facts=0)
@@ -63,6 +79,9 @@ def prepare(intake, archive, source_ids, output):
                 report['sources'].append(result)
                 (output/'result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf8')
                 print(json.dumps(result,ensure_ascii=False),flush=True)
+                # BeautifulSoup's detached tree nodes contain cycles; do not
+                # retain prior source DOMs until a later allocation threshold.
+                gc.collect()
         if digest((intake/'result.json').read_bytes())!=report['input_manifest_sha256']:
             raise ValueError('period_overlay_intake_changed')
         if any(digest(Path(p).read_bytes())!=sha for p,sha in code.items()):

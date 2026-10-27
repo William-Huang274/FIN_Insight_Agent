@@ -50,7 +50,7 @@ class HttpNavigation:
         return SourceDocumentResult.model_validate(response.json())
 
 
-def qualify_concurrency(nav, requests, save, budget, *, api, org, project, space):
+def qualify_concurrency(nav, requests, save, budget, *, api, org, project, space, quality_root=None):
     """Closed-loop fixed compact profile; queue wait/failures retained.
 
     Cached searches and original reads are separate from paid search misses.
@@ -75,28 +75,36 @@ def qualify_concurrency(nav, requests, save, budget, *, api, org, project, space
         raise ValueError('cached_load_requires_actual_response_cache_hit')
     read = found.items[0]['readback']
     expected = nav.navigate(read).model_dump(mode='json')['items'][0]
-    viewer = {'Authorization': 'Bearer qualification-viewer'}
+    quality_root = quality_root or nav.stack.output
+    # Retained fixtures may include a member created before an interrupted load.
+    # Revoke those test-only subjects through Java, then use a fresh identity.
+    for member in api('GET', f'/organizations/{org}/members'):
+        if member['active'] and (member['subject'] == 'oidc:viewer' or member['subject'].startswith('oidc:viewer-')):
+            api('POST', f'/organizations/{org}/remove-member', {'subject': member['subject']})
+    viewer_id = 'viewer-' + uuid4().hex
+    viewer_subject = 'oidc:' + viewer_id
+    viewer = {'Authorization': 'Bearer qualification-' + viewer_id}
     assert nav.stack.bff.post(nav.path, json=search, headers=viewer).status_code == 404
     invite = str(uuid4())
     api('POST', f'/organizations/{org}/invites', {'token': invite})
     joined = nav.stack.bff.post('/api/v1/business/workspaces/join', headers=viewer,
         json={'token': invite, 'display_name': 'Second retrieval researcher'})
     assert joined.status_code == 200
-    api('POST', f'/spaces/{space}/members', {'subject': 'oidc:viewer', 'role': 'reader'})
+    api('POST', f'/spaces/{space}/members', {'subject': viewer_subject, 'role': 'reader'})
     api('POST', f'/projects/{project}/members', {'revision': api('GET', f'/projects/{project}')['revision'],
-        'subject': 'oidc:viewer', 'role': 'researcher'})
+        'subject': viewer_subject, 'role': 'researcher'})
     warm = nav.stack.bff.post(nav.path, json=search, headers=viewer, timeout=300)
     assert warm.status_code == 200, warm.text[:300]
     warm = nav.stack.bff.post(nav.path, json=search, headers=viewer, timeout=300)
     assert warm.status_code == 200 and warm.json()['items'][0]['retrieval'].get('response_cache_hit')
     report['authorized_identities'] = 2
     expected_by_query = {}
-    for file in nav.stack.output.glob('service-quality-question-*.json'):
+    for file in quality_root.glob('service-quality-question-*.json'):
         saved = json.loads(file.read_bytes())['search']
         # The source protocol carries the exact original request query.
         rows = saved['items']
         expected_by_query[file.stem.removeprefix('service-quality-question-')] = [r['node_id'] for r in rows]
-    quality = json.loads((nav.stack.output/'service-quality.json').read_bytes())
+    quality = json.loads((quality_root/'service-quality.json').read_bytes())
     expected_by_query = {row['request']['query']: expected_by_query[row['id']] for row in quality['rows']}
     for mode in ('cached_search', 'original_read', 'mixed_search'):
         for level in (1, 2, 4):
@@ -137,7 +145,7 @@ def qualify_concurrency(nav, requests, save, budget, *, api, org, project, space
                 raise RuntimeError('concurrency_resource_or_provider_stop')
     report['status'] = 'completed'
     report['all_requests_correct'] = all(r['failed'] == 0 for r in report['levels'])
-    api('POST', f'/organizations/{org}/remove-member', {'subject': 'oidc:viewer'})
+    api('POST', f'/organizations/{org}/remove-member', {'subject': viewer_subject})
     before = dict(budget.calls)
     for body in (search, read):
         assert nav.stack.bff.post(nav.path, json=body, headers=viewer).status_code == 404

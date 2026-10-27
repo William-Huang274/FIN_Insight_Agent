@@ -23,6 +23,10 @@ if organization_probe:
     os.environ.pop('FINSIGHT_OIDC_CLIENT_ID', None)
     class SyntheticIdentity(authentication.OIDCBackend):
         def verify(self, token):
+            if os.environ.get('FIN_COMPLETE_SOURCE_HTTP_QUALITY') == '1':
+                import re
+                if re.fullmatch(r'qualification-viewer-[a-f0-9]{32}', token):
+                    return 'oidc:' + token.removeprefix('qualification-')
             if os.environ.get('FIN_ORGANIZATION_CAPACITY_QUALIFICATION') == '1':
                 import re
                 match = re.fullmatch(r'qualification-user-(\d{1,2})', token)

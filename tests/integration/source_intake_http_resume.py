@@ -8,6 +8,7 @@ checks are never reused. Exact index files, Java contract and originals must agr
 from hashlib import file_digest
 import gc
 import json
+import os
 from pathlib import Path
 
 import psycopg
@@ -80,12 +81,24 @@ def run(stack, seal, api, bundles, quality_data, quality_binding, budget, diagno
     del candidate, navigation
     gc.collect()
     nav = HttpNavigation(stack, reader, project, draft)
-    with diagnostic.phase('frozen_quality_replay_real_http'):
-        requests = run_quality(quality_data, quality_binding, nav=nav, bundles=bundles,
-                               save=stack.save, budget=budget)
+    quality_root = stack.output
+    if os.getenv('FIN_COMPLETE_SOURCE_HTTP_QUALITY_CHECKPOINT'):
+        from scripts.engineering.source_intake_batches import baseline
+        from tests.integration.source_intake_quality_checkpoint import restore
+        with diagnostic.phase('verified_quality_phase_resume'):
+            quality_root, requests = restore(os.environ['FIN_COMPLETE_SOURCE_HTTP_QUALITY_CHECKPOINT'],
+                binding=quality_binding, question_ids=[q['id'] for q in quality_data['questions']],
+                manifest_digest=manifest_digest, contract=contract, baseline=baseline(), save=stack.save)
+    else:
+        with diagnostic.phase('frozen_quality_replay_real_http'):
+            requests = run_quality(quality_data, quality_binding, nav=nav, bundles=bundles,
+                                   save=stack.save, budget=budget)
+        from tests.integration.source_intake_quality_checkpoint import seal as seal_quality
+        if (stack.output.parent/'baseline.json').is_file():
+            seal_quality(stack.output)
     with diagnostic.phase('fixed_resource_http_concurrency'):
         load = qualify_concurrency(nav, requests, stack.save, budget,
-            api=api, org=org, project=project, space=str(spaces[0][0]))
+            api=api, org=org, project=project, space=str(spaces[0][0]), quality_root=quality_root)
     nav.navigate(requests[-1])
     assert nav.navigate(requests[-1]).items[0]['retrieval']['response_cache_hit']
     selected = set(manifest['input_selection']['selected_resource_ids'])
@@ -96,7 +109,7 @@ def run(stack, seal, api, bundles, quality_data, quality_binding, budget, diagno
     with pytest.raises(OrganizationExecutionUnavailable):
         nav.navigate(requests[-1])
     originals = contexts = 0
-    for file in sorted(stack.output.glob('service-quality-question-*.json')):
+    for file in sorted(quality_root.glob('service-quality-question-*.json')):
         saved = json.loads(file.read_bytes())
         for row in saved['search']['items'][:10]:
             with pytest.raises(OrganizationExecutionUnavailable):
@@ -114,5 +127,6 @@ def run(stack, seal, api, bundles, quality_data, quality_binding, budget, diagno
     stack.save('service-http-resume-result', {'status': 'completed', 'sources': len(bundles),
         'chunks': expected_chunks, 'publication_source_git': seal['publication_git'],
         'same_version_republication': False, 'quality_replay_passed': True,
+        'quality_resumed_from': str(quality_root) if quality_root != stack.output else None,
         'load_all_requests_correct': load['all_requests_correct'], 'revocation_passed': True,
         'provider_calls': budget.calls, 'Agent_runs': 0, 'S2_passed': False})

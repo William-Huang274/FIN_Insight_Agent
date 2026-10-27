@@ -128,3 +128,47 @@ def test_concurrent_same_session_hits_are_isolated_and_authorized(tmp_path, monk
     assert all(r.items[0]['retrieval']['response_cache_hit'] for r in results)
     results[0].items[0]['title'] = 'changed'
     assert all(r.items[0]['title'] == first.items[0]['title'] for r in results[1:])
+
+
+def test_large_structured_page_is_bounded_and_still_checks_revocation(tmp_path, monkeypatch):
+    nav, _, state, _, request, first, reads, api = setup(tmp_path, monkeypatch)
+    cache = nav._search_cache
+    key, epoch, _ = cache.entry
+    large = first.model_copy(deep=True)
+    large.items[0]['table_completion'] = {'contexts': [
+        {'text': 'Original table header, date, unit and footnote. ' * 30000}]}
+    assert len(large.model_dump_json().encode()) > 512 * 1024
+    cache.put(key, epoch, large)
+    assert isinstance(cache.entry[2], bytes)
+    assert len(cache.entry[2]) <= cache.MAX_COMPRESSED_BYTES
+    warm = nav.navigate(request)
+    assert warm.items[0]['table_completion'] == large.items[0]['table_completion']
+    assert warm.items[0]['retrieval']['response_cache_hit']
+    assert not reads and api.calls == 1
+    warm.items[0]['table_completion']['contexts'][0]['text'] = 'poison'
+    assert nav.navigate(request).items[0]['table_completion'] == large.items[0]['table_completion']
+    state['status'] = 404
+    with pytest.raises(OrganizationExecutionUnavailable):
+        nav.navigate(request)
+
+
+def test_compressed_page_enforces_both_limits_and_rejects_truncated_payload(tmp_path):
+    from base64 import b64encode
+    import random
+    import zlib
+    from sec_agent.research_foundation.organization_search_cache import OrganizationSearchCache
+    from sec_agent.research_foundation.source_document_navigation import SourceDocumentResult
+    path = tmp_path/'source.sqlite'
+    with sqlite3.connect(path): pass
+    cache = OrganizationSearchCache(path)
+    def result(text):
+        return SourceDocumentResult(operation='search', items=(), next_offset=None,
+            total_matches=0, notice=text, source_snapshot_sha256='a' * 64)
+    cache.put('key', 'epoch', result('x' * cache.MAX_DECODED_BYTES))
+    assert cache.entry is None  # Highly compressible still exceeds decoded ceiling.
+    cache.put('key', 'epoch', result(b64encode(random.Random(7).randbytes(700000)).decode()))
+    assert cache.entry is None  # Below decoded ceiling, exceeds retained ceiling.
+    cache.entry = ('key', 'epoch', zlib.compress(b'{}')[:-1])
+    with pytest.raises(ValueError, match='invalid_payload'):
+        cache.get('key', 'epoch')
+    assert cache.entry is None

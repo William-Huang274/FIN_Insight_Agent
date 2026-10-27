@@ -70,6 +70,9 @@ def qualify_concurrency(nav, requests, save, budget, *, api, org, project, space
     search = requests[-1]
     found = nav.navigate(search)
     if not found.items: raise ValueError('load_requires_verified_result')
+    found = nav.navigate(search)
+    if not found.items[0]['retrieval'].get('response_cache_hit'):
+        raise ValueError('cached_load_requires_actual_response_cache_hit')
     read = found.items[0]['readback']
     expected = nav.navigate(read).model_dump(mode='json')['items'][0]
     viewer = {'Authorization': 'Bearer qualification-viewer'}
@@ -84,6 +87,8 @@ def qualify_concurrency(nav, requests, save, budget, *, api, org, project, space
         'subject': 'oidc:viewer', 'role': 'researcher'})
     warm = nav.stack.bff.post(nav.path, json=search, headers=viewer, timeout=300)
     assert warm.status_code == 200, warm.text[:300]
+    warm = nav.stack.bff.post(nav.path, json=search, headers=viewer, timeout=300)
+    assert warm.status_code == 200 and warm.json()['items'][0]['retrieval'].get('response_cache_hit')
     report['authorized_identities'] = 2
     expected_by_query = {}
     for file in nav.stack.output.glob('service-quality-question-*.json'):
@@ -103,7 +108,8 @@ def qualify_concurrency(nav, requests, save, budget, *, api, org, project, space
                     {'pid': p.pid, 'rss_bytes': psutil.Process(p.pid).memory_info().rss,
                      'private_bytes': getattr(psutil.Process(p.pid).memory_info(), 'private', None)}
                     for p in nav.stack.processes if p.poll() is None]
-                return free >= 800*2**20 and not budget.failed
+                return (free >= 800*2**20 and not budget.failed
+                    and not Path(str(nav.stack.output)+'.stop').exists())
             def operation(index, worker):
                 body = read if mode == 'original_read' else search if mode == 'cached_search' else requests[index % 8]
                 response = nav.stack.bff.post(nav.path, json=body, timeout=180,
@@ -114,7 +120,8 @@ def qualify_concurrency(nav, requests, save, budget, *, api, org, project, space
                 ok = bool(rows)
                 if mode == 'original_read': ok = rows == [expected]
                 elif mode == 'cached_search':
-                    ok = [r['node_id'] for r in rows] == [r['node_id'] for r in found.items]
+                    ok = ([r['node_id'] for r in rows] == [r['node_id'] for r in found.items]
+                        and all(r.get('retrieval', {}).get('response_cache_hit') is True for r in rows))
                 else:
                     ok = [r['node_id'] for r in rows] == expected_by_query[body['query']]
                 return {'ok': ok, 'status': response.status_code,

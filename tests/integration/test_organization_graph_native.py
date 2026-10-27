@@ -13,11 +13,6 @@ import httpx
 import psycopg
 import pytest
 
-from apps.workbench.backend.business_transport import delegate
-from sec_agent.research_foundation.asset_workspace import AssetWorkspace
-from sec_agent.agent_runtime.research_orientation import orientation_public_handoff
-from sec_agent.agent_runtime.organization_native_contract import run_request
-from sec_agent.agent_runtime.organization_continuation_contract import baseline_digest, continuation_request
 from tests.integration.test_java_intake_native import Stack, COMPOSE, ROOT, wait_for
 
 pytestmark = pytest.mark.skipif(os.getenv('FIN_ORGANIZATION_GRAPH_QUALIFICATION') != '1',
@@ -90,6 +85,13 @@ class OrganizationGraphStack(Stack):
 
 
 def test_real_native_organization_orientation_restart_and_mid_run_revocation(monkeypatch):
+    # Stack reuse for retrieval qualification does not execute an Agent graph.
+    # Load graph-only contracts only when this native graph test actually runs.
+    from apps.workbench.backend.business_transport import delegate
+    from sec_agent.research_foundation.asset_workspace import AssetWorkspace
+    from sec_agent.agent_runtime.research_orientation import orientation_public_handoff
+    from sec_agent.agent_runtime.organization_native_contract import run_request
+    from sec_agent.agent_runtime.organization_continuation_contract import baseline_digest, continuation_request
     s=OrganizationGraphStack()
     monkeypatch.setenv('FINSIGHT_BUSINESS_SHARED_SECRET',s.shared)
     java=httpx.Client(base_url=f'http://127.0.0.1:{s.java_port}',timeout=60,trust_env=False)

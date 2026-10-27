@@ -11,7 +11,8 @@ from sec_agent.research_foundation.source_document_navigation import SourceDocum
 def install_provider_budget():
     from retrieval.qwen_api import QwenRetrieval
     from tests.integration.source_intake_quality import PaidCallBudget
-    root = Path(os.environ['FINSIGHT_LOCAL_STATE_ROOT']).parent
+    root = Path(os.environ.get('FIN_COMPLETE_SOURCE_HTTP_EVIDENCE_ROOT',
+                              str(Path(os.environ['FINSIGHT_LOCAL_STATE_ROOT']).parent)))
     def save(name, record):
         target = root/(name+'.json')
         temporary = target.with_suffix('.tmp')

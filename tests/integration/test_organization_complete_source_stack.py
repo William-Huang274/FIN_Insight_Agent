@@ -184,6 +184,14 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         if pause_after and not completed<pause_after<=len(bundles):
             raise ValueError('checkpoint_pause_must_advance_within_full_scope')
     s=CompleteSourceStack()
+    retained = None
+    if os.getenv('FIN_COMPLETE_SOURCE_RETAINED_PUBLICATION'):
+        if restored or write_checkpoint:
+            raise ValueError('retained_fixture_cannot_mix_with_archive_restore')
+        from tests.integration.source_intake_retained import adopt
+        retained = adopt(s, os.environ['FIN_COMPLETE_SOURCE_RETAINED_PUBLICATION'],
+            intake_sha256=file_sha256(root/'result.json'),
+            geometry_sha256=os.getenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256'))
     diagnostic=PhaseDiagnostics(s.save)
     if quality_data:
         from tests.integration.source_intake_quality import PaidCallBudget
@@ -194,7 +202,10 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             quality_binding.update(transport='BFF HTTP to current Java user and runtime authority',
                                    table_completion='table-completion.v1')
     indices=reserve_index_output(s.output,os.getenv('FIN_COMPLETE_SOURCE_INDEX_OUTPUT'))
+    staging = (reserve_index_output(s.output, os.environ['FIN_COMPLETE_SOURCE_STAGING_ROOT'])
+               if os.getenv('FIN_COMPLETE_SOURCE_STAGING_ROOT') else indices)
     s.save('source-intake-storage', {'index_output':str(indices), 'state_output':str(s.state),
+        'staging_output':str(staging),
         'table_period_catalog_sha256':os.getenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256'),
         'capture_expectations_enriched':enriched})
     s.env['FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT']=str(indices)
@@ -241,7 +252,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             except psycopg.OperationalError: return False
         wait_for(ready)
         with psycopg.connect(host='127.0.0.1',port=s.pg_port,dbname='probe',user='probe',password=s.password,autocommit=True) as db:
-            db.execute('CREATE DATABASE business')
+            if not retained:
+                db.execute('CREATE DATABASE business')
         if restored:
             restore_checkpoint(s,checkpoint_path,restored)
         s.boot('java');s.boot('bff')
@@ -253,7 +265,13 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             s.save('postgres-settings',settings)
         assets=AssetWorkspace(s.state/'project-library')
         resources={};captures=[];date_denials=[];source_refs=[]
-        if restored:
+        if retained:
+            from tests.integration.source_intake_retained import recover
+            with diagnostic.phase('reauthorize_retained_publication'):
+                prior = recover(s, retained, api, assets, bundles)
+            org,space,project,private=[prior[k] for k in ('org','space','project','private')]
+            resources=dict(prior['resources']);captures=list(prior['captures']);source_refs=list(prior['source_refs'])
+        elif restored:
             prior=restored['publication']
             org,space,project,private=[prior[k] for k in ('org','space','project','private')]
             shared_assets=AssetWorkspace(s.state/'project-library'/'organization-assets')
@@ -419,7 +437,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             with diagnostic.phase('authorized_original_projection',profile=global_probe):
                 if s.compact_profile:
                     from retrieval.prepared_node_store import PreparedNodeStore
-                    node_store=PreparedNodeStore(indices/('prepared-nodes-'+uuid4().hex+'.sqlite'))
+                    node_store=PreparedNodeStore(staging/('prepared-nodes-'+uuid4().hex+'.sqlite'))
                     prepared_stores.append(node_store)
                 else:
                     node_store=None
@@ -848,8 +866,10 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             contracts.append(contract)
         verify_intake_files()
         s.save('complete-source-result',{'status':'passed','sources':results,'frozen_contracts':contracts,
-            'publication_restored':bool(restored),
-            'cross_baseline_fixture_replay':bool(replay_review),
+            'publication_restored':bool(restored or retained),
+            'retained_publication_origin':str(retained['root']) if retained else None,
+            'retained_publication_source_git':retained['source_git'] if retained else None,
+            'cross_baseline_fixture_replay':bool(replay_review or retained),
             'publication_source_baseline':restored['binding']['baseline'] if restored else None,
             'execution_baseline':checkpoint_binding['baseline'] if checkpoint_binding else None,
             'publication_origin_attempt':restored['origin_attempt'] if restored else str(s.output),
@@ -880,4 +900,9 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             if process.poll() is None: process.terminate();process.wait(timeout=20)
         for log in s.logs: log.close()
         try:s.compose('logs','--no-color')
-        finally:s.compose('stop','-t','5');s.bff.close();s.native.close()
+        finally:
+            s.compose('stop','-t','5');s.bff.close();s.native.close()
+            if getattr(s, 'retained_lease', None):
+                if s.retained_lease.read_text(encoding='utf8') != str(s.output):
+                    raise ValueError('retained_fixture_lease_owner_changed')
+                s.retained_lease.unlink()

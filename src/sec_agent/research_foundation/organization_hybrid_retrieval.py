@@ -46,7 +46,7 @@ def preparation_nodes(reader, *, workbench_url, node_store=None):
         raise ValueError('organization_preparation_requires_empty_store')
     nodes = [] if node_store is None else node_store
     by_resource = {item['resource_id']: item for item in manifest['inputs']}
-    def project(resource_id, result):
+    def project_rows(resource_id, result):
         item = by_resource[resource_id]
         document = nav._identity(item)
         if result.get('source_bundle'):
@@ -71,8 +71,18 @@ def preparation_nodes(reader, *, workbench_url, node_store=None):
                 break
             offset = outline.next_offset
         return projected
+    def project(resource_id, result):
+        projected = project_rows(resource_id, result)
+        if node_store is not None:
+            # _project_sources collects callback results before returning. Write
+            # each source here, not after it has accumulated the entire corpus.
+            # The store remains unreadable until BOTH final authority checks pass.
+            node_store.extend(projected)
+            return None
+        return projected
     for projected in reader._project_sources(by_resource, project):
-        nodes.extend(projected)
+        if node_store is None:
+            nodes.extend(projected)
     reader._after(before)
     if node_store is not None:
         node_store.seal()

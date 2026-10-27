@@ -67,3 +67,33 @@ def test_final_revocation_keeps_disk_rows_unreadable(tmp_path, monkeypatch):
         with pytest.raises(ValueError, match='not_sealed'): list(store)
     finally:
         store.close()
+
+
+def test_projection_stages_before_bulk_authority_returns(tmp_path, monkeypatch):
+    reader, _, _, expected = setup(tmp_path/'source')
+    store = PreparedNodeStore(tmp_path/'staged.sqlite')
+    project_sources = reader._project_sources
+    depth = 0
+    def inspect(resource_ids, project):
+        nonlocal depth
+        if depth:
+            return project_sources(resource_ids, project)
+        def checked(resource_id, result):
+            returned = project(resource_id, result)
+            assert returned is None  # No retained per-source rows in the bulk result.
+            assert len(store) > 0  # Already on disk before the bulk method returns.
+            assert not store.sealed
+            with pytest.raises(ValueError, match='not_sealed'):
+                list(store)
+            return returned
+        depth += 1
+        try:
+            return project_sources(resource_ids, checked)
+        finally:
+            depth -= 1
+    monkeypatch.setattr(reader, '_project_sources', inspect)
+    try:
+        _, rows = preparation_nodes(reader, workbench_url='http://localhost', node_store=store)
+        assert list(rows) == expected
+    finally:
+        store.close()

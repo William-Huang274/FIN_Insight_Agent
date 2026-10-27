@@ -48,7 +48,8 @@ def test_unverified_or_cross_version_companion_is_rejected():
 
 @pytest.mark.parametrize('graph',[False,True])
 @pytest.mark.parametrize('lexical',[None,'organization-financial-needs.v2'])
-def test_window_selection_upgrade_does_not_change_candidate_channel_limits(graph,lexical):
+@pytest.mark.parametrize('policy',['needs_window.v3','needs_window.v4'])
+def test_window_selection_upgrade_does_not_change_candidate_channel_limits(graph,lexical,policy):
     from retrieval.candidate_policy import candidate_limits
-    assert candidate_limits('needs_window.v3',has_graph=graph,lexical_policy=lexical)==candidate_limits(
+    assert candidate_limits(policy,has_graph=graph,lexical_policy=lexical)==candidate_limits(
         'needs_window.v2',has_graph=graph,lexical_policy=lexical)

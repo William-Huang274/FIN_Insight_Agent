@@ -44,7 +44,7 @@ def test_development_and_historical_diagnostics_remain_available():
     validate_heldout_freeze({'evaluation_role': 'historical_regression'}, 'heldout')
 
 
-@pytest.mark.parametrize('policy',['needs_window.v2','needs_window.v3'])
+@pytest.mark.parametrize('policy',['needs_window.v2','needs_window.v3','needs_window.v4'])
 def test_source_window_strategy_must_be_explicitly_frozen_and_match_runtime(policy):
     data=frozen()
     data['policy']['candidate_policy']=policy

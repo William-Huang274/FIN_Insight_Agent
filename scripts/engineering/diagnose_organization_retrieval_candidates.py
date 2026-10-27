@@ -92,7 +92,7 @@ def rank_scope(records, directory, matrix, total_count, query_vector, row, *, ca
                                      [candidate_rows[i] for i in lexical_positions])
         evidence.extend(graph_evidence)
         ranked.update(graph_candidates=graph, graph_fused_candidates=reciprocal_rank_fusion([dense, lexical, graph]))
-    if candidate_policy in {'needs_window.v2', 'needs_window.v3'}:
+    if candidate_policy in {'needs_window.v2', 'needs_window.v3', 'needs_window.v4'}:
         if neighbors is None:
             raise ValueError('offline_source_window_requires_verified_neighbors')
         from retrieval.source_window_candidates import expand_candidates

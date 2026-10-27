@@ -14,6 +14,8 @@ import java.util.*;
 class OrganizationExecutionBindings {
     record Create(@NotNull UUID id,@NotBlank @Pattern(regexp="sha256:[a-f0-9]{64}") String manifest_digest) {}
     record Access(@NotNull UUID thread_id,@NotBlank @Pattern(regexp="sha256:[a-f0-9]{64}") String manifest_digest) {}
+    record NavigationAccess(@NotNull UUID thread_id,@NotBlank @Pattern(regexp="sha256:[a-f0-9]{64}") String manifest_digest,
+                            @NotNull Boolean include_grant) {}
     private final JdbcTemplate db;
     private final OrganizationResearchDrafts drafts;
     private final OrganizationProjects projects;
@@ -106,6 +108,36 @@ class OrganizationExecutionBindings {
             if(Boolean.TRUE.equals(binding(id).get("closed")))throw new ApiFailure(404,"执行绑定或所选资料当前不可用");
             var result=new HashMap<String,Object>(view(saved));result.put("manifest_text",saved.get("manifest_text"));
             result.put("inputs",grant.get("inputs"));return result;
+        });
+    }
+
+    // BFF reader identity AND original execution principal, checked together.
+    // Compact replies save immutable bytes only, never skip current DB checks.
+    @PostMapping("/v1/workspaces/projects/{project}/research-drafts/{draft}/execution-bindings/{id}/navigation-access")
+    Object navigationAccess(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID draft,
+                            @PathVariable UUID id,@Valid @RequestBody NavigationAccess body) {
+        String actor=(String)request.getAttribute("owner");
+        if(actor==null || !id.equals(body.thread_id()))throw new ApiFailure(404,"执行绑定不可访问");
+        return tx.execute(status->{
+            var saved=binding(id);
+            if(!project.equals(saved.get("project_id")) || !draft.equals(saved.get("draft_id"))
+                || !body.manifest_digest().equals("sha256:"+saved.get("manifest_digest")))
+                throw new ApiFailure(404,"执行绑定不可访问");
+            drafts.checkMaterialAccess(actor,project,draft);
+            String principal=saved.get("principal").toString();
+            if(!actor.equals(principal))drafts.checkMaterialAccess(principal,project,draft);
+            saved=binding(id); // Close shares the organization/project lock.
+            if(Boolean.TRUE.equals(saved.get("closed")))throw new ApiFailure(404,"执行绑定不可访问");
+            var bindingView=view(saved);
+            var result=new HashMap<String,Object>();
+            result.put("contract_version","organization_navigation_access.v1");result.put("binding",bindingView);
+            if(body.include_grant()) {
+                var full=new HashMap<String,Object>(bindingView);
+                full.put("manifest_text",saved.get("manifest_text"));
+                full.put("inputs",drafts.readAccess(actor,project,draft).get("inputs"));
+                result.put("grant",full);
+            }
+            return result;
         });
     }
 }

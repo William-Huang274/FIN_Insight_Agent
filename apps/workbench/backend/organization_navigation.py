@@ -4,6 +4,7 @@ The server keeps a bounded number of user-private navigation sessions. A cached
 result is never an authorization lease, and this endpoint cannot admit a run.
 """
 from collections import OrderedDict
+from copy import deepcopy
 import os
 from threading import Lock
 
@@ -12,7 +13,7 @@ from fastapi import HTTPException
 
 from .organization_research_inputs import validate_grant
 from sec_agent.research_foundation.organization_execution_access import (
-    OrganizationExecutionAuthority, OrganizationExecutionReader, OrganizationExecutionUnavailable,
+    OrganizationExecutionReader, OrganizationExecutionUnavailable,
     validate_execution_grant,
 )
 from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
@@ -23,30 +24,29 @@ class UserExecutionAuthority:
         self.actor, self.project, self.draft = actor, project, draft
         self.business = business
         self.execution_id, self.manifest_digest = execution, grant['manifest_digest']
-        self.runtime = OrganizationExecutionAuthority(
-            base_url=os.environ['FINSIGHT_BUSINESS_API_URL'],
-            secret=os.environ['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'],
-            execution_id=execution, manifest_digest=self.manifest_digest)
-
-    def user_grant(self):
-        grant = from_thread.run(self.business, self.actor, 'POST',
-            f'projects/{self.project}/research-drafts/{self.draft}/material-access')
-        validate_grant(grant, self.project, self.draft)
-        if grant['manifest_digest'] != self.manifest_digest:
-            raise OrganizationExecutionUnavailable('organization_navigation_manifest_changed')
-        return grant
+        self.frozen = grant
+        self.snapshot = None
 
     def __call__(self):
-        before = self.user_grant()
-        grant = self.runtime()
-        manifest, bindings = validate_execution_grant(grant, self.execution_id, self.manifest_digest)
-        if (manifest != before['manifest'] or manifest['project_id'] != self.project
-                or manifest['draft_id'] != self.draft
-                or bindings != {item['resource_id']: item['binding'] for item in before['inputs']}):
-            raise OrganizationExecutionUnavailable('organization_navigation_binding_mismatch')
-        if self.user_grant() != before:
+        reply = from_thread.run(self.business, self.actor, 'POST',
+            f'projects/{self.project}/research-drafts/{self.draft}/execution-bindings/{self.execution_id}/navigation-access',
+            {'thread_id': self.execution_id, 'manifest_digest': self.manifest_digest,
+             'include_grant': self.snapshot is None})
+        if reply.get('contract_version') != 'organization_navigation_access.v1':
+            raise OrganizationExecutionUnavailable('organization_navigation_access_contract_mismatch')
+        if self.snapshot is None:
+            grant = reply.get('grant', {})
+            manifest, bindings = validate_execution_grant(grant, self.execution_id, self.manifest_digest)
+            if (manifest != self.frozen['manifest'] or manifest['project_id'] != self.project
+                    or manifest['draft_id'] != self.draft
+                    or bindings != {item['resource_id']: item['binding'] for item in self.frozen['inputs']}):
+                raise OrganizationExecutionUnavailable('organization_navigation_binding_mismatch')
+            self.snapshot = deepcopy(grant)
+        expected = {key: value for key, value in self.snapshot.items() if key not in {'manifest_text', 'inputs'}}
+        if reply.get('binding') != expected:
             raise OrganizationExecutionUnavailable('organization_navigation_authority_changed')
-        return grant
+        # Reuse immutable payload only after this call's fresh Java verdict.
+        return deepcopy(self.snapshot)
 
 
 class OrganizationNavigationService:
@@ -61,7 +61,7 @@ class OrganizationNavigationService:
         self.maximum_sessions, self.wait_seconds = maximum_sessions, wait_seconds
         self._lock, self._sessions = Lock(), OrderedDict()
 
-    def navigate(self, actor, project, draft, execution, grant, origin, request):
+    def navigate(self, actor, project, draft, execution, origin, request):
         if request.source_space != 'organization' or request.operation not in {'catalog', 'outline', 'search', 'read'}:
             raise HTTPException(422, '组织检索只接受固定组织资料的目录、检索与原文读取')
         if request.operation != 'search' and not request.document_id:
@@ -72,23 +72,25 @@ class OrganizationNavigationService:
         if not self._lock.acquire(timeout=self.wait_seconds):
             raise HTTPException(429, '组织检索繁忙；本次未执行检索，请稍后手动重试')
         try:
-            key = (actor, project, draft, execution, grant['manifest_digest'], origin)
+            key = (actor, project, draft, execution, origin)
             navigation = self._sessions.get(key)
             if navigation is None:
                 # Evict before allocating another full-corpus navigation state.
                 while len(self._sessions) >= self.maximum_sessions:
                     self._sessions.popitem(last=False)
+                grant = from_thread.run(self.business, actor, 'POST',
+                    f'projects/{project}/research-drafts/{draft}/material-access')
+                validate_grant(grant, project, draft)
                 authority = UserExecutionAuthority(actor, project, draft, execution, grant, self.business)
                 reader = OrganizationExecutionReader(self.workspace, authority)
-                reader.check()  # Reject mismatched execution before index I/O/providers.
                 navigation = OrganizationSourceNavigation(reader, workbench_url=origin,
                     retrieval_root=os.environ['FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT'])
                 self._sessions[key] = navigation
             self._sessions.move_to_end(key)
             try:
-                before, _, _ = navigation.reader._grant()
+                # The production navigator owns before/after I/O and provider
+                # checks. Do not wrap them in another identical grant cycle.
                 result = navigation.navigate(request)
-                navigation.reader._after(before)
                 return result
             except BaseException:
                 # Failed authorization/storage/provider state is not kept warm.

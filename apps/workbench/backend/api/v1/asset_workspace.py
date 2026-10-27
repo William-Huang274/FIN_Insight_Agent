@@ -68,15 +68,11 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None,
     async def organization_navigation(project_id: UUID, draft_id: UUID, execution_id: UUID,
                                      body: SourceDocumentRequest, request: Request, response: Response):
         import os
-        from ...organization_research_inputs import validate_grant
         actor = identity(request, response, True)  # Search may spend on query embeddings/rerank.
         if os.getenv('FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED') != '1':
             raise HTTPException(503, '组织检索服务尚未启用')
-        grant = await space_business_request(actor, 'POST',
-            f'projects/{project_id}/research-drafts/{draft_id}/material-access')
-        validate_grant(grant, project_id, draft_id)
         return await run_in_threadpool(call, navigation_service.navigate, actor, str(project_id),
-            str(draft_id), str(execution_id), grant, str(request.base_url).rstrip('/'), body)
+            str(draft_id), str(execution_id), str(request.base_url).rstrip('/'), body)
 
     @router.get('/projects/{project_id}')
     def catalog(project_id: UUID, request: Request, response: Response):

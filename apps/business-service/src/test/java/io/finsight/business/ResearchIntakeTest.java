@@ -757,6 +757,28 @@ class ResearchIntakeTest {
         runtimeAccess(id,f.digest(),404);
         assertThat(db.queryForObject("SELECT count(*) FROM research_task",Integer.class)).isEqualTo(tasks);
     }
+    @Test void navigation_access_checks_reader_and_execution_principal_on_compact_replies() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();
+        workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
+        String path=f.createPath()+"/"+id+"/navigation-access";
+        var full=Map.of("thread_id",id,"manifest_digest",f.digest(),"include_grant",true);
+        var compact=Map.of("thread_id",id,"manifest_digest",f.digest(),"include_grant",false);
+        var initial=workspace(f.researcher(),"POST",path,full,200);
+        assertThat(initial.path("contract_version").asText()).isEqualTo("organization_navigation_access.v1");
+        assertThat(initial.path("grant")).isEqualTo(runtimeAccess(id,f.digest(),200));
+        var current=workspace(f.admin(),"POST",path,compact,200);
+        assertThat(current.path("binding")).isEqualTo(initial.path("binding"));
+        assertThat(current.has("grant")).isFalse();
+        workspace("unrelated-reader","POST",path,compact,404);
+        workspace(f.admin(),"POST",path,Map.of("thread_id",UUID.randomUUID(),"manifest_digest",f.digest(),"include_grant",false),404);
+        workspace(f.admin(),"POST",path,Map.of("thread_id",id,"manifest_digest","sha256:"+"0".repeat(64),"include_grant",false),404);
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",f.researcher(),"role","remove"),200);
+        workspace(f.admin(),"POST",path,compact,404); // Reader still authorized, execution principal revoked.
+        workspace(f.admin(),"POST","/spaces/"+f.space()+"/members",Map.of("subject",f.researcher(),"role","reader"),200);
+        workspace(f.researcher(),"POST",path,compact,200);
+        workspace(f.admin(),"POST","/projects/"+f.project()+"/execution-bindings/"+id+"/close",null,200);
+        workspace(f.researcher(),"POST",path,compact,404);
+    }
     @Test void execution_close_survives_replay_and_permission_restoration() throws Exception {
         var f=executionFixture();UUID id=UUID.randomUUID();var body=Map.of("id",id,"manifest_digest",f.digest());
         workspace(f.researcher(),"POST",f.createPath(),body,200);

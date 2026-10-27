@@ -33,6 +33,10 @@ Flyway V6 adds internal execution authorization bindings. A separate workload
 credential can request current all-input access for a bound principal, but cannot
 manage projects or impersonate a browser user. This does not create a native run.
 See [scoped organization evidence tools](../../docs/engineering/organization_execution_access.zh-CN.md).
+The opt-in browser retrieval adapter uses a delegated-user `navigation-access`
+verdict that checks both the current reader and saved execution principal in Java.
+Only the immutable manifest payload is reusable; every verdict rechecks current
+project/source permissions and binding state, including on cached results.
 Flyway V7 adds one durable native draft preparation command per binding, with
 frozen configuration, one dispatch attempt and read-only reconciliation. Native
 threads use organization ownership; personal research entry points cannot read

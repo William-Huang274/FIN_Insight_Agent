@@ -20,7 +20,6 @@ def endpoint(tmp_path, monkeypatch):
     runtime = runtime_grant(grant)
     grant['manifest_digest'] = runtime['manifest_digest']
     reader, runtime_state = runtime_at(shared, runtime)
-    monkeypatch.setattr(module, 'OrganizationExecutionAuthority', lambda **kw: reader.authority)
     monkeypatch.setenv('FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED', '1')
     monkeypatch.setenv('FINSIGHT_BUSINESS_API_URL', 'http://127.0.0.1:9')
     monkeypatch.setenv('FINSIGHT_ORGANIZATION_RUNTIME_SECRET', 'unused-test-runtime-secret')
@@ -28,11 +27,21 @@ def endpoint(tmp_path, monkeypatch):
     monkeypatch.delenv('FINSIGHT_ORGANIZATION_TABLE_COMPLETION', raising=False)
     state = {'calls': 0, 'denied': False, 'deny_at': None}
     state['document'] = module.OrganizationSourceNavigation._identity(grant['manifest']['inputs'][0])
-    async def business(actor, method, path):
+    state['navigation_payloads'] = []
+    async def business(actor, method, path, body=None):
         assert method == 'POST'
         state['calls'] += 1
         if actor != 'alice' or state['denied'] or state['deny_at'] == state['calls']:
             raise HTTPException(404, 'no access')
+        if path.endswith('/navigation-access'):
+            if runtime_state['status'] != 200:
+                raise HTTPException(404, 'execution denied')
+            state['navigation_payloads'].append(deepcopy(body))
+            current = deepcopy(runtime_state['grant'])
+            return {'contract_version': 'organization_navigation_access.v1',
+                'binding': {k:v for k,v in current.items() if k not in {'manifest_text','inputs'}},
+                **({'grant': current} if body['include_grant'] else {})}
+        assert path.endswith('/material-access')
         return deepcopy(grant)
     monkeypatch.setattr(transport, 'space_business_request', business)
     app = app_at(tmp_path, monkeypatch)
@@ -56,6 +65,8 @@ def test_http_custody_and_warm_authorization(endpoint):
         assert result.status_code == 200, result.text
         assert result.json()['items'][0]['passage'] == 'Pinned original evidence.'
     assert state['calls'] > 4
+    assert state['navigation_payloads'][0]['include_grant'] is True
+    assert all(not p['include_grant'] for p in state['navigation_payloads'][1:])
     assert client.post(path, json=read, headers={**WRITE, 'Authorization': 'Bearer bob'}).status_code == 404
     state['denied'] = True
     assert client.post(path, json=read, headers=WRITE).status_code == 404
@@ -95,7 +106,7 @@ def test_bounded_admission_rejects_before_work():
     service._lock.acquire()
     try:
         with pytest.raises(HTTPException) as error:
-            service.navigate('a', 'p', 'd', 'e', {}, 'http://localhost',
+            service.navigate('a', 'p', 'd', 'e', 'http://localhost',
                 SourceDocumentRequest(source_space='organization', operation='search', query='evidence'))
         assert error.value.status_code == 429
         assert not service._sessions

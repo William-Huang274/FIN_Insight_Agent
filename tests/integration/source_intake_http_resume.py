@@ -1,8 +1,9 @@
 """Explicit retained immutable index -> current services qualification.
 
 Does not claim a fresh publication or replay old query/authorization results.
-The entire source generation is cold-verified with current implementation before
-paid HTTP quality/load. Exact index files, Java contract and originals must agree.
+The entire source generation is verified with current implementation before
+paid HTTP quality/load. Valid content receipts may be reused; current permission
+checks are never reused. Exact index files, Java contract and originals must agree.
 """
 from hashlib import file_digest
 import gc
@@ -65,13 +66,15 @@ def run(stack, seal, api, bundles, quality_data, quality_binding, budget, diagno
     before, manifest, _ = reader._grant()
     assert manifest == prepared['manifest'] and len(manifest['inputs']) == len(bundles)
     navigation = OrganizationSourceNavigation(reader, workbench_url='http://localhost', retrieval_root=indices)
-    with diagnostic.phase('retained_index_current_cold_verification'):
+    with diagnostic.phase('retained_index_current_verification'):
         navigation.warm_release()
     candidate = navigation._candidate_index
-    assert candidate.original_reads == len(bundles) and len(candidate.rows) == expected_chunks
+    assert candidate.original_reads + candidate.verification_hits == len(bundles)
+    assert len(candidate.rows) == expected_chunks
     reader._after(before)
     stack.save('retained-index-current-verification', {'status': 'passed', 'sources': len(bundles),
         'chunks': expected_chunks, 'original_reads': candidate.original_reads,
+        'verified_receipt_hits': candidate.verification_hits,
         'publication_source_git': seal['publication_git'], 'same_version_republication': False,
         'current_permissions_rechecked': True, 'index_contract': contract})
     del candidate, navigation

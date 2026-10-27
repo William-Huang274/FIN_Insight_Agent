@@ -29,6 +29,7 @@ class PaidCallBudget:
             self.calls[operation] += 1
             self.save('service-quality-provider-budget', self.record('submitted'))
             token = provider_network.set(True)
+            started = perf_counter()
             try:
                 result = method(*args, **kwargs)
             except BaseException:
@@ -38,6 +39,7 @@ class PaidCallBudget:
             finally:
                 provider_network.reset(token)
             self.receipts.append({'operation': operation, 'usage': result.usage,
+                                  'wall_seconds': perf_counter() - started,
                                   'request_id': result.request_id, 'model': result.model})
             self.save('service-quality-provider-budget', self.record('completed'))
             return result

@@ -138,6 +138,12 @@ class OrganizationResearchDrafts {
             return readAccess(actor,projectId,id);
         });
     }
+    void checkMaterialAccess(String actor,UUID projectId,UUID id) {
+        tx.executeWithoutResult(status->{
+            projects.researchPreparation(actor,projectId,true);
+            draft(actor,projectId,id); // Same complete current source predicate; no payload serialization.
+        });
+    }
     Map<String,Object> readAccess(String actor,UUID projectId,UUID id) {
         return tx.execute(status->{
             var row=draft(actor,projectId,id);

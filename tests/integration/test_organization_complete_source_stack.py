@@ -1,7 +1,8 @@
 """Full parsed sources through real BFF/Java/Postgres and production MCP tools.
 
-Explicit private artifacts; qualification login only. No Agent run or paid call.
-This is intake acceptance, deliberately not recall or capacity measurement.
+Explicit private artifacts; qualification login only. No Agent run.
+Default intake is loopback-only. A separately frozen quality replay can opt in
+to bounded Qwen requests; neither mode establishes capacity or Agent quality.
 """
 import asyncio
 from hashlib import sha256
@@ -36,9 +37,11 @@ pytestmark = pytest.mark.skipif(not os.getenv('FIN_COMPLETE_SOURCE_INTAKE'), rea
 
 
 def test_complete_sources_real_authority_publication_frozen_index_and_readback(monkeypatch):
+    from tests.integration.source_intake_quality import provider_network
     connect = socket.socket.connect
     def local_only(sock, address):
-        if isinstance(address, tuple) and address[0] not in {'127.0.0.1','::1','localhost'}:
+        if (isinstance(address, tuple) and address[0] not in {'127.0.0.1','::1','localhost'}
+                and not provider_network.get()):
             raise AssertionError('complete_source_acceptance_forbids_external_network')
         return connect(sock, address)
     monkeypatch.setattr(socket.socket,'connect',local_only)
@@ -102,6 +105,15 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         if ordinal % 100 == 0:
             input_progress(ordinal,'running')
     input_progress(len(intake['sources']),'passed')
+    quality_data = quality_binding = quality_budget = quality_nav = None
+    quality_requests = []
+    quality_root = os.getenv('FIN_COMPLETE_SOURCE_QUALITY_REPLAY')
+    if quality_root:
+        from tests.integration.source_intake_quality import load_frozen_quality
+        if not (global_probe and unified_scope) or batch_binding:
+            raise ValueError('service_quality_requires_unified_source_scope')
+        quality_data, quality_binding = load_frozen_quality(quality_root,
+            os.environ['FIN_COMPLETE_SOURCE_QUALITY_DATASET_SHA256'], bundles)
     model=intake['source_index']['embedding_model']
     namespace=sha256(json.dumps(['index-query.v1','public-recall-qualification',
         intake['source_index']['matrix_sha256'],model,1024],separators=(',',':')).encode()).hexdigest()
@@ -172,6 +184,9 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             raise ValueError('checkpoint_pause_must_advance_within_full_scope')
     s=CompleteSourceStack()
     diagnostic=PhaseDiagnostics(s.save)
+    if quality_data:
+        from tests.integration.source_intake_quality import PaidCallBudget
+        quality_budget = PaidCallBudget(len(quality_data['questions']), s.save)
     indices=reserve_index_output(s.output,os.getenv('FIN_COMPLETE_SOURCE_INDEX_OUTPUT'))
     s.save('source-intake-storage', {'index_output':str(indices), 'state_output':str(s.state),
         'table_period_catalog_sha256':os.getenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256'),
@@ -716,12 +731,35 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     'receipts':[result.items[0]['retrieval'] for result in subset_results]})
             with diagnostic.phase('sampled_original_readback',profile=global_probe):
                 asyncio.run(exercise(read_batch,targets,nav,reader))
+            if quality_data:
+                from retrieval.qwen_api import QwenRetrieval
+                from tests.integration.source_intake_quality import run_quality
+                # New instance freezes the evaluated policy; existing plumbing
+                # probes retain their original no-provider configuration.
+                with monkeypatch.context() as configured:
+                    configured.setenv('FINSIGHT_ORGANIZATION_CANDIDATE_POLICY', 'needs_window.v4')
+                    configured.setenv('FINSIGHT_ORGANIZATION_RERANK', 'qwen')
+                    configured.setenv('FINSIGHT_ORGANIZATION_RERANK_MODEL', 'qwen3.7-text-rerank')
+                    configured.setenv('FINSIGHT_ORGANIZATION_QUERY_EMBEDDING', 'qwen')
+                    configured.setattr(QwenRetrieval, 'embed', quality_budget.wrap('embedding', QwenRetrieval.embed))
+                    configured.setattr(QwenRetrieval, 'rerank', quality_budget.wrap('rerank', QwenRetrieval.rerank))
+                    quality_nav = OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
+                    with diagnostic.phase('frozen_quality_replay_real_authority'):
+                        quality_requests = run_quality(quality_data,quality_binding,nav=quality_nav,
+                            bundles=bundles,save=s.save,budget=quality_budget)
             # Revoke a candidate that was NOT explicitly selected; all current
             # dependencies must still protect cached search, reports and reads.
             revoke_sid=list(batch)[-1] if unified_scope else next(iter(batch))
             first=resources[revoke_sid]
             current=s.request(s.bff,'GET',f'/api/v1/asset-workspace/spaces/resources/{first}')
             api('POST',f'/resources/{first}/revoke',{'revision':current['permission_revision']})
+            if quality_requests:
+                # Exact last request is resident in the response cache. A
+                # non-selected candidate's revocation still invalidates it.
+                with pytest.raises(OrganizationExecutionUnavailable):
+                    quality_nav.navigate(quality_requests[-1])
+                s.save('service-quality-revocation', {'cached_search_denied': True,
+                    'revoked_resource': first, 'provider_calls_after_revocation': 0})
             if needs_request is not None:
                 with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(needs_request)
                 for link in context_links[:4]:
@@ -763,7 +801,9 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             'execution_baseline':checkpoint_binding['baseline'] if checkpoint_binding else None,
             'publication_origin_attempt':restored['origin_attempt'] if restored else str(s.output),
             'batch_binding':batch_binding,'full_intake_sources':full_intake_sources,
-            'revoked_cache_and_readback_denied':True,'provider_calls':0,'research_runs':0,
+            'revoked_cache_and_readback_denied':True,
+            'provider_calls':sum(quality_budget.calls.values()) if quality_budget else 0,'research_runs':0,
+            'frozen_quality_replay':bool(quality_data),
             'recall_or_capacity_evaluation':False,'candidate_chunks':len(vectors),'identity':'qualification login',
             'max_explicit_sources_per_draft':12,'separate_index_batches':len(contracts),
             'corpus_wide_retrieval':unified_scope,'corpus_scope':'selected intake artifact only',
@@ -773,7 +813,8 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             'captures':captures,'node_reads':node_reads,'date_denials':date_denials,'query_is_storage_probe':storage_probe})
     except BaseException as exc:
         s.save('failure',{'error_type':type(exc).__name__,'published_sources':len(captures) if 'captures' in locals() else 0,
-                          'phase_diagnostics':'phase-diagnostics.json','provider_calls':0})
+                          'phase_diagnostics':'phase-diagnostics.json',
+                          'provider_calls':sum(quality_budget.calls.values()) if quality_budget else 0})
         raise
     finally:
         for lifecycle in lifecycles:

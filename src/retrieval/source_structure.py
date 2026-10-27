@@ -17,6 +17,8 @@ NOTE = re.compile(r'\s*\((\d{1,3}|[a-z])\)\s*\n?([^\n]+)', re.I)
 def source_structure(bundle):
     from .library_source_bundle import validate_bundle_text
     validate_bundle_text(bundle)
+    from .source_table_periods import validate_overlay
+    period_tables = {t['source_char_start']:t for t in validate_overlay(bundle)}
     text = bundle.get('text') if 'node_recovery' not in bundle else None
     headings = list(HEAD.finditer(text)) if text else []
     heads = [m.start() for m in headings]
@@ -60,7 +62,16 @@ def source_structure(bundle):
             row['section']={'heading':headings[index][0], 'source_char_start':heads[index]}
         for table in substantive:
             if table.start()<end and table.end()>start:
-                row['tables'].append(_span(table,text))
+                span = _span(table,text)
+                period_table = period_tables.get(table.start())
+                span['period_binding'] = period_table['status'] if period_table else 'requires_original_geometry_and_periods'
+                if period_table:
+                    span['raw_archive_sha256'] = bundle['table_period_context']['raw_sha256']
+                    span['html_table_ordinal'] = period_table['html_table_ordinal']
+                span['period_cells'] = [c for c in period_table['cells'] if c['facts']
+                    and c['source_char_start']<end and c['source_char_end']>start] if period_table else []
+                span['period_scope'] = 'explicit_contextref_not_document_year_or_answer_authority'
+                row['tables'].append(span)
         for lo,hi,marker,parent in notes:
             if lo<end and hi>start:
                 linked=[c['id'] for c in bundle['chunks'] if

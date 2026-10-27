@@ -385,6 +385,16 @@ def navigate_source_nodes(
                 item['next_readback'] = {**item['readback'], 'character_offset': end} if end < item['content_characters'] else None
                 notice = 'Exact source character window; offsets are zero-based, end exclusive. Read adjacent windows before interpreting split tables, sentences or footnotes.'
             used += len(content)
+            if 'source_structure' in row:
+                from copy import deepcopy
+                structure = deepcopy(row['source_structure'])
+                # A character-window read must not expose cells outside that
+                # window. Coordinates remain original source coordinates.
+                if partial:
+                    for table in structure['tables']:
+                        table['period_cells'] = []
+                    structure['period_window_status'] = 'partial_read_requires_complete_cell_readback'
+                item['source_structure'] = structure
         elif request.operation == "search":
             item["preview"] = content[:500]
             if 'source_structure' in row:

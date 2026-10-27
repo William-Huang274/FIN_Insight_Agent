@@ -93,6 +93,8 @@ def source_snapshot(selection, attachments_root, fact_mart, research_library=Non
             db.row_factory = sqlite3.Row
             db.execute('BEGIN')
             bundle = build_source_bundle(db, selection.document_id, selection.snapshot, configured_catalog(), configured_node_catalog())
+        from retrieval.source_table_periods import enrich_from_catalog
+        bundle = enrich_from_catalog(bundle)
         # Recheck the maintained release identity before saving the snapshot.
         if open_library(research_library).manifest['sha256'] != selection.snapshot:
             raise AssetConflict('完整来源保存期间资料库版本变化。')

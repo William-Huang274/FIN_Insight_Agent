@@ -284,6 +284,15 @@ class OrganizationSourceNavigation:
                     raise ValueError('organization_complete_source_requires_chunk_projection')
                 projected = source_nodes(result['source_bundle'], document_id, item,
                     self.workbench_url + f"/api/v1/asset-workspace/organization-projects/{manifest['project_id']}/resources/{item['resource_id']}")
+                if request.operation == 'read':
+                    from collections import ChainMap
+                    from retrieval.source_structure import organization_structure
+                    structures = organization_structure(result['source_bundle'], document_id)
+                    enriched = []
+                    for row in projected:
+                        structure = structures.get(row['node_id']) or structures.get(row['node_id']+':leaf')
+                        enriched.append(ChainMap({'source_structure':structure},row) if structure is not None else row)
+                    projected = enriched
                 return document_id, projected, origin, {row['node_id']:row['original_source'] for row in projected}
             for index, offset in enumerate(range(0, len(text), 6000)):
                 chunk = text[offset:offset + 6000]

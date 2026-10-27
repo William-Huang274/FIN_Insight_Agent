@@ -74,6 +74,7 @@ def implementation_digest():
         'task_attachments.py', 'project_asset_versions.py', 'project_asset_access.py')]
     files.append(root.parents[1]/'retrieval'/'library_source_bundle.py')
     files.append(root.parents[1]/'retrieval'/'source_structure.py')
+    files.append(root.parents[1]/'retrieval'/'source_table_periods.py')
     return sha256(b''.join(path.read_bytes() for path in files)).hexdigest()
 
 

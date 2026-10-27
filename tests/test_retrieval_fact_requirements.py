@@ -30,6 +30,31 @@ def test_same_version_unit_conversion_and_precision_are_separate():
     assert score_requirements([],validated)['requirements'][0]['status']=='missing'
 
 
+def test_typed_fact_period_requires_own_citation_not_filing_date():
+    contract, originals = fixture()
+    contract['schema']='reviewed-fact-requirements.v2'
+    requirement=contract['requirements'][0]
+    requirement['context'].update(disclosure_period='2025-12-31',
+        period={'kind':'instant','role':'balance_as_of','value':'2025-12-31'})
+    with pytest.raises(ValueError,match='period_original_citations'):review_requirements(contract, originals)
+    for a in requirement['alternatives']:
+        a['period_citations']=[{'node_id':a['citations'][0]['node_id'],'quote':'December 31, 2025'}]
+    assert review_requirements(contract, originals)
+    requirement['alternatives'][0]['period_citations'][0]['quote']='September 30, 2025'
+    with pytest.raises(ValueError,match='period_quote'):review_requirements(contract, originals)
+
+
+@pytest.mark.parametrize('period',[
+    '2025-12-31', {'kind':'instant','role':'expiration','value':'2025-12-31'},
+    {'kind':'instant','role':'balance_as_of','value':'2025-02-30'},
+    {'kind':'duration','role':'flow_during_period','start':'2025-12-31','end':'2025-01-01'},
+    {'kind':'fiscal_year','role':'flow_during_period','value':'2025-09-26'},
+    {'kind':'unknown','role':'unresolved','reason':''}])
+def test_typed_fact_period_rejects_ambiguous_or_invalid_forms(period):
+    from scripts.engineering.retrieval_fact_requirements import validate_period
+    with pytest.raises(ValueError):validate_period(period)
+
+
 @pytest.mark.parametrize('field,value',[('period','2024-12-31'),('entity','Other'),
     ('source_digest','v2'),('measure','restricted_cash')])
 def test_other_period_owner_measure_or_revision_not_equivalent(field,value):

@@ -19,6 +19,10 @@ def source_structure(bundle):
     validate_bundle_text(bundle)
     from .source_table_periods import validate_overlay
     period_tables = {t['source_char_start']:t for t in validate_overlay(bundle)}
+    from .fact_period_matching import prose_periods, table_periods, markdown_tables, tagged_periods
+    body=bundle.get('text','')
+    period_evidence = (prose_periods(body) + table_periods(body,list(period_tables.values())+markdown_tables(body))
+        + tagged_periods(list(period_tables.values())))
     text = bundle.get('text') if 'node_recovery' not in bundle else None
     headings = list(HEAD.finditer(text)) if text else []
     heads = [m.start() for m in headings]
@@ -57,6 +61,8 @@ def source_structure(bundle):
         if text[start:end] != chunk['body'] or sha256(chunk['body'].encode()).hexdigest()!=chunk['digest']:
             raise ValueError('source_structure_chunk_mismatch')
         row['status']='verified_original_coordinates'
+        row['period_evidence'] = [e for e in period_evidence
+            if e['source_char_start']<end and e['source_char_end']>start]
         index=bisect_right(heads,start)-1
         if index>=0:
             row['section']={'heading':headings[index][0], 'source_char_start':heads[index]}

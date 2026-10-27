@@ -68,9 +68,14 @@ def compile_needs(query, plan):
             'preferred_report_year':plan.get('preferences', {}).get('verified_report_year'),
             'coverage_semantics':'candidate_routes_not_answer_sufficiency',
             'translation_scope':'reviewed_glossary_other_terms_remain_literal'}
-    if plan.get('policy') == 'conservative.v4':
+    if plan.get('policy') in {'conservative.v4','conservative.v5'}:
         from .financial_query_needs import compile_financial_needs
-        return compile_financial_needs(query, plan, result)
+        result = compile_financial_needs(query, plan, result)
+        if plan.get('policy') == 'conservative.v5':
+            from .fact_period_matching import query_period, POLICY as PERIOD_POLICY
+            result['period_policy'] = PERIOD_POLICY
+            result['period_target'] = query_period(query)
+        return result
     return result
 
 
@@ -138,7 +143,7 @@ def select_coverage(rows, needs, lane_receipts, metadata):
     A route hit never proves an answer. All original candidates remain available
     and no absent fact is manufactured. Matching is on body, not title alone.
     """
-    if len(needs['needs']) == 1:
+    if len(needs['needs']) == 1 and (not needs.get('period_policy') or needs['period_target']['kind']=='unknown'):
         return rows, []
     chosen, receipts = [], []
     for need, lane in zip(needs['needs'], lane_receipts, strict=True):
@@ -165,11 +170,23 @@ def select_coverage(rows, needs, lane_receipts, metadata):
             # alone must not promote an old-period paragraph over the reranker.
             order = {r['node_id']:i for i,r in enumerate(rows)}
             eligible.sort(key=lambda r:order[r['node_id']])
+        period_states = {}
+        if needs.get('period_policy'):
+            from .fact_period_matching import match_period
+            period_states = {r['node_id']:match_period(r,need,needs['period_target']) for r in eligible}
+            # Prefer a positively associated fact. Unknown and other-period
+            # fragments retain their relative order and remain in the result.
+            eligible.sort(key=lambda r:period_states[r['node_id']]!='match')
         picked = eligible[0] if eligible else None
+        if len(needs['needs']) == 1 and 'match' not in period_states.values():
+            picked = None
         if picked:
             if picked['node_id'] not in chosen:
                 chosen.append(picked['node_id'])
         receipts.append({'need_id':need['id'], 'selected_id':picked['node_id'] if picked else None,
-                         'state':'candidate_selected_requires_readback' if picked else 'uncovered'})
+                         'state':'candidate_selected_requires_readback' if picked else
+                            'period_unresolved_order_preserved' if eligible and needs.get('period_policy') else 'uncovered'})
+        if needs.get('period_policy'):
+            receipts[-1]['period_matches'] = period_states
     by_id = {r['node_id']:r for r in rows}
     return [by_id[n] for n in chosen] + [r for r in rows if r['node_id'] not in chosen], receipts

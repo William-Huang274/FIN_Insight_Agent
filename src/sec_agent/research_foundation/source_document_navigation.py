@@ -34,7 +34,7 @@ LIBRARY_SOURCE_ROUTING_GUIDANCE = (
 
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    organization_query_planning: Literal['conservative.v1', 'conservative.v2', 'conservative.v3', 'conservative.v4'] | None = Field(default=None,
+    organization_query_planning: Literal['conservative.v1', 'conservative.v2', 'conservative.v3', 'conservative.v4', 'conservative.v5'] | None = Field(default=None,
         description='Opt-in organization search: literal catalog issuer, explicit filing form and period end. '
         'Unknown metadata stays eligible; ambiguous/multiple issuers and fiscal years are not guessed. '
         'Cannot combine with organization_filter; no paid query planning.')
@@ -391,6 +391,7 @@ def navigate_source_nodes(
                 # A character-window read must not expose cells outside that
                 # window. Coordinates remain original source coordinates.
                 if partial:
+                    structure['period_evidence'] = []
                     for table in structure['tables']:
                         table['period_cells'] = []
                     structure['period_window_status'] = 'partial_read_requires_complete_cell_readback'

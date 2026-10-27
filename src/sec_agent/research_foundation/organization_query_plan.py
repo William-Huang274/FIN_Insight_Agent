@@ -62,7 +62,7 @@ def _report_owners(query, aliases, *, allow_comparison=False, compatible=False):
 
 
 def plan_query(query, metadata, *, policy='conservative.v1'):
-    if policy not in {'conservative.v1', 'conservative.v2', 'conservative.v3', 'conservative.v4'}:
+    if policy not in {'conservative.v1', 'conservative.v2', 'conservative.v3', 'conservative.v4', 'conservative.v5'}:
         raise ValueError('unsupported_organization_query_plan')
     aliases, names = {}, {}
     named_issuers = {}
@@ -84,20 +84,20 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
                 aliases.setdefault(name.casefold(), set()).add(owner)
     matches = [(a, owners) for a, owners in aliases.items() if _mentions(query, a)]
     mentions = []
-    if policy in {'conservative.v3', 'conservative.v4'}:
+    if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'}:
         matches, mentions = _compatible_mentions(query, aliases)
     owners = set().union(*(v for _, v in matches)) if matches else set()
     unresolved, evidence, constraint = [], [], {}
     report_owners, report_phrases = _report_owners(query,
-        dict(matches) if policy in {'conservative.v3', 'conservative.v4'} else aliases,
-        allow_comparison=policy!='conservative.v1', compatible=policy in {'conservative.v3', 'conservative.v4'})
+        dict(matches) if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'} else aliases,
+        allow_comparison=policy!='conservative.v1', compatible=policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'})
     comparison = re.search(r'\b(?:compare|comparison|versus|vs\.?)\b|对比|比较|两家公司|各自', query, re.I)
     if (policy != 'conservative.v1' and len(owners)>1 and comparison and report_phrases
             and comparison.start() < min(query.casefold().find(p.casefold()) for p in report_phrases)):
         # "Compare Alpha and Beta annual report" modifies both owners, not
         # just the last name adjacent to the report noun.
         report_owners = set()
-    if policy in {'conservative.v3', 'conservative.v4'} and comparison and len(owners) == 1:
+    if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'} and comparison and len(owners) == 1:
         # "In Alpha's report, compare ..." has an explicit owner before the
         # comparison. "Compare Unknown and Alpha ..." does not justify a
         # one-company scope, even if only Alpha is present in the catalog.
@@ -171,7 +171,7 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
         unresolved.append('year_or_publication_date_not_mapped_to_period_end')
     result = {'policy': policy, 'constraint': constraint, 'evidence': evidence,
               'unresolved': unresolved, 'unknown_metadata_retained': True}
-    if policy in {'conservative.v3', 'conservative.v4'}:
+    if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'}:
         result['issuer_mentions'] = mentions
         result['issuer_matching'] = 'catalog_whitespace_compatibility_longest_mention.v1'
     if policy != 'conservative.v1':

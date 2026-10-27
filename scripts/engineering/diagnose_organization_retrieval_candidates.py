@@ -104,7 +104,7 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--split', choices=('development', 'heldout', 'all'), required=True)
     parser.add_argument('--source-filter-plan', type=Path, help='Development-only manual constraints; never automatic query routing')
-    parser.add_argument('--query-planning', choices=['conservative.v1', 'conservative.v2', 'conservative.v3', 'conservative.v4'])
+    parser.add_argument('--query-planning', choices=['conservative.v1', 'conservative.v2', 'conservative.v3', 'conservative.v4', 'conservative.v5'])
     parser.add_argument('--candidate-policy', choices=POLICIES, default='balanced.v1')
     args = parser.parse_args()
     args.output.mkdir(exist_ok=False, parents=True)
@@ -230,7 +230,7 @@ def main():
                         sample['known_evidence_excluded'] = [n for n in labels[row['id']] if n not in population]
                         del population
                     needs = None
-                    if args.query_planning in {'conservative.v2', 'conservative.v3', 'conservative.v4'}:
+                    if args.query_planning in {'conservative.v2', 'conservative.v3', 'conservative.v4', 'conservative.v5'}:
                         from retrieval.organization_search_needs import compile_needs
                         needs = compile_needs(row['query'], receipt)
                     ranked, evidence = rank_scope(scoped, directory, args.matrix, len(records), query, row,

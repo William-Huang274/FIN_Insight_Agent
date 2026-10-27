@@ -115,7 +115,10 @@ def test_capture_publish_readback_consumes_period_overlay(tmp_path,monkeypatch):
     from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
     from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionUnavailable
     import sec_agent.research_foundation.research_library as library_module
-    raw,text=fixture();dbpath=tmp_path/'library.sqlite';sid=database(dbpath,text);b=bundle_at(dbpath,sid)
+    raw,text=fixture()
+    prose='At June 30, 2025, cash and cash equivalents were $100 million.'
+    raw=raw.replace(b'</body>',('<p>'+prose+'</p></body>').encode());text+='\n'+prose
+    dbpath=tmp_path/'library.sqlite';sid=database(dbpath,text);b=bundle_at(dbpath,sid)
     overlay=build_overlay(raw,raw_sha256=digest(raw),source_digest=digest(text))
     path,sha=catalog_at(tmp_path/'catalog',b,overlay)
     monkeypatch.setenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG',str(path))
@@ -136,9 +139,13 @@ def test_capture_publish_readback_consumes_period_overlay(tmp_path,monkeypatch):
     assert read['passage']==text and not read['numeric_fact_authority']
     cells=read['source_structure']['tables'][0]['period_cells']
     assert {f['period']['dates'].get('instant') for c in cells for f in c['facts']}=={'2025-06-30',None}
+    evidence=read['source_structure']['period_evidence']
+    assert any(e['basis']=='explicit_same_clause' and e['concept']=='cash_equivalents'
+               and e['period']['value']=='2025-06-30' for e in evidence)
     limited=nav.navigate({**found['readback'],'character_offset':1,'max_characters':2000}).items[0]
     assert limited['source_structure']['period_window_status']=='partial_read_requires_complete_cell_readback'
     assert not limited['source_structure']['tables'][0]['period_cells']
+    assert not limited['source_structure']['period_evidence']
     state['status']=404
     with pytest.raises(OrganizationExecutionUnavailable):nav.navigate(found['readback'])
 

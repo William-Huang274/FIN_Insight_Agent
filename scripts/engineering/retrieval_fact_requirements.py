@@ -5,10 +5,39 @@ understanding. A reviewer must attest column ownership and financial meaning.
 Labels never enter query planning or ranking. Preserve the old strict ID score.
 """
 from decimal import Decimal, InvalidOperation
+from datetime import date
 from hashlib import sha256
 import re
 
 SCALES = {'ones': 1, 'thousands': 1000, 'millions': 1000000, 'billions': 1000000000}
+
+
+def validate_period(period):
+    """Typed annotation, independently reviewed; never copied from ranking."""
+    if not isinstance(period, dict):
+        raise ValueError('typed_fact_period_required')
+    kind = period.get('kind')
+    roles = {'instant': {'balance_as_of'}, 'event': {'authorization_event', 'expiration', 'completion_event'},
+             'duration': {'flow_during_period'}, 'fiscal_year': {'flow_during_period'},
+             'unknown': {'unresolved'}}
+    if kind not in roles or period.get('role') not in roles[kind]:
+        raise ValueError('invalid_fact_period_role')
+    if kind == 'unknown':
+        if set(period) != {'kind','role','reason'} or not period['reason']:
+            raise ValueError('unknown_fact_period_requires_reason')
+        return
+    fields = {'start','end'} if kind == 'duration' else {'value'}
+    if set(period) != {'kind','role'} | fields:
+        raise ValueError('invalid_fact_period_fields')
+    try:
+        if kind == 'fiscal_year':
+            if not re.fullmatch(r'20\d{2}', period['value']):raise ValueError()
+        else:
+            for field in fields:
+                if date.fromisoformat(period[field]).isoformat() != period[field]:raise ValueError()
+            if kind == 'duration' and period['start'] > period['end']:raise ValueError()
+    except (ValueError,TypeError):
+        raise ValueError('invalid_fact_period_value') from None
 
 
 def quantity(value):
@@ -25,7 +54,7 @@ def quantity(value):
 
 def review_requirements(contract, originals):
     """originals maps stable node IDs to hash-verified published source bodies."""
-    if contract.get('schema') != 'reviewed-fact-requirements.v1':
+    if contract.get('schema') not in {'reviewed-fact-requirements.v1','reviewed-fact-requirements.v2'}:
         raise ValueError('unsupported_fact_requirements')
     requirements = contract['requirements']
     ids = [r['id'] for r in requirements]
@@ -36,6 +65,11 @@ def review_requirements(contract, originals):
         context = requirement['context']
         if any(not context.get(k) for k in ('source_id', 'source_digest', 'entity', 'period', 'measure')):
             raise ValueError('incomplete_fact_context')
+        typed = contract['schema'] == 'reviewed-fact-requirements.v2'
+        if typed:
+            validate_period(context['period'])
+            if not context.get('disclosure_period'):
+                raise ValueError('disclosure_and_fact_period_must_be_separate')
         alternatives = []
         for alternative in requirement['alternatives']:
             if not alternative.get('reviewer') or alternative.get('review') != 'original_scope_units_and_precision_checked':
@@ -53,6 +87,14 @@ def review_requirements(contract, originals):
                     raise ValueError('fact_original_binding_mismatch')
                 if not citation['quote'].strip() or citation['quote'] not in original['body']:
                     raise ValueError('fact_quote_missing')
+            if typed:
+                anchors = alternative.get('period_citations', [])
+                if context['period']['kind'] != 'unknown' and not anchors:
+                    raise ValueError('fact_period_original_citations_required')
+                for anchor in anchors:
+                    if not anchor.get('quote','').strip() or not any(
+                        anchor['node_id']==c['node_id'] and anchor['quote'] in c['quote'] for c in citations):
+                        raise ValueError('fact_period_quote_not_in_reviewed_citations')
             status = 'complete'
             if 'quantity' in requirement:
                 expected, allowed_resolution = quantity(requirement['quantity'])
@@ -80,7 +122,9 @@ def review_requirements(contract, originals):
             alternatives.append({'nodes': sorted({c['node_id'] for c in citations}), 'status': status})
         if not alternatives or not any(a['status'] == 'complete' for a in alternatives):
             raise ValueError('requirement_has_no_complete_reference')
-        validated.append({'id': requirement['id'], 'alternatives': alternatives})
+        entry={'id': requirement['id'], 'alternatives': alternatives}
+        if typed:entry['period_resolved']=context['period']['kind']!='unknown'
+        validated.append(entry)
     return validated
 
 
@@ -92,7 +136,10 @@ def score_requirements(ranked, validated, k=10):
         status = ('complete' if 'complete' in hits else 'precision_insufficient'
                   if 'precision_insufficient' in hits else 'value_mismatch' if hits else 'missing')
         outcomes.append({'id': requirement['id'], 'status': status})
-    return {'requirements': outcomes,
+    result = {'requirements': outcomes,
             'complete_fraction': sum(r['status'] == 'complete' for r in outcomes) / len(outcomes),
             'all_complete': all(r['status'] == 'complete' for r in outcomes),
             'scope': 'reviewed_known_facts_not_exhaustive_relevance_or_answer_quality'}
+    if all('period_resolved' in r for r in validated):
+        result['period_resolved_fraction']=sum(r['period_resolved'] for r in validated)/len(validated)
+    return result

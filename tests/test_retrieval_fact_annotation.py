@@ -27,3 +27,18 @@ def test_typed_values_units_and_period_are_source_bound():
     for key,value in [('display_value','999'),('unit_quote','billion'),('unit','USD billion'),('evidence_quote','invented'),('period_quote','December 31, 2024')]:
         bad=deepcopy(a);bad['facts']['bindings'][0][key]=value
         with pytest.raises(ValueError):validate_annotation(bad,require_typed=True)
+
+
+@pytest.mark.parametrize('kind,period', [('fiscal_year','Fiscal year ended December 31, 2025'),
+                                      ('year_to_date','Nine months ended September 30, 2025')])
+def test_duration_labels_keep_reported_period_without_inventing_instant(kind, period):
+    q=question()
+    q['evidence'][0]['quote']=period+' Revenue 100 million'
+    q['fact_review']={'status':'reviewed','entity':'Company','source_id':'s','source_digest':'v',
+      'unit':'million','counterclaim':'100 billion','why_invalid':'Original unit million',
+      'bindings':[{'measure':'revenue','entity_scope':'consolidated','display_value':'100',
+       'unit':'USD million','period':{'kind':kind,'value':period,'meaning':'reported duration'},
+       'evidence_quote':q['evidence'][0]['quote'],'unit_quote':'million','period_quote':period}]}
+    a=normalize_question(q);validate_annotation(a,require_typed=True)
+    bad=deepcopy(a);bad['facts']['bindings'][0]['period_quote']='different fiscal duration'
+    with pytest.raises(ValueError,match='period_quote_missing'):validate_annotation(bad,require_typed=True)

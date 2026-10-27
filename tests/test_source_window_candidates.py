@@ -70,10 +70,11 @@ def test_window_order_preserves_exact_rows_and_ranks_companions_already_in_pool(
     with pytest.raises(ValueError,match='unverified_companion'):order_source_windows(rows,proof)
 
 
-def test_product_uses_same_window_policy_and_rechecks_revocation(tmp_path,monkeypatch):
+@pytest.mark.parametrize('policy',['needs_window.v2','needs_window.v3'])
+def test_product_uses_same_window_policy_and_rechecks_revocation(tmp_path,monkeypatch,policy):
     from test_organization_candidate_index import prepared,query
     from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionUnavailable
-    monkeypatch.setenv('FINSIGHT_ORGANIZATION_CANDIDATE_POLICY','needs_window.v2')
+    monkeypatch.setenv('FINSIGHT_ORGANIZATION_CANDIDATE_POLICY',policy)
     nav,reader,state,_,grant=prepared(tmp_path,monkeypatch)
     with pytest.raises(ValueError,match='requires_verified_navigation'):
         nav.hybrid.rank([], 'new unprepared query', 'invalid', [])
@@ -94,6 +95,8 @@ def test_product_uses_same_window_policy_and_rechecks_revocation(tmp_path,monkey
     receipt=result.items[0]['retrieval']
     assert neighbor in receipt['source_window']['added_node_ids']
     assert neighbor in receipt['candidate_node_ids']
+    if policy=='needs_window.v3':
+        assert receipt['source_window_selection']['policy']=='bounded-context.v1'
     assert all(ci.rows[n]['parent_document_id']==document for n in receipt['candidate_node_ids'])
     assert nav.navigate(request).items[0]['retrieval']['response_cache_hit']
     state['status']=404

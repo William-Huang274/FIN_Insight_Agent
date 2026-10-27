@@ -151,7 +151,7 @@ class VerifiedCandidateIndex:
             from retrieval.source_window_candidates import adjacent_nodes
             # Separate candidate expansion from legacy reader context links.
             # The latter tolerates tiny gaps; recall never crosses any gap.
-            if self.hybrid.candidate_policy == 'needs_window.v2':
+            if self.hybrid.candidate_policy in {'needs_window.v2', 'needs_window.v3'}:
                 window_neighbors.update(adjacent_nodes(ordered))
             for position, (parent, start, end, node) in enumerate(ordered):
                 adjacent = []

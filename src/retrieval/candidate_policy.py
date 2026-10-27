@@ -1,11 +1,11 @@
 """Bounded candidate allocations shared by serving and offline evaluation."""
-POLICIES = ('balanced.v1', 'dense_expanded.v1', 'needs_balanced.v1', 'needs_window.v2')
+POLICIES = ('balanced.v1', 'dense_expanded.v1', 'needs_balanced.v1', 'needs_window.v2', 'needs_window.v3')
 
 
 def candidate_limits(policy='balanced.v1', *, has_graph=False, lexical_policy=None):
     if policy not in POLICIES:
         raise ValueError('organization_candidate_policy_invalid')
-    if policy in {'needs_balanced.v1', 'needs_window.v2'}:
+    if policy in {'needs_balanced.v1', 'needs_window.v2', 'needs_window.v3'}:
         # Same 48-node maximum, with explicit capacity for several evidence
         # needs. This is an opt-in tradeoff, not an unbounded top-K increase.
         if lexical_policy == 'organization-financial-needs.v2':

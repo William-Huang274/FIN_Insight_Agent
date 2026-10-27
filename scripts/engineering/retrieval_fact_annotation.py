@@ -53,7 +53,7 @@ def validate_annotation(annotation, *, require_typed=False):
         p=b['period']
         if p['kind'] in {'instant','event','reported_quarter_end'}:
             if date.fromisoformat(p['value']).isoformat()!=p['value']:raise ValueError('typed_fact_date')
-        elif p['kind'] not in {'event','fiscal_quarter','undated_statement','reported_quarter_end'}:
+        elif p['kind'] not in {'event','fiscal_quarter','fiscal_year','year_to_date','undated_statement','reported_quarter_end'}:
             raise ValueError('typed_fact_period_kind')
         if not p.get('value') or not p.get('meaning'):raise ValueError('typed_fact_period_meaning')
         pieces=b.get('period_quotes') or [b.get('period_quote','')]

@@ -199,7 +199,7 @@ class OrganizationSourceNavigation:
                                           **({'lexical_policy':needs['policy']} if needs else {}))
         if graph is not None:
             receipt.update(graph_evidence=graph_evidence,graph_scope='frozen_one_hop_source_bound_candidates')
-        if self.hybrid.candidate_policy == 'needs_window.v2':
+        if self.hybrid.candidate_policy in {'needs_window.v2', 'needs_window.v3'}:
             from retrieval.source_window_candidates import expand_candidates
             eligible = {r['node_id']:r for r in rows}
             ids, expansion = expand_candidates([r['node_id'] for r in ranked],
@@ -210,7 +210,7 @@ class OrganizationSourceNavigation:
         materialized = candidates.materialize(ranked, manifest)
         if needs:
             materialized = candidates.contextualize(materialized, manifest)
-        if (self.hybrid.candidate_policy == 'needs_window.v2'
+        if (self.hybrid.candidate_policy in {'needs_window.v2', 'needs_window.v3'}
                 and request.organization_metadata_policy == 'sec_cover.v2'):
             from retrieval.rerank_document_context import with_document_context
             materialized = with_document_context(materialized, candidates.source_metadata)
@@ -234,6 +234,11 @@ class OrganizationSourceNavigation:
             from retrieval.source_window_candidates import order_source_windows
             materialized, windows = order_source_windows(materialized, expansion)
             receipt.update(source_windows=windows, selected_node_ids=[r['node_id'] for r in materialized])
+        elif self.hybrid.candidate_policy == 'needs_window.v3':
+            from retrieval.source_window_selection import select_context_companions
+            materialized, selection = select_context_companions(materialized, expansion)
+            receipt.update(source_window_selection=selection,
+                           selected_node_ids=[r['node_id'] for r in materialized])
         receipt.update(lexical_source='published_release', candidate_only=True,
                        lexical_subset_statistics_hit=self._lexical_statistics.hit,
                        source_generation_original_reads=candidates.original_reads,

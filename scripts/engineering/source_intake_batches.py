@@ -119,9 +119,18 @@ def baseline():
         'FIN_PROBE_IMAGE', 'FINSIGHT_LIBRARY_NODE_CATALOG', 'FINSIGHT_LIBRARY_RECOVERY_CATALOG',
         'FIN_COMPLETE_SOURCE_SERIAL_PROFILE',
         'FINSIGHT_LIBRARY_NODE_SHA256', 'FINSIGHT_LIBRARY_RECOVERY_SHA256')}
+    # Keep legacy checkpoint identity unchanged when no enrichment is selected.
+    catalog = os.environ.get('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG')
+    expected = os.environ.get('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256')
+    if catalog or expected:
+        if not catalog or not expected or digest(Path(catalog)) != expected:
+            raise ValueError('batch_period_catalog_configuration_mismatch')
+        configuration.update(FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG=catalog,
+                             FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256=expected)
     file_hashes = {key: digest(value) for key, value in configuration.items()
                    if value and key in ('FIN_COMPLETE_SOURCE_QUESTIONS',
-                       'FINSIGHT_LIBRARY_NODE_CATALOG', 'FINSIGHT_LIBRARY_RECOVERY_CATALOG')}
+                       'FINSIGHT_LIBRARY_NODE_CATALOG', 'FINSIGHT_LIBRARY_RECOVERY_CATALOG',
+                       'FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG')}
     return {'git_head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
             'jar_sha256': digest(jar), 'configuration': configuration, 'configuration_files': file_hashes}
 

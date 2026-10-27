@@ -16,11 +16,13 @@ import numpy as np
 
 class SourceBundles(MutableMapping):
     """Keep file references, not all expanded corpus bodies, in the test driver."""
-    def __init__(self, paths=()):
+    def __init__(self, paths=(), *, enrich=None):
         self.paths = dict(paths)
+        self.enrich = enrich
 
     def __getitem__(self, key):
-        return json.loads(self.paths[key].read_text(encoding='utf8'))
+        bundle = json.loads(self.paths[key].read_text(encoding='utf8'))
+        return self.enrich(bundle) if self.enrich else bundle
 
     def __setitem__(self, key, value):
         self.paths[key] = Path(value)
@@ -35,7 +37,21 @@ class SourceBundles(MutableMapping):
         return len(self.paths)
 
     def subset(self, keys):
-        return SourceBundles((key, self.paths[key]) for key in keys)
+        return SourceBundles(((key, self.paths[key]) for key in keys), enrich=self.enrich)
+
+
+def configured_source_enrichment(bundle):
+    """Use the same digest-bound enrichment as a new production capture."""
+    from retrieval.library_source_bundle import expand_source_bundle
+    from retrieval.source_table_periods import enrich_from_catalog
+    return enrich_from_catalog(expand_source_bundle(bundle))
+
+
+def reserve_index_output(attempt, configured=None):
+    """Allow a separate disk, only in a new explicitly named directory."""
+    path = Path(configured).resolve() if configured else Path(attempt)/'indices'
+    path.mkdir(parents=True, exist_ok=False)
+    return path
 
 
 def file_sha256(path):

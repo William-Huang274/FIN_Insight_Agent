@@ -29,7 +29,7 @@ from sec_agent.research_foundation.organization_source_navigation import Organiz
 from sec_agent.research_foundation.organization_source_projection import PROJECTION, validate_source_cutoff
 from tests.integration.source_intake_runtime import CompleteSourceStack
 from tests.integration.test_java_intake_native import wait_for
-from tests.integration.source_intake_diagnostics import SourceBundles, SourceVectors, PhaseDiagnostics, file_sha256, source_coverage, source_readback_targets
+from tests.integration.source_intake_diagnostics import SourceBundles, SourceVectors, PhaseDiagnostics, file_sha256, source_coverage, source_readback_targets, configured_source_enrichment, reserve_index_output
 from tests.integration.source_intake_checkpoint import load_checkpoint, save_checkpoint, restore_checkpoint, verify_restored_publication
 
 pytestmark = pytest.mark.skipif(not os.getenv('FIN_COMPLETE_SOURCE_INTAKE'), reason='explicit full-source intake artifacts required')
@@ -89,7 +89,9 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         for row in intake['sources']:
             folder=root/row['directory']
             assert all(file_sha256(folder/name)==value for name,value in row['files'].items())
-    bundles, vectors = SourceBundles(), SourceVectors()
+    enriched = bool(os.getenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG') or os.getenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256'))
+    bundles = SourceBundles(enrich=configured_source_enrichment if enriched else None)
+    vectors = SourceVectors()
     for ordinal,row in enumerate(intake['sources'],1):
         folder=root/row['directory']
         assert all(file_sha256(folder/name)==value for name,value in row['files'].items())
@@ -170,7 +172,10 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             raise ValueError('checkpoint_pause_must_advance_within_full_scope')
     s=CompleteSourceStack()
     diagnostic=PhaseDiagnostics(s.save)
-    indices=s.output/'indices'
+    indices=reserve_index_output(s.output,os.getenv('FIN_COMPLETE_SOURCE_INDEX_OUTPUT'))
+    s.save('source-intake-storage', {'index_output':str(indices), 'state_output':str(s.state),
+        'table_period_catalog_sha256':os.getenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256'),
+        'capture_expectations_enriched':enriched})
     s.env['FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT']=str(indices)
     monkeypatch.setenv('FINSIGHT_BUSINESS_SHARED_SECRET',s.shared)
     s.save('complete-source-scope',dict(sources=list(bundles),candidate_chunks=len(vectors),

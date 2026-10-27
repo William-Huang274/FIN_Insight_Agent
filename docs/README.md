@@ -1,5 +1,7 @@
 # FinSight 文档
 
+近期完整研报阅读、可观察方法与协作推断的区分、独立公开数据量化实验，以及研究伙伴设计边界见[研究伙伴与独立实验](architecture/research_partner_experiments.zh-CN.md)。该原型未接入产品研究流程。
+
 当前0.1.4研究runtime开发与测点顺序见[按Agent流转的分段资格路线](engineering/runtime_flow_qualification.zh-CN.md)。
 
 Lead初步判断的依据边界、具体任务依赖和分阶段模型试验见[初步判断与模型选择](engineering/lead_reasoning_and_model_routing.zh-CN.md)。

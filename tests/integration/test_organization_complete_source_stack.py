@@ -96,13 +96,20 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
     enriched = bool(os.getenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG') or os.getenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256'))
     bundles = SourceBundles(enrich=configured_source_enrichment if enriched else None)
     vectors = SourceVectors()
+    retained_chunk_count = 0
     for ordinal,row in enumerate(intake['sources'],1):
         folder=root/row['directory']
         assert all(file_sha256(folder/name)==value for name,value in row['files'].items())
         mapping=json.loads((folder/'vector-map.json').read_text(encoding='utf8'))
         bundles[row['source_id']]=folder/'source.json'
-        for r in mapping:
-            vectors[r['chunk_id']]=(folder/'vectors.npy',r['vector_index'])
+        if os.getenv('FIN_COMPLETE_SOURCE_HTTP_RESUME_INDEX'):
+            # Exact vector files were hashed above; retained index verifier
+            # checks every node. Load-only replay needs the count, not a second
+            # 114k-entry Python map of paths and positions.
+            retained_chunk_count += len(mapping)
+        else:
+            for r in mapping:
+                vectors[r['chunk_id']]=(folder/'vectors.npy',r['vector_index'])
         if ordinal % 100 == 0:
             input_progress(ordinal,'running')
     input_progress(len(intake['sources']),'passed')
@@ -278,7 +285,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         if retained_index:
             from tests.integration.source_intake_http_resume import run
             run(s, retained_index, api, bundles, quality_data, quality_binding, quality_budget, diagnostic,
-                expected_chunks=len(vectors))
+                expected_chunks=retained_chunk_count)
             verify_intake_files()
             return
         if retained:

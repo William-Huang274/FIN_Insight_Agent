@@ -17,7 +17,6 @@ import pytest
 from sec_agent.research_foundation.asset_workspace import AssetWorkspace
 from sec_agent.research_foundation.organization_execution_access import (
     OrganizationExecutionAuthority, OrganizationExecutionReader, OrganizationExecutionUnavailable)
-from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
 from tests.integration.source_intake_http import HttpNavigation, qualify_concurrency
 from tests.integration.source_intake_quality import run_quality
 
@@ -44,11 +43,9 @@ def load_seal(path, *, intake_sha256, geometry_sha256):
 
 
 def run(stack, seal, api, bundles, quality_data, quality_binding, budget, diagnostic, *, expected_chunks):
-    from sec_agent.research_foundation.organization_index_release import load_release
     contract = seal['contract']
     indices = Path(seal['index_root'])
     org, release = seal['organization_id'], contract['release_id']
-    assert load_release(indices, org, release)[3] == contract
     with psycopg.connect(host='127.0.0.1', port=stack.pg_port, dbname='business',
                          user='probe', password=stack.password) as db:
         rows = db.execute('SELECT b.id,b.draft_id,d.project_id,b.manifest_digest,d.manifest_text '
@@ -66,19 +63,16 @@ def run(stack, seal, api, bundles, quality_data, quality_binding, budget, diagno
             execution_id=execution, manifest_digest='sha256:'+manifest_digest))
     before, manifest, _ = reader._grant()
     assert manifest == prepared['manifest'] and len(manifest['inputs']) == len(bundles)
-    navigation = OrganizationSourceNavigation(reader, workbench_url='http://localhost', retrieval_root=indices)
+    from tests.integration.source_intake_warm import run as warm_worker
     with diagnostic.phase('retained_index_current_verification'):
-        navigation.warm_release()
-    candidate = navigation._candidate_index
-    assert candidate.original_reads + candidate.verification_hits == len(bundles)
-    assert len(candidate.rows) == expected_chunks
+        verified = warm_worker({'assets': str(stack.state/'project-library'/'organization-assets'),
+            'java_url': f'http://127.0.0.1:{stack.java_port}', 'runtime_secret': stack.runtime_secret,
+            'execution': execution, 'manifest_digest': 'sha256:'+manifest_digest,
+            'indices': str(indices), 'contract': contract, 'sources': len(bundles), 'chunks': expected_chunks})
     reader._after(before)
-    stack.save('retained-index-current-verification', {'status': 'passed', 'sources': len(bundles),
-        'chunks': expected_chunks, 'original_reads': candidate.original_reads,
-        'verified_receipt_hits': candidate.verification_hits,
+    stack.save('retained-index-current-verification', {**verified,
         'publication_source_git': seal['publication_git'], 'same_version_republication': False,
         'current_permissions_rechecked': True, 'index_contract': contract})
-    del candidate, navigation
     gc.collect()
     nav = HttpNavigation(stack, reader, project, draft)
     quality_root = stack.output

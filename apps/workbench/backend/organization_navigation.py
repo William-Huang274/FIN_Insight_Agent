@@ -64,6 +64,11 @@ class OrganizationNavigationService:
     def navigate(self, actor, project, draft, execution, grant, origin, request):
         if request.source_space != 'organization' or request.operation not in {'catalog', 'outline', 'search', 'read'}:
             raise HTTPException(422, '组织检索只接受固定组织资料的目录、检索与原文读取')
+        if request.operation != 'search' and not request.document_id:
+            # Browsing the authorized project resource list belongs to Java's
+            # paged resource API. The legacy unscoped source catalog projects
+            # every original before paging and is unsafe on this HTTP surface.
+            raise HTTPException(422, '目录、提纲和原文读取需指定资料；请从项目资料列表选择')
         if not self._lock.acquire(timeout=self.wait_seconds):
             raise HTTPException(429, '组织检索繁忙；本次未执行检索，请稍后手动重试')
         try:

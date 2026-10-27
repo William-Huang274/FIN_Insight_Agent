@@ -50,7 +50,7 @@ class CompleteSourceStack(OrganizationGraphStack):
         if self.compact_profile:
             self.compose_files = (*self.compose_files, ROOT/'deploy/qualification/source_intake_compact.compose.yaml')
             self.env.update(COMPACT_ENV)
-            self.bff_arguments = ('--workers', '1', '--limit-concurrency', '4', '--backlog', '8')
+            self.bff_arguments = ('--workers', '1', '--limit-concurrency', '8', '--backlog', '8')
         self.save('source-intake-runtime', {'serial_profile': self.serial_profile,
                   'compact_profile': self.compact_profile,
                   'optional_dependency_root': str(dependency_root) if dependency_root else None,

@@ -985,6 +985,8 @@ BFF 单进程及最多 4 个并行连接、PostgreSQL 容器上限 192 MiB；数
 BFF 显式启用 `FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED=1` 后提供
 `POST /api/v1/asset-workspace/organization-projects/{project}/research-drafts/{draft}/executions/{execution}/navigate`。
 请求使用现有 `SourceDocumentRequest`，只允许 organization 范围的 catalog、outline、search、read。
+除 search 外均需指定 `document_id`；全项目资料列表使用已有 Java 分页接口。
+旧原生 catalog 会先投影整库再分页，因此不将无文档范围的调用开放到这个 HTTP 入口。
 它需要现有 Java 准备单与真实执行绑定，不能创建绑定或授权启动 Agent。浏览器身份及同源请求检查
 沿用资产接口；需要配置业务服务、独立 runtime 密钥和固定检索发布目录。
 
@@ -997,6 +999,9 @@ BFF 显式启用 `FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED=1` 后提供
 服务压测必须计入排队、429、503 和超时，并区分首次索引准备、响应缓存命中、原文回读与混合查询。
 `tests/integration/source_intake_http.py` 将冻结题集经真实 BFF/Java 重放，逐一核对补充区间与原件回读，
 在固定 compact 配置下测量并发 1/2/4；测试登录为合成身份，不替代 OIDC 验收或独占机器容量测试。
+缓存检索和原文回读每档各 32 次，不同问题检索每档 8 次；保留全部原始延迟与失败。
+这些是有界探索样本，不能解释为生产 SLA。BFF 单 worker、连接并发上限 8，
+压测最多 4 个并发请求；检索本身仍通过单操作准入限制付费调用和全库状态的同时构造。
 
 全量索引准备使用 `PreparedNodeStore` 时，每份资料在批量读取回调内立即写入磁盘，回调只返回
 空结果，避免先把所有投影收集到内存再写盘。暂存库必须通过批量读取和准备阶段的末尾授权复核

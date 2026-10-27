@@ -27,6 +27,7 @@ def endpoint(tmp_path, monkeypatch):
     monkeypatch.setenv('FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT', str(tmp_path/'indices'))
     monkeypatch.delenv('FINSIGHT_ORGANIZATION_TABLE_COMPLETION', raising=False)
     state = {'calls': 0, 'denied': False, 'deny_at': None}
+    state['document'] = module.OrganizationSourceNavigation._identity(grant['manifest']['inputs'][0])
     async def business(actor, method, path):
         assert method == 'POST'
         state['calls'] += 1
@@ -44,7 +45,7 @@ def endpoint(tmp_path, monkeypatch):
 
 def test_http_custody_and_warm_authorization(endpoint):
     client, path, state, _ = endpoint
-    request = {'source_space': 'organization', 'operation': 'catalog'}
+    request = {'source_space': 'organization', 'operation': 'catalog', 'document_id': state['document']}
     result = client.post(path, json=request, headers=WRITE)
     assert result.status_code == 200, result.text
     assert result.headers['cache-control'] == 'no-store'
@@ -67,7 +68,8 @@ def test_http_no_result_on_binding_or_current_authority_failure(endpoint, fault)
     if fault == 'other_execution': path = path.replace(runtime['grant']['execution_id'], str(uuid4()))
     if fault == 'other_draft': runtime['grant']['draft_id'] = str(uuid4())
     if fault == 'late_user_revocation': state['deny_at'] = 3
-    result = client.post(path, headers=WRITE, json={'source_space': 'organization', 'operation': 'catalog'})
+    result = client.post(path, headers=WRITE, json={'source_space': 'organization', 'operation': 'catalog',
+                                                   'document_id': state['document']})
     assert result.status_code in (404, 409), result.text
     assert 'Pinned original evidence.' not in result.text and 'items' not in result.json()
 
@@ -77,6 +79,10 @@ def test_http_scope_csrf_optin_and_observation_boundary(endpoint, monkeypatch):
     body = {'source_space': 'organization', 'operation': 'catalog'}
     assert client.post(path, json=body, headers={**WRITE, 'Origin': 'https://foreign.invalid'}).status_code == 403
     assert state['calls'] == 0
+    for operation in ('catalog', 'outline', 'read'):
+        response = client.post(path, headers=WRITE, json={'source_space': 'organization', 'operation': operation})
+        assert response.status_code == 422
+        assert 'Pinned original evidence.' not in response.text
     for space, operation in [('library', 'search'), ('organization', 'observations'), ('organization', 'data')]:
         assert client.post(path, headers=WRITE, json={'source_space': space, 'operation': operation}).status_code == 422
     monkeypatch.setenv('FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED', '0')
@@ -90,7 +96,7 @@ def test_bounded_admission_rejects_before_work():
     try:
         with pytest.raises(HTTPException) as error:
             service.navigate('a', 'p', 'd', 'e', {}, 'http://localhost',
-                SourceDocumentRequest(source_space='organization', operation='catalog'))
+                SourceDocumentRequest(source_space='organization', operation='search', query='evidence'))
         assert error.value.status_code == 429
         assert not service._sessions
     finally:

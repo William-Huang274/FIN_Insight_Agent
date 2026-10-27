@@ -64,6 +64,8 @@ def qualify_concurrency(nav, requests, save, budget, *, api, org, project, space
         'host_is_shared': True, 'external_provider_in_latency': True,
         'maximum_paid_calls_per_operation_including_quality': budget.limit,
         'cold_index_latency_included_in_load': False, 'capacity_ceiling_established': False}
+    report['requests_per_level'] = {'cached_search': 32, 'original_read': 32, 'mixed_search': 8}
+    report['percentile_scope'] = 'exploratory bounded samples, not a production SLA'
     save('service-http-concurrency', report)
     search = requests[-1]
     found = nav.navigate(search)
@@ -118,7 +120,8 @@ def qualify_concurrency(nav, requests, save, budget, *, api, org, project, space
                 return {'ok': ok, 'status': response.status_code,
                     'response_cache_hit': rows[0].get('retrieval', {}).get('response_cache_hit') if rows else None}
             before = dict(budget.calls)
-            result = measure(operation, concurrency=level, requests=8, max_seconds=600, should_continue=guard)
+            result = measure(operation, concurrency=level,
+                requests=report['requests_per_level'][mode], max_seconds=600, should_continue=guard)
             result.update(mode=mode, available_memory_min=min(memory) if memory else None,
                           provider_calls_before=before, provider_calls_after=dict(budget.calls))
             report['levels'].append(result)

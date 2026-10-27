@@ -34,6 +34,9 @@ class ScopedReranker:
                 raise ValueError('rerank_candidate_body_mismatch')
             # Fixed original context, no gold labels, generated hints or answers.
             text=(row.get('embedding_context','')+'\n'+body).strip()
+            if row.get('rerank_document_metadata'):
+                from .rerank_document_context import document_context_text
+                text=document_context_text(row['rerank_document_metadata'])+'\n\n'+text
             if not text or len(text.encode())>32768:
                 raise ValueError('rerank_document_outside_budget_no_truncation')
             documents.append(text)

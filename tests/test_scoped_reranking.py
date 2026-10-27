@@ -36,6 +36,28 @@ def test_scope_restart_and_current_checks(tmp_path):
     assert len(calls)==2
 
 
+def test_verified_document_context_is_separate_and_changes_cache(tmp_path):
+    from retrieval.rerank_document_context import with_document_context
+    source, rows, calls = fixture(tmp_path)
+    rows = [{**row, 'parent_document_id':'doc'} for row in rows]
+    args = dict(scope='test', index_digest='a'*64, check_access=lambda:None)
+    legacy = source.rank('sales', rows, **args)[1]
+    enriched = with_document_context(rows, {'doc':{'issuer':'COMPANY::acme',
+        'form':'10-Q', 'period_end':'2025-03-29'}})
+    fresh = source.rank('sales', enriched, **args)[1]
+    assert legacy['request_key'] != fresh['request_key']
+    assert 'NOT the period of every fact' in calls[1][1][0]
+    assert '2025-03-29' in calls[1][1][0]
+    assert calls[0][1][0] == rows[0]['embedding_context']+'\n'+rows[0]['content']
+    assert enriched[0]['content_sha256'] == rows[0]['content_sha256']
+    assert 'rerank_document_metadata' not in rows[0]
+    assert source.rank('sales', enriched, **args)[1]['provider_calls'] == 0
+    assert source.rank('sales', rows, **args)[1]['provider_calls'] == 0
+    with pytest.raises(ValueError):
+        with_document_context(rows, {'doc':{'period_end':'2025-02-30'}})
+    assert with_document_context(rows, {})[0]['rerank_document_metadata'] == {}
+
+
 def test_failed_unknown_request_never_resubmitted(tmp_path):
     source,rows,calls=fixture(tmp_path)
     def fail(*args,**kw):

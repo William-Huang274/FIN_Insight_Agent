@@ -56,6 +56,7 @@ class VerifiedCandidateIndex:
         self.original_reads = 0
         self.candidate_reads = 0
         self.neighbors = {}
+        self.window_neighbors = {}
         self.structures = {}
         self.verification_hits = 0
 
@@ -89,7 +90,7 @@ class VerifiedCandidateIndex:
         allowed = {OrganizationSourceNavigation._identity(item):item for item in manifest['inputs']}
         expected = {node_id for node_id, record in records.items() if record['document_id'] in allowed}
         rows, origins, metadata, original_metadata, neighbors = {}, {}, {}, {}, {}
-        structures = {}
+        structures, window_neighbors = {}, {}
         self.original_reads = 0
         self.verification_hits = 0
         from .source_verification_cache import SourceVerificationCache, versions
@@ -147,6 +148,11 @@ class VerifiedCandidateIndex:
             # Retain compressed per-source metadata, not 114k expanded dicts.
             structures[document] = zlib.compress(json.dumps(saved['structures']).encode(), 1)
             ordered = sorted(saved.get('locations', []))
+            from retrieval.source_window_candidates import adjacent_nodes
+            # Separate candidate expansion from legacy reader context links.
+            # The latter tolerates tiny gaps; recall never crosses any gap.
+            if self.hybrid.candidate_policy == 'needs_window.v2':
+                window_neighbors.update(adjacent_nodes(ordered))
             for position, (parent, start, end, node) in enumerate(ordered):
                 adjacent = []
                 for other in (position - 1, position + 1):
@@ -187,6 +193,7 @@ class VerifiedCandidateIndex:
         self.source_metadata = metadata
         self.original_source_metadata = original_metadata
         self.neighbors = neighbors
+        self.window_neighbors = window_neighbors
         self.structures = structures
         self.before, self.epoch, self.directory = before, epoch, directory
         self.generation = key

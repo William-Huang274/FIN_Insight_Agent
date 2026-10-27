@@ -53,7 +53,7 @@ def frozen_cosine_scores(path, positions, query, count):
     return cosine_scores(matrix, positions, query)
 
 
-def rank_scope(records, directory, matrix, total_count, query_vector, row, *, candidate_policy='balanced.v1', needs=None, metadata=None):
+def rank_scope(records, directory, matrix, total_count, query_vector, row, *, candidate_policy='balanced.v1', needs=None, metadata=None, neighbors=None):
     """Use production score/fusion functions on an explicit, label-free scope."""
     ranked = {'dense_candidates': [], 'lexical_candidates': [], 'fused_candidates': []}
     evidence = []
@@ -92,6 +92,15 @@ def rank_scope(records, directory, matrix, total_count, query_vector, row, *, ca
                                      [candidate_rows[i] for i in lexical_positions])
         evidence.extend(graph_evidence)
         ranked.update(graph_candidates=graph, graph_fused_candidates=reciprocal_rank_fusion([dense, lexical, graph]))
+    if candidate_policy == 'needs_window.v2':
+        if neighbors is None:
+            raise ValueError('offline_source_window_requires_verified_neighbors')
+        from retrieval.source_window_candidates import expand_candidates
+        documents = {r['node_id']:r['document_id'] for r in records}
+        for channel in ('fused_candidates', 'graph_fused_candidates'):
+            if channel in ranked:
+                ranked[channel], expansion = expand_candidates(ranked[channel], dense, neighbors, documents)
+                evidence.append({'channel':channel,'source_window':expansion})
     return ranked, evidence
 
 

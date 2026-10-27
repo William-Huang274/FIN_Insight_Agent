@@ -199,9 +199,21 @@ class OrganizationSourceNavigation:
                                           **({'lexical_policy':needs['policy']} if needs else {}))
         if graph is not None:
             receipt.update(graph_evidence=graph_evidence,graph_scope='frozen_one_hop_source_bound_candidates')
+        if self.hybrid.candidate_policy == 'needs_window.v2':
+            from retrieval.source_window_candidates import expand_candidates
+            eligible = {r['node_id']:r for r in rows}
+            ids, expansion = expand_candidates([r['node_id'] for r in ranked],
+                receipt['dense_node_ids'], candidates.window_neighbors,
+                {n:r['parent_document_id'] for n,r in eligible.items()})
+            ranked = [eligible[n] for n in ids]
+            receipt.update(source_window=expansion, candidate_node_ids=ids)
         materialized = candidates.materialize(ranked, manifest)
         if needs:
             materialized = candidates.contextualize(materialized, manifest)
+        if (self.hybrid.candidate_policy == 'needs_window.v2'
+                and request.organization_metadata_policy == 'sec_cover.v2'):
+            from retrieval.rerank_document_context import with_document_context
+            materialized = with_document_context(materialized, candidates.source_metadata)
         if self.hybrid.reranker is not None:
             def check_access():
                 self.reader._after(before)
@@ -218,6 +230,10 @@ class OrganizationSourceNavigation:
             materialized, coverage = select_coverage(materialized, needs, lanes, metadata)
             receipt.update(search_needs=needs, lexical_needs=lanes, need_coverage=coverage,
                            selected_node_ids=[r['node_id'] for r in materialized])
+        if self.hybrid.candidate_policy == 'needs_window.v2':
+            from retrieval.source_window_candidates import order_source_windows
+            materialized, windows = order_source_windows(materialized, expansion)
+            receipt.update(source_windows=windows, selected_node_ids=[r['node_id'] for r in materialized])
         receipt.update(lexical_source='published_release', candidate_only=True,
                        lexical_subset_statistics_hit=self._lexical_statistics.hit,
                        source_generation_original_reads=candidates.original_reads,

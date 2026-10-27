@@ -208,6 +208,8 @@ class OrganizationHybridRetrieval:
     def rank(self, rows, query, snapshot, literal, *, source_verifier=None, graph=None, lexical_policy=None):
         from .organization_source_navigation import OrganizationSourceNavigation
         before, manifest, _ = self.reader._grant()
+        if self.candidate_policy == 'needs_window.v2' and source_verifier is None:
+            raise ValueError('organization_source_window_requires_verified_navigation')
         if graph is not None and source_verifier is None:
             raise OrganizationExecutionUnavailable('organization_graph_requires_verified_sources')
         if source_verifier is not None:

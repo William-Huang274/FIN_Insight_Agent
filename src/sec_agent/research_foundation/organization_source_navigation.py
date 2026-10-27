@@ -18,7 +18,7 @@ from .organization_source_filter import OrganizationSourceFilterReceipt
 
 
 class OrganizationSourceNavigation:
-    def __init__(self, reader, *, workbench_url, retrieval_root=None):
+    def __init__(self, reader, *, workbench_url, retrieval_root=None, preparation_cancel=None):
         parsed = urlsplit(workbench_url)
         if (parsed.scheme not in {'http', 'https'} or not parsed.hostname or parsed.username or parsed.password
                 or parsed.path not in {'', '/'} or parsed.query or parsed.fragment):
@@ -33,6 +33,7 @@ class OrganizationSourceNavigation:
         self._search_cache = None
         self._projection_cache = None
         self._candidate_index = None
+        self._preparation_cancel = preparation_cancel
         from retrieval.published_lexical_index import PublishedLexicalStatistics
         self._lexical_statistics = PublishedLexicalStatistics()
         self._retrieval_lifecycle = None
@@ -139,7 +140,7 @@ class OrganizationSourceNavigation:
         if self._candidate_index is None:
             from .organization_candidate_index import VerifiedCandidateIndex
             self._candidate_index = VerifiedCandidateIndex(self.reader, self.hybrid, self._search_cache,
-                                                           self.workbench_url)
+                self.workbench_url, preparation_cancel=self._preparation_cancel)
         self._candidate_index.prepare(before, manifest, epoch)
         return self._candidate_index
 

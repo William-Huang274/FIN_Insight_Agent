@@ -147,3 +147,53 @@ def test_receipt_capacity_eviction_only_forgets_optimization(tmp_path):
     assert cache.get('0') is None and cache.get('new')=={'verified':'fixture'}
     with sqlite3.connect(cache.path) as db:
         assert db.execute('SELECT count(*) FROM receipts').fetchone()[0]==8192
+
+
+def test_compressed_receipts_keep_legacy_reads_and_integrity(tmp_path):
+    from hashlib import sha256
+    from sec_agent.research_foundation.source_verification_cache import SourceVerificationCache
+    cache = SourceVerificationCache(tmp_path)
+    value = {'structures': [{'unit': 'USD millions', 'columns': [2025, 2024]}] * 1000}
+    cache.put('new', value)
+    legacy = json.dumps({'legacy': True})
+    with sqlite3.connect(cache.path) as db:
+        blob, = db.execute("SELECT payload FROM receipts WHERE key='new'").fetchone()
+        assert isinstance(blob, bytes) and len(blob) < len(json.dumps(value))/10
+        db.execute('INSERT INTO receipts VALUES(?,?,?)', ('legacy', legacy, sha256(legacy.encode()).hexdigest()))
+    assert cache.get('new') == value and cache.get('legacy') == {'legacy': True}
+    with sqlite3.connect(cache.path) as db:
+        db.execute("UPDATE receipts SET digest='invalid' WHERE key='new'")
+    with pytest.raises(ValueError, match='receipt_corrupt'):
+        cache.get('new')
+
+
+def test_pending_spool_does_not_retain_mutable_receipts_and_closes_on_failure():
+    from sec_agent.research_foundation.source_verification_cache import PendingSourceReceipts
+    with pytest.raises(RuntimeError):
+        with PendingSourceReceipts() as pending:
+            value = {'structures': [{'unit': 'USD'}]}
+            pending.append(('key', value))
+            value['structures'][0]['unit'] = 'changed after staging'
+            assert list(pending) == [['key', {'structures': [{'unit': 'USD'}]}]]
+            assert set(vars(pending)) == {'stream'}
+            raise RuntimeError('cancelled before final authorization')
+    assert pending.stream.closed
+
+
+def test_late_revocation_discards_spooled_receipts(tmp_path, monkeypatch):
+    from sec_agent.research_foundation.source_verification_cache import SourceVerificationCache
+    nav, reader, state, _, _ = prepared(tmp_path, monkeypatch)
+    original = reader._read_storage
+    count = []
+    def revoke_after_original(*args):
+        result = original(*args)
+        count.append(args[0])
+        if len(count) == 2:
+            state['status'] = 404
+        return result
+    monkeypatch.setattr(reader, '_read_storage', revoke_after_original)
+    with pytest.raises(Exception):
+        nav.warm_release()
+    assert nav._candidate_index.generation is None
+    with sqlite3.connect(SourceVerificationCache(tmp_path/'indices').path) as db:
+        assert db.execute('SELECT count(*) FROM receipts').fetchone()[0] == 0

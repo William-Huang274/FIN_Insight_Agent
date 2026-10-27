@@ -18,6 +18,32 @@ def lifecycle(tmp_path, monkeypatch):
     return manager, reader, state, directory, grant
 
 
+def test_close_cancels_warmup_between_sources_without_publishing(tmp_path, monkeypatch):
+    manager, reader, _, _, _ = lifecycle(tmp_path, monkeypatch)
+    entered, release = Event(), Event()
+    original = reader._read_storage
+    calls = []
+    def paused(*args):
+        calls.append(args[0])
+        entered.set()
+        assert release.wait(5)
+        return original(*args)
+    monkeypatch.setattr(reader, '_read_storage', paused)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        warming = executor.submit(manager.prepare)
+        assert entered.wait(5)
+        closing = executor.submit(manager.close)
+        assert manager._cancel.wait(5)
+        release.set()
+        closing.result(timeout=5)
+        with pytest.raises(OrganizationExecutionUnavailable, match='closed'):
+            warming.result(timeout=5)
+    assert len(calls) == 1
+    assert manager.status()['state'] == 'closed' and manager.status()['generation'] == 0
+    with sqlite3.connect(tmp_path/'indices'/'source-verification.sqlite') as db:
+        assert db.execute('SELECT count(*) FROM receipts').fetchone()[0] == 0
+
+
 def change_store(reader, corrupt=None):
     with sqlite3.connect(reader.workspace.library.documents.path) as db:
         if corrupt:

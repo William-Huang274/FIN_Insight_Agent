@@ -131,7 +131,7 @@ def run_quality(data, binding, *, nav, bundles, save, budget):
     if binding.get('transport'):
         basis.update(purpose='Frozen HTTP quality replay, exact table context readback and fixed-profile two-user load',
             input_scale={'quality_queries': len(data['questions']), 'sources': len(bundles),
-                'load_requests': 72, 'second_user_warmup': 1, 'rerank_documents_per_request_max': 500},
+                'load_requests': 216, 'second_user_warmup': 1, 'rerank_documents_per_request_max': 500},
             quality_risk='Service replay reuses a known set; shared host and provider latency are not exclusive capacity')
         basis['limits'].update(http_concurrency_max=4, provider_concurrency_max=1)
     report = {'status': 'running', 'binding': binding, 'rows': rows, 'TokenBudgetBasis': basis,

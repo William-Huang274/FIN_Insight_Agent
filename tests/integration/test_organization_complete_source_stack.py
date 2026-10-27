@@ -201,7 +201,17 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             quality_budget = RemoteBudget(s.output)
             quality_binding.update(transport='BFF HTTP to current Java user and runtime authority',
                                    table_completion='table-completion.v1')
-    indices=reserve_index_output(s.output,os.getenv('FIN_COMPLETE_SOURCE_INDEX_OUTPUT'))
+    retained_index = None
+    if os.getenv('FIN_COMPLETE_SOURCE_HTTP_RESUME_INDEX'):
+        if not retained or not quality_data or os.getenv('FIN_COMPLETE_SOURCE_HTTP_QUALITY') != '1':
+            raise ValueError('retained_index_requires_owned_fixture_and_frozen_http_quality')
+        from tests.integration.source_intake_http_resume import load_seal
+        retained_index = load_seal(os.environ['FIN_COMPLETE_SOURCE_HTTP_RESUME_INDEX'],
+            intake_sha256=file_sha256(root/'result.json'),
+            geometry_sha256=os.getenv('FINSIGHT_LIBRARY_TABLE_PERIOD_CATALOG_SHA256'))
+        indices = Path(retained_index['index_root'])
+    else:
+        indices=reserve_index_output(s.output,os.getenv('FIN_COMPLETE_SOURCE_INDEX_OUTPUT'))
     staging = (reserve_index_output(s.output, os.environ['FIN_COMPLETE_SOURCE_STAGING_ROOT'])
                if os.getenv('FIN_COMPLETE_SOURCE_STAGING_ROOT') else indices)
     s.save('source-intake-storage', {'index_output':str(indices), 'state_output':str(s.state),
@@ -265,6 +275,12 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             s.save('postgres-settings',settings)
         assets=AssetWorkspace(s.state/'project-library')
         resources={};captures=[];date_denials=[];source_refs=[]
+        if retained_index:
+            from tests.integration.source_intake_http_resume import run
+            run(s, retained_index, api, bundles, quality_data, quality_binding, quality_budget, diagnostic,
+                expected_chunks=len(vectors))
+            verify_intake_files()
+            return
         if retained:
             from tests.integration.source_intake_retained import recover
             with diagnostic.phase('reauthorize_retained_publication'):

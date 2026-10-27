@@ -7,7 +7,7 @@ Each stage keeps its own observations while reusing verified retrieval state.
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from copy import deepcopy
-from threading import RLock
+from threading import Event, RLock
 
 from .organization_execution_access import OrganizationExecutionUnavailable
 from .organization_source_navigation import OrganizationSourceNavigation
@@ -24,11 +24,12 @@ class OrganizationRetrievalLifecycle:
         self._executor = self._future = None
         self._generation = 0
         self._failure = None
+        self._cancel = Event()
 
     def _build(self):
         self.reader._after(self.grant)
         navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url,
-                                                   retrieval_root=self.retrieval_root)
+            retrieval_root=self.retrieval_root, preparation_cancel=self._cancel.is_set)
         navigation.warm_release()
         self.reader._after(self.grant)
         return navigation
@@ -50,7 +51,13 @@ class OrganizationRetrievalLifecycle:
             future = self._future
         # Concurrent admission callers wait for the same build. Status remains
         # observable, and tool calls fail closed instead of waiting for the scan.
-        future.result()
+        try:
+            future.result()
+        except Exception:
+            with self._lock:
+                if self._state == 'closed':
+                    raise OrganizationExecutionUnavailable('organization_retrieval_closed') from None
+            raise
         with self._lock:
             self._check_ready()
             return self.status()
@@ -143,6 +150,7 @@ class OrganizationRetrievalLifecycle:
                     setattr(navigation, field, None)
 
     def close(self):
+        self._cancel.set()
         with self._lock:
             self._state = 'closed'
             executor = self._executor

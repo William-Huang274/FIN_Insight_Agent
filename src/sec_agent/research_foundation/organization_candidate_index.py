@@ -45,7 +45,7 @@ def build(path, nodes):
 
 
 class VerifiedCandidateIndex:
-    def __init__(self, reader, hybrid, observer, workbench_url):
+    def __init__(self, reader, hybrid, observer, workbench_url, *, preparation_cancel=None):
         self.reader, self.hybrid, self.observer = reader, hybrid, observer
         self.workbench_url = workbench_url
         self.generation = None
@@ -60,18 +60,26 @@ class VerifiedCandidateIndex:
         self.structures = {}
         self.locations = {}
         self.verification_hits = 0
+        self.preparation_cancel = preparation_cancel
+
+    def _check_cancelled(self):
+        if self.preparation_cancel is not None and self.preparation_cancel():
+            raise OrganizationExecutionUnavailable('organization_retrieval_cancelled')
 
     def prepare(self, before, manifest, epoch):
         from filelock import FileLock
+        from .source_verification_cache import PendingSourceReceipts
+        self._check_cancelled()
         from .organization_hybrid_retrieval import digest
         # SQLite owns receipts; a maintained OS file lock serializes cold
         # verification across workers. A timeout never starts a second scan.
         lock_key = digest([str(self.observer.path), manifest['organization_id'],
                            manifest['retrieval_index']['release_id']])
-        with FileLock(str(self.hybrid.root/f'.source-verify-{lock_key}.lock'), timeout=60):
-            self._prepare(before, manifest, epoch)
+        with FileLock(str(self.hybrid.root/f'.source-verify-{lock_key}.lock'), timeout=60), PendingSourceReceipts() as pending:
+            self._prepare(before, manifest, epoch, pending)
 
-    def _prepare(self, before, manifest, epoch):
+    def _prepare(self, before, manifest, epoch, pending):
+        self._check_cancelled()
         from .organization_hybrid_retrieval import digest
         from .organization_source_navigation import OrganizationSourceNavigation
         from .organization_source_projection import source_nodes
@@ -97,8 +105,8 @@ class VerifiedCandidateIndex:
         from .source_verification_cache import SourceVerificationCache, versions
         proofs = SourceVerificationCache(self.hybrid.root)
         revision = versions(self.observer)
-        pending = []
         for document, item in allowed.items():
+            self._check_cancelled()
             proof_key = proofs.key(revision, item, manifest)
             saved = proofs.get(proof_key)
             if saved is not None:
@@ -111,6 +119,7 @@ class VerifiedCandidateIndex:
                     saved = None
             if saved is None:
                 result = self.reader._read_storage(item['resource_id'], manifest, bindings)
+                self._check_cancelled()
                 self.original_reads += 1
                 if result.get('needs_vision') or result.get('truncated') or not result.get('source_bundle'):
                     raise ValueError('organization_candidate_index_requires_complete_source')
@@ -189,7 +198,9 @@ class VerifiedCandidateIndex:
         if self.observer.epoch() != epoch:
             raise OrganizationExecutionUnavailable('organization_candidate_storage_changed_during_warmup')
         for proof_key, saved in pending:
+            self._check_cancelled()
             proofs.put(proof_key, saved)
+        self._check_cancelled()
         # No partially checked source generation becomes usable.
         self.rows, self.origins = rows, origins
         self.source_metadata = metadata

@@ -10,6 +10,9 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import sqlite3
+import struct
+import tempfile
+import zlib
 
 
 FORMAT = 'organization-source-verification.v1'
@@ -111,17 +114,52 @@ class SourceVerificationCache:
             row = db.execute('SELECT payload,digest FROM receipts WHERE key=?', (key,)).fetchone()
         if row is None:
             return None
-        if sha256(row[0].encode()).hexdigest() != row[1]:
+        raw = zlib.decompress(row[0]) if isinstance(row[0], bytes) else row[0].encode()
+        if sha256(raw).hexdigest() != row[1]:
             raise ValueError('organization_source_receipt_corrupt')
-        return json.loads(row[0])
+        return json.loads(raw)
 
     def put(self, key, value):
         if key is None:
             return
-        raw = json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+        raw = json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()
         with closing(sqlite3.connect(self.path, timeout=10)) as db, db:
-            db.execute('INSERT OR IGNORE INTO receipts VALUES(?,?,?)', (key, raw, sha256(raw.encode()).hexdigest()))
+            db.execute('INSERT OR IGNORE INTO receipts VALUES(?,?,?)', (key, zlib.compress(raw, 1), sha256(raw).hexdigest()))
             # Bounded FIFO metadata cache. Eviction only loses an optimization:
             # an evicted source must pass full validation before reuse.
             db.execute('DELETE FROM receipts WHERE rowid IN '
                        '(SELECT rowid FROM receipts ORDER BY rowid DESC LIMIT -1 OFFSET 8192)')
+
+
+class PendingSourceReceipts:
+    """Disk spool, never a readable verification cache before the final checks.
+
+    Retain at most one expanded source receipt. TemporaryFile removes abandoned
+    spools on close/process exit; neither a cancelled nor revoked generation can
+    reuse this data as a proof. Persistent receipts remain digest-checked.
+    """
+    def __enter__(self):
+        self.stream = tempfile.TemporaryFile(mode='w+b')
+        return self
+
+    def append(self, entry):
+        if entry[0] is None:
+            return
+        raw = json.dumps(entry, ensure_ascii=False, separators=(',', ':')).encode()
+        blob = zlib.compress(raw, 1)
+        self.stream.write(struct.pack('<Q', len(blob)))
+        self.stream.write(blob)
+
+    def __iter__(self):
+        self.stream.seek(0)
+        while header := self.stream.read(8):
+            if len(header) != 8:
+                raise ValueError('source_receipt_spool_truncated')
+            size, = struct.unpack('<Q', header)
+            blob = self.stream.read(size)
+            if len(blob) != size:
+                raise ValueError('source_receipt_spool_truncated')
+            yield json.loads(zlib.decompress(blob))
+
+    def __exit__(self, *_):
+        self.stream.close()

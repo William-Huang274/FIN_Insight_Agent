@@ -29,6 +29,24 @@ def test_expiration_context_not_blind_translation_or_fiscal_period_inference():
     assert needs('FY2025 未知概念')['financial_concepts']==[]
 
 
+def test_convertible_maturity_forms_have_typed_bilingual_lexical_routes(tmp_path):
+    from retrieval.published_lexical_index import build, lexical_digest
+    for query in ['可转债的到期日是什么', '可转换债券何时到期',
+                  'When do the notes mature?', 'The bond matured last year', 'loan maturity']:
+        result=needs(query)
+        assert result['financial_concepts']==['debt_maturity']
+        assert 'mature' in result['needs'][0]['concept_terms']
+    assert needs('The product reaches maturity')['financial_concepts']==[]
+    assert set(needs('回购授权到期时间')['financial_concepts'])=={'repurchase_authorization','authorization_expiration'}
+    bodies=['Customer receivables mature next year.']*12+[
+        'The convertible notes will mature in December and bear interest per year.']
+    rows=[dict(node_id=str(i),parent_document_id='d',content=b,content_sha256=sha256(b.encode()).hexdigest()) for i,b in enumerate(bodies)]
+    for r in rows:r['lexical_input_sha256']=lexical_digest(r)
+    path=tmp_path/'lexical.sqlite';build(path,rows)
+    ids,_=lexical_candidates(path,rows,needs('可转债的到期日是什么'),{})
+    assert ids[0]=='12'
+
+
 def test_owner_spans_assign_different_measures_and_shared_topics_remain_shared():
     metadata={'a':{'issuer_id':'I::alpha'},'b':{'issuer_id':'I::beta'}}
     query="Compare Alpha's equity commitments and investment capacity with Beta's capital expenditures."

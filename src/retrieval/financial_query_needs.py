@@ -15,6 +15,8 @@ TERM_GROUPS = {
     'capital_expenditures': [['capital','资本'],['expenditure','expenditures','支出']],
     'repurchase_authorization': [['repurchase','repurchases','repurchasing','buyback','buybacks','回购'],
                                 ['authorization','authorizations','authorized','remaining','授权','剩余']],
+    'debt_maturity': [['debt','notes','note','bonds','bond','debentures','loan','loans','债务','债券','借款','转债'],
+                      ['maturity','maturities','mature','matures','matured','到期']],
 }
 # Each tuple is a distinct evidence need, not a bag of interchangeable facts.
 CONCEPTS = (
@@ -39,11 +41,12 @@ CONCEPTS = (
 def concepts(text):
     found = [(name, words, m.start()) for name, pattern, words in CONCEPTS
              if (m := re.search(pattern, text, re.I))]
-    if re.search(r'到期|\bexpir(?:e|es|ed|ation)\b|\bmaturit(?:y|ies)\b', text, re.I):
+    if re.search(r'到期|\bexpir(?:e|es|ed|ation)\b|\bmatur(?:ity|ities|e|es|ed)\b', text, re.I):
         if any(n == 'repurchase_authorization' for n, _, _ in found):
             found.append(('authorization_expiration', 'expire expires expired expiration 到期', 0))
-        elif re.search(r'债务|债券|借款|\bdebt\b|\bnotes\b|\bbonds\b', text, re.I):
-            found.append(('debt_maturity', 'maturity maturities 到期', 0))
+        elif re.search(r'债务|债券|借款|(?:可转换|可转|转)债|\b(?:debt|notes?|bonds?|debentures?|loans?)\b', text, re.I):
+            found.append(('debt_maturity',
+                          'debt notes note bonds bond debentures loan loans maturity maturities mature matures matured 债务 债券 借款 转债 到期', 0))
         # Unknown meaning is left to the literal route, never guessed.
     return found
 

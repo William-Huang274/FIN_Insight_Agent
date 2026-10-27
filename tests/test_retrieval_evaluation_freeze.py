@@ -44,6 +44,23 @@ def test_development_and_historical_diagnostics_remain_available():
     validate_heldout_freeze({'evaluation_role': 'historical_regression'}, 'heldout')
 
 
+def test_source_window_strategy_must_be_explicitly_frozen_and_match_runtime():
+    data=frozen()
+    data['policy']['candidate_policy']='needs_window.v2'
+    data['freeze']['ranking_policy']=dict(data['policy'])
+    data['freeze']['ranking_policy_sha256']=policy_digest(data['policy'])
+    validate_heldout_freeze(data,'heldout',candidate_policy='needs_window.v2',
+        query_planning='conservative.v1',metadata_policy='sec_cover.v2',check_runtime=True)
+    with pytest.raises(ValueError,match='runtime_policy_mismatch'):
+        validate_heldout_freeze(data,'heldout',candidate_policy='needs_balanced.v1',
+            query_planning='conservative.v1',metadata_policy='sec_cover.v2',check_runtime=True)
+    data['freeze']['ranking_policy']['candidate_policy']='needs_window.v3'
+    data['policy']=dict(data['freeze']['ranking_policy'])
+    data['freeze']['ranking_policy_sha256']=policy_digest(data['policy'])
+    with pytest.raises(ValueError,match='unsupported_frozen'):
+        validate_heldout_freeze(data,'heldout')
+
+
 def test_new_reranker_is_frozen_and_cannot_be_changed_without_new_digest():
     data=frozen()
     data['policy']['reranker']='qwen3.7-text-rerank'

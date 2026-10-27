@@ -21,6 +21,8 @@ def source_structure(bundle):
     period_tables = {t['source_char_start']:t for t in validate_overlay(bundle)}
     from .fact_period_matching import prose_periods, table_periods, markdown_tables, tagged_periods
     body=bundle.get('text','')
+    from .table_dependencies import dependencies
+    table_dependencies = dependencies(body, list(period_tables.values()))
     period_evidence = (prose_periods(body) + table_periods(body,list(period_tables.values())+markdown_tables(body))
         + tagged_periods(list(period_tables.values())))
     text = bundle.get('text') if 'node_recovery' not in bundle else None
@@ -61,6 +63,17 @@ def source_structure(bundle):
         if text[start:end] != chunk['body'] or sha256(chunk['body'].encode()).hexdigest()!=chunk['digest']:
             raise ValueError('source_structure_chunk_mismatch')
         row['status']='verified_original_coordinates'
+        # Aggregate per table within this chunk; do not repeat a large header
+        # once for every numeric cell or row in the published proof.
+        needed = {}
+        for dependency in table_dependencies:
+            if dependency['row_start'] < end and dependency['row_end'] > start:
+                key = dependency['table']['source_char_start']
+                group = needed.setdefault(key, {'table':dependency['table'], 'required':[], 'unresolved':[]})
+                for span in dependency['required']:
+                    if span not in group['required']: group['required'].append(span)
+                group['unresolved'] = sorted(set(group['unresolved']) | set(dependency['unresolved']))
+        row['table_dependencies'] = list(needed.values())
         row['period_evidence'] = [e for e in period_evidence
             if e['source_char_start']<end and e['source_char_end']>start]
         index=bisect_right(heads,start)-1

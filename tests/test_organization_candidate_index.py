@@ -38,6 +38,21 @@ def query(**changes):
     return {'source_space':'organization', 'operation':'search', 'query':'disclosure', **changes}
 
 
+def test_optional_completion_preserves_result_order_and_warm_authorization(tmp_path, monkeypatch):
+    nav,reader,state,_,_=prepared(tmp_path,monkeypatch)
+    old=nav.navigate(query())
+    monkeypatch.setenv('FINSIGHT_ORGANIZATION_TABLE_COMPLETION','bounded.v1')
+    enhanced=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=tmp_path/'indices')
+    actual=enhanced.navigate(query())
+    assert [r['node_id'] for r in old.items]==[r['node_id'] for r in actual.items]
+    assert all('table_completion' in r for r in actual.items)
+    monkeypatch.setattr(reader,'_read_storage',lambda *_:pytest.fail('warm search must not rescan originals'))
+    cached=enhanced.navigate(query())
+    assert cached.items[0]['retrieval']['response_cache_hit']
+    state['status']=404
+    with pytest.raises(OrganizationExecutionUnavailable):enhanced.navigate(query())
+
+
 def items(result):
     return [{k:v for k,v in row.items() if k != 'retrieval'} for row in result.items]
 
@@ -148,3 +163,19 @@ def test_unverified_or_copied_rows_cannot_skip_original_identity_checks(tmp_path
         nav.hybrid.rank(rows,'disclosure',reader.authority.manifest_digest[7:],[],source_verifier=proof)
     with pytest.raises(OrganizationExecutionUnavailable,match='invalid_verifier'):
         nav.hybrid.rank(rows,'disclosure',reader.authority.manifest_digest[7:],[],source_verifier=True)
+
+
+@pytest.mark.parametrize('fault',['no_hybrid','no_navigation'])
+def test_completion_cannot_silently_fall_back_without_verified_navigation(tmp_path,monkeypatch,fault):
+    monkeypatch.setenv('FINSIGHT_ORGANIZATION_TABLE_COMPLETION','bounded.v1')
+    nav,_,_,_,_=prepared(tmp_path,monkeypatch)
+    if fault=='no_hybrid':
+        nav.hybrid=None
+    else:
+        load=nav.hybrid.load_frozen
+        def without_navigation(*args):
+            directory,index,other,contract=load(*args)
+            return directory,{k:v for k,v in index.items() if k!='navigation_index'},other,contract
+        monkeypatch.setattr(nav.hybrid,'load_frozen',without_navigation)
+    with pytest.raises(ValueError,match='requires_verified_navigation'):
+        nav.navigate(query())

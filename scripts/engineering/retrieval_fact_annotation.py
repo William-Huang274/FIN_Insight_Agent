@@ -62,7 +62,7 @@ def validate_annotation(annotation, *, require_typed=False):
         period_quote=' '.join(' '.join(v.split()) for v in pieces)
         if p['kind'] in {'instant','event','reported_quarter_end'}:
             possible=[]
-            for pattern in ('%B %d, %Y','%b %d, %Y','%Y-%m-%d'):
+            for pattern in ('%B %d, %Y','%b %d, %Y','%B %d %Y','%b %d %Y','%Y-%m-%d'):
                 try:possible.append(datetime.strptime(period_quote,pattern).date().isoformat())
                 except ValueError:pass
             if p['value'] not in possible:raise ValueError('typed_fact_date_quote_mismatch')

@@ -42,3 +42,15 @@ def test_duration_labels_keep_reported_period_without_inventing_instant(kind, pe
     a=normalize_question(q);validate_annotation(a,require_typed=True)
     bad=deepcopy(a);bad['facts']['bindings'][0]['period_quote']='different fiscal duration'
     with pytest.raises(ValueError,match='period_quote_missing'):validate_annotation(bad,require_typed=True)
+
+
+def test_split_header_date_without_comma_is_still_an_instant():
+    q=question();q['evidence'][0]['quote']='October 31 | 2025 Cash 100 million'
+    q['fact_review']={'status':'reviewed','entity':'Company','source_id':'s','source_digest':'v',
+      'unit':'million','counterclaim':'2024 cash','why_invalid':'Column is 2025',
+      'bindings':[{'measure':'cash','entity_scope':'consolidated','display_value':'100',
+       'unit':'USD million','period':{'kind':'instant','value':'2025-10-31','meaning':'balance as of'},
+       'evidence_quote':'Cash 100 million','unit_quote':'million','period_quotes':['October 31','2025']}]}
+    a=normalize_question(q);validate_annotation(a,require_typed=True)
+    a['facts']['bindings'][0]['period']['value']='2024-10-31'
+    with pytest.raises(ValueError,match='date_quote_mismatch'):validate_annotation(a,require_typed=True)

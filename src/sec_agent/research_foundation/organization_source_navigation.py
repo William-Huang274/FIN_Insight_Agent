@@ -24,6 +24,10 @@ class OrganizationSourceNavigation:
                 or parsed.path not in {'', '/'} or parsed.query or parsed.fragment):
             raise ValueError('organization_source_requires_workbench_origin')
         self.reader, self.workbench_url = reader, workbench_url.rstrip('/')
+        import os
+        self.table_completion = os.getenv('FINSIGHT_ORGANIZATION_TABLE_COMPLETION', '')
+        if self.table_completion not in ('', 'bounded.v1'):
+            raise ValueError('organization_table_completion_configuration_invalid')
         self.observed = ObservedSourceRegistry()
         self.hybrid = None
         self._search_cache = None
@@ -74,10 +78,15 @@ class OrganizationSourceNavigation:
         # One observer connection and one bounded result per navigation session.
         # Serializing this instance also prevents concurrent cache publication.
         with self._navigation_lock:
+            if (self.table_completion and request.operation == 'search'
+                    and request.source_space == 'organization' and self.hybrid is None):
+                raise ValueError('organization_table_completion_requires_verified_navigation')
             if request.operation != 'search' or self.hybrid is None:
                 return self._navigate(request)
             before, manifest, _ = self.reader._grant()
             pinned = manifest.get('retrieval_index')
+            if self.table_completion and pinned is None and request.source_space == 'organization':
+                raise ValueError('organization_table_completion_requires_verified_navigation')
             if pinned is None or request.source_space != 'organization':
                 return self._navigate(request)
             from .organization_search_cache import OrganizationSearchCache
@@ -86,6 +95,8 @@ class OrganizationSourceNavigation:
             cache = self._search_cache
             key, epoch = cache.key(before, request), cache.epoch()
             _, release_index, _, _ = self.hybrid.load_frozen(manifest)
+            if self.table_completion and 'navigation_index' not in release_index:
+                raise ValueError('organization_table_completion_requires_verified_navigation')
             result = cache.get(key, epoch)
             if result is not None:
                 self.reader._after(before)
@@ -244,6 +255,13 @@ class OrganizationSourceNavigation:
             materialized, selection = select_structure_companions(materialized, expansion)
             receipt.update(source_window_selection=selection,
                            selected_node_ids=[r['node_id'] for r in materialized])
+        if self.table_completion:
+            if not needs:
+                materialized = candidates.contextualize(materialized, manifest)
+            page = materialized[request.offset:request.offset+request.limit]
+            page, completion_receipt = candidates.complete_tables(page, rows, manifest)
+            materialized[request.offset:request.offset+request.limit] = page
+            receipt['table_completion'] = completion_receipt
         receipt.update(lexical_source='published_release', candidate_only=True,
                        lexical_subset_statistics_hit=self._lexical_statistics.hit,
                        source_generation_original_reads=candidates.original_reads,

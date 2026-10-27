@@ -74,6 +74,8 @@ def implementation_digest():
         'task_attachments.py', 'project_asset_versions.py', 'project_asset_access.py')]
     files.append(root.parents[1]/'retrieval'/'library_source_bundle.py')
     files.append(root.parents[1]/'retrieval'/'source_structure.py')
+    files.append(root.parents[1]/'retrieval'/'table_dependencies.py')
+    files.append(root.parents[1]/'retrieval'/'table_completion.py')
     files.append(root.parents[1]/'retrieval'/'source_table_periods.py')
     files.append(root.parents[1]/'retrieval'/'source_table_storage.py')
     files.append(root.parents[1]/'retrieval'/'fact_period_matching.py')

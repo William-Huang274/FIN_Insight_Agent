@@ -392,12 +392,15 @@ def navigate_source_nodes(
                 # window. Coordinates remain original source coordinates.
                 if partial:
                     structure['period_evidence'] = []
+                    structure['table_dependencies'] = []
                     for table in structure['tables']:
                         table['period_cells'] = []
                     structure['period_window_status'] = 'partial_read_requires_complete_cell_readback'
                 item['source_structure'] = structure
         elif request.operation == "search":
             item["preview"] = content[:500]
+            if 'table_completion' in row:
+                item['table_completion'] = row['table_completion']
             if 'source_structure' in row:
                 item['source_structure'] = row['source_structure']
             item["preview_truncated"] = len(content) > 500

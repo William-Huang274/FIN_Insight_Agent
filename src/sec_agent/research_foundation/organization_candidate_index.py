@@ -58,6 +58,7 @@ class VerifiedCandidateIndex:
         self.neighbors = {}
         self.window_neighbors = {}
         self.structures = {}
+        self.locations = {}
         self.verification_hits = 0
 
     def prepare(self, before, manifest, epoch):
@@ -90,7 +91,7 @@ class VerifiedCandidateIndex:
         allowed = {OrganizationSourceNavigation._identity(item):item for item in manifest['inputs']}
         expected = {node_id for node_id, record in records.items() if record['document_id'] in allowed}
         rows, origins, metadata, original_metadata, neighbors = {}, {}, {}, {}, {}
-        structures, window_neighbors = {}, {}
+        structures, window_neighbors, locations = {}, {}, {}
         self.original_reads = 0
         self.verification_hits = 0
         from .source_verification_cache import SourceVerificationCache, versions
@@ -148,6 +149,7 @@ class VerifiedCandidateIndex:
             # Retain compressed per-source metadata, not 114k expanded dicts.
             structures[document] = zlib.compress(json.dumps(saved['structures']).encode(), 1)
             ordered = sorted(saved.get('locations', []))
+            locations[document] = zlib.compress(json.dumps(ordered).encode(),1)
             from retrieval.source_window_candidates import adjacent_nodes
             # Separate candidate expansion from legacy reader context links.
             # The latter tolerates tiny gaps; recall never crosses any gap.
@@ -195,6 +197,7 @@ class VerifiedCandidateIndex:
         self.neighbors = neighbors
         self.window_neighbors = window_neighbors
         self.structures = structures
+        self.locations = locations
         self.before, self.epoch, self.directory = before, epoch, directory
         self.generation = key
 
@@ -275,3 +278,30 @@ class VerifiedCandidateIndex:
                 selected_structures[document] = json.loads(zlib.decompress(self.structures[document]))
             row['source_structure'] = selected_structures[document][row['node_id']]
         return result
+
+    def complete_tables(self, rows, eligible, manifest):
+        """Only load exact ranges from the current filtered/authorized release."""
+        from retrieval.table_completion import complete_tables, read_span
+        permitted = {r['node_id'] for r in eligible}
+        documents = {r['parent_document_id'] for r in eligible}
+        before = self.reader._grant()[0]
+        loaded = {}
+        def load(anchor, span):
+            document = anchor['parent_document_id']
+            if document not in documents or anchor['node_id'] not in permitted:
+                raise OrganizationExecutionUnavailable('table_completion_outside_current_scope')
+            positions = [(a,b,n) for p,a,b,n in json.loads(zlib.decompress(self.locations[document]))
+                         if p==document and n in permitted]
+            def node(identifier):
+                self.reader._after(before)
+                if identifier not in loaded:
+                    previous = self.candidate_reads
+                    loaded[identifier] = self.materialize([self.rows[identifier]],manifest)[0]
+                    self.candidate_reads += previous
+                return loaded[identifier]
+            value = read_span(anchor,span,positions,node)
+            self.reader._after(before);self.check()
+            return value
+        result, receipt = complete_tables(rows,load,top_k=len(rows))
+        self.reader._after(before);self.check()
+        return result, receipt

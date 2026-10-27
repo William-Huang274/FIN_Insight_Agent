@@ -734,6 +734,20 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
             if quality_data:
                 from retrieval.qwen_api import QwenRetrieval
                 from tests.integration.source_intake_quality import run_quality
+                # Plumbing evidence has been saved. Release its full-corpus
+                # metadata before warming a differently configured navigator.
+                # Never change policy inside a live response-cache instance.
+                import gc
+                import psutil
+                resident_before = psutil.Process().memory_info().rss
+                if lifecycle is not None:
+                    lifecycle.close()
+                candidate_nav = nav = None
+                gc.collect()
+                s.save('service-quality-phase-memory', {
+                    'before_release_rss_bytes': resident_before,
+                    'after_release_rss_bytes': psutil.Process().memory_info().rss,
+                    'scope': 'process working set observation, not capacity or exclusive physical memory'})
                 # New instance freezes the evaluated policy; existing plumbing
                 # probes retain their original no-provider configuration.
                 with monkeypatch.context() as configured:
@@ -744,6 +758,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
                     configured.setattr(QwenRetrieval, 'embed', quality_budget.wrap('embedding', QwenRetrieval.embed))
                     configured.setattr(QwenRetrieval, 'rerank', quality_budget.wrap('rerank', QwenRetrieval.rerank))
                     quality_nav = OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=indices)
+                    nav = quality_nav
                     with diagnostic.phase('frozen_quality_replay_real_authority'):
                         quality_requests = run_quality(quality_data,quality_binding,nav=quality_nav,
                             bundles=bundles,save=s.save,budget=quality_budget)

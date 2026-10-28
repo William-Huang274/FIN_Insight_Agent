@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import re
 from time import perf_counter
+from threading import RLock
 
 
 provider_network = ContextVar('qualification_provider_network', default=False)
@@ -21,9 +22,16 @@ class PaidCallBudget:
         self.calls = {'embedding': 0, 'rerank': 0}
         self.receipts = []
         self.failed = False
+        self._lock = RLock()
 
     def wrap(self, operation, method):
         def call(*args, **kwargs):
+            # Concurrent BFF actors share one qualification budget/receipt file.
+            # Keep provider execution serial in this fixed diagnostic profile;
+            # local retrieval can overlap, but no concurrent paid claim is made.
+            with self._lock:
+                return invoke(*args, **kwargs)
+        def invoke(*args, **kwargs):
             if self.failed or self.calls[operation] >= self.limit:
                 raise RuntimeError('service_quality_budget_or_failed_request_stop')
             self.calls[operation] += 1

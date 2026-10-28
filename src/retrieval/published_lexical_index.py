@@ -153,11 +153,12 @@ def scores_from_identities(path, identities, query, *, population_cache=None):
             raise ValueError('published_lexical_format_mismatch')
         total = db.execute('SELECT COUNT(*) FROM nodes').fetchone()[0]
         columns = 'position,node_id,content_digest,lexical_digest,length'
-        if len(identities) >= total or len(identities) > 256:
+        if len(identities) >= total:
             entries = db.execute(f'SELECT {columns} FROM nodes ORDER BY position').fetchall()
         else:
-            # Small document scopes benefit from indexed lookup. For larger
-            # scopes one sequential identity scan avoids many SQL round trips.
+            # Use the node_id index for every proper subset. A local SQLite
+            # batch is not a network round trip: loading the entire release
+            # here repeatedly penalizes each filtered financial query lane.
             # Restore caller order below; SQL IN order is not ranking order.
             entries = []
             for start in range(0, len(identities), IDENTITY_BATCH):

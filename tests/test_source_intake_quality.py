@@ -89,6 +89,31 @@ def test_network_permit_exists_only_during_counted_provider_call():
     assert records[-1]['receipts'][0]['usage'] == {'total_tokens': 3}
 
 
+def test_concurrent_actors_cannot_exceed_shared_paid_budget():
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+    from retrieval.qwen_api import RetrievalResponse
+    entered, release = Event(), Event()
+    records, calls = [], []
+    budget = PaidCallBudget(1, lambda name, value: records.append(value))
+    def provider():
+        calls.append(1)
+        entered.set()
+        assert release.wait(3)
+        return RetrievalResponse([], {}, 'synthetic-id', 'synthetic-model')
+    wrapped = budget.wrap('embedding', provider)
+    with ThreadPoolExecutor(2) as pool:
+        first = pool.submit(wrapped)
+        assert entered.wait(2)
+        second = pool.submit(wrapped)
+        release.set()
+        first.result(timeout=2)
+        with pytest.raises(RuntimeError, match='budget_or_failed'):
+            second.result(timeout=2)
+    assert len(calls) == 1 and budget.calls['embedding'] == 1
+    assert [r['status'] for r in records] == ['submitted', 'completed']
+
+
 def test_unknown_failure_stops_all_later_calls_and_restores_guard():
     budget = PaidCallBudget(3, lambda *_: None)
     def failed():

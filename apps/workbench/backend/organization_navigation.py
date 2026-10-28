@@ -5,8 +5,10 @@ result is never an authorization lease, and this endpoint cannot admit a run.
 """
 from collections import OrderedDict
 from copy import deepcopy
+from dataclasses import dataclass, field
 import os
-from threading import Lock
+from threading import BoundedSemaphore, Condition, Lock, RLock
+from time import monotonic
 
 from anyio import from_thread
 from fastapi import HTTPException
@@ -49,17 +51,67 @@ class UserExecutionAuthority:
         return deepcopy(self.snapshot)
 
 
-class OrganizationNavigationService:
-    """One admitted operation at a time, two retained scopes, bounded queue wait.
+@dataclass
+class _Session:
+    lock: object = field(default_factory=Lock)
+    navigation: object = None
+    users: int = 0
 
-    This conservative single-process profile protects developer/small deployments
-    from concurrent full-index loads. Queue time and 429s must count in load tests.
-    It does not promise parallel provider execution or multi-process cache sharing.
+
+class OrganizationNavigationService:
+    """Independent bounded user sessions; serialize each session and cold loads.
+
+    Active or queued sessions cannot be evicted. Session/cache/observer state is
+    never shared between actors. A single deadline bounds all admission waits.
     """
-    def __init__(self, workspace, business, *, maximum_sessions=2, wait_seconds=30):
+    def __init__(self, workspace, business, *, maximum_sessions=2, wait_seconds=30, maximum_parallel=None):
         self.workspace, self.business = workspace, business
         self.maximum_sessions, self.wait_seconds = maximum_sessions, wait_seconds
+        if maximum_sessions < 1 or wait_seconds < 0:
+            raise ValueError('invalid_navigation_admission_limits')
+        if maximum_parallel is None:
+            maximum_parallel = int(os.getenv('FINSIGHT_ORGANIZATION_NAVIGATION_CONCURRENCY', '1'))
+        if not 1 <= maximum_parallel <= maximum_sessions:
+            raise ValueError('invalid_navigation_parallel_limit')
         self._lock, self._sessions = Lock(), OrderedDict()
+        self._changed = Condition(self._lock)
+        self._cold_lock = RLock()
+        self._admission = BoundedSemaphore(maximum_parallel)
+
+    @staticmethod
+    def _busy():
+        return HTTPException(429, '组织检索繁忙；本次未执行检索，请稍后手动重试')
+
+    def _claim(self, key, deadline):
+        if not self._lock.acquire(timeout=max(0, deadline-monotonic())):
+            raise self._busy()
+        try:
+            while key not in self._sessions:
+                if len(self._sessions) < self.maximum_sessions:
+                    self._sessions[key] = _Session()
+                    break
+                idle = next((k for k, s in self._sessions.items() if s.users == 0), None)
+                if idle is not None:
+                    self._sessions.pop(idle)
+                    continue
+                remaining = deadline-monotonic()
+                if remaining <= 0:
+                    raise self._busy()
+                self._changed.wait(remaining)
+            session = self._sessions[key]
+            session.users += 1
+            self._sessions.move_to_end(key)
+            return session
+        finally:
+            self._lock.release()
+
+    @staticmethod
+    def _needs_preparation(navigation, request):
+        if request.operation != 'search':
+            return False
+        candidates = navigation._candidate_index
+        return (candidates is None or candidates.generation is None
+                or candidates.observer.epoch() != candidates.epoch)
 
     def navigate(self, actor, project, draft, execution, origin, request):
         if request.source_space != 'organization' or request.operation not in {'catalog', 'outline', 'search', 'read'}:
@@ -69,24 +121,32 @@ class OrganizationNavigationService:
             # paged resource API. The legacy unscoped source catalog projects
             # every original before paging and is unsafe on this HTTP surface.
             raise HTTPException(422, '目录、提纲和原文读取需指定资料；请从项目资料列表选择')
-        if not self._lock.acquire(timeout=self.wait_seconds):
-            raise HTTPException(429, '组织检索繁忙；本次未执行检索，请稍后手动重试')
+        deadline = monotonic() + self.wait_seconds
+        key = (actor, project, draft, execution, origin)
+        session = self._claim(key, deadline)
+        locked = cold_locked = admitted = False
         try:
-            key = (actor, project, draft, execution, origin)
-            navigation = self._sessions.get(key)
+            locked = session.lock.acquire(timeout=max(0, deadline-monotonic()))
+            if not locked:
+                raise self._busy()
+            admitted = self._admission.acquire(timeout=max(0, deadline-monotonic()))
+            if not admitted:
+                raise self._busy()
+            navigation = session.navigation
             if navigation is None:
-                # Evict before allocating another full-corpus navigation state.
-                while len(self._sessions) >= self.maximum_sessions:
-                    self._sessions.popitem(last=False)
                 grant = from_thread.run(self.business, actor, 'POST',
                     f'projects/{project}/research-drafts/{draft}/material-access')
                 validate_grant(grant, project, draft)
                 authority = UserExecutionAuthority(actor, project, draft, execution, grant, self.business)
                 reader = OrganizationExecutionReader(self.workspace, authority)
                 navigation = OrganizationSourceNavigation(reader, workbench_url=origin,
-                    retrieval_root=os.environ['FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT'])
-                self._sessions[key] = navigation
-            self._sessions.move_to_end(key)
+                    retrieval_root=os.environ['FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT'],
+                    preparation_lock=self._cold_lock)
+                session.navigation = navigation
+            if self._needs_preparation(navigation, request):
+                cold_locked = self._cold_lock.acquire(timeout=max(0, deadline-monotonic()))
+                if not cold_locked:
+                    raise self._busy()
             try:
                 # The production navigator owns before/after I/O and provider
                 # checks. Do not wrap them in another identical grant cycle.
@@ -94,7 +154,17 @@ class OrganizationNavigationService:
                 return result
             except BaseException:
                 # Failed authorization/storage/provider state is not kept warm.
-                self._sessions.pop(key, None)
+                session.navigation = None
                 raise
         finally:
-            self._lock.release()
+            if cold_locked:
+                self._cold_lock.release()
+            if admitted:
+                self._admission.release()
+            if locked:
+                session.lock.release()
+            with self._changed:
+                session.users -= 1
+                if session.users == 0 and session.navigation is None:
+                    self._sessions.pop(key, None)
+                self._changed.notify_all()

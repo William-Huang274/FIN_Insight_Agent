@@ -18,7 +18,8 @@ from .organization_source_filter import OrganizationSourceFilterReceipt
 
 
 class OrganizationSourceNavigation:
-    def __init__(self, reader, *, workbench_url, retrieval_root=None, preparation_cancel=None):
+    def __init__(self, reader, *, workbench_url, retrieval_root=None, preparation_cancel=None,
+                 preparation_lock=None):
         parsed = urlsplit(workbench_url)
         if (parsed.scheme not in {'http', 'https'} or not parsed.hostname or parsed.username or parsed.password
                 or parsed.path not in {'', '/'} or parsed.query or parsed.fragment):
@@ -34,6 +35,7 @@ class OrganizationSourceNavigation:
         self._projection_cache = None
         self._candidate_index = None
         self._preparation_cancel = preparation_cancel
+        self._preparation_lock = preparation_lock or RLock()
         from retrieval.published_lexical_index import PublishedLexicalStatistics
         self._lexical_statistics = PublishedLexicalStatistics()
         self._retrieval_lifecycle = None
@@ -137,6 +139,20 @@ class OrganizationSourceNavigation:
             return result
 
     def _warm_candidates(self, before, manifest, epoch):
+        from .organization_hybrid_retrieval import digest
+        candidate = self._candidate_index
+        if candidate is not None and candidate.generation == (digest(before), epoch):
+            candidate._check_cancelled()
+            candidate.check()
+            candidate.original_reads = 0
+            return candidate
+        # The BFF shares only this preparation lock, never mutable navigation
+        # state. Check again inside it: the storage generation can change after
+        # admission, so an earlier "warm" observation is not a readiness lease.
+        with self._preparation_lock:
+            return self._prepare_candidates(before, manifest, epoch)
+
+    def _prepare_candidates(self, before, manifest, epoch):
         if self._candidate_index is None:
             from .organization_candidate_index import VerifiedCandidateIndex
             self._candidate_index = VerifiedCandidateIndex(self.reader, self.hybrid, self._search_cache,

@@ -81,8 +81,9 @@ def test_full_population_reads_postings_not_per_document_counts(tmp_path):
     assert actual[1:] == expected[1:]
 
 
-def test_filtered_population_fetches_only_selected_identities_in_bounded_batches(tmp_path, monkeypatch):
-    rows = nodes(['cash '+str(i) for i in range(100)])
+@pytest.mark.parametrize('size', [3, 300])
+def test_filtered_population_fetches_only_selected_identities_in_bounded_batches(tmp_path, monkeypatch, size):
+    rows = nodes(['cash '+str(i) for i in range(700)])
     path = tmp_path/'lexical.sqlite'
     published.build(path, rows)
     connect = sqlite3.connect
@@ -94,15 +95,15 @@ def test_filtered_population_fetches_only_selected_identities_in_bounded_batches
     monkeypatch.setattr(published.sqlite3, 'connect', traced)
     monkeypatch.setattr(published, 'IDENTITY_BATCH', 2)
     monkeypatch.setattr(published, 'COUNTS_BATCH', 2)
-    selected = [rows[99], rows[3], rows[60]]
+    selected = rows[::-2][:size]
     actual = published.scores(path, selected, ['cash','60'])
     expected = lexical_scores((lexical_document(row) for row in selected), ['cash','60'])
     np.testing.assert_array_equal(actual[0], expected[0])
     reads = [sql for sql in statements if sql.startswith('SELECT position,node_id')]
-    assert len(reads) == 2 and all('WHERE node_id IN' in sql for sql in reads)
+    assert len(reads) == (size+1)//2 and all('WHERE node_id IN' in sql for sql in reads)
     assert all('ORDER BY position' not in sql for sql in reads)
     count_reads = [sql for sql in statements if sql.startswith('SELECT position,length,counts')]
-    assert len(count_reads)==2 and all('WHERE position IN' in sql for sql in count_reads)
+    assert len(count_reads)==(size+1)//2 and all('WHERE position IN' in sql for sql in count_reads)
     # A wrong digest in a small scope still fails before any scoring.
     broken = deepcopy(selected); broken[0]['content_sha256'] = 'wrong'
     with pytest.raises(ValueError, match='source_mismatch'):

@@ -18,7 +18,7 @@ def install_provider_budget():
         temporary = target.with_suffix('.tmp')
         temporary.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding='utf8')
         temporary.replace(target)
-    budget = PaidCallBudget(80, save)
+    budget = PaidCallBudget(0 if os.getenv('FIN_COMPLETE_SOURCE_HTTP_REPLAY_ONLY') == '1' else 80, save)
     QwenRetrieval.embed = budget.wrap('embedding', QwenRetrieval.embed)
     QwenRetrieval.rerank = budget.wrap('rerank', QwenRetrieval.rerank)
 

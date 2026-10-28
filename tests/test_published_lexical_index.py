@@ -81,6 +81,21 @@ def test_full_population_reads_postings_not_per_document_counts(tmp_path):
     assert actual[1:] == expected[1:]
 
 
+@pytest.mark.parametrize('texts', [[], ['', '[]'], ['cash', ''], ['收入 单位', 'cash']])
+def test_vocabulary_probe_preserves_empty_signal_without_constructing_scores(tmp_path, monkeypatch, texts):
+    rows = nodes(texts)
+    path = tmp_path/'lexical.sqlite'
+    published.build(path, rows)
+    expected = published.scores(path, rows, ['cash'])[2]
+    monkeypatch.setattr(published, '_QueryBM25', lambda *a, **k: pytest.fail('unused ranking'))
+    ids = [(r['node_id'], r['content_sha256'], published.lexical_digest(r)) for r in rows]
+    assert published.scores_from_identities(path, ids, ['cash'], vocabulary_only=True) == ((), [], expected)
+    if ids:
+        wrong = [(ids[0][0], 'wrong', ids[0][2])]
+        with pytest.raises(ValueError, match='source_mismatch'):
+            published.scores_from_identities(path, wrong, ['cash'], vocabulary_only=True)
+
+
 @pytest.mark.parametrize('size', [3, 300])
 def test_filtered_population_fetches_only_selected_identities_in_bounded_batches(tmp_path, monkeypatch, size):
     rows = nodes(['cash '+str(i) for i in range(700)])

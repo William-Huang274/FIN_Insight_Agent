@@ -225,7 +225,9 @@ class TaskAttachmentStore:
                 'SELECT o.* FROM attachment_origins o JOIN attachments a ON a.id=o.object_id WHERE a.thread=?'+condition,
                 (str(thread_id), *(ids or [])))}
             access = {r['asset']:r['revoked'] for r in db.execute(
-                "SELECT asset,revoked FROM project_asset_access WHERE scope=? AND kind='document' ORDER BY rowid",(str(thread_id),))} if db.execute(
+                "SELECT asset,revoked FROM project_asset_access WHERE scope=? AND kind='document'"+
+                (' AND asset IN ('+','.join('?' for _ in ids)+')' if ids is not None else '')+
+                ' ORDER BY rowid',(str(thread_id), *(ids or [])))} if db.execute(
                     "SELECT 1 FROM sqlite_master WHERE name='project_asset_access'").fetchone() else {}
             states = {r['id']:'revoked' if access.get(r['id']) else 'active' for r in rows}
         states = {key:state if state != 'active' else origin_access(self, thread_id, origins.get(key)) for key,state in states.items()}

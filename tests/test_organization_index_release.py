@@ -19,6 +19,17 @@ from test_organization_execution_access import runtime_at
 MODEL = 'qwen3.7-text-embedding'
 
 
+@pytest.mark.parametrize('count', [0, 1, 127, 128, 129, 257])
+def test_batched_canonical_digest_preserves_frozen_wire_bytes(count):
+    from sec_agent.research_foundation.organization_index_release import canonical_digest
+    value = {'z': None, 'records': [{'id': i, 'text': '中文\\"\n',
+        'values': [True, False, -0.0, 1.25e-9], 'nested': {'b': 2, 'a': 1}}
+        for i in range(count)], 'a': {'empty': [], 'tuple': (1, 2)}}
+    expected = sha256(json.dumps(value, sort_keys=True, ensure_ascii=False,
+        separators=(',', ':')).encode()).hexdigest()
+    assert canonical_digest(value) == expected
+
+
 class Api:
     embedding_model = MODEL
     rerank_model = 'unused'

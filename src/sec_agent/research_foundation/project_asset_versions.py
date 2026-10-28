@@ -45,7 +45,9 @@ def document_versions(store, scope, *, ids=None):
     items = store.list(scope, ids=ids)
     with store.connect() as db:
         revisions = {r['child']: dict(r) for r in db.execute(
-            'SELECT r.* FROM attachment_revisions r JOIN attachments a ON a.id=r.child WHERE a.thread=?', (scope,))} if db.execute(
+            'SELECT r.* FROM attachment_revisions r JOIN attachments a ON a.id=r.child WHERE a.thread=?'+
+            (' AND r.child IN ('+','.join('?' for _ in ids)+')' if ids is not None else ''),
+            (scope, *(ids or [])))} if db.execute(
                 "SELECT 1 FROM sqlite_master WHERE name='attachment_revisions'").fetchone() else {}
     for item in items:
         origin = item.get('project_origin', {}).get('research_origin')

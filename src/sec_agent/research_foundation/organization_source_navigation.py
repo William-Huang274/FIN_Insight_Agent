@@ -201,12 +201,14 @@ class OrganizationSourceNavigation:
                 return SourceDocumentResult(operation='search', items=(), next_offset=None, total_matches=0,
                     organization_filter_receipt=OrganizationSourceFilterReceipt.model_validate(filter_receipt),
                     notice=filter_notice(filter_receipt), source_snapshot_sha256=self.reader.authority.manifest_digest[7:])
+        planned_lexical = request.organization_query_planning in {'conservative.v2', 'conservative.v3', 'conservative.v4', 'conservative.v5'}
         scores, overlap, has_terms = scores_from_identities(candidates.directory/'lexical.sqlite',
             ((row['node_id'],row['content_sha256'],row['lexical_input_sha256']) for row in rows),
-            tokenize(request.query), population_cache=self._lexical_statistics)
+            tokenize(request.query), population_cache=None if planned_lexical else self._lexical_statistics,
+            vocabulary_only=planned_lexical)
         literal = [rows[i] for i in sorted(overlap, key=lambda i:(-float(scores[i]),rows[i]['node_id']))]
         needs, lanes = None, []
-        if request.organization_query_planning in {'conservative.v2', 'conservative.v3', 'conservative.v4', 'conservative.v5'}:
+        if planned_lexical:
             from retrieval.organization_search_needs import compile_needs, lexical_candidates
             if request.organization_query_planning == 'conservative.v5':
                 from retrieval.filing_document_identity import with_document_issuer_aliases

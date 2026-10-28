@@ -17,14 +17,26 @@ FIELDS = {'release_id', 'index_digest', 'matrix_sha256', 'model', 'dimensions', 
 def canonical_digest(value):
     """Same canonical bytes as before, without a corpus-sized str/bytes pair."""
     hasher = sha256()
-    pending = bytearray()
     encoder = json.JSONEncoder(sort_keys=True, ensure_ascii=False, separators=(',', ':'))
-    for part in encoder.iterencode(value):
-        pending.extend(part.encode())
-        if len(pending) >= 65536:
-            hasher.update(pending)
-            pending.clear()
-    hasher.update(pending)
+    def write(item):
+        if isinstance(item, dict) and all(isinstance(key, str) for key in item):
+            hasher.update(b'{')
+            for number, key in enumerate(sorted(item)):
+                if number: hasher.update(b',')
+                hasher.update(encoder.encode(key).encode())
+                hasher.update(b':')
+                write(item[key])
+            hasher.update(b'}')
+        elif isinstance(item, (list, tuple)):
+            hasher.update(b'[')
+            # C JSON encoding per bounded group, without a full-release string.
+            for start in range(0, len(item), 128):
+                if start: hasher.update(b',')
+                hasher.update(encoder.encode(item[start:start+128])[1:-1].encode())
+            hasher.update(b']')
+        else:
+            hasher.update(encoder.encode(item).encode())
+    write(value)
     return hasher.hexdigest()
 
 

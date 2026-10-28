@@ -136,7 +136,7 @@ def scores(path, rows, query):
                                         for row in rows), query)
 
 
-def scores_from_identities(path, identities, query, *, population_cache=None):
+def scores_from_identities(path, identities, query, *, population_cache=None, vocabulary_only=False):
     """Score already verified (node ID, body SHA, lexical input SHA) identities.
 
     This lower-level entry does not prove originals or permissions. Published
@@ -174,6 +174,10 @@ def scores_from_identities(path, identities, query, *, population_cache=None):
             selected.append(entry[0])
         if len(selected) != len(set(selected)):
             raise ValueError('published_lexical_duplicate_population')
+        if vocabulary_only:
+            # Planned lexical lanes own ranking. Preserve the legacy empty-
+            # vocabulary signal without building scores that are discarded.
+            return (), [], any(by_id[node_id][4] > 0 for node_id, _, _ in identities)
         if selected != list(range(total)):
             # Unusual document/node filters retain exact scope semantics. They
             # decode only that population's saved counts, not full originals.

@@ -12,7 +12,7 @@ from typing import Literal
 from langchain.agents import create_agent
 from langchain.agents.middleware import HumanInTheLoopMiddleware, ModelCallLimitMiddleware, ToolCallLimitMiddleware
 PermissionMode = Literal["request_standard", "approve_for_me", "full_access"]
-ToolEffect = Literal["read", "working_note_write", "task_artifact_write", "user_file_change", "external_change", "knowledge_admission"]
+ToolEffect = Literal["read", "working_note_write", "delegated_task_control", "task_artifact_write", "user_file_change", "external_change", "knowledge_admission"]
 
 
 @dataclass(frozen=True)
@@ -31,6 +31,8 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
     artifacts may use delegated approval. Changes to user originals and external
     systems interrupt in every mode, including full access, until explicitly
     approved for that concrete operation. Unknown/unclassified tools fail closed.
+    Delegated task control is granted only after host admission and shared budget
+    binding; it does not require another approval for each internal research step.
     """
     if permission_mode not in {"request_standard", "approve_for_me", "full_access"}:
         raise ValueError("conversation_permission_mode_invalid")
@@ -40,7 +42,7 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
     for grant in grants:
         name = grant.tool.name
         if name in names or not grant.scope_description.strip() or grant.effect not in {
-            "read", "working_note_write", "task_artifact_write", "user_file_change", "external_change", "knowledge_admission"
+            "read", "working_note_write", "delegated_task_control", "task_artifact_write", "user_file_change", "external_change", "knowledge_admission"
         }:
             raise ValueError("conversation_tool_grant_invalid")
         names.add(name)

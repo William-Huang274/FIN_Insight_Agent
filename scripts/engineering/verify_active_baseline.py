@@ -64,6 +64,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     'src/sec_agent/adapters/dagster_control_plane_launcher.py',
     'src/sec_agent/adapters/dagster_s2_fact_mart.py',
     'src/sec_agent/agent_runtime/conversation_runtime.py',
+    'src/sec_agent/agent_runtime/delegated_task_graph.py',
     'src/sec_agent/agent_runtime/agent_server_entry.py',
     'src/sec_agent/agent_runtime/research_mcp_tools.py',
     'src/sec_agent/agent_runtime/hermes_context_tools.py',

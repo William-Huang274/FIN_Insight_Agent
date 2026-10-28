@@ -1634,7 +1634,11 @@ class DeepSeekStructuredAgentAdapter:
                 # retired user request can reappear from an earlier journal.
                 # Equality with the FIRST context does not mean equality with
                 # the current one after an intervening revision.
-                delta['task_context_snapshot'] = True
+                from .research_context_view import current_context
+                if delta['task_context'] == current_context(history).get('task_context'):
+                    delta.pop('task_context')
+                else:
+                    delta['task_context_snapshot'] = True
             if initial is not None and delta.get("collaboration_context") == json.loads(initial.content).get("collaboration_context"):
                 delta.pop("collaboration_context", None)
             if is_lead:

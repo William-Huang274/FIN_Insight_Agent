@@ -52,7 +52,7 @@ class OrganizationReportCommands {
         return "sha256:"+Delegation.digest(value.toString().getBytes(StandardCharsets.UTF_8));
     }
     private Map<String,Object> command(UUID execution, UUID id) {
-        return db.queryForList("SELECT *,response::text AS result FROM organization_report_command WHERE id=? AND execution_id=?",id,execution)
+        return db.queryForList("SELECT *,response::text AS result FROM organization_report_command WHERE command_kind='report' AND id=? AND execution_id=?",id,execution)
             .stream().findFirst().orElseThrow(()->new ApiFailure(404,"报告操作不存在"));
     }
     private Map<String,Object> view(Map<String,Object> c) {
@@ -87,7 +87,7 @@ class OrganizationReportCommands {
             throw new ApiFailure(422,"局部修订目标与请求基线不一致");
     }
     private UUID previousRun(UUID execution) {
-        var commands=db.queryForList("SELECT status,run_id FROM organization_report_command WHERE execution_id=? AND status<>'rejected' ORDER BY command_sequence DESC LIMIT 1",execution);
+        var commands=db.queryForList("SELECT status,run_id FROM organization_report_command WHERE command_kind='report' AND execution_id=? AND status<>'rejected' ORDER BY command_sequence DESC LIMIT 1",execution);
         if(!commands.isEmpty()) {
             var c=commands.getFirst();
             if(!"received".equals(c.get("status"))||c.get("run_id")==null)
@@ -112,16 +112,16 @@ class OrganizationReportCommands {
         String fingerprint=Delegation.digest(json.valueToTree(input).toString().getBytes(StandardCharsets.UTF_8));
         tx.executeWithoutResult(status->{
             var prepared=drafts.prepared(actor,project,execution); // Current project/source locks.
-            var existing=db.queryForList("SELECT execution_id,fingerprint FROM organization_report_command WHERE id=?",input.id());
+            var existing=db.queryForList("SELECT execution_id,fingerprint,command_kind FROM organization_report_command WHERE id=?",input.id());
             if(!existing.isEmpty()) {
-                if(!execution.equals(existing.getFirst().get("execution_id"))
+                if(!"report".equals(existing.getFirst().get("command_kind"))||!execution.equals(existing.getFirst().get("execution_id"))
                         ||!fingerprint.equals(existing.getFirst().get("fingerprint")))
                     throw new ApiFailure(409,"同一请求标识不能提交其他报告操作");
                 return;
             }
             if(!input.previous_run_id().equals(previousRun(execution)))
                 throw new ApiFailure(409,"前序运行已变化，请刷新报告后重试");
-            if(!db.queryForList("SELECT id FROM organization_report_command WHERE execution_id=? AND checkpoint_id=? AND status<>'rejected'",execution,input.checkpoint_id()).isEmpty())
+            if(!db.queryForList("SELECT id FROM organization_report_command WHERE command_kind='report' AND execution_id=? AND checkpoint_id=? AND status<>'rejected'",execution,input.checkpoint_id()).isEmpty())
                 throw new ApiFailure(409,"该报告快照已有操作，请核对原记录");
             var start=db.queryForMap("SELECT request_body FROM organization_native_start WHERE execution_id=?",execution);
             var payload=json.valueToTree(input);
@@ -150,7 +150,7 @@ class OrganizationReportCommands {
     @GetMapping("/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands")
     Object list(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID execution) {
         bindings.preparation((String)request.getAttribute("owner"),project,execution);
-        return Map.of("items",db.queryForList("SELECT *,response::text AS result FROM organization_report_command WHERE execution_id=? ORDER BY command_sequence DESC LIMIT 100",execution)
+        return Map.of("items",db.queryForList("SELECT *,response::text AS result FROM organization_report_command WHERE command_kind='report' AND execution_id=? ORDER BY command_sequence DESC LIMIT 100",execution)
             .stream().map(this::view).toList(),"enabled",enabled);
     }
     @GetMapping("/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands/{id}")

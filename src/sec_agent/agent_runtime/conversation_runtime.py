@@ -132,19 +132,9 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
             yield build_hermes_graph(owner=metadata.get('owner_id','local-pilot'),workspace=memory_workspace,
                 actor=memory_actor,model=profile.model,target=target,task_context=task_context,public_sink=public)
         else:
-            from .model_context import RequestSummaryMiddleware
-            summary_spec = specification['summary']
-            summary_profile = DeepSeekModelProfile.model_validate(summary_spec['profile'])
-            summary_basis = TokenBudgetBasis.model_validate_json(json.dumps(summary_spec['budget']))
-            summary_audit = CaseModelAudit(actor='conversation_summary',profile=summary_profile,basis=summary_basis,
-                public_sink=public,private_sink=private,
-                source_access_check=audit.source_access_check,
-                dispatch_guard=budget_scope.guard('context_summary', summary_profile) if budget_scope else None)
-            summary_model = case_chat_model(summary_profile,summary_basis,SimpleNamespace(base_url='https://api.deepseek.com'),
-                SecretStr(os.environ['DEEPSEEK_API_KEY']))
-            summary = RequestSummaryMiddleware(model=summary_model,audited_model=summary_audit.model_runnable(summary_model),
-                trigger_tokens=summary_spec['trigger_tokens'],keep_tokens=summary_spec['keep_tokens'],max_summaries=2,
-                per_user_turn=summary_spec.get('per_user_turn', False))
+            from .conversation_summary import summary_middleware
+            summary = summary_middleware(specification, public=public, private=private,
+                access_check=audit.source_access_check, budget_scope=budget_scope)
             yield build_conversation_agent(model=model, grants=grants,
                 permission_mode=ids.get("permission_mode", "request_standard"), checkpointer=None,
                 middleware=[summary,audit], server_managed_persistence=True, task_context=task_context, **specification["limits"])

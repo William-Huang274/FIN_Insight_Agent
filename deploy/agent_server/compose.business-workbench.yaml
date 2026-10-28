@@ -100,7 +100,7 @@ services:
       LANGSMITH_PROJECT: fin-insight-dell-reference-vertical
       LANGSMITH_HIDE_INPUTS: 'true'
       LANGSMITH_HIDE_OUTPUTS: 'true'
-      LANGSERVE_GRAPHS: '{"research_session":{"path":"sec_agent.agent_runtime.research_session_runtime:research_session_graph"},"conversation_session":{"path":"sec_agent.agent_runtime.conversation_runtime:conversation_session_graph"},"dell_report_session":{"path":"sec_agent.agent_runtime.report_session:archived_report_session_graph"}}'
+      LANGSERVE_GRAPHS: '{"research_session":{"path":"sec_agent.agent_runtime.research_session_runtime:research_session_graph"},"conversation_session":{"path":"sec_agent.agent_runtime.conversation_runtime:conversation_session_graph"},"delegated_task":{"path":"sec_agent.agent_runtime.delegated_task_graph:delegated_task_session_graph"},"dell_report_session":{"path":"sec_agent.agent_runtime.report_session:archived_report_session_graph"}}'
       PYTHONPATH: /deps/FIN_Insight_Agent/src
       PYTHONDONTWRITEBYTECODE: '1'
       FIN_REPO_ROOT: /deps/FIN_Insight_Agent
@@ -112,6 +112,7 @@ services:
       FINSIGHT_BUSINESS_API_URL: http://host.docker.internal:${FINSIGHT_BUSINESS_PORT:?dedicated Java port}
       FINSIGHT_ORGANIZATION_RUNTIME_SECRET: ${FINSIGHT_ORGANIZATION_RUNTIME_SECRET:?dedicated authority secret}
       FINSIGHT_RESEARCH_SESSION_ENABLED: '0'
+      FINSIGHT_ORGANIZATION_TASK_ACTIONS_ENABLED: '0'
       FINSIGHT_ORGANIZATION_START_ENABLED: '0'
       FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED: '0'
       FINSIGHT_TASK_VISION_ENABLED: '0'

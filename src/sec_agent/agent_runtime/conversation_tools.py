@@ -60,7 +60,8 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         if offset < 0 or not 1 <= max_characters <= 24000:
             raise ToolException("请选择非负字符偏移和1至24000字符的窗口")
         allowed = {"read_public_source", "read_company_library", "query_financial_data", "read_task_material", "calculate_research_metric",
-                   "create_report_chart", "list_financial_data", "ReadWorkingNote", "read_handoff_material", "read_handoff_evidence"}
+                   "create_report_chart", "list_financial_data", "ReadWorkingNote", "read_handoff_material", "read_handoff_evidence",
+                   "read_source_document", "read_delegated_evidence", "read_delegated_note"}
         saved = next((m for m in runtime.state.get("messages", []) if isinstance(m, ToolMessage)
                       and m.tool_call_id == tool_call_id and m.name in allowed and m.status == "success"), None)
         if saved is None:
@@ -155,8 +156,8 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         for message in runtime.state.get("messages", []):
             if isinstance(message, ToolMessage) and message.status == "success" and message.name == "read_saved_knowledge":
                 observed.update((message.artifact or {}).get("source_items", {}))
-            if isinstance(message, ToolMessage) and isinstance(message.artifact, dict):
-                if message.name == "read_handoff_evidence" and message.status != "error":
+            if isinstance(message, ToolMessage) and message.status != 'error' and isinstance(message.artifact, dict):
+                if message.name in {"read_handoff_evidence", "read_delegated_evidence"} and message.status != "error":
                     observed.update(message.artifact.get("source_items", {}))
                     continue
                 tool_name = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_handoff_material": "read_source_document", "read_public_source": "read_source_document", "read_company_library": "read_source_document"}.get(message.name, message.name)

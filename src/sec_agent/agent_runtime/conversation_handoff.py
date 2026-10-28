@@ -35,7 +35,7 @@ def observed_sources(state):
         body = message.get("artifact")
         if message.get("type") != "tool" or message.get("status") == "error" or not isinstance(body, dict):
             continue
-        if message.get("name") in {"read_handoff_evidence", "read_saved_knowledge"}:
+        if message.get("name") in {"read_handoff_evidence", "read_delegated_evidence", "read_saved_knowledge"}:
             items.update(body.get("source_items", {}))
         else:
             items.update(source_items_from_tool(names.get(message.get("name"), message.get("name")), body))
@@ -69,7 +69,7 @@ def answer_charts(messages):
             for chart in message["artifact"].get("charts", [])]
 
 
-def handoff_tools(*, reference, sdk, owner_id, attachment_store=None):
+def handoff_tools(*, reference, sdk, owner_id, attachment_store=None, access_check=None, note_reader=None):
     """Reference and owner originate in host-owned thread metadata, not user text."""
     source_thread = str(UUID(reference["source_thread"]))
     checkpoint = {"checkpoint_id": str(UUID(reference["checkpoint_id"])), "checkpoint_ns": ""}
@@ -77,13 +77,32 @@ def handoff_tools(*, reference, sdk, owner_id, attachment_store=None):
 
     async def read():
         nonlocal cache
+        if access_check is not None:
+            import asyncio
+            await asyncio.to_thread(access_check)
         source = await sdk.threads.get(source_thread)
         metadata = source.get("metadata", {})
-        if metadata.get("surface") != SURFACE or metadata.get("owner_id", "local-pilot") != owner_id:
+        if access_check is None and (metadata.get("surface") != SURFACE or metadata.get("owner_id", "local-pilot") != owner_id):
             raise ToolException("交接来源不可访问；链接本身不能授权跨用户读取")
         if cache is None:
             cache = await sdk.threads.get_state(source_thread, checkpoint=checkpoint)
+        if access_check is not None:
+            await asyncio.to_thread(access_check)
         return cache
+
+    async def sources():
+        state = await read()
+        if 'selected_materials' not in reference:
+            return observed_sources(state)
+        result = {}
+        for ref in reference['selected_materials']:
+            rows = [m for m in state.get('values', {}).get('messages', [])
+                    if m.get('type') == 'tool' and m.get('tool_call_id') == ref['tool_call_id']]
+            items = observed_sources({'values': {'messages': rows}})
+            if len(rows) != 1 or ref['source_id'] not in items:
+                raise ToolException('固定交接中的原始回执不可读取；没有改用最新材料')
+            result[ref['source_id']] = items[ref['source_id']]
+        return result
 
     @tool
     async def read_handoff_context(message_index: int = 0, offset: int = 0):
@@ -102,26 +121,33 @@ def handoff_tools(*, reference, sdk, owner_id, attachment_store=None):
         """List original SQL/observed passage/calculation receipts in the handed-off checkpoint. Read a source by its exact ID before calculating. Values, periods and units are not reconstructed from summaries."""
         if offset < 0:
             raise ToolException("offset必须非负")
-        sources = list(observed_sources(await read()).items())
-        return {"source_thread": source_thread, **checkpoint, "total": len(sources),
+        entries = list((await sources()).items())
+        return {"source_thread": source_thread, **checkpoint, "total": len(entries),
             "items": [{"source_id": key, **{k: value[k] for k in ("result_state", "metric_id", "ticker", "unit", "period_end", "result_unit", "expression") if k in value}}
-                      for key, value in sources[offset:offset+20]],
-            "next_offset": offset+20 if offset+20 < len(sources) else None}
+                      for key, value in entries[offset:offset+20]],
+            "next_offset": offset+20 if offset+20 < len(entries) else None}
 
     @tool(response_format="content_and_artifact")
-    async def read_handoff_evidence(source_id: str):
+    async def read_handoff_evidence(source_id: str, offset: int = 0):
         """Rehydrate one original observed receipt from the authorized old checkpoint. Preserves full operands, unit, period and provenance for source-bound calculations in this thread. Never upgrades its authority."""
-        items = observed_sources(await read())
+        items = await sources()
+        if offset < 0:
+            raise ToolException('offset必须非负')
         if source_id not in items:
             raise ToolException("交接版本中不存在该凭证，请先列出可用来源")
         result = {"source_thread": source_thread, **checkpoint, "source_items": {source_id: deepcopy(items[source_id])}}
         text = json.dumps(result, ensure_ascii=False)
-        if len(text) > 30000:
-            raise ToolException("单条历史凭证过大，请返回旧窗口按原文位置读取；不截断计算操作数")
-        return text, result
+        if len(text) <= 12000 and offset == 0:
+            return text, result
+        return json.dumps({'text': text[offset:offset+12000], 'offset': offset,
+            'next_offset': offset+12000 if offset+12000 < len(text) else None,
+            'total_characters': len(text), 'source_id': source_id}, ensure_ascii=False), result
 
     grants = [GrantedTool(t, "read", "用户已选择的旧对话固定checkpoint，只读回溯") for t in
               (read_handoff_context, list_handoff_evidence, read_handoff_evidence)]
+    if 'selected_materials' in reference:
+        # Delegation shares chosen work objects, not a parent's old instructions.
+        grants = [g for g in grants if g.tool.name != 'read_handoff_context']
     if reference.get("working_notes"):
         import sqlite3
         from .working_memory_tools import memory_for
@@ -140,6 +166,8 @@ def handoff_tools(*, reference, sdk, owner_id, attachment_store=None):
             if selected is None:
                 raise ToolException("此底稿不在用户选择的交接版本中")
             try:
+                if note_reader is not None:
+                    return note_reader(note_id, selected['version'], offset)
                 return memory_for({}, "handoff-reader", owner=owner_id, workspace=source_thread).read(
                     note_id, version=selected["version"], offset=offset)
             except (ValueError, OSError, sqlite3.Error):

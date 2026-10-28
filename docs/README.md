@@ -2,6 +2,8 @@
 
 连续问答、底稿、委派、复核与成文的统一入口设计见[研究伙伴产品边界](product/research_partner_workflow.zh-CN.md)与[按需研究运行时第一阶段](architecture/on_demand_research_runtime.zh-CN.md)。A1 交付意图合同与 A2 Java/BFF 准备准入离线回归通过，尚未部署或实现统一入口；目标是新任务仅保留一个生产调度入口，旧完整图仅作历史运行兼容。
 
+[B/D父子任务工程验收](engineering/delegated_task_acceptance.zh-CN.md)记录内部执行、材料与版本交接、命令迁移及离线证据。C统一入口和E实际服务验收仍未完成，新能力默认关闭，最终集成须采用检索方的新稳定版本。
+
 同一设计第5.3—5.7节补充研究判断的形成/检验/更新、设计者指引与方法披露、研究视角审阅及行为验收。“人的引导”指产品设计者提供的支持，不以用户反复纠偏作为自主研究能力。基本指引与首批方法已接入维护代码并做离线消费验证；连续工作与审阅策略仍待后续实施，无付费效果证明。
 
 [基本Agent指引](architecture/research_agent_guidance.zh-CN.md)列出正式资源及输入位置。[研究方法资源编排](architecture/research_skill_curriculum.zh-CN.md)的首批六项优化、一项新增已成为可按章节读取的教材；近期事实有实际核对范围与日期。已验证工具返回和实际请求消费，未部署，不代表研究质量已改善。

@@ -61,6 +61,8 @@ class ResearchIntakeTest {
     @Autowired TaskStore store;
     @Autowired JdbcTemplate db;
     @Autowired PlatformTransactionManager manager;
+    @Autowired OrganizationNativeDrafts nativeDrafts;
+    @Autowired OrganizationReportCommands rootCommands;
     private final HttpClient client = HttpClient.newHttpClient();
 
     static HttpServer fakePython() {
@@ -109,7 +111,7 @@ class ResearchIntakeTest {
                         organizationContinuations.put(id,result);if(dropOrganizationContinuation.contains(id)){exchange.close();return;}
                         send(exchange,200,result);return;
                     }
-                    if(path.equals("organization/report-actions")) {
+                    if(path.equals("organization/report-actions")||path.equals("organization/root-actions")) {
                         var p=JSON.readTree(bytes); String id=p.path("command_id").asText(); reportDispatches.incrementAndGet();
                         var result=JSON.createObjectNode().put("execution_id",p.path("execution_id").asText())
                             .put("thread_id",p.path("execution_id").asText()).put("project_id",p.path("project_id").asText())
@@ -121,7 +123,7 @@ class ResearchIntakeTest {
                         if(dropReportCommands.contains(id)){exchange.close();return;}
                         send(exchange,200,result); return;
                     }
-                    if(path.startsWith("organization/executions/")&&path.contains("/report-actions/")) {
+                    if(path.startsWith("organization/executions/")&&(path.contains("/report-actions/")||path.contains("/root-actions/"))) {
                         var result=reportCommands.get(path.substring(path.lastIndexOf('/')+1));
                         send(exchange,result==null?404:200,result==null?JSON.createObjectNode():result);return;
                     }
@@ -805,7 +807,9 @@ class ResearchIntakeTest {
         var closed=workspace(f.researcher(),"POST",close,null,200);assertThat(closed.path("status").asText()).isEqualTo("closed");
         assertThat(workspace(f.researcher(),"POST",close,null,200)).isEqualTo(closed);
         workspace(f.admin(),"POST","/projects/"+f.project(),Map.of("revision",4,"name","项目","description","","archived",false),200);
-        assertThat(workspace(f.researcher(),"POST",f.createPath(),body,200)).isEqualTo(closed);
+        assertThat(closed.path("native_threads").get(0).asText()).isEqualTo(id.toString());
+        var bindingView=closed.deepCopy();((com.fasterxml.jackson.databind.node.ObjectNode)bindingView).remove("native_threads");
+        assertThat(workspace(f.researcher(),"POST",f.createPath(),body,200)).isEqualTo(bindingView);
         runtimeAccess(id,f.digest(),404);
         assertThat(db.queryForObject("SELECT count(*) FROM organization_project_audit WHERE project_id=? AND action='execution_close'",Integer.class,f.project())).isEqualTo(1);
     }
@@ -909,6 +913,48 @@ class ResearchIntakeTest {
         assertThat(runtimeRequest(runtime,admission.toString(),runtime,RUNTIME_SECRET).statusCode()).isEqualTo(404);
         assertThat(workspace(f.researcher(),"GET","/projects/"+f.project()+"/research-executions",null,200).path("items").size()).isZero();
         assertThat(organizationContinues.get()-before).isEqualTo(1);
+    }
+    @Test void continuous_root_uses_v2_single_start_and_durable_continuation() throws Exception {
+        org.springframework.test.util.ReflectionTestUtils.setField(nativeDrafts,"onDemandEnabled",true);
+        org.springframework.test.util.ReflectionTestUtils.setField(rootCommands,"onDemandEnabled",true);
+        try {
+            var f=executionFixture();UUID execution=UUID.randomUUID(),id=UUID.randomUUID(),checkpoint=UUID.randomUUID();
+            workspace(f.researcher(),"POST",f.createPath(),Map.of("id",execution,"manifest_digest",f.digest()),200);
+            String base="/projects/"+f.project()+"/execution-bindings/"+execution,commands=base+"/task-commands";
+            var options=Map.of("runtime_contract","on_demand.v1","execution",Map.of("mode","auto","model","default","branch_ids",List.of(),"delivery_intent","answer"));
+            workspace(f.researcher(),"POST",base+"/prepare",options,200);
+            assertThat(db.queryForObject("SELECT request_body::jsonb->>'contract_version' FROM organization_native_preparation WHERE execution_id=?",String.class,execution)).isEqualTo("organization_native_preparation.v2");
+            assertThat(workspace(f.researcher(),"GET",base+"/control",null,200).path("runtime_contract").asText()).isEqualTo("on_demand.v1");
+            var started=workspace(f.researcher(),"POST",base+"/start",Map.of("research_as_of","2026-10-12T23:59:59Z"),200);
+            assertThat(db.queryForObject("SELECT request_body::jsonb->>'stage' FROM organization_native_start WHERE execution_id=?",String.class,execution)).isEqualTo("work_session");
+            var body=Map.of("id",id,"previous_run_id",started.path("run_id").asText(),"checkpoint_id",checkpoint,
+                "state_digest","sha256:"+"b".repeat(64),"action","continue","message","Explain the prior answer");
+            workspace(f.researcher(),"POST",base+"/report-commands",body,422);
+            dropReportCommands.add(id.toString());int before=reportDispatches.get();
+            try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
+                var calls=new ArrayList<Future<JsonNode>>();
+                for(int i=0;i<3;i++)calls.add(pool.submit(()->workspace(f.researcher(),"POST",commands,body,200)));
+                for(var call:calls)assertThat(call.get().path("status").asText()).isEqualTo("unknown");
+            }
+            assertThat(reportDispatches.get()-before).isEqualTo(1);
+            var accepted=workspace(f.researcher(),"POST",commands+"/"+id+"/reconcile",null,200);
+            assertThat(accepted.path("status").asText()).isEqualTo("received");
+            var grant=workspace(f.researcher(),"GET",commands+"/"+id+"/access",null,200);
+            assertThat(grant.path("report_action_request").path("contract_version").asText()).isEqualTo("organization_root_action.v1");
+            assertThat(grant.path("report_action_request").has("report_version")).isFalse();
+            workspace(f.researcher(),"GET",base+"/report-commands/"+id+"/access",null,404);
+            var read=workspace(f.researcher(),"GET",base+"/read-access",null,200);
+            assertThat(read.path("run_id")).isEqualTo(accepted.path("run_id"));
+            assertThat(read.path("run_ids").size()).isEqualTo(2);
+            // Turning off admission cannot rewrite the immutable preparation.
+            org.springframework.test.util.ReflectionTestUtils.setField(nativeDrafts,"onDemandEnabled",false);
+            workspace(f.researcher(),"POST",base+"/prepare",options,409);
+            workspace(f.researcher(),"POST",base+"/close",null,200);
+            workspace(f.researcher(),"POST",commands,body,409);
+        } finally {
+            org.springframework.test.util.ReflectionTestUtils.setField(nativeDrafts,"onDemandEnabled",false);
+            org.springframework.test.util.ReflectionTestUtils.setField(rootCommands,"onDemandEnabled",false);
+        }
     }
     @Test void organization_report_commands_are_durable_idempotent_version_bound_and_revocable() throws Exception {
         var f=executionFixture(); UUID execution=UUID.randomUUID();

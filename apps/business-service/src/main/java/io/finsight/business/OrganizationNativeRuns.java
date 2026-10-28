@@ -71,12 +71,13 @@ class OrganizationNativeRuns {
             catch(java.time.DateTimeException e){throw new ApiFailure(422,"研究截止时间必须包含时区");}
             if(!cutoff.toLocalDate().toString().equals(parse(prepared.get("manifest_text")).path("research_as_of").asText()))
                 throw new ApiFailure(409,"截止时间与固定资料日期不一致");
-            var payload=json.createObjectNode().put("contract_version","organization_native_start.v1")
+            boolean onDemand="organization_native_preparation.v2".equals(((JsonNode)prepared.get("prepare_request")).path("contract_version").asText());
+            var payload=json.createObjectNode().put("contract_version",onDemand ? "organization_native_start.v2" : "organization_native_start.v1")
                 .put("execution_id",id.toString()).put("project_id",project.toString())
                 .put("manifest_digest",prepared.get("manifest_digest").toString())
                 .put("configuration_digest",prepared.get("configuration_digest").toString())
                 .put("prepare_operation_id",prepared.get("prepare_operation_id").toString())
-                .put("research_as_of",input.research_as_of()).put("stage","orientation");
+                .put("research_as_of",input.research_as_of()).put("stage",onDemand ? "work_session" : "orientation");
             int inserted=db.update("INSERT INTO organization_native_start(execution_id,operation_id,fingerprint,request_body) VALUES(?,?,?,?) ON CONFLICT DO NOTHING",id,UUID.randomUUID(),fingerprint,payload.toString());
             if(!fingerprint.equals(command(id).get("fingerprint")))throw new ApiFailure(409,"该执行已有其他启动命令");
             if(inserted==1)db.update("INSERT INTO organization_project_audit(project_id,actor,action,target,revision) SELECT id,?,'native_start',?,revision FROM organization_project WHERE id=?",actor,id.toString(),project);

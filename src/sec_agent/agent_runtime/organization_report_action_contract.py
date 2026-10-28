@@ -7,7 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .organization_native_contract import digest, validate_thread, SURFACE
+from .organization_native_contract import digest, validate_thread, SURFACE, on_demand
 from .organization_continuation_contract import baseline_digest
 from .report_session import ReviewAction
 from .targeted_revision import RevisionTarget, report_digest, validate_revision_target
@@ -37,6 +37,27 @@ class ReportCommand(BaseModel):
         return self
 
 
+class RootCommand(BaseModel):
+    """A new user turn, not an implicit report-stage transition."""
+    model_config = ConfigDict(extra='forbid')
+    id: UUID
+    previous_run_id: UUID
+    checkpoint_id: UUID
+    state_digest: str = Field(pattern=r'^sha256:[a-f0-9]{64}$')
+    action: Literal['continue'] = 'continue'
+    message: str = Field(min_length=1, max_length=16000)
+    delivery_intent: Literal['answer', 'workpaper', 'report'] = 'answer'
+    require_report_review: bool = Field(default=False, strict=True)
+
+    @model_validator(mode='after')
+    def nonempty(self):
+        if not self.message.strip():
+            raise ValueError('empty_root_message')
+        if self.require_report_review and self.delivery_intent != 'report':
+            raise ValueError('report_review_requires_report_delivery')
+        return self
+
+
 def review_interrupts(state):
     items = list(state.get('interrupts') or [])
     for task in state.get('tasks') or []:
@@ -49,12 +70,13 @@ def validate_action(grant):
     p = grant['report_action_request']
     identity = {'contract_version', 'command_id', 'execution_id', 'project_id', 'manifest_digest',
                 'configuration_digest', 'prepare_operation_id', 'research_as_of'}
-    if (set(p) != identity | (set(ReportCommand.model_fields) - {'id'})
-            or p['contract_version'] != 'organization_report_action.v1'
+    command = RootCommand if on_demand(grant) else ReportCommand
+    if (set(p) != identity | (set(command.model_fields) - {'id'})
+            or p['contract_version'] != ('organization_root_action.v1' if on_demand(grant) else 'organization_report_action.v1')
             or p['command_id'] != grant['report_command_id']
             or any(p[k] != grant[k] for k in identity - {'contract_version', 'command_id', 'research_as_of'})):
         raise ValueError('organization_report_action_contract_mismatch')
-    ReportCommand.model_validate({'id': p['command_id'], **{k: v for k, v in p.items() if k not in identity}})
+    command.model_validate({'id': p['command_id'], **{k: v for k, v in p.items() if k not in identity}})
     UUID(grant['report_action_operation_id'])
     cutoff = datetime.fromisoformat(p['research_as_of'].replace('Z', '+00:00'))
     if (cutoff.tzinfo is None or cutoff.utcoffset() is None
@@ -83,6 +105,14 @@ def validate_report(values, grant):
 
 def validate_baseline(state, grant):
     p = grant['report_action_request']
+    if on_demand(grant):
+        values = state.get('values') or {}
+        if (state.get('checkpoint', {}).get('checkpoint_id') != p['checkpoint_id']
+                or baseline_digest(state) != p['state_digest'] or state.get('next')
+                or values.get('question') != grant['question']
+                or values.get('task_outcome', {}).get('run_id') != p['previous_run_id']):
+            raise ValueError('organization_root_checkpoint_mismatch')
+        return
     validate_report(state.get('values') or {}, grant)
     if (state.get('checkpoint', {}).get('checkpoint_id') != p['checkpoint_id']
             or baseline_digest(state) != p['state_digest'] or not review_interrupts(state)
@@ -105,8 +135,11 @@ def action_request(thread, grant):
     config['configurable'].update(finsight_research_as_of=grant['report_action_request']['research_as_of'],
         finsight_organization_report_action=action_context(grant),
         finsight_organization_start=None, finsight_organization_continuation=None)
-    args = {'config': config, 'command': {'resume': authorized_action(grant).model_dump(mode='json', exclude_none=True)},
-            'checkpoint_id': grant['report_action_request']['checkpoint_id']}
+    args = {'config': config, 'checkpoint_id': grant['report_action_request']['checkpoint_id']}
+    if on_demand(grant):
+        args['input'] = {'question': grant['question'], 'messages': [{'role': 'user', 'content': grant['report_action_request']['message']}]}
+    else:
+        args['command'] = {'resume': authorized_action(grant).model_dump(mode='json', exclude_none=True)}
     return {**args, 'metadata': {'surface': SURFACE, 'organization_report_action': action_context(grant),
                                 'organization_dispatch_digest': digest(args)}}
 

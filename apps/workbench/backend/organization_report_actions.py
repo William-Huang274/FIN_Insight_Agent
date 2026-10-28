@@ -19,13 +19,16 @@ from sec_agent.agent_runtime.organization_report_action_contract import (
 )
 
 
-async def action_authority(service, project_id, execution_id, *, command_id, raw_body=None, operation_id=None):
+async def action_authority(service, project_id, execution_id, *, command_id, raw_body=None, operation_id=None, root_action=False):
     project_id, execution_id, command_id = map(str, (project_id, execution_id, command_id))
     grant = await space_business_request(service_owner(), 'GET',
-        f'projects/{project_id}/execution-bindings/{execution_id}/report-commands/{command_id}/access')
+        f'projects/{project_id}/execution-bindings/{execution_id}/' + ('task-commands' if root_action else 'report-commands') + f'/{command_id}/access')
     try:
         validate_execution_grant(grant, execution_id, grant['manifest_digest'])
         validate_action(grant)
+        from sec_agent.agent_runtime.organization_native_contract import on_demand
+        if on_demand(grant) != root_action:
+            raise ValueError('action_route_contract_mismatch')
         if (grant['project_id'] != project_id or grant['report_command_id'] != command_id
                 or (raw_body is not None and (
                     grant['report_action_request_digest'] != 'sha256:' + sha256(raw_body).hexdigest()
@@ -38,8 +41,9 @@ async def action_authority(service, project_id, execution_id, *, command_id, raw
 
 
 async def reauthorize(service, grant):
+    from sec_agent.agent_runtime.organization_native_contract import on_demand
     if await action_authority(service, grant['project_id'], grant['execution_id'],
-                              command_id=grant['report_command_id']) != grant:
+                              command_id=grant['report_command_id'], root_action=on_demand(grant)) != grant:
         raise HTTPException(409, '报告操作授权已变化')
 
 
@@ -74,12 +78,16 @@ def install_organization_report_action_routes(router, service):
     prefix = '/internal-research/organization'
 
     @router.post(prefix + '/report-actions')
+    @router.post(prefix + '/root-actions')
     async def submit(request: Request):
         if os.getenv('FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED') != '1':
             raise HTTPException(503, '组织报告交互尚未启用')
         grant = request.scope.get('finsight_organization_report_action')
         if not grant:
             raise HTTPException(401, '缺少报告操作委托')
+        from sec_agent.agent_runtime.organization_native_contract import on_demand
+        if on_demand(grant) and os.getenv('FINSIGHT_ON_DEMAND_ENABLED') != '1':
+            raise HTTPException(503, '按需研究入口尚未启用')
         tid = grant['execution_id']
         thread = await service.sdk.threads.get(tid)
         await completed_predecessor(service, thread, grant['report_action_request']['previous_run_id'])
@@ -106,8 +114,10 @@ def install_organization_report_action_routes(router, service):
         return result
 
     @router.get(prefix + '/executions/{execution_id}/report-actions/{command_id}')
-    async def reconcile(execution_id: UUID, command_id: UUID, project_id: UUID):
-        grant = await action_authority(service, project_id, execution_id, command_id=command_id)
+    @router.get(prefix + '/executions/{execution_id}/root-actions/{command_id}')
+    async def reconcile(execution_id: UUID, command_id: UUID, project_id: UUID, request: Request):
+        grant = await action_authority(service, project_id, execution_id, command_id=command_id,
+                                       root_action='/root-actions/' in request.url.path)
         thread = await service.sdk.threads.get(str(execution_id))
         runs = await service.all_runs(execution_id)
         candidates = [r for r in runs if (r.get('metadata', {}).get('organization_report_action') or {}).get(

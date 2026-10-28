@@ -88,8 +88,10 @@ def test_browser_write_guard_before_java(browser, headers):
     assert s.commands == []
 
 
-def test_start_uses_fixed_cutoff_and_prepare_preserves_identity(browser):
+@pytest.mark.parametrize('continuous', [False, True])
+def test_start_uses_fixed_cutoff_and_prepare_preserves_identity(browser, monkeypatch, continuous):
     s = browser
+    monkeypatch.setenv('FINSIGHT_ON_DEMAND_ENABLED', '1' if continuous else '0')
     with TestClient(s.intake.app()) as c:
         assert c.post(s.root + '/start', json={}, headers=s.headers).status_code == 200
         import json
@@ -100,4 +102,4 @@ def test_start_uses_fixed_cutoff_and_prepare_preserves_identity(browser):
                 'execution': {'mode': 'auto', 'model': 'default', 'branch_ids': []}}
         assert c.post(path, json=body, headers=s.headers).status_code == 200
         assert s.commands[-2][2] == {'id': body['execution_id'], 'manifest_digest': body['manifest_digest']}
-        assert s.commands[-1][2] == {'execution': body['execution']}
+        assert s.commands[-1][2] == {'execution': body['execution'], **({'runtime_contract': 'on_demand.v1'} if continuous else {})}

@@ -14,6 +14,7 @@ from .organization_research_reads import OrganizationReadScope
 from sec_agent.agent_runtime.execution_options import ExecutionOptions
 from sec_agent.agent_runtime.organization_continuation_contract import baseline_digest, validate_baseline
 from sec_agent.agent_runtime.organization_report_action_contract import ReportCommand, review_interrupts
+from sec_agent.agent_runtime.organization_report_action_contract import RootCommand
 from sec_agent.agent_runtime.targeted_revision import report_digest
 
 
@@ -41,6 +42,10 @@ def install_organization_command_routes(router, service, browser_write):
     def response(value):
         return JSONResponse(value, headers={'Cache-Control': 'no-store'})
 
+    @router.get('/organization-research-capabilities')
+    async def capabilities():
+        return response({'on_demand': os.getenv('FINSIGHT_ON_DEMAND_ENABLED') == '1'})
+
     @router.get('/organization-projects/{project_id}/research-drafts/{draft_id}/executions')
     async def bindings(project_id: UUID, draft_id: UUID):
         return response(await space_business_request(service_owner(), 'GET',
@@ -55,7 +60,8 @@ def install_organization_command_routes(router, service, browser_write):
         if binding['status'] != 'bound':
             raise HTTPException(409, '原执行已关闭，请核对项目记录')
         return response(await java(project_id, body.execution_id, 'POST', 'prepare',
-            {'execution': body.execution.model_dump(mode='json', exclude_unset=True)}))
+            {'execution': body.execution.model_dump(mode='json', exclude_unset=True),
+             **({'runtime_contract': 'on_demand.v1'} if os.getenv('FINSIGHT_ON_DEMAND_ENABLED') == '1' else {})}))
 
     @router.get(prefix + '/control')
     async def control(project_id: UUID, execution_id: UUID):
@@ -63,12 +69,16 @@ def install_organization_command_routes(router, service, browser_write):
         try:
             value = await java(project_id, execution_id, 'GET', 'control')
         except HTTPException as exc:
-            if exc.status_code not in (403, 404):
+            if exc.status_code not in (403, 404, 409):
                 raise
             scope = await OrganizationReadScope(service, project_id, execution_id).open()
-            return await scope.response({'can_operate': False})
+            if exc.status_code == 409 and not scope.grant.get('execution_closed'):
+                raise
+            return await scope.response({'can_operate': False,
+                **({'execution_closed': True} if scope.grant.get('execution_closed') else {})})
         value.pop('manifest_text', None)
-        value.update(can_operate=True, enabled=os.getenv('FINSIGHT_ORGANIZATION_START_ENABLED') == '1')
+        value.update(can_operate=True, enabled=os.getenv('FINSIGHT_ORGANIZATION_START_ENABLED') == '1'
+            and (value.get('runtime_contract') != 'on_demand.v1' or os.getenv('FINSIGHT_ON_DEMAND_ENABLED') == '1'))
         return response(value)
 
     @router.post(prefix + '/start')
@@ -153,3 +163,58 @@ def install_organization_command_routes(router, service, browser_write):
     async def report_reconcile(project_id: UUID, execution_id: UUID, command_id: UUID, request: Request):
         browser_write(request)
         return response(await java(project_id, execution_id, 'POST', f'report-commands/{command_id}/reconcile', {}))
+
+    @router.get(prefix + '/task-commands')
+    async def task_commands(project_id: UUID, execution_id: UUID):
+        result = await java(project_id, execution_id, 'GET', 'task-commands')
+        result['enabled'] = bool(result['enabled'] and os.getenv('FINSIGHT_ON_DEMAND_ENABLED') == '1')
+        return response(result)
+
+    @router.get(prefix + '/task-action-preview')
+    async def task_preview(project_id: UUID, execution_id: UUID):
+        from sec_agent.agent_runtime.organization_native_contract import on_demand
+        from .organization_report_actions import completed_predecessor
+        if os.getenv('FINSIGHT_ON_DEMAND_ENABLED') != '1':
+            raise HTTPException(503, '按需工作入口尚未启用')
+        commands = await java(project_id, execution_id, 'GET', 'task-commands')
+        if not commands['enabled'] or (commands['items'] and commands['items'][0]['status'] in {'ready', 'dispatching', 'unknown'}):
+            raise HTTPException(409, '请先核对原命令')
+        scope = await OrganizationReadScope(service, project_id, execution_id).open()
+        if not on_demand(scope.grant):
+            raise HTTPException(409, '历史任务使用原恢复入口')
+        await completed_predecessor(service, scope.thread, scope.grant['run_id'])
+        state = await scope.state()
+        if state.get('next') or (state.get('values') or {}).get('task_outcome', {}).get('run_id') != scope.grant['run_id']:
+            raise HTTPException(409, '任务仍有未结束动作，请核对执行状态')
+        return await scope.response({'previous_run_id': scope.grant['run_id'],
+            'checkpoint_id': state['checkpoint']['checkpoint_id'], 'state_digest': baseline_digest(state)})
+
+    @router.post(prefix + '/task-commands')
+    async def task_command(project_id: UUID, execution_id: UUID, body: RootCommand, request: Request):
+        browser_write(request)
+        if os.getenv('FINSIGHT_ON_DEMAND_ENABLED') != '1':
+            raise HTTPException(503, '按需工作入口尚未启用')
+        return response(await java(project_id, execution_id, 'POST', 'task-commands', body.model_dump(mode='json')))
+
+    @router.post(prefix + '/task-commands/{command_id}/reconcile')
+    async def task_reconcile(project_id: UUID, execution_id: UUID, command_id: UUID, request: Request):
+        browser_write(request)
+        return response(await java(project_id, execution_id, 'POST', f'task-commands/{command_id}/reconcile', {}))
+
+    @router.post(prefix + '/stop')
+    async def stop(project_id: UUID, execution_id: UUID, request: Request):
+        browser_write(request)
+        # Closing is durable and revokes all future model/source dispatches,
+        # even if native cancellation loses its response. It is not pause/resume.
+        closed = await java(project_id, execution_id, 'POST', 'close', {})
+        pending = []
+        for thread in closed.get('native_threads', [str(execution_id)]):
+            thread = str(UUID(str(thread)))
+            try:
+                for run in await service.all_runs(thread):
+                    if run['status'] in {'pending', 'running'}:
+                        await service.sdk.runs.cancel(thread, run['run_id'], action='interrupt')
+            except Exception:
+                pending.append(thread)
+        return response({'execution_closed': True, 'native_stop_pending': pending,
+                         'new_model_requests_authorized': False})

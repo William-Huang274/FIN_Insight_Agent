@@ -118,7 +118,7 @@ def load_research_runtime_profile(root):
     return profile, case
 
 
-def create_research_phase_runnables(*, execution=None, **kwargs):
+def create_research_phase_runnables(*, execution=None, operations=False, **kwargs):
     """Bind the actual run options before constructing any phase/provider.
 
     Direct diagnostic callers and the server use the same configuration path.
@@ -141,8 +141,9 @@ def create_research_phase_runnables(*, execution=None, **kwargs):
                 phases_by_options[key] = _create_bound_research_phases(execution=selected, **kwargs)
             return await phases_by_options[key][name].ainvoke(state, config)
         return RunnableLambda(invoke)
-    return {'hierarchical': True, **{name: phase(name) for name in (
-        'research', 'review', 'triage_review', 'converge', 'revise_research', 'writer', 'verifier', 'quick_writer', 'operate')}}
+    names = ('operate',) if operations else (
+        'research', 'review', 'triage_review', 'converge', 'revise_research', 'writer', 'verifier', 'quick_writer')
+    return {'hierarchical': True, **{name: phase(name) for name in names}}
 
 
 def create_on_demand_research_agent(*, model, grants, execution, phase_arguments, artifact_reader=current_task_artifacts, **agent_arguments):
@@ -152,10 +153,10 @@ def create_on_demand_research_agent(*, model, grants, execution, phase_arguments
     reinterpret orientation/begin_research or migrate a live historical thread.
     """
     from .on_demand_research import build_on_demand_research_agent
-    phases = create_research_phase_runnables(execution=execution, artifact_reader=artifact_reader, **phase_arguments)
+    phases = create_research_phase_runnables(execution=execution, operations=True, artifact_reader=artifact_reader, **phase_arguments)
     return build_on_demand_research_agent(model=model, grants=grants,
         artifacts=artifact_reader, operation_runner=phases['operate'],
-        delivery_intent=execution.delivery_intent, **agent_arguments)
+        delivery_intent=execution.delivery_intent, required_report_review=execution.require_report_review, **agent_arguments)
 
 
 def _create_bound_research_phases(*, root, settings, profile, case, run_id, thread_id, api_key,

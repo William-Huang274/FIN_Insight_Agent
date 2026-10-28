@@ -1,7 +1,7 @@
 import {test,expect,type Page} from './identity-fixture';
 const org='10000000-0000-4000-8000-000000000001',project='20000000-0000-4000-8000-000000000002',resource='30000000-0000-4000-8000-000000000003';
 const url=`/workspace/projects?scope=organization&project=${project}&view=research`;
-async function fixture(page:Page,role='researcher'){
+async function fixture(page:Page,role='researcher',continuous=false){
   const state={releases:[] as any[],saved:null as any,drafts:{} as Record<string,any>,posts:[] as any[],drop:false,revoked:false,verifies:0,hold:false,holdRead:false,release:null as null|(()=>void),execution:null as any,prepares:[] as any[],reconciles:0};
   await page.route('**/api/v1/**',async route=>{
     const r=route.request(),u=new URL(r.url()),b=r.postData()?r.postDataJSON():null;let result:any={};
@@ -40,6 +40,7 @@ async function fixture(page:Page,role='researcher'){
       const draft=state.drafts[u.pathname.split('/').at(-1)!];
       if(state.revoked||!draft){await route.fulfill({status:404,json:{detail:'准备单或所选资料不可访问'}});return;}result=draft;
     }
+    else if(u.pathname==='/api/v1/organization-research-capabilities')result={on_demand:continuous};
     else throw Error('Unexpected request '+r.method()+' '+u.pathname);
     await route.fulfill({json:result});
   });return state;
@@ -51,6 +52,18 @@ async function fill(page:Page){
   await page.getByRole('checkbox',{name:/季度资料固定副本/}).check();
   await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
 }
+for(const delivery of ['answer','workpaper','report'])test(`continuous preparation freezes ${delivery} policy without starting a model`,async({page})=>{
+  const state=await fixture(page,'researcher',true);
+  await page.goto(url);await fill(page);
+  await page.getByLabel('希望得到的成果',{exact:true}).selectOption(delivery);
+  if(delivery==='report')await page.getByLabel('交付前完成独立报告核查',{exact:true}).check();
+  await page.getByRole('button',{name:'准备研究执行',exact:true}).click();
+  await expect(page.getByRole('button',{name:'核对原准备结果',exact:true})).toBeVisible();
+  expect(state.prepares).toHaveLength(1);
+  expect(state.prepares[0].execution).toEqual({mode:'auto',model:'default',branch_ids:[],delivery_intent:delivery,require_report_review:delivery==='report'});
+  await page.reload();expect(state.prepares).toHaveLength(1);
+  await expect(page.getByRole('button',{name:'核对原准备结果',exact:true})).toBeVisible();
+});
 test('selected release survives response loss and copying while source changes require reselection',async({page})=>{
   const state=await fixture(page),release='40000000-0000-4000-8000-000000000004';
   state.releases=[{release_id:release,model:'qwen3.7-text-embedding',index_digest:'c'.repeat(64),

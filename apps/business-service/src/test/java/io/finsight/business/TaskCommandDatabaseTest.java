@@ -40,6 +40,7 @@ class TaskCommandDatabaseTest {
         db.update("INSERT INTO organization_report_command(id,execution_id,operation_id,principal,fingerprint,checkpoint_id,request_body) VALUES(?,?,?,'alice','hash',?,'{}')",
             UUID.randomUUID(),root,UUID.randomUUID(),cp);
         new ResourceDatabasePopulator(new ClassPathResource("db/migration/V12__research_task_command_scope.sql")).execute(source);
+        new ResourceDatabasePopulator(new ClassPathResource("db/migration/V13__continuous_root_commands.sql")).execute(source);
         bindings=mock(OrganizationExecutionBindings.class);
         controller=new OrganizationTaskCommands(db,json,bindings,new DataSourceTransactionManager(source),true);
     }
@@ -78,6 +79,18 @@ class TaskCommandDatabaseTest {
         assertThrows(org.springframework.dao.DataIntegrityViolationException.class,()->db.update(
             "INSERT INTO organization_report_command(id,execution_id,operation_id,principal,fingerprint,checkpoint_id,request_body) VALUES(?,?,?,'alice','hash',?,'{}')",
             UUID.randomUUID(),root,UUID.randomUUID(),cp));
+    }
+    @Test void rootContinuationKeepsCheckpointUniquenessAcrossOldAndNewContracts() {
+        assertThrows(org.springframework.dao.DataIntegrityViolationException.class,()->db.update(
+            "INSERT INTO organization_report_command(id,execution_id,operation_id,principal,fingerprint,checkpoint_id,request_body,command_kind) VALUES(?,?,?,'alice','hash',?,'{}','root_task')",
+            UUID.randomUUID(),root,UUID.randomUUID(),cp));
+        UUID next=UUID.randomUUID();
+        db.update("INSERT INTO organization_report_command(id,execution_id,operation_id,principal,fingerprint,checkpoint_id,request_body,command_kind) VALUES(?,?,?,'alice','hash',?,'{}','root_task')",
+            UUID.randomUUID(),root,UUID.randomUUID(),next);
+        assertEquals(1,db.queryForObject("SELECT count(*) FROM organization_report_command WHERE command_kind='root_task'",Integer.class));
+        assertThrows(org.springframework.dao.DataIntegrityViolationException.class,()->db.update(
+            "UPDATE organization_report_command SET child_thread_id=? WHERE command_kind='root_task'",UUID.randomUUID()));
+        assertEquals(true,claim(create(UUID.randomUUID())).get("dispatch_allowed"));
     }
     @Test void cancellationWinsOverLateAcceptanceAndDoesNotEraseResults() {
         UUID child=UUID.randomUUID(),run=UUID.randomUUID();var first=create(child);var saved=claim(first);

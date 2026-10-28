@@ -58,6 +58,9 @@ def install_organization_start_routes(router, service):
         grant = request.scope.get('finsight_organization_start')
         if not grant:
             raise HTTPException(401, '缺少组织启动委托')
+        from sec_agent.agent_runtime.organization_native_contract import on_demand
+        if on_demand(grant) and os.getenv('FINSIGHT_ON_DEMAND_ENABLED') != '1':
+            raise HTTPException(503, '按需研究入口尚未启用')
         thread = await service.sdk.threads.get(grant['execution_id'])
         validate_thread(thread, grant)
         try:

@@ -27,6 +27,7 @@ class OnDemandResearchState(RequestSummaryState):
     case_papers: list[dict[str, Any]]
     revisions: dict[str, Any]
     report: dict[str, Any]
+    report_version: int
     synthesis: dict[str, Any]
     research_operation: dict | None
     operation_records: list[dict]
@@ -184,7 +185,8 @@ def build_on_demand_research_agent(*, model, grants, artifacts, operation_runner
             task_context=task_context + '\nChoose tools or a bounded operation only when useful for the current question. '
                 'A workpaper is a valid deliverable. Research depth does not prescribe roles or require report writing. '
                 'Operation receipts describe versions and execution, not financial truth. '
-                'Requested delivery: '+delivery_intent)
+                'Requested delivery: '+delivery_intent +
+                ('; the user requires an independent check of the current report before delivery.' if required_report_review else ''))
         before = {m.id for m in state.get('messages', []) if m.id}
         result = await agent.ainvoke({**state, 'research_operation': None, 'delivery': None}, config)
         from langchain_core.messages import AIMessage
@@ -203,6 +205,8 @@ def build_on_demand_research_agent(*, model, grants, artifacts, operation_runner
         if record['operation_digest'] != bound['operation_digest']:
             raise ValueError('operation_receipt_does_not_match_request')
         updates = {k: deepcopy(output[k]) for k in ('revisions', 'report', 'synthesis') if k in output}
+        if 'report' in updates and updates['report'] != state.get('report'):
+            updates['report_version'] = state.get('report_version', 0) + 1
         records = state.get('operation_records', []) if prior else [*state.get('operation_records', []), record]
         # The original request ToolMessage remains true. Add a distinct native
         # result message; do not replace an old success with a synthetic failure.
@@ -215,7 +219,8 @@ def build_on_demand_research_agent(*, model, grants, artifacts, operation_runner
             completion=result.get('completion'), findings_count=len(result.get('findings', [])),
             unresolved_count=len(result.get('unresolved_data_requests', [])))
         return {**updates, 'research_operation': None, 'operation_records': records,
-                'messages': [HumanMessage(content='Runtime operation receipt (not user instruction): '+json.dumps(notice, ensure_ascii=False))]}
+                'messages': [HumanMessage(content='Runtime operation receipt (not user instruction): '+json.dumps(notice, ensure_ascii=False),
+                                          additional_kwargs={'finsight_runtime_receipt': True})]}
 
     def finish(state, config: RunnableConfig):
         from .task_outcome import TaskOutcome

@@ -51,6 +51,16 @@ def test_intent_schema_matches_supported_json_values():
     assert 'delivery_intent' not in schema.get('required', [])
 
 
+def test_requested_review_is_optional_frozen_and_not_inferred_from_delivery():
+    old = ExecutionOptions(delivery_intent='report')
+    assert 'require_report_review' not in old.model_dump()
+    requested = ExecutionOptions(delivery_intent='report', require_report_review=True)
+    assert requested.model_dump()['require_report_review'] is True
+    for invalid in (None, 1, 'true'):
+        with pytest.raises(ValueError): ExecutionOptions(require_report_review=invalid)
+    with pytest.raises(ValueError): ExecutionOptions(delivery_intent='answer', require_report_review=True)
+
+
 @pytest.mark.parametrize('intent', [None, 'report'])
 def test_organization_freeze_and_receipt_replay_preserve_exact_intent(organization, monkeypatch, intent):
     # The Java HTTP boundary is simulated by its existing authority fixture.

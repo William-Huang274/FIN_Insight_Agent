@@ -7,6 +7,7 @@ graphs, credentials, paths, model budgets or arbitrary checkpoint updates.
 from __future__ import annotations
 
 import json
+import os
 import re
 from difflib import unified_diff
 from copy import deepcopy
@@ -514,7 +515,7 @@ def build_report_sessions_router(service):
     @router.get("/research-session-config")
     async def configuration():
         profile = getattr(service, "research_profile", None)
-        return {"fresh_research_enabled": profile is not None, "legacy_review_enabled": service.artifacts is not None,
+        return {"fresh_research_enabled": profile is not None and os.getenv('FINSIGHT_ON_DEMAND_ENABLED') != '1', "legacy_review_enabled": service.artifacts is not None,
             **(deepcopy(profile) if profile else {})}
 
     @router.get("/research-studio")
@@ -594,6 +595,8 @@ def build_report_sessions_router(service):
 
     @router.post("/research-sessions")
     async def create(body: NewSession, request: Request):
+        if os.getenv('FINSIGHT_ON_DEMAND_ENABLED') == '1':
+            raise HTTPException(409, '新研究请使用项目的按需任务入口；历史记录仍可读取和接续')
         browser_write(request)
         asset_context = None
         if body.asset_context_id:

@@ -14,6 +14,7 @@ import static io.finsight.business.TaskStore.*;
 @RequestMapping("/v1/tasks")
 @Validated
 class ResearchTasks {
+    @org.springframework.beans.factory.annotation.Value("${finsight.on-demand-enabled:false}") private boolean onDemandEnabled;
     static final class Execution {
         @NotNull @Pattern(regexp="standard|auto|selected|single") public String mode;
         @NotNull @Pattern(regexp="default|deepseek-v4-flash|deepseek-v4-pro") public String model;
@@ -21,6 +22,17 @@ class ResearchTasks {
         // Absence keeps the historical wire representation; explicit null is invalid.
         @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
         @Pattern(regexp="answer|workpaper|report") public String delivery_intent;
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+        public Boolean require_report_review;
+        @com.fasterxml.jackson.annotation.JsonSetter("require_report_review")
+        public void setRequireReportReview(JsonNode value) {
+            if(!value.isBoolean())throw new IllegalArgumentException("require_report_review_must_be_boolean");
+            require_report_review=value.booleanValue();
+        }
+        @AssertTrue @com.fasterxml.jackson.annotation.JsonIgnore
+        public boolean isReviewScopeValid() {
+            return !Boolean.TRUE.equals(require_report_review)||delivery_intent==null||"report".equals(delivery_intent);
+        }
         @com.fasterxml.jackson.annotation.JsonSetter("delivery_intent")
         public void setDeliveryIntent(JsonNode value) {
             if (!value.isTextual() || !Set.of("answer", "workpaper", "report").contains(value.textValue()))
@@ -94,6 +106,7 @@ class ResearchTasks {
 
     @PostMapping
     Object create(HttpServletRequest request, @RequestHeader("Idempotency-Key") UUID key, @Valid @RequestBody CreateTask input) {
+        if(onDemandEnabled)throw new ApiFailure(409,"新研究请使用项目的按需任务入口；既有任务仍可读取、核对和接续");
         if (input.execution() != null) input.execution().requireReportWorkflow();
         String owner = owner(request);
         python.authorize(owner, input.project_id());

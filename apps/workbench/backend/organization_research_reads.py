@@ -4,6 +4,7 @@ import json
 import re
 from typing import Literal
 from uuid import UUID
+import os
 
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
@@ -12,6 +13,26 @@ from starlette.concurrency import run_in_threadpool
 from .authentication import service_owner
 from .business_transport import space_business_request
 from sec_agent.agent_runtime.organization_native_contract import validate_thread
+from sec_agent.agent_runtime.organization_native_contract import on_demand
+
+
+def work_session_view(state):
+    """Public deliverables only; tool receipts and reasoning stay in the run log."""
+    from sec_agent.agent_runtime.task_outcome import public_task_outcome
+    values = state.get('values') or {}
+    conversation = []
+    for message in values.get('messages', []):
+        if message.get('additional_kwargs', {}).get('finsight_runtime_receipt'):
+            continue
+        role = message.get('role', message.get('type'))
+        body = message.get('content')
+        if role in {'human', 'user', 'ai', 'assistant'} and isinstance(body, str) and body:
+            conversation.append({'role': 'user' if role in {'human', 'user'} else 'assistant', 'content': body})
+    return {'runtime_contract': 'on_demand.v1', 'conversation': conversation,
+            'task_outcome': public_task_outcome(values.get('task_outcome')),
+            'report': values.get('report'), 'report_version': values.get('report_version'),
+            'operations': [{k: row[k] for k in ('action', 'status', 'review_scope', 'operation_digest', 'input_versions') if k in row}
+                           for row in values.get('operation_records', [])]}
 
 
 async def read_authority(project_id, execution_id):
@@ -85,7 +106,7 @@ def install_organization_read_routes(router, service):
     async def snapshot(project_id: UUID, execution_id: UUID):
         scope = await opened(project_id, execution_id)
         state = await scope.state() if scope.grant['run_id'] else {'values': {}}
-        projected = public_state(state)
+        projected = work_session_view(state) if on_demand(scope.grant) else public_state(state)
         # Product mutations still need distinct organization commands.
         projected.update({key: False for key in projected if key.startswith('can_')})
         projected.update(thread_id=str(execution_id), project_id=str(project_id),
@@ -96,6 +117,28 @@ def install_organization_read_routes(router, service):
             from sec_agent.agent_runtime.research_orientation import orientation_public_handoff
             projected['research_orientation'] = orientation_public_handoff(state['values']['research_orientation'])
         return await scope.response(projected)
+
+    @router.get(prefix + '/workpaper')
+    async def workpaper(project_id: UUID, execution_id: UUID, checkpoint_id: UUID, offset: int = 0):
+        scope = await opened(project_id, execution_id)
+        if not on_demand(scope.grant) or not 0 <= offset <= 200000:
+            raise HTTPException(422, '底稿读取范围不合法')
+        values = (await scope.state(checkpoint_id)).get('values') or {}
+        delivery = values.get('delivery') or {}
+        if delivery.get('artifact_kind') != 'workpaper' or not delivery.get('artifact_version'):
+            raise HTTPException(404, '所选成果没有已提交的工作底稿')
+        from sec_agent.agent_runtime.working_memory import WorkingMemory
+        path = os.getenv('FINSIGHT_WORKING_MEMORY_PATH')
+        if not path:
+            raise HTTPException(503, '底稿存储尚未配置')
+        memory = WorkingMemory(path, owner='organization:' + scope.grant['organization_id'], workspace=str(execution_id),
+                               actor='research_partner', allow_remote_search=False)
+        await scope.check()
+        result = await run_in_threadpool(memory.read, delivery['artifact_id'],
+                                        version=delivery['artifact_version'], offset=offset, limit=12000)
+        if not result.get('found'):
+            raise HTTPException(409, '已提交底稿的保存版本不可读，请核对存储')
+        return await scope.response(result)
 
     @router.get(prefix + '/report')
     async def report(project_id: UUID, execution_id: UUID, checkpoint_id: UUID | None = None):

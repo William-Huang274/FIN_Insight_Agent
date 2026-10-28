@@ -36,7 +36,7 @@ class OrganizationResearchReads {
             LEFT JOIN organization_native_start s ON s.execution_id=b.id
             LEFT JOIN organization_native_continuation c ON c.execution_id=b.id
             LEFT JOIN LATERAL (
-                SELECT run_id FROM organization_report_command WHERE command_kind='report' AND execution_id=b.id AND run_id IS NOT NULL
+                SELECT run_id FROM organization_report_command WHERE command_kind IN ('report','root_task') AND execution_id=b.id AND run_id IS NOT NULL
                 ORDER BY command_sequence DESC LIMIT 1
             ) r ON true
             ORDER BY b.created_at DESC,b.id LIMIT 31 OFFSET ?
@@ -50,7 +50,7 @@ class OrganizationResearchReads {
         if(actor==null||actor.equals("local-pilot"))throw new ApiFailure(403,"组织研究需要独立登录身份");
         return tx.execute(status->{
             var row=db.queryForList("""
-                SELECT b.draft_id,d.title,d.question,d.manifest_text,p.operation_id,p.request_body,
+                SELECT b.draft_id,b.closed,d.title,d.question,d.manifest_text,p.operation_id,p.request_body,
                        p.response::text AS receipt,s.run_id AS initial_run_id,c.run_id AS continuation_run_id,
                        COALESCE(r.run_id,c.run_id,s.run_id) AS run_id
                 FROM organization_execution_binding b
@@ -59,7 +59,7 @@ class OrganizationResearchReads {
                 LEFT JOIN organization_native_start s ON s.execution_id=b.id
                 LEFT JOIN organization_native_continuation c ON c.execution_id=b.id
                 LEFT JOIN LATERAL (
-                    SELECT run_id FROM organization_report_command WHERE command_kind='report' AND execution_id=b.id AND run_id IS NOT NULL
+                    SELECT run_id FROM organization_report_command WHERE command_kind IN ('report','root_task') AND execution_id=b.id AND run_id IS NOT NULL
                     ORDER BY command_sequence DESC LIMIT 1
                 ) r ON true
                 WHERE b.id=? AND d.project_id=?
@@ -76,11 +76,12 @@ class OrganizationResearchReads {
             result.put("prepare_request_digest","sha256:"+Delegation.digest(row.get("request_body").toString().getBytes(StandardCharsets.UTF_8)));
             result.put("configuration_digest",parse(row.get("receipt")).path("configuration_digest").asText());
             result.put("run_id",row.get("run_id"));
+            result.put("execution_closed",Boolean.TRUE.equals(row.get("closed")));
             var runs=new LinkedHashSet<Object>();
             if(row.get("initial_run_id")!=null)runs.add(row.get("initial_run_id"));
             if(row.get("continuation_run_id")!=null)runs.add(row.get("continuation_run_id"));
             if(row.get("run_id")!=null)runs.add(row.get("run_id"));
-            runs.addAll(db.queryForList("SELECT run_id FROM organization_report_command WHERE command_kind='report' AND execution_id=? AND run_id IS NOT NULL ORDER BY command_sequence",
+            runs.addAll(db.queryForList("SELECT run_id FROM organization_report_command WHERE command_kind IN ('report','root_task') AND execution_id=? AND run_id IS NOT NULL ORDER BY command_sequence",
                 UUID.class,id));
             result.put("run_ids",runs);return result;
         });

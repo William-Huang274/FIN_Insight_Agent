@@ -1,0 +1,73 @@
+# E：连续研究的公开接入与服务验收
+
+2026-10-29。依据[统一运行时设计](../architecture/on_demand_research_runtime.zh-CN.md)和[C按需操作](on_demand_operation_acceptance.zh-CN.md)。公开接线已实现，正在集成候选验收；**尚未部署，E整体未通过，真实小case未运行**。必须取得检索方最终稳定版本并合并后，再做统一服务检查。本文记录维护代码和复现路径，不把脚本替身测试当成真实用户使用。
+
+## 同一任务的使用方式
+
+用户从项目资料准备任务，选择当前需要回答、底稿或报告。主Agent进入已有对话循环，按需要读取、计算、保存工作笔记、委派或调用综合、复核、修订、成文能力。每项专业操作返回主Agent，不自动串起旧研报流程。
+
+任务完成后，可以在同一执行中追问，也可以把下一步交付改成底稿或报告。来源范围、研究截止日、模型配置和根预算仍继承原来的冻结配置，不由浏览器或模型替换。选择报告时可明确要求独立核查；runtime核对当前报告版本的完整检查状态，不能用旧检查或局部检查宣称整篇通过。检查通过与金融结论正确仍是两项不同结果。
+
+页面显示问题与回复、已交付底稿、报告及操作范围。工作底稿按交付的id/version读取，不读取后来尚未交付的候选稿；报告引用和导出复用已有受权接口。私有推理、工具参数、内部任务回执不加入公开对话。
+
+“结束本次执行”是持久关闭，不是暂停。它先关闭组织执行授权，再停止父/子原生运行。关闭后的成果继续按当前权限读取；不能接续。供应商已受理的请求无法保证取消或免计费；取消响应未知会保留待核对线程，不自动重发。
+
+## 维护边界与替换
+
+| 对象 | 当前实现 |
+| --- | --- |
+| 公开准备/启动 | `organization_native_preparation.v2` → `organization_native_start.v2` / `work_session`；复用原准备记录、原生thread和运行队列 |
+| Java/BFF版本握手 | BFF准备参数声明`runtime_contract=on_demand.v1`；Java与自身开关不一致时拒绝，不回退旧图 |
+| 连续用户动作 | 项目执行下`task-commands`，wire为`organization_root_action.v1`；复用`organization_report_command`，`command_kind=root_task` |
+| 持久约束 | V13迁移保留旧报告行；根报告/连续命令同checkpoint唯一，委派命令仍按自己的父子身份约束；不新增业务队列 |
+| 原生宿主 | `organization_work_session.py`装配C的同一父Agent；组织工厂、共享预算、工具访问、工作记忆和原生checkpoint共同复用 |
+| 来源恢复 | 仅从成功原生工具artifact恢复、经当前组织权限验证；委派来源和计算不丢，模型正文不能自封可信来源 |
+| 完成与历史 | 沿用`TaskOutcome`；每次新运行重新形成结果，不能把旧提交当成本次完成；旧v1 ID、配置、checkpoint和恢复合同保留 |
+
+`FINSIGHT_ON_DEMAND_ENABLED=1`后，新组织准备进入v2；旧Java `/v1/tasks` 和BFF `/research-sessions` 新建入口关闭，历史读取/核对/原合同接续保留。个人普通聊天并非旧研报图，不因此改成强制研报。默认部署值仍为0，待统一版本验收后切换。不能在两种新建入口间自动回退，也不将运行中旧任务迁移成v2。
+
+根任务的公开动作复用Java/BFF原有权限和签名传输。BFF预览检查前序成功、用量可核对、无未结束动作；Java冻结checkpoint、digest、前序run和新指令。原生宿主再次核对实际运行、冻结请求及历史，拒绝注入稿件、来源或伪造消息。网络响应丢失时只核对原命令；不把刷新页面当成再次付费授权。
+
+## 工程证据与实际边界
+
+已有确定性验证覆盖：
+
+- 原生宿主从空状态回答，然后沿准确历史接续；新一轮可以真实保存并交付工作笔记；不能调用旧阶段图或注入状态。
+- 当前组织来源恢复、CALC/委派证据、来源权限与工作笔记空间隔离；缺失或撤权不改读其他资料。
+- 新旧准备合同、接续签名、过期checkpoint、用量未知、重复命令、响应丢失、入口停用和历史兼容。
+- 实际Spring HTTP、Flyway与一次性PostgreSQL验证持久受理和命令约束；外部原生服务由确定性HTTP替身替代。
+- 浏览器桌面/手机尺寸验证回答→选择底稿→响应丢失→刷新核对→读取已提交版本→结束执行；API由测试替身提供，不是最终部署的全链路证明。
+- C/B/D内部测试另覆盖专业操作、独立检查、局部修订、父子任务、共享额度和原生恢复；本轮未重新生成历史AI case。
+
+复现（项目锁定依赖，无供应商调用）：
+
+```bash
+python -m pytest -q tests/test_organization_work_session.py tests/test_organization_root_actions.py tests/test_organization_work_delivery.py tests/test_organization_research_commands.py tests/test_organization_phase_factory.py tests/test_on_demand_research.py tests/test_delivery_intent_contract.py
+cd apps/business-service
+./mvnw -Dtest=ResearchIntakeTest,DeliveryIntentTest,TaskCommandTest test
+cd ../workbench/frontend
+npm run build
+npm run test:public -- organization-continuous-work.spec.ts organization-research-inputs.spec.ts organization-research-results.spec.ts
+```
+
+`TaskCommandDatabaseTest`还验证V11→V12→V13及根/子命令唯一约束；只向显式指定的一次性PostgreSQL运行，使用`FINSIGHT_TASK_DB_TEST_URL`和`FINSIGHT_TASK_DB_TEST_PASSWORD`，测试建立独立随机schema并清理它，不接生产库。没有指定临时数据库时跳过，不能将跳过算通过。
+
+本次最终Python相关回归209项通过。Java完整相关组55项通过（含上述4项实际数据库测试、无跳过），补充关闭后的只读状态后再次验证14项通过。浏览器原相关组23项通过；最终改动分别重验16项及2项连续任务，另新增3项准备策略测试通过。各次测试集有重叠，不相加为总通过数。TypeScript/Vite构建、活动基线及仓库秘密扫描通过；Vite保留已有大分块提醒。没有实际服务切换或供应商请求。
+
+## 统一部署放行顺序
+
+1. 检索方提供最终干净SHA、研究配置/工具schema、冻结发布和索引元数据要求、已验及未验范围。本开发树的旧检索不能冒充最终基线。
+2. 独立集成工作树三方审阅Java、BFF、组织工厂和配置变化；迁移先在临时数据库验，再备份业务库。不得覆盖另一窗口未提交内容。
+3. 同一提交构建Java、BFF、原生服务和前端；确认两端新模式、独立命令/委派开关、记忆空间、根预算、模型配置和新检索发布一致。先做无模型工具、资料回读、权限、未知响应、重启、停止传播、成果/导出检查。
+4. 用浏览器真正提交1–2个小case，保留Java命令→原生run→模型账本→交付/导出版本关联。只有走实际服务的证据才用于T9；不以诊断脚本代替前端受理。
+5. 问答、底稿、追问/委派和成文的合同检查与研究质量评价分开。模型没有自然使用委派时记录未观察，不强迫其为验收分派无用任务。
+
+## 已授权小case的验证范围
+
+用户已允许E之后适当试1–2个真实小case。冻结版本前不请求模型。第一题宜围绕一家公司两期公开披露解释一个经营变化，随后追问依据并交付底稿；第二题选择不同问题，形成短报告并按需核查。具体题目与可用资料在共同发布核对后固定，不给模型参考结论，不重跑case242。
+
+每题调用前写入`TokenBudgetBasis`：问题目的、实际输入规模、需要的输出、推断风险、Flash 1017 high等实际供应商模型身份、根任务累计输入/输出/请求上限及停止策略。初始范围最多2题，每题最多12次供应商请求（含摘要与委派）、累计输入300,000 token、累计输出60,000 token；若预检发现与现有运行上限或资料需求冲突，先调整试题范围并记录，不静默遗漏必要研究。预算只在runtime执行，不把剩余次数塞进模型指引。
+
+出现截断、工具故障、重复无进展或新付费失败即保存记录并停；未知用量不当作0，不自动补发或增加额度。正常必要读取不算无进展。测试记录实际token、缓存、耗时、重复读取、研究推进与推断问题；这两题仅是开发/使用验证，不是总体准确率、稳定性或成本改善证明。
+
+运维接续、离线回放和诊断留在工程线。用户使用入口只呈现自身问题、资料、成果、版本和明确可执行的反馈，不暴露历史实验纠错清单。

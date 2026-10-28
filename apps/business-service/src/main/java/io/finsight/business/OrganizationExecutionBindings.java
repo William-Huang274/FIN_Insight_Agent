@@ -73,6 +73,8 @@ class OrganizationExecutionBindings {
             var grant=preparation((String)request.getAttribute("owner"),project,id);
             var result=new HashMap<String,Object>();
             result.put("execution_id",id);result.put("manifest_text",grant.get("manifest_text"));
+            var preparation=db.queryForList("SELECT request_body::jsonb->>'contract_version' AS contract FROM organization_native_preparation WHERE execution_id=?",id);
+            result.put("runtime_contract",!preparation.isEmpty() && "organization_native_preparation.v2".equals(preparation.getFirst().get("contract")) ? "on_demand.v1" : "legacy_report");
             for(String name:List.of("preparation","start","continuation")) {
                 // Names are a closed server-owned set, never caller input.
                 var rows=db.queryForList("SELECT status FROM organization_native_"+name+" WHERE execution_id=?",id);
@@ -92,7 +94,11 @@ class OrganizationExecutionBindings {
             if(!actor.equals(saved.get("principal"))&&!Boolean.TRUE.equals(member.get("can_manage")))throw new ApiFailure(403,"需要绑定发起人或项目管理权限");
             if(db.update("UPDATE organization_execution_binding SET closed=true,closed_at=now() WHERE id=? AND NOT closed",id)==1)
                 db.update("INSERT INTO organization_project_audit(project_id,actor,action,target,revision) VALUES(?,?,'execution_close',?,?)",project,actor,id.toString(),member.get("revision"));
-            return view(binding(id));
+            var result=new HashMap<String,Object>(view(binding(id)));
+            var threads=new ArrayList<Object>();threads.add(id);
+            threads.addAll(db.queryForList("SELECT DISTINCT child_thread_id FROM organization_report_command WHERE execution_id=? AND command_kind='research_task' AND child_thread_id IS NOT NULL",UUID.class,id));
+            result.put("native_threads",threads);
+            return result;
         });
     }
     @PostMapping("/v1/runtime/organization-executions/{id}/access")

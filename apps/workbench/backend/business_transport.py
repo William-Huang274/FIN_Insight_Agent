@@ -125,15 +125,18 @@ class InternalResearchIdentity:
                 except (ValueError, KeyError, TypeError):
                     return await JSONResponse({'detail': '缺少有效项目或操作凭证'}, status_code=422)(scope, replay, send)
                 try:
-                    if scope['path'] in {INTERNAL + 'organization/prepare', INTERNAL + 'organization/start', INTERNAL + 'organization/continue', INTERNAL + 'organization/report-actions'}:
+                    if scope['path'] in {INTERNAL + 'organization/prepare', INTERNAL + 'organization/start', INTERNAL + 'organization/continue', INTERNAL + 'organization/report-actions', INTERNAL + 'organization/root-actions'}:
                         from .organization_native_drafts import preparation_authority
                         from .organization_native_runs import start_authority
                         from .organization_native_continuation import continuation_authority
                         from .organization_report_actions import action_authority
                         try:
                             execution_id = UUID(json.loads(body)['execution_id'])
-                            reporting = scope['path'] == INTERNAL + 'organization/report-actions'
+                            root_action = scope['path'] == INTERNAL + 'organization/root-actions'
+                            reporting = root_action or scope['path'] == INTERNAL + 'organization/report-actions'
                             extra = {'command_id': UUID(json.loads(body)['command_id'])} if reporting else {}
+                            if root_action:
+                                extra['root_action'] = True
                         except (ValueError, KeyError, TypeError):
                             return await JSONResponse({'detail': '缺少组织执行标识'}, status_code=422)(scope, replay, send)
                         starting = scope['path'] == INTERNAL + 'organization/start'

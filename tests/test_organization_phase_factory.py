@@ -63,7 +63,7 @@ def test_on_demand_operation_uses_real_organization_phase_without_fixed_successo
     state = {'question': 'Compose from the current saved research', 'case_papers': [paper],
         'research_operation': {'action': 'compose', 'purpose': 'One requested report, no implied review',
             'basis': {r['id']: r['digest'] for r in object_catalog(artifacts, {})}}}
-    phases = phases_for(factory, tmp_path)
+    phases = phases_for(factory, tmp_path, operations=True)
     graph = StateGraph(dict).add_node('phase', phases['operate']).add_edge(START, 'phase').add_edge('phase', END).compile(checkpointer=InMemorySaver())
     result = asyncio.run(graph.ainvoke(state, {'configurable': {'thread_id': 'operation-host'}, 'recursion_limit': 100}))
     assert len(configured) == 1

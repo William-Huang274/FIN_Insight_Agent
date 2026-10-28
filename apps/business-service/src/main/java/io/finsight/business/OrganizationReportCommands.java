@@ -21,10 +21,11 @@ class OrganizationReportCommands {
         @NotNull UUID base_checkpoint) {}
     record Create(@NotNull UUID id, @NotNull UUID previous_run_id, @NotNull UUID checkpoint_id,
         @NotBlank @Pattern(regexp="sha256:[a-f0-9]{64}") String state_digest,
-        @Min(1) int report_version, @NotBlank @Pattern(regexp="[a-f0-9]{64}") String report_digest,
-        @NotBlank @Pattern(regexp="ask|revise") String action,
+        @Min(0) int report_version, @Pattern(regexp="[a-f0-9]{64}") String report_digest,
+        @NotBlank @Pattern(regexp="ask|revise|continue") String action,
         @NotBlank @Size(max=16000) String message,
-        @NotBlank @Pattern(regexp="quick|deep") String answer_mode, @Valid Target target) {}
+        @Pattern(regexp="quick|deep") String answer_mode, @Valid Target target,
+        @Pattern(regexp="answer|workpaper|report") String delivery_intent, Boolean require_report_review) {}
     record Admission(@NotNull UUID command_id, @NotNull UUID thread_id, @NotNull UUID run_id,
         @NotNull UUID operation_id, @NotBlank String manifest_digest,
         @NotBlank String configuration_digest, @NotBlank String report_action_request_digest) {}
@@ -36,6 +37,7 @@ class OrganizationReportCommands {
     private final ObjectMapper json;
     private final TransactionTemplate tx;
     private final boolean enabled;
+    @Value("${finsight.on-demand-enabled:false}") private boolean onDemandEnabled;
 
     OrganizationReportCommands(JdbcTemplate db, OrganizationNativeDrafts drafts,
             OrganizationExecutionBindings bindings, PythonIntake python, ObjectMapper json,
@@ -52,7 +54,7 @@ class OrganizationReportCommands {
         return "sha256:"+Delegation.digest(value.toString().getBytes(StandardCharsets.UTF_8));
     }
     private Map<String,Object> command(UUID execution, UUID id) {
-        return db.queryForList("SELECT *,response::text AS result FROM organization_report_command WHERE command_kind='report' AND id=? AND execution_id=?",id,execution)
+        return db.queryForList("SELECT *,response::text AS result FROM organization_report_command WHERE command_kind IN ('report','root_task') AND id=? AND execution_id=?",id,execution)
             .stream().findFirst().orElseThrow(()->new ApiFailure(404,"报告操作不存在"));
     }
     private Map<String,Object> view(Map<String,Object> c) {
@@ -78,6 +80,16 @@ class OrganizationReportCommands {
         if(!enabled)throw new ApiFailure(503,"组织报告交互尚未启用");
     }
     private void validate(Create input) {
+        if (input.action().equals("continue")) {
+            if(input.report_version()!=0 || input.report_digest()!=null || input.answer_mode()!=null || input.target()!=null)
+                throw new ApiFailure(422,"连续工作不接受旧报告阶段参数");
+            if(Boolean.TRUE.equals(input.require_report_review())&&!"report".equals(input.delivery_intent()))
+                throw new ApiFailure(422,"独立报告核查须选择报告成果");
+            return;
+        }
+        if(input.delivery_intent()!=null||input.require_report_review()!=null)throw new ApiFailure(422,"历史报告命令不接受新的交付策略");
+        if(input.report_version()<1 || input.report_digest()==null || input.answer_mode()==null)
+            throw new ApiFailure(422,"报告操作需要完整版本与回答模式");
         if(input.action().equals("revise")&&!input.answer_mode().equals("deep"))
             throw new ApiFailure(422,"修订需要完整修订流程");
         var t=input.target();
@@ -87,7 +99,7 @@ class OrganizationReportCommands {
             throw new ApiFailure(422,"局部修订目标与请求基线不一致");
     }
     private UUID previousRun(UUID execution) {
-        var commands=db.queryForList("SELECT status,run_id FROM organization_report_command WHERE command_kind='report' AND execution_id=? AND status<>'rejected' ORDER BY command_sequence DESC LIMIT 1",execution);
+        var commands=db.queryForList("SELECT status,run_id FROM organization_report_command WHERE command_kind IN ('report','root_task') AND execution_id=? AND status<>'rejected' ORDER BY command_sequence DESC LIMIT 1",execution);
         if(!commands.isEmpty()) {
             var c=commands.getFirst();
             if(!"received".equals(c.get("status"))||c.get("run_id")==null)
@@ -104,63 +116,84 @@ class OrganizationReportCommands {
         return (UUID)db.queryForList("SELECT run_id FROM organization_native_start WHERE execution_id=? AND status='received' AND run_id IS NOT NULL",execution)
             .stream().findFirst().orElseThrow(()->new ApiFailure(409,"先核对研究运行回执")).get("run_id");
     }
-    @PostMapping("/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands")
+    private String routeKind(HttpServletRequest request) {
+        return request.getRequestURI()!=null && request.getRequestURI().contains("/task-commands") ? "root_task" : "report";
+    }
+    private void routeCheck(HttpServletRequest request, Map<String,Object> command) {
+        if(!routeKind(request).equals(command.get("command_kind")))throw new ApiFailure(404,"命令类型不匹配");
+    }
+    @PostMapping({"/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands",
+                  "/v1/workspaces/projects/{project}/execution-bindings/{execution}/task-commands"})
     Object create(HttpServletRequest request, @PathVariable UUID project, @PathVariable UUID execution,
                   @Valid @RequestBody Create input) {
         requireEnabled(); validate(input);
+        String kind=routeKind(request);
+        if(kind.equals("root_task")&&!onDemandEnabled)throw new ApiFailure(503,"按需工作尚未启用");
+        if (kind.equals("root_task") != input.action().equals("continue"))
+            throw new ApiFailure(422,"动作与入口合同不匹配");
         String actor=(String)request.getAttribute("owner");
         String fingerprint=Delegation.digest(json.valueToTree(input).toString().getBytes(StandardCharsets.UTF_8));
         tx.executeWithoutResult(status->{
             var prepared=drafts.prepared(actor,project,execution); // Current project/source locks.
+            boolean onDemand="organization_native_preparation.v2".equals(((JsonNode)prepared.get("prepare_request")).path("contract_version").asText());
+            if(onDemand != kind.equals("root_task"))throw new ApiFailure(409,"命令与固定运行合同不匹配");
             var existing=db.queryForList("SELECT execution_id,fingerprint,command_kind FROM organization_report_command WHERE id=?",input.id());
             if(!existing.isEmpty()) {
-                if(!"report".equals(existing.getFirst().get("command_kind"))||!execution.equals(existing.getFirst().get("execution_id"))
+                if(!kind.equals(existing.getFirst().get("command_kind"))||!execution.equals(existing.getFirst().get("execution_id"))
                         ||!fingerprint.equals(existing.getFirst().get("fingerprint")))
                     throw new ApiFailure(409,"同一请求标识不能提交其他报告操作");
                 return;
             }
             if(!input.previous_run_id().equals(previousRun(execution)))
                 throw new ApiFailure(409,"前序运行已变化，请刷新报告后重试");
-            if(!db.queryForList("SELECT id FROM organization_report_command WHERE command_kind='report' AND execution_id=? AND checkpoint_id=? AND status<>'rejected'",execution,input.checkpoint_id()).isEmpty())
+            if(!db.queryForList("SELECT id FROM organization_report_command WHERE command_kind IN ('report','root_task') AND execution_id=? AND checkpoint_id=? AND status<>'rejected'",execution,input.checkpoint_id()).isEmpty())
                 throw new ApiFailure(409,"该报告快照已有操作，请核对原记录");
             var start=db.queryForMap("SELECT request_body FROM organization_native_start WHERE execution_id=?",execution);
             var payload=json.valueToTree(input);
             var body=(com.fasterxml.jackson.databind.node.ObjectNode)payload;
             body.remove("id");
-            body.put("contract_version","organization_report_action.v1").put("command_id",input.id().toString())
+            if(onDemand) {
+                body.remove(List.of("report_version","report_digest","answer_mode","target"));
+                body.put("delivery_intent",input.delivery_intent()==null?"answer":input.delivery_intent());
+                body.put("require_report_review",Boolean.TRUE.equals(input.require_report_review()));
+            } else body.remove(List.of("delivery_intent","require_report_review"));
+            body.put("contract_version",onDemand ? "organization_root_action.v1" : "organization_report_action.v1").put("command_id",input.id().toString())
                 .put("execution_id",execution.toString()).put("project_id",project.toString())
                 .put("manifest_digest",prepared.get("manifest_digest").toString())
                 .put("configuration_digest",prepared.get("configuration_digest").toString())
                 .put("prepare_operation_id",prepared.get("prepare_operation_id").toString())
                 .put("research_as_of",parse(start.get("request_body")).path("research_as_of").asText());
-            if(db.update("INSERT INTO organization_report_command(id,execution_id,operation_id,principal,fingerprint,checkpoint_id,request_body) VALUES(?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
-                input.id(),execution,UUID.randomUUID(),actor,fingerprint,input.checkpoint_id(),body.toString())!=1)
+            if(db.update("INSERT INTO organization_report_command(id,execution_id,operation_id,principal,fingerprint,checkpoint_id,request_body,command_kind) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
+                input.id(),execution,UUID.randomUUID(),actor,fingerprint,input.checkpoint_id(),body.toString(),kind)!=1)
                 throw new ApiFailure(409,"报告操作标识或快照已被占用，请核对原记录");
             db.update("INSERT INTO organization_project_audit(project_id,actor,action,target,revision) SELECT id,?,'report_action',?,revision FROM organization_project WHERE id=?",actor,input.id().toString(),project);
         });
         var c=command(execution,input.id());
         if(db.update("UPDATE organization_report_command SET status='dispatching',updated_at=now() WHERE id=? AND status='ready'",input.id())==1) {
             try {
-                var reply=python.request(actor,"POST","organization/report-actions",c.get("request_body").toString(),(UUID)c.get("operation_id"));
+                var reply=python.request(actor,"POST",kind.equals("root_task") ? "organization/root-actions" : "organization/report-actions",c.get("request_body").toString(),(UUID)c.get("operation_id"));
                 accept(execution,input.id(),c,reply.status(),reply.body());
             } catch(IntakeUnavailable e) { unknown(input.id()); }
         }
         bindings.preparation(actor,project,execution); return view(command(execution,input.id()));
     }
-    @GetMapping("/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands")
+    @GetMapping({"/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands",
+                 "/v1/workspaces/projects/{project}/execution-bindings/{execution}/task-commands"})
     Object list(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID execution) {
         bindings.preparation((String)request.getAttribute("owner"),project,execution);
-        return Map.of("items",db.queryForList("SELECT *,response::text AS result FROM organization_report_command WHERE command_kind='report' AND execution_id=? ORDER BY command_sequence DESC LIMIT 100",execution)
-            .stream().map(this::view).toList(),"enabled",enabled);
+        return Map.of("items",db.queryForList("SELECT *,response::text AS result FROM organization_report_command WHERE command_kind=? AND execution_id=? ORDER BY command_sequence DESC LIMIT 100",routeKind(request),execution)
+            .stream().map(this::view).toList(),"enabled",enabled&&(!routeKind(request).equals("root_task")||onDemandEnabled));
     }
-    @GetMapping("/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands/{id}")
+    @GetMapping({"/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands/{id}",
+                 "/v1/workspaces/projects/{project}/execution-bindings/{execution}/task-commands/{id}"})
     Object get(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID execution,@PathVariable UUID id) {
         bindings.preparation((String)request.getAttribute("owner"),project,execution);
-        return view(command(execution,id));
+        var c=command(execution,id);routeCheck(request,c);return view(c);
     }
-    @GetMapping("/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands/{id}/access")
+    @GetMapping({"/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands/{id}/access",
+                 "/v1/workspaces/projects/{project}/execution-bindings/{execution}/task-commands/{id}/access"})
     Object access(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID execution,@PathVariable UUID id) {
-        return tx.execute(status->grant((String)request.getAttribute("owner"),project,execution,id));
+        return tx.execute(status->{var value=grant((String)request.getAttribute("owner"),project,execution,id);routeCheck(request,command(execution,id));return value;});
     }
     private void unknown(UUID id) {
         db.update("UPDATE organization_report_command SET status='unknown',updated_at=now() WHERE id=? AND status='dispatching'",id);
@@ -192,12 +225,14 @@ class OrganizationReportCommands {
             db.update("UPDATE organization_report_command SET status='rejected',response=?::jsonb,updated_at=now() WHERE id=? AND status IN ('dispatching','unknown') AND run_id IS NULL",result==null?null:result.toString(),id);
         else unknown(id);
     }
-    @PostMapping("/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands/{id}/reconcile")
+    @PostMapping({"/v1/workspaces/projects/{project}/execution-bindings/{execution}/report-commands/{id}/reconcile",
+                  "/v1/workspaces/projects/{project}/execution-bindings/{execution}/task-commands/{id}/reconcile"})
     Object reconcile(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID execution,@PathVariable UUID id) {
         String actor=(String)request.getAttribute("owner");
         bindings.preparation(actor,project,execution); var c=command(execution,id);
+        routeCheck(request,c);
         if(Set.of("dispatching","unknown").contains(c.get("status"))) {
-            var reply=python.request(actor,"GET","organization/executions/"+execution+"/report-actions/"+id+"?project_id="+project,null,null);
+            var reply=python.request(actor,"GET","organization/executions/"+execution+(routeKind(request).equals("root_task") ? "/root-actions/" : "/report-actions/")+id+"?project_id="+project,null,null);
             if(reply.status()==200&&matches(execution,c,reply.body()))accept(execution,id,c,200,reply.body());
         }
         bindings.preparation(actor,project,execution); return view(command(execution,id));
@@ -210,6 +245,7 @@ class OrganizationReportCommands {
             var identity=db.queryForMap("SELECT b.principal,d.project_id FROM organization_execution_binding b JOIN organization_research_draft d ON d.id=b.draft_id WHERE b.id=?",execution);
             var current=grant(identity.get("principal").toString(),(UUID)identity.get("project_id"),execution,input.command_id());
             var c=command(execution,input.command_id());
+            if("root_task".equals(c.get("command_kind"))&&!onDemandEnabled)throw new ApiFailure(503,"按需工作尚未启用");
             if(!input.operation_id().equals(c.get("operation_id"))
                     ||!input.configuration_digest().equals(current.get("configuration_digest"))
                     ||!input.report_action_request_digest().equals(current.get("report_action_request_digest"))

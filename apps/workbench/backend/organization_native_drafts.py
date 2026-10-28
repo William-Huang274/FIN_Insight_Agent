@@ -2,6 +2,7 @@
 from hashlib import sha256
 from copy import deepcopy
 import json
+import os
 from uuid import UUID
 
 from fastapi import HTTPException, Request
@@ -34,7 +35,7 @@ async def preparation_authority(service, project_id, execution_id, *, raw_body=N
         validate_execution_grant(grant, execution_id, grant['manifest_digest'])
         payload = grant['prepare_request']
         if (set(payload) != {'contract_version', 'execution_id', 'project_id', 'manifest_digest', 'execution'}
-                or payload['contract_version'] != 'organization_native_preparation.v1'
+                or payload['contract_version'] not in {'organization_native_preparation.v1', 'organization_native_preparation.v2'}
                 or payload['execution_id'] != execution_id or payload['project_id'] != project_id
                 or payload['manifest_digest'] != grant['manifest_digest']):
             raise ValueError('request_scope')
@@ -97,7 +98,13 @@ def install_organization_native_routes(router, service):
         if not grant:
             raise HTTPException(401, '缺少组织准备委托')
         try:
-            ExecutionOptions.model_validate(grant['prepare_request']['execution']).require_report_workflow()
+            from sec_agent.agent_runtime.organization_native_contract import on_demand
+            options = ExecutionOptions.model_validate(grant['prepare_request']['execution'])
+            if on_demand(grant):
+                if os.getenv('FINSIGHT_ON_DEMAND_ENABLED') != '1':
+                    raise HTTPException(503, '按需研究入口尚未启用')
+            else:
+                options.require_report_workflow()
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from None
         from types import SimpleNamespace

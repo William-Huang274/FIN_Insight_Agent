@@ -13,6 +13,14 @@ from .execution_options import ExecutionOptions
 SURFACE = 'organization_research_workbench'
 
 
+def on_demand(grant):
+    """The immutable preparation selects the runtime, never a browser/run flag."""
+    version = grant['prepare_request']['contract_version']
+    if version not in {'organization_native_preparation.v1', 'organization_native_preparation.v2'}:
+        raise ValueError('organization_preparation_contract_unsupported')
+    return version == 'organization_native_preparation.v2'
+
+
 def context(grant):
     return {key: grant[key] for key in ('execution_id', 'thread_id', 'project_id', 'draft_id', 'organization_id',
                                        'manifest_digest', 'prepare_operation_id', 'prepare_request_digest')}
@@ -52,7 +60,8 @@ def validate_start(grant):
     payload = grant['start_request']
     if (set(payload) != {'contract_version', 'execution_id', 'project_id', 'manifest_digest', 'configuration_digest',
                          'prepare_operation_id', 'research_as_of', 'stage'}
-            or payload['contract_version'] != 'organization_native_start.v1' or payload['stage'] != 'orientation'
+            or payload['contract_version'] != ('organization_native_start.v2' if on_demand(grant) else 'organization_native_start.v1')
+            or payload['stage'] != ('work_session' if on_demand(grant) else 'orientation')
             or any(payload[key] != grant[key] for key in ('execution_id','project_id','manifest_digest','configuration_digest','prepare_operation_id'))):
         raise ValueError('organization_start_contract_mismatch')
     UUID(grant['start_operation_id'])
@@ -72,7 +81,9 @@ def run_request(thread, grant):
     config = deepcopy(thread['metadata']['organization_run_configuration'])
     config['configurable']['finsight_research_as_of'] = grant['start_request']['research_as_of']
     config['configurable']['finsight_organization_start'] = start_context(grant)
-    arguments = dict(config=config, input=ResearchRequest(question=grant['question'], research_stage='orientation').model_dump(mode='json'))
+    initial = ({'question': grant['question'], 'messages': [{'role': 'user', 'content': grant['question']}]}
+               if on_demand(grant) else ResearchRequest(question=grant['question'], research_stage='orientation').model_dump(mode='json'))
+    arguments = dict(config=config, input=initial)
     return {**arguments, 'metadata':{'surface':'organization_research_workbench', 'organization_start':start_context(grant),
                                     'organization_dispatch_digest':digest(arguments)}}
 

@@ -16,6 +16,7 @@ spring:
   mvc:
     log-request-details: false
 finsight:
+  on-demand-enabled: ${FINSIGHT_ON_DEMAND_ENABLED:false}
   organization-start-enabled: ${FINSIGHT_ORGANIZATION_START_ENABLED:false}
   organization-report-actions-enabled: ${FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED:false}
   runtime-secret: ${FINSIGHT_ORGANIZATION_RUNTIME_SECRET:}

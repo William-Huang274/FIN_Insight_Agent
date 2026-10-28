@@ -13,6 +13,8 @@ class ExecutionOptions(BaseModel):
     model: Literal["default", "deepseek-flash", "deepseek-v4-flash", "deepseek-v4-pro"] = "default"
     delivery_intent: DeliveryIntent = Field(default="report",
         description="Requested deliverable, independent of actor count or research scope. Omitted legacy configurations retain their report workflow; this field grants no execution or review authority.")
+    require_report_review: bool = Field(default=False, strict=True,
+        description="User requires a completed independent check of the delivered report version; not a guarantee of financial correctness.")
     branch_ids: list[str] = Field(default_factory=list, max_length=24)
     require_all_branches: bool = Field(default=False, strict=True,
         description="Explicit fixed-catalog coverage for a user-requested study or qualification only. Standard full research does not imply all catalog topics.")
@@ -27,6 +29,8 @@ class ExecutionOptions(BaseModel):
         body = handler(self)
         if "delivery_intent" not in self.model_fields_set:
             body.pop("delivery_intent", None)
+        if "require_report_review" not in self.model_fields_set:
+            body.pop("require_report_review", None)
         return body
 
     def require_report_workflow(self):
@@ -41,6 +45,8 @@ class ExecutionOptions(BaseModel):
 
     @model_validator(mode="after")
     def scope_shape(self):
+        if self.require_report_review and self.delivery_intent != 'report':
+            raise ValueError('report_review_requires_report_delivery')
         if self.require_all_branches and self.mode != "standard":
             raise ValueError("完整目录覆盖须显式使用standard模式；不能隐含限制自主研究")
         if len(set(self.branch_ids)) != len(self.branch_ids):

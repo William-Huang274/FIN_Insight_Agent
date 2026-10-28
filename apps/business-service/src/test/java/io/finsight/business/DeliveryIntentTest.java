@@ -42,6 +42,31 @@ class DeliveryIntentTest {
         assertThrows(JsonMappingException.class, () -> options(",\"delivery_intnets\":\"answer\""));
     }
 
+    @Test void reviewPolicyIsExplicitAndScopedToReports() throws Exception {
+        assertFalse(json.valueToTree(options("")).has("require_report_review"));
+        assertTrue(options(",\"delivery_intent\":\"report\",\"require_report_review\":true").isReviewScopeValid());
+        assertFalse(options(",\"delivery_intent\":\"answer\",\"require_report_review\":true").isReviewScopeValid());
+        assertThrows(JsonMappingException.class, () -> options(",\"require_report_review\":\"true\""));
+        assertThrows(JsonMappingException.class, () -> options(",\"require_report_review\":null"));
+    }
+
+    @Test void cutoverAndMixedServiceVersionsFailBeforeDispatch() throws Exception {
+        var db=mock(JdbcTemplate.class);var bindings=mock(OrganizationExecutionBindings.class);
+        var python=mock(PythonIntake.class);var manager=mock(PlatformTransactionManager.class);
+        var request=mock(HttpServletRequest.class);var execution=options("");
+        var drafts=new OrganizationNativeDrafts(db,bindings,python,json,manager);
+        assertEquals(409,assertThrows(ApiFailure.class,()->drafts.prepare(request,UUID.randomUUID(),UUID.randomUUID(),
+            new OrganizationNativeDrafts.Prepare(execution,"on_demand.v1"))).status);
+        drafts.onDemandEnabled=true;
+        assertEquals(409,assertThrows(ApiFailure.class,()->drafts.prepare(request,UUID.randomUUID(),UUID.randomUUID(),
+            new OrganizationNativeDrafts.Prepare(execution))).status);
+        var store=mock(TaskStore.class);var tasks=new ResearchTasks(store,python,json);
+        org.springframework.test.util.ReflectionTestUtils.setField(tasks,"onDemandEnabled",true);
+        assertEquals(409,assertThrows(ApiFailure.class,()->tasks.create(request,UUID.randomUUID(),
+            new ResearchTasks.CreateTask(UUID.randomUUID(),"Title","Question to research",null,null,execution))).status);
+        verifyNoInteractions(db,bindings,python,manager,request,store);
+    }
+
     @ParameterizedTest @ValueSource(strings={"answer", "workpaper"})
     void unsupportedIntentIsRejectedBeforeBusinessOrNativeWork(String intent) throws Exception {
         var execution = options(",\"delivery_intent\":\"" + intent + "\"");

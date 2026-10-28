@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,10 @@ import java.util.*;
 @RestController
 @RequestMapping("/v1/workspaces/projects/{project}/execution-bindings/{id}")
 class OrganizationNativeDrafts {
-    record Prepare(@NotNull @Valid ResearchTasks.Execution execution) {}
+    @Value("${finsight.on-demand-enabled:false}") boolean onDemandEnabled;
+    record Prepare(@NotNull @Valid ResearchTasks.Execution execution, String runtime_contract) {
+        Prepare(ResearchTasks.Execution execution) { this(execution, null); }
+    }
     private final JdbcTemplate db;
     private final OrganizationExecutionBindings bindings;
     private final PythonIntake python;
@@ -58,11 +62,14 @@ class OrganizationNativeDrafts {
     }
     @PostMapping("/prepare")
     Object prepare(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID id,@Valid @RequestBody Prepare input) {
-        input.execution().requireReportWorkflow();
+        if (onDemandEnabled != "on_demand.v1".equals(input.runtime_contract())
+                || (input.runtime_contract()!=null && !"on_demand.v1".equals(input.runtime_contract())))
+            throw new ApiFailure(409,"BFF与Java任务入口版本不一致，请完成服务基线检查；不会回退为旧研报流程");
+        if (!onDemandEnabled) input.execution().requireReportWorkflow();
         String actor=(String)request.getAttribute("owner"),fingerprint=Delegation.digest((byte[])request.getAttribute("originalBody"));
         tx.executeWithoutResult(status->{
             var grant=bindings.preparation(actor,project,id);
-            var payload=json.createObjectNode().put("contract_version","organization_native_preparation.v1")
+            var payload=json.createObjectNode().put("contract_version",onDemandEnabled ? "organization_native_preparation.v2" : "organization_native_preparation.v1")
                 .put("execution_id",id.toString()).put("project_id",project.toString()).put("manifest_digest",grant.get("manifest_digest").toString());
             payload.set("execution",json.valueToTree(input.execution()));
             int inserted=db.update("INSERT INTO organization_native_preparation(execution_id,operation_id,fingerprint,request_body) VALUES(?,?,?,?) ON CONFLICT DO NOTHING",id,UUID.randomUUID(),fingerprint,payload.toString());

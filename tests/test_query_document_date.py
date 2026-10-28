@@ -39,7 +39,8 @@ def test_filing_label_date_does_not_erase_two_cash_fact_dates():
 
 @pytest.mark.parametrize('label',[
     'June 30, 2026 10-Q', '10-Q June 30, 2026',
-    '2026-06-30 10-Q', '2026年6月30日的10-Q', '10-Q 2026年6月30日'])
+    '2026-06-30 10-Q', '2026年6月30日的10-Q', '10-Q 2026年6月30日',
+    '2026 年 6 月 30 日的 10-Q', '10-Q 2026 年 6 月 30 日'])
 def test_document_date_word_order_and_language_share_selector(label):
     from retrieval.fact_period_matching import query_period_requirements
     from retrieval.query_document_date import mask_label_dates

@@ -9,7 +9,7 @@ import re
 
 MONTHS=('January','February','March','April','May','June','July','August','September','October','November','December')
 LITERAL_DATE=re.compile(r'(?<!\d)(?:(?P<iso>(?:19|20)\d{2}-\d{2}-\d{2})(?!\d)|'
-    r'(?P<cy>(?:19|20)\d{2})年\s*(?P<cm>\d{1,2})月\s*(?P<cd>\d{1,2})日|'
+    r'(?P<cy>(?:19|20)\d{2})\s*年\s*(?P<cm>\d{1,2})\s*月\s*(?P<cd>\d{1,2})\s*日|'
     r'\b(?P<month>'+ '|'.join(MONTHS)+r')\s+(?P<day>\d{1,2}),?\s+(?P<year>(?:19|20)\d{2})(?!\d))',re.I)
 
 

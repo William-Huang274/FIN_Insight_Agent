@@ -159,11 +159,8 @@ def plan_scope(query, query_plan=None):
     """Extract positive requirements while retaining exclusions separately."""
     from .query_requirements import positive_view
     query, _ = positive_view(query)
-    events = []
-    if re.search(r'业绩(?:发布|公告)|财报发布|\bearnings (?:release|announcement|8-k)\b',query,re.I):
-        events.append('earnings_release')
-    if re.search(r'融资(?:发布|公告)|\bfinancing (?:release|announcement)\b',query,re.I):
-        events.append('financing')
+    from .announcement_query import event_requirements
+    events = event_requirements(query)
     wanted = {'unknown_policy':'retain'}
     if len(events) == 1:wanted['event_type']=events
     statements = []

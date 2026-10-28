@@ -13,6 +13,8 @@ POLICY = 'organization-search-needs.v1'
 # Navigation translations only. For example revenue is not interchangeable
 # with cash collections; commitments are not expenditures already incurred.
 GLOSSARY = (
+    ('新闻稿', 'press release'), ('附件', 'exhibit'),
+    ('财报季度', 'reporting quarter'), ('发布日期', 'release date'),
     ('资本支出', 'capital expenditures'), ('合同承诺', 'contractual commitments'),
     ('未计提', 'unaccrued'), ('同比增加', 'increase year over year'),
     ('经营现金流', 'operating cash flow'), ('自由现金流', 'free cash flow'),

@@ -13,17 +13,46 @@ class ScriptedTools(FakeMessagesListChatModel):
         return self
 
 
-def test_last_authorized_call_is_reserved_for_delivery_without_more_tools():
-    from langchain.agents.middleware.types import ModelRequest
-    from langchain_core.messages import SystemMessage
-    from sec_agent.agent_runtime.conversation_agent import ConversationDeliveryMiddleware
-    request=ModelRequest(model=ScriptedTools(responses=[]),messages=[HumanMessage(content='Keep the current scope')],
-        system_message=SystemMessage(content='Source rules'),tools=[{'name':'read'}],state={'run_model_call_count':7})
-    delivery=ConversationDeliveryMiddleware(8).request_for_delivery(request)
-    assert delivery.tools==[] and request.tools==[{'name':'read'}]
-    assert 'Deliver your answer now' in str(delivery.system_message.content)
-    assert 'incomplete review as passed' in str(delivery.system_message.content)
-    assert delivery.messages==request.messages
+@pytest.mark.parametrize("effect", ["read", "working_note_write"])
+def test_last_authorized_call_can_work_and_checkpoint_survives_limit(effect):
+    from langchain_core.messages import ToolMessage
+    from langchain.agents.middleware.model_call_limit import ModelCallLimitExceededError
+    seen, calls, bound = [], [], []
+    class Capture(ScriptedTools):
+        def bind_tools(self, tools, **kwargs):
+            bound.append([t.name for t in tools])
+            return self
+
+        def _generate(self, messages, **kwargs):
+            seen.append(messages)
+            return super()._generate(messages, **kwargs)
+    @tool
+    def work_fixture():
+        """Read or save one synthetic task object."""
+        calls.append(True)
+        return "fixture-version-2"
+    model = Capture(responses=[
+        AIMessage(content="", tool_calls=[{"id": "work-1", "name": "work_fixture",
+            "args": {}, "type": "tool_call"}]),
+        AIMessage(content="Continue from the retained result.")])
+    agent = build_conversation_agent(model=model,
+        grants=[GrantedTool(work_fixture, effect, "synthetic task object")],
+        permission_mode="request_standard", checkpointer=InMemorySaver(), model_calls=1)
+    config = {"configurable": {"thread_id": "last-call-" + effect}}
+    with pytest.raises(ModelCallLimitExceededError):
+        agent.invoke({"messages": [HumanMessage(content="Complete the task")]}, config)
+    assert len(seen) == 1 and calls == [True] and bound == [["work_fixture"]]
+    current = agent.get_state(config).values
+    assert any(isinstance(m, ToolMessage) and m.tool_call_id == "work-1"
+        and m.content == "fixture-version-2" for m in current["messages"])
+    assert not any(isinstance(m, AIMessage) and m.content for m in current["messages"])
+    assert "authorized model calls left" not in str(seen[0])
+    assert "Deliver your answer now" not in str(seen[0])
+    # A new host-authorized turn can reuse the result; the runtime does not retry.
+    result = agent.invoke({"messages": [HumanMessage(content="Continue with the saved result")]}, config)
+    assert len(seen) == 2 and calls == [True]
+    assert any(isinstance(m, ToolMessage) and m.content == "fixture-version-2" for m in seen[1])
+    assert result["messages"][-1].content == "Continue from the retained result."
 
 
 def test_deployed_conversation_json_budget_validates_in_strict_json_mode():

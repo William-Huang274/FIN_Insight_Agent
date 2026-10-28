@@ -130,7 +130,11 @@ def test_native_conversation_consumes_method_query_and_chart(tmp_path):
         grants=grants, permission_mode="request_standard", checkpointer=saver)
     result = agent.invoke({"messages": [HumanMessage(content="Synthetic development protocol, not real company research.")]}, config)
     methods = next(m for m in result["messages"] if isinstance(m, ToolMessage) and m.name == "get_research_method")
-    assert "执行顺序与交付" in methods.content
+    import json
+    from sec_agent.research_foundation.research_methods import get_research_method
+    delivered = json.loads(methods.content)
+    assert delivered["content"] == get_research_method("finance")["content"]
+    assert "利润桥与现金桥例题" in delivered["content"]
     query = next(m for m in result["messages"] if isinstance(m, ToolMessage) and m.name == "query_financial_data")
     fact = query.artifact["results"][0]["facts"][0]
     assert Decimal(fact["value_decimal"]) == -120

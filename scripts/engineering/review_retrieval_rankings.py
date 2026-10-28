@@ -60,8 +60,17 @@ def review(result_path, dataset_path, index_path, output, judgments_path=None):
                     'historical_rerank_score':scores.get(n),'raw_bm25_score':None,'dense_score':None,
                     'numeric_score_scope':'only_saved_provider_rerank_scores_no_invented_channel_scores',
                     'grade':grades.get((q['id'],n)), 'reason':reasons.get((q['id'],n))})
-            qrels={n:g for (question,n),g in grades.items() if question==q['id']}
+            # The denominator is this frozen review pool, not every label in
+            # a reusable judgment file. Conversely, an unjudged candidate
+            # outside the selected page can still change the ideal ranking.
+            qrels={n:grades[(q['id'],n)] for n in pool if (q['id'],n) in grades}
             scored=ranking_metrics(selected,qrels)
+            pool_complete=len(qrels)==len(pool)
+            scored['all_pool_candidates_reviewed']=pool_complete
+            scored['unjudged_pool_candidates']=len(pool)-len(qrels)
+            if not pool_complete:
+                scored['pooled_graded_ndcg']=None
+                scored['pooled_recall']=None
             gold=set(sample.get('gold',[]))
             metrics.append({'id':q['id'],'kind':q.get('question_kind',sample.get('kind')),
                 **scored,'known_evidence_hit_at_10':bool(gold & set(selected[:10])) if gold else None,
@@ -73,6 +82,7 @@ def review(result_path, dataset_path, index_path, output, judgments_path=None):
     summary={'role':'historical_exposed_regression_not_new_holdout','provider_calls':0,
         'input_sha256':{str(p):sha256(p.read_bytes()).hexdigest() for p in (result_path,dataset_path,index_path)},
         'questions':len(metrics),'all_top10_judged':complete,
+        'all_query_pools_reviewed':bool(metrics) and all(m['all_pool_candidates_reviewed'] for m in metrics),
         'precision_at_10':sum(m['precision'] for m in metrics)/len(metrics) if complete and metrics else None,
         'pooled_ndcg_at_10':sum(m['pooled_graded_ndcg'] for m in metrics)/len(metrics)
             if metrics and all(m['pooled_graded_ndcg'] is not None for m in metrics) else None,

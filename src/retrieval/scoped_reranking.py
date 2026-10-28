@@ -129,6 +129,8 @@ class ConfiguredReranker:
         self.model=os.environ.get('FINSIGHT_ORGANIZATION_RERANK_MODEL',configured_profile().rerank_model)
         if self.model not in {'qwen3-rerank','qwen3.7-text-rerank'}:
             raise ValueError('organization_rerank_model_invalid')
+        from .relevance_instruction import configured_instruction
+        self.instruction = configured_instruction(self.model)
 
     def rank(self,*args,**kwargs):
         from contextlib import closing
@@ -136,6 +138,10 @@ class ConfiguredReranker:
         from retrieval.qwen_api import QwenRetrieval
         if not os.environ.get('QWEN_API_KEY'):
             raise ValueError('organization_rerank_not_configured')
+        if 'instruct' in kwargs:
+            raise ValueError('organization_rerank_instruction_is_server_owned')
+        if self.instruction is not None:
+            kwargs['instruct'] = self.instruction
         with closing(QwenRetrieval(os.environ['QWEN_API_KEY'],embedding_model='qwen3.7-text-embedding',
                                    rerank_model=self.model)) as api:
             return ScopedReranker(self.path,api).rank(*args,**kwargs)

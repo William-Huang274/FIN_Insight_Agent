@@ -46,6 +46,9 @@ class OrganizationSourceNavigation:
         if retrieval_root is not None:
             from .organization_hybrid_retrieval import OrganizationHybridRetrieval
             self.hybrid = OrganizationHybridRetrieval(reader, retrieval_root)
+        from retrieval.relevance_boundary_runtime import configured_boundary
+        self.result_boundary = configured_boundary(self.serving_profile.name,
+            self.hybrid.reranker if self.hybrid is not None else None, self.table_completion)
 
     @staticmethod
     def _identity(item):
@@ -331,6 +334,10 @@ class OrganizationSourceNavigation:
         from retrieval.original_result_groups import collapse_original_duplicates
         materialized,group_receipt=collapse_original_duplicates(materialized)
         receipt['original_result_groups']=group_receipt
+        if self.result_boundary is not None:
+            materialized, boundary_receipt = self.result_boundary.apply(materialized,
+                receipt.get('rerank_response', {}), limit=request.limit)
+            receipt['relevance_boundary'] = boundary_receipt
         receipt['selected_node_ids']=[r['node_id'] for r in materialized]
         if self.table_completion:
             if not needs:
@@ -356,6 +363,10 @@ class OrganizationSourceNavigation:
                 'notice': result.notice + ' Automatic query plan: '+json.dumps(query_plan, ensure_ascii=False)})
         if scope_receipt is not None:
             result = result.model_copy(update={'organization_evidence_scope':scope_receipt})
+        if self.result_boundary is not None:
+            result = result.model_copy(update={'organization_relevance_boundary':boundary_receipt,
+                'notice':result.notice+' Relevance selection may return fewer results than requested. '
+                    'Uncertain candidates do not establish source absence or a financial conclusion.'})
         candidates.check()
         return self._decorate(result, candidates.origins,
             {row['node_id']:row['original_source'] for row in materialized if 'original_source' in row})

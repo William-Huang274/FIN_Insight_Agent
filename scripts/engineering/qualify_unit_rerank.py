@@ -28,6 +28,10 @@ def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
     from retrieval.graph_query_plan import graph_seeds
     from sec_agent.research_foundation.organization_query_plan import plan_query,select_planned
     from sec_agent.research_foundation.organization_index_release import canonical_digest
+    from retrieval.relevance_instruction import configured_instruction
+    from retrieval.relevance_boundary_runtime import configured_boundary,pipeline_identity
+    model='qwen3.7-text-rerank';instruction=configured_instruction(model)
+    boundary=configured_boundary('research.v2',SimpleNamespace(model=model,instruction=instruction),'bounded.v1')
     index=json.loads(index_path.read_bytes());publication=json.loads((overlay/'overlay.json').read_bytes())
     if canonical_digest(index)!=publication['snapshot_digest']:raise ValueError('unit_quality_snapshot_changed')
     allowed=set(publication['parent_scope']);records=[r for r in index['records'] if r['node_id'] in allowed]
@@ -72,6 +76,8 @@ def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
     root=Path(__file__).resolve().parents[2]
     code={str(p):digest(p) for folder in ('src/retrieval','src/sec_agent/research_foundation') for p in (root/folder).glob('*.py')}
     plan={'role':'exposed_regression_full_scoring_not_live_HTTP','jobs':jobs,'code_sha256':code,
+        'instruction':instruction,'relevance_boundary':boundary.artifact if boundary else None,
+        'pipeline':pipeline_identity('research.v2',model,instruction,'bounded.v1'),
         'inputs':{str(p):digest(p) for p in (index_path,overlay/'overlay.json',contexts/'context.json',metadata_path,queries_path)},
         'index_digest':canonical_digest(index),'TokenBudgetBasis':{
             'purpose':'Verify original-unit recall and complete production structural scoring before final page selection',
@@ -102,6 +108,8 @@ def run(output):
     with path.open('x',encoding='utf8') as stream:json.dump(result,stream)
     with closing(QwenRetrieval(os.environ['QWEN_API_KEY'],rerank_model='qwen3.7-text-rerank')) as api:
         reranker=ScopedReranker(output/'receipts',api)
+        from retrieval.relevance_boundary_runtime import ResultBoundary
+        boundary=ResultBoundary(plan['relevance_boundary'],plan['pipeline']) if plan.get('relevance_boundary') else None
         for item in plan['jobs']:
             input_path=output/f'{item["id"]}.input.json'
             if digest(input_path)!=item['input_sha256']:raise ValueError('unit_quality_job_changed')
@@ -110,15 +118,18 @@ def run(output):
                 raise ValueError('unit_quality_provider_input_parity_failed')
             try:
                 ranked,receipt=reranker.rank(job['query'],job['candidates'],scope='qualification:'+plan['index_digest'],
-                    index_digest=plan['index_digest'],check_access=check)
+                    index_digest=plan['index_digest'],check_access=check,instruct=plan.get('instruction'))
                 selected,coverage=select_coverage(ranked,job['needs'],job['retrieval_receipt']['lexical_needs'],job['metadata'])
                 selected,groups=collapse_original_duplicates(selected)
+                boundary_receipt=None
+                if boundary:selected,boundary_receipt=boundary.apply(selected,receipt,limit=10)
             except Exception as error:
                 result.update(status='stopped',failed_question=item['id'],error_type=type(error).__name__)
                 path.write_text(json.dumps(result,indent=2),encoding='utf8');raise
             result['samples'].append({'id':item['id'],'ranked_ids':[r['node_id'] for r in ranked],
                 'selected_ids':[r['node_id'] for r in selected],'receipt':receipt,'coverage':coverage,
                 'original_result_groups':groups,'seconds':time.perf_counter()-start})
+            result['samples'][-1]['relevance_boundary']=boundary_receipt
             result['provider_calls']+=receipt['provider_calls'];path.write_text(json.dumps(result,indent=2),encoding='utf8')
             print(json.dumps({'completed':len(result['samples']),'total':len(plan['jobs']),'id':item['id']}),flush=True)
     result['status']='completed';path.write_text(json.dumps(result,indent=2),encoding='utf8')

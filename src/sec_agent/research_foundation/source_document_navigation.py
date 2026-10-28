@@ -240,6 +240,7 @@ class SourceDocumentResult(BaseModel):
     organization_filter_receipt: OrganizationSourceFilterReceipt | None = None
     organization_query_plan: dict[str, Any] | None = None
     organization_evidence_scope: dict[str, Any] | None = None
+    organization_relevance_boundary: dict[str, Any] | None = None
 
     @model_serializer(mode="wrap")
     def preserve_archived_result_shape(self, handler):
@@ -252,6 +253,8 @@ class SourceDocumentResult(BaseModel):
             body.pop("organization_query_plan", None)
         if 'organization_evidence_scope' not in self.model_fields_set:
             body.pop('organization_evidence_scope', None)
+        if 'organization_relevance_boundary' not in self.model_fields_set:
+            body.pop('organization_relevance_boundary', None)
         return body
 
 

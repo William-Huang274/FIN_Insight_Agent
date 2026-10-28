@@ -89,7 +89,9 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
                 'save using its original title and current base_version. Explain which previous conclusion or next step '
                 'changed and whether related papers may need review. Do not claim other agents were rerun or the final '
                 'report was updated. If the instruction contradicts source evidence, show the conflict and ask rather '
-                'than silently preserving your old conclusion or changing facts. Target: '+json.dumps(target,ensure_ascii=False))
+                'than silently preserving your old conclusion or changing facts. '
+                'The pinned target version is the original baseline, not the current draft version. '
+                'Current version and readback references are refreshed separately. Target baseline: '+json.dumps(target,ensure_ascii=False))
         from .working_memory_tools import working_memory_tools
         from .user_context import user_context_prompt
         from sec_agent.research_foundation.asset_workspace import asset_context_prompt
@@ -109,9 +111,9 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
         if ids.get('finsight_asset_memory'):
             task_context += '\n本轮个人偏好以本轮快照为准，旧对话中的偏好可能已经修改或清空。它不是金融事实；不得擅自写入长期记忆。'
         task_context += user_context_prompt(metadata.get('owner_id','local-pilot'),thread_id)
-        from .user_workpaper_context import human_revision_prompt
-        audit.working_note_context = lambda: human_revision_prompt({}, memory_actor,
-            owner=metadata.get('owner_id', 'local-pilot'), workspace=memory_workspace)
+        from .user_workpaper_context import working_paper_context
+        audit.working_note_context = lambda: working_paper_context({}, memory_actor,
+            owner=metadata.get('owner_id', 'local-pilot'), workspace=memory_workspace, target=target)
         from .conversation_agent import GrantedTool
         grants.extend(GrantedTool(t, "working_note_write" if t.name == "WriteWorkingNote" else "read",
             "当前对话的工作底稿；不改用户原文件、不写入已核验事实库") for t in working_memory_tools(

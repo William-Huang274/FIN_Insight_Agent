@@ -3,23 +3,24 @@ import json
 import sqlite3
 
 
-def human_revision_catalog(memory, offset=0, limit=20):
+def human_revision_catalog(memory, offset=0, limit=20, *, exclude_note_id=None):
     with memory.connection() as db:
         if not db.execute("SELECT 1 FROM sqlite_master WHERE name='working_note_user_edits'").fetchone():
             return {'items': [], 'next_offset': None}
         rows = db.execute('''SELECT n.id,n.title,n.actor,n.version,MAX(e.version) AS user_version
             FROM working_notes n JOIN working_note_user_edits e ON e.id=n.id
-            WHERE n.owner=? AND n.workspace=? GROUP BY n.id ORDER BY MAX(e.updated_at) DESC,n.id
-            LIMIT ? OFFSET ?''', (memory.owner, memory.workspace, limit + 1, offset)).fetchall()
+            WHERE n.owner=? AND n.workspace=? AND (? IS NULL OR n.id<>?)
+            GROUP BY n.id ORDER BY MAX(e.updated_at) DESC,n.id
+            LIMIT ? OFFSET ?''', (memory.owner, memory.workspace, exclude_note_id, exclude_note_id, limit + 1, offset)).fetchall()
         return {'items': [dict(r) for r in rows[:limit]], 'next_offset': offset + limit if len(rows) > limit else None}
 
 
-def human_revision_prompt(config, actor, *, owner=None, workspace=None):
+def human_revision_prompt(config, actor, *, owner=None, workspace=None, exclude_note_id=None):
     from .working_memory_tools import memory_for, memory_enabled
     if not memory_enabled():
         return ''
     try:
-        catalog = human_revision_catalog(memory_for(config, actor, owner=owner, workspace=workspace))
+        catalog = human_revision_catalog(memory_for(config, actor, owner=owner, workspace=workspace), exclude_note_id=exclude_note_id)
     except (sqlite3.Error, OSError, ValueError):
         return '\n用户底稿修订目录暂不可读取；不能声称已经核对最新修改。请保留未完成状态并报告存储问题。'
     if not catalog['items']:
@@ -38,3 +39,42 @@ def current_scope_revision_prompt(actor):
     if scope is None:
         return ''
     return human_revision_prompt({}, actor, owner=scope[0], workspace=scope[1])
+
+
+def working_paper_context(config, actor, *, owner, workspace, target=None):
+    """Refresh the host-selected object; its original version remains a baseline.
+
+    A reference is navigation, never proof the model has read or verified a version.
+    Do not choose another note when the selected object is missing or inaccessible.
+    """
+    if not target:
+        return human_revision_prompt(config, actor, owner=owner, workspace=workspace)
+    from .working_memory_tools import memory_for, memory_enabled
+    if not memory_enabled():
+        return '\n当前选定底稿存储未启用，无法确认当前版本；不能声称已经保存或核对。'
+    if target.get('workspace') != workspace or target.get('actor') != actor:
+        raise ValueError('working_note_target_scope_mismatch')
+    memory = memory_for(config, actor, owner=owner, workspace=workspace)
+    try:
+        current = memory.read(target['id'], limit=1)
+    except (sqlite3.Error, OSError, ValueError):
+        return '\n当前选定底稿暂不可读取，已有版本不作删除；不能声称已经核对当前稿。'
+    if not current.get('found'):
+        return '\n当前研究空间无法读取选定底稿；不得用其他同名底稿替代。'
+    if current['actor'] != actor or current['title'] != target['title']:
+        raise ValueError('working_note_target_identity_mismatch')
+    reference = {
+        'note_id': current['id'], 'title': current['title'],
+        'baseline_version': target['version'], 'current_version': current['version'],
+        'changed_since_baseline': current['version'] != target['version'],
+        'read_current': {'tool': 'ReadWorkingNote', 'arguments': {
+            'note_id': current['id'], 'version': current['version'], 'offset': 0}},
+        'read_baseline': {'tool': 'ReadWorkingNote', 'arguments': {
+            'note_id': current['id'], 'version': target['version'], 'offset': 0}},
+    }
+    return ('\n当前工作对象如下：baseline_version为用户选定时的版本，current_version为本次读取存储确认的版本。'
+            '此目录不表示正文已读、修改已完成或研究判断已核验。需要正文时按准确入口读取；'
+            '保存仍使用实际读到的base_version，期间发生更新由版本冲突反馈处理。\n'
+            + json.dumps(reference, ensure_ascii=False)
+            + human_revision_prompt(config, actor, owner=owner, workspace=workspace,
+                                    exclude_note_id=current['id']))

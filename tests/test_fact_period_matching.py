@@ -38,6 +38,17 @@ def test_combined_liquidity_is_not_proof_of_cash_equivalents_alone():
     assert not prose_periods('As of December 31, 2025, cash, cash equivalents and marketable securities were $5 billion.')
 
 
+def test_combined_liquidity_cannot_displace_correct_reranked_balance_candidate():
+    query='Cash and cash equivalents at 2025-12-31 and 2024-12-31? Retrieve the two date columns and the stated units.'
+    needs=compile_needs(query,{'policy':'conservative.v5','constraint':{},'issuer_mentions':[]})
+    rows=[{'node_id':'balance','parent_document_id':'doc','content':'Cash and cash equivalents | 10 | 9'},
+          {'node_id':'liquidity','parent_document_id':'doc','content':'As of December 31, 2025, cash, cash equivalents and marketable securities were $5 billion.'}]
+    lanes=[{'candidate_ids':['liquidity','balance']} for _ in needs['needs']]
+    selected,receipt=select_coverage(rows,needs,lanes,{'doc':{}})
+    assert selected[0]['node_id']=='balance'
+    assert all(r['period_matches']['liquidity']!='match' for r in receipt)
+
+
 def test_period_comparisons_and_fiscal_quarters_keep_explicit_identity():
     from retrieval.fact_period_matching import query_period_requirements
     assert query_period_requirements('Cash as of 2024-12-31 and 2025-12-31')['targets']==[

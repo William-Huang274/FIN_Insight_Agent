@@ -103,6 +103,7 @@ def compile_financial_needs(query, plan, legacy):
         literal_clauses = owner_clauses(positive, mentions)
         scoped = all(o and o.get('issuer_id') in literal_clauses for o in owners)
     needs = []
+    context_requests=[]
     for owner in owners:
         clause = ' '.join(literal_clauses[owner['issuer_id']]) if scoped and literal_clauses else None
         choices = concepts(clause, extended=extended) if clause is not None else per_owner[owner['issuer_id']] if scoped else found
@@ -153,6 +154,13 @@ def compile_financial_needs(query, plan, legacy):
                 nonperiod=FY.sub('',DATE.sub('',topic))
                 if not re.search(r'[A-Za-z\u3400-\u9fff]',nonperiod):
                     continue
+                from .query_context_requirements import context_requirements,is_assertion_context
+                if is_assertion_context(topic,query):
+                    context_requests.append({'text':topic,'roles':['assertion_to_verify'],'owner':owner})
+                    continue
+                if context:=context_requirements(topic):
+                    context_requests.append({'text':topic,'roles':context,'owner':owner})
+                    continue
                 from .organization_search_needs import lexical_surfaces
                 routes, translations = lexical_surfaces(topic)
                 if routes:
@@ -165,6 +173,7 @@ def compile_financial_needs(query, plan, legacy):
     return {**legacy, 'policy':POLICY, 'needs':needs,
         'financial_concepts':sorted({n['concept'] for n in needs if n.get('concept')}),
         'excluded_requirements':exclusions,
+        'context_requirements':context_requests,
         'decomposition':'explicit_owner_financial_concepts' if scoped else 'financial_concepts',
         'coverage_semantics':'candidate_routes_not_answer_sufficiency',
         'translation_scope':'versioned_financial_navigation_variants_not_fact_equivalence'}

@@ -219,9 +219,10 @@ def select_coverage(rows, needs, lane_receipts, metadata):
         eligible.sort(key=lambda r:(
             0 if year and metadata.get(r['parent_document_id'], {}).get('calendar_annual_year') == year else 1,
             ranked[r['node_id']]))
-        if needs['policy'] == 'organization-financial-needs.v2' and need.get('concept'):
+        if needs['policy'] == 'organization-financial-needs.v2':
             # Preserve the scorer's order within a financial need. Route rank
-            # alone must not promote an old-period paragraph over the reranker.
+            # alone must not promote an old-period paragraph or an unknown
+            # literal topic over the reranker. Owner coverage remains separate.
             order = {r['node_id']:i for i,r in enumerate(rows)}
             eligible.sort(key=lambda r:order[r['node_id']])
         period_states = {}

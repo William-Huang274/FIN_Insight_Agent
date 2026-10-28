@@ -1,6 +1,6 @@
 # FinSight 文档
 
-连续问答、底稿、委派、复核与成文的统一入口设计见[研究伙伴产品边界](product/research_partner_workflow.zh-CN.md)与[按需研究运行时第一阶段](architecture/on_demand_research_runtime.zh-CN.md)。A1 交付意图合同离线回归通过，统一入口尚未实现；目标是新任务仅保留一个生产调度入口，旧完整图仅作历史运行兼容。
+连续问答、底稿、委派、复核与成文的统一入口设计见[研究伙伴产品边界](product/research_partner_workflow.zh-CN.md)与[按需研究运行时第一阶段](architecture/on_demand_research_runtime.zh-CN.md)。A1 交付意图合同与 A2 Java/BFF 准备准入离线回归通过，尚未部署或实现统一入口；目标是新任务仅保留一个生产调度入口，旧完整图仅作历史运行兼容。
 
 近期完整研报阅读、可观察方法与协作推断的区分、独立公开数据量化实验，以及研究伙伴设计边界见[研究伙伴与独立实验](architecture/research_partner_experiments.zh-CN.md)。该原型未接入产品研究流程。
 

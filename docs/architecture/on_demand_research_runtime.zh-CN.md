@@ -66,7 +66,7 @@
 | --- | --- | --- |
 | `ExecutionOptions.delivery_intent` | 可省略，显式值仅 `answer / workpaper / report`；显式 null 和其他类型/值拒绝 | 与 mode、branch_ids、continuation_scope 正交；不新增方向权限或检查许可 |
 | 字段缺省 | 仅解释为历史 report | 序列化仍省略该字段，不补写已存 JSON；缺省与显式 report 的原始表示及摘要不同 |
-| 已有 Python NewSession/ReviewAction 的 execution、run config | 复用 ExecutionOptions，保留已有接口位置 | Java 尚未贯通；不得宣称新交付已可在组织浏览器发起 |
+| 已有 Python NewSession/ReviewAction 的 execution、run config | 复用 ExecutionOptions，保留已有接口位置 | A1 时 Java 尚未贯通；当前 A2 见 4.3，仍未开放新交付 |
 | 现有研究/报告执行器 | 只支持历史 report 交付 | 显式 answer/workpaper 在阶段资源/模型调用前报 `delivery_intent_not_supported_by_report_workflow:<值>`；不会忽略意图继续跑报告。普通问答及旧报告 ask 没有新字段时保持原行为 |
 | `TaskOutcome.artifact_kind` | 可选实际成果形式；当前专家产物投影为 workpaper | 沿用 artifact_digest/status、execution_status、review_status；不从交付意图伪造实际类型或完成状态；旧回执缺省保持缺省 |
 
@@ -76,7 +76,7 @@ A1 离线结果：`test_delivery_intent_contract`、`test_execution_options`、`
 
 ### 4.2 后续动作与 API 冻结顺序
 
-下表冻结职责与依赖，不提前虚构尚未确认的公开 URL/schema。A1 没有新增可执行动作；B/E 在集成方当前检索验收收口、给出干净提交后共同冻结线级合同，再实现。
+下表冻结职责与依赖，不提前虚构尚未确认的公开 URL/schema。A1 没有新增可执行动作；A2 已确认现有准备 DTO 的最小贯通。新动作在 B/E 对应执行器就绪后再冻结线级合同并开放，不能借 A2 提前受理。
 
 | 动作 | 复用对象/机制 | 实施前需共同冻结的增量 |
 | --- | --- | --- |
@@ -87,6 +87,36 @@ A1 离线结果：`test_delivery_intent_contract`、`test_execution_options`、`
 | 成文及导出 | Lead 成文执行器、现有报告版本/导出器 | 成文交付约定与成果可见性；导出继续无模型，不触发全案研究 |
 
 实施顺序进一步收窄为：A1 Python 合同与离线兼容 → A2 双方 DTO/动作/成果读接口冻结及准入回归 → B/D 能力装配和状态接续 → C 固定后继边退出 → E 统一入口真实服务验收。不能因 Python 已接受字段而抢先在 UI 开放新入口。
+
+### 4.3 A2 当前 API 与后续动作准入（双方确认）
+
+A2 本片复用已有接口，不新增公开动作、URL、队列或业务状态表：
+
+| 接口/对象 | 本片处理 | 接受与兼容边界 |
+| --- | --- | --- |
+| Java `POST /v1/tasks` 的 `execution` | 可选 `delivery_intent` 进入共享 Execution DTO | 缺省不补字段，显式 report 保留；answer/workpaper 在任务插入、prepare 派发前返回 422 |
+| Java `POST /v1/workspaces/projects/{project}/execution-bindings/{id}/prepare` | 复用同一 DTO 和能力准入 | 在准备命令事务、审计写入、Python 派发前拒绝不支持意图；已存在的项目/执行绑定并不因此删除 |
+| Java 原任务 `research_options` /组织 `GET .../preparation` | 继续读取持久请求中的 execution | 不使用当前默认值重建历史配置；原始请求摘要与操作身份保持不变 |
+| BFF `NewSession`，包括个人 Java prepare 信封 | 在入参验证时检查现有执行器能力 | 不支持值返回 422，不建立原生 thread、run 或项目分配 |
+| BFF `/api/v1/internal-research/organization/prepare` | 核权之后、资料校验与原生创建之前检查能力 | 不改变授权 grant、签名或请求字节摘要；仍完整冻结 Java execution 原始对象 |
+| Python 阶段工厂 | 保留 A1 二次拒绝 | 防止绕过产品准备直接调用旧报告执行器；不把 unsupported 当作执行完成 |
+
+`delivery_intent` 显式 null、非字符串及未知值无效；Java 的未知 execution 字段不再静默丢弃，拼写错误会在解析期暴露。这是输入兼容收紧，不改历史持久 JSON。旧 mode/model/branch_ids 的既有序列化默认值不在本片迁移；本片保证新增字段的缺省表示不被补写。普通问答的既有调用不因缺省意图而新增完整报告任务。
+
+后续新增动作共用持久命令、原生执行与成果体系，下面是**必须满足的合同，尚不是可调用 API**：
+
+| 动作 | 命令必须固定的对象 | 准入及完成条件 |
+| --- | --- | --- |
+| 当前请求直接工作 | 原问题/本次用户请求、输入版本、交付意图、宿主能力和预算 | 对应执行器可处理该交付才受理；保存中间成果不自动完成请求 |
+| 委派/接续/停止 | 父任务与子任务身份、固定子输入、可委派能力、根预算 | 不超父授权，不复制父 run 凭证；重复派发幂等，撤权/取消传播可恢复；unknown 只核对 |
+| 检查指定成果 | 成果版本/摘要、检查范围、相关变更及已完成检查引用 | 当前输入授权；检查只对该版本和范围有效，必要关联读取仍允许 |
+| 修订指定成果 | 原版本、修订请求、成果身份及局部变更 | 沿用分批保存、冲突检查、最终提交；不能因保存成功提前标为完成 |
+| 成文 | 当前问题、选用成果版本和对应检查结果、交付约定 | 复用 Lead 与现有成文能力；不触发强制重跑研究或复核 |
+| 导出/读取 | 已保存成果版本、导出格式 | 复用当前读取授权与导出器，无模型；不隐含研究或成文命令 |
+
+这些动作不能塞进 orientation/start/begin_research；旧命令保持原语义。实施依赖为：能力输入/结果合同 → 执行器与离线验证 → 对应持久命令/Java-BFF 准入 → 唯一新入口替换旧固定后继边 → UI 开放与统一服务验收。未就绪动作明确不可用，不建 run 后才宣告不支持，也不保留两套可创建新任务的流程。
+
+A2 本片离线证据：Java `DeliveryIntentTest` 11项通过，实际 JDK21 编译 DTO/控制器，mock 持久存储/远端确认拒绝时无调用；Python `test_delivery_intent_contract`、`test_java_research_intake`、`test_organization_native_drafts`、`test_organization_execution_compatibility` 77项通过，覆盖真实 FastAPI 路由/签名/回执与模拟原生 SDK。两组分别验证 Java 及 BFF，未声称已跑跨进程 PostgreSQL/Java/Agent Server 联调；没有模型调用、Docker 启动或部署切换。
 
 ### 提示、配置和旧验收的替换
 
@@ -156,9 +186,11 @@ A1 离线结果：`test_delivery_intent_contract`、`test_execution_options`、`
 
 当前集成方负责且本阶段不触碰的优化面：`source_verification_cache`、`organization_candidate_index`、`asset_workspace` 有界版本查询、`prepared_source_metadata`、`published_lexical_index` 统计缓存；其隔离 Java/BFF 验证继续自行进行。
 
-模块归属：研究侧负责 A 的研究合同和 B/C/D；集成方负责 A 的业务授权/创建合同与 E 的 Java/BFF/前端。准备/启动/接续、thread/run/checkpoint/冻结配置、执行绑定、全部输入当前授权、成果/引用/导出可见性，是双方必须先确认的交界。研究侧不在自己的分支自行实现这些共享入口。第一阶段发布前重新确认双方干净提交，由集成方选择提交合并和部署时机；本次文档提交不自动触发部署。
+模块归属：研究侧负责 A 的研究合同和 B/C/D；集成方负责 A 的业务授权/创建合同与 E 的 Java/BFF/前端。准备/启动/接续、thread/run/checkpoint/冻结配置、执行绑定、全部输入当前授权、成果/引用/导出可见性，是双方必须先确认的交界。共享入口经明确模块交接后才实施。第一阶段发布前重新确认双方干净提交，由集成方选择提交合并和部署时机；文档或代码提交不自动触发部署。
 
 本次边界已确认；具体新增动作/schema/API、实现排期、服务切换与正式验收仍待实施前确认，不能标为已完成集成。
+
+2026-10-28 A2 交接更新：集成方在 ebf01862 上继续检索冷启动验收，未提供新的干净基线；明确允许研究侧从已有干净基线+A1在隔离树修改 ResearchTasks.Execution/准入、OrganizationNativeDrafts 准备准入及对应 BFF/测试/文档。本片不改授权 grant、组织访问 SQL、检索、资料存储或 source_intake 验收脚本，不打包覆盖其 jar、不切部署。第 4.3 节为本次共同确认的最小范围；新增动作的实际 API 仍待执行器就绪。集成方封口后核对三方差异再选择提交。
 
 后续 A1 对齐：集成方允许在研究侧干净提交实施可选 delivery_intent 及离线兼容；公开动作/Java/BFF 请求改造留 A2/B/E 联合冻结。集成方以当前检索验收收口为先，不承诺同时实施；研究侧不修改其列明的优化文件或 HTTP 压测脚本。
 
@@ -171,6 +203,7 @@ A1 离线结果：`test_delivery_intent_contract`、`test_execution_options`、`
 - [x] 集成窗口确认并行边界与应复用/先协调的共享合同；模块归属已记录。
 - [x] 冻结 A1 新选项、结果形式及不开放新动作的边界；使用研究侧干净提交开展离线实施。
 - [x] A1 合同、实际成果形式投影与旧执行器拒绝不支持意图的离线回归通过。
-- [ ] A2/B/E 共同冻结公开动作、Java/BFF schema/API 与集成提交。
+- [x] A2 最小准备 DTO/现有 API/不支持意图准入共同确认，Java/BFF 离线回归通过。
+- [ ] B/E 新动作线级合同及准入随执行器就绪冻结；A2 提交待集成方干净基线三方核对。
 - [ ] 实现 A–E 及相应旧逻辑退出。
 - [ ] 离线回放、统一服务无模型检查、真实连续使用与质量验收。

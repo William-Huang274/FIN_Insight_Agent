@@ -58,6 +58,7 @@ class OrganizationNativeDrafts {
     }
     @PostMapping("/prepare")
     Object prepare(HttpServletRequest request,@PathVariable UUID project,@PathVariable UUID id,@Valid @RequestBody Prepare input) {
+        input.execution().requireReportWorkflow();
         String actor=(String)request.getAttribute("owner"),fingerprint=Delegation.digest((byte[])request.getAttribute("originalBody"));
         tx.executeWithoutResult(status->{
             var grant=bindings.preparation(actor,project,id);

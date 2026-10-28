@@ -18,6 +18,23 @@ class ResearchTasks {
         @NotNull @Pattern(regexp="standard|auto|selected|single") public String mode;
         @NotNull @Pattern(regexp="default|deepseek-v4-flash|deepseek-v4-pro") public String model;
         @NotNull @Size(max=24) public List<@NotBlank @Size(max=120) String> branch_ids;
+        // Absence keeps the historical wire representation; explicit null is invalid.
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+        @Pattern(regexp="answer|workpaper|report") public String delivery_intent;
+        @com.fasterxml.jackson.annotation.JsonSetter("delivery_intent")
+        public void setDeliveryIntent(JsonNode value) {
+            if (!value.isTextual() || !Set.of("answer", "workpaper", "report").contains(value.textValue()))
+                throw new IllegalArgumentException("delivery_intent_must_be_answer_workpaper_or_report");
+            delivery_intent = value.textValue();
+        }
+        void requireReportWorkflow() {
+            if (delivery_intent != null && !"report".equals(delivery_intent))
+                throw new ApiFailure(422, "delivery_intent_not_supported_by_report_workflow:" + delivery_intent);
+        }
+        @com.fasterxml.jackson.annotation.JsonAnySetter
+        public void rejectUnknownOption(String name, JsonNode value) {
+            throw new IllegalArgumentException("unknown_execution_option:" + name);
+        }
         // Missing on an old client means the default; explicit null remains invalid.
         @NotNull @Pattern(regexp="original_question|original_plan")
         public String continuation_scope = "original_question";
@@ -77,6 +94,7 @@ class ResearchTasks {
 
     @PostMapping
     Object create(HttpServletRequest request, @RequestHeader("Idempotency-Key") UUID key, @Valid @RequestBody CreateTask input) {
+        if (input.execution() != null) input.execution().requireReportWorkflow();
         String owner = owner(request);
         python.authorize(owner, input.project_id());
         String fingerprint = Delegation.digest((byte[])request.getAttribute("originalBody"));

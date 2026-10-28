@@ -96,6 +96,10 @@ def install_organization_native_routes(router, service):
         grant = request.scope.get('finsight_organization_preparation')
         if not grant:
             raise HTTPException(401, '缺少组织准备委托')
+        try:
+            ExecutionOptions.model_validate(grant['prepare_request']['execution']).require_report_workflow()
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from None
         from types import SimpleNamespace
         shared = SimpleNamespace(workspace=AssetWorkspace(service.attachment_store.root.parent / 'project-library' / 'organization-assets'))
         await run_in_threadpool(verify_storage, shared, grant['organization_id'], grant['inputs'],

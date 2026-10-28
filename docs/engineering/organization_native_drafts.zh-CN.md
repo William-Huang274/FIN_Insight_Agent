@@ -21,6 +21,8 @@ Python 的 `/api/v1/internal-research/organization/prepare` 只接受 Java 的�
 
 ## 原生身份与冻结配置
 
+准备 `execution.delivery_intent` 可省略或显式 report，两者保留各自 JSON 表示及摘要。answer/workpaper 尚无对应准备执行器，Java 在准备命令持久化前返回 422；Python 再次在原生线程创建前拒绝，不会静默按报告运行。原 preparation 回读仍直接读取持久请求，不补写新默认字段。此合同不把 orientation/start/begin_research 扩展成任意工作，后续动作见[按需运行时 A2 合同](../architecture/on_demand_research_runtime.zh-CN.md#43-a2-当前-api-与后续动作准入双方确认)。
+
 使用官方 SDK 的一次 `threads.create(thread_id=execution_id, metadata=..., if_exists='raise')` 原子保存身份与配置；不采用“先建空 thread、再 patch metadata”。已有相同 UUID 不覆盖，不自动生成另一个 UUID。
 
 - `surface=organization_research_workbench`，`owner_id=organization:<organization_id>`，与个人研究入口隔离。

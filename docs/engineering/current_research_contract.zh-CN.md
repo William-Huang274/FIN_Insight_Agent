@@ -1,10 +1,12 @@
 # 当前研究任务与历史数据契约
 
-## 交付意图合同（A1，未开放新交付执行）
+## 交付意图合同（A1/A2，未开放新交付执行）
 
 `ExecutionOptions.delivery_intent` 可省略，显式值为 `answer`、`workpaper` 或 `report`，显式 null 拒绝。缺省在解释层仍为历史 report，但序列化不增加该字段，已冻结的请求 JSON、配置摘要和幂等身份不重写。研究范围、Agent 数量与交付形式分开；字段本身不赋予执行或复核权限。
 
-当前研究/报告执行器仍只承接历史报告流程；显式 answer/workpaper 在调用阶段资源/模型前返回 `delivery_intent_not_supported_by_report_workflow:<值>`，不能默默忽略该字段生成报告。现有普通对话、旧配置及报告追问不因本字段改变。Java DTO、新动作准入、统一主入口与底稿交付待后续集成，不能因 Python schema 接受就宣称组织产品已开放。
+A2 将该字段贯通 Java 个人任务/组织准备 DTO；缺省与显式 report 仍保留不同原始表示。answer/workpaper 暂未有对应入口执行器，在 Java 创建任务/准备持久命令前和 BFF 原生线程创建前拒绝，现有执行器继续二次拒绝。Java execution 中未知字段、非法类型和值不能静默丢弃。没有新增公开动作或开放 UI 选择，具体接口与后续动作准入见[第一阶段第 4.3 节](../architecture/on_demand_research_runtime.zh-CN.md#43-a2-当前-api-与后续动作准入双方确认)。
+
+当前研究/报告执行器仍只承接历史报告流程；显式 answer/workpaper 在调用阶段资源/模型前返回 `delivery_intent_not_supported_by_report_workflow:<值>`，不能默默忽略该字段生成报告。现有普通对话、旧配置及报告追问不因本字段改变。新动作准入、统一主入口与底稿交付待后续集成；Java/BFF DTO 的离线贯通不代表组织产品已开放新交付。
 
 专家 `TaskOutcome` 增加可选 `artifact_kind`：有真实候选或提交时为 `workpaper`；没有成果不填，旧记录回读不补字段。它与已有提交/候选状态、作者部分完成说明、独立复核状态分开，不改变来源/计算/正文或原成果摘要。完整替换边界见[按需研究运行时](../architecture/on_demand_research_runtime.zh-CN.md)。
 

@@ -17,6 +17,14 @@ import psutil
 def digest(path):return sha256(Path(path).read_bytes()).hexdigest()
 
 
+def preparation_code():
+    root=Path(__file__).resolve().parents[2]
+    code={str(p):digest(p) for folder in ('src/retrieval','src/sec_agent/research_foundation') for p in (root/folder).glob('*.py')}
+    for name in ('qualify_unit_rerank.py','frozen_retrieval_context.py','rerank_receipt_audit.py','prepare_unit_rerank_isolated.py'):
+        path=root/'scripts/engineering'/name;code[str(path)]=digest(path)
+    return code
+
+
 def publication_rows(records,allowed):
     """Retain release rows and every document with any unpublished parent.
 
@@ -27,7 +35,8 @@ def publication_rows(records,allowed):
             {r['document_id'] for r in records if r['node_id'] not in allowed})
 
 
-def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
+def prepare(index_path,overlay,contexts,metadata_path,queries_path,output,*,query_ids=None):
+    code=preparation_code()
     from scripts.engineering.frozen_retrieval_context import FrozenRetrievalContext
     from retrieval.semantic_unit_index import rank,validate
     from retrieval.published_lexical_index import PublishedLexicalStatistics
@@ -49,6 +58,11 @@ def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
     records,unpublished_documents=publication_rows(index['records'],allowed)
     validate(overlay,publication['descriptor'],records,index['model'])
     metadata=json.loads(metadata_path.read_bytes());queries=json.loads(queries_path.read_bytes())['questions']
+    if query_ids is not None:
+        requested=set(query_ids)
+        if not requested or len(requested)!=len(query_ids):raise ValueError('unit_quality_invalid_query_selection')
+        queries=[q for q in queries if q['id'] in requested]
+        if {q['id'] for q in queries}!=requested:raise ValueError('unit_quality_query_selection_missing')
     output.mkdir(parents=True,exist_ok=False);jobs=[];total_bytes=0;total_candidates=0
     statistics=PublishedLexicalStatistics()
     with closing(FrozenRetrievalContext(index_path,contexts,index=index,
@@ -98,10 +112,7 @@ def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
             # statistics remain shared; scope and provider inputs are unchanged.
             del job,texts,candidates,entry,receipt,context_receipt,rows
             adapter.select_documents(set())
-    root=Path(__file__).resolve().parents[2]
-    code={str(p):digest(p) for folder in ('src/retrieval','src/sec_agent/research_foundation') for p in (root/folder).glob('*.py')}
-    for name in ('qualify_unit_rerank.py','frozen_retrieval_context.py','rerank_receipt_audit.py'):
-        path=root/'scripts/engineering'/name;code[str(path)]=digest(path)
+    if preparation_code()!=code:raise RuntimeError('unit_quality_code_changed_during_preparation')
     plan={'role':'exposed_regression_full_scoring_not_live_HTTP','jobs':jobs,'code_sha256':code,
         'instruction':instruction,'relevance_boundary':boundary.artifact if boundary else None,
         'pipeline':pipeline_identity('research.v2',model,instruction,'bounded.v1'),
@@ -172,7 +183,8 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='action',required=True)
     create=sub.add_parser('prepare')
     for key in ('index','overlay','contexts','metadata','queries','output'):create.add_argument('--'+key,type=Path,required=True)
+    create.add_argument('--query-id',action='append',dest='query_ids',help='Prepare explicit IDs from the same fully hashed query file; no provider requests')
     execute=sub.add_parser('run');execute.add_argument('--output',type=Path,required=True)
     a=p.parse_args()
-    if a.action=='prepare':print(json.dumps(prepare(a.index,a.overlay,a.contexts,a.metadata,a.queries,a.output),ensure_ascii=False))
+    if a.action=='prepare':print(json.dumps(prepare(a.index,a.overlay,a.contexts,a.metadata,a.queries,a.output,query_ids=a.query_ids),ensure_ascii=False))
     else:run(a.output)

@@ -4,6 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from .research_graph_contracts import canonical_sha256
+from .execution_options import DeliveryIntent
 
 
 class NoteModel(BaseModel):
@@ -80,6 +81,8 @@ class TaskOutcome(NoteModel):
     stop_reason: str | None = None
     artifact_digest: str | None = None
     artifact_status: Literal["submitted", "candidate", "none"]
+    artifact_kind: DeliveryIntent | None = Field(default=None, exclude_if=lambda v: v is None,
+        description="Actual artifact form, not requested intent, execution completion or independent verification. Absent in legacy outcomes; never inferred from single/auto mode.")
     review_status: Literal["not_assessed_in_this_record"] = "not_assessed_in_this_record"
     success_criteria: list[str] = Field(default_factory=list)
     author_note: AuthorTaskNote | None = None
@@ -141,6 +144,7 @@ def task_outcome(state, *, assignment=None, error_type=None, cancelled=False):
         stop_reason=error_type or state.get("review_reason") or (state.get("human_review_handoff") or {}).get("reason_code"),
         artifact_digest=canonical_sha256(artifact) if artifact else None,
         artifact_status="submitted" if status == "submitted" and artifact else "candidate" if artifact else "none",
+        artifact_kind="workpaper" if artifact else None,
         success_criteria=criteria, author_note=note, author_note_status=note_status,
         navigation_issues=navigation, open_gaps=[s for s in gaps if isinstance(s, str)] if isinstance(gaps, (list, tuple)) else [],
         runtime_changes=[{k: row[k] for k in ("baseline_digest", "current_digest", "changed_claim_ids", "locations", "semantic_status") if k in row}

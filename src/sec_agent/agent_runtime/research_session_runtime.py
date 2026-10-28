@@ -130,6 +130,7 @@ def create_research_phase_runnables(*, execution=None, **kwargs):
         async def invoke(state, config: RunnableConfig):
             supplied = config.get('configurable', {}).get('finsight_execution')
             selected = execution_from_config(config) if supplied is not None else execution or ExecutionOptions()
+            selected.require_report_workflow()
             if execution is not None and selected != execution:
                 raise ValueError('research_execution_configuration_mismatch')
             key = selected.model_dump_json()

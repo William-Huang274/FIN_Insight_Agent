@@ -1,5 +1,13 @@
 # 当前研究任务与历史数据契约
 
+## 交付意图合同（A1，未开放新交付执行）
+
+`ExecutionOptions.delivery_intent` 可省略，显式值为 `answer`、`workpaper` 或 `report`，显式 null 拒绝。缺省在解释层仍为历史 report，但序列化不增加该字段，已冻结的请求 JSON、配置摘要和幂等身份不重写。研究范围、Agent 数量与交付形式分开；字段本身不赋予执行或复核权限。
+
+当前研究/报告执行器仍只承接历史报告流程；显式 answer/workpaper 在调用阶段资源/模型前返回 `delivery_intent_not_supported_by_report_workflow:<值>`，不能默默忽略该字段生成报告。现有普通对话、旧配置及报告追问不因本字段改变。Java DTO、新动作准入、统一主入口与底稿交付待后续集成，不能因 Python schema 接受就宣称组织产品已开放。
+
+专家 `TaskOutcome` 增加可选 `artifact_kind`：有真实候选或提交时为 `workpaper`；没有成果不填，旧记录回读不补字段。它与已有提交/候选状态、作者部分完成说明、独立复核状态分开，不改变来源/计算/正文或原成果摘要。完整替换边界见[按需研究运行时](../architecture/on_demand_research_runtime.zh-CN.md)。
+
 ## 局部修订即提交
 
 已有候选稿的局部修订使用 `ReviseWorkpaperAction`：模型提供版本摘要和修改片段，runtime 复用未变的正文、论断及引文，组装完整候选并执行与全量提交相同的结构、来源和交付校验。此调用本身就是提交，不要求随后再调用 `SubmitWorkpaperAction` 重发整稿。首次写稿或有意全文重写仍可使用全量提交。

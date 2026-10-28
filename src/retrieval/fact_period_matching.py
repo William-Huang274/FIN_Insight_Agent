@@ -26,6 +26,10 @@ def balance_concepts(text):
         names.discard('repurchase_authorization')
     if re.search(r'\b(?:beginning|increase|decrease|change)\b|期初|增加|减少|变动',text,re.I):
         names.difference_update({'cash_equivalents','restricted_cash'})
+    # A combined liquidity amount is not the cash-equivalents line item.
+    # Keep it retrievable lexically, but it cannot supply an exact fact proof.
+    if re.search(r'\bcash(?:\s*,|\s+and)?\s*(?:cash\s+)?equivalents\s*,?\s+(?:and|including)\s+(?:(?:short[- ]term|marketable)\s+)?(?:securities|investments)\b|现金(?:及|和|与)?现金等价物(?:及|和|与)(?:有价证券|短期投资)',text,re.I):
+        names.discard('cash_equivalents')
     return names
 
 

@@ -291,23 +291,14 @@ class OrganizationSourceNavigation:
                 policy=self.hybrid.candidate_policy)
             ranked = [eligible[n] for n in ids]
             receipt.update(source_window=expansion, candidate_node_ids=ids)
-        materialized = candidates.materialize(ranked, manifest)
-        if needs or evidence_filter:
-            materialized = candidates.contextualize(materialized, manifest)
-        if evidence_filter:
-            from retrieval.evidence_scoring_view import attach_scoring_view
-            materialized=[attach_scoring_view(row,evidence_filter) for row in materialized]
-        if (self.hybrid.candidate_policy in {'needs_window.v2', 'needs_window.v3', 'needs_window.v4','needs_units.v1'}
-                and request.organization_metadata_policy == 'sec_cover.v2'):
-            from retrieval.rerank_document_context import with_document_context
-            materialized = with_document_context(materialized, candidates.source_metadata)
+        from retrieval.organization_candidate_preparation import prepare_candidates
+        materialized,context_receipt=prepare_candidates(candidates,ranked,rows,manifest,
+            needs=needs,wanted=evidence_filter,
+            document_context=(self.hybrid.candidate_policy in {'needs_window.v2','needs_window.v3','needs_window.v4','needs_units.v1'}
+                              and request.organization_metadata_policy=='sec_cover.v2'),
+            table_context=self.hybrid.reranker is not None and self.table_completion)
+        if context_receipt is not None:receipt['rerank_table_context']=context_receipt
         if self.hybrid.reranker is not None:
-            if self.table_completion:
-                materialized, context_receipt=candidates.complete_tables(
-                    materialized,rows,manifest,independent_candidates=True)
-                for row in materialized:
-                    row['rerank_table_completion']=row.pop('table_completion')
-                receipt['rerank_table_context']=context_receipt
             def check_access():
                 self.reader._after(before)
                 candidates.check()

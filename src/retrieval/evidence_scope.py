@@ -5,12 +5,12 @@ import re
 from .catalog_company_identity import aliases_for, name_key
 
 POLICY = 'original-evidence-scope.v1'
-STATEMENT = re.compile(r'(?im)^[ \t]*(?:UNAUDITED\s+)?(?:CONDENSED\s+)?(?P<consolidated>CONSOLIDATED\s+)?'
-    r'(?:BALANCE\s+SHEETS?|STATEMENTS?\s+OF\s+(?:CASH\s+FLOWS?|(?:COMPREHENSIVE\s+)?(?:INCOME|OPERATIONS|EARNINGS))'
-    r'(?:\s+AND\s+COMPREHENSIVE\s+(?:INCOME|LOSS))?)'
+STATEMENT = re.compile(r'(?im)^[ \t]*(?:UNAUDITED\s+)?(?:CONDENSED\s+)?(?P<consolidated>CONSOLIDATED(?:\s+AND\s+COMBINED)?\s+)?(?:COMBINED\s+)?'
+    r'(?:BALANCE\s+SHEETS?|STATEMENTS?\s+OF\s+FINANCIAL\s+POSITION|STATEMENTS?\s+OF\s+(?:CASH\s+FLOWS?|(?:COMPREHENSIVE\s+)?(?:INCOME|OPERATIONS|EARNINGS))'
+    r'(?:\s+AND\s+COMPREHENSIVE\s+(?:INCOME|LOSS))?|STATEMENTS?\s+OF\s+(?:CHANGES\s+IN\s+)?(?:(?:STOCKHOLDERS|SHAREHOLDERS|PARTNERS)[\x27’]?\s+)?(?:EQUITY|CAPITAL))'
     r'(?P<tail>[^\n]*)$')
 TABLE = re.compile(r'\[TABLE:[^\n]*\].*?\[/TABLE\]', re.S)
-ITEM = re.compile(r'(?im)^[ \t]*Item[ \t]+(?P<number>\d+\.\d+)[. \t]*(?:\r?\n[ \t]*)?[^\n]+$')
+ITEM = re.compile(r'(?im)^[ \t]*I(?:[ \t]*\r?\n[ \t]*)?tem[ \t]+(?P<number>\d+\.\d+)[. \t]*(?:\r?\n[ \t]*)?[^\n]+$')
 
 
 def source_scopes(text):
@@ -40,11 +40,13 @@ def source_scopes(text):
         if any(not is_table_caption(s) for s in between.splitlines()):
             continue
         title = heading.group().casefold()
-        kind = 'balance_sheet' if 'balance' in title else 'cash_flow' if 'cash' in title else 'income_statement'
+        kind = ('balance_sheet' if 'balance' in title or 'financial position' in title else 'cash_flow' if 'cash' in title else
+                'equity_statement' if re.search(r'\b(?:equity|capital)\b',title) else 'income_statement')
         attributes = {'statement_type':kind,'statement_role':'supplemental' if supplemental else 'primary'}
         if heading.group('consolidated'):
             attributes['consolidation'] = 'consolidated'
-        previous = text[max(0,heading.start()-240):heading.start()].rstrip().split('\n')[-1].strip()
+        previous_lines=[re.sub(r'[\u200b\ufeff]','',s).strip() for s in text[max(0,heading.start()-240):heading.start()].splitlines()]
+        previous=next((s for s in reversed(previous_lines) if s),'')
         owner = re.sub(r'\s+AND\s+(?:SUBSIDIARIES|SUBSIDIARY\s+COMPANIES)\s*$', '', previous, flags=re.I)
         if named_owner:
             attributes['reporting_entity']=named_owner[1]
@@ -52,15 +54,17 @@ def source_scopes(text):
                 and re.search(r'\b(?:INC\.?|CORPORATION|CORP\.?|COMPANY|LIMITED|LTD\.?|PLC|LLC|L\.?P\.?|N\.?V\.?)\s*$',owner,re.I)):
             attributes['reporting_entity'] = owner
         add(heading.start(), table[1], attributes, 'explicit_statement_heading_and_immediate_table')
+    from .statement_headings import embedded_statement_regions
+    for start,end,attributes,basis in embedded_statement_regions(text,tables):add(start,end,attributes,basis)
     items = list(ITEM.finditer(text))
     for i, heading in enumerate(items):
         event = {'2.02':'earnings_release', '2.03':'financing'}.get(heading['number'])
         if event:
             add(heading.start(), items[i+1].start() if i+1<len(items) else len(text),
                 {'event_type':event}, 'explicit_sec_item_'+heading['number'])
-    from .business_scope_attributes import table_attributes,exhibit_attributes,transaction_attributes
+    from .business_scope_attributes import table_attributes,exhibit_attributes,transaction_attributes,disclosure_attributes
     for start,end,attributes,basis in [*table_attributes(text,tables),
-                                      *exhibit_attributes(text,tables),*transaction_attributes(text)]:
+                                      *exhibit_attributes(text,tables),*transaction_attributes(text),*disclosure_attributes(text)]:
         add(start,end,attributes,basis)
     return regions
 
@@ -73,7 +77,7 @@ def matching_state(scopes, wanted):
     for scope in scopes:
         actual = scope['attributes']; checks = []
         for key, values in wanted.items():
-            if key == 'unknown_policy':continue
+            if key in {'unknown_policy','fact_periods'}:continue
             if not values:continue
             value = actual.get(key)
             if value is None:
@@ -96,7 +100,7 @@ def interval_matching_state(scopes, wanted):
     """
     checks=[]
     for key,values in wanted.items():
-        if key=='unknown_policy' or not values:continue
+        if key in {'unknown_policy','fact_periods'} or not values:continue
         actual=[s['attributes'][key] for s in scopes if key in s['attributes']]
         if not actual:
             checks.append(None);continue
@@ -109,7 +113,8 @@ def interval_matching_state(scopes, wanted):
 def select_scoped(rows, wanted):
     counts = {'match':0,'unknown':0,'mismatch':0}; selected = []
     for row in rows:
-        state = matching_state(row.get('evidence_scopes', []), wanted)
+        business={k:v for k,v in wanted.items() if k not in {'unknown_policy','fact_periods'} and v}
+        state = matching_state(row.get('evidence_scopes', []), wanted) if business else 'match'
         # A mixed chunk may contain an unclassified paragraph beside a known
         # conflicting table. That table cannot classify the entire chunk.
         if state == 'mismatch' and not row.get('evidence_scope_complete', False):
@@ -118,6 +123,9 @@ def select_scoped(rows, wanted):
             intervals=scope_intervals(*row['source_interval'],row.get('evidence_scopes',[]),wanted)
             states=[s['state'] for s in intervals]
             state='match' if 'match' in states else 'unknown' if 'unknown' in states else 'mismatch'
+        if wanted.get('fact_periods') and state!='mismatch':
+            from .fact_scope import fact_state
+            state=fact_state(row,wanted)
         counts[state] += 1
         if state == 'match' or (state == 'unknown' and wanted.get('unknown_policy') == 'retain'):
             selected.append(row)
@@ -174,6 +182,9 @@ def plan_scope(query, query_plan=None):
                 wanted['reporting_entity']=constraint['company_names']
     from .business_scope_attributes import query_attributes
     wanted.update(query_attributes(query))
+    from .fact_scope import inferred_fact_requirements
+    facts=inferred_fact_requirements(query)
+    if facts:wanted['fact_periods']=facts
     return wanted if len(wanted)>1 else None
 
 
@@ -185,7 +196,10 @@ def resolve_scope(query, query_plan, explicit=None):
     for key, values in (inferred or {}).items():
         if key=='unknown_policy' or not explicit.get(key):
             continue
-        if key=='reporting_entity':
+        if key=='fact_periods':
+            normalize=lambda rows:{json.dumps({k:v for k,v in r.items() if v is not None},sort_keys=True) for r in rows}
+            expected,supplied=normalize(values),normalize(explicit[key])
+        elif key=='reporting_entity':
             expected={name_key(a) for v in values for a in aliases_for({'company_name':v})}
             supplied={name_key(a) for v in explicit[key] for a in aliases_for({'company_name':v})}
         else:
@@ -214,7 +228,7 @@ def scoring_scope_text(row):
                 or len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest)):
             raise ValueError('rerank_unverified_evidence_scope')
         attributes=region['attributes']
-        allowed={'reporting_entity':None,'statement_type':{'balance_sheet','cash_flow','income_statement'},
+        allowed={'reporting_entity':None,'statement_type':{'balance_sheet','cash_flow','income_statement','equity_statement'},
                  'statement_role':{'primary','supplemental','reconciliation'},
                  'consolidation':{'consolidated'},'event_type':{'earnings_release','financing'},
                  'asset_scope':{'pension_plan','postretirement_plan','nuclear_decommissioning_trust','investment_fund'},

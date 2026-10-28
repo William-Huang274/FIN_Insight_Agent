@@ -54,6 +54,20 @@ def test_independent_rerank_candidate_cannot_borrow_another_candidate_header():
     assert any(s['role']=='header_band' for s in result[1]['table_completion']['contexts'])
 
 
+def test_independent_candidate_context_budget_is_not_spent_by_previous_sources():
+    rows,load,_=fixture();one=deepcopy(rows[1]);two=deepcopy(one)
+    two['node_id']='other';two['parent_document_id']='other-document'
+    def own_load(anchor,span):
+        value=load(one,span)
+        return {**value,'document_id':anchor['parent_document_id']}
+    single,_=complete_tables([one],own_load,independent_candidates=True)
+    required=len(single[0]['table_completion']['contexts'])
+    forward,receipt=complete_tables([one,two],own_load,maximum_spans=required,independent_candidates=True)
+    backward,_=complete_tables([two,one],own_load,maximum_spans=required,independent_candidates=True)
+    assert all(r['table_completion']['status']=='context_complete' for r in forward+backward)
+    assert receipt['budget_scope']=='per_candidate' and receipt['unique_supplemental_spans']==2*required
+
+
 def test_explicit_note_is_required_but_unmarked_note_is_not():
     rows,load,_=fixture()
     deps=rows[1]['source_structure']['table_dependencies'][0]

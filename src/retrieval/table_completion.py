@@ -44,7 +44,12 @@ def complete_tables(rows, load_context, *, top_k=10, maximum_spans=24, maximum_c
     """
     result = [dict(row) for row in rows]
     used, characters = {}, 0
+    all_used={}
     for row in result[:top_k]:
+        # Every reranker document gets the same bounded context opportunity.
+        # Earlier candidates must not spend later candidates' context budget.
+        # The caller separately limits the aggregate provider input bytes.
+        if independent_candidates:used,characters={},0
         origin = row.get('original_source', {})
         structure = row.get('source_structure', {})
         if structure.get('status') not in VERIFIED:
@@ -87,13 +92,14 @@ def complete_tables(rows, load_context, *, top_k=10, maximum_spans=24, maximum_c
                             or loaded.get('original_node_id')!=origin_bounds(origin)[0]
                             or loaded['source_char_start']!=lo or loaded['source_char_end']!=hi):
                         raise ValueError('table_completion_source_mismatch')
-                    used[key] = loaded;characters += len(text)
+                    used[key] = loaded;characters += len(text);all_used[key]=loaded
                 contexts.append({**used[key], 'role':span['role'], 'content_sha256':span['content_sha256']})
         row['table_completion'] = {'policy':POLICY,
             'status':'incomplete' if missing else 'context_complete' if required_count else 'not_assessed',
             'contexts':contexts,'unresolved':sorted(set(missing)),
             'semantics':'structural_context_only_not_answer_validation'}
-    return result, {'policy':POLICY,'top_k_unchanged':True,'unique_supplemental_spans':len(used),
-                    'supplemental_characters':characters,'maximum_spans':maximum_spans,
+    return result, {'policy':POLICY,'top_k_unchanged':True,'unique_supplemental_spans':len(all_used),
+                    'supplemental_characters':sum(len(v['text']) for v in all_used.values()),'maximum_spans':maximum_spans,
                     'maximum_characters':maximum_characters,
+                    'budget_scope':'per_candidate' if independent_candidates else 'result_page',
                     'coverage_mode':'individual_candidate' if independent_candidates else 'result_page'}

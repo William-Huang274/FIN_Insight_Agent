@@ -11,6 +11,35 @@ import math
 from sec_agent.adapters.local_records import LocalRecords
 
 
+def scoring_documents(candidates):
+    """Exact provider inputs shared by preflight and execution; never truncate."""
+    documents=[]
+    for row in candidates:
+        body=row['content']
+        if sha256(body.encode()).hexdigest()!=row['content_sha256']:
+            raise ValueError('rerank_candidate_body_mismatch')
+        # Fixed original context, no gold labels, generated hints or answers.
+        from .evidence_scoring_view import scoring_body
+        text=(row.get('embedding_context','')+'\n'+scoring_body(row)).strip()
+        if row.get('rerank_document_metadata'):
+            from .rerank_document_context import document_context_text
+            text=document_context_text(row['rerank_document_metadata'])+'\n\n'+text
+        from .evidence_scope import scoring_scope_text
+        scope_text=scoring_scope_text(row)
+        if scope_text:
+            text=scope_text+'\n\n'+text
+        from .rerank_structure_context import structure_context_text
+        structural=structure_context_text(row)
+        if structural:
+            text=structural+'\n\n'+text
+        if not text or len(text.encode())>32768:
+            raise ValueError('rerank_document_outside_budget_no_truncation')
+        documents.append(text)
+    if sum(len(x.encode()) for x in documents)>524288:
+        raise ValueError('rerank_total_input_outside_budget')
+    return documents
+
+
 class ScopedReranker:
     def __init__(self, path, api):
         self.path, self.api = path, api
@@ -27,30 +56,7 @@ class ScopedReranker:
         ids=[r['node_id'] for r in candidates]
         if len(set(ids))!=len(ids):
             raise ValueError('rerank_duplicate_candidate')
-        documents=[]
-        for row in candidates:
-            body=row['content']
-            if sha256(body.encode()).hexdigest()!=row['content_sha256']:
-                raise ValueError('rerank_candidate_body_mismatch')
-            # Fixed original context, no gold labels, generated hints or answers.
-            from .evidence_scoring_view import scoring_body
-            text=(row.get('embedding_context','')+'\n'+scoring_body(row)).strip()
-            if row.get('rerank_document_metadata'):
-                from .rerank_document_context import document_context_text
-                text=document_context_text(row['rerank_document_metadata'])+'\n\n'+text
-            from .evidence_scope import scoring_scope_text
-            scope_text=scoring_scope_text(row)
-            if scope_text:
-                text=scope_text+'\n\n'+text
-            from .rerank_structure_context import structure_context_text
-            structural=structure_context_text(row)
-            if structural:
-                text=structural+'\n\n'+text
-            if not text or len(text.encode())>32768:
-                raise ValueError('rerank_document_outside_budget_no_truncation')
-            documents.append(text)
-        if sum(len(x.encode()) for x in documents)>524288:
-            raise ValueError('rerank_total_input_outside_budget')
+        documents=scoring_documents(candidates)
         identity={'format':'scoped-rerank.v1','scope':scope,'index':index_digest,
                   'model':self.api.rerank_model,'query':query,'candidates':[
                       [n,sha256(t.encode()).hexdigest()] for n,t in zip(ids,documents)]}

@@ -80,6 +80,23 @@ def transaction_attributes(text):
     return result
 
 
+def disclosure_attributes(text):
+    """A filing's explicit release announcement, not mere exhibit boilerplate.
+
+    Bind the original announcement line only. It supplies the role and event
+    together, without joining a different exhibit row or another SEC item.
+    """
+    result=[]
+    for line in re.finditer(r'(?m)^[^\n]+$',text):
+        if '|' in line[0] or len(line[0])>4000:continue
+        if not re.search(r'\b(?:issued|published)\s+(?:a|the)\s+press release\s+announcing\b',line[0],re.I):continue
+        attrs={'exhibit_role':'press_release'}
+        if re.search(r'\b(?:its |the )?(?:financial results|results of operations|earnings)\b',line[0],re.I):
+            attrs['event_type']='earnings_release'
+        result.append((line.start(),line.end(),attrs,'explicit_original_release_announcement'))
+    return result
+
+
 def query_attributes(query):
     attrs={}
     if asset:=_unique(query,ASSET_PATTERNS):attrs['asset_scope']=[asset]

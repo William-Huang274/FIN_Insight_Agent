@@ -8,6 +8,7 @@ FORMAT = 'prepared-source-metadata.v1'
 
 def prepare(value):
     from retrieval.source_window_candidates import adjacent_nodes
+    from retrieval.fact_scope import compact_evidence
     ordered = sorted(value.get('locations', []))
     neighbors = {}
     for position, (parent, start, end, node) in enumerate(ordered):
@@ -25,6 +26,7 @@ def prepare(value):
         'evidence_scopes':{n:s.get('evidence_scopes', []) for n,s in value['structures'].items()
                            if s.get('evidence_scopes')},
         'evidence_scope_complete':[n for n,s in value['structures'].items() if s.get('evidence_scope_complete')],
+        'period_evidence':{n:compact_evidence(s['period_evidence']) for n,s in value['structures'].items() if s.get('period_evidence')},
         'source_intervals':{n:[a,b] for _,a,b,n in ordered},
         'prepared_navigation': {'format': FORMAT, 'structures': packed(value['structures']),
             'locations': packed(ordered), 'neighbors': neighbors,

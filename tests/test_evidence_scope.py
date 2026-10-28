@@ -72,6 +72,41 @@ def test_event_scope_does_not_confuse_earnings_and_debt_or_guess_negation():
     assert plan_scope('Not financing release, earnings release')['event_type']==['earnings_release']
 
 
+def test_split_item_word_ends_the_previous_event_at_the_real_original_heading():
+    text='Item 2.03 Creation of a Direct Financial Obligation\nDebt issued\nI\ntem 7.01 Regulation FD Disclosure.\nUnrelated disclosure\nItem 9.01 Exhibits\n'
+    scopes=source_scopes(text)
+    assert scopes[0]['source_char_end']==text.index('I\ntem')
+    assert 'Unrelated disclosure' not in text[scopes[0]['source_char_start']:scopes[0]['source_char_end']]
+
+
+def test_embedded_statement_title_classifies_equity_without_borrowing_cash_words():
+    text='[TABLE: original]\n | |\nCONSOLIDATED AND COMBINED STATEMENT OF CHANGES IN EQUITY (UNAUDITED) | |\n(In millions) | Common shares | Total equity\nCash flow hedges | 35 | 35\n[/TABLE]'
+    scopes=source_scopes(text)
+    assert scopes[0]['attributes']['statement_type']=='equity_statement'
+    assert matching_state(scopes,{'statement_type':['balance_sheet']})=='mismatch'
+    assert not source_scopes(text.replace('CONSOLIDATED AND COMBINED STATEMENT OF CHANGES IN EQUITY (UNAUDITED)','We discuss the statement of changes in equity below'))
+
+
+def test_zero_width_blank_line_does_not_erase_immediate_original_table_owner():
+    text='ALPHA INC.\n\u200b\nCONSOLIDATED BALANCE SHEETS\n[TABLE: original]\nCash | 10\n[/TABLE]'
+    assert source_scopes(text)[0]['attributes']['reporting_entity']=='ALPHA INC.'
+
+
+@pytest.mark.parametrize('title',['CONSOLIDATED AND COMBINED STATEMENT OF CHANGES IN EQUITY (UNAUDITED)',
+    "CONDENSED CONSOLIDATED STATEMENTS OF SHAREHOLDERS’ EQUITY"])
+def test_equity_statement_heading_outside_table_is_not_an_unknown_balance(title):
+    text=title+'\n[TABLE: original]\nCash flow hedges | 10\n[/TABLE]'
+    assert source_scopes(text)[0]['attributes']['statement_type']=='equity_statement'
+
+
+def test_financial_position_is_balance_sheet_but_not_a_prose_mention():
+    from retrieval.statement_headings import statement_kind
+    assert statement_kind('CONSOLIDATED AND COMBINED STATEMENT OF FINANCIAL POSITION (UNAUDITED)')=='balance_sheet'
+    assert statement_kind('We discussed the statement of financial position') is None
+    text='STATEMENT OF FINANCIAL POSITION\n[TABLE: original]\nCash | 10\n[/TABLE]'
+    assert source_scopes(text)[0]['attributes']['statement_type']=='balance_sheet'
+
+
 def test_explicit_statement_request_inherits_only_an_unambiguous_catalog_owner():
     query='Alpha consolidated balance sheet cash'
     constraint={'issuer_id':'A','company_names':['Alpha Inc.']}

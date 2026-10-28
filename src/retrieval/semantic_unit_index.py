@@ -123,6 +123,7 @@ def select_units(directory,parents,wanted):
                     'content_sha256':digest,'lexical_input_sha256':digest,'embedding_input_sha256':input_digest,
                     'vector_index':pos,'source_interval':[start,end],'original_node_id':space,
                     'evidence_scopes':original.get('evidence_scopes',[]),
+                    'period_evidence':original.get('period_evidence',[]),
                     'evidence_scope_complete':original.get('evidence_scope_complete',False)})
     return select_scoped(result,wanted)[0] if wanted else result
 

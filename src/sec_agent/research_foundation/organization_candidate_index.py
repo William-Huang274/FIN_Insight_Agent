@@ -180,6 +180,7 @@ class VerifiedCandidateIndex:
                     'lexical_input_sha256':record['lexical_input_sha256'],
                     'navigation_sha256':record['navigation_sha256']}
                 rows[node_id]['evidence_scopes'] = saved.get('evidence_scopes', {}).get(node_id, [])
+                rows[node_id]['period_evidence'] = saved.get('period_evidence', {}).get(node_id, [])
                 rows[node_id]['evidence_scope_complete'] = node_id in scope_complete
                 rows[node_id]['source_interval'] = saved['source_intervals'].get(node_id)
             origin = {'resource_id':item['resource_id'], 'ref':deepcopy(item['ref']),

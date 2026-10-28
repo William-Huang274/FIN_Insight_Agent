@@ -55,6 +55,17 @@ def test_exhibit_number_without_description_cannot_define_business_role():
     assert not source_scopes('[TABLE: original]\n99.1 | Document\n[/TABLE]')
 
 
+def test_release_announcement_carries_joint_role_in_same_interval():
+    from retrieval.evidence_scope import select_scoped
+    text='Item 2.02 Results of Operations\nOn August 11, 2025, Example Inc. issued a press release announcing its financial results.\nItem 9.01 Exhibits\n99.1 Press release'
+    scopes=source_scopes(text)
+    wanted={'event_type':['earnings_release'],'exhibit_role':['press_release'],'unknown_policy':'exclude'}
+    announcement={'node_id':'a','source_interval':[text.index('On August'),text.index('Item 9.01')],'evidence_scopes':scopes}
+    assert select_scoped([announcement],wanted)[0]
+    unrelated={'node_id':'b','source_interval':[text.index('99.1'),len(text)],'evidence_scopes':scopes}
+    assert not select_scoped([unrelated],wanted)[0]
+
+
 def test_original_security_ids_have_an_explicit_scheme_and_no_coupon_year_guess():
     assert plan_scope('Find the notes with CUSIP:123456AB7')['transaction_id']==['CUSIP:123456AB7']
     assert source_scopes('CUSIP:123456AB7')[0]['attributes']=={'transaction_id':'CUSIP:123456AB7'}

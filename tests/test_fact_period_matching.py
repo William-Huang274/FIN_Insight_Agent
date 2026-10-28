@@ -28,6 +28,16 @@ def test_uncertain_and_publication_periods_do_not_become_fact_periods():
     assert not prose_periods('Cash and cash equivalents as of December 31, 2025:\n[TABLE: original]\n100\n[/TABLE]\nA separate 20 percent fee.')
 
 
+def test_combined_liquidity_is_not_proof_of_cash_equivalents_alone():
+    from retrieval.fact_period_matching import balance_concepts
+    for text in ['cash, cash equivalents and marketable securities',
+                 'cash and cash equivalents and short-term investments',
+                 '现金及现金等价物和短期投资']:
+        assert 'cash_equivalents' not in balance_concepts(text)
+    assert 'cash_equivalents' in balance_concepts('Cash and cash equivalents')
+    assert not prose_periods('As of December 31, 2025, cash, cash equivalents and marketable securities were $5 billion.')
+
+
 def test_period_comparisons_and_fiscal_quarters_keep_explicit_identity():
     from retrieval.fact_period_matching import query_period_requirements
     assert query_period_requirements('Cash as of 2024-12-31 and 2025-12-31')['targets']==[

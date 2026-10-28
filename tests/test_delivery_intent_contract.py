@@ -51,7 +51,7 @@ def test_intent_schema_matches_supported_json_values():
     assert 'delivery_intent' not in schema.get('required', [])
 
 
-@pytest.mark.parametrize('intent', [None, 'report', 'answer', 'workpaper'])
+@pytest.mark.parametrize('intent', [None, 'report'])
 def test_organization_freeze_and_receipt_replay_preserve_exact_intent(organization, monkeypatch, intent):
     # The Java HTTP boundary is simulated by its existing authority fixture.
     # This checks BFF freezing, not Java admission of the new field.
@@ -84,6 +84,31 @@ def test_organization_freeze_and_receipt_replay_preserve_exact_intent(organizati
     altered['metadata']['configuration_digest'] = digest(config)
     with pytest.raises(ValueError, match='organization_prepared_thread_mismatch'):
         validate_thread(altered, s.grant)
+
+
+@pytest.mark.parametrize('intent', ['answer', 'workpaper'])
+def test_organization_rejects_unsupported_delivery_before_native_creation(organization, intent):
+    s = organization
+    s.body['execution']['delivery_intent'] = intent
+    s.grant['prepare_request_digest'] = 'sha256:' + sha256(json.dumps(s.body, separators=(',', ':')).encode()).hexdigest()
+    with TestClient(s.intake.app()) as client:
+        response = prepare(client, s)
+    assert response.status_code == 422, response.text
+    assert 'delivery_intent_not_supported_by_report_workflow' in response.text
+    assert s.state['creates'] == 0 and not s.intake.threads and not s.intake.runs
+
+
+@pytest.mark.parametrize('intent', ['answer', 'workpaper'])
+def test_personal_intake_rejects_unsupported_delivery_before_persistence(intake, intent):
+    from test_java_research_intake import payload, request
+    body = payload(intake)
+    body['session']['execution'] = {'delivery_intent': intent}
+    with TestClient(intake.app()) as client:
+        response = request(client, 'prepare', body)
+    assert response.status_code == 422, response.text
+    assert 'delivery_intent_not_supported_by_report_workflow' in response.text
+    assert not intake.threads and not intake.runs
+    assert not intake.library.index('oidc:alice')['assignments']
 
 
 @pytest.mark.parametrize('intent', ['answer', 'workpaper'])

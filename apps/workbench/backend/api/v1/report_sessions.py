@@ -329,6 +329,12 @@ class NewSession(BaseModel):
     project_materials: ProjectMaterials | None = None
     asset_context_id: UUID | None = None
 
+    @model_validator(mode='after')
+    def supported_delivery(self):
+        if self.execution is not None:
+            self.execution.require_report_workflow()
+        return self
+
 
 class ResearchGuidance(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)

@@ -109,12 +109,14 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
                 aliases.setdefault(alias.casefold(), set()).update(owners)
             if issuer:
                 names.setdefault(issuer,set()).update(row.get('verified_company_names') or [])
+                names[issuer].update(row.get('joint_registrant_names') or [])
     matches = [(a, owners) for a, owners in aliases.items() if _mentions(query, a)]
     mentions = []
     if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'}:
         matches, mentions = _compatible_mentions(query, aliases, bilingual_boundaries=policy=='conservative.v5')
     owners = set().union(*(v for _, v in matches)) if matches else set()
-    from retrieval.catalog_company_identity import verified_issuer_groups
+    from retrieval.catalog_company_identity import verified_issuer_groups, joint_reporting_targets
+    joint_targets=joint_reporting_targets(query,metadata) if policy=='conservative.v5' else {}
     identity_group=next((g for g in verified_issuer_groups(metadata)
                          if owners and owners<=set(g['issuer_ids'])),None) if policy=='conservative.v5' else None
     unresolved, evidence, constraint = [], [], {}
@@ -132,7 +134,9 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
     temporal_comparison = bool(policy == 'conservative.v5' and comparison and comparison_starts_with_date(query, comparison.end()))
     if temporal_comparison:
         evidence.append({'field':'issuer', 'basis':'comparison_object_is_explicit_date_not_another_issuer'})
-    if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'} and comparison and len(owners) == 1 and not temporal_comparison:
+    explicit_joint_comparison=len(owners)==1 and len(joint_targets.get(next(iter(owners)),[]))>1
+    if (policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'} and comparison
+            and len(owners) == 1 and not temporal_comparison and not explicit_joint_comparison):
         # "In Alpha's report, compare ..." has an explicit owner before the
         # comparison. "Compare Unknown and Alpha ..." does not justify a
         # one-company scope, even if only Alpha is present in the catalog.
@@ -247,6 +251,9 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
     result = {'policy': policy, 'constraint': constraint, 'evidence': evidence,
               'unresolved': unresolved, 'unknown_metadata_retained': True}
     if policy == 'conservative.v5':
+        result['joint_reporting_entity_targets']=joint_targets
+        if any(owner in joint_targets and not joint_targets[owner] for owner in owners):
+            unresolved.append('joint_filing_reporting_entity_not_explicit')
         entity_ids={}
         for row in metadata.values():
             if row.get('issuer_id'):
@@ -255,7 +262,8 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
         # Conflicting IDs under one catalog issuer remain unresolved. No
         # borrowing the largest/most frequent context from a joint filing.
         result['fact_entity_by_issuer']={issuer:[{'scheme':scheme,'identifier':identifier}]
-            for issuer,values in entity_ids.items() if len(values)==1 for scheme,identifier in values}
+            for issuer,values in entity_ids.items() if len(values)==1 and issuer not in joint_targets
+            for scheme,identifier in values}
     if exclusions:
         result['query_requirements'] = {'original_query':original_query,
             'positive_constraint_view':query, 'exclusions':exclusions,
@@ -287,6 +295,7 @@ def document_constraint_states(metadata, plan):
     else:
         metadata = {k:{field:value for field,value in row.items() if field != 'same_document_issuer_ids'}
                     for k,row in metadata.items()}
+    from retrieval.catalog_company_identity import document_names
     wanted = plan['constraint']
     states = {}
     for document, row in metadata.items():
@@ -298,8 +307,8 @@ def document_constraint_states(metadata, plan):
             names = {name.casefold() for o in owners for name in o['company_names']}
             if actual_id and all(o['issuer_id'] for o in owners):
                 checks.append(actual_id in ids or bool(ids & set(row.get('same_document_issuer_ids', []))))
-            elif names and (actual_name or row.get('verified_company_names')):
-                actual_names = {n.casefold() for n in [actual_name, *(row.get('verified_company_names') or [])] if n}
+            elif names and document_names(row):
+                actual_names = {n.casefold() for n in document_names(row)}
                 checks.append(bool(actual_names & names))
             else:
                 checks.append(None)
@@ -313,8 +322,8 @@ def document_constraint_states(metadata, plan):
             actual_id, actual_name = row.get('issuer_id'), row.get('company_name')
             if actual_id and wanted.get('issuer_id'):
                 checks.append(actual_id == wanted['issuer_id'] or wanted['issuer_id'] in row.get('same_document_issuer_ids', []))
-            elif names and (actual_name or row.get('verified_company_names')):
-                actual_names = {n.casefold() for n in [actual_name, *(row.get('verified_company_names') or [])] if n}
+            elif names and document_names(row):
+                actual_names = {n.casefold() for n in document_names(row)}
                 checks.append(bool(actual_names & names))
             else:
                 checks.append(None)

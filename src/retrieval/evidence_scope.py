@@ -175,8 +175,10 @@ def plan_scope(query, query_plan=None):
             if not re.search(r'附注|明细|调节|摘要|\b(?:notes?|detail|highlights?|reconciliation|supplemental)\b',query,re.I):
                 wanted['statement_role']=['primary']
             constraint=(query_plan or {}).get('constraint',{})
-            if constraint.get('issuer_id') and constraint.get('company_names'):
-                wanted['reporting_entity']=constraint['company_names']
+            targets=(query_plan or {}).get('joint_reporting_entity_targets',{})
+            entity_names=targets.get(constraint.get('issuer_id'),constraint.get('company_names'))
+            if constraint.get('issuer_id') and entity_names:
+                wanted['reporting_entity']=entity_names
     from .business_scope_attributes import query_attributes
     wanted.update(query_attributes(query))
     from .fact_scope import inferred_fact_requirements

@@ -76,9 +76,36 @@ def compile_needs(query, plan):
         from .financial_query_needs import compile_financial_needs
         result = compile_financial_needs(query, plan, result)
         if plan.get('policy') == 'conservative.v5':
+            from .catalog_company_identity import legal_name_mentions
+            from .financial_query_needs import concepts
+            targets=plan.get('joint_reporting_entity_targets',{})
+            # A joint filing can contain a comparison of two legal entities
+            # under one local issuer ID. Keep independent coverage obligations.
+            expanded=[]
+            for need in result['needs']:
+                owner=need.get('owner')
+                names=targets.get((owner or {}).get('issuer_id'),[])
+                if len(names)<=1:
+                    expanded.append(need);continue
+                mentions=legal_name_mentions(query,names)
+                clauses={name:[] for name in names}
+                for i,(_,end,name) in enumerate(mentions):
+                    clauses[name].append(query[end:mentions[i+1][0] if i+1<len(mentions) else len(query)])
+                local={name:{c[0] for c in concepts(' '.join(parts))} for name,parts in clauses.items()}
+                bound=all(local.values())
+                for name in names:
+                    if bound and need.get('concept') and need['concept'] not in local[name]:continue
+                    expanded.append({**need,'owner':{**owner,'company_names':[name]},
+                        'joint_reporting_target_explicit':True,
+                        **({'query_clause':' '.join(clauses[name])} if bound else {})})
+            result['needs']=[{**n,'id':f'need-{i+1}'} for i,n in enumerate(expanded)]
             result['document_query_plan'] = {'policy':plan['policy'], 'constraint':plan.get('constraint', {})}
             for need in result['needs']:
                 owner=need.get('owner')
+                targets=plan.get('joint_reporting_entity_targets',{})
+                if owner and owner.get('issuer_id') in targets and not need.get('joint_reporting_target_explicit'):
+                    owner={**owner,'company_names':targets[owner['issuer_id']]}
+                    need['owner']=owner
                 if owner and (identifiers:=plan.get('fact_entity_by_issuer',{}).get(owner.get('issuer_id'))):
                     need['owner']={**owner,'fact_entity_identifiers':identifiers}
             from .fact_period_matching import query_period, query_period_requirements, POLICY as PERIOD_POLICY
@@ -108,8 +135,8 @@ def owner_matches(metadata, owner):
         return True
     if metadata.get('issuer_id') and owner.get('issuer_id'):
         return metadata['issuer_id'] == owner['issuer_id']
-    actual_names = {n.casefold() for n in [metadata.get('company_name'),
-        *(metadata.get('verified_company_names') or [])] if n}
+    from .catalog_company_identity import document_names
+    actual_names = {n.casefold() for n in document_names(metadata)}
     return bool(actual_names & {n.casefold() for n in (owner.get('company_names') or [])})
 
 

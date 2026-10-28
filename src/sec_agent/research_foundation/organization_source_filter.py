@@ -106,6 +106,7 @@ def source_metadata_details(bundle):
             descriptor['verified_company_names'] = recovered_names
         elif recovered_names:
             descriptor['company_name_resolution'] = 'joint_registrants_not_a_unique_owner'
+            descriptor['joint_registrant_names'] = recovered_names
         from .sec_cover_metadata import cover_form, calendar_annual_year
         from retrieval.filing_document_identity import original_filing_key
         if key := original_filing_key(bundle['source'].get('url')):
@@ -149,9 +150,9 @@ def select_documents(metadata, constraint):
     from retrieval.same_original_metadata import resolve
     metadata = resolve(metadata)
     matches, unknown = set(), 0
-    from retrieval.catalog_company_identity import aliases_for, name_key
+    from retrieval.catalog_company_identity import aliases_for, name_key, document_names
     for document, actual in metadata.items():
-        verified_names = [n for n in [actual.get('company_name'), *(actual.get('verified_company_names') or [])] if n]
+        verified_names = document_names(actual)
         def field_matches(key,value):
             if key=='company_name':
                 return name_key(value) in {name_key(a) for n in verified_names for a in aliases_for({'company_name':n})}

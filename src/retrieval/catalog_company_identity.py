@@ -21,11 +21,21 @@ def cover_names(text):
             previous = lines[-2].rsplit(' ',1)
             combined = previous[-1]+lines[-1]
             if len(previous)==2 and combined.casefold() in {'corporation','incorporated','limited'}:
-                lines[-1] = previous[0]+' '+combined
+                lines[-2:] = [previous[0]+' '+combined]
         if lines and 3 <= len(lines[-1]) <= 180 and re.search(r'[A-Za-z\u3400-\u9fff]', lines[-1]):
             name = lines[-1]
             if not any(c in name for c in '|[]<>') and name not in names:
-                names.append(name)
+                # A joint cover can list consecutive legal names under ONE
+                # (even singular) caption. Taking only the last line invents
+                # a unique registrant and falsely attaches the archive CIK.
+                joint=[]
+                for line in reversed(lines):
+                    if (not 3<=len(line)<=180 or any(c in line for c in '|[]<>()')
+                            or not re.search(r'\b(?:INC\.?|INCORPORATED|CORPORATION|CORP\.?|COMPANY|LIMITED|LTD\.?|PLC|LLC|L\.?P\.?)\s*$',line,re.I)):
+                        break
+                    joint.append(line)
+                for value in reversed(joint or [name]):
+                    if value not in names:names.append(value)
     # Some SEC covers place the explicit registrant caption in a column
     # header. Use that exact column only when the original rows have a
     # consistent cell count; never guess through merged/misaligned cells.
@@ -41,19 +51,20 @@ def cover_names(text):
                 if len(row)!=len(cells):
                     break
                 name=row[column].strip()
-                if (3 <= len(name) <= 180 and re.search(r'\b(?:INC\.?|CORPORATION|CORP\.?|COMPANY|LIMITED|LTD\.?|PLC|LLC)\s*$',name,re.I)
+                if (3 <= len(name) <= 180 and re.search(r'\b(?:INC\.?|CORPORATION|CORP\.?|COMPANY|LIMITED|LTD\.?|PLC|LLC|L\.?P\.?)\s*$',name,re.I)
                         and not any(c in name for c in '[]<>') and name not in names):
                     names.append(name)
     return names
 
 
 def aliases_for(row):
-    declared = [row.get('company_name'), *(row.get('verified_company_names') or [])]
+    declared = [row.get('company_name'), *(row.get('verified_company_names') or []),
+                *(row.get('joint_registrant_names') or [])]
     tail = (row.get('issuer_id') or '').split('::')[-1].replace('_', ' ').strip()
     # A legacy ID spelling is only a fallback. Once the original cover gives
     # an explicit registrant, an unrelated ID tail must not become a second
     # company alias (nor shorten a name merely because it shares a prefix).
-    if len(tail) >= 3 and not row.get('verified_company_names'):
+    if len(tail) >= 3 and not row.get('verified_company_names') and not row.get('joint_registrant_names'):
         declared.append(tail)
     # Preserve the legal name. A shortened legal suffix is merely another
     # lookup alias; collisions remain explicit and never merge identities.
@@ -67,6 +78,40 @@ def aliases_for(row):
         if len(name_key(short)) >= 3:
             result.add(short)
     return sorted(result)
+
+
+def document_names(row):
+    """Original names that locate a filing; joint names are NOT fact owners."""
+    return list(dict.fromkeys(n for n in [row.get('company_name'),
+        *(row.get('verified_company_names') or []), *(row.get('joint_registrant_names') or [])]
+        if isinstance(n,str) and n.strip()))
+
+
+def joint_reporting_targets(query, metadata):
+    """Only an explicit complete legal name disambiguates joint registrants.
+
+    A shared short name or the archive CIK does not identify the requested
+    statement owner. Return an empty target for unresolved joint issuers so
+    consumers cannot silently fall back to the document lookup aliases.
+    """
+    joint=defaultdict(dict)
+    for row in metadata.values():
+        if row.get('issuer_id'):
+            for name in row.get('joint_registrant_names') or []:
+                joint[row['issuer_id']].setdefault(name_key(name),name)
+    result={}
+    for issuer,names in joint.items():
+        hits=legal_name_mentions(query,names.values())
+        result[issuer]=sorted({h[2] for h in hits})
+    return result
+
+
+def legal_name_mentions(query,names):
+    hits=[]
+    for name in names:
+        pattern=r'(?<![A-Za-z0-9_])'+r'[\W_]*'.join(re.escape(c) for c in name_key(name))+r'(?![A-Za-z0-9_])'
+        for m in re.finditer(pattern,query,re.I):hits.append((m.start(),m.end(),name))
+    return sorted(h for h in hits if not any(a<=h[0] and b>=h[1] and b-a>h[1]-h[0] for a,b,_ in hits))
 
 
 def audit_catalog(metadata):

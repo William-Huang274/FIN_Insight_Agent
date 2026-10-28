@@ -11,7 +11,14 @@ def with_document_context(rows, metadata):
     for row in rows:
         source = metadata.get(row['parent_document_id'], {})
         context = {}
+        joint=source.get('joint_registrants') or source.get('joint_registrant_names')
+        if joint is not None:
+            if (not isinstance(joint,list) or not 2<=len(joint)<=32
+                    or any(not isinstance(n,str) or not n.strip() or len(n)>256 for n in joint)):
+                raise ValueError('rerank_invalid_joint_registrants')
+            context['joint_registrants']=joint
         for field in ('issuer', 'form', 'period_end'):
+            if field=='issuer' and joint:continue
             value = source.get(field)
             if field == 'issuer' and value is None:
                 names = source.get('verified_company_names') or []
@@ -28,12 +35,13 @@ def with_document_context(rows, metadata):
 
 
 def document_context_text(context):
-    if not isinstance(context, dict) or set(context) - {'issuer', 'form', 'period_end'}:
+    if not isinstance(context, dict) or set(context) - {'issuer', 'form', 'period_end','joint_registrants'}:
         raise ValueError('rerank_invalid_document_metadata')
     # Revalidate even when another caller constructs the optional context.
     with_document_context([{'parent_document_id': 'document'}], {'document': context})
     if not context:
         return ''
     return ('Verified document catalog (period_end is the document reporting period, '
-            'NOT the period of every fact in the excerpt):\n'
+            'NOT the period of every fact in the excerpt; joint_registrants locate the same filing, '
+            'NOT interchangeable statement owners):\n'
             + json.dumps(context, sort_keys=True, ensure_ascii=False))

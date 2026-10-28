@@ -49,6 +49,75 @@ def test_registrant_table_preserves_joint_names_without_assigning_unique_owner()
     assert cover_names(text.replace('1-100 | ALPHA INC. | 00-000','ALPHA INC. | 00-000'))==[]
 
 
+def test_consecutive_joint_legal_names_under_one_caption_are_not_last_name_only():
+    from sec_agent.research_foundation.organization_source_filter import source_metadata
+    import json
+    text='001-123\n(ALPHA INC.)\n000-456\n(ALPHA L.P.)\nALPHA INC.\nALPHA L.P.\n(Exact name of registrant as specified in its charter)'
+    assert cover_names(text)==['ALPHA INC.','ALPHA L.P.']
+    row=source_metadata({'text':text,'source':{'metadata':json.dumps({'entity_id':'alpha','cik':'123'}),
+        'url':'https://www.sec.gov/Archives/edgar/data/123/000000012326000001/report.htm'}})
+    assert row['company_name_resolution']=='joint_registrants_not_a_unique_owner'
+    assert row['joint_registrant_names']==['ALPHA INC.','ALPHA L.P.']
+    assert 'verified_company_names' not in row and 'fact_entity_identifiers' not in row
+    from retrieval.catalog_company_identity import aliases_for,verified_issuer_groups
+    assert 'ALPHA L.P.' in aliases_for(row)
+    assert verified_issuer_groups({'d':row})==[]
+
+
+def test_joint_table_recognizes_partnership_without_guessing_merged_cells():
+    text='[TABLE: original]\nFile | Exact name of registrants as specified in their charter | Tax\n1 | ALPHA INC. | 00\n2 | ALPHA L.P. | 01\n[/TABLE]'
+    assert cover_names(text)==['ALPHA INC.','ALPHA L.P.']
+
+
+def test_joint_filing_lookup_does_not_make_all_registrants_equivalent_fact_owners():
+    from retrieval.evidence_scope import plan_scope
+    from retrieval.organization_search_needs import compile_needs
+    from sec_agent.research_foundation.organization_source_filter import select_documents,OrganizationSourceFilter
+    metadata={'joint':{'issuer_id':'alpha','joint_registrant_names':['ALPHA INC.','ALPHA L.P.'],
+                       'company_name_resolution':'joint_registrants_not_a_unique_owner'},
+              'single':{'issuer_id':'alpha','verified_company_names':['ALPHA INC.'],
+                        'fact_entity_identifiers':[{'scheme':'http://www.sec.gov/CIK','identifier':'123'}]}}
+    for query,expected in [('Alpha consolidated balance sheet cash equivalents',[]),
+                           ('Alpha Inc. consolidated balance sheet cash equivalents',['ALPHA INC.']),
+                           ('Alpha L.P. consolidated balance sheet cash equivalents',['ALPHA L.P.'])]:
+        plan=plan_query(query,metadata,policy='conservative.v5')
+        assert plan['joint_reporting_entity_targets']['alpha']==expected
+        assert 'alpha' not in plan['fact_entity_by_issuer']
+        assert plan_scope(query,plan).get('reporting_entity',[])==expected
+        assert all(n['owner']['company_names']==expected for n in compile_needs(query,plan)['needs'])
+    assert 'joint' in select_documents(metadata,OrganizationSourceFilter(company_name='ALPHA L.P.'))[0]
+
+
+def test_joint_targets_require_complete_name_and_preserve_multiple_explicit_owners():
+    from retrieval.catalog_company_identity import joint_reporting_targets
+    rows={'d':{'issuer_id':'p','joint_registrant_names':['NORTH INC.','NORTH L.P.']}}
+    assert joint_reporting_targets('North cash',rows)=={'p':[]}
+    assert joint_reporting_targets('Compare NORTH INC. with NORTH L.P. cash',rows)=={'p':['NORTH INC.','NORTH L.P.']}
+    assert joint_reporting_targets('NORTH INCORPORATEDXYZ cash',rows)=={'p':[]}
+
+
+def test_same_catalog_issuer_joint_comparison_has_separate_coverage_needs():
+    from retrieval.organization_search_needs import compile_needs
+    rows={'d':{'issuer_id':'p','joint_registrant_names':['NORTH INC.','NORTH L.P.']}}
+    query='Compare NORTH INC. cash and cash equivalents and NORTH L.P. revenue'
+    needs=compile_needs(query,plan_query(query,rows,policy='conservative.v5'))['needs']
+    recognized={(n['concept'],tuple(n['owner']['company_names'])) for n in needs if n.get('concept')}
+    assert recognized=={('cash_equivalents',('NORTH INC.',)),('revenue',('NORTH L.P.',))}
+    query='Compare NORTH INC. and NORTH L.P. cash and cash equivalents'
+    needs=compile_needs(query,plan_query(query,rows,policy='conservative.v5'))['needs']
+    assert {tuple(n['owner']['company_names']) for n in needs if n.get('concept')=='cash_equivalents'}=={('NORTH INC.',),('NORTH L.P.',)}
+
+
+def test_joint_rerank_context_never_labels_last_cover_name_as_unique_issuer():
+    from retrieval.rerank_document_context import with_document_context,document_context_text
+    source={'issuer_id':'alpha','company_name':'ALPHA L.P.',
+            'joint_registrant_names':['ALPHA INC.','ALPHA L.P.'],'form':'10-Q'}
+    context=with_document_context([{'parent_document_id':'d'}],{'d':source})[0]['rerank_document_metadata']
+    assert 'issuer' not in context
+    assert context['joint_registrants']==['ALPHA INC.','ALPHA L.P.']
+    assert 'NOT interchangeable statement owners' in document_context_text(context)
+
+
 def test_same_original_parse_ids_use_name_scope_without_merging_other_documents():
     from sec_agent.research_foundation.organization_query_plan import select_planned
     url='https://www.sec.gov/Archives/edgar/data/123/000000012324000001/report.htm'

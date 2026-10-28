@@ -72,6 +72,8 @@ def query_period_requirements(query):
     """Typed explicit comparisons; never map a fiscal quarter to calendar dates."""
     from .query_requirements import positive_view
     text, _ = positive_view(query)
+    from .query_document_date import mask_label_dates
+    text = mask_label_dates(text)
     observed = dates(text)
     quarters = re.findall(r'\b(?:FY\s*)?(20\d{2})\s*Q([1-4])\b|\bQ([1-4])\s*(?:FY\s*)?(20\d{2})\b', text, re.I)
     if quarters:

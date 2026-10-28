@@ -127,6 +127,8 @@ def source_metadata_details(bundle):
             previous = descriptor['form']
             conflict = previous is not None and previous != evidence['form']
             descriptor['form'] = None if conflict else evidence['form']
+            if conflict:
+                descriptor['metadata_conflicts'] = ['form']
             proof = {**evidence, 'metadata_form': previous,
                 'status': 'conflict' if conflict else 'confirmed' if previous else 'recovered'}
             annual = calendar_annual_year(bundle, descriptor, evidence)
@@ -144,6 +146,8 @@ def source_metadata(bundle):
 def select_documents(metadata, constraint):
     """Conjunction over exact original fields; unknown stays explicitly unknown."""
     wanted = constraint.model_dump(mode='json', exclude_none=True)
+    from retrieval.same_original_metadata import resolve
+    metadata = resolve(metadata)
     matches, unknown = set(), 0
     from retrieval.catalog_company_identity import aliases_for, name_key
     for document, actual in metadata.items():

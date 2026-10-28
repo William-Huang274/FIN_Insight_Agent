@@ -5,6 +5,8 @@ import json
 
 def with_document_context(rows, metadata):
     """metadata must come from the verified, immutable source catalog."""
+    from .same_original_metadata import resolve
+    metadata = resolve(metadata)
     result = []
     for row in rows:
         source = metadata.get(row['parent_document_id'], {})

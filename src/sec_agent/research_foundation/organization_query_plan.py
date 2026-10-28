@@ -238,6 +238,12 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
         constraint['period_end'] = report_period['value']
         evidence.append({'field':'period_end', **report_period})
         unresolved = [v for v in unresolved if v != 'year_or_publication_date_not_mapped_to_period_end']
+    if policy == 'conservative.v5':
+        from retrieval.query_document_date import document_date
+        labelled_date=document_date(query,constraint.get('form'))
+        if labelled_date:
+            constraint['document_date']=labelled_date['value']
+            evidence.append({'field':'document_date',**labelled_date})
     result = {'policy': policy, 'constraint': constraint, 'evidence': evidence,
               'unresolved': unresolved, 'unknown_metadata_retained': True}
     if policy == 'conservative.v5':
@@ -276,7 +282,8 @@ def document_constraint_states(metadata, plan):
     """
     if plan['policy'] == 'conservative.v5':
         from retrieval.filing_document_identity import with_document_issuer_aliases
-        metadata = with_document_issuer_aliases(metadata)
+        from retrieval.same_original_metadata import resolve
+        metadata = with_document_issuer_aliases(resolve(metadata))
     else:
         metadata = {k:{field:value for field,value in row.items() if field != 'same_document_issuer_ids'}
                     for k,row in metadata.items()}
@@ -314,6 +321,9 @@ def document_constraint_states(metadata, plan):
         for field in ('form', 'period_end'):
             if field in wanted:
                 checks.append(row.get(field) == wanted[field] if row.get(field) else None)
+        if wanted.get('document_date'):
+            from retrieval.query_document_date import matches_document_date
+            checks.append(matches_document_date(row,wanted['document_date']))
         if wanted.get('excluded_forms'):
             checks.append(row['form'] not in wanted['excluded_forms'] if row.get('form') else None)
         if 'report_kind' in wanted:

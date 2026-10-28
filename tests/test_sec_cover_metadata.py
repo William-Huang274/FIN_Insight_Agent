@@ -63,6 +63,7 @@ def test_cover_recovery_is_only_for_original_sec_filings(url, category):
 def test_conflicting_metadata_is_not_silently_overwritten():
     descriptor, proof = source_metadata_details(bundle(form='10-Q'))
     assert descriptor['form'] is None
+    assert descriptor['metadata_conflicts']==['form']
     assert proof['status'] == 'conflict' and proof['metadata_form'] == '10-Q' and proof['form'] == '10-K'
     assert source_metadata_details(bundle(form='10-K'))[1]['status'] == 'confirmed'
 

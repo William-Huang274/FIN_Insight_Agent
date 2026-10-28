@@ -21,6 +21,8 @@ def source_structure(bundle):
     period_tables = {t['source_char_start']:t for t in validate_overlay(bundle)}
     from .fact_period_matching import prose_periods, table_periods, markdown_tables, tagged_periods
     body=bundle.get('text','')
+    from .evidence_scope import source_scopes
+    scopes = source_scopes(body)
     from .table_dependencies import dependencies
     table_dependencies = dependencies(body, list(period_tables.values()))
     period_evidence = (prose_periods(body) + table_periods(body,list(period_tables.values())+markdown_tables(body))
@@ -63,6 +65,9 @@ def source_structure(bundle):
         if text[start:end] != chunk['body'] or sha256(chunk['body'].encode()).hexdigest()!=chunk['digest']:
             raise ValueError('source_structure_chunk_mismatch')
         row['status']='verified_original_coordinates'
+        row['evidence_scopes'] = [s for s in scopes if s['source_char_start']<end and s['source_char_end']>start]
+        from .evidence_scope import covers_interval
+        row['evidence_scope_complete'] = covers_interval(row['evidence_scopes'],start,end)
         # Aggregate per table within this chunk; do not repeat a large header
         # once for every numeric cell or row in the published proof.
         needed = {}

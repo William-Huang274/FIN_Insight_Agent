@@ -20,15 +20,16 @@ def test_explicit_note_completes_table_even_when_best_adjacent_block_is_already_
     rows,proof=fixture()
     assert not select_context_companions(rows,proof)[1]['promotions']
     selected,receipt=select_structure_companions(rows,proof)
-    assert [r['node_id'] for r in selected[:3]]==['0','20','1']
-    assert receipt['promotions'][0]['basis']=='explicit_post_table_marker'
+    assert selected == rows
+    assert receipt['companions'][0]['basis']=='explicit_post_table_marker'
+    assert receipt['promotions'] == [] and receipt['top_k_unchanged']
     assert set(str(i) for i in range(8)) <= {r['node_id'] for r in selected[:10]}
     assert all(next(r for r in selected if r['node_id']==old['node_id']) is old for old in rows)
 
 
 def test_explicit_relationship_does_not_require_a_dense_seed_or_new_fetch():
     rows,proof=fixture();proof['links']=[]
-    assert select_structure_companions(rows,proof)[0][1]['node_id']=='20'
+    assert select_structure_companions(rows,proof)[1]['companions'][0]['companion']=='20'
     rows=[r for r in rows if r['node_id']!='20']
     assert select_structure_companions(rows,proof)[0]==rows
 
@@ -36,10 +37,10 @@ def test_explicit_relationship_does_not_require_a_dense_seed_or_new_fetch():
 def test_cross_document_and_changed_table_hash_never_bind():
     rows,proof=fixture();proof['links']=[]
     rows[20]['parent_document_id']='other-version'
-    assert not select_structure_companions(rows,proof)[1]['promotions']
+    assert not select_structure_companions(rows,proof)[1]['companions']
     rows[20]['parent_document_id']='d'
     rows[20]['source_structure']['footnotes'][0]['table']['content_sha256']='b'*64
-    assert not select_structure_companions(rows,proof)[1]['promotions']
+    assert not select_structure_companions(rows,proof)[1]['companions']
 
 
 @pytest.mark.parametrize('part',['note','table'])
@@ -56,7 +57,8 @@ def test_protection_and_total_promotion_budget_remain_two():
         rows[other]['source_structure']=deepcopy(rows[20]['source_structure'])
         rows[anchor]['parent_document_id']=rows[other]['parent_document_id']=str(anchor)
     selected,receipt=select_structure_companions(rows,proof)
-    assert len(receipt['promotions'])==2
+    assert len(receipt['companions'])==2 and receipt['promotions']==[]
+    assert selected == rows
     assert {str(i) for i in range(8)} <= {r['node_id'] for r in selected[:10]}
     assert len({r['node_id'] for r in selected})==len(rows)
 
@@ -72,6 +74,6 @@ def test_partial_note_in_core_does_not_hide_missing_original_tail():
     rows[1]['source_structure']=deepcopy(rows[20]['source_structure'])
     rows[1]['original_source']={'source_char_start':50,'source_char_end':58}
     selected,receipt=select_structure_companions(rows,proof)
-    assert selected[1]['node_id']=='20' and receipt['promotions']
+    assert selected == rows and receipt['companions']
     rows[1]['original_source']['source_char_end']=70
-    assert not select_structure_companions(rows,proof)[1]['promotions']
+    assert not select_structure_companions(rows,proof)[1]['companions']

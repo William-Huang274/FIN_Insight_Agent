@@ -17,8 +17,8 @@ def test_bounded_windows_preserve_leading_union_without_query_or_label_rules():
     docs={n:'d' for n in base+extra}
     links={base[i]:extra[2*i:2*i+2] for i in range(6)}
     result,receipt=expand_candidates(base,base[:24],links,docs)
-    assert result==base[:36]+extra
-    assert receipt['displaced_node_ids']==base[36:]
+    assert result==base
+    assert receipt['displaced_node_ids']==[] and receipt['added_node_ids']==[]
     assert len(result)==len(set(result))==48
     unchanged,_=expand_candidates(base,base[:24],{},docs)
     assert unchanged==base
@@ -62,7 +62,7 @@ def test_window_order_preserves_exact_rows_and_ranks_companions_already_in_pool(
     assert not proof['added_node_ids']  # Already recalled, but ranked too low.
     rows=[{'node_id':n,'parent_document_id':'d','content':n,'score':1/(i+1)} for i,n in enumerate(ids)]
     selected,windows=order_source_windows(rows,proof)
-    assert [r['node_id'] for r in selected[:2]]==['anchor','companion']
+    assert selected == rows
     assert {r['node_id'] for r in selected}==set(base)
     assert all(next(r for r in selected if r['node_id']==old['node_id']) is old for old in rows)
     assert windows==[{'anchor':'anchor','companions':['companion']}]
@@ -96,9 +96,9 @@ def test_product_uses_same_window_policy_and_rechecks_revocation(tmp_path,monkey
     assert neighbor in receipt['source_window']['added_node_ids']
     assert neighbor in receipt['candidate_node_ids']
     if policy=='needs_window.v3':
-        assert receipt['source_window_selection']['policy']=='bounded-context.v1'
+        assert receipt['source_window_selection']['policy']=='supplemental-context.v2'
     if policy=='needs_window.v4':
-        assert receipt['source_window_selection']['policy']=='bounded-structure.v1'
+        assert receipt['source_window_selection']['policy']=='supplemental-structure.v2'
     assert all(ci.rows[n]['parent_document_id']==document for n in receipt['candidate_node_ids'])
     assert nav.navigate(request).items[0]['retrieval']['response_cache_hit']
     state['status']=404

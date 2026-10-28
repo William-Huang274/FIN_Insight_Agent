@@ -87,6 +87,20 @@ def test_verified_document_context_is_separate_and_changes_cache(tmp_path):
     assert with_document_context(rows, {})[0]['rerank_document_metadata'] == {}
 
 
+def test_verified_table_scope_changes_scoring_input_and_paid_cache_identity(tmp_path):
+    source,rows,calls=fixture(tmp_path)
+    args=dict(scope='test',index_digest='a'*64,check_access=lambda:None)
+    old=source.rank('sales',rows,**args)[1]
+    rows[0]['original_source']={'source_char_start':0,'source_char_end':len(rows[0]['content'])}
+    rows[0]['source_structure']={'status':'verified_original_coordinates','evidence_scopes':[
+        {'source_char_start':0,'source_char_end':100,'content_sha256':'c'*64,
+         'attributes':{'reporting_entity':'Subsidiary Company','statement_type':'income_statement'}}]}
+    new=source.rank('sales',rows,**args)[1]
+    assert old['request_key']!=new['request_key']
+    assert 'Subsidiary Company' in calls[1][1][0]
+    assert source.rank('sales',rows,**args)[1]['provider_calls']==0
+
+
 def test_failed_unknown_request_never_resubmitted(tmp_path):
     source,rows,calls=fixture(tmp_path)
     def fail(*args,**kw):

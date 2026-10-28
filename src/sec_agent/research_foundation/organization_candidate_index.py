@@ -169,6 +169,7 @@ class VerifiedCandidateIndex:
             neighbors.update(links)
             if self.hybrid.candidate_policy in {'needs_window.v2', 'needs_window.v3', 'needs_window.v4'}:
                 window_neighbors.update(windows)
+            scope_complete = set(saved.get('evidence_scope_complete', []))
             for node_id in saved['nodes']:
                 record = records.get(node_id)
                 if record is None or node_id in rows or record['document_id'] != document:
@@ -178,6 +179,8 @@ class VerifiedCandidateIndex:
                     'embedding_input_sha256':record['embedding_input_sha256'],
                     'lexical_input_sha256':record['lexical_input_sha256'],
                     'navigation_sha256':record['navigation_sha256']}
+                rows[node_id]['evidence_scopes'] = saved.get('evidence_scopes', {}).get(node_id, [])
+                rows[node_id]['evidence_scope_complete'] = node_id in scope_complete
             origin = {'resource_id':item['resource_id'], 'ref':deepcopy(item['ref']),
                 'execution_id':self.reader.authority.execution_id,
                 'manifest_digest':self.reader.authority.manifest_digest,

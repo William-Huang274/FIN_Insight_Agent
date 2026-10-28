@@ -37,6 +37,10 @@ class ScopedReranker:
             if row.get('rerank_document_metadata'):
                 from .rerank_document_context import document_context_text
                 text=document_context_text(row['rerank_document_metadata'])+'\n\n'+text
+            from .evidence_scope import scoring_scope_text
+            scope_text=scoring_scope_text(row)
+            if scope_text:
+                text=scope_text+'\n\n'+text
             if not text or len(text.encode())>32768:
                 raise ValueError('rerank_document_outside_budget_no_truncation')
             documents.append(text)

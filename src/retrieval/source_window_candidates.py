@@ -34,7 +34,7 @@ def adjacent_nodes(locations):
 
 
 def expand_candidates(ordered, dense, neighbors, documents):
-    """Keep first 36 original IDs and reserve <=12 slots for <=6 seed windows.
+    """Keep all independent candidates; use only spare slots for seed windows.
 
     documents maps only current eligible node IDs to immutable document IDs.
     An unavailable neighbor is skipped, never loaded to decide its relevance.
@@ -44,7 +44,7 @@ def expand_candidates(ordered, dense, neighbors, documents):
             or not set(ordered) <= documents.keys() or not set(dense) <= set(ordered)):
         raise ValueError('source_window_unverified_population')
     extra, links = [], []
-    keep = ordered[:36]
+    keep = ordered
     for seed in dense[:6]:
         adjacent = neighbors.get(seed, [])
         if len(adjacent) > 2 or len(set(adjacent)) != len(adjacent):
@@ -57,7 +57,8 @@ def expand_candidates(ordered, dense, neighbors, documents):
             links.append({'seed':seed, 'neighbor':node})
             if node not in keep and node not in extra:
                 extra.append(node)
-    selected = list(dict.fromkeys([*keep, *extra, *ordered[36:]]))[:48]
+    selected = [*keep, *extra[:48-len(keep)]]
+    links = [link for link in links if link['neighbor'] in selected]
     return selected, {'policy':POLICY, 'seed_limit':6, 'neighbor_limit':12,
                       'candidate_limit':48, 'seed_node_ids':dense[:6],
                       'links':links, 'added_node_ids':[n for n in selected if n not in ordered],
@@ -65,11 +66,7 @@ def expand_candidates(ordered, dense, neighbors, documents):
 
 
 def order_source_windows(rows, expansion):
-    """Keep verified seed companions together; original rank scores survive.
-
-    Windows follow the reranked/coverage-selected seed order, not the initial
-    dense order. No new node is fetched here and no original body is joined.
-    """
+    """Describe verified companions without changing primary result order."""
     by_id={r['node_id']:r for r in rows}
     if len(by_id)!=len(rows) or len(rows)>48 or expansion.get('policy')!=POLICY:
         raise ValueError('source_window_invalid_ranked_population')
@@ -95,4 +92,6 @@ def order_source_windows(rows, expansion):
             if node not in seen:
                 result.append(by_id[node]);seen.add(node);added.append(node)
         if added:windows.append({'anchor':seed,'companions':added})
-    return result,windows
+    # References may be displayed or read separately. Adjacency is not a
+    # relevance score and must not change either ranking or top-K membership.
+    return rows,windows

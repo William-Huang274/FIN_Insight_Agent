@@ -298,7 +298,7 @@ class OrganizationHybridRetrieval:
             raise ValueError('organization_retrieval_query_not_prepared_no_provider_fallback')
         # Selection happens before cosine scoring/top-K. Unselected documents
         # cannot occupy quotas, produce previews, or influence lexical ranks.
-        scope = {'policy': POLICY, 'grant': digest(before), 'index': index_digest,
+        scope = {'policy': POLICY, 'trace_version':'channel-scores.v1', 'grant': digest(before), 'index': index_digest,
             'query': query_hash, 'nodes': [(r['node_id'], r['content_sha256']) for r in rows]}
         if lexical_policy is not None:
             scope['lexical_policy'] = lexical_policy
@@ -320,8 +320,8 @@ class OrganizationHybridRetrieval:
                 entry = json.loads(saved[0])
             else:
                 scores = (verified_cosine_scores if pinned is not None else cosine_scores)(matrix, selected, query_vector)
-                dense = [rows[i]['node_id'] for i in sorted(range(len(rows)),
-                    key=lambda i: (-float(scores[i]), rows[i]['node_id']))[:limits['dense']]]
+                dense_order = sorted(range(len(rows)), key=lambda i: (-float(scores[i]), rows[i]['node_id']))
+                dense = [rows[i]['node_id'] for i in dense_order[:limits['dense']]]
                 lexical = [r['node_id'] for r in literal[:limits['lexical']]]
                 from retrieval.rank_fusion import reciprocal_rank_fusion
                 channels=[dense,lexical]+([graph] if graph is not None else [])
@@ -330,11 +330,24 @@ class OrganizationHybridRetrieval:
                         if node_id not in by_id:
                             raise OrganizationExecutionUnavailable('organization_retrieval_candidate_outside_scope')
                 entry = {'ordered': reciprocal_rank_fusion(channels), 'dense': dense, 'lexical': lexical}
+                entry['dense_trace'] = {'population_count':len(rows), 'trace_limit':96,
+                    'trace_truncated':len(rows)>96, 'scores':[
+                        {'node_id':rows[i]['node_id'], 'score':float(scores[i]), 'rank':rank+1}
+                        for rank,i in enumerate(dense_order[:96])]}
                 if graph is not None:entry['graph']=graph
                 self.reader._after(before)
                 db.execute('INSERT OR IGNORE INTO ranks VALUES (?,?)', (key, json.dumps(entry)))
             if graph is not None and entry.get('graph')!=graph:
                 raise OrganizationExecutionUnavailable('organization_graph_cache_scope_mismatch')
+            trace = entry.get('dense_trace', {})
+            samples = trace.get('scores', [])
+            import math
+            if (trace.get('population_count') != len(rows) or len(samples) != min(96,len(rows))
+                    or len({r.get('node_id') for r in samples}) != len(samples)
+                    or any(r.get('node_id') not in by_id or r.get('rank') != i+1
+                           or type(r.get('score')) not in (int,float) or not math.isfinite(r['score'])
+                           for i,r in enumerate(samples))):
+                raise OrganizationExecutionUnavailable('organization_retrieval_trace_scope_mismatch')
             for channel in ('ordered', 'dense', 'lexical', *(['graph'] if graph is not None else [])):
                 ids = entry[channel]
                 if (not isinstance(ids, list) or len(set(ids)) != len(ids)
@@ -352,5 +365,6 @@ class OrganizationHybridRetrieval:
                if self.candidate_policy != 'balanced.v1' else {}),
             **({'graph_node_ids':entry['graph']} if graph is not None else {}),
             'index_digest': scope['index'], 'dense_node_ids': entry['dense'], 'lexical_node_ids': entry['lexical'],
+            'dense_trace':entry['dense_trace'],
             'candidate_node_ids': entry['ordered'], 'provider_calls': query_receipt['provider_calls'],
             'query_embedding': query_receipt, 'rerank': 'local_rrf_no_provider'}

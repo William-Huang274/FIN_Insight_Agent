@@ -88,6 +88,8 @@ def implementation_digest():
     files.append(root.parents[1]/'retrieval'/'source_window_selection.py')
     files.append(root.parents[1]/'retrieval'/'source_structure_selection.py')
     files.append(root.parents[1]/'retrieval'/'rerank_document_context.py')
+    files.append(root.parents[1]/'retrieval'/'evidence_scope.py')
+    files.append(root.parents[1]/'retrieval'/'catalog_company_identity.py')
     return sha256(b''.join(path.read_bytes() for path in files)).hexdigest()
 
 

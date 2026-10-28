@@ -11,6 +11,9 @@ def with_document_context(rows, metadata):
         context = {}
         for field in ('issuer', 'form', 'period_end'):
             value = source.get(field)
+            if field == 'issuer' and value is None:
+                names = source.get('verified_company_names') or []
+                value = source.get('company_name') or (names[0] if len(names)==1 else None) or source.get('issuer_id')
             if value is None:
                 continue
             if not isinstance(value, str) or not value or len(value) > 256:

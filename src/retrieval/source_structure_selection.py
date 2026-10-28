@@ -1,7 +1,7 @@
-"""Bounded original table-note dependencies among already authorized candidates.
+"""Validate structural companions without changing independent relevance ranks.
 
-This opt-in selector never fetches missing nodes. Explicit original structure
-outranks mere adjacency, but is not a claim that every note answers the query.
+The separately authorized table completion reader owns supplemental text.
+Original adjacency and a table-note relationship are never ranking evidence.
 """
 from .source_window_selection import select_context_companions
 
@@ -83,25 +83,14 @@ def select_structure_companions(rows, expansion):
         other = min(options, key=position.__getitem__)
         promotions[row['node_id']] = (other, 'explicit_post_table_marker')
         used.add(other)
-    for pair in fallback['promotions']:
+    for pair in fallback['companions']:
         if len(used) == 2:
             break
         anchor, other = pair['anchor'], pair['companion']
         if anchor not in promotions and other not in used:
             promotions[anchor] = (other, 'verified_adjacent_original')
             used.add(other)
-    result, seen = [], set()
-    for row in rows:
-        node = row['node_id']
-        if node not in seen:
-            result.append(row)
-            seen.add(node)
-        if node in promotions:
-            other, _ = promotions[node]
-            if other not in seen:
-                result.append(by_id[other])
-                seen.add(other)
-    return result, {'policy': 'bounded-structure.v1', 'protected_prefix': 8,
-        'promotion_limit': 2, 'promotions': [
+    return rows, {'policy': 'supplemental-structure.v2', 'top_k_unchanged': True,
+        'promotion_limit': 0, 'promotions': [], 'companions': [
             {'anchor': anchor, 'companion': other, 'basis': basis}
             for anchor, (other, basis) in promotions.items()]}

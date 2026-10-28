@@ -20,6 +20,23 @@ def test_financial_variants_preserve_distinct_evidence_needs():
     assert 'indebtedness' in result['needs'][1]['concept_terms']
 
 
+def test_earnings_event_route_does_not_only_match_release_boilerplate(tmp_path):
+    from retrieval.published_lexical_index import build, lexical_digest
+    bodies=['On August 10 the company issued a press release announcing a financing facility. Exhibit 99.1.']*12
+    bodies+=['The company announced earnings results in a release for the quarter.']
+    rows=[dict(node_id=str(i),parent_document_id='d',content=b,content_sha256=sha256(b.encode()).hexdigest()) for i,b in enumerate(bodies)]
+    for r in rows:r['lexical_input_sha256']=lexical_digest(r)
+    path=tmp_path/'lexical.sqlite';build(path,rows)
+    for query in ['Alpha earnings release date and exhibit', 'Alpha业绩公告发布日期和附件']:
+        result=compile_needs(query,{'policy':'conservative.v5'})
+        assert result['financial_concepts']==['earnings_release']
+        ids,lanes=lexical_candidates(path,rows,result,{})
+        assert ids[0]=='12'
+        assert len(lanes[0]['route_ids'])==2  # Literal query preserved.
+    result=compile_needs('Not an earnings release, find the financing announcement',{'policy':'conservative.v5'})
+    assert 'earnings_release' not in result['financial_concepts']
+
+
 def test_expiration_context_not_blind_translation_or_fiscal_period_inference():
     auth=needs('回购授权到期时间')
     assert 'authorization_expiration' in auth['financial_concepts']

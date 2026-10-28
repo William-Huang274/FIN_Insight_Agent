@@ -79,6 +79,12 @@ def source_metadata_details(bundle):
     descriptor = original_source_metadata(bundle)
     proof = None
     if bundle:
+        from retrieval.catalog_company_identity import cover_names
+        recovered_names = cover_names(bundle.get('text', ''))
+        if len(recovered_names) == 1:
+            descriptor['verified_company_names'] = recovered_names
+        elif recovered_names:
+            descriptor['company_name_resolution'] = 'joint_registrants_not_a_unique_owner'
         from .sec_cover_metadata import cover_form, calendar_annual_year
         from retrieval.filing_document_identity import original_filing_key
         if key := original_filing_key(bundle['source'].get('url')):

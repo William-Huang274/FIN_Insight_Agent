@@ -21,10 +21,10 @@ def _mentions(query, alias):
 
 
 def _alias_pattern(alias, compatible=False):
-    # Only whitespace compatibility for a declared catalog alias. No fuzzy
-    # spelling, suffix removal, inferred ticker, or merging issuer identities.
+    # Whitespace/punctuation compatibility for catalog-derived aliases only;
+    # no fuzzy spelling, inferred ticker, or merging issuer identities.
     if compatible and alias.isascii():
-        return r'\s*'.join(re.escape(c) for c in alias if not c.isspace())
+        return r'[\W_]*'.join(re.escape(c) for c in alias if c.isalnum())
     return re.escape(alias)
 
 
@@ -78,9 +78,11 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
         raise ValueError('unsupported_organization_query_plan')
     aliases, names = {}, {}
     named_issuers = {}
+    from retrieval.catalog_company_identity import aliases_for, name_key, owners_for_row
     for row in metadata.values():
-        if row.get('issuer_id') and row.get('company_name'):
-            named_issuers.setdefault(row['company_name'].casefold(), set()).add(row['issuer_id'])
+        if row.get('issuer_id'):
+            for alias in aliases_for(row):
+                named_issuers.setdefault(name_key(alias), set()).add(row['issuer_id'])
     for row in metadata.values():
         issuer, name = row.get('issuer_id'), row.get('company_name')
         if issuer:
@@ -90,10 +92,16 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
             if len(tail) >= 3:
                 aliases.setdefault(tail.casefold(), set()).add(issuer)
         if name:
-            owners = {issuer} if issuer else named_issuers.get(name.casefold(), {'name:'+name.casefold()})
+            owners = owners_for_row(row, named_issuers)
             for owner in owners:
                 names.setdefault(owner, set()).add(name)
                 aliases.setdefault(name.casefold(), set()).add(owner)
+        if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'}:
+            for alias in aliases_for(row):
+                owners = owners_for_row(row, named_issuers)
+                aliases.setdefault(alias.casefold(), set()).update(owners)
+            if issuer:
+                names.setdefault(issuer,set()).update(row.get('verified_company_names') or [])
     matches = [(a, owners) for a, owners in aliases.items() if _mentions(query, a)]
     mentions = []
     if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'}:
@@ -142,6 +150,21 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
                          'basis':'explicit_comparison_of_unambiguous_catalog_owners'})
     elif owners:
         unresolved.append('multiple_or_ambiguous_issuers_no_issuer_filter')
+        if policy == 'conservative.v5' and not comparison:
+            # Duplicate parse IDs for one exact original can use an explicit
+            # common name scope. Never merge those IDs across other filings.
+            from retrieval.filing_document_identity import original_filing_key
+            filing_owners = {}
+            for row in metadata.values():
+                key = original_filing_key(row.get('original_filing_key'))
+                if key and row.get('issuer_id'):
+                    filing_owners.setdefault(key,set()).add(row['issuer_id'])
+            common = set.intersection(*(set(names.get(o,())) for o in owners)) if owners else set()
+            if common and any(owners <= ids for ids in filing_owners.values()):
+                constraint['company_names'] = sorted(common)
+                unresolved.remove('multiple_or_ambiguous_issuers_no_issuer_filter')
+                evidence.append({'field':'company_names','basis':'same_original_multiple_parse_ids_common_name',
+                                 'issuer_ids_not_merged':True})
     else:
         unresolved.append('no_unambiguous_literal_catalog_issuer')
     form_pattern = (r'(?<![A-Za-z0-9_-])(?:10-?[KQ]|8-?K)(?:\s*/A)?(?![A-Za-z0-9_/-])'
@@ -196,7 +219,7 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
               'unresolved': unresolved, 'unknown_metadata_retained': True}
     if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'}:
         result['issuer_mentions'] = mentions
-        result['issuer_matching'] = 'catalog_whitespace_compatibility_longest_mention.v1'
+        result['issuer_matching'] = 'catalog_name_compatibility_longest_mention.v2'
     if policy != 'conservative.v1':
         # A bare "2025 report" does not establish a filing form or fiscal
         # endpoint. It can prefer an independently cover-verified report year
@@ -226,8 +249,9 @@ def select_planned(metadata, plan):
             names = {name.casefold() for o in owners for name in o['company_names']}
             if actual_id and all(o['issuer_id'] for o in owners):
                 checks.append(actual_id in ids or bool(ids & set(row.get('same_document_issuer_ids', []))))
-            elif actual_name and names:
-                checks.append(actual_name.casefold() in names)
+            elif names and (actual_name or row.get('verified_company_names')):
+                actual_names = {n.casefold() for n in [actual_name, *(row.get('verified_company_names') or [])] if n}
+                checks.append(bool(actual_names & names))
             else:
                 checks.append(None)
         if ('form' in wanted or 'report_kind' in wanted) and row.get('evidence_role') == 'discovery_metadata_only':
@@ -240,8 +264,9 @@ def select_planned(metadata, plan):
             actual_id, actual_name = row.get('issuer_id'), row.get('company_name')
             if actual_id and wanted.get('issuer_id'):
                 checks.append(actual_id == wanted['issuer_id'] or wanted['issuer_id'] in row.get('same_document_issuer_ids', []))
-            elif actual_name and names:
-                checks.append(actual_name.casefold() in names)
+            elif names and (actual_name or row.get('verified_company_names')):
+                actual_names = {n.casefold() for n in [actual_name, *(row.get('verified_company_names') or [])] if n}
+                checks.append(bool(actual_names & names))
             else:
                 checks.append(None)
         for field in ('form', 'period_end'):

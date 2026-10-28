@@ -5,6 +5,8 @@ No labels, source IDs, known amounts, model calls or permission decisions enter
 this module. Unknown language stays literal and is reported, never guessed.
 """
 import re
+from hashlib import sha256
+import json
 from .text import tokenize
 
 POLICY = 'organization-search-needs.v1'
@@ -86,8 +88,9 @@ def owner_matches(metadata, owner):
         return True
     if metadata.get('issuer_id') and owner.get('issuer_id'):
         return metadata['issuer_id'] == owner['issuer_id']
-    return bool(metadata.get('company_name') and metadata['company_name'].casefold() in
-                {n.casefold() for n in (owner.get('company_names') or [])})
+    actual_names = {n.casefold() for n in [metadata.get('company_name'),
+        *(metadata.get('verified_company_names') or [])] if n}
+    return bool(actual_names & {n.casefold() for n in (owner.get('company_names') or [])})
 
 
 def interleave(channels, limit=None):
@@ -101,12 +104,12 @@ def interleave(channels, limit=None):
     return result
 
 
-def lexical_candidates(path, records, needs, metadata, *, population_cache=None):
+def lexical_candidates(path, records, needs, metadata, *, population_cache=None, capture_trace=False):
     from .published_lexical_index import scores_from_identities
     rankings, receipts = [], []
     for need in needs['needs']:
         scoped = [r for r in records if owner_matches(metadata.get(r['parent_document_id'], {}), need['owner'])]
-        routes = []
+        routes, traces = [], []
         for route_number, terms in enumerate(need['lexical_routes']):
             if not scoped:
                 continue
@@ -123,10 +126,21 @@ def lexical_candidates(path, records, needs, metadata, *, population_cache=None)
                         ((r['node_id'],r['content_sha256'],r['lexical_input_sha256']) for r in scoped),
                         group, population_cache=population_cache)
                     complete.intersection_update(group_overlap)
+            raw_order = sorted(overlap, key=lambda i:(-float(scores[i]), scoped[i]['node_id'])) if capture_trace else []
             ranked = sorted(overlap, key=lambda i:(
                 0 if complete is None or i in complete else 1,
                 -float(scores[i]), scoped[i]['node_id']))[:48]
             routes.append([scoped[i]['node_id'] for i in ranked])
+            if capture_trace:
+                traces.append({'route':route_number, 'terms':terms, 'population_count':len(scoped),
+                'population_sha256':sha256(json.dumps([(r['node_id'],r['content_sha256'],
+                    r['lexical_input_sha256']) for r in scoped], separators=(',', ':')).encode()).hexdigest(),
+                'matched_count':len(overlap), 'trace_limit':96, 'trace_truncated':len(raw_order)>96,
+                'raw_bm25': [{'node_id':scoped[i]['node_id'], 'score':float(scores[i]), 'rank':rank+1}
+                             for rank,i in enumerate(raw_order[:96])],
+                'selected_before_interleave':routes[-1],
+                'term_group_preference':complete is not None,
+                'complete_term_group_ids':[scoped[i]['node_id'] for i in ranked if complete is not None and i in complete]})
         if needs['policy'] == 'organization-financial-needs.v2' and need.get('concept'):
             # Reserve two of three opportunities for the explicit business
             # need, one for the unchanged question (dates/unrecognized terms).
@@ -135,7 +149,8 @@ def lexical_candidates(path, records, needs, metadata, *, population_cache=None)
         else:
             merged = interleave(routes, 48)
         rankings.append(merged)
-        receipts.append({'need_id':need['id'], 'candidate_ids':merged, 'route_ids':routes})
+        receipts.append({'need_id':need['id'], 'candidate_ids':merged, 'route_ids':routes,
+                         **({'route_traces':traces} if capture_trace else {})})
     return interleave(rankings, 48), receipts
 
 

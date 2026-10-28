@@ -26,6 +26,7 @@ class OrganizationSourceNavigation:
             raise ValueError('organization_source_requires_workbench_origin')
         self.reader, self.workbench_url = reader, workbench_url.rstrip('/')
         import os
+        self.capture_trace = os.getenv('FINSIGHT_ORGANIZATION_RETRIEVAL_TRACE', '') == 'bounded.v1'
         self.table_completion = os.getenv('FINSIGHT_ORGANIZATION_TABLE_COMPLETION', '')
         if self.table_completion not in ('', 'bounded.v1'):
             raise ValueError('organization_table_completion_configuration_invalid')
@@ -202,6 +203,21 @@ class OrganizationSourceNavigation:
                     organization_filter_receipt=OrganizationSourceFilterReceipt.model_validate(filter_receipt),
                     notice=filter_notice(filter_receipt), source_snapshot_sha256=self.reader.authority.manifest_digest[7:])
         planned_lexical = request.organization_query_planning in {'conservative.v2', 'conservative.v3', 'conservative.v4', 'conservative.v5'}
+        from retrieval.evidence_scope import select_scoped, resolve_scope
+        explicit_scope = (request.organization_evidence_filter.model_dump(mode='json', exclude_defaults=True)
+                          if request.organization_evidence_filter is not None else None)
+        evidence_filter = (resolve_scope(request.query, query_plan, explicit_scope)
+                           if explicit_scope is not None or request.organization_query_planning == 'conservative.v5' else None)
+        scope_receipt = None
+        if evidence_filter:
+            rows, scope_receipt = select_scoped(rows, evidence_filter)
+            scope_receipt['origin'] = 'explicit_tool_argument' if request.organization_evidence_filter else 'query_plan'
+            if not rows:
+                from .source_document_navigation import SourceDocumentResult
+                return SourceDocumentResult(operation='search', items=(), next_offset=None,total_matches=0,
+                    organization_evidence_scope=scope_receipt, organization_query_plan=query_plan,
+                    notice='No verified candidate matches this evidence scope; unknown metadata is not absent disclosure.',
+                    source_snapshot_sha256=self.reader.authority.manifest_digest[7:])
         scores, overlap, has_terms = scores_from_identities(candidates.directory/'lexical.sqlite',
             ((row['node_id'],row['content_sha256'],row['lexical_input_sha256']) for row in rows),
             tokenize(request.query), population_cache=None if planned_lexical else self._lexical_statistics,
@@ -215,7 +231,7 @@ class OrganizationSourceNavigation:
                 metadata = with_document_issuer_aliases(metadata)
             needs = compile_needs(request.query, query_plan)
             ids, lanes = lexical_candidates(candidates.directory/'lexical.sqlite', rows, needs,
-                                           metadata, population_cache=self._lexical_statistics)
+                                           metadata, population_cache=self._lexical_statistics, capture_trace=self.capture_trace)
             by_id = {r['node_id']:r for r in rows}
             literal = [by_id[n] for n in ids]
         graph=None
@@ -229,6 +245,14 @@ class OrganizationSourceNavigation:
                                           **({'lexical_policy':needs['policy']} if needs else {}))
         if graph is not None:
             receipt.update(graph_evidence=graph_evidence,graph_scope='frozen_one_hop_source_bound_candidates')
+        if not self.capture_trace:
+            receipt.pop('dense_trace', None)
+        if self.capture_trace and not planned_lexical:
+            raw_order = sorted(overlap, key=lambda i:(-float(scores[i]),rows[i]['node_id']))
+            receipt['lexical_trace'] = {'terms':tokenize(request.query),'population_count':len(rows),
+                'trace_limit':96,'trace_truncated':len(raw_order)>96,
+                'scores':[{'node_id':rows[i]['node_id'],'score':float(scores[i]),'rank':rank+1}
+                          for rank,i in enumerate(raw_order[:96])]}
         if self.hybrid.candidate_policy in {'needs_window.v2', 'needs_window.v3', 'needs_window.v4'}:
             from retrieval.source_window_candidates import expand_candidates
             eligible = {r['node_id']:r for r in rows}
@@ -295,6 +319,8 @@ class OrganizationSourceNavigation:
         if query_plan is not None:
             result = result.model_copy(update={'organization_query_plan': query_plan,
                 'notice': result.notice + ' Automatic query plan: '+json.dumps(query_plan, ensure_ascii=False)})
+        if scope_receipt is not None:
+            result = result.model_copy(update={'organization_evidence_scope':scope_receipt})
         candidates.check()
         return self._decorate(result, candidates.origins,
             {row['node_id']:row['original_source'] for row in materialized if 'original_source' in row})
@@ -302,7 +328,7 @@ class OrganizationSourceNavigation:
     def _navigate(self, request, *, projection_cache=None, storage_check=None):
         request = SourceDocumentRequest.model_validate(request)
         if (request.organization_filter is not None or request.organization_metadata_policy != 'original.v1'
-                or request.organization_query_planning is not None) and request.operation == 'search':
+                or request.organization_query_planning is not None or request.organization_evidence_filter is not None) and request.operation == 'search':
             raise ValueError('organization_filtered_search_requires_prepared_candidate_index')
         if request.source_space=='organization' and request.entity_id:
             raise ValueError('organization_graph_requires_published_candidate_navigation')

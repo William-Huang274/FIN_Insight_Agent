@@ -1,4 +1,4 @@
-"""Bound context promotion without displacing the leading relevance core."""
+"""Identify bounded context references without promoting adjacent originals."""
 from .source_window_candidates import order_source_windows
 
 
@@ -28,15 +28,6 @@ def select_context_companions(rows, expansion):
             break
         promotions[seed] = best
         promoted.add(best)
-    selected, seen = [], set()
-    for row in rows:
-        node = row['node_id']
-        if node not in seen:
-            selected.append(row)
-            seen.add(node)
-        other = promotions.get(node)
-        if other and other not in seen:
-            selected.append(by_id[other])
-            seen.add(other)
-    return selected, {'policy':'bounded-context.v1', 'protected_prefix':8,
-        'promotion_limit':2, 'promotions':[{'anchor':k,'companion':v} for k,v in promotions.items()]}
+    return rows, {'policy':'supplemental-context.v2', 'top_k_unchanged':True,
+        'promotion_limit':0, 'promotions':[],
+        'companions':[{'anchor':k,'companion':v} for k,v in promotions.items()]}

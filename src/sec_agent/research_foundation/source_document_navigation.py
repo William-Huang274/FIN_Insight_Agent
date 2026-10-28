@@ -18,6 +18,7 @@ from retrieval.query_bm25 import lexical_scores, lexical_document
 from retrieval.text import tokenize
 from .research_methods import REPORT_PROCESSING_TOOL_GUIDANCE
 from .organization_source_filter import OrganizationSourceFilter, OrganizationSourceFilterReceipt
+from .organization_evidence_filter import OrganizationEvidenceFilter
 
 
 LIBRARY_SOURCE_ROUTING_GUIDANCE = (
@@ -36,7 +37,7 @@ class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     organization_query_planning: Literal['conservative.v1', 'conservative.v2', 'conservative.v3', 'conservative.v4', 'conservative.v5'] | None = Field(default=None,
         description='Opt-in organization search: literal catalog issuer, explicit filing form and period end. '
-        'Unknown metadata stays eligible; ambiguous/multiple issuers and fiscal years are not guessed. '
+        'Unknown metadata stays eligible; v3-v5 support explicit multi-company comparisons. Ambiguous identities and fiscal year ends are not guessed. '
         'Cannot combine with organization_filter; no paid query planning.')
     organization_metadata_policy: Literal['original.v1', 'sec_cover.v2'] = Field(default='original.v1',
         description='Organization catalog/search only. original.v1 preserves original metadata; '
@@ -46,7 +47,14 @@ class SourceDocumentRequest(BaseModel):
         'from catalog organization_metadata. Conditions are AND; company_name ignores case only. '
         'period_end is the reporting period end, never filing/publication date or inferred fiscal year. '
         'Unknown original metadata is excluded and counted. entity_id separately seeds graph relations. '
-        'Natural-language query constraints are not automatically parsed.'))
+        'With this explicit filter natural-language constraints do not override these fields.'))
+    organization_evidence_filter: OrganizationEvidenceFilter | None = Field(default=None, description=(
+        'Organization search business scope, applied before vector/BM25 quotas. AND across fields, OR within a field; '
+        'all conditions must match one source region. Preserve the complete user question. '
+        'Distinguish table reporting entity from document issuer and consolidated from subsidiary accounts. '
+        'Use returned original names; omit unknown requirements, never invent an identifier. '
+        'Event type is not SEC form; publication date is not a fact date. This field never grants access. '
+        'Unknown exclusions are reported, not proof of absent disclosure. Supplemental context is not an independent ranked answer.'))
     source_space: Literal["local", "web", "uploads", "library", "organization"] = Field(default="local", description=(
         'library is the shared company/industry knowledge database, when authorized. local is only the '
         'frozen document tree attached to this case, not the whole database. company/data/related require '
@@ -78,7 +86,7 @@ class SourceDocumentRequest(BaseModel):
     node_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
         description="Only local/library/uploads/organization node navigation. Omit for web: use document_id and offset in characters. A PASSAGE citation ID is never a node_id. Copy exact returned node navigation; never infer an ID.")
     query: str = Field(default="", max_length=600,
-        description="For catalog use a company name/ticker or leave empty (also '*' lists the menu), not a research sentence. Search accepts research keywords. For data this is a literal field filter: financial=concept e.g. Revenue, positions=issuer name, filings=form e.g.10-Q; prices=ticker, normally leave empty. Dates/period instructions are NOT parsed from query.")
+        description="For catalog use a company name/ticker or leave empty (also '*' lists the menu), not a research sentence. Search accepts the complete research question; do not drop known subject, event, period or scope. Organization query planning, when enabled, reports recognized constraints and unresolved requirements; it does not infer arbitrary fiscal year ends. For data this is a literal field filter: financial=concept e.g. Revenue, positions=issuer name, filings=form e.g.10-Q; prices=ticker. Data dates use structured fields, not query text.")
     page_start: int | None = Field(default=None, ge=1)
     page_end: int | None = Field(default=None, ge=1)
     offset: int = Field(default=0, ge=0, description="For web read, character offset in the captured document; omit node_id, character_offset and page fields. Other spaces use their returned pagination arguments. Saved cross-author sources use their handoff readback.")
@@ -99,6 +107,8 @@ class SourceDocumentRequest(BaseModel):
     @model_serializer(mode="wrap")
     def preserve_legacy_local_request(self, handler):
         body = handler(self)
+        if 'organization_evidence_filter' not in self.model_fields_set:
+            body.pop('organization_evidence_filter', None)
         if 'organization_query_planning' not in self.model_fields_set:
             body.pop('organization_query_planning', None)
         if 'organization_filter' not in self.model_fields_set:
@@ -121,6 +131,8 @@ class SourceDocumentRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
+        if self.organization_evidence_filter is not None and (self.source_space != 'organization' or self.operation != 'search'):
+            raise ValueError('organization_evidence_filter_requires_organization_search')
         if self.organization_query_planning is not None and (self.source_space != 'organization'
                 or self.operation != 'search' or self.organization_filter is not None):
             raise ValueError('organization_query_planning_requires_search_without_explicit_filter')
@@ -225,6 +237,7 @@ class SourceDocumentResult(BaseModel):
     execution_receipt: SourceExecutionReceipt | None = None
     organization_filter_receipt: OrganizationSourceFilterReceipt | None = None
     organization_query_plan: dict[str, Any] | None = None
+    organization_evidence_scope: dict[str, Any] | None = None
 
     @model_serializer(mode="wrap")
     def preserve_archived_result_shape(self, handler):
@@ -235,6 +248,8 @@ class SourceDocumentResult(BaseModel):
             body.pop("organization_filter_receipt", None)
         if "organization_query_plan" not in self.model_fields_set:
             body.pop("organization_query_plan", None)
+        if 'organization_evidence_scope' not in self.model_fields_set:
+            body.pop('organization_evidence_scope', None)
         return body
 
 

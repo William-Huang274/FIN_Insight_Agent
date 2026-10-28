@@ -22,6 +22,9 @@ def prepare(value):
         return b64encode(zlib.compress(json.dumps(item, ensure_ascii=False,
             separators=(',', ':'), allow_nan=False).encode(), 1)).decode('ascii')
     return {**{k: v for k, v in value.items() if k not in {'structures', 'locations'}},
+        'evidence_scopes':{n:s.get('evidence_scopes', []) for n,s in value['structures'].items()
+                           if s.get('evidence_scopes')},
+        'evidence_scope_complete':[n for n,s in value['structures'].items() if s.get('evidence_scope_complete')],
         'prepared_navigation': {'format': FORMAT, 'structures': packed(value['structures']),
             'locations': packed(ordered), 'neighbors': neighbors,
             'window_neighbors': adjacent_nodes(ordered)}}

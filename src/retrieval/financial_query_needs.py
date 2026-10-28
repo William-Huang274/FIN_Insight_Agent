@@ -8,6 +8,7 @@ from .text import tokenize
 
 POLICY = 'organization-financial-needs.v2'
 TERM_GROUPS = {
+    'earnings_release': [['earnings','results','业绩'], ['release','announced','announcing','announcement','发布','公告']],
     'cash_equivalents': [['cash','现金'],['equivalents','等价物']],
     'restricted_cash': [['cash','现金'],['restricted','受限']],
     'equity_commitments': [['equity','股权'],['commitment','commitments','承诺']],
@@ -53,6 +54,15 @@ def concepts(text):
 
 def compile_financial_needs(query, plan, legacy):
     found = concepts(query)
+    if plan.get('policy') == 'conservative.v5':
+        from .evidence_scope import plan_scope
+        scope = plan_scope(query)
+        if scope and scope.get('event_type') == ['earnings_release']:
+            # An explicit earnings announcement needs its event topic, not
+            # just shared press-release/date/exhibit boilerplate. Preserve
+            # the literal route as well; this is allocation, not a hard gate.
+            found.append(('earnings_release',
+                'earnings results release announced announcing announcement 业绩 发布 公告', 0))
     if not found:
         return {**legacy, 'financial_concepts': [],
                 'decomposition': 'legacy_syntax_no_recognized_financial_concept'}

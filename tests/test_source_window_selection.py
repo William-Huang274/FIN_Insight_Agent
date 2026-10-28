@@ -16,17 +16,18 @@ def test_core_keeps_order_and_all_eight_nodes_with_many_neighbor_links():
     links=[(str(i),str(20+i)) for i in range(6)]
     result,receipt=select_context_companions(original,proof(links))
     ids=[r['node_id'] for r in result]
-    assert ids[:10]==['0','20','1','21','2','3','4','5','6','7']
+    assert ids[:10]==[str(i) for i in range(10)]
     assert [n for n in ids if int(n)<8]==[str(i) for i in range(8)]
-    assert len(receipt['promotions'])==2 and len(ids)==len(set(ids))==30
+    assert len(receipt['companions'])==2 and receipt['promotions']==[] and len(ids)==len(set(ids))==30
     assert all(next(r for r in result if r['node_id']==old['node_id']) is old for old in original)
 
 
 def test_choose_best_neighbor_without_replacing_a_core_neighbor_with_a_weaker_one():
     original=rows()
     result,receipt=select_context_companions(original,proof([('0','29'),('0','10'),('2','25'),('2','3')]))
-    assert [r['node_id'] for r in result[:5]]==['0','10','1','2','3']
-    assert receipt['promotions']==[{'anchor':'0','companion':'10'}]
+    assert result == original
+    assert receipt['companions']==[{'anchor':'0','companion':'10'}]
+    assert receipt['promotions']==[]
 
 
 def test_small_population_stays_unchanged_and_tail_anchors_cannot_displace_core():

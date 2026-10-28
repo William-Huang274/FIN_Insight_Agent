@@ -45,3 +45,30 @@ def test_changed_body_or_missing_display_position_fails_closed(tmp_path):
     data['candidates'][0]['content']='a';data['candidates'][0]['ranks']['selected']=3
     path.write_text(json.dumps(data))
     with pytest.raises(ValueError,match='missing_top10_rank'):score(pools,judgments)
+
+
+def test_unreviewed_pool_tail_does_not_inflate_ndcg_or_recall(tmp_path):
+    pools,judgments,batch=fixture(tmp_path)
+    (batch/'unreviewed.json').unlink()
+    path=batch/'reviewed.json';data=json.loads(path.read_text())
+    # This candidate was recalled by another channel but not displayed. Its
+    # relevance can change IDCG and recall even though Precision is unaffected.
+    data['candidates'].append({'node_id':'outside','content':'outside',
+        'content_sha256':sha256(b'outside').hexdigest(),'ranks':{'selected':None}})
+    path.write_text(json.dumps(data))
+    output=score(pools,judgments)['batches'][0]
+    result=output['samples'][0]['stages']['selected']
+    assert result['precision']==.1 and result['unjudged']==0
+    assert result['pooled_graded_ndcg'] is None and result['pooled_recall'] is None
+    summary=output['stages']['selected']
+    assert summary['all_queries_top10_reviewed'] and not summary['all_query_pools_reviewed']
+    assert summary['precision_at_10_macro']==.1
+    assert summary['pooled_graded_ndcg_at_10_macro'] is None
+    labelpath=judgments/'reviewed.json';labels=json.loads(labelpath.read_text())
+    labels.append({'question_id':'reviewed','query_sha256':sha256(b'reviewed').hexdigest(),
+        'node_id':'outside','content_sha256':sha256(b'outside').hexdigest(),
+        'grade':3,'reason':'A relevant alternative in another channel'})
+    labelpath.write_text(json.dumps(labels))
+    completed=score(pools,judgments)['batches'][0]['samples'][0]['stages']['selected']
+    assert 0<completed['pooled_graded_ndcg']<1
+    assert completed['pooled_recall']==.5

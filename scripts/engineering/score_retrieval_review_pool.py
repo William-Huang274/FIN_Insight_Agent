@@ -53,6 +53,16 @@ def score(pools, judgments):
                 if not expected<=ranks.keys():raise ValueError('review_missing_top10_rank')
                 page=[ranks[i] for i in sorted(expected)]
                 metrics=ranking_metrics(page,qrels)
+                # A reviewed top ten is sufficient for Precision@10, but not
+                # for the ideal ranking or recall denominator. An unreviewed
+                # rank-11 candidate might be a better answer than every result.
+                # Never inflate nDCG by silently dropping it from the ideal.
+                pool_complete=len(qrels)==len(seen)
+                if not pool_complete:
+                    metrics['pooled_graded_ndcg']=None
+                    metrics['pooled_recall']=None
+                metrics['all_pool_candidates_reviewed']=pool_complete
+                metrics['unjudged_pool_candidates']=len(seen)-len(qrels)
                 relevant=sum(qrels.get(n,-1)>=2 for n in page)
                 metrics.update(returned_precision=(relevant/len(page) if page and not metrics['unjudged'] else None),
                     irrelevant_results=sum(qrels.get(n)==0 for n in page),
@@ -70,6 +80,8 @@ def score(pools, judgments):
                 nums=[v[field] for v in values if v is not None and v[field] is not None]
                 return mean(nums) if full and len(nums)==len(values) else None
             summaries[stage]={'all_queries_top10_reviewed':full,'fully_reviewed_queries':len(known),
+                'all_query_pools_reviewed':bool(values) and all(
+                    v is not None and v['all_pool_candidates_reviewed'] for v in values),
                 'precision_at_10_macro':average('precision'),
                 'returned_precision_macro':average('returned_precision'),
                 'pooled_graded_ndcg_at_10_macro':average('pooled_graded_ndcg'),
@@ -79,7 +91,7 @@ def score(pools, judgments):
     return {'role':'historical_review_coverage_and_metrics_not_current_acceptance',
         'provider_calls':0,'judgment_files':provenance,'batches':batches,
         'precision_denominator':10,'returned_precision_denominator':'actual_displayed_results; empty is undefined',
-        'ndcg_ideal':'all_explicitly_judged_pool_candidates; not_exhaustive_corpus',
+        'ndcg_ideal':'entire_frozen_candidate_pool; undefined_until_all_reviewed; not_exhaustive_corpus',
         'all_equivalent_evidence_recall':None,'unreviewed_are_not_negatives':True}
 
 

@@ -97,3 +97,66 @@ def test_announced_subject_is_not_the_other_release_in_later_sentence():
     assert 'event_type' not in source_scopes(mixed)[0]['attributes']
     generic='The Company issued a press release announcing its outlook for liquidity.'
     assert 'event_type' not in source_scopes(generic)[0]['attributes']
+
+
+@pytest.mark.parametrize('instrument,alias',[
+    ('a $900 million delayed draw term loan facility','Growth 2.5 Facility'),
+    ('a revolving credit facility','Working Capital Line'),
+    ('a credit agreement','New Agreement'),
+    ('a senior notes offering','Offering'),
+])
+def test_release_and_exhibit_resolve_locally_defined_financing_objects(instrument,alias):
+    text=(f'The Company entered into {instrument} (the “{alias}”).\n'
+          f'On May 6, 2025, the Company issued a press release announcing the closing of the {alias}. '
+          'A copy is attached as Exhibit 99.1.\n'
+          f'[TABLE: original]\n99.1 | Press release relating to the {alias}\n[/TABLE]')
+    found=[s for s in source_scopes(text) if s['attributes'].get('exhibit_role')=='press_release']
+    assert len(found)==2 and all(s['attributes']['event_type']=='financing' for s in found)
+
+
+def test_defined_financing_object_is_not_guessed_or_carried_across_documents():
+    from retrieval.business_scope_attributes import financing_definitions
+    release='The Company issued a press release announcing the opening of the Facility.'
+    assert 'event_type' not in source_scopes(release)[0]['attributes']
+    factory='The Company built a manufacturing facility (the “Facility”).\n'
+    assert not financing_definitions(factory)
+    assert 'event_type' not in source_scopes(factory+release)[0]['attributes']
+    # A loan elsewhere in the definition sentence cannot type the named factory.
+    indirect='With a term loan, it built a manufacturing facility (the “Facility”).\n'
+    assert not financing_definitions(indirect)
+    ambiguous='It signed a credit agreement (the “Facility”).\n'+factory
+    assert not financing_definitions(ambiguous)
+
+
+def test_defined_object_does_not_match_a_longer_alias_or_override_mixed_event():
+    prefix='It entered a term loan facility (the “Line 1”).\n'
+    longer=prefix+'It issued a press release announcing the closing of Line 10.'
+    assert 'event_type' not in source_scopes(longer)[0]['attributes']
+    mixed=prefix+'It issued a press release announcing financial results and the closing of Line 1.'
+    assert 'event_type' not in source_scopes(mixed)[0]['attributes']
+
+
+def test_table_subject_survives_complete_original_page_furniture():
+    title='Recurring Non-Derivative Fair Value Measurements\n–\nAlpha financial assets by hierarchy level are as follows:'
+    furniture='\n87\nTable of Contents\nALPHA INC. AND BETA COMPANY\nNOTES TO CONSOLIDATED FINANCIAL STATEMENTS (Continued)\n'
+    body=title+furniture+'[TABLE: original]\nCash equivalents | 99\n[/TABLE]'
+    scopes=source_scopes(body)
+    assert scopes[0]['attributes']=={'table_topic':'fair_value_measurements','statement_role':'supplemental'}
+    assert scopes[0]['source_char_start']==0 and scopes[0]['source_char_end']==len(body)
+    wanted={'statement_role':['primary'],'unknown_policy':'retain'}
+    assert '99' not in scoring_body(attach_scoring_view(row(body+'\nUnclassified text'),wanted))
+
+
+def test_table_subject_is_not_carried_past_prose_or_another_table():
+    heading='Fair Value Measurements\n–\nThe values are as follows:\n'
+    for separator in ('Unrelated discussion.\n','[TABLE: original]\nValue | 7\n[/TABLE]\n'):
+        body=heading+separator+'[TABLE: original]\nCash | 99\n[/TABLE]'
+        scopes=source_scopes(body)
+        assert not any(s['source_char_end']==len(body) for s in scopes)
+
+
+def test_explicit_pension_introduction_with_as_follows_is_supplemental():
+    body=('Pension Plan Assets, Benefit Obligations and Funded Status – '
+          'The changes in assets, benefit obligations and funded status of the pension plan are as follows:\n'
+          '[TABLE: original]\nCash | 999\n[/TABLE]')
+    assert source_scopes(body)[0]['attributes']['asset_scope']=='pension_plan'

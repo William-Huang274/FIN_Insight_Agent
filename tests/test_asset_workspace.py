@@ -59,6 +59,22 @@ def test_exact_version_resolution_keeps_catalog_contract_without_full_listing(tm
         workspace.read('local-pilot', ref)
 
 
+def test_batch_versions_match_single_reads_and_keep_current_access(tmp_path):
+    _, _, _, _, workspace, project = setup(tmp_path)
+    ref = selection(workspace, project)
+    ids = [ref['version_id']]
+    expected = workspace.document_version('local-pilot', project, ids[0])
+    assert workspace.document_version_batch('local-pilot', project, ids) == {ids[0]: expected}
+    with pytest.raises(KeyError):
+        workspace.document_version_batch('another-owner', project, ids)
+    with pytest.raises(KeyError):
+        workspace.document_version_batch('local-pilot', project, [*ids, 'missing'])
+    with pytest.raises(ValueError, match='duplicate'):
+        workspace.document_version_batch('local-pilot', project, ids*2)
+    workspace.library.set_access('local-pilot', project, 'document', ids[0], True)
+    assert workspace.document_version_batch('local-pilot', project, ids)[ids[0]]['access_status'] == 'revoked'
+
+
 def context(client, ref, version=0):
     response=client.post('/api/v1/asset-workspace/contexts',headers=WRITE,json={
         'schema_version':'asset_context.v1','question':'Read this saved asset and identify what still needs verification.',

@@ -74,7 +74,7 @@ def implementation_digest():
     files = [root/name for name in ('source_verification_cache.py', 'organization_candidate_index.py',
         'organization_source_projection.py', 'organization_source_filter.py', 'sec_cover_metadata.py', 'organization_graph_index.py',
         'organization_execution_access.py', 'project_source_captures.py', 'asset_workspace.py',
-        'task_attachments.py', 'project_asset_versions.py', 'project_asset_access.py')]
+        'task_attachments.py', 'project_asset_versions.py', 'project_asset_access.py', 'prepared_source_metadata.py')]
     files.append(root.parents[1]/'retrieval'/'library_source_bundle.py')
     files.append(root.parents[1]/'retrieval'/'source_structure.py')
     files.append(root.parents[1]/'retrieval'/'table_dependencies.py')

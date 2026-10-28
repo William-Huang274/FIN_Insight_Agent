@@ -150,6 +150,20 @@ def test_subset_statistics_reuse_reads_postings_and_keeps_scope_order(tmp_path, 
         np.testing.assert_array_equal(actual[0],expected[0]); assert not cache.hit
 
 
+def test_alternating_scopes_reuse_bounded_statistics_without_score_changes(tmp_path):
+    rows = nodes(['cash equity', 'cash debt', 'rare', 'debt debt', 'income'])
+    path = tmp_path/'lexical.sqlite'; published.build(path, rows)
+    cache = published.PublishedLexicalStatistics(limit=2048)
+    scopes = [rows[:2], rows[2:4]]
+    for i, scope in enumerate(scopes*3):
+        ids = [(r['node_id'],r['content_sha256'],published.lexical_digest(r)) for r in scope]
+        actual = published.scores_from_identities(path, ids, ['cash','debt'], population_cache=cache)
+        expected = lexical_scores((lexical_document(r) for r in scope), ['cash','debt'])
+        np.testing.assert_array_equal(actual[0], expected[0])
+        assert actual[1:] == expected[1:] and cache.hit == (i >= 2)
+        assert sum(map(len, cache._entries.values())) <= cache.limit
+
+
 def test_subset_cache_invalidates_on_file_change_and_respects_memory_bound(tmp_path):
     rows = nodes(['cash equity','cash debt','rare'])
     path = tmp_path/'lexical.sqlite'; published.build(path,rows)
@@ -166,3 +180,28 @@ def test_subset_cache_invalidates_on_file_change_and_respects_memory_bound(tmp_p
     tiny = published.PublishedLexicalStatistics(limit=1)
     published.scores_from_identities(other,selected,['cash'],population_cache=tiny)
     assert tiny.entry is None
+
+
+def test_subset_lru_evicts_oldest_scope_and_recomputes_exact_scores(tmp_path):
+    rows = nodes([f'cash equity term{i}' for i in range(10)])
+    path = tmp_path/'lexical.sqlite'; published.build(path, rows)
+    cache = published.PublishedLexicalStatistics()
+    def score(position):
+        row = rows[position]
+        identity = [(row['node_id'], row['content_sha256'], published.lexical_digest(row))]
+        actual = published.scores_from_identities(path, identity, ['cash'], population_cache=cache)
+        expected = lexical_scores([lexical_document(row)], ['cash'])
+        np.testing.assert_array_equal(actual[0], expected[0])
+        assert actual[1:] == expected[1:]
+    for position in range(8):
+        score(position)
+        assert not cache.hit
+    score(0)
+    assert cache.hit
+    score(8)
+    assert not cache.hit and len(cache._entries) == 8
+    score(0)
+    assert cache.hit
+    score(1)
+    assert not cache.hit and len(cache._entries) == 8
+    assert sum(map(len, cache._entries.values())) <= cache.limit

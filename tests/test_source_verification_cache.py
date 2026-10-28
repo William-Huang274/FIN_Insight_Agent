@@ -78,6 +78,25 @@ def test_missing_trigger_forces_full_validation_and_catches_unjournaled_corrupti
         nav.navigate(query())
 
 
+def test_restart_restores_prepacked_metadata_without_rebuilding(tmp_path, monkeypatch):
+    import zlib
+    from sec_agent.research_foundation import prepared_source_metadata as metadata
+    nav, reader, state, _, _ = prepared(tmp_path, monkeypatch)
+    nav.warm_release()
+    expected = nav._candidate_index
+    monkeypatch.setattr(metadata, 'prepare', lambda *a: pytest.fail('rebuilding verified metadata'))
+    new = OrganizationSourceNavigation(reader, workbench_url='http://localhost', retrieval_root=tmp_path/'indices')
+    new.warm_release()
+    actual = new._candidate_index
+    assert actual.original_reads == 0 and actual.verification_hits == 2
+    assert actual.neighbors == expected.neighbors
+    for field in ('structures', 'locations'):
+        assert {k: json.loads(zlib.decompress(v)) for k,v in getattr(actual, field).items()} == {
+            k: json.loads(zlib.decompress(v)) for k,v in getattr(expected, field).items()}
+    state['status'] = 404
+    with pytest.raises(Exception): new.navigate(query())
+
+
 def test_failed_transaction_does_not_invalidate_proof(tmp_path, monkeypatch):
     nav, reader, _, _, _ = prepared(tmp_path, monkeypatch)
     nav.warm_release()
@@ -87,6 +106,28 @@ def test_failed_transaction_does_not_invalidate_proof(tmp_path, monkeypatch):
     new = OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=tmp_path/'indices')
     new.warm_release()
     assert new._candidate_index.original_reads == 0
+
+
+def test_local_withdrawal_after_batch_snapshot_rejects_restored_generation(tmp_path, monkeypatch):
+    nav, reader, _, _, grant = prepared(tmp_path, monkeypatch)
+    nav.warm_release()
+    manifest = grant['manifest']
+    ref = manifest['inputs'][0]['ref']
+    original = reader.workspace.document_version_batch
+    withdrawn = []
+    def withdraw(*args):
+        result = original(*args)
+        reader.workspace.library.set_access('organization:'+manifest['organization_id'],
+            ref['project_id'], 'document', ref['version_id'], True)
+        withdrawn.append(True)
+        return result
+    monkeypatch.setattr(reader.workspace, 'document_version_batch', withdraw)
+    new = OrganizationSourceNavigation(reader, workbench_url='http://localhost', retrieval_root=tmp_path/'indices')
+    from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionUnavailable
+    with pytest.raises(OrganizationExecutionUnavailable, match='storage_changed'):
+        new.warm_release()
+    assert withdrawn
+    assert new._candidate_index.generation is None
 
 
 def test_reinstalling_lost_change_tracking_never_restores_old_proofs(tmp_path, monkeypatch):

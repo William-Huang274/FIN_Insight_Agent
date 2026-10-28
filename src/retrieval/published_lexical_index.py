@@ -4,7 +4,7 @@ Build once from exact ordered source nodes. Query reads only requested term
 columns. A filtered population recomputes its own IDF from saved counts, never
 from global statistics or original text. Authorization belongs to the caller.
 """
-from collections import Counter
+from collections import Counter, OrderedDict
 from contextlib import closing
 from hashlib import sha256
 import json
@@ -24,7 +24,7 @@ COUNTS_BATCH = 256
 
 
 class PublishedLexicalStatistics:
-    """One bounded subset's statistics, no text, grants or query result cache.
+    """Bounded LRU subset statistics, no text, grants or query result cache.
 
     The caller serializes access. File identity and the exact ordered content
     identities bind reuse; current authorization is still checked by serving.
@@ -33,13 +33,17 @@ class PublishedLexicalStatistics:
         self.limit = limit
         self.entry = None
         self.hit = False
+        self._entries = OrderedDict()
 
     def get(self, key):
-        self.hit = self.entry is not None and self.entry[0] == key
+        packed = self._entries.pop(key, None)
+        self.hit = packed is not None
         if not self.hit:
             self.entry = None
             return None
-        return _unpack(self.entry[1])
+        self._entries[key] = packed
+        self.entry = key, packed
+        return _unpack(packed)
 
     def put(self, key, index):
         raw = json.dumps([index.doc_len, index.idf, getattr(index, 'average_idf', 0), index.avgdl],
@@ -47,6 +51,10 @@ class PublishedLexicalStatistics:
         if len(raw) <= 32 * 1024 * 1024:
             packed = zlib.compress(raw, 1)
             if len(packed) <= self.limit:
+                self._entries.pop(key, None)
+                self._entries[key] = packed
+                while len(self._entries) > 8 or sum(map(len, self._entries.values())) > self.limit:
+                    self._entries.popitem(last=False)
                 self.entry = key, packed
 
 

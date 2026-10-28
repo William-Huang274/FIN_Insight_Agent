@@ -105,14 +105,21 @@ class VerifiedCandidateIndex:
         from .source_verification_cache import SourceVerificationCache, versions
         proofs = SourceVerificationCache(self.hybrid.root)
         revision = versions(self.observer)
+        from collections import defaultdict
+        by_space = defaultdict(set)
+        for item in allowed.values():
+            by_space[item['ref']['project_id']].add(item['ref']['version_id'])
+        current_versions = {space: self.reader.workspace.document_version_batch(
+            'organization:'+manifest['organization_id'], space, sorted(ids))
+            for space, ids in by_space.items()}
+        from .prepared_source_metadata import prepare as prepare_metadata, restore as restore_metadata
         for document, item in allowed.items():
             self._check_cancelled()
             proof_key = proofs.key(revision, item, manifest)
             saved = proofs.get(proof_key)
             if saved is not None:
                 # This is a content proof, never a current local/Java grant.
-                version = self.reader.workspace.document_version('organization:'+manifest['organization_id'],
-                    item['ref']['project_id'], item['ref']['version_id'])
+                version = current_versions[item['ref']['project_id']][item['ref']['version_id']]
                 if version['access_status'] != 'active':
                     raise OrganizationExecutionUnavailable('organization_candidate_current_local_access_denied')
                 if version != saved['version'] or version['ref'] != item['ref']:
@@ -151,29 +158,17 @@ class VerifiedCandidateIndex:
                     parent = origin.get('original_node_id') if 'source_char_start' not in origin else document
                     if type(start) is int and type(end) is int and parent and 0 <= start < end:
                         saved['locations'].append([parent, start, end, row['node_id']])
+                saved = prepare_metadata(saved)
                 pending.append((proof_key, saved))
             else:
                 self.verification_hits += 1
             metadata[document], original_metadata[document] = saved['metadata'], saved['original_metadata']
-            # Retain compressed per-source metadata, not 114k expanded dicts.
-            structures[document] = zlib.compress(json.dumps(saved['structures']).encode(), 1)
-            ordered = sorted(saved.get('locations', []))
-            locations[document] = zlib.compress(json.dumps(ordered).encode(),1)
-            from retrieval.source_window_candidates import adjacent_nodes
-            # Separate candidate expansion from legacy reader context links.
-            # The latter tolerates tiny gaps; recall never crosses any gap.
+            # Restore verified compressed blocks directly, not a full decode /
+            # recompress of the whole corpus on every process/session start.
+            structures[document], locations[document], links, windows = restore_metadata(saved)
+            neighbors.update(links)
             if self.hybrid.candidate_policy in {'needs_window.v2', 'needs_window.v3', 'needs_window.v4'}:
-                window_neighbors.update(adjacent_nodes(ordered))
-            for position, (parent, start, end, node) in enumerate(ordered):
-                adjacent = []
-                for other in (position - 1, position + 1):
-                    if 0 <= other < len(ordered):
-                        p, a, b, identifier = ordered[other]
-                        # Same immutable original/coordinate system, overlap or
-                        # adjacent whitespace only. Never jump a missing page.
-                        if p == parent and max(start, a) - min(end, b) <= 4:
-                            adjacent.append(identifier)
-                neighbors[node] = adjacent
+                window_neighbors.update(windows)
             for node_id in saved['nodes']:
                 record = records.get(node_id)
                 if record is None or node_id in rows or record['document_id'] != document:

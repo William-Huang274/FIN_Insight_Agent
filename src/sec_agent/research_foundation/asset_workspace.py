@@ -162,6 +162,21 @@ class AssetWorkspace:
             raise KeyError('资产或版本不存在')
         return _document_version(items[0], project)
 
+    def document_version_batch(self, owner, project, version_ids):
+        """Current metadata only, bounded SQL batches; no content/permission cache."""
+        ids = tuple(version_ids)
+        if len(set(ids)) != len(ids):
+            raise ValueError('duplicate_document_versions')
+        scope = self.library.scope(owner, project)
+        result = {}
+        for start in range(0, len(ids), 256):
+            for item in document_versions(self.library.documents, scope, ids=ids[start:start+256]):
+                version = _document_version(item, project)
+                result[version['ref']['version_id']] = version
+        if set(result) != set(ids):
+            raise KeyError('资产或版本不存在')
+        return result
+
     def resolve(self, owner, ref):
         version, row, _ = self._resolve_with_capture(owner, ref)
         return version, row

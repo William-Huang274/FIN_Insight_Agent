@@ -19,6 +19,37 @@ def test_upload_document_id_feedback_precedes_masked_remote_failure():
     SourceDocumentRequest(source_space="uploads", operation="search", query="segment", document_id="a25d79583063485c8b6d4b8c137178ed")
 
 
+def test_batched_metadata_uses_exact_row_lookup_and_keeps_scope_and_order(tmp_path, monkeypatch):
+    store, thread, other = TaskAttachmentStore(tmp_path), str(uuid4()), str(uuid4())
+    seed = store.add(thread, 'seed.md', b'Original source.')['document_id']
+    foreign = store.add(other, 'private.md', b'Other space.')['document_id']
+    ids = ['UPLOAD::'+uuid4().hex for _ in range(300)]
+    with store.connect() as db:
+        for identifier in ids:
+            db.execute('INSERT INTO attachments(thread,id,name,kind,body,pages,digest) '
+                       'SELECT thread,?,name,kind,body,pages,digest FROM attachments WHERE id=?', (identifier, seed))
+    statements = []
+    connect = store.connect
+    from contextlib import contextmanager
+    @contextmanager
+    def traced():
+        with connect() as db:
+            db.set_trace_callback(statements.append)
+            yield db
+    monkeypatch.setattr(store, 'connect', traced)
+    selected = ids[:255]
+    result = store.list(thread, ids=[foreign, *reversed(selected)])
+    assert [item['document_id'] for item in result] == selected
+    assert all(item['access_status'] == 'active' for item in result)
+    query = next(sql for sql in statements if sql.startswith('SELECT a.id,a.name'))
+    with connect() as db:
+        plan = [row[3] for row in db.execute('EXPLAIN QUERY PLAN '+query)]
+    # Guard the observed optimizer regression: no whole-space attachment scan
+    # even with a 256-ID request ordered by insertion row, on a shared database.
+    assert any('SEARCH a ' in step and ('rowid=?' in step or 'INTEGER PRIMARY KEY' in step) for step in plan)
+    assert store.list(thread, ids=[]) == []
+
+
 def test_unread_breakdown_remains_reachable_after_a_selected_block_read(tmp_path):
     store, thread = TaskAttachmentStore(tmp_path), str(uuid4())
     doc = store.add(thread, 'quarter.md', b'# Overview\nTotal revenue rose.\n\n# Segment components\nNorth revenue 30; operating profit 6.\nSouth revenue 20; operating profit 2.')

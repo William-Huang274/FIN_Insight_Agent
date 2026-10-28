@@ -216,7 +216,12 @@ class TaskAttachmentStore:
         with self.connect() as db:
             if ids is not None and not ids:
                 return []
-            condition = ' AND a.id IN ('+','.join('?' for _ in ids)+')' if ids is not None else ''
+            # Resolve the exact IDs through their covering primary-key index
+            # before reading rows. With many IDs plus ORDER BY a.rowid, SQLite
+            # can otherwise scan every (large) attachment in the whole scope.
+            # The outer scope predicate still enforces the caller's boundary.
+            condition = (' AND a.rowid IN (SELECT rowid FROM attachments WHERE id IN ('+
+                         ','.join('?' for _ in ids)+'))') if ids is not None else ''
             rows = db.execute('SELECT a.id,a.name,a.kind,a.digest,a.created,s.bytes,s.sections,s.needs_vision,s.excerpt '
                               'FROM attachments a JOIN attachment_summaries s ON s.object_id=a.id '
                               'WHERE a.thread=?'+condition+' ORDER BY a.rowid',

@@ -153,6 +153,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     )
 
     async def run_research(state, config: RunnableConfig, *, continuing=False):
+        execution_from_config(config).require_report_workflow()
         if continuing:
             if not can_continue_remaining_research(state):
                 raise ValueError("only_incomplete_research_can_continue_remaining_tasks")

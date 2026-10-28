@@ -95,7 +95,8 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
     audits = audits or {}
     graph = StateGraph(state_schema, input_schema=input_schema)
 
-    def initialize(state):
+    def initialize(state, config: RunnableConfig):
+        execution_from_config(config).require_report_workflow()
         if state.get("initialized"):
             raise ValueError("existing_session_requires_native_interrupt_resume_not_restart")
         material = initial(state) if callable(initial) else initial
@@ -104,10 +105,13 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             "report_version": 1, "report_revision_reason": "初始报告", "phase": material.get("phase", "needs_revision"), "conversation": [], "model_events": []}
 
     def human_review(state, config: RunnableConfig):
+        execution_from_config(config).require_report_workflow()
         response = interrupt({"kind": "dell_report_review", "report_version": state["report_version"],
             "phase": state["phase"], "actions": ["ask", "revise", "accept"],
             "notice": "Acceptance is local human report review, not automatic release or financial authority."})
         action = ReviewAction.model_validate(response)
+        if action.execution is not None:
+            action.execution.require_report_workflow()
         if review_action_check is not None:
             review_action_check(state, action)
         if action.action == 'manual_complete':
@@ -335,6 +339,7 @@ async def report_session_graph(config: RunnableConfig, runtime: ServerRuntime):
     if runtime.execution_runtime is None:
         yield _schema_graph()
         return
+    execution_from_config(config).require_report_workflow()
     from mcp import Client
     from .agent_server_data_composition import open_approved_data_composition
     from .agent_server_entry import _require_langsmith_execution_environment

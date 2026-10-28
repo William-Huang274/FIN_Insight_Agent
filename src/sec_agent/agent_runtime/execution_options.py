@@ -1,13 +1,18 @@
 """User research scope over native run configuration, never provider authority."""
 from copy import deepcopy
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
+
+
+DeliveryIntent = Literal["answer", "workpaper", "report"]
 
 
 class ExecutionOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
     mode: Literal["standard", "auto", "selected", "single"] = "standard"
     model: Literal["default", "deepseek-flash", "deepseek-v4-flash", "deepseek-v4-pro"] = "default"
+    delivery_intent: DeliveryIntent = Field(default="report",
+        description="Requested deliverable, independent of actor count or research scope. Omitted legacy configurations retain their report workflow; this field grants no execution or review authority.")
     branch_ids: list[str] = Field(default_factory=list, max_length=24)
     require_all_branches: bool = Field(default=False, strict=True,
         description="Explicit fixed-catalog coverage for a user-requested study or qualification only. Standard full research does not imply all catalog topics.")
@@ -15,6 +20,24 @@ class ExecutionOptions(BaseModel):
         default="original_question",
         description="User-owned continuation scope. Reuse completed work and allow Lead to fill gaps in the original question by default. Set original_plan only when the user explicitly forbids adding tasks to an existing plan; not inferred from saved workpapers or technical recovery.",
     )
+
+    @model_serializer(mode="wrap")
+    def preserve_delivery_omission(self, handler):
+        """Interpret a legacy omission without adding it to the serialized value."""
+        body = handler(self)
+        if "delivery_intent" not in self.model_fields_set:
+            body.pop("delivery_intent", None)
+        return body
+
+    def require_report_workflow(self):
+        """Do not silently run report stages for an as-yet unsupported deliverable.
+
+        This belongs to the existing report executor, not to the shared option
+        validator. The on-demand executor will consume the same intent when its
+        authorization and artifact interfaces are integrated.
+        """
+        if self.delivery_intent != "report":
+            raise ValueError("delivery_intent_not_supported_by_report_workflow:" + self.delivery_intent)
 
     @model_validator(mode="after")
     def scope_shape(self):

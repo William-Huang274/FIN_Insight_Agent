@@ -100,7 +100,7 @@ def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
             adapter.select_documents(set())
     root=Path(__file__).resolve().parents[2]
     code={str(p):digest(p) for folder in ('src/retrieval','src/sec_agent/research_foundation') for p in (root/folder).glob('*.py')}
-    for name in ('qualify_unit_rerank.py','frozen_retrieval_context.py'):
+    for name in ('qualify_unit_rerank.py','frozen_retrieval_context.py','rerank_receipt_audit.py'):
         path=root/'scripts/engineering'/name;code[str(path)]=digest(path)
     plan={'role':'exposed_regression_full_scoring_not_live_HTTP','jobs':jobs,'code_sha256':code,
         'instruction':instruction,'relevance_boundary':boundary.artifact if boundary else None,
@@ -119,6 +119,7 @@ def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
 
 
 def run(output):
+    from scripts.engineering.rerank_receipt_audit import summarize
     from retrieval.scoped_reranking import ScopedReranker,scoring_documents
     from retrieval.qwen_api import QwenRetrieval
     from retrieval.organization_search_needs import select_coverage
@@ -130,7 +131,9 @@ def run(output):
         if psutil.virtual_memory().available<800*2**20:raise RuntimeError('unit_quality_memory_guard')
         if any(digest(p)!=expected for p,expected in plan['code_sha256'].items()):raise RuntimeError('unit_quality_code_changed')
     check();result={'status':'running','plan_sha256':digest(output/'plan.json'),'samples':[],
-                    'provider_calls':0,'live_authorization_tested':False,'independent_evaluation':False}
+                    'provider_calls':0,'provider_calls_scope':'successful_rank_returns_only_see_provider_receipts_for_failures',
+                    'provider_receipts':summarize(output/'receipts'),
+                    'live_authorization_tested':False,'independent_evaluation':False}
     path=output/'result.json'
     with path.open('x',encoding='utf8') as stream:json.dump(result,stream)
     with closing(QwenRetrieval(os.environ['QWEN_API_KEY'],rerank_model='qwen3.7-text-rerank')) as api:
@@ -152,12 +155,15 @@ def run(output):
                 if boundary:selected,boundary_receipt=boundary.apply(selected,receipt,limit=10)
             except Exception as error:
                 result.update(status='stopped',failed_question=item['id'],error_type=type(error).__name__)
+                result['provider_receipts']=summarize(output/'receipts')
                 path.write_text(json.dumps(result,indent=2),encoding='utf8');raise
             result['samples'].append({'id':item['id'],'ranked_ids':[r['node_id'] for r in ranked],
                 'selected_ids':[r['node_id'] for r in selected],'receipt':receipt,'coverage':coverage,
                 'original_result_groups':groups,'seconds':time.perf_counter()-start})
             result['samples'][-1]['relevance_boundary']=boundary_receipt
-            result['provider_calls']+=receipt['provider_calls'];path.write_text(json.dumps(result,indent=2),encoding='utf8')
+            result['provider_calls']+=receipt['provider_calls']
+            result['provider_receipts']=summarize(output/'receipts')
+            path.write_text(json.dumps(result,indent=2),encoding='utf8')
             print(json.dumps({'completed':len(result['samples']),'total':len(plan['jobs']),'id':item['id']}),flush=True)
     result['status']='completed';path.write_text(json.dumps(result,indent=2),encoding='utf8')
 

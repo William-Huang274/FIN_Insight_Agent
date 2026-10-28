@@ -207,7 +207,11 @@ def markdown_tables(text):
                     cells.append({'row':y,'column':x,'rowspan':1,'colspan':1,'text':body,'facts':[],
                         'source_char_start':offset+a+1+trim,'source_char_end':offset+a+1+trim+len(body)})
             offset+=len(line)+1
-        result.append({'status':'original_geometry_verified','cells':cells})
+        from hashlib import sha256
+        result.append({'status':'original_geometry_verified','cells':cells,
+            'source_char_start':block.start(),'source_char_end':block.end(),
+            'content_sha256':sha256(block[0].encode()).hexdigest(),
+            'geometry_basis':'explicit_rectangular_markdown'})
     return result
 
 
@@ -257,6 +261,11 @@ def fact_entity_matches(evidence, need, row):
     remain retrieval candidates and may be read; this is not an access rule.
     """
     owner = need.get('owner') or {}
+    if row.get('scoring_view'):
+        lo,hi=evidence.get('source_char_start'),evidence.get('source_char_end')
+        if type(lo) is not int or type(hi) is not int or not any(
+                s['source_char_start']<=lo and s['source_char_end']>=hi for s in row['scoring_view']['spans']):
+            return False
     if evidence.get('entity') is not None:
         expected = owner.get('fact_entity_identifiers', [])
         if not expected:

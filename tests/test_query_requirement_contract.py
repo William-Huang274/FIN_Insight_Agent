@@ -83,6 +83,14 @@ def test_report_year_word_order_is_equivalent_without_fact_period_guess():
         assert 'period_end' not in p['constraint']
 
 
+def test_company_specific_dates_do_not_form_a_cross_product_of_requirements():
+    q='Compare North Harbor cash equivalents as of 2024-12-31 with Silver Lake cash equivalents as of 2025-12-31'
+    n=compile_needs(q,plan_query(q,catalog(),policy='conservative.v5'))
+    assert [(r['owner']['issuer_id'],r['period_target']) for r in n['needs']]==[
+        ('I::first',{'kind':'date','value':'2024-12-31'}),
+        ('I::second',{'kind':'date','value':'2025-12-31'})]
+
+
 def test_explicit_name_filter_uses_verified_legal_names_without_merging_ids():
     data={'a':{'issuer_id':'I::first','company_name':None,'verified_company_names':['North Harbor Inc.']},
           'b':{'issuer_id':'I::second','company_name':'North Harbor Systems Inc.'},'unknown':{}}

@@ -112,6 +112,7 @@ def compile_financial_needs(query, plan, legacy):
             from .organization_search_needs import lexical_surfaces
             routes, translations = lexical_surfaces(clause)
             needs.append({'id':f'need-{len(needs)+1}', 'text':clause, 'owner':owner,
+                'query_clause':clause,
                 'concept':None, 'lexical_routes':routes, 'translations':translations,
                 'interpretation':'unrecognized_owner_topic_preserved_literal'})
             continue
@@ -122,6 +123,7 @@ def compile_financial_needs(query, plan, legacy):
             seen.add(name)
             primary = list(dict.fromkeys(tokenize(terms)))
             needs.append({'id':f'need-{len(needs)+1}', 'text':query, 'owner':owner,
+                **({'query_clause':clause} if clause is not None else {}),
                 'concept':name, 'concept_terms':primary,
                 'term_groups':TERM_GROUPS.get(name, [primary]),
                 'lexical_routes':[primary, list(dict.fromkeys(tokenize(query)))], 'translations':[],
@@ -147,10 +149,15 @@ def compile_financial_needs(query, plan, legacy):
                 start = after
                 if not cuts or not topic or concepts(topic):
                     continue
+                from .fact_period_matching import DATE, FY
+                nonperiod=FY.sub('',DATE.sub('',topic))
+                if not re.search(r'[A-Za-z\u3400-\u9fff]',nonperiod):
+                    continue
                 from .organization_search_needs import lexical_surfaces
                 routes, translations = lexical_surfaces(topic)
                 if routes:
                     needs.append({'id':f'need-{len(needs)+1}', 'text':topic, 'owner':owner,
+                        **({'query_clause':clause} if clause is not None else {}),
                         'concept':None, 'lexical_routes':routes, 'translations':translations,
                         'interpretation':'unrecognized_conjoined_topic_preserved_literal'})
     if len(needs) > 32:

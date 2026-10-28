@@ -34,6 +34,20 @@ def test_corrupted_chunk_is_rejected():
     with pytest.raises(ValueError,match='chunk_mismatch'):source_structure(value)
 
 
+def test_rectangular_markdown_table_keeps_header_unit_and_note_dependencies():
+    text=('SAMPLE CORPORATION\nCONSOLIDATED BALANCE SHEETS\n(in millions)\n'
+          '| Measure | 2025 | 2024 |\n| --- | --- | --- |\n| Cash (a) | 35 | 24 |\n'
+          '(a) Includes restricted cash.\n')
+    result=source_structure(bundle(text,text.index('| Cash')))
+    structure=result['1']
+    assert structure['evidence_scopes'][0]['attributes']['reporting_entity']=='SAMPLE CORPORATION'
+    dependency=structure['table_dependencies'][0]
+    assert {s['role'] for s in dependency['required']}=={'header_band','unit_statement','row_label','marked_footnote'}
+    assert dependency['unresolved']==[]
+    for span in dependency['required']:
+        assert sha256(text[span['source_char_start']:span['source_char_end']].encode()).hexdigest()==span['content_sha256']
+
+
 def test_nested_or_unclosed_table_does_not_manufacture_binding():
     text='[TABLE: outer]\nCost (1) | 100\n[TABLE: inner]\nCost (1) | 200\n[/TABLE]\n(1) Estimates.'
     assert source_structure(bundle(text))['0']['footnotes']==[]

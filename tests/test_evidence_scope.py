@@ -36,8 +36,31 @@ def test_wrapped_statement_titles_and_standalone_units_are_original_scope():
     scope=source_scopes(text)
     assert len(scope)==1
     assert scope[0]['attributes']=={'reporting_entity':'NORTH HARBOR INC.',
-        'statement_type':'balance_sheet','consolidation':'consolidated'}
+        'statement_type':'balance_sheet','statement_role':'primary','consolidation':'consolidated'}
     assert not source_scopes(text.replace('USD millions','(The subsidiary uses USD millions)'))
+
+
+@pytest.mark.parametrize('caption',['(Unaudited, in millions)','(in millions; unaudited)',
+    '(in millions, except par value per share amounts)','(in millions, except par value)',
+    '(unaudited, in thousands, except per unit data)','(In thousands, except share information)',
+    '(In Millions of New Taiwan Dollars or U.S. Dollars)', '($000, except per share data)',
+    '(Unaudited) (Millions of Dollars, Except Share Data)','(continued; in millions)',
+    '(in thousands, except net loss per share data)','($ in millions)',
+    '($ in millions, except per share data)','(in millions, continued on next page)'])
+def test_explicit_caption_variants_do_not_lose_existing_statement_scope(caption):
+    text='ALPHA INC.\nCONSOLIDATED BALANCE SHEETS (CONTINUED)\n'+caption+'\n[TABLE: original]\nx\n[/TABLE]'
+    assert len(source_scopes(text))==1
+
+
+@pytest.mark.parametrize('heading',['CONSOLIDATED BALANCE SHEETS — UNAUDITED',
+    'CONSOLIDATED STATEMENTS OF CASH FLOWS — (Continued)', 'Balance Sheets (in thousands):',
+    'Condensed Consolidated Balance Sheets*','Condensed Consolidated Statements of Earnings (Loss)*',
+    'Condensed balance sheets of Example N.V.',
+    'Condensed Consolidated Statements of Income and Related Financial Highlights',
+    'CONDENSED CONSOLIDATED STATEMENTS OF INCOME AND SUPPLEMENTAL INFORMATION'])
+def test_title_suffixes_preserve_scope_but_statement_mentions_do_not(heading):
+    assert source_scopes(heading+'\n[TABLE: original]\nCash | 10\n[/TABLE]')
+    assert not source_scopes('Consolidated Statements of Income include stock compensation as follows:\n[TABLE: original]\nExpense | 10\n[/TABLE]')
 
 
 def test_event_scope_does_not_confuse_earnings_and_debt_or_guess_negation():

@@ -47,6 +47,13 @@ def test_complete_original_does_not_load_duplicate_context():
     assert not calls and receipt['unique_supplemental_spans']==0
 
 
+def test_independent_rerank_candidate_cannot_borrow_another_candidate_header():
+    rows,load,calls=fixture()
+    result,receipt=complete_tables(rows,load,independent_candidates=True)
+    assert calls and receipt['coverage_mode']=='individual_candidate'
+    assert any(s['role']=='header_band' for s in result[1]['table_completion']['contexts'])
+
+
 def test_explicit_note_is_required_but_unmarked_note_is_not():
     rows,load,_=fixture()
     deps=rows[1]['source_structure']['table_dependencies'][0]

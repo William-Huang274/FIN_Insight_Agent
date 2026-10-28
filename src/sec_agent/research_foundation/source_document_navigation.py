@@ -415,11 +415,17 @@ def navigate_source_nodes(
                 item['source_structure'] = structure
         elif request.operation == "search":
             item["preview"] = content[:500]
+            if row.get('scoring_view'):
+                from retrieval.evidence_scoring_view import scoring_body
+                scoped_body=scoring_body(row)
+                item['preview']=scoped_body[:500]
+                item['scoring_view']=row['scoring_view']
+                item['preview_scope']='query_eligible_original_intervals'
             if 'table_completion' in row:
                 item['table_completion'] = row['table_completion']
             if 'source_structure' in row:
                 item['source_structure'] = row['source_structure']
-            item["preview_truncated"] = len(content) > 500
+            item["preview_truncated"] = len(scoped_body if row.get('scoring_view') else content) > 500
             if row.get('context_status'):
                 item['context_status'] = row['context_status']
                 item['context_readbacks'] = row['context_readbacks']

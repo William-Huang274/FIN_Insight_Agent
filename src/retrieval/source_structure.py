@@ -17,6 +17,8 @@ NOTE = re.compile(r'\s*\((\d{1,3}|[a-z])\)\s*\n?([^\n]+)', re.I)
 def source_structure(bundle):
     from .library_source_bundle import validate_bundle_text
     validate_bundle_text(bundle)
+    if 'node_recovery' in bundle:
+        return _indexed_node_structure(bundle)
     from .source_table_periods import validate_overlay
     period_tables = {t['source_char_start']:t for t in validate_overlay(bundle)}
     from .fact_period_matching import prose_periods, table_periods, markdown_tables, tagged_periods
@@ -24,8 +26,10 @@ def source_structure(bundle):
     from .evidence_scope import source_scopes
     scopes = source_scopes(body)
     from .table_dependencies import dependencies
-    table_dependencies = dependencies(body, list(period_tables.values()))
-    period_evidence = (prose_periods(body) + table_periods(body,list(period_tables.values())+markdown_tables(body))
+    plain_tables = markdown_tables(body)
+    geometry = sorted([*period_tables.values(),*plain_tables],key=lambda t:t['source_char_start'])
+    table_dependencies = dependencies(body, geometry)
+    period_evidence = (prose_periods(body) + table_periods(body,geometry)
         + tagged_periods(list(period_tables.values())))
     text = bundle.get('text') if 'node_recovery' not in bundle else None
     headings = list(HEAD.finditer(text)) if text else []
@@ -107,6 +111,31 @@ def source_structure(bundle):
                     'table_readback_truncated':len(linked)>4})
         output[chunk['id']]=row
     return output
+
+
+def _indexed_node_structure(bundle):
+    """Analyze each verified stored node without inventing a global document.
+
+    An imported table and its section can be alternative surfaces. Their local
+    offsets may overlap numerically, but must never supply one another's units.
+    """
+    from .library_node_recovery import validate_bundle
+    originals=validate_bundle(bundle);groups={}
+    for chunk in bundle['chunks']:groups.setdefault(chunk['parent_id'],[]).append(chunk)
+    result={}
+    for parent, chunks in groups.items():
+        original=originals[parent]
+        body=original.get('content') or original.get('model_text') or ''
+        local={'source':{'digest':sha256(body.encode()).hexdigest()},'text':body,
+               'chunks':[{**c,'source_char_start':c['char_start'],'source_char_end':c['char_end']} for c in chunks]}
+        for identifier,value in source_structure(local).items():
+            value['status']='verified_original_node_coordinates'
+            value['coordinate_space']={'kind':'original_indexed_node','original_node_id':original['node_id'],
+                'original_node_sha256':original['content_sha256'],
+                'node_set_sha256':bundle['node_recovery']['node_set_sha256'],
+                'complete_original_document':False}
+            result[identifier]=value
+    return result
 
 
 def _span(match,text):

@@ -83,14 +83,17 @@ def compile_needs(query, plan):
             result['period_target'] = query_period(query)
             result['period_requirements'] = query_period_requirements(query)
             targets = result['period_requirements']['targets']
-            if len(targets)>1:
-                expanded=[]
-                for need in result['needs']:
-                    for target in targets:
-                        expanded.append({**need,'id':f'need-{len(expanded)+1}','period_target':target})
-                if len(expanded)>32:
-                    raise ValueError('organization_period_needs_exceed_32')
-                result['needs']=expanded
+            if len(targets)==1:
+                result['period_target']=targets[0]
+            expanded=[]
+            for need in result['needs']:
+                local_targets=(query_period_requirements(need['query_clause'])['targets']
+                               if 'query_clause' in need else targets)
+                for target in local_targets or [{'kind':'unknown','reason':'no_explicit_fact_period_in_need_clause'}]:
+                    expanded.append({**need,'id':f'need-{len(expanded)+1}','period_target':target})
+            if len(expanded)>32:
+                raise ValueError('organization_period_needs_exceed_32')
+            result['needs']=expanded
         return result
     return result
 
@@ -187,7 +190,8 @@ def select_coverage(rows, needs, lane_receipts, metadata):
         for row in rows:
             if row['node_id'] not in ranked or not owner_matches(metadata.get(row['parent_document_id'], {}), need['owner']):
                 continue
-            body_terms = set(tokenize(row['content']))
+            from .evidence_scoring_view import scoring_body
+            body_terms = set(tokenize(scoring_body(row)))
             surface_terms = {t for route in need['lexical_routes'] for t in route if not t.isdigit()}
             matches = bool(body_terms & surface_terms)
             if need.get('term_groups'):

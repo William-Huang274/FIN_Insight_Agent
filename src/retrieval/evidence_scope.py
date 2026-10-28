@@ -5,15 +5,19 @@ import re
 from .catalog_company_identity import aliases_for, name_key
 
 POLICY = 'original-evidence-scope.v1'
-STATEMENT = re.compile(r'(?im)^[ \t]*(?:CONDENSED\s+)?(?P<consolidated>CONSOLIDATED\s+)?'
-    r'(?:BALANCE\s+SHEETS?|STATEMENTS?\s+OF\s+(?:CASH\s+FLOWS?|INCOME|OPERATIONS|EARNINGS))'
-    r'[ \t]*(?:\((?:UNAUDITED|AUDITED)\))?[ \t]*$')
+STATEMENT = re.compile(r'(?im)^[ \t]*(?:UNAUDITED\s+)?(?:CONDENSED\s+)?(?P<consolidated>CONSOLIDATED\s+)?'
+    r'(?:BALANCE\s+SHEETS?|STATEMENTS?\s+OF\s+(?:CASH\s+FLOWS?|(?:COMPREHENSIVE\s+)?(?:INCOME|OPERATIONS|EARNINGS))'
+    r'(?:\s+AND\s+COMPREHENSIVE\s+(?:INCOME|LOSS))?)'
+    r'(?P<tail>[^\n]*)$')
 TABLE = re.compile(r'\[TABLE:[^\n]*\].*?\[/TABLE\]', re.S)
 ITEM = re.compile(r'(?im)^[ \t]*Item[ \t]+(?P<number>\d+\.\d+)[. \t]*(?:\r?\n[ \t]*)?[^\n]+$')
 
 
 def source_scopes(text):
     regions = []
+    from .fact_period_matching import markdown_tables
+    tables=sorted([(m.start(),m.end()) for m in TABLE.finditer(text)]+
+        [(t['source_char_start'],t['source_char_end']) for t in markdown_tables(text)])
     def add(start, end, attributes, basis):
         regions.append({'source_char_start':start,'source_char_end':end,
             'content_sha256':sha256(text[start:end].encode()).hexdigest(),
@@ -21,24 +25,33 @@ def source_scopes(text):
     # A statement title binds only its immediately following original table,
     # allowing unit/unaudited lines, not arbitrary intervening prose.
     for heading in STATEMENT.finditer(text):
-        table = TABLE.search(text, heading.end())
-        if table is None or table.start()-heading.end()>220:
-            continue
-        between = text[heading.end():table.start()]
         from .table_captions import is_table_caption
+        tail=heading['tail'].strip(' \t:—–-*†‡')
+        qualifiers=re.sub(r'\((?:UNAUDITED|AUDITED|CONTINUED|LOSS)\)', '',tail,flags=re.I).strip(' \t:—–-')
+        supplemental=qualifiers.casefold() in {'data','detail','details','measures','highlights',
+            'and supplemental information','and related financial highlights'}
+        named_owner=re.fullmatch(r'of\s+(.{3,180}?(?:INC\.?|CORPORATION|CORP\.?|COMPANY|LIMITED|LTD\.?|PLC|LLC|N\.?V\.?))',qualifiers,re.I)
+        if qualifiers and not supplemental and not named_owner and not is_table_caption(qualifiers):
+            continue  # A prose mention of a statement is not its table title.
+        table = next((t for t in tables if t[0]>=heading.end()),None)
+        if table is None or table[0]-heading.end()>220:
+            continue
+        between = text[heading.end():table[0]]
         if any(not is_table_caption(s) for s in between.splitlines()):
             continue
         title = heading.group().casefold()
         kind = 'balance_sheet' if 'balance' in title else 'cash_flow' if 'cash' in title else 'income_statement'
-        attributes = {'statement_type':kind}
+        attributes = {'statement_type':kind,'statement_role':'supplemental' if supplemental else 'primary'}
         if heading.group('consolidated'):
             attributes['consolidation'] = 'consolidated'
         previous = text[max(0,heading.start()-240):heading.start()].rstrip().split('\n')[-1].strip()
-        owner = re.sub(r'\s+AND\s+SUBSIDIARIES\s*$', '', previous, flags=re.I)
-        if (3 <= len(owner) <= 180 and not any(c in owner for c in '|[]<>')
-                and re.search(r'\b(?:INC\.?|CORPORATION|CORP\.?|COMPANY|LIMITED|LTD\.?|PLC|LLC)\s*$',owner,re.I)):
+        owner = re.sub(r'\s+AND\s+(?:SUBSIDIARIES|SUBSIDIARY\s+COMPANIES)\s*$', '', previous, flags=re.I)
+        if named_owner:
+            attributes['reporting_entity']=named_owner[1]
+        elif (3 <= len(owner) <= 180 and not any(c in owner for c in '|[]<>')
+                and re.search(r'\b(?:INC\.?|CORPORATION|CORP\.?|COMPANY|LIMITED|LTD\.?|PLC|LLC|L\.?P\.?|N\.?V\.?)\s*$',owner,re.I)):
             attributes['reporting_entity'] = owner
-        add(heading.start(), table.end(), attributes, 'explicit_statement_heading_and_immediate_table')
+        add(heading.start(), table[1], attributes, 'explicit_statement_heading_and_immediate_table')
     items = list(ITEM.finditer(text))
     for i, heading in enumerate(items):
         event = {'2.02':'earnings_release', '2.03':'financing'}.get(heading['number'])
@@ -68,6 +81,25 @@ def matching_state(scopes, wanted):
                 checks.append(value in values)
         states.append('mismatch' if False in checks else 'unknown' if None in checks else 'match')
     return 'match' if 'match' in states else 'unknown' if 'unknown' in states else 'mismatch'
+
+
+def interval_matching_state(scopes, wanted):
+    """Combine only at a proven common interval, never across adjacent tables.
+
+    A broad SEC event can supply event_type while the nested table supplies its
+    owner. An unknown broad region cannot override a known conflicting owner.
+    Contradictory original bindings remain unresolved rather than choosing one.
+    """
+    checks=[]
+    for key,values in wanted.items():
+        if key=='unknown_policy' or not values:continue
+        actual=[s['attributes'][key] for s in scopes if key in s['attributes']]
+        if not actual:
+            checks.append(None);continue
+        states=[matching_state([{'attributes':{key:v}}],{key:values}) for v in actual]
+        checks.append(False if all(s=='mismatch' for s in states) else
+                      True if all(s=='match' for s in states) else None)
+    return 'mismatch' if False in checks else 'unknown' if None in checks else 'match'
 
 
 def select_scoped(rows, wanted):
@@ -144,10 +176,10 @@ def resolve_scope(query, query_plan, explicit=None):
 def scoring_scope_text(row):
     """Expose verified table/event ownership when a chunk starts mid-table."""
     structure=row.get('source_structure',{})
-    if structure.get('status')!='verified_original_coordinates':
+    from .source_coordinates import VERIFIED, verified_bounds
+    if structure.get('status') not in VERIFIED:
         return ''
-    origin=row.get('original_source',{})
-    start,end=origin.get('source_char_start'),origin.get('source_char_end')
+    _,start,end=verified_bounds(row)
     regions=structure.get('evidence_scopes',[])
     result=[]
     for region in regions:
@@ -159,6 +191,7 @@ def scoring_scope_text(row):
             raise ValueError('rerank_unverified_evidence_scope')
         attributes=region['attributes']
         allowed={'reporting_entity':None,'statement_type':{'balance_sheet','cash_flow','income_statement'},
+                 'statement_role':{'primary','supplemental','reconciliation'},
                  'consolidation':{'consolidated'},'event_type':{'earnings_release','financing'}}
         if not attributes or any(k not in allowed or not isinstance(v,str) or not v.strip() or len(v)>180
                 or (allowed[k] is not None and v not in allowed[k]) for k,v in attributes.items()):

@@ -33,7 +33,8 @@ class ScopedReranker:
             if sha256(body.encode()).hexdigest()!=row['content_sha256']:
                 raise ValueError('rerank_candidate_body_mismatch')
             # Fixed original context, no gold labels, generated hints or answers.
-            text=(row.get('embedding_context','')+'\n'+body).strip()
+            from .evidence_scoring_view import scoring_body
+            text=(row.get('embedding_context','')+'\n'+scoring_body(row)).strip()
             if row.get('rerank_document_metadata'):
                 from .rerank_document_context import document_context_text
                 text=document_context_text(row['rerank_document_metadata'])+'\n\n'+text
@@ -41,6 +42,10 @@ class ScopedReranker:
             scope_text=scoring_scope_text(row)
             if scope_text:
                 text=scope_text+'\n\n'+text
+            from .rerank_structure_context import structure_context_text
+            structural=structure_context_text(row)
+            if structural:
+                text=structural+'\n\n'+text
             if not text or len(text.encode())>32768:
                 raise ValueError('rerank_document_outside_budget_no_truncation')
             documents.append(text)

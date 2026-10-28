@@ -288,7 +288,7 @@ class VerifiedCandidateIndex:
             row['source_structure'] = selected_structures[document][row['node_id']]
         return result
 
-    def complete_tables(self, rows, eligible, manifest):
+    def complete_tables(self, rows, eligible, manifest, *, independent_candidates=False):
         """Business scope selects anchors; authorization bounds exact context.
 
         A trusted same-table header need not independently match the business
@@ -304,8 +304,9 @@ class VerifiedCandidateIndex:
             document = anchor['parent_document_id']
             if document not in documents or anchor['node_id'] not in permitted:
                 raise OrganizationExecutionUnavailable('table_completion_outside_current_scope')
+            coordinate_space=anchor['original_source'].get('original_node_id',document)
             positions = [(a,b,n) for p,a,b,n in json.loads(zlib.decompress(self.locations[document]))
-                         if p==document and n in self.rows
+                         if p==coordinate_space and n in self.rows
                          and self.rows[n]['parent_document_id']==document]
             def node(identifier):
                 self.reader._after(before)
@@ -317,6 +318,6 @@ class VerifiedCandidateIndex:
             value = read_span(anchor,span,positions,node)
             self.reader._after(before);self.check()
             return value
-        result, receipt = complete_tables(rows,load,top_k=len(rows))
+        result, receipt = complete_tables(rows,load,top_k=len(rows),independent_candidates=independent_candidates)
         self.reader._after(before);self.check()
         return result, receipt

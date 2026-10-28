@@ -290,6 +290,8 @@ class OrganizationHybridRetrieval:
         from .organization_vector_math import unit_vectors, cosine_scores, verified_cosine_scores
         if pinned is None and not unit_vectors(matrix, selected):
             raise ValueError('organization_retrieval_invalid_prepared_vectors')
+        if self.candidate_policy=='needs_units.v1' and 'semantic_units' not in index:
+            raise ValueError('organization_unit_policy_requires_unit_publication')
         query_hash = sha256(query.encode()).hexdigest()
         query_receipt = {'provider_calls': 0, 'cache_hit': True, 'source': 'prepared_index'}
         if query_hash in index['queries']:

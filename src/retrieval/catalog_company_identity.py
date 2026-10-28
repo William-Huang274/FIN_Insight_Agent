@@ -50,7 +50,10 @@ def cover_names(text):
 def aliases_for(row):
     declared = [row.get('company_name'), *(row.get('verified_company_names') or [])]
     tail = (row.get('issuer_id') or '').split('::')[-1].replace('_', ' ').strip()
-    if len(tail) >= 3:
+    # A legacy ID spelling is only a fallback. Once the original cover gives
+    # an explicit registrant, an unrelated ID tail must not become a second
+    # company alias (nor shorten a name merely because it shares a prefix).
+    if len(tail) >= 3 and not row.get('verified_company_names'):
         declared.append(tail)
     # Preserve the legal name. A shortened legal suffix is merely another
     # lookup alias; collisions remain explicit and never merge identities.
@@ -102,3 +105,66 @@ def owners_for_row(row, declared_alias_owners):
         return owners
     name = row.get('company_name') or next(iter(row.get('verified_company_names') or []), None)
     return {'name:'+name.casefold()} if name else set()
+
+
+def verified_issuer_groups(metadata):
+    """Lookup compatibility from unique original CIKs, never identity mutation.
+
+    Each participating parse ID needs a single registrant cover and exactly one
+    consistent CIK across its observed rows. Joint registrants, conflicting CIKs
+    and name-only homonyms cannot establish a group.
+    """
+    identifiers=defaultdict(set);covered=set();ambiguous=set();cover_aliases=defaultdict(set)
+    for row in metadata.values():
+        issuer=row.get('issuer_id')
+        if not issuer:continue
+        if row.get('company_name_resolution') in {'joint_registrants_not_a_unique_owner','original_cover_url_cik_conflict'}:ambiguous.add(issuer)
+        names=row.get('verified_company_names') or []
+        if len(names)==1:
+            covered.add(issuer)
+            cover_aliases[issuer].update(name_key(a) for a in aliases_for({'company_name':names[0]}))
+        elif len(names)>1:ambiguous.add(issuer)
+        for value in row.get('fact_entity_identifiers',[]):
+            scheme=(value.get('scheme') or '').rstrip('/').casefold();identifier=value.get('identifier')
+            if (scheme in {'http://www.sec.gov/cik','https://www.sec.gov/cik'}
+                    and isinstance(identifier,str) and identifier.isascii() and identifier.isdigit()
+                    and 0<int(identifier)<10**10):
+                identifiers[issuer].add(str(int(identifier)))
+    for row in metadata.values():
+        issuer=row.get('issuer_id');name=row.get('company_name')
+        # A reused local issuer ID with a different unverified name is not a
+        # safe cross-document alias, even if another row has a valid cover.
+        if issuer in covered and name and not row.get('verified_company_names'):
+            declared={name_key(a) for a in aliases_for({'company_name':name})}
+            if not declared & cover_aliases[issuer]:ambiguous.add(issuer)
+    groups=defaultdict(set)
+    for issuer,values in identifiers.items():
+        if issuer in covered and issuer not in ambiguous and len(values)==1:
+            groups[next(iter(values))].add(issuer)
+    return [{'scheme':'http://www.sec.gov/CIK','identifier':cik,'issuer_ids':sorted(owners),
+        'basis':'single_original_registrant_and_consistent_catalog_cik'}
+        for cik,owners in sorted(groups.items()) if len(owners)>1]
+
+
+def with_original_registrant_identity(row):
+    """A unique original SEC cover plus its exact filing URL supplies a CIK.
+
+    The URL alone is not a company-name oracle. Conflicting original metadata
+    is reported and cannot establish an automatic identity compatibility group.
+    """
+    from .filing_document_identity import original_filing_key
+    key=original_filing_key(row.get('original_filing_key'))
+    result=dict(row)
+    if (not key or len(row.get('verified_company_names') or [])!=1
+            or row.get('company_name_resolution')=='joint_registrants_not_a_unique_owner'):return result
+    cik=str(int(key.split('/data/')[1].split('/')[0]))
+    if not 0<int(cik)<10**10:return result
+    prior={str(int(v['identifier'])) for v in row.get('fact_entity_identifiers',[])
+        if (v.get('scheme') or '').rstrip('/').casefold() in {'http://www.sec.gov/cik','https://www.sec.gov/cik'}
+        and isinstance(v.get('identifier'),str) and v['identifier'].isascii() and v['identifier'].isdigit()}
+    if prior and prior!={cik}:
+        result['company_name_resolution']='original_cover_url_cik_conflict'
+        return result
+    if not prior:result['fact_entity_identifiers']=[{'scheme':'http://www.sec.gov/CIK','identifier':cik,
+        'basis':'unique_original_registrant_cover_and_sec_archive_identity'}]
+    return result

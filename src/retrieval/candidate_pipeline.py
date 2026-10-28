@@ -23,11 +23,32 @@ def fuse_channels(rows, dense_scores, lexical, *, policy, lexical_policy=None, g
         raise ValueError('candidate_pipeline_graph_outside_quota')
     order = sorted(range(len(rows)), key=lambda i: (-float(dense_scores[i]), ids[i]))
     dense = [ids[i] for i in order[:limits['dense']]]
+    full_lexical=list(lexical)
     lexical = lexical[:limits['lexical']]
     result = {'ordered':reciprocal_rank_fusion([dense, lexical] + ([graph] if graph is not None else [])),
               'dense':dense, 'lexical':lexical}
     if graph is not None:
         result['graph'] = graph
+    if policy=='needs_units.v1':
+        # Repeated parents shared by channels do not consume distinct union
+        # slots. Fill the spare capacity with independently ranked candidates
+        # before considering any adjacency. Keep primary quotas auditable.
+        seen=set(result['ordered']);extra_dense=[];extra_lexical=[]
+        depth={'dense':limits['dense'],'lexical':limits['lexical']}
+        dense_tail=[ids[i] for i in order[limits['dense']:]]
+        lexical_tail=full_lexical[limits['lexical']:]
+        for offset in range(max(len(dense_tail),len(lexical_tail))):
+            for name,channel,output in (('dense',dense_tail,extra_dense),('lexical',lexical_tail,extra_lexical)):
+                if len(seen)>=48:break
+                if offset<len(channel):
+                    depth[name]=limits[name]+offset+1
+                    if channel[offset] not in seen:
+                        output.append(channel[offset]);seen.add(channel[offset])
+            if len(seen)>=48:break
+        result['ordered']=[n for n in reciprocal_rank_fusion([[ids[i] for i in order[:depth['dense']]],
+            full_lexical[:depth['lexical']]]+([graph] if graph is not None else [])) if n in seen]
+        result['independent_backfill']={'dense':extra_dense,'lexical':extra_lexical,
+            'max_unique_candidates':48,'examined_channel_prefixes':depth,'adjacent_only_candidates':[]}
     return result, order, limits
 
 

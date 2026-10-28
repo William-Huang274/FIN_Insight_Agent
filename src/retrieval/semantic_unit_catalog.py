@@ -68,3 +68,39 @@ def iter_units(path,*,require_new_vector=False):
                     or sha256(text.encode()).hexdigest()!=input_digest):
                 raise ValueError('semantic_unit_catalog_content_mismatch')
             yield position,unit,reuse
+
+
+def select_parents(source,destination,parent_ids):
+    """Copy whole parents into a new sealed plan, retaining original vector IDs.
+
+    This is a declared publication scope, never a selection of answer units.
+    Missing parents fail the build; partial output remains unsealed.
+    """
+    source=Path(source).resolve();destination=Path(destination).resolve()
+    wanted=set(parent_ids)
+    if not wanted:raise ValueError('semantic_unit_scope_empty')
+    with destination.open('xb'):pass
+    with closing(sqlite3.connect(source.as_uri()+'?mode=ro',uri=True)) as old,closing(sqlite3.connect(destination)) as new,new:
+        if old.execute("SELECT value FROM metadata WHERE key='sealed'").fetchone()!=(FORMAT,):
+            raise ValueError('semantic_unit_catalog_not_sealed')
+        new.executescript('PRAGMA journal_mode=DELETE; PRAGMA cache_size=-2048;')
+        for (sql,) in old.execute("SELECT sql FROM sqlite_master WHERE sql IS NOT NULL AND type IN ('table','index') ORDER BY type DESC"):
+            new.execute(sql)
+        found=set();count=0;reused=0
+        for row in old.execute('SELECT * FROM parents'):
+            if row[0] in wanted:
+                new.execute('INSERT INTO parents VALUES (?,?,?,?,?)',row);found.add(row[0])
+        if found!=wanted:raise ValueError('semantic_unit_scope_parent_missing')
+        for row in old.execute('SELECT * FROM units ORDER BY position'):
+            if row[2] not in wanted:continue
+            new.execute('INSERT INTO units VALUES (?,?,?,?,?,?,?,?)',(count,*row[1:]))
+            count+=1;reused+=row[6] is not None
+        if {r[0] for r in new.execute('SELECT DISTINCT parent FROM units')}!=wanted:
+            raise ValueError('semantic_unit_scope_parent_without_units')
+        summary={'format':FORMAT,'parents':len(found),'retrievable_units':count,
+            'reused_vectors':reused,'new_vectors_required':count-reused,'provider_calls':0,
+            'scope':'all_units_for_declared_parent_population'}
+        new.execute('INSERT INTO metadata VALUES (?,?)',('summary',json.dumps(summary,sort_keys=True)))
+        new.execute('INSERT INTO metadata VALUES (?,?)',('sealed',FORMAT))
+    with destination.open('rb') as stream:summary['catalog_sha256']=file_digest(stream,'sha256').hexdigest()
+    return summary

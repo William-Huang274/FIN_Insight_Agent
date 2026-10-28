@@ -127,7 +127,7 @@ def select_units(directory,parents,wanted):
     return select_scoped(result,wanted)[0] if wanted else result
 
 
-def rank(directory,parents,query_vector,needs,metadata,wanted,*,policy,graph=None,population_cache=None,capture_trace=False):
+def rank(directory,parents,query_vector,needs,metadata,wanted,*,policy,graph=None,population_cache=None,capture_trace=False,trace_sink=None):
     """Unit scores precede original-parent quotas in both recall channels."""
     from .organization_search_needs import lexical_candidates
     from .candidate_pipeline import fuse_channels
@@ -140,13 +140,20 @@ def rank(directory,parents,query_vector,needs,metadata,wanted,*,policy,graph=Non
         groups[row['node_id']]=row['parent_node_id'];key=row['parent_node_id']
         if key not in best or float(score)>best[key][0]:best[key]=(float(score),row)
     lexical,lanes=lexical_candidates(Path(directory)/'unit-lexical.sqlite',units,needs,metadata,
-        population_cache=population_cache,capture_trace=capture_trace,result_groups=groups)
+        population_cache=population_cache,capture_trace=capture_trace,result_groups=groups,trace_sink=trace_sink)
     available=[p for p in parents if p['node_id'] in best]
     eligible={p['node_id'] for p in available}
     active_graph=[n for n in graph if n in eligible] if graph is not None else None
     entry,order,limits=fuse_channels(available,[best[p['node_id']][0] for p in available],lexical,
         policy=policy,lexical_policy=needs['policy'],graph=active_graph)
+    complete_dense=None
+    if capture_trace and trace_sink is not None:
+        complete_dense=trace_sink('dense_units',0,(
+            {'node_id':u['node_id'],'parent_node_id':u['parent_node_id'],'score':float(score),
+             'source_interval':u['source_interval'],'original_node_id':u['original_node_id']}
+            for u,score in zip(units,scores,strict=True)))
     receipt={'policy':FORMAT,'unit_population':len(units),'parent_population':len(available),'limits':limits,
+        'independent_backfill':entry.get('independent_backfill'),
         '_eligible_parent_ids':list(eligible),
         'lexical_needs':lanes,'dense_trace':{'population_count':len(available),'trace_limit':96,
             'trace_truncated':len(available)>96,'scores':[{'node_id':available[i]['node_id'],
@@ -154,5 +161,6 @@ def rank(directory,parents,query_vector,needs,metadata,wanted,*,policy,graph=Non
                 'rank':number+1} for number,i in enumerate(order[:96])]},
         'dense_unit_spans':{n:{k:best[n][1][k] for k in ('node_id','source_interval','original_node_id')}
                             for n in entry['dense']},
-        'scoring_semantics':'maximum_eligible_original_unit_before_parent_quota_not_parent_vector'}
+        'scoring_semantics':'maximum_eligible_original_unit_before_parent_quota_not_parent_vector',
+        **({'full_dense_units_artifact':complete_dense} if complete_dense else {})}
     return entry,receipt

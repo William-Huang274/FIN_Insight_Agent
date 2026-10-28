@@ -26,3 +26,14 @@ def test_frozen_plan_executes_only_own_exact_inputs_and_resumes_completed_receip
     execute(output);execute(output)
     assert api.embed.call_count==1
     assert json.loads((output/'result.json').read_text())['provider_calls']==0
+    from retrieval.unit_embedding_receipts import UnitEmbeddingReceiptReader
+    from retrieval.semantic_unit_catalog import iter_units
+    reader=UnitEmbeddingReceiptReader([output])
+    try:
+        for _,unit,_ in iter_units(catalog,require_new_vector=True):
+            result=reader(unit)
+            assert result['input_sha256']==unit['embedding_input_sha256']
+            assert result['vector'][0]==1 and result['provider_calls']==0
+        assert reader.completed_batches==1 and reader.incomplete_batches==0
+    finally:reader.close()
+    assert api.embed.call_count==1

@@ -81,6 +81,8 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
     if policy == 'conservative.v5':
         from retrieval.query_requirements import positive_view
         query, exclusions = positive_view(query)
+        from retrieval.catalog_company_identity import with_original_registrant_identity
+        metadata={d:with_original_registrant_identity(row) for d,row in metadata.items()}
     aliases, names = {}, {}
     named_issuers = {}
     from retrieval.catalog_company_identity import aliases_for, name_key, owners_for_row
@@ -90,7 +92,7 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
                 named_issuers.setdefault(name_key(alias), set()).add(row['issuer_id'])
     for row in metadata.values():
         issuer, name = row.get('issuer_id'), row.get('company_name')
-        if issuer:
+        if issuer and policy in {'conservative.v1','conservative.v2'}:
             # Only literal catalog identifiers; never infer a ticker/company
             # association from body text, graph counterparties or a URL.
             tail = issuer.split('::')[-1].replace('_', ' ').strip()
@@ -112,6 +114,9 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
     if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'}:
         matches, mentions = _compatible_mentions(query, aliases, bilingual_boundaries=policy=='conservative.v5')
     owners = set().union(*(v for _, v in matches)) if matches else set()
+    from retrieval.catalog_company_identity import verified_issuer_groups
+    identity_group=next((g for g in verified_issuer_groups(metadata)
+                         if owners and owners<=set(g['issuer_ids'])),None) if policy=='conservative.v5' else None
     unresolved, evidence, constraint = [], [], {}
     report_owners, report_phrases = _report_owners(query,
         dict(matches) if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'} else aliases,
@@ -140,7 +145,7 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
         owners=report_owners
         evidence.append({'field':'issuer','matched_query_text':report_phrases,
                          'basis':'explicit_report_owner_not_counterparty'})
-    if len(owners) == 1:
+    if len(owners) == 1 and identity_group is None:
         owner = next(iter(owners))
         constraint['company_names'] = sorted(names.get(owner, set()))
         if not owner.startswith('name:'):
@@ -153,6 +158,11 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
             company_names=sorted(names.get(owner, set()))) for owner in sorted(owners)]
         evidence.append({'field':'issuer_union', 'matched_query_text':sorted(a for a,_ in matches),
                          'basis':'explicit_comparison_of_unambiguous_catalog_owners'})
+    elif owners and identity_group:
+        constraint['issuer_union']=[{'issuer_id':owner,'company_names':sorted(names.get(owner,set()))}
+                                    for owner in identity_group['issuer_ids']]
+        evidence.append({'field':'issuer_union','basis':'verified_original_identity_compatibility',
+            'proof':identity_group,'wire_ids_unchanged':True})
     elif owners:
         unresolved.append('multiple_or_ambiguous_issuers_no_issuer_filter')
         if policy == 'conservative.v5' and not comparison:

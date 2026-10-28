@@ -102,12 +102,26 @@ def test_published_units_run_through_organization_navigation_and_revoke_cached_a
     _,_,_,contract=load_release(tmp_path/'indices',org,release)
     grant['manifest']['retrieval_index']=contract
     new_reader,state=runtime_at(SimpleNamespace(workspace=reader.workspace),runtime_grant(grant))
+    monkeypatch.setenv('FINSIGHT_ORGANIZATION_SEARCH_PROFILE','research.v2')
     active=OrganizationSourceNavigation(new_reader,workbench_url='http://localhost',retrieval_root=tmp_path/'indices')
     result=active.navigate(query(organization_query_planning='conservative.v5'))
     receipt=result.items[0]['retrieval']
     assert receipt['semantic_units']['unit_population']>0
+    assert receipt['serving_profile']['name']=='research.v2'
+    assert receipt['candidate_policy']=='needs_units.v1'
     assert '_eligible_parent_ids' not in receipt['semantic_units']
     assert receipt['provider_calls']==0
     assert active.navigate(query(organization_query_planning='conservative.v5')).items[0]['retrieval']['response_cache_hit']
     state['status']=404
     with pytest.raises(OrganizationExecutionUnavailable):active.navigate(query(organization_query_planning='conservative.v5'))
+
+
+def test_unit_policy_without_published_units_fails_before_query_provider(tmp_path,monkeypatch):
+    from types import SimpleNamespace
+    from test_organization_candidate_index import prepared,query
+    nav,*_=prepared(tmp_path,monkeypatch)
+    nav.hybrid.candidate_policy='needs_units.v1'
+    def forbidden(*args,**kwargs):raise AssertionError('Must not pay for an unusable publication')
+    nav.hybrid.query_source=SimpleNamespace(embed=forbidden)
+    with pytest.raises(ValueError,match='requires_unit_publication'):
+        nav.navigate(query(query='new unpublished question',organization_query_planning='conservative.v5'))

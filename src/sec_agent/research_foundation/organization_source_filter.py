@@ -133,7 +133,8 @@ def source_metadata_details(bundle):
             if annual is not None:
                 descriptor['calendar_annual_year'] = annual['year']
                 proof['calendar_annual_year'] = annual
-    return descriptor, proof
+    from retrieval.catalog_company_identity import with_original_registrant_identity
+    return with_original_registrant_identity(descriptor), proof
 
 
 def source_metadata(bundle):

@@ -297,7 +297,7 @@ class OrganizationSourceNavigation:
         if evidence_filter:
             from retrieval.evidence_scoring_view import attach_scoring_view
             materialized=[attach_scoring_view(row,evidence_filter) for row in materialized]
-        if (self.hybrid.candidate_policy in {'needs_window.v2', 'needs_window.v3', 'needs_window.v4'}
+        if (self.hybrid.candidate_policy in {'needs_window.v2', 'needs_window.v3', 'needs_window.v4','needs_units.v1'}
                 and request.organization_metadata_policy == 'sec_cover.v2'):
             from retrieval.rerank_document_context import with_document_context
             materialized = with_document_context(materialized, candidates.source_metadata)

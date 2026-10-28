@@ -60,3 +60,38 @@ def test_same_original_parse_ids_use_name_scope_without_merging_other_documents(
     selected,_=select_planned(metadata,plan)
     assert selected=={'a','b'}
     assert metadata['c']['issuer_id']=='B'
+
+
+def test_original_cover_does_not_keep_an_unrelated_legacy_id_alias():
+    from retrieval.catalog_company_identity import aliases_for
+    row={'issuer_id':'COMPANY::wrong_short','verified_company_names':['Northern Circuits Inc.']}
+    assert 'wrong short' not in aliases_for(row)
+    assert 'issuer_id' not in plan_query('wrong short revenue',{'d':row},policy='conservative.v5')['constraint']
+    assert plan_query('Northern Circuits revenue',{'d':row},policy='conservative.v5')['constraint']['issuer_id']==row['issuer_id']
+
+
+def test_verified_same_cik_names_expand_lookup_across_parse_ids_not_homonyms():
+    from retrieval.catalog_company_identity import verified_issuer_groups
+    from sec_agent.research_foundation.organization_query_plan import select_planned
+    def row(issuer,cik):return {'issuer_id':issuer,'verified_company_names':['Northern Circuits Inc.'],
+        'fact_entity_identifiers':[{'scheme':'http://www.sec.gov/CIK','identifier':cik}]}
+    metadata={'a':row('A','123'),'b':row('B','000123')}
+    assert len(verified_issuer_groups(metadata))==1
+    plan=plan_query('Northern Circuits revenue',metadata,policy='conservative.v5')
+    assert {v['issuer_id'] for v in plan['constraint']['issuer_union']}=={'A','B'}
+    assert select_planned(metadata,plan)[0]=={'a','b'}
+    metadata['c']=row('B','456')
+    assert verified_issuer_groups(metadata)==[]
+    assert 'issuer_union' not in plan_query('Northern Circuits revenue',metadata,policy='conservative.v5')['constraint']
+
+
+def test_url_requires_unique_cover_and_conflicting_cik_never_establishes_alias():
+    from retrieval.catalog_company_identity import with_original_registrant_identity,verified_issuer_groups
+    url='https://www.sec.gov/Archives/edgar/data/123/000000012324000001/report.htm'
+    assert 'fact_entity_identifiers' not in with_original_registrant_identity({'original_filing_key':url})
+    row={'original_filing_key':url,'verified_company_names':['Northern Circuits Inc.'],'issuer_id':'A'}
+    assert with_original_registrant_identity(row)['fact_entity_identifiers'][0]['identifier']=='123'
+    conflict=with_original_registrant_identity({**row,'fact_entity_identifiers':[
+        {'scheme':'http://www.sec.gov/CIK','identifier':'456'}]})
+    assert conflict['company_name_resolution']=='original_cover_url_cik_conflict'
+    assert verified_issuer_groups({'a':conflict,'b':{**conflict,'issuer_id':'B'}})==[]

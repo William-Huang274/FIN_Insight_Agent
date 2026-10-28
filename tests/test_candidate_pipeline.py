@@ -32,3 +32,16 @@ def test_empty_graph_does_not_take_dense_capacity():
     empty,_,b=fuse_channels(rows,scores,[],policy='needs_window.v4',graph=[])
     assert a==b and empty['dense']==baseline['dense']
     assert empty['graph']==[] and b['graph']==0
+
+
+def test_unit_policy_backfills_independent_rankings_before_any_neighbors():
+    rows=[{'node_id':str(i)} for i in range(100)]
+    scores=[1/(i+1) for i in range(100)]
+    lexical=[str(i) for i in [*range(24),*range(70,94)]]
+    entry,_,limits=fuse_channels(rows,scores,lexical,policy='needs_units.v1',
+        lexical_policy='organization-financial-needs.v2')
+    assert len(entry['ordered'])==48 and len(set(entry['ordered']))==48
+    assert entry['dense']==entry['lexical']==[str(i) for i in range(24)]
+    assert len(entry['independent_backfill']['dense'])==12
+    assert len(entry['independent_backfill']['lexical'])==12
+    assert entry['independent_backfill']['adjacent_only_candidates']==[]

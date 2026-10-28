@@ -36,6 +36,7 @@ class ServingProfile:
 PROFILES={
     'legacy.v1':ServingProfile('legacy.v1',None,'original.v1','balanced.v1','','qwen3-rerank'),
     'research.v1':ServingProfile('research.v1','conservative.v5','sec_cover.v2','needs_window.v4','bounded.v1','qwen3.7-text-rerank'),
+    'research.v2':ServingProfile('research.v2','conservative.v5','sec_cover.v2','needs_units.v1','bounded.v1','qwen3.7-text-rerank'),
 }
 
 

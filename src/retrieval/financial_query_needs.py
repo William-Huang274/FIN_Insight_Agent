@@ -135,6 +135,10 @@ def compile_financial_needs(query, plan, legacy):
             # ("cash and cash equivalents" is one concept, not two clauses).
             text = clause if clause is not None else positive
             if clause is None:
+                from .query_context_requirements import assertion_request_view
+                text,assertions=assertion_request_view(text)
+                context_requests.extend({'text':a['text'],'roles':['assertion_to_verify'],'owner':owner}
+                                        for a in assertions)
                 chars = list(text)
                 for mention in mentions:
                     chars[mention['start']:mention['end']] = ' ' * (mention['end']-mention['start'])

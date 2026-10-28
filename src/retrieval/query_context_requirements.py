@@ -6,6 +6,22 @@ business units, and an unqualified 'units' are not measurement instructions.
 import re
 
 
+def assertion_request_view(query):
+    """Mask a claim before an explicit evidence request, keeping source offsets.
+
+    Only used to split independent retrieval needs. The complete claim remains
+    in semantic/rerank input. Never assume its dates, labels or amounts are true.
+    Without a following explicit request, retain the entire original statement.
+    """
+    start=re.match(r'^\s*(?:(?:a|the|this)\s+(?:summary|claim|report|note|analysis)|someone|an analyst)\s+'
+        r'(?:says|states|claims|assigns|labels|asserts|treats)\b|^\s*(?:有人|摘要|总结|报告)(?:声称|称|表示|将|把)',query,re.I)
+    if not start:return query,[]
+    request=re.search(r'(?:[.!?。！？]\s*)(?P<request>(?:please\s+)?(?:find|retrieve|check|verify)\b|(?:请)?(?:核对|核查|验证|找出|查找))',query[start.end():],re.I)
+    if not request:return query,[]
+    end=start.end()+request.start('request')
+    return ' '*end+query[end:],[{'start':0,'end':end,'text':query[:end],'role':'assertion_to_verify'}]
+
+
 def is_assertion_context(topic,query):
     # Keep the full assertion in semantic/literal queries; it must not create
     # another must-cover need just because its clause has an unfamiliar noun.

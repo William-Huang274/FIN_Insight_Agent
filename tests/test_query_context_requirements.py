@@ -41,3 +41,30 @@ def test_unmapped_business_topic_coverage_preserves_reranker_not_bm25_order():
     lanes=[{'candidate_ids':['answer']},{'candidate_ids':['boilerplate','answer']}]
     selected,_=select_coverage(rows,needs,lanes,{})
     assert selected[0]['node_id']=='answer'
+
+
+def test_claim_continuations_are_not_split_into_positive_business_requirements():
+    from retrieval.query_context_requirements import assertion_request_view
+    query='A summary treats July 8, 2026 as quarter end and calls the press release Exhibit 104. Find the release date, reporting quarter and exhibit to check this.'
+    view,claims=assertion_request_view(query)
+    assert len(view)==len(query) and view.index('Find')==query.index('Find')
+    assert 'calls' not in view and len(claims)==1
+    plan={'policy':'conservative.v5','constraint':{},'issuer_mentions':[]}
+    needs=compile_needs(query,plan)
+    assert all(not n['text'].startswith(('A summary treats','calls')) for n in needs['needs'] if n['concept'] is None)
+    assert any(n['text']==query for n in needs['needs'])
+
+
+def test_assertion_view_preserves_unknown_business_needs_and_nonverification_statements():
+    from retrieval.query_context_requirements import assertion_request_view
+    query='A summary claims margins improved and calls demand stable. Find revenue and customer concentration.'
+    plan={'policy':'conservative.v5','constraint':{},'issuer_mentions':[]}
+    needs=compile_needs(query,plan)
+    assert any(n['concept'] is None and 'customer concentration' in n['text'] for n in needs['needs'])
+    for text in ['A summary treats customer concentration and demand as risks.',
+                 'Find revenue and customer concentration.',
+                 'Someone claims costs fell but the report discusses revenue.']:
+        assert assertion_request_view(text)==(text,[])
+    chinese='有人把六月报表写成七月，并称附件是104。查找收入以及客户集中度核对。'
+    view,claims=assertion_request_view(chinese)
+    assert len(view)==len(chinese) and len(claims)==1 and '客户集中度' in view

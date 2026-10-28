@@ -81,6 +81,8 @@ class NativeFixtureModel(BaseChatModel):
         return self
 
     def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+        from sec_agent.research_foundation.research_methods import BASIC_RESEARCH_GUIDANCE
+        assert str(messages[0].content).count(BASIC_RESEARCH_GUIDANCE.strip()) == 1
         self.contexts.append(messages)
         previous = [m for m in messages if isinstance(m, AIMessage)]
         assert all(m.additional_kwargs.get("reasoning_content") == self.marker for m in previous)
@@ -292,7 +294,11 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
             assert state["phase"] == ("case_report_needs_revision" if material else "case_report_ready_for_human_review")
             assert ref in state["report"]["citations"]
             verifier_input = json.loads(model.contexts[0][1].content)
-            assert "Not separately disclosed does not mean not achieved" in model.contexts[0][0].content
+            # Domain teaching remains available, rather than reinjected as a
+            # mandatory correction checklist in every role's system prompt.
+            from sec_agent.research_foundation.research_methods import get_research_method
+            assert "未单独披露不等于未实现" in get_research_method("finance")["content"]
+            assert "scenario_sensitivity：" in model.contexts[0][0].content
             assert verifier_input["report"] == report
             assert "citations" not in verifier_input["report"]
             assert "reasoning_content" not in json.dumps(state)

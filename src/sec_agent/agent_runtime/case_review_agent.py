@@ -26,7 +26,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from .deepseek_structured_agents import TokenBudgetBasis, ReasoningPreservingChatDeepSeek, _usage_audit_fields
 from .case_artifacts import CaseArtifacts
-from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE
+from sec_agent.research_foundation.research_methods import BASIC_RESEARCH_GUIDANCE, METHOD_TOOL_GUIDANCE
 from sec_agent.research_foundation.source_bound_calculator import source_items_from_tool
 from sec_agent.research_foundation.source_quotes import contains_source_quote
 from .review_submission_notes import AssessmentNote, preserve_assessment_notes
@@ -1352,7 +1352,7 @@ When done, submit_case_review with an assessment of this revision, all saved fin
         # request. Scoped revision review does not run this whole-case gate.
         context_middlewares.insert(max(0, len(context_middlewares)-1), ReviewReferenceState(artifacts))
     agent = create_agent(model=model, tools=[*tools, *notes, record_case_finding, submit_case_review], state_schema=CaseReviewerState,
-        system_prompt=prompt + (WORKING_MEMORY_GUIDANCE if notes else "") + METHOD_TOOL_GUIDANCE + method_instructions,
+        system_prompt=prompt + BASIC_RESEARCH_GUIDANCE + (WORKING_MEMORY_GUIDANCE if notes else "") + METHOD_TOOL_GUIDANCE + method_instructions,
         middleware=[StopOnAcceptedReview(), InvalidToolCallFeedback(), CompactReviewSchemaFeedback(), ModelCallLimitMiddleware(run_limit=max_model_calls, exit_behavior="end"),
                     ToolCallLimitMiddleware(run_limit=max_tool_calls, exit_behavior="end"),
                     *context_middlewares],

@@ -2,9 +2,9 @@
 
 连续问答、底稿、委派、复核与成文的统一入口设计见[研究伙伴产品边界](product/research_partner_workflow.zh-CN.md)与[按需研究运行时第一阶段](architecture/on_demand_research_runtime.zh-CN.md)。A1 交付意图合同与 A2 Java/BFF 准备准入离线回归通过，尚未部署或实现统一入口；目标是新任务仅保留一个生产调度入口，旧完整图仅作历史运行兼容。
 
-同一设计第 5.3—5.7 节补充研究判断的形成/检验/更新、设计者指引与方法披露、研究视角审阅及行为验收。这里的“人的引导”指产品设计者提供的支持，不以用户反复纠偏作为自主研究能力；补充目前仅为设计，未修改生产提示、skill 或运行逻辑。
+同一设计第5.3—5.7节补充研究判断的形成/检验/更新、设计者指引与方法披露、研究视角审阅及行为验收。“人的引导”指产品设计者提供的支持，不以用户反复纠偏作为自主研究能力。基本指引与首批方法已接入维护代码并做离线消费验证；连续工作与审阅策略仍待后续实施，无付费效果证明。
 
-[基本Agent指引](architecture/research_agent_guidance.zh-CN.md)确定短而稳定的研究职责正文及旧逻辑替换边界。[研究方法资源编排与教材样稿](architecture/research_skill_curriculum.zh-CN.md)确定首批六项优化、一项新增，给出通用方法、专业结构、专题算例及近期市场变化的分层，包含增长解释和云经济性两个示例；近期事实有实际核对范围与日期，尚未注入生产方法。
+[基本Agent指引](architecture/research_agent_guidance.zh-CN.md)列出正式资源及输入位置。[研究方法资源编排](architecture/research_skill_curriculum.zh-CN.md)的首批六项优化、一项新增已成为可按章节读取的教材；近期事实有实际核对范围与日期。已验证工具返回和实际请求消费，未部署，不代表研究质量已改善。
 
 当前0.1.4研究runtime开发与测点顺序见[按Agent流转的分段资格路线](engineering/runtime_flow_qualification.zh-CN.md)。
 

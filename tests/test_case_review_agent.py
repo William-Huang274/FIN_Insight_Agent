@@ -69,6 +69,8 @@ class ScriptedNativeChat(BaseChatModel):
         return self
 
     def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+        from sec_agent.research_foundation.research_methods import BASIC_RESEARCH_GUIDANCE
+        assert str(messages[0].content).count(BASIC_RESEARCH_GUIDANCE.strip()) == 1
         for message in messages:
             if isinstance(message, AIMessage):
                 assert message.additional_kwargs["reasoning_content"] == self.marker

@@ -100,11 +100,11 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
             return json.dumps(body, ensure_ascii=False), body
         grants.extend(GrantedTool(t, "read", "本对话上传资料的副本") for t in [list_task_materials, read_task_material])
     @tool
-    def get_research_method(method_id: str = ""):
-        """Read a method before substantive analysis or new-report processing: report_processing, finance, industry_product, counter, writer, verifier or lead. Empty ID lists methods. Guidance only, not evidence or extra permissions."""
-        from sec_agent.research_foundation.research_methods import get_research_method as read_method
+    def get_research_method(method_id: str = "", section: str = ""):
+        """Read research teaching resources as needed. Empty ID lists methods and sections; use an exact section title for a chapter. Guidance only, not evidence or extra permissions."""
+        from sec_agent.research_foundation.research_methods import get_research_method as read_method, select_method_section
         try:
-            return (method_reader or read_method)(method_id)
+            return select_method_section((method_reader or read_method)(method_id), section)
         except ValueError as exc:
             raise ToolException(str(exc)) from exc
     grants.append(GrantedTool(get_research_method, "read", "已打包研究方法，只读"))

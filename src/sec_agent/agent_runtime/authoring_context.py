@@ -33,7 +33,7 @@ CORE_SEMANTICS = (
     "Distinguish observation, calculation, assumption and inference; do not revive rejected interpretations. "
     "Keep decisive conditions attached to reusable claims, not only in footnotes. "
     "Prose, tables, structured findings and remaining issues must agree. New substantive judgments require "
-    "the relevant method and original evidence, not stylistic completion. Tool failure is not non-disclosure."
+    "relevant evidence; methods are available when useful. Tool failure is not non-disclosure."
 )
 
 

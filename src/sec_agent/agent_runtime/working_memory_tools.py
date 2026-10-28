@@ -64,8 +64,8 @@ def native_memory_scope(owner, workspace, *, access_check=None, allow_remote_sea
 
 WORKING_MEMORY_GUIDANCE = """
 Working memory is available through WriteWorkingNote, ReadWorkingNote and SearchWorkingNotes.
-For substantial work, start a short working note and update it after a useful finding or changed judgment,
-before moving to another topic. Use natural prose/Markdown in the user's language; no required template.
+Save useful current understanding when it changes or a handoff needs it.
+Use natural prose/Markdown in the user's language; no required template or note before taking action.
 Record what you established, source references when available, uncertainty, user corrections and next work.
 Use a descriptive title: subject/company, period when relevant, and research topic (in the user's language).
 The title helps discovery; the returned note_id is the stable lookup key. Copy it, never guess it from the title.

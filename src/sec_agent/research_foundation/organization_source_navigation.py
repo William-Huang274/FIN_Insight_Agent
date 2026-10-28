@@ -662,8 +662,8 @@ def build_organization_source_server(navigation, *, binding_reader=None, role_me
                 data_snapshot_id=data_snapshot_id, execution_attempt_id=execution_attempt_id, source_policy=source_policy)
 
         @server.tool(name='get_research_method', structured_output=True)
-        def method(method_id: str = '') -> dict[str, Any]:
-            """Read packaged task methods; guidance does not authorize new data access."""
-            from .research_methods import get_research_method
-            return (role_method_reader or get_research_method)(method_id)
+        def method(method_id: str = '', section: str = '') -> dict[str, Any]:
+            """Read method/section; empty ID lists methods and exact section titles. No new authority."""
+            from .research_methods import get_research_method, select_method_section
+            return select_method_section((role_method_reader or get_research_method)(method_id), section)
     return server

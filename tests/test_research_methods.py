@@ -14,7 +14,7 @@ def test_writing_briefs_select_audience_without_copying_the_entire_method():
         assert all(part in method for part in brief.split('\n\n'))
         assert '决定判断能否成立的条件写在判断附近' in brief
         assert '虚构运输企业' not in brief
-    assert '分派问题' in workpaper and 'schema' in workpaper
+    assert '分派问题' in workpaper and 'schema' not in workpaper
     assert '跨公司、跨底稿选材' in report and 'schema' not in report
     with pytest.raises(ValueError, match='unknown_research_writing_stage'):
         research_writing_guidance('../../private')

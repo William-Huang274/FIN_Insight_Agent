@@ -263,6 +263,8 @@ class RequestResearchMethodAction(_StrictModel):
     reason_summary: str = Field(min_length=1, max_length=1_000)
     method_id: str = Field(default="", max_length=64,
         description="Empty for catalog, or a method_id from that catalog. This does not enable the unavailable general disclosure service.")
+    section: str = Field(default="", max_length=120, exclude_if=lambda v: not v,
+        description="Optional exact section title from the method catalog; empty reads the complete method.")
 
 
 class RequestHumanReviewAction(_StrictModel):
@@ -2635,8 +2637,8 @@ def build_specialist_agentic_state_graph(
         if notebook.tool_action_count >= state["max_tool_actions"]:
             return result({"error": "tool_action_ceiling_reached_no_silent_completion"}, error=True,
                 updated=_replace_notebook(notebook, status="human_review_required"), review=True)
-        if digest in notebook.dispatched_action_digests:
-            return result({"error": "method_already_read", "next_action": "Use its earlier ToolMessage, or select a different method."}, error=True)
+        # A read-only method may have left the active context. Permit an exact
+        # readback under the same tool ceiling; no paid retry or authority change.
         updated = _replace_notebook(notebook, tool_action_count=notebook.tool_action_count + 1,
             dispatched_action_digests=(*notebook.dispatched_action_digests, digest))
         try:
@@ -2646,8 +2648,12 @@ def build_specialist_agentic_state_graph(
                 action.method_id and (method.get("method_id") != action.method_id or method.get("grants_authority") is not False)
             ):
                 raise ValueError("invalid_method_projection")
+            if action.section:
+                from sec_agent.research_foundation.research_methods import select_method_section
+                body = {**body, "method": select_method_section(method, action.section),
+                        "runtime_projection": "exact_method_section"}
         except Exception:
-            return result({"error": "method_read_failed", "next_action": "Select an ID from the method catalog; paths are not allowed."},
+            return result({"error": "method_read_failed", "next_action": "Select a method ID and optional exact section title from the catalog; paths are not allowed."},
                 error=True, updated=updated)
         return result(body, updated=updated)
 

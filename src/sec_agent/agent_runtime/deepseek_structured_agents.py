@@ -29,7 +29,7 @@ from pydantic import (
     model_validator,
 )
 
-from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE, research_writing_guidance
+from sec_agent.research_foundation.research_methods import BASIC_RESEARCH_GUIDANCE, METHOD_TOOL_GUIDANCE, research_writing_guidance
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction
 from .research_working_state import UpdateResearchStateAction
 from .authoring_context import PrepareWorkpaperAction
@@ -1583,6 +1583,7 @@ class DeepSeekStructuredAgentAdapter:
                            "Do not remove citation/claim records while retaining the unsupported statement in prose. "
                            "This is a new revision using artifact handoff, not continuation of the old provider conversation.")
             messages[0] = SystemMessage(content=prompt)
+        messages[0] = SystemMessage(content=messages[0].content + BASIC_RESEARCH_GUIDANCE)
         if not is_lead and "request_method" in semantic_input.get("allowed_actions", ()):
             messages[0] = SystemMessage(content=messages[0].content + METHOD_TOOL_GUIDANCE
                 + " Use RequestResearchMethodAction to access get_research_method in this tool interface.")

@@ -928,8 +928,11 @@ def test_agentic_real_sdk_wire_uses_object_envelope_without_network(
         result = adapter.specialist_model_turn(request)
 
     assert len(wire_payloads) == 1
-    assert ('Before the first substantive financial judgment' in
-            wire_payloads[0]['messages'][0]['content']) is method_available
+    from sec_agent.research_foundation.research_methods import BASIC_RESEARCH_GUIDANCE
+    prompt = wire_payloads[0]['messages'][0]['content']
+    assert prompt.count(BASIC_RESEARCH_GUIDANCE.strip()) == 1
+    assert 'Before the first substantive financial judgment' not in prompt
+    assert ('scenario_sensitivity：' in prompt) is method_available
     assert result["action"] == action
     assert result["runtime_receipt"]["output_digest"] == canonical_sha256(action)
     assert result["runtime_receipt"]["transport_attempts"] == 1

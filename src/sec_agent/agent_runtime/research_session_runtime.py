@@ -130,7 +130,8 @@ def create_research_phase_runnables(*, execution=None, **kwargs):
         async def invoke(state, config: RunnableConfig):
             supplied = config.get('configurable', {}).get('finsight_execution')
             selected = execution_from_config(config) if supplied is not None else execution or ExecutionOptions()
-            selected.require_report_workflow()
+            if name != 'operate':
+                selected.require_report_workflow()
             if execution is not None and selected != execution:
                 raise ValueError('research_execution_configuration_mismatch')
             key = selected.model_dump_json()
@@ -141,13 +142,27 @@ def create_research_phase_runnables(*, execution=None, **kwargs):
             return await phases_by_options[key][name].ainvoke(state, config)
         return RunnableLambda(invoke)
     return {'hierarchical': True, **{name: phase(name) for name in (
-        'research', 'review', 'triage_review', 'converge', 'revise_research', 'writer', 'verifier', 'quick_writer')}}
+        'research', 'review', 'triage_review', 'converge', 'revise_research', 'writer', 'verifier', 'quick_writer', 'operate')}}
+
+
+def create_on_demand_research_agent(*, model, grants, execution, phase_arguments, artifact_reader=current_task_artifacts, **agent_arguments):
+    """One admitted parent, with the same maintained phase executors.
+
+    Product admission must select this contract before dispatch; this does not
+    reinterpret orientation/begin_research or migrate a live historical thread.
+    """
+    from .on_demand_research import build_on_demand_research_agent
+    phases = create_research_phase_runnables(execution=execution, artifact_reader=artifact_reader, **phase_arguments)
+    return build_on_demand_research_agent(model=model, grants=grants,
+        artifacts=artifact_reader, operation_runner=phases['operate'],
+        delivery_intent=execution.delivery_intent, **agent_arguments)
 
 
 def _create_bound_research_phases(*, root, settings, profile, case, run_id, thread_id, api_key,
                                     environment=None, public_sink, private_sink, read_guidance=None, studio=None, execution=None,
                                     blocked_model_inputs=(), plan_invocation_id=None, budget_scope=None, author_audit_paths=(), feedback_owner=None,
-                                    contract_version='research_session.v2', organization_data_factory=None, run_access_check=None):
+                                    contract_version='research_session.v2', organization_data_factory=None, run_access_check=None,
+                                    artifact_reader=current_task_artifacts):
     if studio:
         profile = studio.apply_profile(profile)
         case = studio.apply_case(case)
@@ -487,7 +502,7 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
 
     @asynccontextmanager
     async def tools_for(state, artifacts_override=None):
-        artifacts = artifacts_override if artifacts_override is not None else current_task_artifacts(state)
+        artifacts = artifacts_override if artifacts_override is not None else artifact_reader(state)
         with data_factory(run_invocation_id=invocation, environment=environment,
                 source_read_enabled=True, live_web_read_enabled=live_web, case_artifacts=artifacts,
                 role_method_reader=studio.method if studio else None) as data:
@@ -519,14 +534,24 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
         if source_check:
             source_check()
 
-    def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False, actor_override=None, confirmation=None, incomplete_reviewers=None, review_execution_control=None):
+    def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False, actor_override=None, confirmation=None, incomplete_reviewers=None, review_execution_control=None, operation=None):
         if role == "repair" and execution.mode == "selected":
             branch = next((p["branch_id"] for p in artifacts.catalog()["papers"] if p["paper_id"] == paper_id), None)
             if branch not in execution.branch_ids:
                 raise ValueError("所需修订超出所选研究方向；请扩大范围后发起新运行")
         profile_role = "synthesis" if role in {"lead_decision", "prepare"} else role
         method_instructions = studio.instructions(profile_role) if studio else ""
-        if profile.get('authoring', {}).get('enabled') and role in {'prepare', 'writer'} and not interactive:
+        if operation is not None:
+            # Default role textbooks remain callable methods, not inherited
+            # mandatory stage instructions. Preserve explicit studio edits.
+            from sec_agent.research_foundation.research_methods import get_research_method
+            if studio:
+                selected_method = studio.bindings.get(profile_role, profile_role)
+                custom_method = studio.method(selected_method)['content']
+                method_instructions = custom_method if custom_method != get_research_method(selected_method)['content'] else ''
+            else:
+                method_instructions = ''
+        if operation is None and profile.get('authoring', {}).get('enabled') and role in {'prepare', 'writer'} and not interactive:
             from .authoring_context import stage_methods
             from sec_agent.research_foundation.research_methods import get_research_method
             def authoring_method_reader(method_id):
@@ -567,6 +592,11 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
                 basis = basis.model_copy(update={
                     'node_purpose': 'Lead diagnoses incomplete review from saved public findings and exact tool errors, without restarting research or accepting the paper.',
                     'required_outputs': ('Choose a bounded review continuation, targeted author repairs followed by completion of independent review, or explicit stop. No final report or acceptance of unfinished review.',)})
+        if operation is not None:
+            basis = basis.model_copy(update={
+                'node_purpose': operation['purpose'],
+                'required_outputs': ('Return the requested '+operation['action']+' result to the parent; no automatic successor or financial approval.',),
+                'input_scale': 'Current version-bound objects and authorized source readers; no inherited whole-case route or private peer histories.'})
         audit = CaseModelAudit(actor=actor_override or ("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
             public_sink=public_sink, private_sink=private_sink, stream_public=True,
             dispatch_guard=budget_scope.guard(profile_role, model_profile) if budget_scope else None, source_access_check=source_access_check)
@@ -596,14 +626,17 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
             return build_case_reviewer(role=role, model=model, tools=tools, artifacts=artifacts,
                 max_model_calls=limits["model_calls"], max_tool_calls=limits["tool_calls"], audit=audit,
                 method_instructions=method_instructions, confirmation=confirmation,
-                require_inspection=confirmation is None or bool(confirmation.get('complete_pending_case_review')))
-        output_role = ("prepare" if role == 'prepare' else "lead_writer" if role == 'writer' and profile.get('authoring', {}).get('enabled') and not interactive else "verifier" if role in {"report_verifier", "research_verifier"} else "writer" if role in {"writer", "quick_writer"}
+                require_inspection=(confirmation is None or bool(confirmation.get('complete_pending_case_review'))) if operation is None else False,
+                operation_paper_id=operation['paper_id'] if operation and operation['action'] == 'review_workpaper' else None)
+        output_role = ("prepare" if role == 'prepare' else "lead_writer" if role == 'writer' and profile.get('authoring', {}).get('enabled') and not interactive and operation is None else "verifier" if role in {"report_verifier", "research_verifier"} else "writer" if role in {"writer", "quick_writer"}
                        else "synthesis" if role == "synthesis" else "decision" if role == "lead_decision" else "repair")
         return build_case_output_agent(role=output_role, model=model, tools=tools, artifacts=artifacts,
             feedback=feedback, paper_id=paper_id, limits=limits, audit=audit, report_revision=interactive or revising,
             allow_answers=interactive and output_role == "writer", answer_only=role == "quick_writer",
             require_responsibility=role in {"report_verifier", "research_verifier"}, method_instructions=method_instructions,
-            incomplete_reviewers=incomplete_reviewers)
+            incomplete_reviewers=incomplete_reviewers,
+            on_demand=operation is not None,
+            review_scope='selected_claims' if operation and operation['review_scope'] == 'selected' else 'full_report')
 
     async def review(state, config: RunnableConfig):
         state = await with_guidance(state, "review")
@@ -640,9 +673,15 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
                     'tool_feedback':[m.content for m in result.get('messages',[]) if isinstance(m,ToolMessage) and m.status=='error'][-4:]}
             return output
 
-    async def execute_convergence(state, config, existing=None):
+    async def execute_convergence(state, config, existing=None, operation=None):
         from .review_recovery import public_review
-        state = await with_guidance(state, "convergence")
+        if operation is None:
+            state = await with_guidance(state, "convergence")
+        else:
+            from .research_operation import bind_operation
+            # Fail before opening a source session, constructing an agent or
+            # charging a provider. Historical guidance is not a current task.
+            operation = bind_operation(operation, artifact_reader(state), state)
         async with tools_for(state) as (artifacts, tools):
             async def run_author(paper_id, convergence_state, child_config):
                 from .author_revision import current_author_state, restore_author_history, native_revision_view, author_feedback
@@ -654,6 +693,10 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
                 if execution.mode == "selected" and saved["task"]["branch_id"] not in execution.branch_ids:
                     raise ValueError("author_revision_outside_selected_scope")
                 repair_profile, basis, limits = model_values("repair")
+                if operation is not None:
+                    basis = basis.model_copy(update={
+                        'node_purpose': operation['purpose'],
+                        'required_outputs': ('Save and submit the requested original-author revision; return it without automatic confirmation or report writing.',)})
                 configured = research_config().model_copy(update={
                     "model_profiles": {**research_config().model_profiles, "specialist": repair_profile},
                     "token_budget_basis": {**research_config().token_budget_basis, "specialist": basis.model_copy(update={"node_role": "specialist"})}})
@@ -721,11 +764,29 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
                     async def invoke(candidate, config: RunnableConfig):
                         async with tools_for(state, current) as (validated, current_tools):
                             agent = native_agent(role, current_tools, validated, feedback=feedback, paper_id=paper_id,
-                                revising=role == 'writer' and revising_report)
+                                revising=role == 'writer' and revising_report, operation=operation)
                             return await agent.ainvoke(candidate, config)
-                    return RunnableLambda(invoke)
+                    if operation is None:
+                        return RunnableLambda(invoke)
+                    # A native subgraph retains checkpoint/read progress across
+                    # resource re-opening; a plain RunnableLambda has no state API.
+                    from langgraph.graph import StateGraph, START, END
+                    from .report_synthesis_agent import CaseOutputState
+                    from .case_review_agent import CaseReviewerState
+                    wrapper = StateGraph(CaseReviewerState if role in {'counter', 'verifier'} else CaseOutputState)
+                    wrapper.add_node('execute', invoke)
+                    wrapper.add_edge(START, 'execute')
+                    wrapper.add_edge('execute', END)
+                    return wrapper.compile()
                 return native_agent(role, tools, current, feedback=feedback, paper_id=paper_id,
-                    revising=role == "writer" and revising_report)
+                    revising=role == "writer" and revising_report, operation=operation)
+            if operation is not None:
+                from .research_operation import ResearchOperation
+                request = {k: operation[k] for k in ResearchOperation.model_fields}
+                graph = build_research_convergence_graph(artifacts=artifacts, question=state['question'],
+                    feedback={}, research_review_context={}, make_agent=make_agent, run_author=run_author,
+                    operation=request, operation_state=state).compile()
+                return await graph.ainvoke({}, config)
             feedback = state['feedback']
             if (not existing and not state.get('review_repair_decision') and all(
                     state.get('case_review', {}).get(role, {}).get('status') == 'review_submitted'
@@ -754,6 +815,9 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
 
     async def revise_research(state, config: RunnableConfig):
         return await execute_convergence({**state, "feedback": {}}, config, existing=state)
+
+    async def operate(state, config: RunnableConfig):
+        return await execute_convergence(state, config, operation=state['research_operation'])
 
     def interactive(role):
         async def execute(state, config: RunnableConfig):
@@ -821,7 +885,7 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
                 raise
         return RunnableLambda(invoke)
 
-    return {"hierarchical": True, "research": guarded("research", research), "review": guarded("review", review), "triage_review": guarded("lead_review_triage", triage_review), "converge": guarded("convergence", converge),
+    return {"hierarchical": True, "operate": guarded('research_operation', operate), "research": guarded("research", research), "review": guarded("review", review), "triage_review": guarded("lead_review_triage", triage_review), "converge": guarded("convergence", converge),
             "revise_research": guarded("research_revision", revise_research), "writer": interactive("writer"),
             "verifier": interactive("report_verifier"), "quick_writer": interactive("quick_writer")}
 

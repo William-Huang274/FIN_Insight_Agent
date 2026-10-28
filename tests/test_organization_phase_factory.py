@@ -46,6 +46,33 @@ def invoke(phases, name, state):
     return asyncio.run(graph.ainvoke(state, {'recursion_limit':100}))
 
 
+def test_on_demand_operation_uses_real_organization_phase_without_fixed_successors(submitted, tmp_path, monkeypatch):
+    from langgraph.checkpoint.memory import InMemorySaver
+    from sec_agent.agent_runtime.research_operation import object_catalog
+    from test_report_synthesis_agent import NativeFixtureModel
+    factory, authority, artifacts, paper = submitted
+    claim = artifacts.read_paper('P01')['claims'][0]['claim_id']
+    report = {'title': 'On-demand organization fixture', 'narrative_markdown':
+        'Synthetic native source and phase qualification, not proof of financial research quality. '*4 + f'[P01:{claim}]'}
+    configured = []
+    def model(profile, basis, *args, **kw):
+        configured.append(basis)
+        return NativeFixtureModel(marker='one-operation', replies=[
+            [call('submit_case_report', {'report': report}, 'report')]])
+    monkeypatch.setattr(runtime, 'case_chat_model', model)
+    state = {'question': 'Compose from the current saved research', 'case_papers': [paper],
+        'research_operation': {'action': 'compose', 'purpose': 'One requested report, no implied review',
+            'basis': {r['id']: r['digest'] for r in object_catalog(artifacts, {})}}}
+    phases = phases_for(factory, tmp_path)
+    graph = StateGraph(dict).add_node('phase', phases['operate']).add_edge(START, 'phase').add_edge('phase', END).compile(checkpointer=InMemorySaver())
+    result = asyncio.run(graph.ainvoke(state, {'configurable': {'thread_id': 'operation-host'}, 'recursion_limit': 100}))
+    assert len(configured) == 1
+    assert configured[0].node_purpose == state['research_operation']['purpose']
+    assert result['operation_result']['action'] == 'compose'
+    assert result['operation_result']['next_action'] is None
+    assert not result.get('report_review')
+
+
 def replay(action, request):
     schema = SpecialistNativeToolBatch if action['action'] == 'native_tool_batch' else SpecialistAction
     parsed = TypeAdapter(schema).validate_json(json.dumps(action)).model_dump(mode='json')

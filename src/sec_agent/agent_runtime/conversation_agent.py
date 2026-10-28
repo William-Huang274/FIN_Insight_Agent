@@ -24,7 +24,7 @@ class GrantedTool:
 
 def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mode: PermissionMode,
                              checkpointer, middleware=(), model_calls=8, tool_calls=12,
-                             server_managed_persistence=False, task_context=""):
+                             server_managed_persistence=False, task_context="", state_schema=None, completion_middleware=()):
     """Build a native agent; grants are trusted host configuration, not model input.
 
     Read access is explicitly granted by the host. Only task-owned generated
@@ -80,9 +80,10 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
         navigation = [ContextOrientationMiddleware()]
     from .model_context import RequestSummaryState
     return create_agent(model=model, tools=[g.tool for g in grants], system_prompt=prompt,
-        state_schema=RequestSummaryState,
+        state_schema=state_schema or RequestSummaryState,
         checkpointer=checkpointer, middleware=[
             HumanInTheLoopMiddleware(interrupt_on=interrupt_on),
+            *completion_middleware,
             ModelCallLimitMiddleware(run_limit=model_calls, exit_behavior="error"),
             # Native limits enforce execution bounds without changing the research
             # task or removing tools from the final authorized model request.

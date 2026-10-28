@@ -192,8 +192,9 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
                         synthesis_failed = True
                         # Simulate the old native model loop ending without a
                         # structured output, including its completed checkpoint.
+                        from sec_agent.research_foundation.research_methods import BASIC_RESEARCH_GUIDANCE
                         return create_agent(model=NativeFixtureModel(marker="synthesis-private", replies=[[]]),
-                            tools=[], state_schema=CaseOutputState, name="case_synthesis_report")
+                            tools=[], state_schema=CaseOutputState, system_prompt=BASIC_RESEARCH_GUIDANCE, name="case_synthesis_report")
                     reply = call("submit_research_synthesis", {"synthesis": report}, "synthesis")
                 else:
                     reply = call("submit_case_report", {"report": report}, "report")

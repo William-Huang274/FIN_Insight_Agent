@@ -78,6 +78,8 @@ def research_decision_context(artifacts, current, state, *, question, research_r
 
 
 class ResearchConvergenceState(TypedDict, total=False):
+    operation_result: dict[str, Any]
+    workpaper_review: dict[str, Any]
     authoring_context: dict[str, Any]
     workpaper_confirmation: dict[str, Any]
     confirmation_history: Annotated[list[dict[str, Any]], operator.add]
@@ -131,7 +133,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                                      make_agent, max_parallel_authors=2, existing_state=None, human_feedback=None,
                                      execution_plan=None, hierarchical=False, max_correction_rounds=1,
                                      run_author=None, review_revisions=None, authoring_stages=False,
-                                     initial_lead_decision=None, initial_revisions=None):
+                                     initial_lead_decision=None, initial_revisions=None, operation=None,
+                                     operation_state=None):
     """A current-task graph: authors -> Lead -> research review -> report review.
 
     make_agent reuses native create_agent and current read-only MCP tools. It is
@@ -159,6 +162,11 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         if parsed.action != 'repair' or errors or not review_revisions or existing_state:
             raise ValueError('initial_review_repair_requires_valid_decision_and_independent_confirmation')
     graph = StateGraph(ResearchConvergenceState)
+    if operation is not None:
+        from .research_operation import bind_operation, operation_input
+        operation = bind_operation(operation, artifacts, operation_state or {})
+        if existing_state or initial_lead_decision or execution_plan or authoring_stages:
+            raise ValueError('on_demand_operation_cannot_inherit_legacy_routing')
     plan = ResearchExecutionPlan.model_validate(execution_plan) if execution_plan else None
     depth = plan.depth if plan else "extended"  # old persisted sessions keep their contract
     if depth == "focused" and len(artifacts.catalog()["papers"]) != 1:
@@ -324,6 +332,14 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             # Only the current synthesis/review cross this handoff, not historical
             # review journals or another author's private conversation.
             body['authoring_basis_digest'] = canonical_sha256(writing_basis(state, current))
+        if operation is not None:
+            # Retain real current materials and model judgments, not the old
+            # whole-case obligations or previous correction round's route.
+            body.pop('research_decision_context', None)
+            body.pop('completed_research_reviews', None)
+            body.pop('instruction', None)
+            body['current_operation'] = deepcopy(operation)
+            body['continuation'] = 'Return this operation result to the same parent. No downstream stage is implied.'
         value["messages"] = [HumanMessage(content=json.dumps(body, ensure_ascii=False))]
         # An explicitly retried parent can reach a child whose native loop ended
         # without its required submission. Reopen only that completed child via
@@ -438,7 +454,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             after = artifacts.with_revisions({**state.get("revisions", {}), pid: output})
             changes = workpaper_changes(current.read_paper(pid), after.read_paper(pid))
             output = {**output, "runtime_changes": changes}
-            event("author_" + pid, "outcome", status="submitted_pending_independent_confirmation",
+            event("author_" + pid, "outcome", status="revision_submitted" if operation is not None else "submitted_pending_independent_confirmation",
                 paper_id=pid, runtime_changes=changes)
             updates = {"revisions": {pid: output}, "author_completed": {pid: state["correction_round"]},
                 "artifact_history": [{"actor": "author_" + pid, "correction_round": state["correction_round"],
@@ -544,6 +560,59 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             phase = "case_report_ready_for_human_review"
         return {"phase": phase}
 
+    if operation is not None:
+        roles = {'synthesize': 'synthesis', 'compose': 'writer', 'review_report': 'report_verifier',
+                 'review_synthesis': 'research_verifier', 'revise_workpaper': 'repair',
+                 'review_workpaper': operation['reviewer']}
+        role = roles[operation['action']]
+
+        def seed_operation(_):
+            return operation_input(operation, operation_state or {})
+
+        async def execute_operation(state, config: RunnableConfig):
+            if operation['action'] == 'review_workpaper':
+                current = artifacts.with_revisions(state.get('revisions', {}))
+                agent = make_agent(role, current, paper_id=operation['paper_id'])
+                result = await agent.ainvoke({'messages': [HumanMessage(content=json.dumps({
+                    'question': question, 'current_operation': operation,
+                    'catalog': current.catalog()}, ensure_ascii=False))]}, config)
+                if not result.get('review'):
+                    raise ValueError('workpaper_reviewer_ended_without_submission')
+                return {'workpaper_review': result['review']}
+            if role == 'repair':
+                if run_author is None:
+                    raise ValueError('on_demand_revision_requires_original_author_executor')
+                return await author({**state, 'paper_id': operation['paper_id']}, config)
+            return await invoke(role, state, config)
+
+        def return_operation(state):
+            target = {'synthesize': 'synthesis', 'compose': 'report', 'review_report': 'report_review',
+                      'review_synthesis': 'synthesis_review', 'revise_workpaper': 'revisions',
+                      'review_workpaper': 'workpaper_review'}[operation['action']]
+            output = state[target][operation['paper_id']] if target == 'revisions' else state[target]
+            if target == 'revisions':
+                # The parent's public receipt is not an author's private
+                # conversation. Full author state stays in native revisions.
+                output = {k: v for k, v in output.items() if k != 'author_state'}
+            return {'phase': 'research_operation_returned', 'operation_result': {
+                'action': operation['action'], 'operation_digest': operation['operation_digest'],
+                'basis': deepcopy(operation['basis']), 'review_scope': operation['review_scope'],
+                'input_versions': deepcopy(operation['input_versions']),
+                'locations': deepcopy(operation['locations']), 'paper_id': operation['paper_id'],
+                'output': deepcopy(output), 'output_digest': canonical_sha256(output),
+                'status': 'needs_attention' if state.get('stop_reason') or state.get('unchanged_corrections') else 'submitted',
+                'stop_reason': state.get('stop_reason'), 'next_action': None}}
+
+        graph.add_node('operation_input', seed_operation)
+        graph.add_node('operation', execute_operation)
+        graph.add_node('return_operation', return_operation)
+        graph.add_edge(START, 'operation_input')
+        graph.add_edge('operation_input', 'operation')
+        graph.add_edge('operation', 'return_operation')
+        graph.add_edge('return_operation', END)
+        return graph
+
+    # These automatic successor edges belong only to frozen historical flows.
     graph.add_node("initialize", initialize)
     graph.add_node("lead_decision", actor_node("lead_decision"))
     graph.add_node("apply_lead_repairs", apply_lead_repairs)

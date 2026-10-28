@@ -43,8 +43,8 @@ V12只扩展现有`organization_report_command`：报告命令仍以execution/ch
 
 常规Java测试运行`./mvnw test`。数据库专项需显式提供指向一次性数据库的`FINSIGHT_TASK_DB_TEST_URL`和`FINSIGHT_TASK_DB_TEST_PASSWORD`；夹具只在随机测试schema操作并清理该schema，禁止指向正式数据库。未提供时专项明确跳过，不能据此称数据库迁移验证通过。
 
-## 仍需C/E完成
+## C接入与E待完成
 
-主Agent公开入口装配、替换固定研究/复核/成文后继，以及根任务停止的浏览器到后台传播属于C/E。新增Java内部接口须完成双方代码审阅，再按统一版本开放；BFF现有A2拒绝不支持新交付的行为保持不变。不得借旧`begin_research`绕过独立准入。
+C内部主Agent已可接收这些准入工具，并以单项操作替换新路径固定后继，见[C工程验收](on_demand_operation_acceptance.zh-CN.md)。主Agent公开入口装配以及根任务停止的浏览器到后台传播仍属E。新增Java内部接口须完成双方代码审阅，再按统一版本开放；BFF现有A2拒绝不支持新交付的行为保持不变。不得借旧`begin_research`绕过独立准入。
 
 E使用检索方的新稳定基线，验证真实服务中的所有权、资料权限、取消、恢复、版本展示与导出。此处确定性测试不证明真实模型会合理委派、费用下降或金融研究质量提升；这些须在统一入口上另做授权范围内的实际使用测试。

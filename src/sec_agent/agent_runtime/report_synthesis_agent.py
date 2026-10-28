@@ -565,7 +565,7 @@ financial_semantics_verified=false means not verified, not a failed review; abse
 """
 
 
-def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True, method_instructions="", review_scope="full_report", incomplete_reviewers=None):
+def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True, method_instructions="", review_scope="full_report", incomplete_reviewers=None, on_demand=False):
     lead_author = role == 'lead_writer'
     if lead_author:
         role = 'writer'  # Preserve existing submission/edits and wire formats.
@@ -865,7 +865,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_report_edits(edits: list[ReportTextEdit], runtime: ToolRuntime) -> Command:
-        """Submit 1–24 exact unique text edits atomically, then independent review. Omit chart_index for body, or set it for one chart interpretation. No file/path access or changed chart values. Prefer local edits instead of reproducing the report."""
+        """Submit 1–24 exact unique text edits atomically. Saving does not certify review. Omit chart_index for body, or set it for one chart interpretation. No file/path access or changed chart values. Prefer local edits instead of reproducing the report."""
         if runtime.state.get("request_action") != "revise":
             return output_message(runtime, error="Report edits require a revision request, not an ordinary question.")
         try:
@@ -992,11 +992,24 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         submit = submit_case_answer
     scope_notice = ("\nInvocation scope: selected claims only. Apply the supplied role method within those targets, not its whole-report coverage steps. The verifier method is already fully loaded here; other methods are optional only when necessary to a target. Missing unselected sections are NOT unresolved checks. Only an indispensable unanswered dependency of a selected claim may block its check. completion describes this selected scope, never the whole report. Keep the summary compact and account for every target ID. Submit inspected results with explicit unresolved dependencies; do not infer acceptance from correct arithmetic or the presence of a qualifier."
         if review_scope == "selected_claims" else "")
+    if on_demand:
+        if review_scope == 'selected_claims':
+            scope_notice = '\nCheck the exact selected quotations and necessary dependencies. Missing unselected sections are not unfinished work. Completion applies only to this selection, never the whole report.'
+        if role not in {'synthesis', 'writer', 'verifier'}:
+            raise ValueError('unsupported_on_demand_output_role')
+        # Replace historical role-order assumptions, rather than append a
+        # contradictory instruction below AFTER-review / BEFORE-writer rules.
+        specific = {
+            'synthesis': 'You are the responsible Lead synthesizing the requested current research. Explain what the evidence means for the question, compare explanations and retain decisive conditions and counterevidence. Prior author judgments and reviews are fallible references. Submit this synthesis using submit_research_synthesis; no report or review follows automatically.',
+            'writer': 'You are the same responsible Lead composing or revising the requested report. Organize the answer around the question and useful judgments, with their evidence and decisive conditions. Select and connect current research rather than paste papers or narrate checking history. Use submit_case_report; for local changes use the disclosed edit tools. This submission is an authored artifact, not independent approval.',
+            'verifier': 'Independently inspect the exact version and scope in current_operation. Check evidence use, inference and expression, including necessary dependencies. Prior findings are fallible navigation. Return findings, limitations and genuinely unfinished checks using submit_report_review. A selected-scope check does not certify unselected content; do not revise the author text or trigger another stage.',
+        }[role]
+        specific += ' Read relevant originals using the disclosed tools; preserve source, calculation, subject, period and unit identities. Use actual citation IDs. Methods are available on demand. Return the result to the parent; it decides the next action.'
     from .working_memory_tools import working_memory_tools, WORKING_MEMORY_GUIDANCE
     # Final writing is a stage of this Lead's research, not a new notebook
     # owner. Reuse the existing synthesis namespace; legacy standalone writers
     # and independent reviewers retain their original identities.
-    note_role = 'synthesis' if lead_author or role == 'prepare' else role
+    note_role = 'synthesis' if lead_author or role == 'prepare' or (on_demand and role == 'writer') else role
     notes = working_memory_tools(f"{note_role}:{paper_id or 'report'}")
     report_writing = role == 'writer' and not allow_answers
     draft_middleware = []

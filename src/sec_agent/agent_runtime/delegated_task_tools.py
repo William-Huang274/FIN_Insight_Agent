@@ -131,6 +131,25 @@ def delegation_tools(*, controller, parent_thread_id, parent_run_id, root_budget
     return grants
 
 
+def saved_note_artifact(memory, note_id, version):
+    """One shared exact-version handoff for parent and child workpapers."""
+    if memory is None or not note_id or type(version) is not int or version < 1:
+        raise ToolException('底稿交付需要已保存的note_id和version；不要重新抄写正文')
+    page = memory.read(note_id, version=version)
+    if not page.get('found') or not page.get('is_current'):
+        raise ToolException('指定底稿不是当前保存版本，请读取当前版本后决定')
+    text, offset = page['body'], page['next_offset']
+    while offset is not None:
+        part = memory.read(note_id, version=version, offset=offset)
+        if not part.get('found') or not part.get('is_current'):
+            raise ToolException('底稿版本读取未完成，尚未提交')
+        text += part['body']; offset = part['next_offset']
+    latest = memory.read(note_id)
+    if not latest.get('found') or latest['version'] != version:
+        raise ToolException('底稿在提交期间已更新；已有保存保留，请读取当前版本后决定')
+    return {'kind': 'workpaper', 'id': note_id, 'version': version, 'digest': canonical_sha256(text)}
+
+
 def completion_tool(*, fixed_input, child_thread_id, run_id, memory, access_check):
     """Commit an answer or exact saved note using the existing native tool result."""
     intent = fixed_input['task']['delivery_intent']
@@ -149,20 +168,7 @@ def completion_tool(*, fixed_input, child_thread_id, run_id, memory, access_chec
         else:
             if answer or not note_id or type(version) is not int or version < 1:
                 raise ToolException('底稿交付需要已保存的note_id和version；不要重新抄写正文')
-            page = memory.read(note_id, version=version)
-            if not page.get('found') or not page.get('is_current'):
-                raise ToolException('指定底稿不是当前保存版本，请读取当前版本后决定')
-            text, offset = page['body'], page['next_offset']
-            while offset is not None:
-                part = memory.read(note_id, version=version, offset=offset)
-                if not part.get('found') or not part.get('is_current'):
-                    raise ToolException('底稿版本读取未完成，尚未提交')
-                text += part['body']; offset = part['next_offset']
-            latest = memory.read(note_id)
-            if not latest.get('found') or latest['version'] != version:
-                raise ToolException('底稿在提交期间已更新；已有保存保留，请读取当前版本后决定')
-            artifact = {'kind': 'workpaper', 'id': note_id, 'version': version,
-                        'digest': canonical_sha256(text), 'workspace': child_thread_id,
+            artifact = {**saved_note_artifact(memory, note_id, version), 'workspace': child_thread_id,
                         'readback': {'tool': 'read_delegated_note', 'arguments': {
                             'child_thread_id': child_thread_id, 'note_id': note_id, 'version': version}}}
         access_check()

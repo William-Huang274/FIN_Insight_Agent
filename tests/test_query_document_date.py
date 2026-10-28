@@ -35,3 +35,38 @@ def test_filing_label_date_does_not_erase_two_cash_fact_dates():
     assert query_period_requirements(query)['targets']==expected
     needs=compile_needs(query,plan_query(query,{},policy='conservative.v5'))
     assert [n['period_target'] for n in needs['needs'] if n.get('concept')=='cash_equivalents']==expected
+
+
+@pytest.mark.parametrize('label',[
+    'June 30, 2026 10-Q', '10-Q June 30, 2026',
+    '2026-06-30 10-Q', '2026年6月30日的10-Q', '10-Q 2026年6月30日'])
+def test_document_date_word_order_and_language_share_selector(label):
+    from retrieval.fact_period_matching import query_period_requirements
+    from retrieval.query_document_date import mask_label_dates
+    query=f'Using Cedar {label}, compare cash as of 2025-12-31 and 2024-12-31.'
+    plan=plan_query(query,{},policy='conservative.v5')
+    assert plan['constraint']['document_date']=='2026-06-30'
+    assert query_period_requirements(query)['targets']==[
+        {'kind':'date','value':'2025-12-31'},{'kind':'date','value':'2024-12-31'}]
+    masked=mask_label_dates(query)
+    assert len(masked)==len(query) and masked.index('2025-12-31')==query.index('2025-12-31')
+    rows={'right':{'form':'10-Q','period_end':'2026-06-30','publication_date':'2026-08-05'},
+          'wrong':{'form':'10-Q','period_end':'2025-06-30','publication_date':'2025-08-06'}}
+    assert document_constraint_states(rows,plan)=={'right':'match','wrong':'mismatch'}
+
+
+@pytest.mark.parametrize('query',[
+    'June 30, 2026 and June 30, 2025 balances in the 10-Q',
+    'June 30, 2026 10-Q and June 30, 2025 10-Q',
+    'February 30, 2026 10-Q', '2026年2月30日的10-Q',
+    'June 30, 2026 10-Q/A'])
+def test_dates_cannot_cross_prose_or_select_one_of_multiple_filing_labels(query):
+    assert document_date(query,'10-Q') is None
+
+
+def test_amendment_label_is_preserved_and_its_date_is_not_a_fact_date():
+    from retrieval.query_document_date import mask_label_dates
+    query='June 30, 2026 10-Q/A, cash as of December 31, 2025'
+    assert document_date(query,'10-Q/A')['value']=='2026-06-30'
+    assert 'June 30, 2026' not in mask_label_dates(query)
+    assert 'December 31, 2025' in mask_label_dates(query)

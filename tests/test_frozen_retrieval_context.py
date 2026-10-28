@@ -55,3 +55,45 @@ def test_unknown_retained_document_cannot_silently_shrink_scope(tmp_path):
     index=corpus(tmp_path)
     with pytest.raises(ValueError,match='retained_document_missing'):
         FrozenRetrievalContext(tmp_path/'index.json',tmp_path,index=index,retained_documents={'absent'})
+
+
+def test_lazy_query_switch_preserves_verified_rows_and_full_planning_catalog(tmp_path):
+    index=corpus(tmp_path)
+    with closing(FrozenRetrievalContext(tmp_path/'index.json',tmp_path,index=index)) as eager:
+        expected=dict(eager.rows);metadata=dict(eager.source_metadata)
+    with closing(FrozenRetrievalContext(tmp_path/'index.json',tmp_path,index=index,lazy_structures=True)) as lazy:
+        assert not lazy.rows and lazy.source_metadata==metadata
+        for selected,ids in [({'d1'},{'n1'}),({'d2'},{'n2'}),({'d1','d2'},{'n1','n2'}),(set(),set())]:
+            lazy.select_documents(selected)
+            assert lazy.rows=={n:expected[n] for n in ids}
+            assert set(lazy.neighbors)==ids and set(lazy.origins)==selected
+            assert lazy.source_metadata==metadata
+
+
+def test_lazy_selection_cannot_expand_declared_publication(tmp_path):
+    index=corpus(tmp_path)
+    with closing(FrozenRetrievalContext(tmp_path/'index.json',tmp_path,index=index,
+                                       retained_documents={'d1'},lazy_structures=True)) as lazy:
+        assert 'd2' in lazy.source_metadata
+        with pytest.raises(ValueError,match='selection_outside_release'):lazy.select_documents({'d2'})
+        assert not lazy.rows
+
+
+def test_lazy_selection_checks_payload_again_and_discards_partial_population(tmp_path,monkeypatch):
+    index=corpus(tmp_path)
+    with closing(FrozenRetrievalContext(tmp_path/'index.json',tmp_path,index=index,lazy_structures=True)) as lazy:
+        read=lazy._document
+        def changed(document):
+            if document=='d2':raise ValueError('offline_context_document_changed')
+            return read(document)
+        monkeypatch.setattr(lazy,'_document',changed)
+        with pytest.raises(ValueError,match='document_changed'):lazy.select_documents({'d1','d2'})
+        assert not lazy.rows and not lazy.neighbors and not lazy.origins
+        assert set(lazy.source_metadata)=={'d1','d2'}
+
+
+def test_lazy_switch_checks_storage_generation(tmp_path):
+    index=corpus(tmp_path)
+    with closing(FrozenRetrievalContext(tmp_path/'index.json',tmp_path,index=index,lazy_structures=True)) as lazy:
+        (tmp_path/'navigation.sqlite').write_bytes(b'changed-navigation')
+        with pytest.raises(ValueError,match='generation_changed'):lazy.select_documents({'d1'})

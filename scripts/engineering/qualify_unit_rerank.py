@@ -17,6 +17,16 @@ import psutil
 def digest(path):return sha256(Path(path).read_bytes()).hexdigest()
 
 
+def publication_rows(records,allowed):
+    """Retain release rows and every document with any unpublished parent.
+
+    Keeping the latter set preserves rejection of partially published sources
+    without retaining all other full-library record dictionaries in memory.
+    """
+    return ([r for r in records if r['node_id'] in allowed],
+            {r['document_id'] for r in records if r['node_id'] not in allowed})
+
+
 def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
     from scripts.engineering.frozen_retrieval_context import FrozenRetrievalContext
     from retrieval.semantic_unit_index import rank,validate
@@ -33,22 +43,27 @@ def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
     model='qwen3.7-text-rerank';instruction=configured_instruction(model)
     boundary=configured_boundary('research.v2',SimpleNamespace(model=model,instruction=instruction),'bounded.v1')
     index=json.loads(index_path.read_bytes());publication=json.loads((overlay/'overlay.json').read_bytes())
-    if canonical_digest(index)!=publication['snapshot_digest']:raise ValueError('unit_quality_snapshot_changed')
-    allowed=set(publication['parent_scope']);records=[r for r in index['records'] if r['node_id'] in allowed]
+    index_digest=canonical_digest(index)
+    if index_digest!=publication['snapshot_digest']:raise ValueError('unit_quality_snapshot_changed')
+    allowed=set(publication['parent_scope'])
+    records,unpublished_documents=publication_rows(index['records'],allowed)
     validate(overlay,publication['descriptor'],records,index['model'])
     metadata=json.loads(metadata_path.read_bytes());queries=json.loads(queries_path.read_bytes())['questions']
     output.mkdir(parents=True,exist_ok=False);jobs=[];total_bytes=0;total_candidates=0
     statistics=PublishedLexicalStatistics()
     with closing(FrozenRetrievalContext(index_path,contexts,index=index,
-            retained_documents={r['document_id'] for r in records})) as adapter:
+            retained_documents={r['document_id'] for r in records},lazy_structures=True)) as adapter:
+        # The adapter has verified the full snapshot and catalog. Retain the
+        # selected release rows and explicit incomplete-document guard only.
+        del index
         metadata.update(adapter.source_metadata)
         for q in queries:
             import gc
             gc.collect()
             if psutil.virtual_memory().available<800*2**20:raise RuntimeError('unit_quality_memory_guard')
             documents,plan=select_planned(metadata,plan_query(q['query'],metadata,policy='conservative.v5'))
-            required={r['node_id'] for r in index['records'] if r['document_id'] in documents}
-            if required-allowed:raise ValueError('unit_quality_scope_not_fully_published')
+            if set(documents)&unpublished_documents:raise ValueError('unit_quality_scope_not_fully_published')
+            adapter.select_documents(documents)
             rows=[r for r in adapter.rows.values() if r['parent_document_id'] in documents]
             wanted=resolve_scope(q['query'],plan);scope_receipt=None
             if wanted:rows,scope_receipt=select_scoped(rows,wanted)
@@ -73,7 +88,16 @@ def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
                 'metadata':{d:metadata[d] for d in {r['parent_document_id'] for r in candidates}}}
             path=output/f'{q["id"]}.input.json';path.write_text(json.dumps(job,ensure_ascii=False),encoding='utf8')
             jobs.append({'id':q['id'],'input_sha256':digest(path)})
-            print(json.dumps({'prepared':len(jobs),'total':len(queries),'id':q['id'],'candidates':len(candidates)}),flush=True)
+            memory=psutil.Process().memory_info()
+            print(json.dumps({'prepared':len(jobs),'total':len(queries),'id':q['id'],'candidates':len(candidates),
+                'resident_documents':len(adapter.origins),'resident_parent_rows':len(adapter.rows),
+                'rss_bytes':memory.rss,'peak_working_set_bytes':getattr(memory,'peak_wset',None),
+                'available_bytes':psutil.virtual_memory().available}),flush=True)
+            # Do not retain the previous query's bodies/structures across the
+            # next memory guard. The immutable catalog and bounded lexical
+            # statistics remain shared; scope and provider inputs are unchanged.
+            del job,texts,candidates,entry,receipt,context_receipt,rows
+            adapter.select_documents(set())
     root=Path(__file__).resolve().parents[2]
     code={str(p):digest(p) for folder in ('src/retrieval','src/sec_agent/research_foundation') for p in (root/folder).glob('*.py')}
     for name in ('qualify_unit_rerank.py','frozen_retrieval_context.py'):
@@ -82,7 +106,7 @@ def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
         'instruction':instruction,'relevance_boundary':boundary.artifact if boundary else None,
         'pipeline':pipeline_identity('research.v2',model,instruction,'bounded.v1'),
         'inputs':{str(p):digest(p) for p in (index_path,overlay/'overlay.json',contexts/'context.json',metadata_path,queries_path)},
-        'index_digest':canonical_digest(index),'TokenBudgetBasis':{
+        'index_digest':index_digest,'TokenBudgetBasis':{
             'purpose':'Verify original-unit recall and complete production structural scoring before final page selection',
             'input_scale':{'queries':len(jobs),'candidate_occurrences':total_candidates,'utf8_bytes':total_bytes},
             'required_output':'Full ranks, scores, usage and final selected IDs for reviewed relevance evaluation',

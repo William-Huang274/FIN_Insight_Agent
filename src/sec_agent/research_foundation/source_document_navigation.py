@@ -44,7 +44,8 @@ class SourceDocumentRequest(BaseModel):
         'sec_cover.v2 explicitly enables conservative SEC cover form recovery and conflict detection.')
     organization_filter: OrganizationSourceFilter | None = Field(default=None, description=(
         'Organization catalog/search only. Copy exact issuer_id, company_name, form or period_end '
-        'from catalog organization_metadata. Conditions are AND; company_name ignores case only. '
+        'from catalog organization_metadata. Conditions are AND; company_name accepts verified legal-name, '
+        'spacing, punctuation and legal-suffix aliases; issuer IDs are never merged. '
         'period_end is the reporting period end, never filing/publication date or inferred fiscal year. '
         'Unknown original metadata is excluded and counted. entity_id separately seeds graph relations. '
         'With this explicit filter natural-language constraints do not override these fields.'))

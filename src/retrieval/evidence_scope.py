@@ -5,10 +5,11 @@ import re
 from .catalog_company_identity import aliases_for, name_key
 
 POLICY = 'original-evidence-scope.v1'
-STATEMENT = re.compile(r'(?im)^[ \t]*(?:CONDENSED[ \t]+)?(?P<consolidated>CONSOLIDATED[ \t]+)?'
-    r'(?:BALANCE[ \t]+SHEETS?|STATEMENTS?[ \t]+OF[ \t]+(?:CASH[ \t]+FLOWS?|INCOME|OPERATIONS|EARNINGS))[^\n]*$')
+STATEMENT = re.compile(r'(?im)^[ \t]*(?:CONDENSED\s+)?(?P<consolidated>CONSOLIDATED\s+)?'
+    r'(?:BALANCE\s+SHEETS?|STATEMENTS?\s+OF\s+(?:CASH\s+FLOWS?|INCOME|OPERATIONS|EARNINGS))'
+    r'[ \t]*(?:\((?:UNAUDITED|AUDITED)\))?[ \t]*$')
 TABLE = re.compile(r'\[TABLE:[^\n]*\].*?\[/TABLE\]', re.S)
-ITEM = re.compile(r'(?im)^[ \t]*Item[ \t]+(?P<number>\d+\.\d+)[. \t]+[^\n]+$')
+ITEM = re.compile(r'(?im)^[ \t]*Item[ \t]+(?P<number>\d+\.\d+)[. \t]*(?:\r?\n[ \t]*)?[^\n]+$')
 
 
 def source_scopes(text):
@@ -24,8 +25,8 @@ def source_scopes(text):
         if table is None or table.start()-heading.end()>220:
             continue
         between = text[heading.end():table.start()]
-        if any(s.strip(' \t\r\u200b\ufeff') and not (s.strip().startswith('(') and s.strip().endswith(')'))
-               for s in between.splitlines()):
+        from .table_captions import is_table_caption
+        if any(not is_table_caption(s) for s in between.splitlines()):
             continue
         title = heading.group().casefold()
         kind = 'balance_sheet' if 'balance' in title else 'cash_flow' if 'cash' in title else 'income_statement'
@@ -95,9 +96,9 @@ def covers_interval(scopes, start, end):
 
 
 def plan_scope(query, query_plan=None):
-    """Only unambiguous positive requests; negations/comparisons stay broad."""
-    if re.search(r'不是|并非|而非|而不是|\b(?:not|rather than|instead of|versus|vs)\b',query,re.I):
-        return None
+    """Extract positive requirements while retaining exclusions separately."""
+    from .query_requirements import positive_view
+    query, _ = positive_view(query)
     events = []
     if re.search(r'业绩(?:发布|公告)|财报发布|\bearnings (?:release|announcement|8-k)\b',query,re.I):
         events.append('earnings_release')

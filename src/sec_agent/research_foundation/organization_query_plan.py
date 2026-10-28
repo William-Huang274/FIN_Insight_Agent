@@ -76,6 +76,11 @@ def _report_owners(query, aliases, *, allow_comparison=False, compatible=False, 
 def plan_query(query, metadata, *, policy='conservative.v1'):
     if policy not in {'conservative.v1', 'conservative.v2', 'conservative.v3', 'conservative.v4', 'conservative.v5'}:
         raise ValueError('unsupported_organization_query_plan')
+    original_query = query
+    exclusions = []
+    if policy == 'conservative.v5':
+        from retrieval.query_requirements import positive_view
+        query, exclusions = positive_view(query)
     aliases, names = {}, {}
     named_issuers = {}
     from retrieval.catalog_company_identity import aliases_for, name_key, owners_for_row
@@ -173,6 +178,10 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
         form_pattern, query, re.IGNORECASE)))
     forms = [re.sub(r'^(10|8)([KQ])', r'\1-\2', f) for f in forms]
     forms = sorted(set(forms))
+    excluded_forms = sorted({re.sub(r'^(10|8)([KQ])', r'\1-\2', m.group().upper().replace(' ', ''))
+        for span in exclusions for m in re.finditer(form_pattern, span['text'], re.I)})
+    if excluded_forms:
+        constraint['excluded_forms'] = excluded_forms
     if len(forms) == 1:
         constraint['form'] = forms[0]
         evidence.append({'field': 'form', 'matched_query_text': forms, 'basis': 'explicit_filing_form'})
@@ -193,6 +202,10 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
     for years in re.findall(r'((?:19|20)\d{2})\s*(?:and|versus|vs|to|[、/–—-]|与|和|及|至)\s*'
         r'((?:19|20)\d{2})\s*(?:财年|年)?\s*(?:annual\s+reports?|年报|年度报告|(?:Form\s+)?10-?K)', query, re.I):
         report_years.update(years)
+    if policy == 'conservative.v5':
+        report_years.update(re.findall(
+            r'(?:\bannual\s+report|年报|年度报告|\b10-?K(?:\s*/A)?)\s*(?:for\s+)?(?:FY\s*|fiscal\s+(?:year\s+)?)?'
+            r'((?:19|20)\d{2})(?![\d-])', query, re.I))
     if len(report_years) == 1:
         constraint['annual_report_year'] = next(iter(report_years))
         evidence.append({'field':'annual_report_year', 'basis':'explicit_report_year_with_calendar_cover_validation',
@@ -217,6 +230,20 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
         unresolved = [v for v in unresolved if v != 'year_or_publication_date_not_mapped_to_period_end']
     result = {'policy': policy, 'constraint': constraint, 'evidence': evidence,
               'unresolved': unresolved, 'unknown_metadata_retained': True}
+    if policy == 'conservative.v5':
+        entity_ids={}
+        for row in metadata.values():
+            if row.get('issuer_id'):
+                entity_ids.setdefault(row['issuer_id'],set()).update(
+                    (v['scheme'],v['identifier']) for v in row.get('fact_entity_identifiers',[]))
+        # Conflicting IDs under one catalog issuer remain unresolved. No
+        # borrowing the largest/most frequent context from a joint filing.
+        result['fact_entity_by_issuer']={issuer:[{'scheme':scheme,'identifier':identifier}]
+            for issuer,values in entity_ids.items() if len(values)==1 for scheme,identifier in values}
+    if exclusions:
+        result['query_requirements'] = {'original_query':original_query,
+            'positive_constraint_view':query, 'exclusions':exclusions,
+            'semantics':'excluded_terms_do_not_create_positive_constraints_original_query_retained'}
     if policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'}:
         result['issuer_mentions'] = mentions
         result['issuer_matching'] = 'catalog_name_compatibility_longest_mention.v2'
@@ -272,6 +299,8 @@ def select_planned(metadata, plan):
         for field in ('form', 'period_end'):
             if field in wanted:
                 checks.append(row.get(field) == wanted[field] if row.get(field) else None)
+        if wanted.get('excluded_forms'):
+            checks.append(row['form'] not in wanted['excluded_forms'] if row.get('form') else None)
         if 'report_kind' in wanted:
             kind = REPORT_KINDS.get(row.get('form'))
             checks.append(kind == wanted['report_kind'] if kind else None)

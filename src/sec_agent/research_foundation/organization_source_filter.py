@@ -90,6 +90,12 @@ def source_metadata_details(bundle):
         if key := original_filing_key(bundle['source'].get('url')):
             descriptor['original_filing_key'] = key
         metadata = json.loads(bundle['source']['metadata'])
+        cik = metadata.get('cik')
+        if (not recovered_names or len(recovered_names)==1) and isinstance(cik,(str,int)) and not isinstance(cik,bool):
+            digits=str(cik).strip()
+            if digits.isascii() and digits.isdigit() and 0<len(digits)<=10 and int(digits)>0:
+                descriptor['fact_entity_identifiers']=[{'scheme':'http://www.sec.gov/CIK',
+                    'identifier':str(int(digits)), 'basis':'original_source_metadata_cik'}]
         # A discovery catalogue is a known evidence role, not an unknown
         # filing form. Keep this original marker; never infer it from a title
         # or from absence of an article body in an arbitrary document.
@@ -117,11 +123,13 @@ def select_documents(metadata, constraint):
     """Conjunction over exact original fields; unknown stays explicitly unknown."""
     wanted = constraint.model_dump(mode='json', exclude_none=True)
     matches, unknown = set(), 0
+    from retrieval.catalog_company_identity import aliases_for, name_key
     for document, actual in metadata.items():
-        if any(actual.get(key) is None for key in wanted):
+        verified_names = [n for n in [actual.get('company_name'), *(actual.get('verified_company_names') or [])] if n]
+        if any((not verified_names if key == 'company_name' else actual.get(key) is None) for key in wanted):
             unknown += 1
             continue
-        if all((actual[key].casefold() == value.casefold() if key == 'company_name'
+        if all((name_key(value) in {name_key(a) for n in verified_names for a in aliases_for({'company_name':n})} if key == 'company_name'
                 else actual[key] == value) for key, value in wanted.items()):
             matches.add(document)
     return matches, {'filter': wanted, 'scope_sources': len(metadata),

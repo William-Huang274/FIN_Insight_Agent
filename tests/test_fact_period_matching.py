@@ -28,6 +28,32 @@ def test_uncertain_and_publication_periods_do_not_become_fact_periods():
     assert not prose_periods('Cash and cash equivalents as of December 31, 2025:\n[TABLE: original]\n100\n[/TABLE]\nA separate 20 percent fee.')
 
 
+def test_period_comparisons_and_fiscal_quarters_keep_explicit_identity():
+    from retrieval.fact_period_matching import query_period_requirements
+    assert query_period_requirements('Cash as of 2024-12-31 and 2025-12-31')['targets']==[
+        {'kind':'date','value':'2024-12-31'},{'kind':'date','value':'2025-12-31'}]
+    assert query_period_requirements('Revenue from 2025-01-01 to 2025-06-30')['targets']==[
+        {'kind':'duration','start':'2025-01-01','end':'2025-06-30'}]
+    assert query_period_requirements('Revenue FY2025 Q1')['targets']==[
+        {'kind':'fiscal_quarter','fiscal_year':'2025','quarter':1}]
+    assert query_period_requirements('Published 2025-06-30, cash disclosed on 2025-07-01')['targets']==[]
+
+
+def test_fact_entity_must_match_an_explicit_identifier_before_period_preference():
+    period={'kind':'date','value':'2025-12-31'}
+    evidence={'concept':'cash_equivalents','role':'balance_as_of','period':period,
+        'entity':'00000123','entity_scheme':'http://www.sec.gov/CIK'}
+    row={'content':'Cash 10','source_structure':{'period_evidence':[evidence]}}
+    need={'concept':'cash_equivalents','owner':{'issuer_id':'I::alpha'}}
+    assert match_period(row,need,period)=='unknown'
+    need['owner']['fact_entity_identifiers']=[{'identifier':'456','scheme':'http://www.sec.gov/CIK'}]
+    assert match_period(row,need,period)=='unknown'
+    need['owner']['fact_entity_identifiers']=[{'identifier':'123','scheme':'https://www.sec.gov/CIK'}]
+    assert match_period(row,need,period)=='match'
+    evidence['entity_scheme']='different-identifier-system'
+    assert match_period(row,need,period)=='unknown'
+
+
 def test_markdown_headers_bind_columns_not_document_year():
     text='Published 2026\n| Metric | 2025-12-31 | 2024-12-31 |\n| --- | --- | --- |\n| Cash and cash equivalents | 100 | 90 |\n'
     observed=table_periods(text,markdown_tables(text))

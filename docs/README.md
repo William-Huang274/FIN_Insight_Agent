@@ -17,6 +17,7 @@ FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工�
 | [第一版验收指导](product/first_release_acceptance.zh-CN.md) · [共同基线与执行计划](engineering/first_release_acceptance_execution.zh-CN.md) | 以联调开始状态为基线，按工程、RAG、新研究、多轮交互、独立验证和收口执行；区分已验与待验、部署责任及真实产品入口 |
 | [Java / Python 独立集成候选](engineering/java_python_release_candidate.zh-CN.md) | 固定双方提交、合并依赖、历史回读修复、真实服务综合验收及放行前缺口 |
 | [组织并发与检索质量验收](engineering/organization_capacity_and_retrieval_qualification.zh-CN.md) | 多身份真实服务压力、网页与 Agent 检索、新题召回、索引版本和新查询向量；分阶段记录实测边界与简历指标 |
+| [组织检索查询与评测一致性](engineering/retrieval_query_contract.zh-CN.md) | 查询否定、公司主题、事实期间与主体、表格附属上下文、在线离线共同候选处理及完整分数诊断 |
 | [历史案例应用验收](engineering/historical_application_scenarios.zh-CN.md) | 固定 runtime 基线，复用旧案例验证 Java/Python 资料、向量与知识库路径；只读缓存、逐场景证据和待接权限边界 |
 | [组织授权混合检索](engineering/organization_hybrid_retrieval.zh-CN.md) | 向量与 BM25 的授权前置、固定版本、范围缓存；历史无付费通道及可选冻结发布/新查询接入 |
 | [结构化 SQL 与数据卡验收](engineering/structured_sql_acceptance.zh-CN.md) | 历史公司/期间/单位、固定快照、修订与并发写入、SQL 回滚及 Java 重启；无付费调用 |

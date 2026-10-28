@@ -74,9 +74,23 @@ def compile_needs(query, plan):
         from .financial_query_needs import compile_financial_needs
         result = compile_financial_needs(query, plan, result)
         if plan.get('policy') == 'conservative.v5':
-            from .fact_period_matching import query_period, POLICY as PERIOD_POLICY
+            for need in result['needs']:
+                owner=need.get('owner')
+                if owner and (identifiers:=plan.get('fact_entity_by_issuer',{}).get(owner.get('issuer_id'))):
+                    need['owner']={**owner,'fact_entity_identifiers':identifiers}
+            from .fact_period_matching import query_period, query_period_requirements, POLICY as PERIOD_POLICY
             result['period_policy'] = PERIOD_POLICY
             result['period_target'] = query_period(query)
+            result['period_requirements'] = query_period_requirements(query)
+            targets = result['period_requirements']['targets']
+            if len(targets)>1:
+                expanded=[]
+                for need in result['needs']:
+                    for target in targets:
+                        expanded.append({**need,'id':f'need-{len(expanded)+1}','period_target':target})
+                if len(expanded)>32:
+                    raise ValueError('organization_period_needs_exceed_32')
+                result['needs']=expanded
         return result
     return result
 
@@ -104,7 +118,7 @@ def interleave(channels, limit=None):
     return result
 
 
-def lexical_candidates(path, records, needs, metadata, *, population_cache=None, capture_trace=False):
+def lexical_candidates(path, records, needs, metadata, *, population_cache=None, capture_trace=False, trace_sink=None):
     from .published_lexical_index import scores_from_identities
     rankings, receipts = [], []
     for need in needs['needs']:
@@ -132,10 +146,14 @@ def lexical_candidates(path, records, needs, metadata, *, population_cache=None,
                 -float(scores[i]), scoped[i]['node_id']))[:48]
             routes.append([scoped[i]['node_id'] for i in ranked])
             if capture_trace:
+                full_receipt = trace_sink(need['id'], route_number, (
+                    {'node_id':scoped[i]['node_id'], 'score':float(scores[i]), 'rank':rank+1}
+                    for rank, i in enumerate(raw_order))) if trace_sink is not None else None
                 traces.append({'route':route_number, 'terms':terms, 'population_count':len(scoped),
                 'population_sha256':sha256(json.dumps([(r['node_id'],r['content_sha256'],
                     r['lexical_input_sha256']) for r in scoped], separators=(',', ':')).encode()).hexdigest(),
                 'matched_count':len(overlap), 'trace_limit':96, 'trace_truncated':len(raw_order)>96,
+                **({'full_raw_bm25_artifact':full_receipt} if full_receipt is not None else {}),
                 'raw_bm25': [{'node_id':scoped[i]['node_id'], 'score':float(scores[i]), 'rank':rank+1}
                              for rank,i in enumerate(raw_order[:96])],
                 'selected_before_interleave':routes[-1],
@@ -190,7 +208,7 @@ def select_coverage(rows, needs, lane_receipts, metadata):
         period_states = {}
         if needs.get('period_policy'):
             from .fact_period_matching import match_period
-            period_states = {r['node_id']:match_period(r,need,needs['period_target']) for r in eligible}
+            period_states = {r['node_id']:match_period(r,need,need.get('period_target',needs['period_target'])) for r in eligible}
             # Prefer a positively associated fact. Unknown and other-period
             # fragments retain their relative order and remain in the result.
             eligible.sort(key=lambda r:period_states[r['node_id']]!='match')

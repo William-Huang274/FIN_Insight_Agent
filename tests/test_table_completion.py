@@ -117,7 +117,13 @@ def test_candidate_adapter_only_reads_scoped_chunks_and_rechecks_revocation(monk
     assert calls==['0'] and result[0]['table_completion']['status']=='context_complete'
     calls.clear()
     result,_=proof.complete_tables([rows[1]],[proof.rows['1']],{})
+    # Header lacks the business metric, but is in the SAME authorized original.
+    assert calls==['0'] and result[0]['table_completion']['status']=='context_complete'
+    calls.clear()
+    original=proof.rows.pop('0')
+    result,_=proof.complete_tables([rows[1]],[proof.rows['1']],{})
     assert not calls and result[0]['table_completion']['status']=='incomplete'
+    proof.rows['0']=original
     def revoke(*args):
         value=materialize(*args);state['active']=False;return value
     proof.materialize=revoke
@@ -171,10 +177,24 @@ def test_intervening_table_prevents_attaching_later_matching_note():
     assert not any(s['role']=='marked_footnote' for s in dep['required'])
 
 
-def test_unit_outside_verified_table_stays_unresolved():
+def test_explicit_immediate_unit_caption_binds_but_surrounding_prose_does_not():
     from retrieval.table_dependencies import dependencies
     text,t=geometry_rows([['Description','2025'],['Cash','120']],prefix='USD millions\n')
+    result=dependencies(text,[t])[0]
+    assert not result['unresolved']
+    assert any(s['role']=='unit_statement' for s in result['required'])
+    text,t=geometry_rows([['Description','2025'],['Cash','120']],prefix='Other tables are in USD millions\n')
     assert dependencies(text,[t])[0]['unresolved']==['unit_not_explicitly_bound']
+
+
+def test_contiguous_plain_marked_note_is_bound_to_referencing_row():
+    from retrieval.table_dependencies import dependencies
+    text,t=geometry_rows([['USD millions','2025'],['Cash (a)','120']])
+    text+='\n(a) Restricted cash is excluded.\n'
+    dep=dependencies(text,[t])[0]
+    note=next(s for s in dep['required'] if s['role']=='marked_footnote')
+    assert text[note['source_char_start']:note['source_char_end']]=='(a) Restricted cash is excluded.'
+    assert not dep['unresolved']
 
 
 def test_parenthesized_negative_values_are_not_footnote_markers():

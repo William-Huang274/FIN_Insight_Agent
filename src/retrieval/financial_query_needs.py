@@ -20,6 +20,14 @@ TERM_GROUPS = {
                       ['maturity','maturities','mature','matures','matured','到期']],
 }
 # Each tuple is a distinct evidence need, not a bag of interchangeable facts.
+EXTENDED_CONCEPTS = (
+    ('revenue', r'收入|营收|\brevenues?\b|\bnet sales\b', 'revenue revenues sales 收入 营收'),
+    ('operating_income', r'营业利润|经营利润|\boperating (?:income|profit)\b', 'operating income profit 营业利润 经营利润'),
+    ('net_income', r'净利润|净收益|\bnet (?:income|earnings|profit)\b', 'net income earnings profit 净利润 净收益'),
+    ('gross_margin', r'毛利率|\bgross margin\b', 'gross margin 毛利率'),
+    ('accounts_receivable', r'应收账款|\baccounts receivable\b', 'accounts receivable 应收账款'),
+    ('inventory', r'存货|\binventor(?:y|ies)\b', 'inventory inventories 存货'),
+)
 CONCEPTS = (
     ('cash_equivalents', r'现金(?:及|和|与)?现金等价物|现金等价物|\bcash(?: and cash)? equivalents\b',
      'cash equivalents 现金 现金等价物'),
@@ -39,8 +47,9 @@ CONCEPTS = (
 )
 
 
-def concepts(text):
-    found = [(name, words, m.start()) for name, pattern, words in CONCEPTS
+def concepts(text, *, extended=True):
+    vocabulary = (*EXTENDED_CONCEPTS, *CONCEPTS) if extended else CONCEPTS
+    found = [(name, words, m.start()) for name, pattern, words in vocabulary
              if (m := re.search(pattern, text, re.I))]
     if re.search(r'到期|\bexpir(?:e|es|ed|ation)\b|\bmatur(?:ity|ities|e|es|ed)\b', text, re.I):
         if any(n == 'repurchase_authorization' for n, _, _ in found):
@@ -53,10 +62,16 @@ def concepts(text):
 
 
 def compile_financial_needs(query, plan, legacy):
-    found = concepts(query)
+    positive = query
+    exclusions = []
+    if plan.get('policy') == 'conservative.v5':
+        from .query_requirements import positive_view
+        positive, exclusions = positive_view(query)
+    extended = plan.get('policy') == 'conservative.v5'
+    found = concepts(positive, extended=extended)
     if plan.get('policy') == 'conservative.v5':
         from .evidence_scope import plan_scope
-        scope = plan_scope(query)
+        scope = plan_scope(positive)
         if scope and scope.get('event_type') == ['earnings_release']:
             # An explicit earnings announcement needs its event topic, not
             # just shared press-release/date/exhibit boilerplate. Preserve
@@ -78,13 +93,28 @@ def compile_financial_needs(query, plan, legacy):
     if len(owners) > 1:
         for i, mention in enumerate(mentions):
             end = mentions[i+1]['start'] if i+1 < len(mentions) else len(query)
-            local = concepts(query[mention['end']:end])
+            local = concepts(query[mention['end']:end], extended=extended)
             if len(mention['issuer_ids']) == 1 and local:
                 per_owner.setdefault(mention['issuer_ids'][0], []).extend(local)
     scoped = all(o and o.get('issuer_id') in per_owner for o in owners)
+    literal_clauses = {}
+    if plan.get('policy') == 'conservative.v5' and len(owners) > 1:
+        from .query_requirements import owner_clauses
+        literal_clauses = owner_clauses(positive, mentions)
+        scoped = all(o and o.get('issuer_id') in literal_clauses for o in owners)
     needs = []
     for owner in owners:
-        choices = per_owner[owner['issuer_id']] if scoped else found
+        clause = ' '.join(literal_clauses[owner['issuer_id']]) if scoped and literal_clauses else None
+        choices = concepts(clause, extended=extended) if clause is not None else per_owner[owner['issuer_id']] if scoped else found
+        if clause is not None and not choices:
+            # Preserve an unknown owner's full topic as its own literal need.
+            # It cannot inherit a different owner's recognized financial fact.
+            from .organization_search_needs import lexical_surfaces
+            routes, translations = lexical_surfaces(clause)
+            needs.append({'id':f'need-{len(needs)+1}', 'text':clause, 'owner':owner,
+                'concept':None, 'lexical_routes':routes, 'translations':translations,
+                'interpretation':'unrecognized_owner_topic_preserved_literal'})
+            continue
         seen = set()
         for name, terms, _ in choices:
             if name in seen:
@@ -96,10 +126,38 @@ def compile_financial_needs(query, plan, legacy):
                 'term_groups':TERM_GROUPS.get(name, [primary]),
                 'lexical_routes':[primary, list(dict.fromkeys(tokenize(query)))], 'translations':[],
                 'period_state':'requires_original_fact_date_or_table_column_verification'})
+        if extended:
+            # A recognized measure must not erase an independent unknown
+            # topic. Split only explicit conjunctions outside known phrases
+            # ("cash and cash equivalents" is one concept, not two clauses).
+            text = clause if clause is not None else positive
+            if clause is None:
+                chars = list(text)
+                for mention in mentions:
+                    chars[mention['start']:mention['end']] = ' ' * (mention['end']-mention['start'])
+                text = ''.join(chars)
+            spans = [(m.start(), m.end()) for _, pattern, _ in (*EXTENDED_CONCEPTS, *CONCEPTS)
+                     for m in re.finditer(pattern, text, re.I)]
+            cuts = [m for m in re.finditer(r'\band\b|\bas well as\b|以及|同时|并且', text, re.I)
+                    if not any(a <= m.start() < b for a, b in spans)]
+            start = 0
+            for end, after in [*( (m.start(), m.end()) for m in cuts), (len(text), len(text))]:
+                topic = text[start:end].strip(' ,;，；。.')
+                topic = re.sub(r'^(?:compare|comparison of|find|retrieve|show|比较|对比|找出)\s*', '', topic, flags=re.I).strip()
+                start = after
+                if not cuts or not topic or concepts(topic):
+                    continue
+                from .organization_search_needs import lexical_surfaces
+                routes, translations = lexical_surfaces(topic)
+                if routes:
+                    needs.append({'id':f'need-{len(needs)+1}', 'text':topic, 'owner':owner,
+                        'concept':None, 'lexical_routes':routes, 'translations':translations,
+                        'interpretation':'unrecognized_conjoined_topic_preserved_literal'})
     if len(needs) > 32:
         raise ValueError('organization_financial_needs_exceed_32')
     return {**legacy, 'policy':POLICY, 'needs':needs,
-        'financial_concepts':sorted({n['concept'] for n in needs}),
+        'financial_concepts':sorted({n['concept'] for n in needs if n.get('concept')}),
+        'excluded_requirements':exclusions,
         'decomposition':'explicit_owner_financial_concepts' if scoped else 'financial_concepts',
         'coverage_semantics':'candidate_routes_not_answer_sufficiency',
         'translation_scope':'versioned_financial_navigation_variants_not_fact_equivalence'}

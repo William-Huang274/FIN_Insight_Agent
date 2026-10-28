@@ -64,6 +64,34 @@ def query_period(query):
     return target
 
 
+def query_period_requirements(query):
+    """Typed explicit comparisons; never map a fiscal quarter to calendar dates."""
+    from .query_requirements import positive_view
+    text, _ = positive_view(query)
+    observed = dates(text)
+    quarters = re.findall(r'\b(?:FY\s*)?(20\d{2})\s*Q([1-4])\b|\bQ([1-4])\s*(?:FY\s*)?(20\d{2})\b', text, re.I)
+    if quarters:
+        targets = [{'kind':'fiscal_quarter','fiscal_year':a or d,'quarter':int(b or c)} for a,b,c,d in quarters]
+        return {'targets':targets,'calendar_mapping':'unresolved_requires_original_fiscal_calendar'}
+    if len(observed)==2 and re.search(r'\bfrom\b|自|从',text[:observed[0][0]],re.I):
+        bridge=text[observed[0][1]:observed[1][0]]
+        if re.fullmatch(r'\s*(?:to|through|至|到|–|—)\s*',bridge,re.I):
+            start,end=observed[0][2],observed[1][2]
+            if start<=end:
+                return {'targets':[{'kind':'duration','start':start,'end':end}],'basis':'explicit_interval'}
+    if observed and re.search(r'\bas of\b|\bat\b|截至',text[:observed[0][0]],re.I):
+        # Every later date must be linked by an explicit comparison connector;
+        # publication/authorization dates elsewhere are not balance targets.
+        if all(re.fullmatch(r'\s*(?:and|versus|vs\.?|with|和|与|及|、|相比)\s*',
+                           text[left[1]:right[0]],re.I) for left,right in zip(observed,observed[1:])):
+            return {'targets':[{'kind':'date','value':v} for v in dict.fromkeys(d[2] for d in observed)],
+                    'basis':'explicit_balance_dates'}
+    fiscal = list(dict.fromkeys(a or b for a,b in FY.findall(text)))
+    if fiscal and not observed and not re.search(r'quarter|季度|\bQ[1-4]\b',text,re.I):
+        return {'targets':[{'kind':'fiscal_year','value':v} for v in fiscal],'basis':'explicit_fiscal_years'}
+    return {'targets':[],'unresolved':'no_unambiguous_fact_period_requirement'}
+
+
 def prose_periods(text):
     # Table contents cannot borrow a date from surrounding narrative.
     # A removed table is a clause boundary, not whitespace joining a heading
@@ -188,17 +216,21 @@ def tagged_periods(tables):
     for table in tables:
         for cell in table['cells']:
             for fact in cell.get('facts',[]):
-                context=fact['period'];instant=context.get('dates',{}).get('instant')
-                if context.get('status')!='explicit_xbrl_period' or not instant:continue
+                context=fact['period'];observed=context.get('dates',{});instant=observed.get('instant')
+                if context.get('status')!='explicit_xbrl_period':continue
                 # A dimensional/member value is not silently promoted to the
                 # issuer-wide metric requested by an unqualified question.
                 if context.get('dimensions'):continue
                 label=re.sub(r'(?<=[a-z])(?=[A-Z])',' ',fact.get('concept') or '')
-                for name in sorted(balance_concepts(label)):
-                    output.append({'concept':name,'role':'balance_as_of','period':{'kind':'date','value':instant},
+                period=({'kind':'date','value':instant} if instant else
+                        {'kind':'duration','start':observed['startdate'],'end':observed['enddate']})
+                names=balance_concepts(label) if instant else {n for n,_,_ in concepts(label)} - BALANCES
+                for name in sorted(names):
+                    output.append({'concept':name,'role':'balance_as_of' if instant else 'flow_duration','period':period,
                         'basis':'original_contextref','source_char_start':cell['source_char_start'],
                         'source_char_end':cell['source_char_end'],'quote':cell['text'],
-                        'context_ref':fact['context_ref'],'entity':context['entity']})
+                        'context_ref':fact['context_ref'],'entity':context['entity'],
+                        'entity_scheme':context.get('entity_scheme')})
     return output
 
 
@@ -208,7 +240,7 @@ def match_period(row,need,target):
     # This is a relative candidate preference, never an access or exclusion rule.
     evidence=row.get('source_structure',{}).get('period_evidence')
     if evidence is None:evidence=prose_periods(row['content'])+table_periods(row['content'],markdown_tables(row['content']))
-    matching=[e for e in evidence if e['concept']==need.get('concept')]
+    matching=[e for e in evidence if e['concept']==need.get('concept') and fact_entity_matches(e,need,row)]
     if need.get('concept')=='repurchase_authorization':
         matching=[e for e in matching if e['role']!='authorization_event']
     comparable=[e for e in matching if e['period']['kind']==target['kind']]
@@ -216,3 +248,34 @@ def match_period(row,need,target):
     # A fragment is not an exhaustive source. An observed other period is a
     # mismatch for that fact, not proof that the document lacks a target fact.
     return 'other_observed_period' if comparable else 'unknown'
+
+
+def fact_entity_matches(evidence, need, row):
+    """A dated subsidiary value cannot prove the requested issuer's fact date.
+
+    Unknown entity bindings do not supply a positive period preference. They
+    remain retrieval candidates and may be read; this is not an access rule.
+    """
+    owner = need.get('owner') or {}
+    if evidence.get('entity') is not None:
+        expected = owner.get('fact_entity_identifiers', [])
+        if not expected:
+            return False
+        def key(entity, scheme):
+            if not isinstance(entity,str) or not isinstance(scheme,str):return None
+            scheme=scheme.rstrip('/').casefold()
+            if scheme in {'http://www.sec.gov/cik','https://www.sec.gov/cik'} and entity.isdigit():
+                return ('sec-cik',str(int(entity)))
+            return (scheme,entity)
+        actual=key(evidence['entity'],evidence.get('entity_scheme'))
+        return actual is not None and any(actual==key(e.get('identifier'),e.get('scheme')) for e in expected)
+    names=owner.get('company_names') or []
+    if names:
+        from .evidence_scope import matching_state
+        start,end=evidence.get('source_char_start'),evidence.get('source_char_end')
+        regions=[s for s in row.get('source_structure',{}).get('evidence_scopes',[])
+                 if type(start) is int and type(end) is int
+                 and s['source_char_start']<=start and s['source_char_end']>=end]
+        if regions and matching_state(regions,{'reporting_entity':names})=='mismatch':
+            return False
+    return True

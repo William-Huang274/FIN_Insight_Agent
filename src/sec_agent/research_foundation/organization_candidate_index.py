@@ -289,7 +289,12 @@ class VerifiedCandidateIndex:
         return result
 
     def complete_tables(self, rows, eligible, manifest):
-        """Only load exact ranges from the current filtered/authorized release."""
+        """Business scope selects anchors; authorization bounds exact context.
+
+        A trusted same-table header need not independently match the business
+        query. Its original must still be part of this verified current grant.
+        Supplemental ranges never become independently ranked candidates.
+        """
         from retrieval.table_completion import complete_tables, read_span
         permitted = {r['node_id'] for r in eligible}
         documents = {r['parent_document_id'] for r in eligible}
@@ -300,7 +305,8 @@ class VerifiedCandidateIndex:
             if document not in documents or anchor['node_id'] not in permitted:
                 raise OrganizationExecutionUnavailable('table_completion_outside_current_scope')
             positions = [(a,b,n) for p,a,b,n in json.loads(zlib.decompress(self.locations[document]))
-                         if p==document and n in permitted]
+                         if p==document and n in self.rows
+                         and self.rows[n]['parent_document_id']==document]
             def node(identifier):
                 self.reader._after(before)
                 if identifier not in loaded:

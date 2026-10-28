@@ -31,13 +31,22 @@ def test_intervening_prose_never_binds_an_unrelated_table():
     assert not source_scopes('ALPHA INC.\nCONSOLIDATED BALANCE SHEETS\nThe subsidiary below has different accounts.\n[TABLE: original]\nx\n[/TABLE]')
 
 
+def test_wrapped_statement_titles_and_standalone_units_are_original_scope():
+    text='NORTH HARBOR INC.\nCONSOLIDATED\nBALANCE SHEETS\nUSD millions\n[TABLE: original]\nCash | 10\n[/TABLE]'
+    scope=source_scopes(text)
+    assert len(scope)==1
+    assert scope[0]['attributes']=={'reporting_entity':'NORTH HARBOR INC.',
+        'statement_type':'balance_sheet','consolidation':'consolidated'}
+    assert not source_scopes(text.replace('USD millions','(The subsidiary uses USD millions)'))
+
+
 def test_event_scope_does_not_confuse_earnings_and_debt_or_guess_negation():
     text = 'Item 2.02 Results of Operations and Financial Condition\nearnings\nItem 2.03 Creation of a Direct Financial Obligation\nnotes\nItem 9.01 Exhibits\n'
     scopes=source_scopes(text)
     assert matching_state(scopes[:1],{'event_type':['earnings_release']})=='match'
     assert matching_state(scopes[1:],{'event_type':['earnings_release']})=='mismatch'
     assert plan_scope('Alpha earnings release')['event_type']==['earnings_release']
-    assert plan_scope('Not financing release, earnings release') is None
+    assert plan_scope('Not financing release, earnings release')['event_type']==['earnings_release']
 
 
 def test_explicit_statement_request_inherits_only_an_unambiguous_catalog_owner():

@@ -320,16 +320,9 @@ class OrganizationHybridRetrieval:
                 entry = json.loads(saved[0])
             else:
                 scores = (verified_cosine_scores if pinned is not None else cosine_scores)(matrix, selected, query_vector)
-                dense_order = sorted(range(len(rows)), key=lambda i: (-float(scores[i]), rows[i]['node_id']))
-                dense = [rows[i]['node_id'] for i in dense_order[:limits['dense']]]
-                lexical = [r['node_id'] for r in literal[:limits['lexical']]]
-                from retrieval.rank_fusion import reciprocal_rank_fusion
-                channels=[dense,lexical]+([graph] if graph is not None else [])
-                for channel in channels:
-                    for node_id in channel:
-                        if node_id not in by_id:
-                            raise OrganizationExecutionUnavailable('organization_retrieval_candidate_outside_scope')
-                entry = {'ordered': reciprocal_rank_fusion(channels), 'dense': dense, 'lexical': lexical}
+                from retrieval.candidate_pipeline import fuse_channels
+                entry, dense_order, _ = fuse_channels(rows, scores, [r['node_id'] for r in literal],
+                    policy=self.candidate_policy, lexical_policy=lexical_policy, graph=graph)
                 entry['dense_trace'] = {'population_count':len(rows), 'trace_limit':96,
                     'trace_truncated':len(rows)>96, 'scores':[
                         {'node_id':rows[i]['node_id'], 'score':float(scores[i]), 'rank':rank+1}

@@ -254,11 +254,11 @@ class OrganizationSourceNavigation:
                 'scores':[{'node_id':rows[i]['node_id'],'score':float(scores[i]),'rank':rank+1}
                           for rank,i in enumerate(raw_order[:96])]}
         if self.hybrid.candidate_policy in {'needs_window.v2', 'needs_window.v3', 'needs_window.v4'}:
-            from retrieval.source_window_candidates import expand_candidates
+            from retrieval.candidate_pipeline import expand_population
             eligible = {r['node_id']:r for r in rows}
-            ids, expansion = expand_candidates([r['node_id'] for r in ranked],
-                receipt['dense_node_ids'], candidates.window_neighbors,
-                {n:r['parent_document_id'] for n,r in eligible.items()})
+            ids, expansion = expand_population([r['node_id'] for r in ranked],
+                receipt['dense_node_ids'], rows, candidates.window_neighbors,
+                policy=self.hybrid.candidate_policy)
             ranked = [eligible[n] for n in ids]
             receipt.update(source_window=expansion, candidate_node_ids=ids)
         materialized = candidates.materialize(ranked, manifest)

@@ -48,6 +48,12 @@ def dependencies(text, tables):
         # Header bands retain all columns (including merged headings). This
         # is context, not a fabricated numeric-to-year assignment.
         context = []
+        from .table_captions import is_unit_caption
+        prefix=text[:table['source_char_start']].rstrip()
+        caption=prefix.rsplit('\n',1)[-1] if prefix else ''
+        if is_unit_caption(caption):
+            start=len(prefix)-len(caption)
+            context.append(_span(text,start,len(prefix),'unit_statement'))
         if header:
             context.append(_span(text, min(c['source_char_start'] for c in header),
                                  max(c['source_char_end'] for c in header), 'header_band'))
@@ -56,6 +62,14 @@ def dependencies(text, tables):
                 context.append(_span(text, c['source_char_start'], c['source_char_end'], 'unit_statement'))
         notes = {}
         previous = table['source_char_end']
+        # An explicit referenced marker in a contiguous plain-text note has
+        # the same ownership as a one-row HTML note. Stop at any other prose,
+        # heading or table; do not search ahead for a convenient matching note.
+        while (note := re.match(r'\s*\(([a-z]|\d{1,3})\)[ \t]+[^\n]+',text[previous:],re.I)):
+            lo=previous+len(note[0])-len(note[0].lstrip())
+            hi=previous+note.end()
+            notes.setdefault(note[1].lower(),[]).append(_span(text,lo,hi,'marked_footnote'))
+            previous=hi
         for following in tables[index+1:]:
             if text[previous:following['source_char_start']].strip():
                 break
@@ -93,7 +107,7 @@ def dependencies(text, tables):
                     unresolved.append('marked_footnote:'+marker)
             if not header:
                 unresolved.append('header_band')
-            if not any(UNIT.search(c['text']) for c in [*header,*cells]):
+            if not any(UNIT.search(c['text']) for c in [*header,*cells]) and not any(s['role']=='unit_statement' for s in required):
                 unresolved.append('unit_not_explicitly_bound')
             output.append({'table':identity,'row_start':start,'row_end':end,
                 'required':required,'unresolved':unresolved,

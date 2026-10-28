@@ -112,3 +112,29 @@ def test_bounded_admission_rejects_before_work():
         assert not service._sessions
     finally:
         service._lock.release()
+
+
+def test_frozen_payload_decode_is_independent_but_never_an_authorization_lease(tmp_path, monkeypatch):
+    _, grant = fixture(tmp_path)
+    runtime = runtime_grant(grant)
+    grant['manifest_digest'] = runtime['manifest_digest']
+    state = {'calls': 0, 'denied': False}
+    def invoke(business, actor, method, path, body):
+        state['calls'] += 1
+        if state['denied']:
+            raise HTTPException(404, 'revoked')
+        return {'contract_version': 'organization_navigation_access.v1',
+            'binding': {k:v for k,v in runtime.items() if k not in {'manifest_text','inputs'}},
+            **({'grant': deepcopy(runtime)} if body['include_grant'] else {})}
+    monkeypatch.setattr(module.from_thread, 'run', invoke)
+    authority = module.UserExecutionAuthority('alice', grant['project_id'], grant['id'],
+        runtime['execution_id'], grant, None)
+    first = authority()
+    first['inputs'][0]['binding']['ref']['digest'] = 'corrupted-caller-copy'
+    first['manifest_text'] = '{}'
+    second = authority()
+    assert second == runtime and state['calls'] == 2
+    state['denied'] = True
+    with pytest.raises(HTTPException):
+        authority()
+    assert state['calls'] == 3

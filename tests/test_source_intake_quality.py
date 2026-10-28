@@ -128,6 +128,14 @@ def test_unknown_failure_stops_all_later_calls_and_restores_guard():
     assert budget.calls == {'embedding': 0, 'rerank': 1}
 
 
+def test_http_budget_metadata_matches_replay_only_guard(tmp_path, monkeypatch):
+    from tests.integration.source_intake_http import RemoteBudget
+    monkeypatch.setenv('FIN_COMPLETE_SOURCE_HTTP_REPLAY_ONLY', '1')
+    assert RemoteBudget(tmp_path).limit == 0
+    monkeypatch.delenv('FIN_COMPLETE_SOURCE_HTTP_REPLAY_ONLY')
+    assert RemoteBudget(tmp_path).limit == 80
+
+
 def test_completion_checks_exact_source_and_live_windows():
     from tests.integration.source_intake_quality import verify_completion
     b = bundle()

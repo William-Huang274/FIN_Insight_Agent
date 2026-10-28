@@ -779,6 +779,23 @@ class ResearchIntakeTest {
         workspace(f.admin(),"POST","/projects/"+f.project()+"/execution-bindings/"+id+"/close",null,200);
         workspace(f.researcher(),"POST",path,compact,404);
     }
+    @Test void navigation_compact_access_rejects_changed_revision_binding_and_inactive_resource() throws Exception {
+        var f=executionFixture();UUID id=UUID.randomUUID();
+        workspace(f.researcher(),"POST",f.createPath(),Map.of("id",id,"manifest_digest",f.digest()),200);
+        String path=f.createPath()+"/"+id+"/navigation-access";
+        var body=Map.of("thread_id",id,"manifest_digest",f.digest(),"include_grant",false);
+        var original=workspace(f.researcher(),"POST",path,body,200);
+        db.update("UPDATE space_resource SET revision=revision+1 WHERE id=?",f.resource());
+        workspace(f.researcher(),"POST",path,body,404);
+        db.update("UPDATE space_resource SET revision=revision-1 WHERE id=?",f.resource());
+        db.update("UPDATE space_resource SET binding='null'::jsonb WHERE id=?",f.resource());
+        workspace(f.researcher(),"POST",path,body,404);
+        db.update("UPDATE space_resource r SET binding=i.binding FROM organization_research_input i WHERE i.draft_id=? AND r.id=i.resource_id",f.draft());
+        db.update("UPDATE space_resource SET active=false WHERE id=?",f.resource());
+        workspace(f.researcher(),"POST",path,body,404);
+        db.update("UPDATE space_resource SET active=true WHERE id=?",f.resource());
+        assertThat(workspace(f.researcher(),"POST",path,body,200)).isEqualTo(original);
+    }
     @Test void execution_close_survives_replay_and_permission_restoration() throws Exception {
         var f=executionFixture();UUID id=UUID.randomUUID();var body=Map.of("id",id,"manifest_digest",f.digest());
         workspace(f.researcher(),"POST",f.createPath(),body,200);

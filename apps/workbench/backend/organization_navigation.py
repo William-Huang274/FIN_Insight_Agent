@@ -6,6 +6,7 @@ result is never an authorization lease, and this endpoint cannot admit a run.
 from collections import OrderedDict
 from copy import deepcopy
 from dataclasses import dataclass, field
+import json
 import os
 from threading import BoundedSemaphore, Condition, Lock, RLock
 from time import monotonic
@@ -28,6 +29,7 @@ class UserExecutionAuthority:
         self.execution_id, self.manifest_digest = execution, grant['manifest_digest']
         self.frozen = grant
         self.snapshot = None
+        self._snapshot_json = None
 
     def __call__(self):
         reply = from_thread.run(self.business, self.actor, 'POST',
@@ -44,11 +46,15 @@ class UserExecutionAuthority:
                     or bindings != {item['resource_id']: item['binding'] for item in self.frozen['inputs']}):
                 raise OrganizationExecutionUnavailable('organization_navigation_binding_mismatch')
             self.snapshot = deepcopy(grant)
+            # The wire contract is JSON. Decode an immutable encoding rather
+            # than recursively deep-copying thousands of nested input records
+            # on every fresh authority check. Each caller still owns its dict.
+            self._snapshot_json = json.dumps(grant, ensure_ascii=False, separators=(',', ':'), allow_nan=False)
         expected = {key: value for key, value in self.snapshot.items() if key not in {'manifest_text', 'inputs'}}
         if reply.get('binding') != expected:
             raise OrganizationExecutionUnavailable('organization_navigation_authority_changed')
         # Reuse immutable payload only after this call's fresh Java verdict.
-        return deepcopy(self.snapshot)
+        return json.loads(self._snapshot_json)
 
 
 @dataclass

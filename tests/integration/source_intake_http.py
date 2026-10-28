@@ -24,8 +24,9 @@ def install_provider_budget():
 
 
 class RemoteBudget:
-    limit = 80
-    def __init__(self, root): self.root = root
+    def __init__(self, root):
+        self.root = root
+        self.limit = 0 if os.getenv('FIN_COMPLETE_SOURCE_HTTP_REPLAY_ONLY') == '1' else 80
     def record(self, status):
         path = self.root/'service-quality-provider-budget.json'
         return json.loads(path.read_bytes()) if path.exists() else {
@@ -61,7 +62,8 @@ def qualify_concurrency(nav, requests, save, budget, *, api, org, project, space
     from scripts.engineering.qualification_load import measure
     report = {'status': 'running', 'profile': 'source_intake_compact', 'levels': [],
         'logical_cpus': psutil.cpu_count(), 'host_total_bytes': psutil.virtual_memory().total,
-        'host_is_shared': True, 'external_provider_in_latency': True,
+        'host_is_shared': True, 'external_provider_in_latency': budget.limit > 0,
+        'provider_mode': 'live_calls_allowed' if budget.limit else 'cached_receipts_only',
         'maximum_paid_calls_per_operation_including_quality': budget.limit,
         'cold_index_latency_included_in_load': False, 'capacity_ceiling_established': False}
     report['requests_per_level'] = {'cached_search': 32, 'original_read': 32, 'mixed_search': 8}

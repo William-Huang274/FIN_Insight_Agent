@@ -47,10 +47,13 @@ class OrganizationResearchDrafts {
     static final String VISIBLE="""
         SELECT d.* FROM organization_research_draft d WHERE d.project_id=? AND EXISTS (
         """+OrganizationProjects.VISIBLE+" AND p.id=d.project_id) AND EXISTS (SELECT 1 FROM organization_research_input present WHERE present.draft_id=d.id) AND NOT EXISTS ("+
-        "SELECT 1 FROM organization_research_input i WHERE i.draft_id=d.id AND NOT EXISTS ("+
-        "SELECT 1 FROM space_resource r JOIN resource_space s ON s.id=r.space_id " +
-        "WHERE r.id=i.resource_id AND r.space_id=i.space_id AND r.active AND r.revision=i.resource_revision AND r.binding=i.binding AND "+
-        ProjectResources.SOURCE_ACCESS+" AND "+ProjectResources.LINK_ACCESS+"))";
+        // Join immutable input identities first. The nested NOT EXISTS shape
+        // could materialize all authorized bindings and compare every pair.
+        // IS NOT TRUE preserves fail-closed behavior for missing/NULL matches.
+        "SELECT 1 FROM organization_research_input i LEFT JOIN space_resource r ON r.id=i.resource_id " +
+        "LEFT JOIN resource_space s ON s.id=r.space_id WHERE i.draft_id=d.id AND ("+
+        "r.id IS NOT NULL AND s.id IS NOT NULL AND r.space_id=i.space_id AND r.active AND r.revision=i.resource_revision AND r.binding=i.binding AND "+
+        ProjectResources.SOURCE_ACCESS+" AND "+ProjectResources.LINK_ACCESS+") IS NOT TRUE)";
     private Map<String,Object> draft(String actor,UUID project,UUID id) {
         return one(VISIBLE+" AND d.id=?",project,actor,actor,project,actor,id);
     }

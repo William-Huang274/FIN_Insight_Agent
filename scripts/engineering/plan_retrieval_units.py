@@ -18,7 +18,9 @@ def plan(index_path,output):
     from retrieval.source_structure import TABLE
     from retrieval.fact_period_matching import markdown_tables
     from retrieval.semantic_unit_catalog import build
-    from retrieval import semantic_units,business_scope_attributes,table_captions,evidence_scope
+    from retrieval import semantic_units,business_scope_attributes,table_captions,evidence_scope,original_input_context,statement_headings
+    modules=(semantic_units,business_scope_attributes,table_captions,evidence_scope,original_input_context,statement_headings)
+    code={Path(m.__file__).name:sha256(Path(m.__file__).read_bytes()).hexdigest() for m in modules}
     index_path=index_path.resolve();raw=index_path.read_bytes();index=json.loads(raw)
     input_digest=sha256(raw).hexdigest();del raw
     navigation=index_path.parent/'navigation.sqlite'
@@ -73,11 +75,12 @@ def plan(index_path,output):
                         yield {**row,'source_structure':structure},position
                 if ordinal%100==0:print(json.dumps({'documents_planned':ordinal,'total':len(grouped)}),flush=True)
     summary=build(output/'units.sqlite',rows())
+    if code!={Path(m.__file__).name:sha256(Path(m.__file__).read_bytes()).hexdigest() for m in modules}:
+        raise ValueError('unit_plan_implementation_changed')
     summary.update(documents=len(grouped),index_sha256=input_digest,
         original_index_digest=__import__('sec_agent.research_foundation.organization_index_release',
             fromlist=['canonical_digest']).canonical_digest(index),
-        code_sha256={Path(m.__file__).name:sha256(Path(m.__file__).read_bytes()).hexdigest()
-            for m in (semantic_units,business_scope_attributes,table_captions,evidence_scope)},
+        code_sha256=code,
         purpose='dry_publication_plan_no_paid_calls_or_quality_claim',publication_state='vectors_not_prepared')
     (output/'plan.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2),encoding='utf8')
     return summary

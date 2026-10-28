@@ -24,6 +24,19 @@ EXHIBIT_PATTERNS={
 }
 
 
+def announced_event(subject):
+    """Classify the explicitly announced object, not incidental finance words.
+
+    Both event kinds in one announcement remain ambiguous. A generic press
+    release, exhibit number or mention of liquidity proves neither event.
+    """
+    patterns={
+        'earnings_release':r'\b(?:financial results|results of operations|earnings(?: results)?)\b',
+        'financing':r'\b(?:(?:senior |convertible |secured |unsecured )*(?:notes?|bonds?|debt|equity|shares?|securities) (?:offering|issuance)|(?:offering|issuance) of (?:its |the )?(?:(?:senior|convertible|secured|unsecured) )*(?:notes?|bonds?|debt|equity|shares?|securities)|credit (?:facility|agreement)|term loan)\b',
+    }
+    return _unique(subject,patterns)
+
+
 def _unique(text,patterns):
     values=[name for name,pattern in patterns.items() if re.search(pattern,text,re.I)]
     return values[0] if len(values)==1 else None
@@ -64,8 +77,8 @@ def exhibit_attributes(text,tables):
             role=_unique(line[0],EXHIBIT_PATTERNS)
             if not role:continue
             attrs={'exhibit_role':role}
-            if role=='press_release' and re.search(r'\b(?:earnings|financial results|results of operations)\b',line[0],re.I):
-                attrs['event_type']='earnings_release'
+            if role=='press_release' and (event:=announced_event(line[0])):
+                attrs['event_type']=event
             result.append((start+line.start(),start+line.end(),attrs,'explicit_exhibit_row_description'))
     return result
 
@@ -89,11 +102,14 @@ def disclosure_attributes(text):
     result=[]
     for line in re.finditer(r'(?m)^[^\n]+$',text):
         if '|' in line[0] or len(line[0])>4000:continue
-        if not re.search(r'\b(?:issued|published)\s+(?:a|the)\s+press release\s+announcing\b',line[0],re.I):continue
+        announcement=re.search(r'\b(?:issued|published)\s+(?:a|the)\s+press release\s+announcing\b',line[0],re.I)
+        if not announcement:continue
         attrs={'exhibit_role':'press_release'}
-        if re.search(r'\b(?:its |the )?(?:financial results|results of operations|earnings)\b',line[0],re.I):
-            attrs['event_type']='earnings_release'
-        result.append((line.start(),line.end(),attrs,'explicit_original_release_announcement'))
+        # Only the announced subject before the next sentence; descriptions
+        # of a different release later in the paragraph cannot change it.
+        subject=re.split(r'(?<=[.!?])\s+(?=[A-Z])',line[0][announcement.end():],maxsplit=1)[0]
+        if event:=announced_event(subject):attrs['event_type']=event
+        result.append((line.start(),line.start()+announcement.end()+len(subject),attrs,'explicit_original_release_announcement'))
     return result
 
 

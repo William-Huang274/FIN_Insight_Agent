@@ -19,4 +19,9 @@ def prepare_candidates(adapter,ranked,eligible,manifest,*,needs,wanted,
     if table_context:
         rows,receipt=adapter.complete_tables(rows,eligible,manifest,independent_candidates=True)
         for row in rows:row['rerank_table_completion']=row.pop('table_completion')
+    # Preserve the archived embedding input for vector validation. Reranking
+    # must not treat a preceding body row in that input as this candidate's own
+    # evidence. Verified same-table dependencies have their separate channel.
+    from .original_input_context import POLICY
+    for row in rows:row['scoring_context_policy']=POLICY
     return rows,receipt

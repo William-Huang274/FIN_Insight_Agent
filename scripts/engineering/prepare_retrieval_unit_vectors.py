@@ -16,16 +16,28 @@ def digest(path):
     with Path(path).open('rb') as stream:return file_digest(stream,'sha256').hexdigest()
 
 
-def prepare(catalog,scope,output):
+def prepare(catalog,scope,output,reuse_receipts=()):
     catalog=catalog.resolve();scope=scope.resolve()
     selected=json.loads(scope.read_text(encoding='utf8'))
     allowed=set(selected['parent_node_ids'])
     if not allowed or len(selected['snapshot_digest'])!=64:raise ValueError('unit_vector_preparation_scope_invalid')
     output.mkdir(parents=True,exist_ok=False)
-    count=size=batches=0;seen=set();batch=[];batch_bytes=0
+    reused=set();reuse_proofs={}
+    if reuse_receipts:
+        from retrieval.unit_embedding_receipts import UnitEmbeddingReceiptReader
+        # Require every prior batch to be completed. Failed/unknown inputs
+        # must not slip into a differently packed new batch and get resubmitted.
+        with closing(UnitEmbeddingReceiptReader(reuse_receipts)) as reader:
+            reused=set(reader.inputs)
+        for folder in reuse_receipts:
+            for name in ('plan.json','jobs.jsonl','receipts/records-v1.sqlite'):
+                path=(Path(folder)/name).resolve();reuse_proofs[str(path)]=digest(path)
+    count=size=batches=0;seen=set();batch=[];batch_bytes=0;reused_selected=set()
     with (output/'jobs.jsonl').open('x',encoding='utf8') as jobs:
         for _,unit,_ in iter_units(catalog,require_new_vector=True):
             if unit['parent_node_id'] not in allowed or unit['embedding_input_sha256'] in seen:continue
+            if unit['embedding_input_sha256'] in reused:
+                reused_selected.add(unit['embedding_input_sha256']);continue
             text=unit['embedding_context']+'\n'+unit['content'];length=len(text.encode())
             if length>16384:raise ValueError('unit_input_requires_replanning_no_truncation')
             if batch and (len(batch)==20 or batch_bytes+length>131072):
@@ -40,7 +52,8 @@ def prepare(catalog,scope,output):
     code={str(Path(m.__file__).resolve()):digest(m.__file__) for m in (semantic_units,unit_embedding_preparation,qwen_api)}
     code[str(Path(__file__).resolve())]=digest(__file__)
     basis={'purpose':'Prepare exact original-span vectors for frozen retrieval repair validation',
-        'input_scale':{'unique_new_vectors':count,'utf8_bytes':size,'parent_scope_size':len(allowed)},
+        'input_scale':{'unique_new_vectors':count,'utf8_bytes':size,'parent_scope_size':len(allowed),
+                       'reused_completed_inputs':len(reused_selected)},
         'required_output':'One 1024-dimensional vector per exact input, model identity and durable usage receipt',
         'quality_risk':'Exposed regression scope; smaller units may lose context; preparation is not retrieval-quality acceptance',
         'reasoning_profile':'qwen3.7-text-embedding only; no generation or Agent research',
@@ -49,7 +62,8 @@ def prepare(catalog,scope,output):
         'stop_behavior':'Stop on first failed/unknown call, input drift, memory below 800 MiB or disk below 2 GiB; never resubmit or truncate'}
     plan={'format':'original-unit-embedding-plan.v1','catalog':str(catalog),'catalog_sha256':digest(catalog),
         'scope':str(scope),'scope_sha256':digest(scope),'snapshot_digest':selected['snapshot_digest'],
-        'jobs_sha256':digest(output/'jobs.jsonl'),'code_sha256':code,'TokenBudgetBasis':basis}
+        'jobs_sha256':digest(output/'jobs.jsonl'),'code_sha256':code,'TokenBudgetBasis':basis,
+        'reused_receipt_files':reuse_proofs,'reused_input_sha256':sorted(reused_selected)}
     (output/'plan.json').write_text(json.dumps(plan,ensure_ascii=False,indent=2),encoding='utf8')
     print(json.dumps(basis,ensure_ascii=False),flush=True)
     return plan
@@ -60,7 +74,8 @@ def execute(output):
     import shutil
     plan=json.loads((output/'plan.json').read_text(encoding='utf8'));catalog=Path(plan['catalog'])
     for path,expected in [(catalog,plan['catalog_sha256']),(Path(plan['scope']),plan['scope_sha256']),
-                           (output/'jobs.jsonl',plan['jobs_sha256']),*plan['code_sha256'].items()]:
+                           (output/'jobs.jsonl',plan['jobs_sha256']),*plan['code_sha256'].items(),
+                           *plan.get('reused_receipt_files',{}).items()]:
         if digest(path)!=expected:raise ValueError('unit_vector_frozen_input_changed')
     stat=catalog.stat();signature=(stat.st_size,stat.st_mtime_ns,stat.st_ctime_ns)
     basis=plan['TokenBudgetBasis'];limits=basis['limits']
@@ -109,6 +124,7 @@ if __name__=='__main__':
     parser.add_argument('action',choices=['prepare','execute'])
     parser.add_argument('--catalog',type=Path);parser.add_argument('--scope',type=Path)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--reuse-receipts',type=Path,action='append',default=[])
     args=parser.parse_args()
-    if args.action=='prepare':prepare(args.catalog,args.scope,args.output)
+    if args.action=='prepare':prepare(args.catalog,args.scope,args.output,args.reuse_receipts)
     else:execute(args.output)

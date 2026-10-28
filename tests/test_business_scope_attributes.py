@@ -72,3 +72,28 @@ def test_original_security_ids_have_an_explicit_scheme_and_no_coupon_year_guess(
     assert not source_scopes('Notes due 2030 at 5.2 percent')
     with pytest.raises(ValueError,match='original_labeled_id'):
         OrganizationEvidenceFilter(transaction_id=['notes-2030'])
+
+
+@pytest.mark.parametrize('subject',[
+    'the commencement of the Convertible Notes Offering',
+    'the pricing of its senior unsecured notes offering',
+    'the completion of an offering of convertible notes',
+    'a new credit facility',
+])
+def test_financing_release_is_not_an_unknown_earnings_candidate(subject):
+    text='The Company issued a press release announcing '+subject+'. A copy is attached as Exhibit 99.1.'
+    scopes=source_scopes(text)
+    assert scopes[0]['attributes']=={'exhibit_role':'press_release','event_type':'financing'}
+    from retrieval.evidence_scope import select_scoped
+    rows=[{'node_id':'announcement','source_interval':[0,scopes[0]['source_char_end']],'evidence_scopes':scopes}]
+    assert not select_scoped(rows,{'event_type':['earnings_release'],'unknown_policy':'retain'})[0]
+
+
+def test_announced_subject_is_not_the_other_release_in_later_sentence():
+    text=('The Company issued a press release announcing its financial results. '
+          'Another press release announced its convertible notes offering.')
+    assert source_scopes(text)[0]['attributes']['event_type']=='earnings_release'
+    mixed='The Company issued a press release announcing financial results and a notes offering.'
+    assert 'event_type' not in source_scopes(mixed)[0]['attributes']
+    generic='The Company issued a press release announcing its outlook for liquidity.'
+    assert 'event_type' not in source_scopes(generic)[0]['attributes']

@@ -20,7 +20,12 @@ def scoring_documents(candidates):
             raise ValueError('rerank_candidate_body_mismatch')
         # Fixed original context, no gold labels, generated hints or answers.
         from .evidence_scoring_view import scoring_body
-        text=(row.get('embedding_context','')+'\n'+scoring_body(row)).strip()
+        context=row.get('embedding_context','')
+        if row.get('scoring_context_policy') is not None:
+            from .original_input_context import document_context,POLICY
+            if row['scoring_context_policy']!=POLICY:raise ValueError('rerank_context_policy_invalid')
+            context=document_context(row)
+        text=(context+'\n'+scoring_body(row)).strip()
         if row.get('rerank_document_metadata'):
             from .rerank_document_context import document_context_text
             text=document_context_text(row['rerank_document_metadata'])+'\n\n'+text

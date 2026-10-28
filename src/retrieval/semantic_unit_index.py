@@ -7,7 +7,8 @@ import sqlite3
 import numpy as np
 from .semantic_unit_catalog import iter_units
 
-FORMAT='published-original-unit-index.v1'
+FORMAT='published-original-unit-index.v2'
+LEGACY_FORMAT='published-original-unit-index.v1'
 FILES=('unit-metadata.sqlite','unit-vectors.npy','unit-lexical.sqlite')
 
 
@@ -53,7 +54,8 @@ def build(directory,catalog,parent_records,parent_matrix,embedding_reader,*,mode
                         or unit['original_node_id']!=space or not lo<=a<b<=hi
                         or unit['source_digest']!=original['original_source']['source_digest']
                         or unit['content']!=original['content'][a-lo:b-lo]
-                        or unit['embedding_context']!=original.get('embedding_context','')):
+                        or unit.get('context_policy')!='document-identity-only.v1'
+                        or unit['embedding_context']!=_document_context(original)):
                     raise ValueError('semantic_index_unit_not_bound_to_original')
                 if reuse is not None:
                     if reuse!=parent['vector_index'] or parent['embedding_input_sha256']!=unit['embedding_input_sha256']:
@@ -82,10 +84,15 @@ def build(directory,catalog,parent_records,parent_matrix,embedding_reader,*,mode
     return {'format':FORMAT,'units':count,'parents':len(seen),'model':model,'dimensions':1024,'files':hashes}
 
 
+def _document_context(row):
+    from .original_input_context import document_context
+    return document_context(row)
+
+
 def validate(directory,descriptor,records,model,*,verified_files=False):
     from sec_agent.research_foundation.organization_vector_math import unit_vectors
     directory=Path(directory)
-    if (set(descriptor)!={'format','units','parents','model','dimensions','files'} or descriptor['format']!=FORMAT
+    if (set(descriptor)!={'format','units','parents','model','dimensions','files'} or descriptor['format'] not in {FORMAT,LEGACY_FORMAT}
             or type(descriptor['units']) is not int or descriptor['units']<1
             or descriptor['parents']!=len(records) or descriptor['model']!=model or descriptor['dimensions']!=1024
             or set(descriptor['files'])!=set(FILES)):

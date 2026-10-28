@@ -112,6 +112,18 @@ def test_published_units_run_through_organization_navigation_and_revoke_cached_a
     assert '_eligible_parent_ids' not in receipt['semantic_units']
     assert receipt['provider_calls']==0
     assert active.navigate(query(organization_query_planning='conservative.v5')).items[0]['retrieval']['response_cache_hit']
+    # A historical component remains readable, but the new research profile
+    # cannot quietly serve it or pay for a query against its old input policy.
+    original_load=active.hybrid.load_frozen
+    def legacy_component(*args,**kwargs):
+        directory,index,matrix,contract=original_load(*args,**kwargs)
+        return directory,{**index,'semantic_units':{**index['semantic_units'],'format':'published-original-unit-index.v1'}},matrix,contract
+    monkeypatch.setattr(active.hybrid,'load_frozen',legacy_component)
+    def forbidden(*args,**kwargs):raise AssertionError('Must reject legacy unit input before paid query')
+    active.hybrid.query_source=SimpleNamespace(embed=forbidden)
+    with pytest.raises(ValueError,match='requires_identity_context_publication'):
+        active.navigate(query(query='new question needs a vector',organization_query_planning='conservative.v5'))
+    monkeypatch.setattr(active.hybrid,'load_frozen',original_load)
     state['status']=404
     with pytest.raises(OrganizationExecutionUnavailable):active.navigate(query(organization_query_planning='conservative.v5'))
 

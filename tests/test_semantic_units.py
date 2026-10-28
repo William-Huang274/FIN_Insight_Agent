@@ -10,7 +10,7 @@ def row(body,scopes=(),tables=(),space=None):
     if space:
         origin={'source_digest':'s'*64,'char_start':100,'char_end':100+len(body),'original_node_id':space}
         structure.update(status='verified_original_node_coordinates',coordinate_space={'original_node_id':space})
-    return {'node_id':'parent','parent_document_id':'doc','content':body,'original_source':origin,
+    return {'node_id':'parent','parent_document_id':'doc','title':'original context','content':body,'original_source':origin,
         'source_structure':structure,'content_sha256':sha256(body.encode()).hexdigest(),
         'embedding_context':'original context','embedding_input_sha256':sha256(('original context\n'+body).encode()).hexdigest()}
 

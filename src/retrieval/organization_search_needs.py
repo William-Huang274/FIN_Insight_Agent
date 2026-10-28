@@ -74,6 +74,7 @@ def compile_needs(query, plan):
         from .financial_query_needs import compile_financial_needs
         result = compile_financial_needs(query, plan, result)
         if plan.get('policy') == 'conservative.v5':
+            result['document_query_plan'] = {'policy':plan['policy'], 'constraint':plan.get('constraint', {})}
             for need in result['needs']:
                 owner=need.get('owner')
                 if owner and (identifiers:=plan.get('fact_entity_by_issuer',{}).get(owner.get('issuer_id'))):
@@ -199,6 +200,10 @@ def select_coverage(rows, needs, lane_receipts, metadata):
     if len(needs['needs']) == 1 and (not needs.get('period_policy') or needs['period_target']['kind']=='unknown'):
         return rows, []
     chosen, receipts = [], []
+    document_states = {}
+    if needs.get('document_query_plan'):
+        from sec_agent.research_foundation.organization_query_plan import document_constraint_states
+        document_states = document_constraint_states(metadata, needs['document_query_plan'])
     for need, lane in zip(needs['needs'], lane_receipts, strict=True):
         ranked = {n:i for i,n in enumerate(lane['candidate_ids'])}
         eligible = []
@@ -231,7 +236,8 @@ def select_coverage(rows, needs, lane_receipts, metadata):
             period_states = {r['node_id']:match_period(r,need,need.get('period_target',needs['period_target'])) for r in eligible}
             # Prefer a positively associated fact. Unknown and other-period
             # fragments retain their relative order and remain in the result.
-            eligible.sort(key=lambda r:period_states[r['node_id']]!='match')
+            eligible.sort(key=lambda r:not (period_states[r['node_id']]=='match'
+                and (not document_states or document_states.get(r['parent_document_id'])=='match')))
         picked = eligible[0] if eligible else None
         if len(needs['needs']) == 1 and 'match' not in period_states.values():
             picked = None
@@ -243,5 +249,8 @@ def select_coverage(rows, needs, lane_receipts, metadata):
                             'period_unresolved_order_preserved' if eligible and needs.get('period_policy') else 'uncovered'})
         if needs.get('period_policy'):
             receipts[-1]['period_matches'] = period_states
+            if document_states:
+                receipts[-1]['document_constraint_states'] = {
+                    r['node_id']:document_states.get(r['parent_document_id'],'unknown') for r in eligible}
     by_id = {r['node_id']:r for r in rows}
     return [by_id[n] for n in chosen] + [r for r in rows if r['node_id'] not in chosen], receipts

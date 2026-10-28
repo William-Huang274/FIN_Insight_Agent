@@ -268,7 +268,12 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
     return result
 
 
-def select_planned(metadata, plan):
+def document_constraint_states(metadata, plan):
+    """Proven document matches and unknowns remain distinct after recall.
+
+    Unknown catalog rows may be retrieved, but cannot prove that a requested
+    filing identity was satisfied merely by containing a matching fact date.
+    """
     if plan['policy'] == 'conservative.v5':
         from retrieval.filing_document_identity import with_document_issuer_aliases
         metadata = with_document_issuer_aliases(metadata)
@@ -276,7 +281,7 @@ def select_planned(metadata, plan):
         metadata = {k:{field:value for field,value in row.items() if field != 'same_document_issuer_ids'}
                     for k,row in metadata.items()}
     wanted = plan['constraint']
-    accepted, unknown = set(), 0
+    states = {}
     for document, row in metadata.items():
         checks = []
         if 'issuer_union' in wanted:
@@ -317,9 +322,13 @@ def select_planned(metadata, plan):
         if 'annual_report_year' in wanted:
             year = row.get('calendar_annual_year')
             checks.append(year == wanted['annual_report_year'] if year else None)
-        if False in checks:
-            continue
-        accepted.add(document)
-        unknown += int(None in checks)
+        states[document] = 'mismatch' if False in checks else 'unknown' if None in checks else 'match'
+    return states
+
+
+def select_planned(metadata, plan):
+    states = document_constraint_states(metadata, plan)
+    accepted = {document for document, state in states.items() if state != 'mismatch'}
+    unknown = sum(state == 'unknown' for state in states.values())
     return accepted, {**plan, 'scope_sources': len(metadata), 'selected_sources': len(accepted),
                       'unknown_sources_retained': unknown, 'excluded_sources': len(metadata)-len(accepted)}

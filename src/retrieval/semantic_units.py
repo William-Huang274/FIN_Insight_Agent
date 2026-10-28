@@ -8,7 +8,7 @@ from hashlib import sha256
 import json
 import re
 
-FORMAT='original-retrieval-units.v1'
+FORMAT='original-retrieval-units.v2'
 PROSE_TARGET=1800
 
 
@@ -68,7 +68,9 @@ def split_original(row):
             'parent_document_id':row['parent_document_id'],'source_digest':row['original_source']['source_digest'],
             'original_node_id':space,'source_char_start':lo,'source_char_end':hi,
             'content_sha256':sha256(text.encode()).hexdigest()}
-        context=row.get('embedding_context','')
+        from .original_input_context import document_context,POLICY as CONTEXT_POLICY
+        context=document_context(row)
+        identity['context_policy']=CONTEXT_POLICY
         model_input=context+'\n'+text
         output.append({**identity,'unit_id':'UNIT::'+_digest(identity),'role':role,
             'content':text,'embedding_context':context,'embedding_input_sha256':sha256(model_input.encode()).hexdigest(),

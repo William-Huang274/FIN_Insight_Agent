@@ -292,6 +292,10 @@ class OrganizationHybridRetrieval:
             raise ValueError('organization_retrieval_invalid_prepared_vectors')
         if self.candidate_policy=='needs_units.v1' and 'semantic_units' not in index:
             raise ValueError('organization_unit_policy_requires_unit_publication')
+        if self.candidate_policy=='needs_units.v1':
+            from retrieval.semantic_unit_index import FORMAT as UNIT_FORMAT
+            if index['semantic_units'].get('format')!=UNIT_FORMAT:
+                raise ValueError('organization_unit_policy_requires_identity_context_publication')
         query_hash = sha256(query.encode()).hexdigest()
         query_receipt = {'provider_calls': 0, 'cache_hit': True, 'source': 'prepared_index'}
         if query_hash in index['queries']:

@@ -4,7 +4,7 @@
 
 同一设计第 5.3—5.7 节补充研究判断的形成/检验/更新、设计者指引与方法披露、研究视角审阅及行为验收。这里的“人的引导”指产品设计者提供的支持，不以用户反复纠偏作为自主研究能力；补充目前仅为设计，未修改生产提示、skill 或运行逻辑。
 
-[研究方法资源编排与教材样稿](architecture/research_skill_curriculum.zh-CN.md)给出通用方法、专业结构、专题算例及近期市场变化的分层，包含增长解释和云经济性两个示例；近期事实有实际核对范围与日期，尚未注入生产方法。
+[基本Agent指引](architecture/research_agent_guidance.zh-CN.md)确定短而稳定的研究职责正文及旧逻辑替换边界。[研究方法资源编排与教材样稿](architecture/research_skill_curriculum.zh-CN.md)确定首批六项优化、一项新增，给出通用方法、专业结构、专题算例及近期市场变化的分层，包含增长解释和云经济性两个示例；近期事实有实际核对范围与日期，尚未注入生产方法。
 
 当前0.1.4研究runtime开发与测点顺序见[按Agent流转的分段资格路线](engineering/runtime_flow_qualification.zh-CN.md)。
 

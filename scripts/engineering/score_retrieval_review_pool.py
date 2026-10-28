@@ -6,10 +6,47 @@ reported as a complete batch. This command makes no model or service calls.
 from hashlib import sha256
 import argparse
 import json
+import math
 from pathlib import Path
 from statistics import mean
 
 from retrieval.relevance_metrics import ranking_metrics
+
+
+def candidate_diagnostics(candidates, qrels, labels_by_node):
+    """Keep original channel evidence; ranks never stand in for missing scores."""
+    result=[]
+    for row in candidates:
+        scores={key:row.get(key) for key in ('raw_bm25_score','dense_score','historical_rerank_score')}
+        for value in scores.values():
+            if value is not None and (type(value) not in (int,float) or not math.isfinite(value)):
+                raise ValueError('review_invalid_channel_score')
+        node=row['node_id'];label=labels_by_node.get(node)
+        result.append({'node_id':node,'content_sha256':row['content_sha256'],
+            'title':row.get('title'),'original_source':row.get('original_source'),
+            'grade':qrels.get(node),'reason':label['reason'] if label else None,
+            'ranks':row['ranks'],'scores':scores,
+            'score_scope':row.get('numeric_score_scope','only_explicitly_saved_scores'),
+            'missing_score_channels':[key for key,value in scores.items() if value is None]})
+    return result
+
+
+def ordering_diagnostics(ranks, qrels):
+    """Within-query inversions, including relevant tails beyond the shown page.
+
+    Context-only and unjudged candidates are not labeled irrelevant. This is a
+    diagnostic on reviewed pairs, not a full quality metric until the pool is
+    reviewed, and says nothing about incomparable scores across queries/models.
+    """
+    relevant=[(rank,node) for rank,node in ranks.items() if qrels.get(node,-1)>=2]
+    bad=[(rank,node) for rank,node in ranks.items() if rank<=10 and qrels.get(node)==0]
+    return {'reviewed_irrelevant_top10_above_direct_evidence_pairs':sum(
+                bad_rank<good_rank for bad_rank,_ in bad for good_rank,_ in relevant),
+            'reviewed_irrelevant_top10_above_direct_evidence_nodes':[
+                node for rank,node in sorted(bad) if any(rank<good_rank for good_rank,_ in relevant)],
+            'reviewed_direct_evidence_absent_from_stage':[
+                node for node,grade in qrels.items() if grade>=2 and node not in ranks.values()],
+            'scope':'same_query_reviewed_pairs_only; unjudged_and_context_only_not_negatives'}
 
 
 def score(pools, judgments):
@@ -32,14 +69,15 @@ def score(pools, judgments):
             raw=path.read_bytes();pool=json.loads(raw)
             if 'question' not in pool or 'candidates' not in pool:continue
             question=pool['question'];qhash=sha256(question['query'].encode()).hexdigest()
-            qrels={};seen=set();rankings={};bodies={}
+            qrels={};seen=set();rankings={};bodies={};labels_by_node={}
             for row in pool['candidates']:
                 node=row['node_id'];bodyhash=sha256(row['content'].encode()).hexdigest()
                 if bodyhash!=row['content_sha256']:raise ValueError('review_pool_content_changed')
                 if node in seen:raise ValueError('review_pool_duplicate_node')
                 seen.add(node);bodies[node]=bodyhash
                 label=labels.get((question['id'],qhash,node,bodyhash))
-                if label is not None:qrels[node]=label['grade']
+                if label is not None:
+                    qrels[node]=label['grade'];labels_by_node[node]=label
                 for stage,rank in row['ranks'].items():
                     if rank is None:continue
                     if type(rank) is not int or rank<1:raise ValueError('review_invalid_rank')
@@ -68,9 +106,11 @@ def score(pools, judgments):
                     irrelevant_results=sum(qrels.get(n)==0 for n in page),
                     context_only_results=sum(qrels.get(n)==1 for n in page),
                     unique_returned_bodies=len({bodies[n] for n in page}))
+                metrics['ordering_diagnostics']=ordering_diagnostics(ranks,qrels)
                 stages[stage]=metrics
             samples.append({'id':question['id'],'pool_file_sha256':sha256(raw).hexdigest(),
-                'query_sha256':qhash,'pool_count':len(seen),'judged_pool_count':len(qrels),'stages':stages})
+                'query_sha256':qhash,'pool_count':len(seen),'judged_pool_count':len(qrels),'stages':stages,
+                'candidate_diagnostics':candidate_diagnostics(pool['candidates'],qrels,labels_by_node)})
         summaries={}
         for stage in sorted({s for item in samples for s in item['stages']}):
             values=[item['stages'].get(stage) for item in samples]

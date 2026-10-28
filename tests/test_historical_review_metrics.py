@@ -1,7 +1,7 @@
 import json
 from hashlib import sha256
 import pytest
-from scripts.engineering.score_retrieval_review_pool import score
+from scripts.engineering.score_retrieval_review_pool import score, ordering_diagnostics, candidate_diagnostics
 
 
 def fixture(tmp_path):
@@ -72,3 +72,29 @@ def test_unreviewed_pool_tail_does_not_inflate_ndcg_or_recall(tmp_path):
     completed=score(pools,judgments)['batches'][0]['samples'][0]['stages']['selected']
     assert 0<completed['pooled_graded_ndcg']<1
     assert completed['pooled_recall']==.5
+
+
+def test_channel_scores_are_original_not_rank_proxies_and_unknown_is_not_negative():
+    candidates=[{'node_id':'bad','content_sha256':'digest','ranks':{'dense_candidates':1},
+        'raw_bm25_score':31.2,'dense_score':-.03,'historical_rerank_score':.91},
+        {'node_id':'unknown','content_sha256':'other','ranks':{'reranked':2}}]
+    rows=candidate_diagnostics(candidates,{'bad':0},{'bad':{'reason':'Wrong period'}})
+    assert rows[0]['scores']==dict(raw_bm25_score=31.2,dense_score=-.03,historical_rerank_score=.91)
+    assert rows[1]['grade'] is None and rows[1]['reason'] is None
+    assert all(value is None for value in rows[1]['scores'].values())
+    assert len(rows[1]['missing_score_channels'])==3
+
+
+@pytest.mark.parametrize('value',[True,float('nan'),float('inf'),'0.9'])
+def test_non_numeric_or_nonfinite_scores_cannot_enter_diagnostics(value):
+    with pytest.raises(ValueError,match='invalid_channel_score'):
+        candidate_diagnostics([{'node_id':'a','content_sha256':'x','ranks':{},'dense_score':value}],{}, {})
+
+
+def test_ordering_audit_counts_only_wrong_above_direct_with_tail_and_absence_separate():
+    ranks={1:'unknown',2:'wrong',3:'context',4:'answer',11:'tail',12:'wrong_tail'}
+    grades={'wrong':0,'context':1,'answer':3,'tail':2,'wrong_tail':0,'absent':2}
+    result=ordering_diagnostics(ranks,grades)
+    assert result['reviewed_irrelevant_top10_above_direct_evidence_pairs']==2
+    assert result['reviewed_irrelevant_top10_above_direct_evidence_nodes']==['wrong']
+    assert result['reviewed_direct_evidence_absent_from_stage']==['absent']

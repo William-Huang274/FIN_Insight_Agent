@@ -18,7 +18,7 @@ def fuse_channels(rows, dense_scores, lexical, *, policy, lexical_policy=None, g
     for channel in (lexical, *([graph] if graph is not None else [])):
         if len(set(channel)) != len(channel) or not set(channel) <= population:
             raise ValueError('candidate_pipeline_channel_outside_scope')
-    limits = candidate_limits(policy, has_graph=graph is not None, lexical_policy=lexical_policy)
+    limits = candidate_limits(policy, has_graph=bool(graph), lexical_policy=lexical_policy)
     if graph is not None and len(graph) > limits['graph']:
         raise ValueError('candidate_pipeline_graph_outside_quota')
     order = sorted(range(len(rows)), key=lambda i: (-float(dense_scores[i]), ids[i]))

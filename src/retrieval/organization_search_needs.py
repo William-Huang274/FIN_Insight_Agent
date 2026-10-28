@@ -121,12 +121,13 @@ def interleave(channels, limit=None):
     return result
 
 
-def lexical_candidates(path, records, needs, metadata, *, population_cache=None, capture_trace=False, trace_sink=None):
+def lexical_candidates(path, records, needs, metadata, *, population_cache=None, capture_trace=False, trace_sink=None,
+                       result_groups=None):
     from .published_lexical_index import scores_from_identities
     rankings, receipts = [], []
     for need in needs['needs']:
         scoped = [r for r in records if owner_matches(metadata.get(r['parent_document_id'], {}), need['owner'])]
-        routes, traces = [], []
+        routes, traces,unit_bindings = [], [],[]
         for route_number, terms in enumerate(need['lexical_routes']):
             if not scoped:
                 continue
@@ -144,10 +145,21 @@ def lexical_candidates(path, records, needs, metadata, *, population_cache=None,
                         group, population_cache=population_cache)
                     complete.intersection_update(group_overlap)
             raw_order = sorted(overlap, key=lambda i:(-float(scores[i]), scoped[i]['node_id'])) if capture_trace else []
-            ranked = sorted(overlap, key=lambda i:(
+            ordered = sorted(overlap, key=lambda i:(
                 0 if complete is None or i in complete else 1,
-                -float(scores[i]), scoped[i]['node_id']))[:48]
-            routes.append([scoped[i]['node_id'] for i in ranked])
+                -float(scores[i]), scoped[i]['node_id']))
+            ranked=[];seen=set()
+            for i in ordered:
+                group=result_groups[scoped[i]['node_id']] if result_groups is not None else scoped[i]['node_id']
+                if group in seen:continue
+                seen.add(group);ranked.append(i)
+                if len(ranked)==48:break
+            routes.append([result_groups[scoped[i]['node_id']] if result_groups is not None else scoped[i]['node_id'] for i in ranked])
+            if result_groups is not None:
+                unit_bindings.append([{'parent_node_id':result_groups[scoped[i]['node_id']],
+                    'unit_id':scoped[i]['node_id'],'content_sha256':scoped[i]['content_sha256'],
+                    'source_interval':scoped[i].get('source_interval'),
+                    'original_node_id':scoped[i].get('original_node_id'),'score':float(scores[i])} for i in ranked])
             if capture_trace:
                 full_receipt = trace_sink(need['id'], route_number, (
                     {'node_id':scoped[i]['node_id'], 'score':float(scores[i]), 'rank':rank+1}
@@ -160,6 +172,8 @@ def lexical_candidates(path, records, needs, metadata, *, population_cache=None,
                 'raw_bm25': [{'node_id':scoped[i]['node_id'], 'score':float(scores[i]), 'rank':rank+1}
                              for rank,i in enumerate(raw_order[:96])],
                 'selected_before_interleave':routes[-1],
+                **({'selected_unit_ids':[scoped[i]['node_id'] for i in ranked],
+                    'grouping':'one_original_parent_per_route_before_quota'} if result_groups is not None else {}),
                 'term_group_preference':complete is not None,
                 'complete_term_group_ids':[scoped[i]['node_id'] for i in ranked if complete is not None and i in complete]})
         if needs['policy'] == 'organization-financial-needs.v2' and need.get('concept'):
@@ -171,6 +185,7 @@ def lexical_candidates(path, records, needs, metadata, *, population_cache=None,
             merged = interleave(routes, 48)
         rankings.append(merged)
         receipts.append({'need_id':need['id'], 'candidate_ids':merged, 'route_ids':routes,
+                         **({'unit_bindings':unit_bindings} if result_groups is not None else {}),
                          **({'route_traces':traces} if capture_trace else {})})
     return interleave(rankings, 48), receipts
 

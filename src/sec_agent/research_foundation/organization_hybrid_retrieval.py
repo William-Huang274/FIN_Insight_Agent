@@ -91,7 +91,7 @@ def preparation_nodes(reader, *, workbench_url, node_store=None):
 
 def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, model, provenance, release_id=None,
                            projection='organization-text-6000.v1', publish_lexical=True, publish_navigation=True,
-                           graph_sources=None):
+                           graph_sources=None, semantic_catalog=None, semantic_embedding_reader=None):
     """Host-side publication of exact prepared content/query embeddings.
 
     Caller must verify embedding text/model provenance before publication.
@@ -109,6 +109,8 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
                       and projection == CHUNK_PROJECTION)
     if graph_sources is not None and not navigation:
         raise ValueError('organization_graph_requires_candidate_release')
+    if semantic_catalog is not None and (not navigation or semantic_embedding_reader is None):
+        raise ValueError('organization_units_require_candidate_release_and_receipts')
     if projection not in PROJECTIONS or (release_id is None and projection == CHUNK_PROJECTION):
         raise ValueError('organization_retrieval_projection_requires_supported_release')
     for i, row in enumerate(nodes):
@@ -184,6 +186,11 @@ def publish_prepared_index(root, organization_id, nodes, vectors, queries, *, mo
         with graph_path.open('rb') as stream:
             graph_sha256=file_digest(stream,'sha256').hexdigest()
         manifest['graph_index']={'format':GRAPH_FORMAT,'sha256':graph_sha256,**counts}
+    if semantic_catalog is not None:
+        from retrieval.semantic_unit_index import build as build_units
+        manifest['semantic_units']=build_units(directory,semantic_catalog,records,vectors,
+                                              semantic_embedding_reader,model=model,
+                                              original_reader=lambda record:nodes[record['vector_index']])
     # Publish the marker only after every file and its digest are complete.
     # The directory is newly reserved; a failed build is never overwritten.
     import os
@@ -220,7 +227,8 @@ class OrganizationHybridRetrieval:
         return load_release(self.root, manifest['organization_id'], pinned['release_id'], pinned,
                             cache=self.release_cache)
 
-    def rank(self, rows, query, snapshot, literal, *, source_verifier=None, graph=None, lexical_policy=None):
+    def rank(self, rows, query, snapshot, literal, *, source_verifier=None, graph=None, lexical_policy=None,
+             search_needs=None, source_metadata=None, evidence_filter=None):
         from .organization_source_navigation import OrganizationSourceNavigation
         before, manifest, _ = self.reader._grant()
         if self.candidate_policy in {'needs_window.v2', 'needs_window.v3', 'needs_window.v4'} and source_verifier is None:
@@ -297,15 +305,31 @@ class OrganizationHybridRetrieval:
             query_vector = vector(values, index['dimensions'])
         else:
             raise ValueError('organization_retrieval_query_not_prepared_no_provider_fallback')
+        if 'semantic_units' in index:
+            if source_verifier is None or search_needs is None or source_metadata is None:
+                raise ValueError('organization_units_require_verified_query_context')
+            from retrieval.semantic_unit_index import rank as rank_units
+            self.reader._after(before)
+            entry,unit_receipt=rank_units(directory,rows,query_vector,search_needs,source_metadata,evidence_filter,
+                policy=self.candidate_policy,graph=graph)
+            self.reader._after(before);source_verifier.check();self.release_cache.check()
+            return [by_id[n] for n in entry['ordered']],{'mode':'organization-original-units-rrf.v1',
+                'cache_hit':False,'index_digest':index_digest,'candidate_policy':self.candidate_policy,
+                'candidate_limits':unit_receipt['limits'],'dense_node_ids':entry['dense'],
+                'lexical_node_ids':entry['lexical'],'candidate_node_ids':entry['ordered'],
+                **({'graph_node_ids':entry['graph']} if graph is not None else {}),
+                'dense_trace':unit_receipt['dense_trace'],'semantic_units':unit_receipt,
+                'provider_calls':query_receipt['provider_calls'],'query_embedding':query_receipt,
+                'rerank':'local_rrf_no_provider'}
         # Selection happens before cosine scoring/top-K. Unselected documents
         # cannot occupy quotas, produce previews, or influence lexical ranks.
-        scope = {'policy': POLICY, 'trace_version':'channel-scores.v1', 'grant': digest(before), 'index': index_digest,
+        scope = {'policy': POLICY, 'trace_version':'channel-scores.v2', 'grant': digest(before), 'index': index_digest,
             'query': query_hash, 'nodes': [(r['node_id'], r['content_sha256']) for r in rows]}
         if lexical_policy is not None:
             scope['lexical_policy'] = lexical_policy
             scope['lexical_order'] = [r['node_id'] for r in literal]
         from retrieval.candidate_policy import candidate_limits
-        limits = candidate_limits(self.candidate_policy, has_graph=graph is not None, lexical_policy=lexical_policy)
+        limits = candidate_limits(self.candidate_policy, has_graph=bool(graph), lexical_policy=lexical_policy)
         if self.candidate_policy != 'balanced.v1':
             scope['candidate_policy'] = self.candidate_policy
         if graph is not None:

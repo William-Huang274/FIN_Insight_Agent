@@ -23,3 +23,12 @@ def test_ties_are_stable_and_nonfinite_scores_rejected():
     assert entry['dense']==['a','z'] and order==[1,0]
     with pytest.raises(ValueError,match='nonfinite'):
         fuse_channels(rows,[float('nan'),.5],[],policy='balanced.v1')
+
+
+def test_empty_graph_does_not_take_dense_capacity():
+    rows=[{'node_id':str(i)} for i in range(80)]
+    scores=list(range(80))
+    baseline,_,a=fuse_channels(rows,scores,[],policy='needs_window.v4')
+    empty,_,b=fuse_channels(rows,scores,[],policy='needs_window.v4',graph=[])
+    assert a==b and empty['dense']==baseline['dense']
+    assert empty['graph']==[] and b['graph']==0

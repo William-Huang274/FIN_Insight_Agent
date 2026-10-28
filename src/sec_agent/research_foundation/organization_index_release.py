@@ -115,6 +115,10 @@ def _load_release(root, organization_id, release_id, expected=None, *, verified_
             with (directory/'graph.sqlite').open('rb') as stream:
                 if not verified_files and file_digest(stream,'sha256').hexdigest()!=graph['sha256']:
                     raise ValueError('organization_graph_release_integrity_failure')
+        if 'semantic_units' in index:
+            if 'navigation_index' not in index:raise ValueError('semantic_index_requires_parent_navigation')
+            from retrieval.semantic_unit_index import validate as validate_units
+            validate_units(directory,index['semantic_units'],index['records'],index['model'],verified_files=verified_files)
         matrix = np.load(directory/'vectors.npy', mmap_mode='r', allow_pickle=False)
         records = index['records']
         if (matrix.dtype != np.float32 or matrix.shape != (len(records), 1024)
@@ -149,12 +153,13 @@ class ReleaseLoadCache:
     @staticmethod
     def _signature(directory):
         values = []
-        for name in ('index.json', 'vectors.npy', 'lexical.sqlite', 'navigation.sqlite', 'graph.sqlite'):
+        from retrieval.semantic_unit_index import FILES as UNIT_FILES
+        for name in ('index.json', 'vectors.npy', 'lexical.sqlite', 'navigation.sqlite', 'graph.sqlite',*UNIT_FILES):
             path = directory/name
             try:
                 stat = path.stat()
             except FileNotFoundError:
-                if name in {'lexical.sqlite', 'navigation.sqlite', 'graph.sqlite'}:
+                if name in {'lexical.sqlite', 'navigation.sqlite', 'graph.sqlite',*UNIT_FILES}:
                     values.append(None)
                     continue
                 raise ValueError('organization_index_release_unavailable') from None
@@ -167,6 +172,8 @@ class ReleaseLoadCache:
             raise ValueError('organization_index_release_navigation_unsealed')
         if any((directory/('graph.sqlite'+suffix)).exists() for suffix in ('-wal', '-journal')):
             raise ValueError('organization_graph_release_unsealed')
+        if any((directory/(name+suffix)).exists() for name in UNIT_FILES if name.endswith('.sqlite') for suffix in ('-wal','-journal')):
+            raise ValueError('semantic_index_unsealed')
         return tuple(values)
 
     def check(self):
@@ -202,9 +209,11 @@ class ReleaseLoadCache:
             # A host-owned receipt only: no data or positive authorization is
             # stored here. SQLite serializes publication across processes.
             from . import organization_vector_math
+            from retrieval import semantic_unit_index
             receipt_key = canonical_digest({'directory':str(directory), 'signature':before,
                 'expected':expected, 'loader':sha256(Path(__file__).read_bytes()).hexdigest(),
-                'vector_validator':sha256(Path(organization_vector_math.__file__).read_bytes()).hexdigest()})
+                'vector_validator':sha256(Path(organization_vector_math.__file__).read_bytes()).hexdigest(),
+                'unit_validator':sha256(Path(semantic_unit_index.__file__).read_bytes()).hexdigest()})
             with closing(sqlite3.connect(Path(root)/'verified-releases.sqlite', timeout=10)) as db, db:
                 db.execute('CREATE TABLE IF NOT EXISTS verified(key TEXT PRIMARY KEY)')
                 verified = db.execute('SELECT 1 FROM verified WHERE key=?', (receipt_key,)).fetchone()

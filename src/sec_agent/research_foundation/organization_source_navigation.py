@@ -168,6 +168,10 @@ class OrganizationSourceNavigation:
         from retrieval.text import tokenize
         candidates = self._warm_candidates(before, manifest, epoch)
         rows = candidates.select(request)
+        _, index, _, _ = self.hybrid.load_frozen(manifest)
+        unit_retrieval='semantic_units' in index
+        metadata=(candidates.source_metadata if request.organization_metadata_policy=='sec_cover.v2'
+                  else candidates.original_source_metadata)
         if request.entity_id:
             _, index, _, _ = self.hybrid.load_frozen(manifest)
             if 'graph_index' not in index:
@@ -223,30 +227,54 @@ class OrganizationSourceNavigation:
         scores, overlap, has_terms = scores_from_identities(candidates.directory/'lexical.sqlite',
             ((row['node_id'],row['content_sha256'],row['lexical_input_sha256']) for row in rows),
             tokenize(request.query), population_cache=None if planned_lexical else self._lexical_statistics,
-            vocabulary_only=planned_lexical)
+            vocabulary_only=planned_lexical or unit_retrieval)
         literal = [rows[i] for i in sorted(overlap, key=lambda i:(-float(scores[i]),rows[i]['node_id']))]
         needs, lanes = None, []
-        if planned_lexical:
+        if planned_lexical or unit_retrieval:
             from retrieval.organization_search_needs import compile_needs, lexical_candidates
             if request.organization_query_planning == 'conservative.v5':
                 from retrieval.filing_document_identity import with_document_issuer_aliases
                 metadata = with_document_issuer_aliases(metadata)
-            needs = compile_needs(request.query, query_plan)
-            ids, lanes = lexical_candidates(candidates.directory/'lexical.sqlite', rows, needs,
+            needs = compile_needs(request.query, query_plan or {'constraint':{}})
+            ids, lanes = ([],[]) if unit_retrieval else lexical_candidates(candidates.directory/'lexical.sqlite', rows, needs,
                                            metadata, population_cache=self._lexical_statistics, capture_trace=self.capture_trace)
             by_id = {r['node_id']:r for r in rows}
             literal = [by_id[n] for n in ids]
         graph=None
         graph_evidence=[]
-        if request.entity_id:
+        from retrieval.graph_query_plan import graph_seeds
+        seeds, graph_seed_basis=graph_seeds(request,query_plan)
+        if seeds:
             from .organization_graph_index import candidates as graph_candidates
-            graph,graph_evidence=graph_candidates(candidates.directory/'graph.sqlite',rows,request,
-                                                 manifest['research_as_of'],literal)
+            _, index, _, _ = self.hybrid.load_frozen(manifest)
+            if 'graph_index' in index:
+                from retrieval.organization_search_needs import interleave
+                graph_lanes=[];proofs={}
+                for seed in seeds:
+                    lane,evidence=graph_candidates(candidates.directory/'graph.sqlite',rows,
+                        request.model_copy(update={'entity_id':seed}),manifest['research_as_of'],literal)
+                    graph_lanes.append(lane)
+                    for evidence_row in evidence:
+                        proofs.setdefault(evidence_row['node'],[]).append(evidence_row)
+                graph=interleave(graph_lanes,12)
+                graph_evidence=[proof for node in graph for proof in proofs[node]]
+            else:
+                graph_seed_basis='resolved_identity_graph_not_published'
         ranked, receipt = self.hybrid.rank(rows, request.query, self.reader.authority.manifest_digest[7:],
                                           literal, source_verifier=candidates,graph=graph,
-                                          **({'lexical_policy':needs['policy']} if needs else {}))
+                                          **({'lexical_policy':needs['policy']} if needs else {}),
+                                          search_needs=needs,source_metadata=metadata,evidence_filter=evidence_filter)
+        if unit_retrieval:
+            units=receipt['semantic_units']
+            eligible_parents=set(units.pop('_eligible_parent_ids'))
+            rows=[r for r in rows if r['node_id'] in eligible_parents]
+            lanes=units['lexical_needs']
         if graph is not None:
-            receipt.update(graph_evidence=graph_evidence,graph_scope='frozen_one_hop_source_bound_candidates')
+            accepted_graph=set(receipt.get('graph_node_ids',[]))
+            receipt.update(graph_evidence=[e for e in graph_evidence if e['node'] in accepted_graph],
+                           graph_scope='frozen_one_hop_source_bound_candidates')
+        receipt['graph_query_plan']={'seeds':seeds,'basis':graph_seed_basis,
+            'coverage':'published_reviewed_edges_only_not_complete_relationships'}
         if not self.capture_trace:
             receipt.pop('dense_trace', None)
         if self.capture_trace and not planned_lexical:
@@ -309,6 +337,10 @@ class OrganizationSourceNavigation:
             materialized, selection = select_structure_companions(materialized, expansion)
             receipt.update(source_window_selection=selection,
                            selected_node_ids=[r['node_id'] for r in materialized])
+        from retrieval.original_result_groups import collapse_original_duplicates
+        materialized,group_receipt=collapse_original_duplicates(materialized)
+        receipt['original_result_groups']=group_receipt
+        receipt['selected_node_ids']=[r['node_id'] for r in materialized]
         if self.table_completion:
             if not needs:
                 materialized = candidates.contextualize(materialized, manifest)

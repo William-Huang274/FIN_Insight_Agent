@@ -7,7 +7,7 @@ from datetime import date
 import json
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator, model_serializer
 
 
 class OrganizationSourceFilter(BaseModel):
@@ -16,8 +16,19 @@ class OrganizationSourceFilter(BaseModel):
     company_name: str | None = Field(default=None, min_length=1, max_length=300)
     form: str | None = Field(default=None, min_length=1, max_length=40)
     period_end: date | None = None
+    publication_date: date | None = None
+    published_from: date | None = None
+    published_through: date | None = None
 
-    @field_validator('period_end', mode='before')
+    @model_serializer(mode='wrap')
+    def preserve_original_filter(self, handler):
+        body=handler(self)
+        for key in ('publication_date','published_from','published_through'):
+            if key not in self.model_fields_set:
+                body.pop(key,None)
+        return body
+
+    @field_validator('period_end','publication_date','published_from','published_through', mode='before')
     @classmethod
     def exact_date(cls, value):
         if value is None or type(value) is date:
@@ -41,6 +52,8 @@ class OrganizationSourceFilter(BaseModel):
 
     @model_validator(mode='after')
     def nonempty(self):
+        if self.published_from and self.published_through and self.published_from>self.published_through:
+            raise ValueError('organization_publication_range_invalid')
         if all(v is None for v in self.model_dump().values()):
             raise ValueError('organization_filter_requires_constraint')
         return self
@@ -70,8 +83,16 @@ def original_source_metadata(bundle):
     except ValueError:
         period = None
     form = text('form')
-    return {'issuer_id': text('entity_id'), 'company_name': text('company'),
+    result={'issuer_id': text('entity_id'), 'company_name': text('company'),
             'form': form.upper() if form else None, 'period_end': period}
+    # Publication remains a separate observation; never substitute period_end.
+    published=bundle['source'].get('published_at') if bundle else None
+    if isinstance(published,str):
+        try:
+            value=date.fromisoformat(published)
+            if value.isoformat()==published:result['publication_date']=published
+        except ValueError:pass
+    return result
 
 
 def source_metadata_details(bundle):
@@ -126,11 +147,17 @@ def select_documents(metadata, constraint):
     from retrieval.catalog_company_identity import aliases_for, name_key
     for document, actual in metadata.items():
         verified_names = [n for n in [actual.get('company_name'), *(actual.get('verified_company_names') or [])] if n]
-        if any((not verified_names if key == 'company_name' else actual.get(key) is None) for key in wanted):
+        def field_matches(key,value):
+            if key=='company_name':
+                return name_key(value) in {name_key(a) for n in verified_names for a in aliases_for({'company_name':n})}
+            if key=='published_from':return actual['publication_date']>=value
+            if key=='published_through':return actual['publication_date']<=value
+            return actual[key]==value
+        if any((not verified_names if key == 'company_name' else actual.get(
+                'publication_date' if key in {'published_from','published_through'} else key) is None) for key in wanted):
             unknown += 1
             continue
-        if all((name_key(value) in {name_key(a) for n in verified_names for a in aliases_for({'company_name':n})} if key == 'company_name'
-                else actual[key] == value) for key, value in wanted.items()):
+        if all(field_matches(key,value) for key,value in wanted.items()):
             matches.add(document)
     return matches, {'filter': wanted, 'scope_sources': len(metadata),
                      'matched_sources': len(matches), 'unknown_sources': unknown,

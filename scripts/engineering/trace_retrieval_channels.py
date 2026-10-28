@@ -65,6 +65,7 @@ def run(index_path,metadata_path,scope_path,queries_path,output):
         selected,plan=select_planned(metadata,plan_query(q['query'],metadata,policy='conservative.v5'))
         rows=[{**r,'parent_document_id':r['document_id'],
                'evidence_scopes':scopes.get(r['node_id'],{}).get('evidence_scopes',[]),
+               'source_interval':scopes.get(r['node_id'],{}).get('source_interval'),
                'evidence_scope_complete':scopes.get(r['node_id'],{}).get('evidence_scope_complete',False)}
               for r in records if r['document_id'] in selected]
         wanted=plan_scope(q['query'],plan);scope_receipt=None

@@ -47,6 +47,7 @@ class SourceDocumentRequest(BaseModel):
         'from catalog organization_metadata. Conditions are AND; company_name accepts verified legal-name, '
         'spacing, punctuation and legal-suffix aliases; issuer IDs are never merged. '
         'period_end is the reporting period end, never filing/publication date or inferred fiscal year. '
+        'publication_date or inclusive published_from/published_through filter the original publication date separately. '
         'Unknown original metadata is excluded and counted. entity_id separately seeds graph relations. '
         'With this explicit filter natural-language constraints do not override these fields.'))
     organization_evidence_filter: OrganizationEvidenceFilter | None = Field(default=None, description=(

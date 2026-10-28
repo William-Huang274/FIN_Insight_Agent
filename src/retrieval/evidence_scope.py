@@ -58,6 +58,10 @@ def source_scopes(text):
         if event:
             add(heading.start(), items[i+1].start() if i+1<len(items) else len(text),
                 {'event_type':event}, 'explicit_sec_item_'+heading['number'])
+    from .business_scope_attributes import table_attributes,exhibit_attributes,transaction_attributes
+    for start,end,attributes,basis in [*table_attributes(text,tables),
+                                      *exhibit_attributes(text,tables),*transaction_attributes(text)]:
+        add(start,end,attributes,basis)
     return regions
 
 
@@ -110,12 +114,28 @@ def select_scoped(rows, wanted):
         # conflicting table. That table cannot classify the entire chunk.
         if state == 'mismatch' and not row.get('evidence_scope_complete', False):
             state = 'unknown'
+        if row.get('source_interval'):
+            intervals=scope_intervals(*row['source_interval'],row.get('evidence_scopes',[]),wanted)
+            states=[s['state'] for s in intervals]
+            state='match' if 'match' in states else 'unknown' if 'unknown' in states else 'mismatch'
         counts[state] += 1
         if state == 'match' or (state == 'unknown' and wanted.get('unknown_policy') == 'retain'):
             selected.append(row)
     return selected, {'policy':POLICY, 'constraints':wanted, 'counts':counts,
         'selected':len(selected), 'filtered_before_scoring':True,
         'unknown_is_not_source_absence':True}
+
+
+def scope_intervals(start,end,regions,wanted):
+    """Classify a single original coordinate frame, shared by recall and scoring."""
+    if type(start) is not int or type(end) is not int or not 0<=start<end:
+        raise ValueError('evidence_scope_invalid_source_interval')
+    active=[s for s in regions if s['source_char_start']<end and s['source_char_end']>start]
+    boundaries=sorted({start,end,*(max(start,s['source_char_start']) for s in active),
+                       *(min(end,s['source_char_end']) for s in active)})
+    return [{'source_char_start':lo,'source_char_end':hi,'state':interval_matching_state(
+        [s for s in active if s['source_char_start']<=lo and s['source_char_end']>=hi],wanted)}
+        for lo,hi in zip(boundaries,boundaries[1:])]
 
 
 def covers_interval(scopes, start, end):
@@ -147,9 +167,13 @@ def plan_scope(query, query_plan=None):
         wanted['statement_type']=statements
         if re.search(r'合并|\bconsolidated\b',query,re.I):
             wanted['consolidation']=['consolidated']
+            if not re.search(r'附注|明细|调节|摘要|\b(?:notes?|detail|highlights?|reconciliation|supplemental)\b',query,re.I):
+                wanted['statement_role']=['primary']
             constraint=(query_plan or {}).get('constraint',{})
             if constraint.get('issuer_id') and constraint.get('company_names'):
                 wanted['reporting_entity']=constraint['company_names']
+    from .business_scope_attributes import query_attributes
+    wanted.update(query_attributes(query))
     return wanted if len(wanted)>1 else None
 
 
@@ -192,7 +216,11 @@ def scoring_scope_text(row):
         attributes=region['attributes']
         allowed={'reporting_entity':None,'statement_type':{'balance_sheet','cash_flow','income_statement'},
                  'statement_role':{'primary','supplemental','reconciliation'},
-                 'consolidation':{'consolidated'},'event_type':{'earnings_release','financing'}}
+                 'consolidation':{'consolidated'},'event_type':{'earnings_release','financing'},
+                 'asset_scope':{'pension_plan','postretirement_plan','nuclear_decommissioning_trust','investment_fund'},
+                 'table_topic':{'fair_value_measurements','asset_allocation'},
+                 'exhibit_role':{'press_release','certification','interactive_data','debt_agreement','acquisition_agreement'},
+                 'transaction_id':None}
         if not attributes or any(k not in allowed or not isinstance(v,str) or not v.strip() or len(v)>180
                 or (allowed[k] is not None and v not in allowed[k]) for k,v in attributes.items()):
             raise ValueError('rerank_invalid_evidence_attributes')

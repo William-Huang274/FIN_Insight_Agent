@@ -26,8 +26,10 @@ class OrganizationSourceNavigation:
             raise ValueError('organization_source_requires_workbench_origin')
         self.reader, self.workbench_url = reader, workbench_url.rstrip('/')
         import os
+        from retrieval.serving_profile import configured_profile
+        self.serving_profile=configured_profile()
         self.capture_trace = os.getenv('FINSIGHT_ORGANIZATION_RETRIEVAL_TRACE', '') == 'bounded.v1'
-        self.table_completion = os.getenv('FINSIGHT_ORGANIZATION_TABLE_COMPLETION', '')
+        self.table_completion = os.getenv('FINSIGHT_ORGANIZATION_TABLE_COMPLETION', self.serving_profile.table_completion)
         if self.table_completion not in ('', 'bounded.v1'):
             raise ValueError('organization_table_completion_configuration_invalid')
         self.observed = ObservedSourceRegistry()
@@ -78,7 +80,7 @@ class OrganizationSourceNavigation:
         return self._navigate_ready(request)
 
     def _navigate_ready(self, request):
-        request = SourceDocumentRequest.model_validate(request)
+        request = self.serving_profile.apply_request(SourceDocumentRequest.model_validate(request))
         # One observer connection and one bounded result per navigation session.
         # Serializing this instance also prevents concurrent cache publication.
         with self._navigation_lock:
@@ -315,6 +317,7 @@ class OrganizationSourceNavigation:
             materialized[request.offset:request.offset+request.limit] = page
             receipt['table_completion'] = completion_receipt
         receipt.update(lexical_source='published_release', candidate_only=True,
+                       serving_profile=self.serving_profile.receipt(request,self.hybrid.reranker is not None),
                        lexical_subset_statistics_hit=self._lexical_statistics.hit,
                        source_generation_original_reads=candidates.original_reads,
                        candidate_body_reads=candidates.candidate_reads, projection_cache_hits=0)

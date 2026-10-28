@@ -4,7 +4,7 @@ The original body, embedding and citation identity are unchanged. A matched
 table does not make conflicting tables in the same chunk eligible evidence.
 """
 from hashlib import sha256
-from .evidence_scope import interval_matching_state, scoring_scope_text
+from .evidence_scope import scope_intervals, scoring_scope_text
 
 FORMAT = 'original-scope-scoring-view.v1'
 
@@ -19,12 +19,9 @@ def attach_scoring_view(row, wanted):
     _,start,end=verified_bounds(row)
     if len(row['content'])!=end-start or sha256(row['content'].encode()).hexdigest()!=row['content_sha256']:
         raise ValueError('scope_view_original_mismatch')
-    boundaries=sorted({start,end,*(max(start,s['source_char_start']) for s in regions),
-                       *(min(end,s['source_char_end']) for s in regions)})
     eligible=[];excluded=[]
-    for lo,hi in zip(boundaries,boundaries[1:]):
-        active=[s for s in regions if s['source_char_start']<=lo and s['source_char_end']>=hi]
-        state=interval_matching_state(active,wanted)
+    for interval in scope_intervals(start,end,regions,wanted):
+        lo,hi,state=interval['source_char_start'],interval['source_char_end'],interval['state']
         keep=state=='match' or (state=='unknown' and wanted.get('unknown_policy')=='retain')
         target=eligible if keep else excluded
         if target and target[-1]['source_char_end']==lo and target[-1]['state']==state:

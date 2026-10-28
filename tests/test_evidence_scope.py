@@ -96,7 +96,7 @@ def test_typed_scope_and_language_conflicts_are_not_silently_ignored():
         resolve_scope('Alpha balance sheet',{}, {'statement_type':['cash_flow']})
     r=resolve_scope('Alpha consolidated balance sheet',{}, {'reporting_entity':['Alpha']})
     assert r=={'unknown_policy':'exclude','reporting_entity':['Alpha'],
-               'statement_type':['balance_sheet'],'consolidation':['consolidated']}
+               'statement_type':['balance_sheet'],'statement_role':['primary'],'consolidation':['consolidated']}
     assert resolve_scope('Not financing release',{},None) is None
 
 
@@ -122,6 +122,9 @@ def test_actual_navigation_filters_before_hybrid_and_denies_revoked_empty_scope(
     chosen=list(ci.rows)[:2]
     ci.rows[chosen[0]]['evidence_scopes']=[{'attributes':{'event_type':'earnings_release'}}]
     ci.rows[chosen[1]]['evidence_scopes']=[{'attributes':{'event_type':'financing'}}]
+    for identifier in chosen:
+        start,end=ci.rows[identifier]['source_interval']
+        ci.rows[identifier]['evidence_scopes'][0].update(source_char_start=start,source_char_end=end)
     original=nav.hybrid.rank
     def checked(rows,*args,**kwargs):
         assert [r['node_id'] for r in rows]==chosen[:1]

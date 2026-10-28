@@ -25,6 +25,7 @@ def prepare(value):
         'evidence_scopes':{n:s.get('evidence_scopes', []) for n,s in value['structures'].items()
                            if s.get('evidence_scopes')},
         'evidence_scope_complete':[n for n,s in value['structures'].items() if s.get('evidence_scope_complete')],
+        'source_intervals':{n:[a,b] for _,a,b,n in ordered},
         'prepared_navigation': {'format': FORMAT, 'structures': packed(value['structures']),
             'locations': packed(ordered), 'neighbors': neighbors,
             'window_neighbors': adjacent_nodes(ordered)}}

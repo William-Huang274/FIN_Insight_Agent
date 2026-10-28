@@ -181,6 +181,7 @@ class VerifiedCandidateIndex:
                     'navigation_sha256':record['navigation_sha256']}
                 rows[node_id]['evidence_scopes'] = saved.get('evidence_scopes', {}).get(node_id, [])
                 rows[node_id]['evidence_scope_complete'] = node_id in scope_complete
+                rows[node_id]['source_interval'] = saved['source_intervals'].get(node_id)
             origin = {'resource_id':item['resource_id'], 'ref':deepcopy(item['ref']),
                 'execution_id':self.reader.authority.execution_id,
                 'manifest_digest':self.reader.authority.manifest_digest,

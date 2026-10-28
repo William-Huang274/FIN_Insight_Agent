@@ -40,11 +40,12 @@ def test_discovery_role_survives_descriptor_without_title_based_inference():
 
 def test_original_fields_only_and_explicit_unknown_coverage():
     missing = descriptor(parent_form='10-K', fiscal_year=2024, report_date='2024-12-31')
-    assert all(value is None for value in missing.values())
+    assert all(missing[key] is None for key in ('issuer_id','company_name','form','period_end'))
+    assert missing['publication_date']=='2025-02-01'
     assert descriptor(period_end='2024-02-30')['period_end'] is None
     assert descriptor(period_end='2024-W01-1')['period_end'] is None
     actual = descriptor(entity_id='ENTITY::issuer', company=' Acme ', form='10-k', period_end='2024-12-31')
-    assert actual == dict(issuer_id='ENTITY::issuer', company_name='Acme', form='10-K', period_end='2024-12-31')
+    assert actual == dict(issuer_id='ENTITY::issuer', company_name='Acme', form='10-K', period_end='2024-12-31',publication_date='2025-02-01')
     matches, receipt = select_documents({'a': actual, 'b': missing,
         'c': {**actual, 'form': '10-K/A'}}, OrganizationSourceFilter(company_name='acme', form='10-k'))
     assert matches == {'a'}
@@ -53,6 +54,16 @@ def test_original_fields_only_and_explicit_unknown_coverage():
     # Publication year and amended/parent form never satisfy an exact original period/form.
     assert not select_documents({'a': actual}, OrganizationSourceFilter(period_end='2025-02-01'))[0]
     assert not select_documents({'a': actual}, OrganizationSourceFilter(issuer_id='ENTITY::other'))[0]
+
+
+def test_publication_range_is_not_a_fiscal_or_fact_period():
+    actual=descriptor(company='Acme',period_end='2024-12-31')
+    constraint=OrganizationSourceFilter(published_from='2025-02-01',published_through='2025-02-28')
+    found,receipt=select_documents({'a':actual,'b':{'period_end':'2025-02-12'},
+        'c':{**actual,'publication_date':'2025-03-01'}},constraint)
+    assert found=={'a'} and receipt['unknown_sources']==1 and receipt['mismatched_sources']==1
+    with pytest.raises(ValueError,match='publication_range'):
+        OrganizationSourceFilter(published_from='2025-03-01',published_through='2025-02-28')
 
 
 @pytest.mark.parametrize('constraint', [{}, {'form': ' '}, {'period_end': 1735603200},
@@ -68,6 +79,10 @@ def test_request_compatibility_and_scope():
     parsed = SourceDocumentRequest.model_validate(query(organization_filter={'period_end': '2024-12-31'}))
     assert parsed.organization_filter.period_end == date(2024, 12, 31)
     assert parsed.model_dump(mode='json')['organization_filter']['period_end'] == '2024-12-31'
+    assert parsed.model_dump(mode='json')['organization_filter'] == {
+        'issuer_id':None,'company_name':None,'form':None,'period_end':'2024-12-31'}
+    explicit=OrganizationSourceFilter(form='10-K',publication_date=None)
+    assert 'publication_date' in explicit.model_dump(mode='json')
     for changes in ({'source_space': 'library'}, {'source_space': 'local'},
                     {'operation': 'read', 'document_id': 'doc'}):
         with pytest.raises(ValueError, match='organization_filter_requires'):

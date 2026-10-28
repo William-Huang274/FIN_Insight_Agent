@@ -202,7 +202,8 @@ class OrganizationHybridRetrieval:
         self.query_source = query_source
         import os
         from retrieval.candidate_policy import candidate_limits
-        self.candidate_policy = os.environ.get('FINSIGHT_ORGANIZATION_CANDIDATE_POLICY', 'balanced.v1')
+        from retrieval.serving_profile import configured_profile
+        self.candidate_policy = os.environ.get('FINSIGHT_ORGANIZATION_CANDIDATE_POLICY', configured_profile().candidate_policy)
         candidate_limits(self.candidate_policy)
         rerank = os.environ.get('FINSIGHT_ORGANIZATION_RERANK', '')
         if rerank not in ('', 'qwen'):

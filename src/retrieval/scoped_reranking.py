@@ -114,7 +114,8 @@ class ConfiguredReranker:
     def __init__(self,path):
         import os
         self.path=path
-        self.model=os.environ.get('FINSIGHT_ORGANIZATION_RERANK_MODEL','qwen3-rerank')
+        from .serving_profile import configured_profile
+        self.model=os.environ.get('FINSIGHT_ORGANIZATION_RERANK_MODEL',configured_profile().rerank_model)
         if self.model not in {'qwen3-rerank','qwen3.7-text-rerank'}:
             raise ValueError('organization_rerank_model_invalid')
 

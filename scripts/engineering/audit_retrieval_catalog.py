@@ -30,8 +30,9 @@ def audit(index_path, metadata_path, output):
     import retrieval.evidence_scope as scope_module
     import retrieval.table_captions as caption_module
     import retrieval.fact_period_matching as period_module
+    import retrieval.business_scope_attributes as business_module
     code={Path(m.__file__).name:sha256(Path(m.__file__).read_bytes()).hexdigest()
-          for m in (scope_module,caption_module,period_module)}
+          for m in (scope_module,caption_module,period_module,business_module)}
     raw = index_path.read_bytes(); index = json.loads(raw); index_hash = sha256(raw).hexdigest(); del raw
     raw = metadata_path.read_bytes(); metadata = json.loads(raw); metadata_hash=sha256(raw).hexdigest()
     metadata = metadata.get('resolved',metadata); del raw
@@ -91,6 +92,7 @@ def audit(index_path, metadata_path, output):
                     scopes=[s for s in regions if s['source_char_start']<end and s['source_char_end']>start]
                     if scopes:
                         out.write(json.dumps({'document_id':document,'node_id':node,'evidence_scopes':scopes,
+                            'source_interval':[start,end],
                             'coordinate_space':{'kind':'original_indexed_node','original_node_id':frame} if frame else {'kind':'original_document'},
                             'evidence_scope_complete':covers_interval(scopes,start,end)},ensure_ascii=False)+'\n');known+=1
             counts['documents']+=1;counts['nodes']+=len(records);counts['scoped_nodes']+=known

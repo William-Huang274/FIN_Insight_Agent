@@ -39,7 +39,8 @@ def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
     metadata=json.loads(metadata_path.read_bytes());queries=json.loads(queries_path.read_bytes())['questions']
     output.mkdir(parents=True,exist_ok=False);jobs=[];total_bytes=0;total_candidates=0
     statistics=PublishedLexicalStatistics()
-    with closing(FrozenRetrievalContext(index_path,contexts,index=index)) as adapter:
+    with closing(FrozenRetrievalContext(index_path,contexts,index=index,
+            retained_documents={r['document_id'] for r in records})) as adapter:
         metadata.update(adapter.source_metadata)
         for q in queries:
             import gc
@@ -75,6 +76,8 @@ def prepare(index_path,overlay,contexts,metadata_path,queries_path,output):
             print(json.dumps({'prepared':len(jobs),'total':len(queries),'id':q['id'],'candidates':len(candidates)}),flush=True)
     root=Path(__file__).resolve().parents[2]
     code={str(p):digest(p) for folder in ('src/retrieval','src/sec_agent/research_foundation') for p in (root/folder).glob('*.py')}
+    for name in ('qualify_unit_rerank.py','frozen_retrieval_context.py'):
+        path=root/'scripts/engineering'/name;code[str(path)]=digest(path)
     plan={'role':'exposed_regression_full_scoring_not_live_HTTP','jobs':jobs,'code_sha256':code,
         'instruction':instruction,'relevance_boundary':boundary.artifact if boundary else None,
         'pipeline':pipeline_identity('research.v2',model,instruction,'bounded.v1'),

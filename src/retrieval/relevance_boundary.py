@@ -11,6 +11,26 @@ import math
 FORMAT='graded-relevance-boundary.v1'
 
 
+def _score(value):
+    # bool is an int subclass but is never a provider relevance score.
+    return type(value) in (float,int) and 0<=value<=1 and math.isfinite(value)
+
+
+def _requirements_valid(precision,results,questions):
+    return (_score(precision) and 0<precision<1
+            and type(results) is int and results>=1
+            and type(questions) is int and questions>=2)
+
+
+def _check_calibration_values(calibration):
+    fitted=calibration.get('fit');requirements=calibration.get('requirements')
+    if (not isinstance(fitted,dict) or not _score(fitted.get('threshold'))
+            or not isinstance(requirements,dict)
+            or not _requirements_valid(requirements.get('minimum_precision_lower_bound'),
+                requirements.get('minimum_results'),requirements.get('minimum_questions'))):
+        raise ValueError('relevance_calibration_invalid_contract')
+
+
 def _digest(value):
     return sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
@@ -25,8 +45,7 @@ def _reviewed_rows(samples):
     unique={}
     for row in samples:
         if (type(row.get('grade')) is not int or not 0<=row['grade']<=3
-                or type(row.get('score')) not in (float,int) or not math.isfinite(row['score'])
-                or not 0<=row['score']<=1 or not row.get('review_reason')
+                or not _score(row.get('score')) or not row.get('review_reason')
                 or any(not isinstance(row.get(k),str) or len(row[k])!=64
                        or any(c not in '0123456789abcdef' for c in row[k])
                        for k in ('query_sha256','content_sha256','source_document_sha256'))):
@@ -47,7 +66,7 @@ def fit(samples,*,pipeline,minimum_precision,minimum_results,minimum_questions):
     counted once. No company, question ID or expected-answer string is learned.
     The caller must freeze a disjoint validation set before enabling a fit.
     """
-    if (not pipeline or not 0<minimum_precision<1 or minimum_results<1 or minimum_questions<2):
+    if not pipeline or not _requirements_valid(minimum_precision,minimum_results,minimum_questions):
         raise ValueError('relevance_calibration_invalid_contract')
     rows=_reviewed_rows(samples)
     eligible=[];accepted=[];correct=0;queries=set()
@@ -72,6 +91,7 @@ def fit(samples,*,pipeline,minimum_precision,minimum_results,minimum_questions):
 
 
 def validate(calibration,samples,*,pipeline):
+    _check_calibration_values(calibration)
     rows=_reviewed_rows(samples)
     queries={r['query_sha256'] for r in rows};documents={r['source_document_sha256'] for r in rows}
     if (calibration.get('format')!=FORMAT or calibration.get('pipeline')!=pipeline
@@ -97,7 +117,9 @@ def partition(rows,scores,calibration,*,pipeline,validation,limit):
     Validation evidence is a deployment-owned artifact bound to this exact
     fit. Current access and source checks remain the service's responsibility.
     """
-    if (limit<1 or calibration.get('format')!=FORMAT or calibration.get('pipeline')!=pipeline
+    _check_calibration_values(calibration)
+    if (type(limit) is not int or limit<1
+            or calibration.get('format')!=FORMAT or calibration.get('pipeline')!=pipeline
             or validation.get('calibration_sha256')!=_digest(calibration)
             or validation.get('status')!='passed'
             or not validation.get('query_sha256')
@@ -110,7 +132,7 @@ def partition(rows,scores,calibration,*,pipeline,validation,limit):
         key=row['node_id']
         if key in seen:raise ValueError('relevance_boundary_duplicate_candidate')
         seen.add(key);score=scores.get(key)
-        if not isinstance(score,(float,int)) or not math.isfinite(score) or not 0<=score<=1:
+        if not _score(score):
             raise ValueError('relevance_boundary_missing_valid_score')
         (accepted if score>=threshold else uncertain).append(row)
     return accepted,{'policy':FORMAT,'calibration_sha256':_digest(calibration),

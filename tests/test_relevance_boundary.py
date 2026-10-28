@@ -83,3 +83,38 @@ def test_failed_validation_or_pipeline_drift_cannot_enable_boundary():
     changed={**fitted,'fit':{**fitted['fit'],'threshold':.1}}
     with pytest.raises(ValueError,match='independent_validation'):
         partition([],{},changed,pipeline=PIPELINE,validation=good,limit=10)
+
+
+@pytest.mark.parametrize('score',[True,False,None,'0.99',float('nan'),float('inf'),-0.1,1.1,10**400])
+def test_serving_rejects_invalid_scores_instead_of_accepting_boolean_confidence(score):
+    fitted=calibration();evidence=validate(fitted,reviewed('holdout'),pipeline=PIPELINE)
+    with pytest.raises(ValueError,match='missing_valid_score'):
+        partition([{'node_id':'a'}],{'a':score},fitted,pipeline=PIPELINE,validation=evidence,limit=10)
+
+
+@pytest.mark.parametrize('key,value',[
+    ('minimum_precision',None),('minimum_precision','0.9'),('minimum_precision',True),
+    ('minimum_precision',float('nan')),('minimum_results',True),('minimum_results',2.5),
+    ('minimum_results',float('nan')),('minimum_questions',2.5),('minimum_questions',None)])
+def test_fit_requires_finite_precision_and_integral_sample_counts(key,value):
+    options=dict(minimum_precision=.9,minimum_results=40,minimum_questions=8)
+    options[key]=value
+    with pytest.raises(ValueError,match='invalid_contract'):
+        fit(reviewed('train'),pipeline=PIPELINE,**options)
+
+
+@pytest.mark.parametrize('threshold',[True,None,'0.9',float('nan'),float('inf'),-1,2])
+def test_invalid_threshold_cannot_generate_or_load_validation(threshold):
+    fitted=calibration();evidence=validate(fitted,reviewed('holdout'),pipeline=PIPELINE)
+    fitted['fit']['threshold']=threshold
+    with pytest.raises(ValueError,match='invalid_contract'):
+        validate(fitted,reviewed('holdout'),pipeline=PIPELINE)
+    with pytest.raises(ValueError,match='invalid_contract'):
+        partition([],{},fitted,pipeline=PIPELINE,validation=evidence,limit=10)
+
+
+@pytest.mark.parametrize('limit',[True,False,None,1.5,'10'])
+def test_result_limit_is_a_positive_integer(limit):
+    fitted=calibration();evidence=validate(fitted,reviewed('holdout'),pipeline=PIPELINE)
+    with pytest.raises(ValueError,match='independent_validation'):
+        partition([],{},fitted,pipeline=PIPELINE,validation=evidence,limit=limit)

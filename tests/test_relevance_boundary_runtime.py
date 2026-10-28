@@ -45,6 +45,13 @@ def test_provider_and_duplicate_score_cannot_bypass_boundary():
         boundary.apply([],{'model':'provider','scores':[['a',.1],['a',.9]]},limit=10)
 
 
+@pytest.mark.parametrize('score',[True,False,'0.99',None,float('nan')])
+def test_invalid_provider_score_cannot_become_supported_evidence(score):
+    pipeline={'model':'provider'};boundary=ResultBoundary(artifact(pipeline),pipeline)
+    with pytest.raises(ValueError,match='missing_valid_score'):
+        boundary.apply([{'node_id':'a'}],{'model':'provider','scores':[['a',score]]},limit=10)
+
+
 def test_instruction_is_explicit_server_owned_and_model_bound(monkeypatch):
     from retrieval.relevance_instruction import configured_instruction,TEXT
     from retrieval.scoped_reranking import ConfiguredReranker

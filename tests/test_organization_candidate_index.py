@@ -38,6 +38,24 @@ def query(**changes):
     return {'source_space':'organization', 'operation':'search', 'query':'disclosure', **changes}
 
 
+def test_verified_source_owner_survives_cold_and_receipt_restoration(tmp_path,monkeypatch):
+    from sec_agent.research_foundation import organization_source_filter
+    original=organization_source_filter.source_metadata
+    identifiers=[{'identifier':'123','scheme':'http://www.sec.gov/CIK'}]
+    def metadata(bundle):
+        return {**original(bundle),'verified_company_names':['Cedar Inc.'],
+                'fact_entity_identifiers':identifiers}
+    monkeypatch.setattr(organization_source_filter,'source_metadata',metadata)
+    nav,reader,_,_,_=prepared(tmp_path,monkeypatch)
+    nav.warm_release()
+    expected={'company_names':['Cedar Inc.'],'fact_entity_identifiers':identifiers}
+    assert all(r['fact_owner']==expected for r in nav._candidate_index.rows.values())
+    monkeypatch.setattr(reader,'_read_storage',lambda *_:pytest.fail('valid receipt must avoid original reload'))
+    restored=OrganizationSourceNavigation(reader,workbench_url='http://localhost',retrieval_root=tmp_path/'indices')
+    restored.warm_release()
+    assert all(r['fact_owner']==expected for r in restored._candidate_index.rows.values())
+
+
 def test_optional_completion_preserves_result_order_and_warm_authorization(tmp_path, monkeypatch):
     nav,reader,state,_,_=prepared(tmp_path,monkeypatch)
     old=nav.navigate(query())

@@ -170,6 +170,8 @@ class VerifiedCandidateIndex:
             if self.hybrid.candidate_policy in {'needs_window.v2', 'needs_window.v3', 'needs_window.v4'}:
                 window_neighbors.update(windows)
             scope_complete = set(saved.get('evidence_scope_complete', []))
+            from retrieval.fact_scope import verified_fact_owner
+            fact_owner = verified_fact_owner(saved['metadata'])
             for node_id in saved['nodes']:
                 record = records.get(node_id)
                 if record is None or node_id in rows or record['document_id'] != document:
@@ -181,6 +183,7 @@ class VerifiedCandidateIndex:
                     'navigation_sha256':record['navigation_sha256']}
                 rows[node_id]['evidence_scopes'] = saved.get('evidence_scopes', {}).get(node_id, [])
                 rows[node_id]['period_evidence'] = saved.get('period_evidence', {}).get(node_id, [])
+                rows[node_id]['fact_owner'] = fact_owner
                 rows[node_id]['evidence_scope_complete'] = node_id in scope_complete
                 rows[node_id]['source_interval'] = saved['source_intervals'].get(node_id)
             origin = {'resource_id':item['resource_id'], 'ref':deepcopy(item['ref']),

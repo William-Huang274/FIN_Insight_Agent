@@ -19,7 +19,9 @@ def corpus(tmp_path):
         db.executescript('CREATE TABLE documents(id TEXT PRIMARY KEY,payload BLOB); CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT);')
         db.execute('INSERT INTO metadata VALUES (?,?)',('sealed','frozen-production-structure.v1'))
         for r in records:
-            value={'metadata':{'issuer_id':r['document_id'],'form':'10-K'},'nodes':[r['node_id']],
+            value={'metadata':{'issuer_id':r['document_id'],'form':'10-K',
+                   'verified_company_names':['Cedar Inc.'],
+                   'fact_entity_identifiers':[{'identifier':'123','scheme':'http://www.sec.gov/CIK'}]},'nodes':[r['node_id']],
                    'source_intervals':{r['node_id']:[0,10]},'prepared_navigation':{'neighbors':{r['node_id']:[]}}}
             raw=zlib.compress(json.dumps(value).encode())
             db.execute('INSERT INTO documents VALUES (?,?)',(r['document_id'],raw))
@@ -34,6 +36,8 @@ def test_bounded_structures_preserve_full_verified_catalog_and_default_populatio
     with closing(FrozenRetrievalContext(tmp_path/'index.json',tmp_path,index=index,retained_documents={'d1'})) as bounded:
         assert set(bounded.rows)=={'n1'} and set(bounded.neighbors)=={'n1'}
         assert set(bounded.source_metadata)=={'d1','d2'}
+        assert bounded.rows['n1']['fact_owner']=={'company_names':['Cedar Inc.'],
+            'fact_entity_identifiers':[{'identifier':'123','scheme':'http://www.sec.gov/CIK'}]}
         bounded.check()
     with closing(FrozenRetrievalContext(tmp_path/'index.json',tmp_path,index=index)) as full:
         assert set(full.rows)=={'n1','n2'}

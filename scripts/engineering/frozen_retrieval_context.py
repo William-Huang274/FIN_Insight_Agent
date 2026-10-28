@@ -54,11 +54,14 @@ class FrozenRetrievalContext:
                 if document not in retained:continue
                 self.neighbors.update(value['prepared_navigation']['neighbors'])
                 complete=set(value.get('evidence_scope_complete',[]))
+                from retrieval.fact_scope import verified_fact_owner
+                fact_owner=verified_fact_owner(value['metadata'])
                 for node in value['nodes']:
                     record=records[node]
                     self.rows[node]={**record,'parent_document_id':document,
                         'evidence_scopes':value.get('evidence_scopes',{}).get(node,[]),
                         'period_evidence':value.get('period_evidence',{}).get(node,[]),
+                        'fact_owner':fact_owner,
                         'source_interval':value['source_intervals'].get(node),'evidence_scope_complete':node in complete}
                 self.origins[document]={'resource_id':'offline-source'}
         except BaseException:

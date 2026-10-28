@@ -19,3 +19,13 @@ def test_multiple_resolved_owners_preserved_without_name_guessing():
     plan={'constraint':{'issuer_union':[{'issuer_id':'A'},{'company_names':['Unknown']},
                                         {'issuer_id':'B'},{'issuer_id':'A'}]}}
     assert graph_seeds(request('A and B customer relationships'),plan)[0]==['A','B']
+
+
+def test_excluded_relationships_do_not_take_graph_capacity():
+    plan={'constraint':{'issuer_id':'I::cedar'}}
+    for query in ('Cedar cash equivalents, not its customer relationships',
+                  'Cedar现金余额，不要供应商关系'):
+        assert graph_seeds(request(query),plan)==([], 'no_relationship_requirement')
+    for query in ('Cedar suppliers, excluding customers',
+                  'Does Cedar not have supplier relationships?'):
+        assert graph_seeds(request(query),plan)[0]==['I::cedar']

@@ -67,6 +67,23 @@ def test_repeated_units_do_not_spend_parent_route_quota(tmp_path):
     assert set(ids)=={'one-large-parent','another-parent'}
 
 
+def test_unit_prefilter_keeps_verified_owner_binding_and_rejects_other_entity(tmp_path):
+    from retrieval.semantic_unit_index import select_units
+    directory,_,_,parents=fixture(tmp_path)
+    owner={'company_names':['Cedar Inc.'],
+           'fact_entity_identifiers':[{'identifier':'123','scheme':'http://www.sec.gov/CIK'}]}
+    for row in parents:
+        row['fact_owner']=owner
+        row['period_evidence']=[{'source_char_start':101,'source_char_end':105,
+            'concept':'cash_equivalents','role':'balance_as_of',
+            'period':{'kind':'date','value':'2025-12-31'},
+            'entity':'456' if row['node_id']=='mixed' else '123','entity_scheme':'http://www.sec.gov/CIK'}]
+    wanted={'fact_periods':[{'concept':'cash_equivalents','kind':'date','value':'2025-12-31'}]}
+    selected=select_units(directory,parents,wanted)
+    assert {r['parent_node_id'] for r in selected}=={'correct'}
+    assert all(r['fact_owner']==owner for r in selected)
+
+
 def test_unit_index_rejects_mismatched_file_and_parent_scope(tmp_path):
     directory,descriptor,parents,_=fixture(tmp_path)
     with pytest.raises(ValueError,match='parent_scope'):

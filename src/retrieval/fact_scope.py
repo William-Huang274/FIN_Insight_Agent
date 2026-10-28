@@ -10,6 +10,17 @@ def compact_evidence(evidence):
     return [{k:e[k] for k in fields if k in e} for e in evidence]
 
 
+def verified_fact_owner(metadata):
+    """A single original registrant identity, never a joint filing's archive ID."""
+    if metadata.get('joint_registrant_names') or metadata.get('company_name_resolution'):
+        return {}
+    names=metadata.get('verified_company_names') or [metadata.get('company_name')]
+    names=[n for n in names if isinstance(n,str) and n.strip()]
+    identifiers=metadata.get('fact_entity_identifiers') or []
+    if len(names)!=1 or len(identifiers)!=1:return {}
+    return {'company_names':names,'fact_entity_identifiers':identifiers}
+
+
 def fact_state(row,wanted):
     from .evidence_scope import interval_matching_state
     requests=wanted.get('fact_periods',[])
@@ -20,6 +31,16 @@ def fact_state(row,wanted):
     for evidence in row.get('period_evidence',[]):
         lo,hi=evidence['source_char_start'],evidence['source_char_end']
         if not (lo<bounds[1] and hi>bounds[0]):continue
+        if evidence.get('entity') is not None:
+            from .fact_period_matching import fact_entity_matches
+            from .evidence_scope import matching_state
+            owner=row.get('fact_owner') or {}
+            if not fact_entity_matches(evidence,{'owner':owner},row):continue
+            if wanted.get('reporting_entity'):
+                names=owner.get('company_names') or []
+                if len(names)!=1 or matching_state(
+                    [{'attributes':{'reporting_entity':names[0]}}],
+                    {'reporting_entity':wanted['reporting_entity']})!='match':continue
         # A source whose owner is unresolved cannot satisfy an explicit owner.
         regions=[s for s in row.get('evidence_scopes',[])
                  if s['source_char_start']<=lo and s['source_char_end']>=hi]

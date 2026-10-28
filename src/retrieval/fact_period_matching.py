@@ -9,7 +9,7 @@ from .financial_query_needs import concepts
 
 POLICY = 'explicit-fact-periods.v1'
 MONTHS = {name.lower():i for i,name in enumerate(('January','February','March','April','May','June','July','August','September','October','November','December'),1)}
-DATE = re.compile(r'\b(20\d{2})-(\d{2})-(\d{2})\b|(20\d{2})年\s*(\d{1,2})月\s*(\d{1,2})日|\b('+'|'.join(MONTHS)+r')\s+(\d{1,2}),?\s+(20\d{2})\b',re.I)
+DATE = re.compile(r'\b(20\d{2})-(\d{2})-(\d{2})\b|(20\d{2})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日|\b('+'|'.join(MONTHS)+r')\s+(\d{1,2}),?\s+(20\d{2})\b',re.I)
 FY = re.compile(r'\b(?:FY\s*|fiscal\s+(?:year\s+)?)(20\d{2})\b|(20\d{2})\s*财年',re.I)
 TABLE = re.compile(r'\[TABLE:[^\n]*\].*?\[/TABLE\]',re.S)
 NUMBER = re.compile(r'^\s*\(?\s*[$€£]?\s*-?\d[\d,]*(?:\.\d+)?\s*%?\s*\)?\s*$')
@@ -19,6 +19,7 @@ BALANCES = {'cash_equivalents','restricted_cash','repurchase_authorization'}
 
 
 def balance_concepts(text):
+    text=re.sub(r'\s+',' ',text)
     names={n for n,_,_ in concepts(text)} & BALANCES
     # Retrieval vocabulary deliberately includes spending as a useful route;
     # a period association must not call that spending an unused authority.
@@ -98,48 +99,62 @@ def query_period_requirements(query):
     return {'targets':[],'unresolved':'no_unambiguous_fact_period_requirement'}
 
 
+def _prose_clauses(masked):
+    """Keep paragraph/sentence boundaries and exact non-whitespace offsets."""
+    for match in re.finditer(r'[^。；;!?\x00]+',masked):
+        start=0
+        separators=list(re.finditer(r'\r?\n[ \t]*\r?\n+',match[0]))
+        for end,next_start in [(s.start(),s.end()) for s in separators]+[(len(match[0]),len(match[0]))]:
+            paragraph=match[0][start:end]
+            for part in re.finditer(r'.+?(?:\.(?=\s+(?:[*#]+\s*)?[A-Z])|$)',paragraph,re.S):
+                body=part[0].strip()
+                if body:
+                    offset=match.start()+start+part.start()+len(part[0])-len(part[0].lstrip())
+                    yield offset,body
+            start=next_start
+
+
 def prose_periods(text):
     # Table contents cannot borrow a date from surrounding narrative.
     # A removed table is a clause boundary, not whitespace joining a heading
     # to an unrelated numeric footnote after the table. Preserve coordinates.
     masked=TABLE.sub(lambda m:'\x00'*len(m[0]),text)
     output=[]
-    for match in re.finditer(r'[^。；;!?\x00]+',masked):
-        # Split English sentences without splitting decimals or line wraps.
-        for part in re.finditer(r'.+?(?:\.(?=\s+[A-Z])|$)',match[0],re.S):
-            clause=part[0];offset=match.start()+part.start()
-            # Markdown rows are handled by their own explicit columns.
-            if '|' in clause:continue
-            if re.search(r'\b(?:forecast|projected|expected|might|would|could)\b|预计|预测|可能',clause,re.I):continue
-            names={n for n,_,_ in concepts(clause)}
-            numeric_text=FY.sub('',DATE.sub('',clause))
-            if not names or not re.search(r'\d',numeric_text):continue
-            ds=dates(clause);fys={a or b for a,b in FY.findall(clause)}
-            bindings=[]
-            for lo,hi,value in ds:
-                before=clause[max(0,lo-35):lo]
-                after=clause[hi:hi+15]
-                if re.search(r'(?:\bas\s+of|\bat|截至)\s*$',before,re.I):
-                    role='balance_as_of'
-                elif re.search(r'(?:expir\w*|matur\w*)\s+(?:on\s+)?$',before,re.I) or re.match(r'\s*(?:到期|届满)',after):
-                    role='expiration'
-                elif re.search(r'\bon\s*$',before,re.I) and re.search(r'authoriz|批准|授权',clause,re.I):
-                    role='authorization_event'
-                else:continue
-                # Multiple dates can describe different events. A balance is
-                # only bound when the clause has no competing date or FY.
-                if role=='balance_as_of' and (len(ds)!=1 or fys or
-                    re.search(r'\b(?:and|or|versus|vs\.?)\s+20\d{2}\b|(?:和|及|与)\s*20\d{2}年',clause,re.I)):continue
-                allowed=balance_concepts(clause) if role=='balance_as_of' else names & {'authorization_expiration','debt_maturity'} if role=='expiration' else names & {'repurchase_authorization'}
-                for name in sorted(allowed):
-                    bindings.append({'concept':name,'role':role,'period':{'kind':'date','value':value}})
-            if (len(fys)==1 and not ds and not re.search(r'quarter|季度|Q[1-4]',clause,re.I)
-                    and not re.search(r'(?:fiscal\s+(?:year\s+)?20\d{2}|FY\s*20\d{2})\s+(?:annual\s+)?report|20\d{2}财年年报',clause,re.I)):
-                for name in sorted(names):
-                    bindings.append({'concept':name,'role':'fiscal_year','period':{'kind':'fiscal_year','value':next(iter(fys))}})
-            for b in bindings:
-                output.append({**b,'basis':'explicit_same_clause','source_char_start':offset,
-                    'source_char_end':offset+len(clause),'quote':text[offset:offset+len(clause)]})
+    for offset,clause in _prose_clauses(masked):
+        # Markdown rows are handled by their own explicit columns.
+        if '|' in clause:continue
+        if re.search(r'\b(?:forecast|projected|expected|might|would|could)\b|预计|预测|可能',clause,re.I):continue
+        # Recognition may normalize wrapped words; proof offsets and quotes
+        # always refer to the unchanged original clause.
+        names={n for n,_,_ in concepts(re.sub(r'\s+',' ',clause))}
+        numeric_text=FY.sub('',DATE.sub('',clause))
+        if not names or not re.search(r'\d',numeric_text):continue
+        ds=dates(clause);fys={a or b for a,b in FY.findall(clause)}
+        bindings=[]
+        for lo,hi,value in ds:
+            before=clause[max(0,lo-35):lo]
+            after=clause[hi:hi+15]
+            if re.search(r'(?:\bas\s+of|\bat|截至)\s*$',before,re.I):
+                role='balance_as_of'
+            elif re.search(r'(?:expir\w*|matur\w*)\s+(?:on\s+)?$',before,re.I) or re.match(r'\s*(?:到期|届满)',after):
+                role='expiration'
+            elif re.search(r'\bon\s*$',before,re.I) and re.search(r'authoriz|批准|授权',clause,re.I):
+                role='authorization_event'
+            else:continue
+            # Multiple dates can describe different events. A balance is
+            # only bound when the clause has no competing date or FY.
+            if role=='balance_as_of' and (len(ds)!=1 or fys or
+                re.search(r'\b(?:and|or|versus|vs\.?)\s+20\d{2}\b|(?:和|及|与)\s*20\d{2}年',clause,re.I)):continue
+            allowed=balance_concepts(clause) if role=='balance_as_of' else names & {'authorization_expiration','debt_maturity'} if role=='expiration' else names & {'repurchase_authorization'}
+            for name in sorted(allowed):
+                bindings.append({'concept':name,'role':role,'period':{'kind':'date','value':value}})
+        if (len(fys)==1 and not ds and not re.search(r'quarter|季度|Q[1-4]',clause,re.I)
+                and not re.search(r'(?:fiscal\s+(?:year\s+)?20\d{2}|FY\s*20\d{2})\s+(?:annual\s+)?report|20\d{2}财年年报',clause,re.I)):
+            for name in sorted(names):
+                bindings.append({'concept':name,'role':'fiscal_year','period':{'kind':'fiscal_year','value':next(iter(fys))}})
+        for b in bindings:
+            output.append({**b,'basis':'explicit_same_clause','source_char_start':offset,
+                'source_char_end':offset+len(clause),'quote':text[offset:offset+len(clause)]})
     return output
 
 

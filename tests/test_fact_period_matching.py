@@ -28,6 +28,30 @@ def test_uncertain_and_publication_periods_do_not_become_fact_periods():
     assert not prose_periods('Cash and cash equivalents as of December 31, 2025:\n[TABLE: original]\n100\n[/TABLE]\nA separate 20 percent fee.')
 
 
+def test_prose_fact_proof_does_not_cross_paragraphs_or_markdown_headings():
+    text=('Cash used in investing was $12 million in fiscal year 2026.\n'
+          '**Debt Proceeds**\n\nWe issue debt to maintain liquidity.')
+    assert not any(e['concept']=='debt_maturity' for e in prose_periods(text))
+    assert not prose_periods('As of December 31, 2025\n\nCash and cash equivalents were $100 million.')
+    assert not prose_periods('Fiscal 2025 expenses were $10 million.\n\n**Cash and cash equivalents**')
+
+
+def test_prose_fact_span_trims_whitespace_without_dropping_line_wrapped_fact():
+    text='\n\n  As of December 31, 2025, cash and cash\nequivalents were $100 million. \n\n'
+    evidence=prose_periods(text)
+    assert len(evidence)==1
+    e=evidence[0]
+    assert e['quote']==text.strip()
+    assert text[e['source_char_start']:e['source_char_end']]==e['quote']
+    assert e['source_char_start']==4
+
+
+def test_spaced_chinese_fact_dates_match_unspaced_identity():
+    from retrieval.fact_period_matching import query_period_requirements
+    assert query_period_requirements('截至 2025 年 12 月 31 日现金及现金等价物')['targets']==[
+        {'kind':'date','value':'2025-12-31'}]
+
+
 def test_combined_liquidity_is_not_proof_of_cash_equivalents_alone():
     from retrieval.fact_period_matching import balance_concepts
     for text in ['cash, cash equivalents and marketable securities',

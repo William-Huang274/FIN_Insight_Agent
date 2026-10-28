@@ -30,7 +30,10 @@ def fact_state(row,wanted):
     business={k:v for k,v in wanted.items() if k not in {'fact_periods','unknown_policy'}}
     for evidence in row.get('period_evidence',[]):
         lo,hi=evidence['source_char_start'],evidence['source_char_end']
-        if not (lo<bounds[1] and hi>bounds[0]):continue
+        # Partial overlap is not a complete fact proof: a clipped sentence or
+        # cell can leave the value/period outside the actual retrieval unit.
+        # This matches the complete-span rule applied to the rerank view.
+        if not (bounds[0]<=lo<hi<=bounds[1]):continue
         if evidence.get('entity') is not None:
             from .fact_period_matching import fact_entity_matches
             from .evidence_scope import matching_state

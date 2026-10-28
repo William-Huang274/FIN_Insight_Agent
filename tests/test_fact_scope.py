@@ -37,6 +37,21 @@ def test_unit_cannot_borrow_parent_fact_outside_its_own_interval():
     assert not select_scoped([row],request())[0]
 
 
+@pytest.mark.parametrize('bounds',[[0,12],[12,30],[11,14]])
+def test_partial_fact_overlap_is_not_a_complete_unit_period_proof(bounds):
+    row={'node_id':'clipped','source_interval':bounds,
+         'period_evidence':[fact(10,15,'2025-12-31')]}
+    assert not select_scoped([row],request())[0]
+    selected,receipt=select_scoped([row],request(unknown_policy='retain'))
+    assert selected and receipt['counts']=={'match':0,'unknown':1,'mismatch':0}
+
+
+def test_complete_fact_span_at_unit_boundaries_is_valid():
+    row={'node_id':'whole','source_interval':[10,15],
+         'period_evidence':[fact(10,15,'2025-12-31')]}
+    assert select_scoped([row],request())[0]
+
+
 def test_explicit_contract_rejects_invalid_period_and_natural_conflict():
     for value in ['2025-02-30','FY2025','2025-12-31T00:00:00']:
         with pytest.raises(ValueError):OrganizationEvidenceFilter(fact_periods=[{'concept':'cash_equivalents','kind':'date','value':value}])

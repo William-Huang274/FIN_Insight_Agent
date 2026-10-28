@@ -222,8 +222,8 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
             r'((?:19|20)\d{2})(?![\d-])', query, re.I))
     if len(report_years) == 1:
         constraint['annual_report_year'] = next(iter(report_years))
-        evidence.append({'field':'annual_report_year', 'basis':'explicit_report_year_with_calendar_cover_validation',
-                         'unknown_noncalendar_reports_retained':True})
+        evidence.append({'field':'annual_report_year', 'basis':'explicit_report_year_with_original_heading_or_calendar_cover',
+                         'unknown_fiscal_report_labels_retained':True})
     elif report_years:
         unresolved.append('multiple_annual_report_years_no_year_filter')
     periods = re.findall(r'(?:period\s+end(?:ing)?|报告期末|期末)\s*[:：]?\s*(\d{4}-\d{2}-\d{2})(?!\d)', query, re.IGNORECASE)
@@ -339,7 +339,7 @@ def document_constraint_states(metadata, plan):
             kind = REPORT_KINDS.get(row.get('form'))
             checks.append(kind == wanted['report_kind'] if kind else None)
         if 'annual_report_year' in wanted:
-            year = row.get('calendar_annual_year')
+            year = row.get('fiscal_report_year') or row.get('calendar_annual_year')
             checks.append(year == wanted['annual_report_year'] if year else None)
         states[document] = 'mismatch' if False in checks else 'unknown' if None in checks else 'match'
     return states

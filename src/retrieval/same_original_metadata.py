@@ -6,7 +6,7 @@ An exhibit and the filing that links it have different document keys.
 from collections import defaultdict
 from .filing_document_identity import original_filing_key
 
-FIELDS = ('form', 'period_end', 'publication_date', 'calendar_annual_year')
+FIELDS = ('form', 'period_end', 'publication_date', 'calendar_annual_year', 'fiscal_report_year')
 DERIVED = 'same_original_metadata_resolution'
 
 
@@ -18,10 +18,14 @@ def resolve(metadata):
             groups[key].append((document, row))
     output = {document:{k:v for k,v in row.items() if k != DERIVED} for document,row in metadata.items()}
     for key, entries in groups.items():
+        years = {row[field] for _,row in entries
+                 for field in ('calendar_annual_year', 'fiscal_report_year') if row.get(field)}
         for field in FIELDS:
             # Conflicting cover metadata must remain unresolved in every parse
             # of that same original, not be filled from a convenient neighbor.
             conflict = any(field in row.get('metadata_conflicts', []) for _,row in entries)
+            if field in {'calendar_annual_year', 'fiscal_report_year'} and len(years)>1:
+                conflict = True
             values = {row[field] for _,row in entries if row.get(field)}
             if conflict or len(values)>1:
                 for document,_ in entries:

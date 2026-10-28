@@ -63,3 +63,41 @@ def calendar_annual_year(bundle, descriptor, form_evidence):
     return {'policy':'sec-calendar-annual-year.v1', 'year':year,
             'char_start':match.start(), 'char_end':match.end(), 'quote':quote,
             'quote_sha256':sha256(quote.encode()).hexdigest()}
+
+
+def explicit_fiscal_report_year(bundle, descriptor, form_evidence):
+    """Read a standalone original report heading, never derive FY from a date.
+
+    Some issuers name a fiscal year differently from its end-date year. An
+    original prefatory heading is document identity; arbitrary body references,
+    catalogue titles and publication dates are not. Conflicting headings remain
+    unknown and cannot be resolved from another parse of the same original.
+    """
+    if not form_evidence or descriptor.get('form') not in {'10-K', '10-K/A'}:
+        return None
+    text = bundle.get('text', '')
+    if not isinstance(text, str):
+        return None
+    preface = text[:8192]
+    boundary = re.search(r'^\s*(?:\*{1,2}|#{1,6})?\s*PART\s+I\b', preface, re.I | re.M)
+    if boundary:
+        preface = preface[:boundary.start()]
+    pattern = re.compile(
+        r'^[ \t|*#]*Fiscal\s+(?:Year\s+)?(?P<year>(?:19|20)\d{2})\s+'
+        r'Annual\s+Report(?:\s+on\s+Form\s+(?P<form>10\s*-\s*K(?:\s*/\s*A)?))?'
+        r'[ \t|*]*$', re.I | re.M)
+    matches = [m for m in pattern.finditer(preface, form_evidence['char_end'])]
+    if not matches:
+        return None
+    proofs = [{'char_start':m.start(), 'char_end':m.end(), 'quote':text[m.start():m.end()],
+               'quote_sha256':sha256(text[m.start():m.end()].encode()).hexdigest()}
+              for m in matches]
+    years = {m.group('year') for m in matches}
+    forms = {re.sub(r'\s+', '', m.group('form')).upper() for m in matches if m.group('form')}
+    conflict = len(years) != 1 or bool(forms - {descriptor['form']})
+    year = next(iter(years)) if len(years) == 1 else None
+    if descriptor.get('calendar_annual_year') not in (None, year):
+        conflict = True
+    return {'policy':'sec-explicit-fiscal-report-heading.v1',
+            'status':'conflict' if conflict else 'confirmed',
+            'year':None if conflict else year, 'proofs':proofs}

@@ -251,7 +251,8 @@ def select_coverage(rows, needs, lane_receipts, metadata):
         # question's rerank score. This avoids losing the other half of a query.
         year = needs.get('preferred_report_year')
         eligible.sort(key=lambda r:(
-            0 if year and metadata.get(r['parent_document_id'], {}).get('calendar_annual_year') == year else 1,
+            0 if year and (metadata.get(r['parent_document_id'], {}).get('fiscal_report_year')
+                or metadata.get(r['parent_document_id'], {}).get('calendar_annual_year')) == year else 1,
             ranked[r['node_id']]))
         if needs['policy'] == 'organization-financial-needs.v2':
             # Preserve the scorer's order within a financial need. Route rank

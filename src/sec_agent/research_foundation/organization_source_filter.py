@@ -107,7 +107,7 @@ def source_metadata_details(bundle):
         elif recovered_names:
             descriptor['company_name_resolution'] = 'joint_registrants_not_a_unique_owner'
             descriptor['joint_registrant_names'] = recovered_names
-        from .sec_cover_metadata import cover_form, calendar_annual_year
+        from .sec_cover_metadata import cover_form, calendar_annual_year, explicit_fiscal_report_year
         from retrieval.filing_document_identity import original_filing_key
         if key := original_filing_key(bundle['source'].get('url')):
             descriptor['original_filing_key'] = key
@@ -136,6 +136,15 @@ def source_metadata_details(bundle):
             if annual is not None:
                 descriptor['calendar_annual_year'] = annual['year']
                 proof['calendar_annual_year'] = annual
+            fiscal = explicit_fiscal_report_year(bundle, descriptor, evidence)
+            if fiscal is not None:
+                proof['fiscal_report_year'] = fiscal
+                if fiscal['status'] == 'conflict':
+                    descriptor.setdefault('metadata_conflicts', []).extend(
+                        ['fiscal_report_year', 'calendar_annual_year'])
+                    descriptor['calendar_annual_year'] = None
+                else:
+                    descriptor['fiscal_report_year'] = fiscal['year']
     from retrieval.catalog_company_identity import with_original_registrant_identity
     return with_original_registrant_identity(descriptor), proof
 

@@ -97,6 +97,7 @@ def implementation_digest():
     files.append(root.parents[1]/'retrieval'/'statement_headings.py')
     files.append(root.parents[1]/'retrieval'/'business_scope_attributes.py')
     files.append(root.parents[1]/'retrieval'/'catalog_company_identity.py')
+    files.append(root.parents[1]/'retrieval'/'indexed_source_metadata.py')
     files.append(root.parents[1]/'retrieval'/'same_original_metadata.py')
     files.append(root.parents[1]/'retrieval'/'query_document_date.py')
     return sha256(b''.join(path.read_bytes() for path in files)).hexdigest()

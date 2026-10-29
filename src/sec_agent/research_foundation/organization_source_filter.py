@@ -100,6 +100,22 @@ def source_metadata_details(bundle):
     descriptor = original_source_metadata(bundle)
     proof = None
     if bundle:
+        metadata = json.loads(bundle['source']['metadata'])
+        # Old library imports retained these fields on the original nodes but
+        # dropped them from the source row. Restore only the bound node set's
+        # unanimous declaration; its legacy issuer ID is not a canonical ID.
+        recovery = bundle.get('node_recovery')
+        if recovery and metadata.get('import_origin') == 'existing_public_library':
+            from retrieval.indexed_source_metadata import node_metadata, merge_metadata
+            evidence = node_metadata(bundle['source'], recovery['nodes'])
+            metadata = merge_metadata(metadata, evidence)
+        if metadata.get('indexed_source_metadata'):
+            descriptor['indexed_source_metadata'] = metadata['indexed_source_metadata']
+            descriptor['company_name'] = metadata.get('company')
+        if metadata.get('indexed_company_conflict'):
+            descriptor['company_name'] = None
+            descriptor['issuer_id'] = None
+            descriptor['metadata_conflicts'] = ['company_name']
         from retrieval.catalog_company_identity import cover_names
         recovered_names = cover_names(bundle.get('text', ''))
         if len(recovered_names) == 1:
@@ -111,7 +127,6 @@ def source_metadata_details(bundle):
         from retrieval.filing_document_identity import original_filing_key
         if key := original_filing_key(bundle['source'].get('url')):
             descriptor['original_filing_key'] = key
-        metadata = json.loads(bundle['source']['metadata'])
         cik = metadata.get('cik')
         if (not recovered_names or len(recovered_names)==1) and isinstance(cik,(str,int)) and not isinstance(cik,bool):
             digits=str(cik).strip()
@@ -129,7 +144,7 @@ def source_metadata_details(bundle):
             conflict = previous is not None and previous != evidence['form']
             descriptor['form'] = None if conflict else evidence['form']
             if conflict:
-                descriptor['metadata_conflicts'] = ['form']
+                descriptor.setdefault('metadata_conflicts', []).append('form')
             proof = {**evidence, 'metadata_form': previous,
                 'status': 'conflict' if conflict else 'confirmed' if previous else 'recovered'}
             annual = calendar_annual_year(bundle, descriptor, evidence)

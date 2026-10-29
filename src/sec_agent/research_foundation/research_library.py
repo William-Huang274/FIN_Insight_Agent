@@ -61,6 +61,7 @@ def publish_library(target, snapshot_paths, *, public_sources_confirmed=False, p
     target = Path(target)
     sources, passages, entities, edges, observations = {}, {}, {}, {}, {}
     receipts, imports = [], []
+    imported_nodes = {}
 
     def add(table, value):
         if value['id'] in table and table[value['id']] != value:
@@ -102,9 +103,14 @@ def publish_library(target, snapshot_paths, *, public_sources_confirmed=False, p
             add(sources, source)
         elif sources[sid]['url'] != source['url']:
             raise ValueError('public_document_identity_conflict')
+        imported_nodes.setdefault(sid, []).append(node)
         add(passages, {'id': 'PASSAGE::' + node['node_id'] + '::' + node['content_sha256'][:16],
             'source_id': sid, 'locator': str(node.get('section_path') or node['node_id']),
             'body': body, 'digest': node['content_sha256']})
+    from retrieval.indexed_source_metadata import node_metadata, merge_metadata
+    for sid, nodes in imported_nodes.items():
+        source = sources[sid]
+        source['metadata'] = merge_metadata(source['metadata'], node_metadata(source, nodes))
     for edge in edges.values():
         if not any(p['source_id'] == edge['source_id'] for p in passages.values()):
             raise ValueError('edge_requires_readable_source_document:' + edge['id'])

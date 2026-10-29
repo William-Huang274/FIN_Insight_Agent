@@ -116,6 +116,21 @@ def test_repeated_units_do_not_spend_parent_route_quota(tmp_path):
     assert set(ids)=={'one-large-parent','another-parent'}
 
 
+def test_raw_provider_and_live_normalized_query_have_same_cosine_scores(tmp_path):
+    directory,_,_,parents=fixture(tmp_path)
+    needs=compile_needs('cash equivalents',{'policy':'conservative.v5','constraint':{}})
+    query=np.asarray(vec(.7),dtype=np.float32)
+    expected,receipt=rank(directory,parents,query,needs,{'doc':{}},None,policy='needs_window.v4')
+    for scale in (1.0003, 7.):
+        actual,other=rank(directory,parents,(query*scale).tolist(),needs,{'doc':{}},None,policy='needs_window.v4')
+        assert actual==expected
+        assert [s['score'] for s in other['dense_trace']['scores']]==pytest.approx(
+            [s['score'] for s in receipt['dense_trace']['scores']],abs=2e-7)
+    for invalid in ([0.]*1024,[float('nan')]+[0.]*1023,[1.]*5):
+        with pytest.raises(ValueError,match='invalid_vector'):
+            rank(directory,parents,invalid,needs,{'doc':{}},None,policy='needs_window.v4')
+
+
 def test_unit_prefilter_keeps_verified_owner_binding_and_rejects_other_entity(tmp_path):
     from retrieval.semantic_unit_index import select_units
     directory,_,_,parents=fixture(tmp_path)

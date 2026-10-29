@@ -162,6 +162,10 @@ def rank(directory,parents,query_vector,needs,metadata,wanted,*,policy,graph=Non
     from .organization_search_needs import lexical_candidates
     from .candidate_pipeline import fuse_channels
     from sec_agent.research_foundation.organization_vector_math import verified_cosine_scores
+    from sec_agent.research_foundation.organization_hybrid_retrieval import vector
+    # Offline preparations may pass raw provider vectors while the live
+    # service already normalizes them. Share the same cosine contract here.
+    query_vector = vector(query_vector, 1024)
     units=select_units(directory,parents,wanted)
     matrix=np.load(Path(directory)/'unit-vectors.npy',mmap_mode='r',allow_pickle=False)
     scores=verified_cosine_scores(matrix,[u['vector_index'] for u in units],query_vector)

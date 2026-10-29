@@ -171,6 +171,18 @@ class LocalRecords:
     def add(self, key, value):
         return self._write(key, value, None, add=True)
 
+    def compare_and_set(self, key, expected, value):
+        """Replace an exact durable receipt atomically; never revive expired data."""
+        encoded = json.dumps(_pack(value), ensure_ascii=False, allow_nan=False)
+        before = json.dumps(_pack(expected), ensure_ascii=False, allow_nan=False)
+        if len(encoded.encode("utf-8")) > MAX_VALUE_BYTES:
+            raise ValueError("local_record_too_large")
+        with self.db:
+            return self.db.execute(
+                "UPDATE records SET value=? WHERE key=? AND value=? AND expires IS NULL",
+                (encoded, key, before),
+            ).rowcount == 1
+
     def set(self, key, value, *, expire=None):
         return self._write(key, value, expire, add=False)
 

@@ -28,7 +28,7 @@ def build(index_path,catalog,scope_path,receipt_paths,output):
             if file_digest(stream,'sha256').hexdigest()!=expected:raise ValueError('unit_overlay_original_file_changed')
     output=Path(output);output.mkdir(parents=True,exist_ok=False)
     subset=select_parents(catalog,output/'plan.sqlite',selected)
-    reader=UnitEmbeddingReceiptReader(receipt_paths)
+    reader=UnitEmbeddingReceiptReader(receipt_paths,allow_unsubmitted=True)
     try:
         matrix=np.load(index_path.parent/'vectors.npy',mmap_mode='r',allow_pickle=False)
         with closing(sqlite3.connect((index_path.parent/'navigation.sqlite').as_uri()+'?mode=ro',uri=True)) as db:

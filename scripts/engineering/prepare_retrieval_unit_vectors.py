@@ -25,9 +25,9 @@ def prepare(catalog,scope,output,reuse_receipts=()):
     reused=set();reuse_proofs={}
     if reuse_receipts:
         from retrieval.unit_embedding_receipts import UnitEmbeddingReceiptReader
-        # Require every prior batch to be completed. Failed/unknown inputs
-        # must not slip into a differently packed new batch and get resubmitted.
-        with closing(UnitEmbeddingReceiptReader(reuse_receipts)) as reader:
+        # A stopped plan may contain never-submitted jobs. Reuse its completed
+        # inputs, but reject any failed/pending receipt before repacking work.
+        with closing(UnitEmbeddingReceiptReader(reuse_receipts,allow_unsubmitted=True)) as reader:
             reused=set(reader.inputs)
         for folder in reuse_receipts:
             for name in ('plan.json','jobs.jsonl','receipts/records-v1.sqlite'):
@@ -80,6 +80,7 @@ def execute(output):
     stat=catalog.stat();signature=(stat.st_size,stat.st_mtime_ns,stat.st_ctime_ns)
     basis=plan['TokenBudgetBasis'];limits=basis['limits']
     summary={'status':'running','completed_batches':0,'provider_calls':0,'reported_new_tokens':0,
+             'provider_attempts':0,'failed_attempts_usage_unknown':0,
              'plan_sha256':digest(output/'plan.json'),'financial_research_calls':0}
     try:
         with (closing(QwenRetrieval(os.environ['QWEN_API_KEY'],embedding_model='qwen3.7-text-embedding')) as api,
@@ -103,7 +104,14 @@ def execute(output):
                         if sha256(text.encode()).hexdigest()!=item['input_sha256']:
                             raise ValueError('unit_preparation_input_digest_mismatch')
                         texts.append(text)
-                    _,receipt=client.embed(texts)
+                    attempts_before=client.submitted_calls
+                    try:
+                        _,receipt=client.embed(texts)
+                    except Exception:
+                        summary['failed_attempts_usage_unknown']+=client.submitted_calls-attempts_before
+                        raise
+                    finally:
+                        summary['provider_attempts']+=client.submitted_calls-attempts_before
                     summary['completed_batches']+=1;summary['provider_calls']+=receipt['provider_calls']
                     usage=receipt['newly_reported_usage']
                     summary['reported_new_tokens']+=usage.get('total_tokens',usage.get('input_tokens',0))

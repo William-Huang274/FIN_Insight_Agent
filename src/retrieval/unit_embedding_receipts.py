@@ -21,7 +21,7 @@ class _ReadOnlyRecords:
 
 
 class UnitEmbeddingReceiptReader:
-    def __init__(self,outputs,*,allow_partial=False):
+    def __init__(self,outputs,*,allow_partial=False,allow_unsubmitted=False):
         self.records=[];self.inputs={};self._last=None
         self.completed_batches=0;self.incomplete_batches=0
         try:
@@ -38,6 +38,7 @@ class UnitEmbeddingReceiptReader:
                     saved=records.get(key)
                     if saved is None or saved.get('status')!='completed':
                         self.incomplete_batches+=1
+                        if saved is None and allow_unsubmitted:continue
                         if not allow_partial:raise ValueError('unit_receipt_preparation_incomplete_no_provider_fallback')
                         continue
                     if saved['input_sha256']!=hashes or saved['result']['model']!='qwen3.7-text-embedding':

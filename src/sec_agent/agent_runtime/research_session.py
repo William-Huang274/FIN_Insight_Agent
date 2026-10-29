@@ -121,7 +121,7 @@ def _stage(actor, event, **details):
                         "recorded_at": datetime.now(timezone.utc).isoformat(), **details})
 
 
-def build_research_session_graph(*, research, review, converge, writer, verifier, quick_writer=None, revise_research=None, hierarchical=False, triage_review=None, promote_orientation=False, review_action_check=None):
+def build_research_session_graph(*, research, review, converge, writer, verifier, quick_writer=None, revise_research=None, hierarchical=False, triage_review=None, promote_orientation=False, review_action_check=None, state_schema=ResearchSessionState):
     """One fresh research request -> real artifacts -> review -> report -> HITL.
 
     Existing report session nodes handle subsequent ask/revise/accept actions;
@@ -146,7 +146,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         writer=writer, verifier=verifier, quick_writer=quick_writer,
         artifacts=current_task_artifacts,
         initial=lambda state: {key: state[key] for key in ("report", "report_review", "revisions", "phase")},
-        state_schema=ResearchSessionState, input_schema=ResearchRequest, start_at_initialize=False,
+        state_schema=state_schema, input_schema=ResearchRequest, start_at_initialize=False,
         revision_handler=revision_handler if revise_research is not None else None,
         revision_requires_case_review=True,
         review_action_check=review_action_check,

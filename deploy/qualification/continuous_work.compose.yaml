@@ -1,0 +1,12 @@
+# Explicit isolated integration only. Never loaded by a normal deployment.
+services:
+  api:
+    environment:
+      LANGSERVE_GRAPHS: '{"research_session":"/probe/continuous_work_graph.py:graph"}'
+      FIN_CONTINUOUS_WORK_QUALIFICATION: '1'
+      FINSIGHT_ON_DEMAND_ENABLED: '1'
+      FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED: '1'
+      FINSIGHT_WORKING_MEMORY_PATH: /probe-audit/working-memory.sqlite
+      FIN_MODEL_BUDGET_POSTGRES_URI: ${FIN_PROBE_BUDGET_DSN:?restricted isolated budget worker}
+    volumes:
+      - ../../tests/integration/fixtures/continuous_work_graph.py:/probe/continuous_work_graph.py:ro

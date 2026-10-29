@@ -894,10 +894,23 @@ def _create_bound_research_phases(*, root, settings, profile, case, run_id, thre
 @asynccontextmanager
 async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime):
     if runtime.execution_runtime is None:
+        # Agent Server uses this graph to decode persisted checkpoints too.
+        # A legacy-only schema silently hides continuous-work channels on reads.
+        from .on_demand_research import OnDemandResearchState
+        from .research_session import ResearchSessionState
+        class ReadableResearchState(ResearchSessionState, OnDemandResearchState):
+            # Read channels must not manufacture empty reducer values from the
+            # other contract: admission compares exact persisted state.
+            messages: list
+            conversation: list
+            model_events: list
         def unavailable(_):
             raise RuntimeError("schema_only_execution_unavailable")
         phases = {key: RunnableLambda(unavailable) for key in ("research", "review", "converge", "writer", "verifier", "quick_writer", "revise_research")}
-        yield build_research_session_graph(**phases).compile(name="research_session")
+        graph = build_research_session_graph(**phases, state_schema=ReadableResearchState)
+        graph.add_node('admitted_input', unavailable)
+        graph.add_node('work', unavailable)
+        yield graph.compile(name="research_session")
         return
     from .agent_server_entry import _require_langsmith_execution_environment
     _require_langsmith_execution_environment(config)

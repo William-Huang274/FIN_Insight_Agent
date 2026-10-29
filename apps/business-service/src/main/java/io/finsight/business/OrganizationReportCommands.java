@@ -234,6 +234,8 @@ class OrganizationReportCommands {
         if(Set.of("dispatching","unknown").contains(c.get("status"))) {
             var reply=python.request(actor,"GET","organization/executions/"+execution+(routeKind(request).equals("root_task") ? "/root-actions/" : "/report-actions/")+id+"?project_id="+project,null,null);
             if(reply.status()==200&&matches(execution,c,reply.body()))accept(execution,id,c,200,reply.body());
+            else if(reply.status()==409&&reply.body()!=null&&"not_dispatched".equals(reply.body().path("submission_status").asText()))
+                accept(execution,id,c,reply.status(),reply.body());
         }
         bindings.preparation(actor,project,execution); return view(command(execution,id));
     }

@@ -2,7 +2,7 @@
 
 连续问答、底稿、委派、复核与成文的统一入口设计见[研究伙伴产品边界](product/research_partner_workflow.zh-CN.md)与[按需研究运行时第一阶段](architecture/on_demand_research_runtime.zh-CN.md)。A1 交付意图合同与 A2 Java/BFF 准备准入离线回归通过；C研究侧内部统一主入口与按需操作已实现，尚未公开部署。目标是新任务仅保留一个生产调度入口，旧完整图仅作历史运行兼容。
 
-[B/D父子任务工程验收](engineering/delegated_task_acceptance.zh-CN.md)记录内部执行、材料与版本交接、命令迁移及离线证据。[C按需操作工程验收](engineering/on_demand_operation_acceptance.zh-CN.md)记录新路径固定后继退出、版本化操作与内部入口。[E连续研究服务验收](engineering/continuous_work_service_acceptance.zh-CN.md)记录公开接线、唯一新建入口、版本合同和确定性证据；统一部署及实际服务验收尚未完成，新能力未开放。按用户最新决定，先用检索方明确认可的稳定联调版本开展Agent测试，不等待下一轮检索改造全部结束；检索质量限制单列。
+[B/D父子任务工程验收](engineering/delegated_task_acceptance.zh-CN.md)记录内部执行、材料与版本交接、命令迁移及离线证据。[C按需操作工程验收](engineering/on_demand_operation_acceptance.zh-CN.md)记录新路径固定后继退出、版本化操作与内部入口。[E连续研究服务验收](engineering/continuous_work_service_acceptance.zh-CN.md)记录公开接线、唯一新建入口、版本合同、隔离实际服务和浏览器验收范围。隔离环境已接入冻结全库；实际验证发现并修复派发前中断无法核对、连续任务交付配置未传入成文执行器的问题。共享生产部署尚未开放，具体通过项及待验项以该文档为准。先用检索方明确认可的稳定联调版本开展Agent测试，不等待下一轮检索改造全部结束；检索质量限制单列。
 
 同一设计第5.3—5.7节补充研究判断的形成/检验/更新、设计者指引与方法披露、研究视角审阅及行为验收。“人的引导”指产品设计者提供的支持，不以用户反复纠偏作为自主研究能力。基本指引与首批方法已接入维护代码并做离线消费验证；连续工作与审阅策略仍待后续实施，无付费效果证明。
 

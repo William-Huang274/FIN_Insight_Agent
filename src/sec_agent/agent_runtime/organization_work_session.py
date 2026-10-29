@@ -154,9 +154,20 @@ async def organization_work_session(*, native, resources, authority, check, orga
                 raise ValueError('organization_work_continuation_input_mismatch')
             return {}
 
+        async def work(state, config: RunnableConfig):
+            # Admission validates the immutable native configuration. A signed
+            # continuation may change only the requested deliverable/review;
+            # all nested operations must receive that same effective selection.
+            # Do not rewrite the persisted native request or relax phase checks.
+            if host.execution_from_config(config) != phase_arguments['execution']:
+                raise ValueError('organization_work_execution_configuration_mismatch')
+            effective = {**config, 'configurable': {**config.get('configurable', {}),
+                'finsight_execution': execution.model_dump(mode='json')}}
+            return await parent.ainvoke(state, effective)
+
         graph = StateGraph(OnDemandResearchState)
         graph.add_node('admitted_input', guard)
-        graph.add_node('work', parent)
+        graph.add_node('work', work)
         graph.add_edge(START, 'admitted_input')
         graph.add_edge('admitted_input', 'work')
         graph.add_edge('work', END)

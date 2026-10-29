@@ -116,3 +116,20 @@ def test_legacy_http_receipts_replay_or_hold_without_dispatch(tmp_path):
         assert response.headers['Idempotent-Replayed'] == 'true'
         assert client.post('/api/v1/dispatch', headers=uncertain, json={}).status_code == 409
     assert calls == []
+
+
+def test_preflight_liveness_and_legacy_are_not_guessed(tmp_path):
+    from filelock import FileLock
+    from hashlib import sha256
+    import json
+    owner, op = 'oidc:alice', str(uuid4())
+    key = sha256(json.dumps([owner, op]).encode()).hexdigest()
+    receipts = SubmissionReceipts(None, tmp_path)
+    receipts.claim(key, 'fingerprint')
+    assert not receipts.abandoned_preflight(tmp_path, owner, op)
+    receipts.phase(key, 'fingerprint', 'validating')
+    with FileLock(str(tmp_path / (key + '.lock'))):
+        assert not receipts.abandoned_preflight(tmp_path, owner, op)
+    assert receipts.abandoned_preflight(tmp_path, owner, op)
+    receipts.phase(key, 'fingerprint', 'dispatch_started')
+    assert not receipts.abandoned_preflight(tmp_path, owner, op)

@@ -67,7 +67,7 @@ def test_parent_source_view_preserves_delegated_evidence_but_not_model_claims(na
         content='failed', status='error', artifact={'source_items': {identity: original}})]}).source_snapshot() == {}
 
 
-@pytest.mark.parametrize('next_delivery', ['answer', 'workpaper'])
+@pytest.mark.parametrize('next_delivery', ['answer', 'workpaper', 'report'])
 def test_native_work_session_uses_same_parent_and_does_not_start_old_graph(continuous, tmp_path, monkeypatch, next_delivery):
     from sec_agent.agent_runtime import research_session_runtime as runtime
     from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionAuthority
@@ -156,6 +156,44 @@ def test_native_work_session_uses_same_parent_and_does_not_start_old_graph(conti
                 return ChatResult(generations=[ChatGeneration(message=AIMessage(content='', tool_calls=[call]))])
         monkeypatch.setattr('sec_agent.agent_runtime.case_review_agent.case_chat_model',
             lambda *a, **k: WorkingPaperModel(responses=[AIMessage(content='unused')]))
+    phase_calls = []
+    if next_delivery == 'report':
+        from langchain_core.outputs import ChatResult, ChatGeneration
+        from langchain_core.runnables import RunnableConfig, RunnableLambda
+        from sec_agent.agent_runtime.research_operation import bind_operation
+        from test_on_demand_research import artifact_fixture
+        monkeypatch.setattr('sec_agent.agent_runtime.organization_work_session.artifact_reader',
+                            lambda *args: artifact_fixture())
+        class ReportModel(Model):
+            def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+                catalog = next((json.loads(m.content) if isinstance(m.content, str) else m.content for m in reversed(messages)
+                                if getattr(m, 'name', '') == 'research_object_catalog'), None)
+                produced = catalog and next((r for r in catalog if r['id'] == 'report'), None)
+                if produced:
+                    name, body = 'deliver_research_result', {'object_id': 'report', 'digest': produced['digest']}
+                elif catalog and not phase_calls:
+                    name, body = 'request_research_operation', {'request': {'action': 'compose',
+                        'purpose': 'Explain the current evidence', 'basis': {r['id']: r['digest'] for r in catalog}}}
+                else:
+                    name, body = 'research_object_catalog', {}
+                return ChatResult(generations=[ChatGeneration(message=AIMessage(content='', tool_calls=[
+                    {'name': name, 'id': name+str(len(messages)), 'args': body}]))])
+        monkeypatch.setattr('sec_agent.agent_runtime.case_review_agent.case_chat_model',
+            lambda *a, **k: ReportModel(responses=[AIMessage(content='unused')]))
+        # Keep the real phase selector and its configuration equality check;
+        # replace only the expensive actor executor, not the parent handoff.
+        def bound_phases(**kwargs):
+            async def operate(state, config: RunnableConfig):
+                selected = runtime.execution_from_config(config)
+                assert selected == kwargs['execution']
+                assert selected.delivery_intent == 'report'
+                assert selected.model == s.body['execution'].get('model', 'default')
+                phase_calls.append(selected)
+                value = {'title': 'Qualification report', 'narrative_markdown': 'Synthetic engineering output', 'charts': []}
+                bound = bind_operation(state['research_operation'], kwargs['artifact_reader'](state), state)
+                return {'report': value, 'operation_result': {**bound, 'status': 'submitted', 'output': value}}
+            return {'operate': RunnableLambda(operate)}
+        monkeypatch.setattr(runtime, '_create_bound_research_phases', bound_phases)
     async def continue_work(injected=False):
         async with runtime.research_session_graph(config, SimpleNamespace(execution_runtime=True)) as graph:
             value = {**result, 'messages': [*result['messages'], HumanMessage(content=payload['message'])]}
@@ -166,6 +204,10 @@ def test_native_work_session_uses_same_parent_and_does_not_start_old_graph(conti
     assert continued['task_outcome']['artifact_kind'] == next_delivery
     assert continued['task_outcome']['execution_status'] == 'submitted'
     assert len(continued['messages']) > len(result['messages'])
+    if next_delivery == 'report':
+        assert len(phase_calls) == 1
+        assert continued['report']['title'] == 'Qualification report'
+        assert config['configurable']['finsight_execution']['delivery_intent'] == 'answer'
     if next_delivery == 'workpaper':
         from sec_agent.agent_runtime.working_memory import WorkingMemory
         memory = WorkingMemory(env['FINSIGHT_WORKING_MEMORY_PATH'], owner='organization:' + grant['organization_id'],

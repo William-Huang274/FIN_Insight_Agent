@@ -7,6 +7,8 @@ must share a qualified transactional receipt store before enabling ingress there
 from hashlib import sha256
 import json
 from uuid import UUID
+from pathlib import Path
+from filelock import FileLock, Timeout
 
 from sec_agent.adapters.local_records import LocalRecords as Cache
 from starlette.requests import Request
@@ -27,6 +29,46 @@ class SubmissionReceipts:
     def complete(self, key, fingerprint, status, body):
         with Cache(self.directory) as cache:
             cache[key] = {'fingerprint': fingerprint, 'status': 'received', 'http_status': status, 'body': body}
+
+    def phase(self, key, fingerprint, phase):
+        with Cache(self.directory) as cache:
+            value = cache[key]
+            if value['fingerprint'] != fingerprint or value['status'] != 'dispatching':
+                raise RuntimeError('submission_phase_identity_changed')
+            cache[key] = {**value, 'dispatch_phase': phase}
+
+    @staticmethod
+    def abandoned_preflight(directory, owner, identifier):
+        """A live handler owns the OS lock; legacy/dispatch-started stays unknown."""
+        key = sha256(json.dumps([owner, str(UUID(identifier))]).encode()).hexdigest()
+        lock = FileLock(str(Path(directory) / (key + '.lock')), timeout=0)
+        try:
+            with lock:
+                with Cache(directory) as cache:
+                    value = cache.get(key) or {}
+                    if value.get('status') != 'dispatching':
+                        return False
+                    if value.get('dispatch_phase') == 'validating':
+                        return True
+                    # Explicit offline maintenance evidence is separate from the
+                    # original claim. Never infer a phase for legacy receipts.
+                    proof = value.get('quiescent_absence') or {}
+                    name = proof.get('evidence_file', '')
+                    if not name or Path(name).name != name:
+                        return False
+                    raw = (Path(directory) / 'maintenance' / name).read_bytes()
+                    evidence = json.loads(raw)
+                    return (sha256(raw).hexdigest() == proof.get('sha256')
+                            and evidence.get('receipt_key') == key
+                            and evidence.get('original_receipt') == {k:v for k,v in value.items() if k != 'quiescent_absence'}
+                            and evidence.get('native_stopped') is True
+                            and evidence.get('ingress_stopped') is True
+                            and evidence.get('matching_native_runs') == []
+                            and evidence.get('active_native_runs') == [])
+        except Timeout:
+            return False
+        except (OSError, ValueError, TypeError, AttributeError):
+            return False
 
     @staticmethod
     def lookup(directory, owner, identifier):
@@ -100,4 +142,22 @@ class SubmissionReceipts:
                     if start:
                         await send(start)
                     await send({'type': 'http.response.body', 'body': content})
-        await self.app(scope, replay_body, capture)
+        # Only these handlers explicitly mark the boundary immediately before
+        # SDK create. No time-based expiry or inferred retry for older receipts.
+        phased = scope['path'] in {
+            '/api/v1/internal-research/organization/root-actions',
+            '/api/v1/internal-research/organization/report-actions',
+        }
+        lock = FileLock(str(Path(self.directory) / (key + '.lock')), timeout=5, thread_local=False) if phased else None
+        if lock:
+            await run_in_threadpool(lock.acquire)
+        try:
+            if lock:
+                await run_in_threadpool(self.phase, key, fingerprint, 'validating')
+                async def mark_dispatch():
+                    await run_in_threadpool(self.phase, key, fingerprint, 'dispatch_started')
+                scope['finsight_mark_dispatch'] = mark_dispatch
+            await self.app(scope, replay_body, capture)
+        finally:
+            if lock:
+                lock.release()

@@ -1,0 +1,10 @@
+# Only an independently copied frozen publication; never the original archive.
+services:
+  api:
+    environment:
+      FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT: /frozen-indices
+      FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED: '1'
+      FIN_CONTINUOUS_LIBRARY_QUALIFICATION: '1'
+      FIN_QUALIFICATION_QUERY: ${FIN_QUALIFICATION_QUERY:?cached query required}
+    volumes:
+      - ${FIN_QUALIFICATION_INDEX_COPY:?independent release copy}:/frozen-indices

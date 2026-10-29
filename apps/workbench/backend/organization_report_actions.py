@@ -104,6 +104,10 @@ def install_organization_report_action_routes(router, service):
         await reauthorize(service, grant)
         # Any exception after this point retains SubmissionReceipts' uncertain
         # claim. Java reconciles by operation ID; there is no transport retry.
+        mark_dispatch = request.scope.get('finsight_mark_dispatch')
+        if mark_dispatch is None:
+            raise HTTPException(503, '报告操作缺少持久派发边界，未创建运行')
+        await mark_dispatch()
         run = await service.sdk.runs.create(tid, 'research_session', **arguments,
             multitask_strategy='reject', stream_mode='custom', stream_subgraphs=True, stream_resumable=True)
         try:
@@ -122,6 +126,13 @@ def install_organization_report_action_routes(router, service):
         runs = await service.all_runs(execution_id)
         candidates = [r for r in runs if (r.get('metadata', {}).get('organization_report_action') or {}).get(
             'report_action_operation_id') == grant['report_action_operation_id']]
+        if not candidates:
+            from .submission_receipts import SubmissionReceipts
+            if await run_in_threadpool(SubmissionReceipts.abandoned_preflight,
+                    service.intake_receipts_root, service_owner(), grant['report_action_operation_id']):
+                await reauthorize(service, grant)
+                return JSONResponse({'submission_status': 'not_dispatched',
+                    'detail': '原操作在原生派发前中断，未创建运行；原命令保留为未执行，可重新发起操作。'}, status_code=409)
         if len(candidates) != 1:
             raise HTTPException(409, '无法唯一核对报告操作，保留原命令')
         result = checked_receipt(candidates[0], thread, grant)

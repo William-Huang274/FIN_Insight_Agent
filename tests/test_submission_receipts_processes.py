@@ -16,6 +16,41 @@ from apps.workbench.backend.authentication import _request_owner
 from apps.workbench.backend.submission_receipts import SubmissionReceipts
 
 
+def _phase_process(root, operation, dispatched, entered):
+    from fastapi import Request
+    app = FastAPI()
+    @app.post('/api/v1/internal-research/organization/root-actions')
+    async def action(request: Request):
+        if dispatched:
+            await request.scope['finsight_mark_dispatch']()
+        entered.set()
+        await asyncio.sleep(120)
+    app.add_middleware(SubmissionReceipts, directory=root)
+    token = _request_owner.set('oidc:phase-owner')
+    try:
+        with TestClient(app) as client:
+            client.post('/api/v1/internal-research/organization/root-actions',json={},headers={
+                'Idempotency-Key':operation,'X-Workbench-Request':'1'})
+    finally:
+        _request_owner.reset(token)
+
+
+def test_process_death_before_vs_after_sdk_boundary(tmp_path):
+    ctx = multiprocessing.get_context('spawn')
+    for dispatched in (False, True):
+        operation = str(uuid4())
+        entered = ctx.Event()
+        process = ctx.Process(target=_phase_process,args=(str(tmp_path),operation,dispatched,entered))
+        process.start()
+        try:
+            assert entered.wait(45)
+            assert not SubmissionReceipts.abandoned_preflight(tmp_path,'oidc:phase-owner',operation)
+        finally:
+            process.terminate(); process.join(15)
+        assert not process.is_alive()
+        assert SubmissionReceipts.abandoned_preflight(tmp_path,'oidc:phase-owner',operation) is (not dispatched)
+
+
 def _request_process(root, key, owner, payload, result, entered=None,
                      release=None, saved=None):
     app = FastAPI()

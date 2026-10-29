@@ -125,7 +125,7 @@ class ResearchIntakeTest {
                     }
                     if(path.startsWith("organization/executions/")&&(path.contains("/report-actions/")||path.contains("/root-actions/"))) {
                         var result=reportCommands.get(path.substring(path.lastIndexOf('/')+1));
-                        send(exchange,result==null?404:200,result==null?JSON.createObjectNode():result);return;
+                        send(exchange,result==null?404:result.has("submission_status")?409:200,result==null?JSON.createObjectNode():result);return;
                     }
                     if(path.startsWith("organization/executions/")&&path.endsWith("/continuation-state")){
                         var result=organizationContinuations.get(path.split("/")[2]);send(exchange,result==null?404:200,result==null?JSON.createObjectNode():result);return;
@@ -946,6 +946,20 @@ class ResearchIntakeTest {
             var read=workspace(f.researcher(),"GET",base+"/read-access",null,200);
             assertThat(read.path("run_id")).isEqualTo(accepted.path("run_id"));
             assertThat(read.path("run_ids").size()).isEqualTo(2);
+            UUID abandoned=UUID.randomUUID(), nextCheckpoint=UUID.randomUUID();
+            var follow=new HashMap<String,Object>(body);
+            follow.put("id",abandoned);follow.put("checkpoint_id",nextCheckpoint);
+            follow.put("previous_run_id",accepted.path("run_id").asText());
+            dropReportCommands.add(abandoned.toString());
+            assertThat(workspace(f.researcher(),"POST",commands,follow,200).path("status").asText()).isEqualTo("unknown");
+            reportCommands.remove(abandoned.toString());
+            assertThat(workspace(f.researcher(),"POST",commands+"/"+abandoned+"/reconcile",null,200).path("status").asText()).isEqualTo("unknown");
+            reportCommands.put(abandoned.toString(),JSON.createObjectNode().put("submission_status","not_dispatched"));
+            int beforeRecovery=reportDispatches.get();
+            assertThat(workspace(f.researcher(),"POST",commands+"/"+abandoned+"/reconcile",null,200).path("status").asText()).isEqualTo("rejected");
+            assertThat(reportDispatches.get()).isEqualTo(beforeRecovery);
+            follow.put("id",UUID.randomUUID());
+            assertThat(workspace(f.researcher(),"POST",commands,follow,200).path("status").asText()).isEqualTo("received");
             // Turning off admission cannot rewrite the immutable preparation.
             org.springframework.test.util.ReflectionTestUtils.setField(nativeDrafts,"onDemandEnabled",false);
             workspace(f.researcher(),"POST",base+"/prepare",options,409);

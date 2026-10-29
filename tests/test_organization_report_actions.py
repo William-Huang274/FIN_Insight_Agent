@@ -110,6 +110,35 @@ def test_uncertain_action_is_query_only(reporting, fault):
     assert len(s.intake.runs[s.grant['execution_id']]) == 2
 
 
+def test_preflight_crash_is_known_not_dispatched_but_never_retried(reporting, monkeypatch):
+    s = reporting
+    def crash(*args):
+        raise RuntimeError('interrupted before SDK boundary')
+    monkeypatch.setattr('apps.workbench.backend.organization_report_actions.verify_storage', crash)
+    with TestClient(s.intake.app(), raise_server_exceptions=False) as c:
+        assert submit(c, s).status_code == 500
+        assert submit(c, s).json()['submission_status'] == 'unknown'
+        response = reconcile(c, s)
+        assert response.status_code == 409
+        assert response.json()['submission_status'] == 'not_dispatched'
+        s.state['status'] = 404
+        assert reconcile(c, s).status_code == 404
+    assert len(s.intake.runs[s.grant['execution_id']]) == 1
+
+
+def test_sdk_timeout_without_visible_run_is_still_unknown(reporting):
+    s = reporting
+    async def crash(*args, **kwargs):
+        raise httpx.ReadTimeout('server acceptance cannot be inferred')
+    s.intake.service.sdk.runs.create = crash
+    with TestClient(s.intake.app(), raise_server_exceptions=False) as c:
+        assert submit(c, s).status_code == 500
+        result = reconcile(c, s)
+        assert result.status_code == 409
+        assert result.json().get('submission_status') != 'not_dispatched'
+    assert len(s.intake.runs[s.grant['execution_id']]) == 1
+
+
 @pytest.mark.parametrize('fault', ['checkpoint', 'report', 'version', 'interrupt', 'busy', 'failed',
                                  'unknown_usage', 'partial_audit', 'missing_audit', 'configuration', 'operation', 'payload'])
 def test_stale_or_unauthorized_action_never_dispatches(reporting, fault):

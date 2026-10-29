@@ -32,6 +32,15 @@ def _ids(value: list, allowed: set, label: str) -> list:
     return value
 
 
+def partition_scope(elements: list[dict], source_ids: list[str]) -> tuple[list[str], list[str]]:
+    """Keep structural whitespace in the source ledger, out of semantic tasks."""
+    by_id = {e['id']: e for e in elements}
+    _ids(source_ids, set(by_id), 'partition source scope')
+    retained = [eid for eid in source_ids if by_id[eid]['kind'] != 'table'
+                and not by_id[eid]['text'].replace('\u200b', '').replace('\ufeff', '').strip()]
+    return [eid for eid in source_ids if eid not in set(retained)], retained
+
+
 def validate_delta(packet: dict, result: dict, *, trusted_roles: dict | None = None) -> dict:
     """Return a separate pending overlay; preserve every original source element.
 
@@ -68,12 +77,20 @@ def validate_delta(packet: dict, result: dict, *, trusted_roles: dict | None = N
     proposed = []
     touched: set[str] = set()
     unresolved = []
+    retained_structure: set[str] = set()
     for d in decisions:
         task = by_task[d["task_id"]]
         kind = task["kind"]
         _check(kind in {"footnote", "context", "partition"}, "unknown task kind")
         scope = _ids(task["scope_ids"], set(by_id), "task scope")
         _check(scope == sorted(scope, key=positions.get), "unordered task scope")
+        if 'partition_source_ids' in task:
+            _check(kind == 'partition', 'structural scope only applies to partition')
+            original = task['partition_source_ids']
+            _check(original == sorted(original, key=positions.get), 'unordered partition source scope')
+            expected_scope, excluded = partition_scope(elements, original)
+            _check(scope == expected_scope, 'semantic scope omitted non-whitespace source')
+            retained_structure.update(excluded)
         if d.get("status") == "unresolved":
             _check(set(d) == {"task_id", "status", "reason"}, "unresolved fields")
             _check(isinstance(d["reason"], str) and 0 < len(d["reason"].strip()) <= 600,
@@ -125,7 +142,8 @@ def validate_delta(packet: dict, result: dict, *, trusted_roles: dict | None = N
         "source": deepcopy(packet["source"]),
         "elements": deepcopy(elements),
         "coverage": [{"element_id": eid, "state": "proposal_pending_review"
-                      if eid in touched else "retained_unreviewed"} for eid in element_ids],
+                      if eid in touched else "retained_structure" if eid in retained_structure
+                      else "retained_unreviewed"} for eid in element_ids],
         "proposals": proposed, "unresolved": unresolved,
         "semantic_accepted": False, "publication_allowed": False,
     }

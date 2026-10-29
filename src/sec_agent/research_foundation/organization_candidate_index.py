@@ -76,9 +76,11 @@ class VerifiedCandidateIndex:
         lock_key = digest([str(self.observer.path), manifest['organization_id'],
                            manifest['retrieval_index']['release_id']])
         with FileLock(str(self.hybrid.root/f'.source-verify-{lock_key}.lock'), timeout=60), PendingSourceReceipts() as pending:
-            self._prepare(before, manifest, epoch, pending)
+            from contextlib import ExitStack
+            with ExitStack() as resources:
+                self._prepare(before, manifest, epoch, pending, resources)
 
-    def _prepare(self, before, manifest, epoch, pending):
+    def _prepare(self, before, manifest, epoch, pending, resources):
         self._check_cancelled()
         from .organization_hybrid_retrieval import digest
         from .organization_source_navigation import OrganizationSourceNavigation
@@ -113,10 +115,10 @@ class VerifiedCandidateIndex:
             'organization:'+manifest['organization_id'], space, sorted(ids))
             for space, ids in by_space.items()}
         from .prepared_source_metadata import prepare as prepare_metadata, restore as restore_metadata
-        for document, item in allowed.items():
+        proof_rows = resources.enter_context(closing(proofs.iter_get(
+            proofs.key(revision, item, manifest) for item in allowed.values())))
+        for (document, item), (proof_key, saved) in zip(allowed.items(), proof_rows):
             self._check_cancelled()
-            proof_key = proofs.key(revision, item, manifest)
-            saved = proofs.get(proof_key)
             if saved is not None:
                 # This is a content proof, never a current local/Java grant.
                 version = current_versions[item['ref']['project_id']][item['ref']['version_id']]
@@ -192,9 +194,11 @@ class VerifiedCandidateIndex:
         self.hybrid.release_cache.check()
         if self.observer.epoch() != epoch:
             raise OrganizationExecutionUnavailable('organization_candidate_storage_changed_during_warmup')
-        for proof_key, saved in pending:
-            self._check_cancelled()
-            proofs.put(proof_key, saved)
+        def checked_entries():
+            for entry in pending:
+                self._check_cancelled()
+                yield entry
+        proofs.put_many(checked_entries())
         self._check_cancelled()
         # No partially checked source generation becomes usable.
         self.rows, self.origins = rows, origins

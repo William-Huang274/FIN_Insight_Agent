@@ -43,6 +43,27 @@ def validate_grant(grant, project_id, draft_id):
 
 
 def verify_storage(shared, org, inputs, research_as_of=None, retrieval_index=None):
+    import os
+    from sec_agent.research_foundation.organization_input_integrity import verify
+    try:
+        return verify(shared.workspace, org, inputs, research_as_of, retrieval_index,
+                      os.environ.get('FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT'),
+                      lambda: _verify_storage_full(shared, org, inputs, research_as_of, retrieval_index))
+    except KeyError:
+        raise HTTPException(409, '已保存的研究原件缺失；准备单保留，请恢复存储后重新校验') from None
+    except (ProjectAssetUnavailable, ValueError, OSError, TypeError):
+        raise HTTPException(409, '固定研究原件或索引暂不可核实；不会替换版本或启动研究') from None
+
+
+def _verify_storage_full(shared, org, inputs, research_as_of=None, retrieval_index=None):
+    if retrieval_index is not None:
+        import os
+        from sec_agent.research_foundation.organization_index_release import verify_release_inputs
+        # read_source already checks original bytes, version and captures. Do
+        # not resolve/decode every source again before the projection check.
+        verify_release_inputs(shared.workspace, org, inputs, retrieval_index,
+                              os.environ['FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT'], research_as_of)
+        return [{'resource_id': item['resource_id'], 'ref': item['binding']['ref']} for item in inputs]
     checked = []
     for item in inputs:
         ref = AssetRef.model_validate(item['binding']['ref'])
@@ -60,14 +81,6 @@ def verify_storage(shared, org, inputs, research_as_of=None, retrieval_index=Non
         except (ProjectAssetUnavailable, ValueError, OSError):
             raise HTTPException(409, '固定研究原件暂不可核实；不会替换版本或启动研究') from None
         checked.append({'resource_id': item['resource_id'], 'ref': version['ref']})
-    if retrieval_index is not None:
-        import os
-        from sec_agent.research_foundation.organization_index_release import verify_release_inputs
-        try:
-            root = os.environ['FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT']
-            verify_release_inputs(shared.workspace, org, inputs, retrieval_index, root, research_as_of)
-        except (OSError, KeyError, TypeError, ValueError, ProjectAssetUnavailable, AssetConflict):
-            raise HTTPException(409, '固定索引或资料投影不可核实；不会切换最新版本或启动研究') from None
     return checked
 
 

@@ -112,6 +112,10 @@ class SourceVerificationCache:
             return None
         with closing(sqlite3.connect(self.path, timeout=10)) as db:
             row = db.execute('SELECT payload,digest FROM receipts WHERE key=?', (key,)).fetchone()
+        return self._decode(row)
+
+    @staticmethod
+    def _decode(row):
         if row is None:
             return None
         raw = zlib.decompress(row[0]) if isinstance(row[0], bytes) else row[0].encode()
@@ -119,12 +123,24 @@ class SourceVerificationCache:
             raise ValueError('organization_source_receipt_corrupt')
         return json.loads(raw)
 
+    def iter_get(self, keys):
+        """One connection, one decoded receipt at a time; no corpus-sized map."""
+        with closing(sqlite3.connect(self.path, timeout=10)) as db:
+            for key in keys:
+                row = db.execute('SELECT payload,digest FROM receipts WHERE key=?', (key,)).fetchone() if key else None
+                yield key, self._decode(row)
+
     def put(self, key, value):
-        if key is None:
-            return
-        raw = json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()
+        self.put_many([(key, value)])
+
+    def put_many(self, entries):
+        """Publish a fully verified spool atomically, not one fsync per source."""
         with closing(sqlite3.connect(self.path, timeout=10)) as db, db:
-            db.execute('INSERT OR IGNORE INTO receipts VALUES(?,?,?)', (key, zlib.compress(raw, 1), sha256(raw).hexdigest()))
+            for key, value in entries:
+                if key is None:
+                    continue
+                raw = json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()
+                db.execute('INSERT OR IGNORE INTO receipts VALUES(?,?,?)', (key, zlib.compress(raw, 1), sha256(raw).hexdigest()))
             # Bounded FIFO metadata cache. Eviction only loses an optimization:
             # an evicted source must pass full validation before reuse.
             db.execute('DELETE FROM receipts WHERE rowid IN '

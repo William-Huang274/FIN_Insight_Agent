@@ -51,13 +51,17 @@ def test_storage_verifies_original_bytes_and_never_substitutes_version(tmp_path,
     org, inputs = validate_grant(grant, grant['project_id'], grant['id'])
     assert verify_storage(shared, org, inputs) == [
         {'resource_id': inputs[0]['resource_id'], 'ref': inputs[0]['binding']['ref']}]
-    get = shared.workspace.library.documents.get
-    def corrupt(*args, **kwargs):
-        return {**get(*args, **kwargs), 'body': b'Corrupted stored original.'}
-    monkeypatch.setattr(shared.workspace.library.documents, 'get', corrupt)
+    import sqlite3
+    identifier = inputs[0]['binding']['ref']['version_id']
+    # Mutate the actual store, including its revision journal. A monkeypatched
+    # getter does not represent a persisted change to an already verified asset.
+    with sqlite3.connect(shared.workspace.library.documents.path) as db:
+        original = db.execute('SELECT body FROM attachments WHERE id=?', (identifier,)).fetchone()[0]
+        db.execute('UPDATE attachments SET body=? WHERE id=?', (b'Corrupted stored original.', identifier))
     with pytest.raises(HTTPException) as error: verify_storage(shared, org, inputs)
     assert error.value.status_code == 409
-    monkeypatch.setattr(shared.workspace.library.documents, 'get', get)
+    with sqlite3.connect(shared.workspace.library.documents.path) as db:
+        db.execute('UPDATE attachments SET body=? WHERE id=?', (original, identifier))
     absent = deepcopy(inputs)
     absent[0]['binding']['ref']['version_id'] = str(uuid4())
     with pytest.raises(HTTPException) as error: verify_storage(shared, org, absent)

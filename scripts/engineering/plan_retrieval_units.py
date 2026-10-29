@@ -12,7 +12,7 @@ import sqlite3
 import zlib
 
 
-def plan(index_path,output):
+def plan(index_path,output,scope_path=None):
     from retrieval.source_coordinates import origin_bounds
     from retrieval.evidence_scope import source_scopes
     from retrieval.source_structure import TABLE
@@ -29,6 +29,24 @@ def plan(index_path,output):
             raise ValueError('unit_plan_navigation_hash_mismatch')
     grouped=defaultdict(list)
     for record in index['records']:grouped[record['document_id']].append(record)
+    scope_proof=None
+    if scope_path is not None:
+        from sec_agent.research_foundation.organization_index_release import canonical_digest
+        scope_raw=Path(scope_path).read_bytes();scope=json.loads(scope_raw)
+        if scope['snapshot_digest']!=canonical_digest(index):raise ValueError('unit_plan_scope_snapshot_changed')
+        allowed=set(scope['parent_node_ids'])
+        if not allowed or len(allowed)!=len(scope['parent_node_ids']):raise ValueError('unit_plan_scope_invalid')
+        actual={r['node_id'] for r in index['records']}
+        if not allowed<=actual:raise ValueError('unit_plan_scope_parent_missing')
+        selected={}
+        for document,records in grouped.items():
+            ids={r['node_id'] for r in records}
+            if ids&allowed:
+                if not ids<=allowed:raise ValueError('unit_plan_scope_partial_document')
+                selected[document]=records
+        grouped=selected
+        scope_proof={'sha256':sha256(scope_raw).hexdigest(),'parents':len(allowed),
+                     'semantics':'all_original_parents_of_declared_documents_not_whole_corpus'}
     output.mkdir(parents=True,exist_ok=False)
     def rows():
         with sqlite3.connect(navigation.as_uri()+'?mode=ro',uri=True) as db:
@@ -82,6 +100,7 @@ def plan(index_path,output):
             fromlist=['canonical_digest']).canonical_digest(index),
         code_sha256=code,
         purpose='dry_publication_plan_no_paid_calls_or_quality_claim',publication_state='vectors_not_prepared')
+    if scope_proof is not None:summary['declared_scope']=scope_proof
     (output/'plan.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2),encoding='utf8')
     return summary
 
@@ -90,5 +109,6 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--index',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--scope',type=Path,help='Frozen whole-document diagnostic scope; defaults to whole release')
     args=parser.parse_args()
-    print(json.dumps(plan(args.index,args.output),ensure_ascii=False),flush=True)
+    print(json.dumps(plan(args.index,args.output,args.scope),ensure_ascii=False),flush=True)

@@ -8,8 +8,9 @@ from retrieval.semantic_unit_index import build,validate,rank
 from retrieval.organization_search_needs import compile_needs
 
 
-def test_structural_parent_never_requests_embedding_or_enters_recall(tmp_path):
-    original=row('Cash | 20');empty=row('[/TABLE]');empty['node_id']='marker'
+@pytest.mark.parametrize('empty_text', ['[/TABLE]', '| \u200b | \ufeff |'])
+def test_structural_parent_never_requests_embedding_or_enters_recall(tmp_path, empty_text):
+    original=row('Cash | 20');empty=row(empty_text);empty['node_id']='marker'
     originals=[original,empty]
     parents=[{'node_id':r['node_id'],'document_id':'doc','content_sha256':r['content_sha256'],
         'embedding_input_sha256':r['embedding_input_sha256'],'vector_index':i} for i,r in enumerate(originals)]

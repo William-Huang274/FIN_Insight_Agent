@@ -56,7 +56,8 @@ def test_split_table_fragment_keeps_global_table_identity_and_prose_never_trunca
 
 
 @pytest.mark.parametrize('text', ['[/TABLE]', '\n[TABLE: original cell order]\n[/TABLE]\n', ' \n',
-    '[TABLE: original cell order]\n | | | \n', ' | | \n[/TABLE]'])
+    '[TABLE: original cell order]\n | | | \n', ' | | \n[/TABLE]',
+    '[TABLE: cell order]\n\u200b | \u200b | \ufeff\n[/TABLE]'])
 def test_parser_only_units_are_preserved_but_not_searchable(text):
     original=row(text)
     units=split_original(original)
@@ -67,7 +68,7 @@ def test_parser_only_units_are_preserved_but_not_searchable(text):
 
 @pytest.mark.parametrize('text', ['Cash | 20', '(in millions)', '(1) Includes restricted cash.',
     '2024 | 2023', '[TABLE:1] Cash | 20 [/TABLE]', 'CONSOLIDATED BALANCE SHEETS',
-    '[Unknown marker]', 'Table of Contents', '| - |', '| $ |', '| 0 |'])
+    '[Unknown marker]', 'Table of Contents', '| - |', '| $ |', '| 0 |', '\u200b | 0 | \ufeff'])
 def test_short_facts_units_footnotes_and_navigation_are_not_blanket_discarded(text):
     assert not structural_only(text)
     assert any(u['retrievable'] for u in split_original(row(text)))

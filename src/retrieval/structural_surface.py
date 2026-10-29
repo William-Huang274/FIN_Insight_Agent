@@ -13,4 +13,6 @@ def structural_only(text):
     remainder = _TABLE_MARKER.sub('', text)
     # SEC text conversion can leave rows containing only empty cell separators.
     # Preserve '-' (a reported nil value), numbers, currencies and all wording.
-    return not remainder.replace('|', '').strip()
+    # HTML filings also use zero-width spaces/BOMs as empty-cell furniture.
+    # Do not normalize the stored text or strip symbols carrying nil/unit data.
+    return not remainder.replace('|', '').replace('\u200b', '').replace('\ufeff', '').strip()

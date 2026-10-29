@@ -46,7 +46,7 @@ async def organization_work_session(*, native, resources, authority, check, orga
     from .delegated_task_graph import current_work_catalog
     from .working_memory import WorkingMemory
     from .working_memory_tools import native_memory_scope, working_memory_tools
-    from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
+    from sec_agent.research_foundation.organization_source_request import OrganizationSourceRequest
     from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
 
     tid, rid = phase_arguments['thread_id'], phase_arguments['run_id']
@@ -88,7 +88,7 @@ async def organization_work_session(*, native, resources, authority, check, orga
     grants = conversation_tools(thread_id=tid)
 
     @tool(response_format='content_and_artifact')
-    def read_source_document(request: SourceDocumentRequest):
+    def read_source_document(request: OrganizationSourceRequest):
         """Search/catalog/read the task's authorized fixed originals. Candidate IDs are not citations until read."""
         check()
         result = navigation.navigate(request)

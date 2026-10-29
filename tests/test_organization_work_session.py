@@ -104,7 +104,16 @@ def test_native_work_session_uses_same_parent_and_does_not_start_old_graph(conti
     monkeypatch.setattr('sec_agent.agent_runtime.research_budget.budget_from_host',
         lambda *a, **k: SimpleNamespace(guard=lambda *a: None))
     class Model(FakeMessagesListChatModel):
-        def bind_tools(self, *args, **kwargs): return self
+        def bind_tools(self, *args, **kwargs):
+            from langchain_core.utils.function_calling import convert_to_openai_tool
+            for current in args[0]:
+                schema = convert_to_openai_tool(current)['function']
+                if schema['name'] == 'read_source_document':
+                    request = schema['parameters']['properties']['request']['properties']
+                    assert request['source_space']['const'] == 'organization'
+                    assert request['source_space']['default'] == 'organization'
+                    assert 'company_section' not in request
+            return self
     monkeypatch.setattr('sec_agent.agent_runtime.case_review_agent.case_chat_model',
         lambda *a, **k: Model(responses=[AIMessage(content='已回答当前问题；没有启动完整研报流程。')]))
     monkeypatch.setattr('sec_agent.agent_runtime.conversation_summary.summary_middleware', lambda *a, **k: AgentMiddleware())

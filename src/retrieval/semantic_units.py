@@ -8,7 +8,7 @@ from hashlib import sha256
 import json
 import re
 
-FORMAT='original-retrieval-units.v2'
+FORMAT='original-retrieval-units.v3'
 PROSE_TARGET=1800
 
 
@@ -72,6 +72,7 @@ def split_original(row):
         context=document_context(row)
         identity['context_policy']=CONTEXT_POLICY
         model_input=context+'\n'+text
+        from .structural_surface import structural_only
         output.append({**identity,'unit_id':'UNIT::'+_digest(identity),'role':role,
             'content':text,'embedding_context':context,'embedding_input_sha256':sha256(model_input.encode()).hexdigest(),
             'parent_content_sha256':row['content_sha256'],
@@ -79,7 +80,7 @@ def split_original(row):
             'source_interval':[lo,hi], 'table_intervals':tables_for_unit,
             'reusable_parent_vector':lo==start and hi==end and
                 sha256(model_input.encode()).hexdigest()==row.get('embedding_input_sha256'),
-            'retrievable':bool(text.strip()),
+            'retrievable':not structural_only(text),
             'citation_semantics':'parent_original_node_and_exact_span_no_new_source'})
     validate_partition(row,output)
     return output

@@ -2,6 +2,7 @@ from copy import deepcopy
 from hashlib import sha256
 import pytest
 from retrieval.semantic_units import split_original,validate_partition
+from retrieval.structural_surface import structural_only
 
 
 def row(body,scopes=(),tables=(),space=None):
@@ -52,3 +53,21 @@ def test_split_table_fragment_keeps_global_table_identity_and_prose_never_trunca
     assert len(units)==1 and units[0]['table_intervals']==[(50,9000)]
     assert len(units[0]['content'])==7000
     assert split_original(row('a'*7000))[0]['content']=='a'*7000
+
+
+@pytest.mark.parametrize('text', ['[/TABLE]', '\n[TABLE: original cell order]\n[/TABLE]\n', ' \n',
+    '[TABLE: original cell order]\n | | | \n', ' | | \n[/TABLE]'])
+def test_parser_only_units_are_preserved_but_not_searchable(text):
+    original=row(text)
+    units=split_original(original)
+    assert ''.join(u['content'] for u in units)==text
+    assert all(not u['retrievable'] for u in units)
+    validate_partition(original,units)
+
+
+@pytest.mark.parametrize('text', ['Cash | 20', '(in millions)', '(1) Includes restricted cash.',
+    '2024 | 2023', '[TABLE:1] Cash | 20 [/TABLE]', 'CONSOLIDATED BALANCE SHEETS',
+    '[Unknown marker]', 'Table of Contents', '| - |', '| $ |', '| 0 |'])
+def test_short_facts_units_footnotes_and_navigation_are_not_blanket_discarded(text):
+    assert not structural_only(text)
+    assert any(u['retrievable'] for u in split_original(row(text)))

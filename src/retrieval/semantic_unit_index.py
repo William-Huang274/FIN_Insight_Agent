@@ -7,7 +7,7 @@ import sqlite3
 import numpy as np
 from .semantic_unit_catalog import iter_units
 
-FORMAT='published-original-unit-index.v2'
+FORMAT='published-original-unit-index.v3'
 LEGACY_FORMAT='published-original-unit-index.v1'
 FILES=('unit-metadata.sqlite','unit-vectors.npy','unit-lexical.sqlite')
 
@@ -32,9 +32,12 @@ def build(directory,catalog,parent_records,parent_matrix,embedding_reader,*,mode
                 document TEXT NOT NULL,digest TEXT NOT NULL,input_digest TEXT NOT NULL,
                 start INTEGER NOT NULL,end INTEGER NOT NULL,coordinate_space TEXT);
             CREATE INDEX unit_parent ON units(parent);
-            CREATE INDEX unit_document ON units(document);''')
+            CREATE INDEX unit_document ON units(document);
+            CREATE TABLE structural_parents(parent TEXT PRIMARY KEY,document TEXT NOT NULL,digest TEXT NOT NULL);''')
         with closing(sqlite3.connect(Path(catalog).resolve().as_uri()+'?mode=ro',uri=True)) as plan:
             expected=plan.execute('SELECT count(*) FROM units').fetchone()[0]
+        if expected==0:
+            raise ValueError('semantic_index_no_evidence_units')
         np.lib.format.write_array_header_1_0(vectors,{'descr':np.lib.format.dtype_to_descr(np.dtype(np.float32)),
             'fortran_order':False,'shape':(expected,1024)})
         def lexical_rows():
@@ -57,6 +60,9 @@ def build(directory,catalog,parent_records,parent_matrix,embedding_reader,*,mode
                         or unit.get('context_policy')!='document-identity-only.v1'
                         or unit['embedding_context']!=_document_context(original)):
                     raise ValueError('semantic_index_unit_not_bound_to_original')
+                from .structural_surface import structural_only
+                if structural_only(unit['content']):
+                    raise ValueError('semantic_index_structural_unit_not_searchable')
                 if reuse is not None:
                     if reuse!=parent['vector_index'] or parent['embedding_input_sha256']!=unit['embedding_input_sha256']:
                         raise ValueError('semantic_index_cannot_reuse_different_input')
@@ -76,12 +82,21 @@ def build(directory,catalog,parent_records,parent_matrix,embedding_reader,*,mode
                 yield {'node_id':unit['unit_id'],'content':unit['content'],
                     'content_sha256':unit['content_sha256'],'node_kind':'text'}
         lexical_count=build_lexical(directory/'unit-lexical.sqlite',lexical_rows())
-        if count!=expected or count!=lexical_count or seen!=set(parents):
+        from .structural_surface import structural_only
+        for identifier in set(parents)-seen:
+            parent=parents[identifier];source=original_reader(parent)
+            if (source['node_id']!=identifier or source['parent_document_id']!=parent['document_id']
+                    or sha256(source['content'].encode()).hexdigest()!=parent['content_sha256']
+                    or not structural_only(source['content'])):
+                raise ValueError('semantic_index_missing_evidence_parent')
+            db.execute('INSERT INTO structural_parents VALUES (?,?,?)',
+                       (identifier,parent['document_id'],parent['content_sha256']))
+        if count!=expected or count!=lexical_count:
             raise ValueError('semantic_index_incomplete_parent_population')
     hashes={}
     for name in FILES:
         with (directory/name).open('rb') as stream:hashes[name]=file_digest(stream,'sha256').hexdigest()
-    return {'format':FORMAT,'units':count,'parents':len(seen),'model':model,'dimensions':1024,'files':hashes}
+    return {'format':FORMAT,'units':count,'parents':len(parents),'model':model,'dimensions':1024,'files':hashes}
 
 
 def _document_context(row):
@@ -92,7 +107,7 @@ def _document_context(row):
 def validate(directory,descriptor,records,model,*,verified_files=False):
     from sec_agent.research_foundation.organization_vector_math import unit_vectors
     directory=Path(directory)
-    if (set(descriptor)!={'format','units','parents','model','dimensions','files'} or descriptor['format'] not in {FORMAT,LEGACY_FORMAT}
+    if (set(descriptor)!={'format','units','parents','model','dimensions','files'} or descriptor['format'] not in {FORMAT,LEGACY_FORMAT,'published-original-unit-index.v2'}
             or type(descriptor['units']) is not int or descriptor['units']<1
             or descriptor['parents']!=len(records) or descriptor['model']!=model or descriptor['dimensions']!=1024
             or set(descriptor['files'])!=set(FILES)):
@@ -108,10 +123,16 @@ def validate(directory,descriptor,records,model,*,verified_files=False):
     if matrix.dtype!=np.float32 or matrix.shape!=(descriptor['units'],1024):raise ValueError('semantic_index_matrix_shape')
     if not verified_files and not unit_vectors(matrix):raise ValueError('semantic_index_invalid_vectors')
     with closing(sqlite3.connect((directory/'unit-metadata.sqlite').as_uri()+'?mode=ro',uri=True)) as db:
+        structural={}
+        if descriptor['format']==FORMAT:
+            structural={n:(d,h) for n,d,h in db.execute('SELECT * FROM structural_parents')}
+            expected={r['node_id']:(r['document_id'],r['content_sha256']) for r in records}
+            if any(expected.get(n)!=identity for n,identity in structural.items()):
+                raise ValueError('semantic_index_structural_parent_mismatch')
         actual=db.execute('SELECT count(*),count(distinct parent),min(position),max(position) FROM units').fetchone()
-        if actual!=(descriptor['units'],len(records),0,descriptor['units']-1):raise ValueError('semantic_index_population_mismatch')
+        if actual!=(descriptor['units'],len(records)-len(structural),0,descriptor['units']-1):raise ValueError('semantic_index_population_mismatch')
         actual_parents={n:d for n,d in db.execute('SELECT DISTINCT parent,document FROM units')}
-        if actual_parents!={r['node_id']:r['document_id'] for r in records}:raise ValueError('semantic_index_parent_scope_mismatch')
+        if actual_parents!={r['node_id']:r['document_id'] for r in records if r['node_id'] not in structural}:raise ValueError('semantic_index_parent_scope_mismatch')
 
 
 def select_units(directory,parents,wanted):

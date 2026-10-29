@@ -48,8 +48,8 @@ def prepare(catalog,scope,output,reuse_receipts=()):
         if batch:
             jobs.write(json.dumps({'number':batches,'units':batch,'utf8_bytes':batch_bytes})+'\n');batches+=1
     if not count:raise ValueError('unit_vector_preparation_has_no_new_inputs')
-    from retrieval import semantic_units,unit_embedding_preparation,qwen_api
-    code={str(Path(m.__file__).resolve()):digest(m.__file__) for m in (semantic_units,unit_embedding_preparation,qwen_api)}
+    from retrieval import semantic_units,structural_surface,unit_embedding_preparation,qwen_api
+    code={str(Path(m.__file__).resolve()):digest(m.__file__) for m in (semantic_units,structural_surface,unit_embedding_preparation,qwen_api)}
     code[str(Path(__file__).resolve())]=digest(__file__)
     basis={'purpose':'Prepare exact original-span vectors for frozen retrieval repair validation',
         'input_scale':{'unique_new_vectors':count,'utf8_bytes':size,'parent_scope_size':len(allowed),

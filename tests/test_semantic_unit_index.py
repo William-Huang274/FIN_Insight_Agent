@@ -8,6 +8,54 @@ from retrieval.semantic_unit_index import build,validate,rank
 from retrieval.organization_search_needs import compile_needs
 
 
+def test_structural_parent_never_requests_embedding_or_enters_recall(tmp_path):
+    original=row('Cash | 20');empty=row('[/TABLE]');empty['node_id']='marker'
+    originals=[original,empty]
+    parents=[{'node_id':r['node_id'],'document_id':'doc','content_sha256':r['content_sha256'],
+        'embedding_input_sha256':r['embedding_input_sha256'],'vector_index':i} for i,r in enumerate(originals)]
+    plan(tmp_path/'plan.sqlite',list(zip(originals,range(2))))
+    published=tmp_path/'published';published.mkdir()
+    def no_new_vectors(unit):raise AssertionError('marker must not request a vector')
+    descriptor=build(published,tmp_path/'plan.sqlite',parents,np.array([vec(.6),vec(1.)],dtype=np.float32),
+        no_new_vectors,model='qwen3.7-text-embedding',original_reader=lambda p:originals[p['vector_index']])
+    assert descriptor['parents']==2 and descriptor['units']==1
+    validate(published,descriptor,parents,'qwen3.7-text-embedding')
+    metadata=[{**p,'parent_document_id':'doc'} for p in parents]
+    entry,_=rank(published,metadata,vec(1.),compile_needs('cash',{'policy':'conservative.v5','constraint':{}}),
+        {'doc':{}},None,policy='needs_window.v4')
+    assert entry['dense']==['parent'] and 'marker' not in entry['ordered']
+    # A missing substantive parent must not pass as a structural exclusion.
+    changed=[dict(p) for p in parents];changed[1]['content_sha256']='x'*64
+    with pytest.raises(ValueError,match='structural_parent_mismatch'):
+        validate(published,descriptor,changed,'qwen3.7-text-embedding')
+
+
+def test_omitted_substantive_parent_cannot_be_hidden_as_empty(tmp_path):
+    import sqlite3
+    original=row('Cash | 20');missing=row('Cash | 30');missing['node_id']='missing'
+    originals=[original,missing]
+    parents=[{'node_id':r['node_id'],'document_id':'doc','content_sha256':r['content_sha256'],
+        'embedding_input_sha256':r['embedding_input_sha256'],'vector_index':i} for i,r in enumerate(originals)]
+    catalog=tmp_path/'plan.sqlite';plan(catalog,list(zip(originals,range(2))))
+    with sqlite3.connect(catalog) as db:db.execute("DELETE FROM units WHERE parent='missing'")
+    directory=tmp_path/'published';directory.mkdir()
+    with pytest.raises(ValueError,match='missing_evidence_parent'):
+        build(directory,catalog,parents,np.array([vec(.6),vec(1.)],dtype=np.float32),None,
+            model='qwen3.7-text-embedding',original_reader=lambda p:originals[p['vector_index']])
+
+
+def test_only_structural_sources_cannot_publish_an_empty_evidence_index(tmp_path):
+    original=row('[/TABLE]')
+    parents=[{'node_id':original['node_id'],'document_id':'doc',
+        'content_sha256':original['content_sha256'],
+        'embedding_input_sha256':original['embedding_input_sha256'],'vector_index':0}]
+    plan(tmp_path/'plan.sqlite',[(original,0)])
+    directory=tmp_path/'published';directory.mkdir()
+    with pytest.raises(ValueError,match='no_evidence_units'):
+        build(directory,tmp_path/'plan.sqlite',parents,np.array([vec(1.)],dtype=np.float32),None,
+            model='qwen3.7-text-embedding',original_reader=lambda _:original)
+
+
 def vec(score):return [score,sqrt(1-score*score)]+[0.]*1022
 
 

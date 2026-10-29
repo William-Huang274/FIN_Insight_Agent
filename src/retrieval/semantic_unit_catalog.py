@@ -36,7 +36,7 @@ def build(path,rows):
             for unit in planned:
                 stats['all_intervals']+=1
                 if not unit['retrievable']:
-                    stats['whitespace_intervals']+=1;continue
+                    stats['whitespace_intervals' if not unit['content'].strip() else 'structural_only_intervals']+=1;continue
                 text=unit['embedding_context']+'\n'+unit['content'];size=len(text.encode())
                 max_bytes=max(size,max_bytes)
                 reuse=vector_index if unit['reusable_parent_vector'] else None
@@ -95,8 +95,8 @@ def select_parents(source,destination,parent_ids):
             if row[2] not in wanted:continue
             new.execute('INSERT INTO units VALUES (?,?,?,?,?,?,?,?)',(count,*row[1:]))
             count+=1;reused+=row[6] is not None
-        if {r[0] for r in new.execute('SELECT DISTINCT parent FROM units')}!=wanted:
-            raise ValueError('semantic_unit_scope_parent_without_units')
+        # A parser-marker-only parent legitimately has no search units. Its
+        # original identity remains in parents and is checked at publication.
         summary={'format':FORMAT,'parents':len(found),'retrievable_units':count,
             'reused_vectors':reused,'new_vectors_required':count-reused,'provider_calls':0,
             'scope':'all_units_for_declared_parent_population'}

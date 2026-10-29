@@ -18,8 +18,8 @@ def plan(index_path,output):
     from retrieval.source_structure import TABLE
     from retrieval.fact_period_matching import markdown_tables
     from retrieval.semantic_unit_catalog import build
-    from retrieval import semantic_units,business_scope_attributes,table_captions,evidence_scope,original_input_context,statement_headings
-    modules=(semantic_units,business_scope_attributes,table_captions,evidence_scope,original_input_context,statement_headings)
+    from retrieval import semantic_units,structural_surface,business_scope_attributes,table_captions,evidence_scope,original_input_context,statement_headings
+    modules=(semantic_units,structural_surface,business_scope_attributes,table_captions,evidence_scope,original_input_context,statement_headings)
     code={Path(m.__file__).name:sha256(Path(m.__file__).read_bytes()).hexdigest() for m in modules}
     index_path=index_path.resolve();raw=index_path.read_bytes();index=json.loads(raw)
     input_digest=sha256(raw).hexdigest();del raw

@@ -96,6 +96,40 @@ def test_joint_targets_require_complete_name_and_preserve_multiple_explicit_owne
     assert joint_reporting_targets('NORTH INCORPORATEDXYZ cash',rows)=={'p':[]}
 
 
+def test_joint_unique_suffix_variant_reaches_scope_without_merging_registrants():
+    from retrieval.evidence_scope import plan_scope, interval_matching_state
+    from retrieval.organization_search_needs import compile_needs
+    rows={'d':{'issuer_id':'p','joint_registrant_names':['NORTHERN ENERGY, INC.','SOUTHERN POWER COMPANY']}}
+    query='Northern Energy consolidated balance sheet cash and cash equivalents'
+    plan=plan_query(query,rows,policy='conservative.v5')
+    assert plan['joint_reporting_entity_targets']['p']==['NORTHERN ENERGY, INC.']
+    scope=plan_scope(query,plan)
+    assert scope['reporting_entity']==['NORTHERN ENERGY, INC.']
+    assert interval_matching_state([{'attributes':{'reporting_entity':'SOUTHERN POWER COMPANY'}}],scope)=='mismatch'
+    assert all(n['owner']['company_names']==['NORTHERN ENERGY, INC.'] for n in compile_needs(query,plan)['needs'])
+    assert 'p' not in plan['fact_entity_by_issuer']
+
+
+def test_joint_suffix_collisions_are_unresolved_and_longer_legal_names_win():
+    from retrieval.catalog_company_identity import joint_reporting_targets
+    for names in [('NORTH INC.','NORTH LLC'),('NORTH CORPORATION','NORTH L.P.')]:
+        rows={'d':{'issuer_id':'p','joint_registrant_names':list(names)}}
+        assert joint_reporting_targets('North cash',rows)=={'p':[]}
+        assert joint_reporting_targets(names[0]+' cash',rows)=={'p':[names[0]]}
+    rows={'d':{'issuer_id':'p','joint_registrant_names':['NORTH ENERGY INC.','NORTH ENERGY PARTNERS LLC']}}
+    assert joint_reporting_targets('NORTH ENERGY PARTNERS cash',rows)=={'p':['NORTH ENERGY PARTNERS LLC']}
+    assert joint_reporting_targets('North cash',rows)=={'p':[]}
+
+
+def test_joint_suffix_comparison_keeps_clause_specific_metrics():
+    from retrieval.organization_search_needs import compile_needs
+    rows={'d':{'issuer_id':'p','joint_registrant_names':['NORTH ENERGY INC.','SOUTH ENERGY LLC']}}
+    query='Compare North Energy cash and cash equivalents and South Energy revenue'
+    needs=compile_needs(query,plan_query(query,rows,policy='conservative.v5'))['needs']
+    assert {(n['concept'],tuple(n['owner']['company_names'])) for n in needs if n.get('concept')}=={
+        ('cash_equivalents',('NORTH ENERGY INC.',)),('revenue',('SOUTH ENERGY LLC',))}
+
+
 def test_same_catalog_issuer_joint_comparison_has_separate_coverage_needs():
     from retrieval.organization_search_needs import compile_needs
     rows={'d':{'issuer_id':'p','joint_registrant_names':['NORTH INC.','NORTH L.P.']}}

@@ -88,7 +88,7 @@ def document_names(row):
 
 
 def joint_reporting_targets(query, metadata):
-    """Only an explicit complete legal name disambiguates joint registrants.
+    """Resolve full names or unambiguous legal-suffix variants of registrants.
 
     A shared short name or the archive CIK does not identify the requested
     statement owner. Return an empty target for unresolved joint issuers so
@@ -101,9 +101,29 @@ def joint_reporting_targets(query, metadata):
                 joint[row['issuer_id']].setdefault(name_key(name),name)
     result={}
     for issuer,names in joint.items():
-        hits=legal_name_mentions(query,names.values())
+        hits=joint_name_mentions(query,names.values())
         result[issuer]=sorted({h[2] for h in hits})
     return result
+
+
+def joint_name_mentions(query,names):
+    """Do not require 'Inc.' when the remaining full name is unambiguous.
+
+    All registrants participate in collision detection, including partnerships.
+    No initials, prefixes, archive CIKs or company-specific aliases are inferred.
+    Longest original mention wins before resolving a shortened-name collision.
+    """
+    aliases=defaultdict(set);spelling={}
+    for name in names:
+        short=re.sub(r'(?:[,\s]+(?:incorporated|corporation|limited|inc\.?|corp\.?|ltd\.?|plc|llc|l\.?p\.?))+$',
+                     '',name,flags=re.I).strip()
+        for alias in (name,short):
+            key=name_key(alias)
+            if len(key)<3:continue
+            aliases[key].add(name);spelling.setdefault(key,alias)
+    hits=legal_name_mentions(query,spelling.values())
+    return sorted((start,end,next(iter(aliases[name_key(alias)])))
+                  for start,end,alias in hits if len(aliases[name_key(alias)])==1)
 
 
 def legal_name_mentions(query,names):

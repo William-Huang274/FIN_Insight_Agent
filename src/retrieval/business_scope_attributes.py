@@ -134,8 +134,9 @@ def transaction_attributes(text):
 def disclosure_attributes(text):
     """A filing's explicit release announcement, not mere exhibit boilerplate.
 
-    Bind the original announcement line only. It supplies the role and event
-    together, without joining a different exhibit row or another SEC item.
+    Bind the announcement and an immediately attached, explicit copy reference.
+    Removing an ineligible event must not leave its anaphoric exhibit reference
+    looking like a different unknown event. Never cross another statement/item.
     """
     result=[];definitions=financing_definitions(text)
     for line in re.finditer(r'(?m)^[^\n]+$',text):
@@ -147,7 +148,19 @@ def disclosure_attributes(text):
         # of a different release later in the paragraph cannot change it.
         subject=re.split(r'(?<=[.!?])\s+(?=[A-Z])',line[0][announcement.end():],maxsplit=1)[0]
         if event:=announced_event(subject,definitions):attrs['event_type']=event
-        result.append((line.start(),line.start()+announcement.end()+len(subject),attrs,'explicit_original_release_announcement'))
+        end=line.start()+announcement.end()+len(subject)
+        continuation=text[end:end+650]
+        reference=re.match(
+            r'[ \t]*(?:\r?\n[ \t]*)?'
+            r'(?P<sentence>(?:A copy(?: of (?:the|this|that|such) press release| thereof)?|'
+            r'(?:The|This|That|Such) press release)\s+'
+            r'(?:is|has been)\s+(?:(?:attached|furnished|filed|included)\s+)'
+            r'(?:(?:hereto|herewith)\s+)?as\s+Exhibit\s+\d+(?:\.\d+)?'
+            r'(?:\s+(?:hereto|herewith))?'
+            r'(?:\s+and\s+incorporated\s+(?:herein|herein by reference|by reference))?'
+            r'\.(?=\s|$))',continuation,re.I)
+        if reference:end+=reference.end()
+        result.append((line.start(),end,attrs,'explicit_original_release_announcement'))
     return result
 
 

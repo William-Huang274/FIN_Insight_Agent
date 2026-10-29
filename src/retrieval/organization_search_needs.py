@@ -76,7 +76,7 @@ def compile_needs(query, plan):
         from .financial_query_needs import compile_financial_needs
         result = compile_financial_needs(query, plan, result)
         if plan.get('policy') == 'conservative.v5':
-            from .catalog_company_identity import legal_name_mentions
+            from .catalog_company_identity import joint_name_mentions
             from .financial_query_needs import concepts
             targets=plan.get('joint_reporting_entity_targets',{})
             # A joint filing can contain a comparison of two legal entities
@@ -87,7 +87,7 @@ def compile_needs(query, plan):
                 names=targets.get((owner or {}).get('issuer_id'),[])
                 if len(names)<=1:
                     expanded.append(need);continue
-                mentions=legal_name_mentions(query,names)
+                mentions=joint_name_mentions(query,names)
                 clauses={name:[] for name in names}
                 for i,(_,end,name) in enumerate(mentions):
                     clauses[name].append(query[end:mentions[i+1][0] if i+1<len(mentions) else len(query)])

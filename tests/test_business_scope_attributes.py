@@ -99,6 +99,45 @@ def test_announced_subject_is_not_the_other_release_in_later_sentence():
     assert 'event_type' not in source_scopes(generic)[0]['attributes']
 
 
+@pytest.mark.parametrize('separator',[' ','\n'])
+@pytest.mark.parametrize('copy',[
+    'A copy of the press release is attached hereto as Exhibit 99.1 and incorporated herein by reference.',
+    'A copy is attached as Exhibit 99.1.',
+    'Such press release has been furnished as Exhibit 99.2 hereto.',
+])
+def test_explicit_immediate_release_reference_keeps_event_before_scoring(separator,copy):
+    from retrieval.evidence_scope import select_scoped
+    announcement='The Company issued a press release announcing its convertible notes offering.'
+    text=announcement+separator+copy+' Unrelated following discussion.'
+    scopes=source_scopes(text)
+    start=len(announcement)+len(separator);end=start+len(copy)
+    assert scopes[0]['source_char_end']==end
+    candidate={'node_id':'copy','source_interval':[start,end],'evidence_scopes':scopes}
+    assert select_scoped([candidate],{'event_type':['earnings_release'],'unknown_policy':'retain'})[0]==[]
+    view=scoring_body(attach_scoring_view(row(text),{'event_type':['earnings_release'],'unknown_policy':'retain'}))
+    assert 'Exhibit 99.' not in view
+    assert 'Unrelated following discussion.' in view
+
+
+@pytest.mark.parametrize('intervening',[
+    ' Another release concerned earnings. ',
+    '\nItem 9.01 Exhibits\n',
+    '\n\n',
+])
+def test_release_reference_does_not_jump_over_other_statements(intervening):
+    announcement='The Company issued a press release announcing its notes offering.'
+    text=announcement+intervening+'A copy of the press release is attached hereto as Exhibit 99.1.'
+    assert source_scopes(text)[0]['source_char_end']==len(announcement)
+
+
+def test_reference_does_not_change_mixed_or_unknown_announcement_identity():
+    for subject in ('its liquidity outlook','financial results and a notes offering'):
+        text='The Company issued a press release announcing '+subject+'. A copy is attached as Exhibit 99.1.'
+        scope=source_scopes(text)[0]
+        assert scope['source_char_end']==len(text)
+        assert 'event_type' not in scope['attributes']
+
+
 @pytest.mark.parametrize('instrument,alias',[
     ('a $900 million delayed draw term loan facility','Growth 2.5 Facility'),
     ('a revolving credit facility','Working Capital Line'),

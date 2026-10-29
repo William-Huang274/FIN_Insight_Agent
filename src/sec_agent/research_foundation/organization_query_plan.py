@@ -130,10 +130,14 @@ def plan_query(query, metadata, *, policy='conservative.v1'):
         # "Compare Alpha and Beta annual report" modifies both owners, not
         # just the last name adjacent to the report noun.
         report_owners = set()
-    from retrieval.query_report_period import comparison_starts_with_date, explicit_report_period
+    from retrieval.query_report_period import comparison_starts_with_date, comparison_has_period_object, explicit_report_period
     temporal_comparison = bool(policy == 'conservative.v5' and comparison and comparison_starts_with_date(query, comparison.end()))
+    period_object = bool(policy == 'conservative.v5' and comparison and comparison_has_period_object(query, comparison.end()))
     if temporal_comparison:
         evidence.append({'field':'issuer', 'basis':'comparison_object_is_explicit_date_not_another_issuer'})
+    if period_object:
+        temporal_comparison = True
+        evidence.append({'field':'issuer', 'basis':'comparison_object_is_explicit_period_not_another_issuer'})
     explicit_joint_comparison=len(owners)==1 and len(joint_targets.get(next(iter(owners)),[]))>1
     if (policy in {'conservative.v3', 'conservative.v4', 'conservative.v5'} and comparison
             and len(owners) == 1 and not temporal_comparison and not explicit_joint_comparison):

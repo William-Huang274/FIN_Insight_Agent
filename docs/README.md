@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[原件结构修复后的检索归因验收](engineering/parser_upstream_ablation.zh-CN.md)：94 问旧/新表示对照、R01–R30 复核边界；离线结果不代表服务或金融质量验收。
+
 当前0.1.4研究runtime开发与测点顺序见[按Agent流转的分段资格路线](engineering/runtime_flow_qualification.zh-CN.md)。
 
 Lead初步判断的依据边界、具体任务依赖和分阶段模型试验见[初步判断与模型选择](engineering/lead_reasoning_and_model_routing.zh-CN.md)。

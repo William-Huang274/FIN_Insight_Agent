@@ -28,3 +28,15 @@ def comparison_starts_with_date(query, comparison_end):
     suffix = query[comparison_end:]
     found = dates(suffix)
     return bool(found and not suffix[:found[0][0]].strip())
+
+
+def comparison_has_period_object(query, comparison_end):
+    """Explicit comparative-period wording, not an unknown second company.
+
+    Recognizing the object does not infer a fiscal date or broaden permissions.
+    Generic 'compare businesses' and named unknown counterparties still abstain.
+    """
+    suffix = query[comparison_end:]
+    return bool(re.match(
+        r'\s*(?:(?:prior|previous|reporting|comparative)\s+(?:periods?|quarters?|years?)\b'
+        r'|periods?\b|期间|上年同期|去年同期|上期|前期)', suffix, re.I))

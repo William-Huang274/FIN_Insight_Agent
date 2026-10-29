@@ -74,7 +74,7 @@ def aliases_for(row):
             continue
         name = unicodedata.normalize('NFKC', name).strip()
         result.add(name)
-        short = re.sub(r'(?:[,\s]+(?:incorporated|corporation|limited|inc\.?|corp\.?|ltd\.?|plc|llc))+$', '', name, flags=re.I).strip()
+        short = re.sub(r'(?:[,\s]+(?:incorporated|corporation|limited|company|inc\.?|corp\.?|ltd\.?|plc|llc))+$', '', name, flags=re.I).strip()
         if len(name_key(short)) >= 3:
             result.add(short)
     return sorted(result)
@@ -115,7 +115,7 @@ def joint_name_mentions(query,names):
     """
     aliases=defaultdict(set);spelling={}
     for name in names:
-        short=re.sub(r'(?:[,\s]+(?:incorporated|corporation|limited|inc\.?|corp\.?|ltd\.?|plc|llc|l\.?p\.?))+$',
+        short=re.sub(r'(?:[,\s]+(?:incorporated|corporation|limited|company|inc\.?|corp\.?|ltd\.?|plc|llc|l\.?p\.?))+$',
                      '',name,flags=re.I).strip()
         for alias in (name,short):
             key=name_key(alias)

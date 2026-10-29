@@ -56,3 +56,38 @@ def test_explicit_dated_report_owner_beats_a_later_short_counterparty_name():
     data={'long':{'issuer_id':'COMPANY::acmeservices'},'short':{'issuer_id':'COMPANY::acme'}}
     plan=plan_query("In Acme Services' June 30, 2024 10-Q can Acme use these assets?",data,policy='conservative.v5')
     assert plan['constraint']['issuer_id']=='COMPANY::acmeservices'
+
+
+@pytest.mark.parametrize('query', [
+    'Acme 于2025年何时变更报告分部，比较期间是否重列？',
+    'Acme compare prior periods and explain the restatement.',
+    'Acme compare reporting periods after the segment change.',
+    'Acme 对比上年同期，哪些分部重新划分？',
+])
+def test_comparative_period_object_preserves_single_owner_without_date_inference(query):
+    data=catalog();plan=plan_query(query,data,policy='conservative.v5')
+    assert plan['constraint']['issuer_id']=='COMPANY::acme'
+    assert 'period_end' not in plan['constraint']
+    assert select_planned(data,plan)[0]=={'current','prior','unknown'}
+
+
+@pytest.mark.parametrize('query', [
+    'Acme 比较另一家公司的分部与本期业务',
+    'Compare Unknown and Acme over the prior periods',
+    'Compare Periodical Holdings and Acme in prior periods',
+])
+def test_unknown_counterparty_is_not_reclassified_as_temporal(query):
+    assert 'issuer_id' not in plan_query(query,catalog(),policy='conservative.v5')['constraint']
+
+
+def test_company_legal_suffix_is_optional_without_merging_issuer_ids():
+    data={'a':{'issuer_id':'COMPANY::alpha','verified_company_names':['Alpha Systems Company']},
+          'b':{'issuer_id':'COMPANY::beta','verified_company_names':['Beta Systems Company']},
+          'unknown':{}}
+    plan=plan_query('Alpha Systems现金是多少？',data,policy='conservative.v5')
+    assert plan['constraint']['issuer_id']=='COMPANY::alpha'
+    assert select_planned(data,plan)[0]=={'a','unknown'}
+    data['collision']={'issuer_id':'COMPANY::separate','verified_company_names':['Alpha Systems Inc.']}
+    assert 'issuer_id' not in plan_query('Alpha Systems cash',data,policy='conservative.v5')['constraint']
+    exact=plan_query('Alpha Systems Company cash',data,policy='conservative.v5')
+    assert exact['constraint']['issuer_id']=='COMPANY::alpha'

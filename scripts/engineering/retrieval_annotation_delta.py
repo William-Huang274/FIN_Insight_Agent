@@ -32,13 +32,13 @@ def _ids(value: list, allowed: set, label: str) -> list:
     return value
 
 
-def validate_delta(packet: dict, result: dict) -> dict:
+def validate_delta(packet: dict, result: dict, *, trusted_roles: dict | None = None) -> dict:
     """Return a separate pending overlay; preserve every original source element.
 
     Tasks are operator-prepared source scopes, not model-generated instructions.
     Content sufficiency and semantic correctness require a separate review.
     """
-    _check(packet.get("schema") == "retrieval-annotation-packet.v2", "packet schema")
+    _check(packet.get("schema") in {"retrieval-annotation-packet.v2", "retrieval-annotation-packet.v3"}, "packet schema")
     _check(set(result) == {"packet_id", "packet_digest", "decisions"}, "result fields")
     _check(result["packet_id"] == packet["packet_id"], "packet identity")
     _check(result["packet_digest"] == digest(packet), "packet digest mismatch")
@@ -46,6 +46,9 @@ def validate_delta(packet: dict, result: dict) -> dict:
     element_ids = [e["id"] for e in elements]
     _check(len(set(element_ids)) == len(element_ids), "duplicate source elements")
     by_id = {e["id"]: e for e in elements}
+    from scripts.engineering.retrieval_annotation_reviews import verified_role
+    _check(set(packet.get("source_role_refs", {})) <= set(by_id), "unknown role element")
+    roles = {eid: verified_role(packet, e, trusted_roles or {}) for eid, e in by_id.items()}
     positions = {eid: i for i, eid in enumerate(element_ids)}
     last_end = -1
     for e in elements:
@@ -105,9 +108,11 @@ def validate_delta(packet: dict, result: dict) -> dict:
                 seen_targets.add(target)
                 support = _ids(link["support_ids"], set(scope), "link support")
                 _check(target not in support, "self link")
-                _check(all(by_id[e]["kind"] != "table" for e in support),
+                _check(all(by_id[e]["kind"] != "table" or
+                           (kind == "context" and roles[e] == "layout_caption") for e in support),
                        "table cannot masquerade as caption/footnote")
                 _check(by_id[target]["kind"] == "table", "target is not table")
+                _check(roles[target] != "layout_caption", "layout caption is not a data target")
                 _check(support == sorted(support, key=positions.get), "unordered support")
                 if kind == "footnote":
                     _check(support == task["support_ids"], "footnote body changed")
@@ -115,7 +120,7 @@ def validate_delta(packet: dict, result: dict) -> dict:
                 touched.add(target)
         proposed.append(deepcopy(d))
     return {
-        "schema": "retrieval-annotation-overlay.v2",
+        "schema": "retrieval-annotation-overlay.v3" if packet["schema"].endswith(".v3") else "retrieval-annotation-overlay.v2",
         "packet_id": packet["packet_id"], "packet_digest": digest(packet),
         "source": deepcopy(packet["source"]),
         "elements": deepcopy(elements),

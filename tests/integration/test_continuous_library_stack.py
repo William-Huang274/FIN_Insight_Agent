@@ -13,6 +13,7 @@ import pytest
 from tests.integration.test_continuous_work_stack import ContinuousStack, ROOT
 from tests.integration.continuous_library_copy import copy_publication, restore_business
 from tests.integration.source_intake_registration import register_index
+from tests.integration.continuous_export_checks import check_export_texts, original_reads, powerpoint_body
 
 pytestmark = pytest.mark.skipif(os.getenv('FIN_CONTINUOUS_LIBRARY_QUALIFICATION') != '1', reason='explicit isolated full publication required')
 
@@ -110,14 +111,13 @@ def test_frozen_library_continuous_browser_and_exports():
                 names=['word/document.xml'] if fmt=='docx' else [n for n in archive.namelist()
                     if n.endswith('.xml') and n.startswith(('ppt/slides/slide','ppt/notesSlides/notesSlide'))]
                 texts[fmt]='\n'.join(''.join(fromstring(archive.read(n)).itertext()) for n in names)
-        source=next(iter(snapshot['report']['citations'].values()))['sources'][0]
-        snippet=''.join(source['text'].split())[:50]
-        checks={fmt:{'label':'服务' in text and '验证' in text,
-            'original':snippet in ''.join(text.split()), 'bytes':(output/f'report.{fmt}').stat().st_size}
-            for fmt,text in texts.items()}
+        texts['pptx']=powerpoint_body(output/'report.pptx')
+        native=s.state_of(tid)
+        checks=check_export_texts(snapshot['report'],texts,original_reads(native))
+        for fmt,row in checks.items():
+            row['bytes']=(output/f'report.{fmt}').stat().st_size
         s.save('export-content-checks',checks)
         assert all(row['label'] and row['original'] for row in checks.values()),checks
-        native=s.state_of(tid)
         searches=[]
         for m in native['values'].get('messages',[]):
             if m.get('type')=='tool' and m.get('name')=='read_source_document':

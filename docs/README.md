@@ -14,6 +14,7 @@ FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工�
 
 | 文档 | 内容 |
 | --- | --- |
+| [资料解析与分块候选选型](engineering/document_parser_selection.zh-CN.md) | 冻结来源类型盘点、SEC/网页/PDF/结构化资料的开源候选及小批次资格计划；调研不等同实测通过 |
 | [第一版验收指导](product/first_release_acceptance.zh-CN.md) · [共同基线与执行计划](engineering/first_release_acceptance_execution.zh-CN.md) | 以联调开始状态为基线，按工程、RAG、新研究、多轮交互、独立验证和收口执行；区分已验与待验、部署责任及真实产品入口 |
 | [Java / Python 独立集成候选](engineering/java_python_release_candidate.zh-CN.md) | 固定双方提交、合并依赖、历史回读修复、真实服务综合验收及放行前缺口 |
 | [组织并发与检索质量验收](engineering/organization_capacity_and_retrieval_qualification.zh-CN.md) | 多身份真实服务压力、网页与 Agent 检索、新题召回、索引版本和新查询向量；分阶段记录实测边界与简历指标 |

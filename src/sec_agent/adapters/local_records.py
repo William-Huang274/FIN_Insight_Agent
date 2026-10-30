@@ -171,6 +171,23 @@ class LocalRecords:
     def add(self, key, value):
         return self._write(key, value, None, add=True)
 
+    def compare_and_set(self, key, expected, value):
+        """Atomically claim one explicit retry without losing its old receipt."""
+        encoded = json.dumps(_pack(value), ensure_ascii=False, allow_nan=False)
+        if len(encoded.encode('utf8')) > MAX_VALUE_BYTES:
+            raise ValueError('local_record_too_large')
+        self.db.execute('BEGIN IMMEDIATE')
+        try:
+            if self.get(key) != expected:
+                self.db.rollback()
+                return False
+            self.db.execute('UPDATE records SET value=? WHERE key=?', (encoded, key))
+            self.db.commit()
+            return True
+        except BaseException:
+            self.db.rollback()
+            raise
+
     def set(self, key, value, *, expire=None):
         return self._write(key, value, expire, add=False)
 

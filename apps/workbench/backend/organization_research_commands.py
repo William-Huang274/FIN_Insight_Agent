@@ -171,7 +171,7 @@ def install_organization_command_routes(router, service, browser_write):
         return response(result)
 
     @router.get(prefix + '/task-action-preview')
-    async def task_preview(project_id: UUID, execution_id: UUID):
+    async def task_preview(project_id: UUID, execution_id: UUID, action: Literal['continue', 'recover'] = 'continue'):
         from sec_agent.agent_runtime.organization_native_contract import on_demand
         from .organization_report_actions import completed_predecessor
         if os.getenv('FINSIGHT_ON_DEMAND_ENABLED') != '1':
@@ -182,10 +182,12 @@ def install_organization_command_routes(router, service, browser_write):
         scope = await OrganizationReadScope(service, project_id, execution_id).open()
         if not on_demand(scope.grant):
             raise HTTPException(409, '历史任务使用原恢复入口')
-        await completed_predecessor(service, scope.thread, scope.grant['run_id'])
+        await completed_predecessor(service, scope.thread, scope.grant['run_id'], recover=action == 'recover')
         state = await scope.state()
-        if state.get('next') or (state.get('values') or {}).get('task_outcome', {}).get('run_id') != scope.grant['run_id']:
+        if action == 'continue' and (state.get('next') or (state.get('values') or {}).get('task_outcome', {}).get('run_id') != scope.grant['run_id']):
             raise HTTPException(409, '任务仍有未结束动作，请核对执行状态')
+        if action == 'recover' and not state.get('next'):
+            raise HTTPException(409, '当前没有属于失败运行的可恢复检查点')
         return await scope.response({'previous_run_id': scope.grant['run_id'],
             'checkpoint_id': state['checkpoint']['checkpoint_id'], 'state_digest': baseline_digest(state)})
 

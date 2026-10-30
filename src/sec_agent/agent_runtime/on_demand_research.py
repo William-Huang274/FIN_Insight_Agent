@@ -188,7 +188,8 @@ def build_on_demand_research_agent(*, model, grants, artifacts, operation_runner
                 'Requested delivery: '+delivery_intent +
                 ('; the user requires an independent check of the current report before delivery.' if required_report_review else ''))
         before = {m.id for m in state.get('messages', []) if m.id}
-        result = await agent.ainvoke({**state, 'research_operation': None, 'delivery': None}, config)
+        from .native_subgraph_config import native_subgraph_config
+        result = await agent.ainvoke({**state, 'research_operation': None, 'delivery': None}, native_subgraph_config(config))
         from langchain_core.messages import AIMessage
         new_messages = [m for m in result.get('messages', []) if isinstance(m, AIMessage) and m.id not in before]
         used += len(new_messages)

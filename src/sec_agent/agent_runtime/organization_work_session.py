@@ -4,6 +4,7 @@ No dispatch or admission is performed here. The caller has validated a durable
 command and keeps the existing organization data factory alive for this run.
 """
 from contextlib import asynccontextmanager
+from contextlib import nullcontext
 from copy import deepcopy
 import json
 from types import SimpleNamespace
@@ -163,7 +164,8 @@ async def organization_work_session(*, native, resources, authority, check, orga
                 raise ValueError('organization_work_execution_configuration_mismatch')
             effective = {**config, 'configurable': {**config.get('configurable', {}),
                 'finsight_execution': execution.model_dump(mode='json')}}
-            return await parent.ainvoke(state, effective)
+            from .native_subgraph_config import native_subgraph_config
+            return await parent.ainvoke(state, native_subgraph_config(effective))
 
         graph = StateGraph(OnDemandResearchState)
         graph.add_node('admitted_input', guard)
@@ -171,5 +173,8 @@ async def organization_work_session(*, native, resources, authority, check, orga
         graph.add_edge(START, 'admitted_input')
         graph.add_edge('admitted_input', 'work')
         graph.add_edge('work', END)
-        with native_memory_scope(owner, tid, access_check=check, allow_remote_search=False):
+        from retrieval.query_embeddings import authorized_query_recovery
+        recovering = grant.get('report_action_request', {}).get('action') == 'recover'
+        recovery = authorized_query_recovery(owner, grant['report_command_id']) if recovering else nullcontext()
+        with native_memory_scope(owner, tid, access_check=check, allow_remote_search=False), recovery:
             yield graph.compile(name='research_session')

@@ -8,9 +8,23 @@ from hashlib import sha256
 import json
 import math
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 
 from sec_agent.adapters.local_records import LocalRecords
 from retrieval.source_hybrid import CachedRetrieval
+
+_recovery = ContextVar('query_embedding_recovery', default=None)
+
+
+@contextmanager
+def authorized_query_recovery(scope, command_id):
+    """Host-only explicit recovery; never exposed as a model tool argument."""
+    token = _recovery.set((scope, command_id))
+    try:
+        yield
+    finally:
+        _recovery.reset(token)
 
 
 class QueryEmbeddingSource:
@@ -49,7 +63,9 @@ class QueryEmbeddingSource:
             ['index-query.v1', scope, index_digest, self.model, self.dimensions],
             separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
         with LocalRecords(self.path) as cache:
-            client = CachedRetrieval(cache, self.api, namespace)
+            authorization = _recovery.get()
+            client = CachedRetrieval(cache, self.api, namespace,
+                retry_authorization=authorization[1] if authorization and authorization[0] == scope else None)
             try:
                 result = client.call('embedding', [query])
             except RuntimeError:

@@ -94,7 +94,8 @@ async def admit(native, config, thread, authority):
         (validate_action_baseline if reporting else validate_baseline)(saved, grant)
         payload = grant['report_action_request' if reporting else 'continuation_request']
         previous = await native.runs.get(grant['execution_id'], payload['previous_run_id'])
-        if previous['status'] != 'success' or previous['run_id'] != payload['previous_run_id']:
+        statuses = {'error', 'interrupted', 'timeout'} if payload.get('action') == 'recover' else {'success'}
+        if previous['status'] not in statuses or previous['run_id'] != payload['previous_run_id']:
             raise ValueError('organization_continuation_predecessor_not_complete')
     elif saved.get('values'):
         raise ValueError('organization_initial_run_requires_empty_state')

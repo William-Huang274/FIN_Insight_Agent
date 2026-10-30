@@ -14,6 +14,41 @@ _TRANSPORT_KEYS = {"mcp_receipt_chain", "mcp_receipt", "cell_binding_used", "sou
 _PARSER_IMPLEMENTATION_KEYS = {"parser", "material_card_version"}
 
 
+def _navigation_envelope(row):
+    return (row.get('operation') in {'catalog', 'outline', 'search', 'read'}
+            and isinstance(row.get('items'), list)
+            and row.get('read_only') is True and 'source_snapshot_sha256' in row)
+
+
+def _shared_navigation_metadata(row):
+    """Factor exact repeated metadata, without dropping candidates or diagnostics.
+
+    Native navigation is already a result envelope (not wrapped in ``result``).
+    Full canonical receipts stay unchanged; inheritance is explicit in the view.
+    Unknown/conflicting metadata remains on its original item.
+    """
+    if not _navigation_envelope(row) or len(row['items']) < 2:
+        return row
+    items = row['items']
+    for key in ('retrieval', 'organization_source'):
+        shared_key = 'shared_' + key
+        if shared_key in row or not all(isinstance(i, dict) and key in i for i in items):
+            continue
+        shared = items[0][key]
+        if not shared or not all(i[key] == shared for i in items):
+            continue
+        row[shared_key] = shared
+        for item in items:
+            del item[key]
+            item[key + '_ref'] = '#/' + shared_key
+        if key == 'retrieval' and isinstance(row.get('notice'), str):
+            # Replace only the exact serialized receipt produced by navigation;
+            # retain all surrounding source/coverage warnings verbatim.
+            row['notice'] = row['notice'].replace('Retrieval: ' + str(shared),
+                'Retrieval: see shared_retrieval (same receipt for every item).')
+    return row
+
+
 def _company_source_menu(row):
     """A known company sources section is a file menu, not a company profile.
 
@@ -113,7 +148,7 @@ def source_result_view(value):
                 row.pop("metadata")
         if row.get('result_state') == 'retrieval_candidate':
             row = _company_source_menu(row)
-        return row
+        return _shared_navigation_metadata(row)
     if isinstance(value, (list, tuple)):
         return [source_result_view(v) for v in value]
     return value
@@ -133,7 +168,7 @@ def source_message_views(messages):
                 body = None
             # User prose and unknown JSON contracts are not a tool result.
             if isinstance(body, dict) and ("progress" in body or message.additional_kwargs.get('fin_research_working_view')
-                                         or (isinstance(message, ToolMessage) and "result" in body)):
+                                         or (isinstance(message, ToolMessage) and ("result" in body or _navigation_envelope(body)))):
                 projected = source_result_view(body)
                 if projected != body:
                     view = message.model_copy(update={"content": json.dumps(projected, ensure_ascii=False, separators=(",", ":"))})

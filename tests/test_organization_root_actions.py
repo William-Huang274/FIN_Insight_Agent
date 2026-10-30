@@ -45,7 +45,8 @@ def root(continuous, monkeypatch):
     s.intake.service.sdk.threads.get_state = state
     async def create(t, graph, **kwargs):
         assert 'command' not in kwargs and kwargs['multitask_strategy'] == 'reject'
-        assert kwargs['input'] == {'question': s.grant['question'], 'messages': [{'role': 'user', 'content': payload['message']}]}
+        assert kwargs['input'] == (None if payload['action'] == 'recover' else
+            {'question': s.grant['question'], 'messages': [{'role': 'user', 'content': payload['message']}]})
         s.actual = deepcopy(kwargs)
         run = {'thread_id': t, 'run_id': str(uuid4()), 'status': 'pending', 'metadata': kwargs['metadata']}
         s.intake.runs[t].append(deepcopy(run))
@@ -86,6 +87,24 @@ def test_lost_root_reply_is_reconciled_without_new_model_run(root):
         assert submit(c, s).json()['submission_status'] == 'unknown'
         assert reconcile(c, s).status_code == 200
     assert len(s.intake.runs[s.grant['execution_id']]) == 2
+
+
+def test_failed_root_recovery_is_explicit_idempotent_and_does_not_replace_history(root):
+    s = root
+    s.action_body['action'] = 'recover'
+    s.baseline['next'] = ['work']
+    s.baseline['metadata'] = {'run_id': s.action_body['previous_run_id']}
+    s.action_body['state_digest'] = baseline_digest(s.baseline)
+    s.action_grant['report_action_request_digest'] = 'sha256:'+sha256(json.dumps(s.action_body, separators=(',', ':')).encode()).hexdigest()
+    s.intake.runs[s.grant['execution_id']][0]['status'] = 'error'
+    original = deepcopy(s.baseline)
+    with TestClient(s.intake.app()) as c:
+        accepted = submit(c, s)
+        assert accepted.status_code == 200, accepted.text
+        assert submit(c, s).json() == reconcile(c, s).json() == accepted.json()
+    assert s.baseline == original
+    assert s.actual['input'] is None and 'checkpoint_id' not in s.actual
+    assert s.intake.runs[s.grant['execution_id']][0]['status'] == 'error'
 
 
 @pytest.mark.parametrize('fault', ['pending', 'checkpoint', 'history', 'outcome', 'usage', 'disabled', 'old_route'])

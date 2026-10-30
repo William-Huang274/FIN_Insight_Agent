@@ -47,13 +47,14 @@ async def reauthorize(service, grant):
         raise HTTPException(409, '报告操作授权已变化')
 
 
-async def completed_predecessor(service, thread, previous_run_id):
+async def completed_predecessor(service, thread, previous_run_id, *, recover=False):
     """All rounds count; no guessed latest run and no two-run truncation."""
     runs = await service.all_runs(thread['thread_id'])
-    if thread.get('status') not in {'idle', 'interrupted'}:
+    if thread.get('status') not in ({'idle', 'interrupted', 'error'} if recover else {'idle', 'interrupted'}):
         raise HTTPException(409, '当前运行尚未结束或存在失败，请先核对原操作')
     previous = [r for r in runs if r['run_id'] == previous_run_id]
-    if len(previous) != 1 or previous[0]['status'] != 'success' or any(r['status'] in {'pending', 'running'} for r in runs):
+    statuses = {'error', 'interrupted', 'timeout'} if recover else {'success'}
+    if len(previous) != 1 or previous[0]['status'] not in statuses or any(r['status'] in {'pending', 'running'} for r in runs):
         raise HTTPException(409, '前序运行尚未完成，请先核对原操作')
     # Created timestamps are server-owned. Caller checkpoint must also equal
     # the latest state; a matching historic predecessor is never sufficient.
@@ -90,7 +91,8 @@ def install_organization_report_action_routes(router, service):
             raise HTTPException(503, '按需研究入口尚未启用')
         tid = grant['execution_id']
         thread = await service.sdk.threads.get(tid)
-        await completed_predecessor(service, thread, grant['report_action_request']['previous_run_id'])
+        await completed_predecessor(service, thread, grant['report_action_request']['previous_run_id'],
+                                    recover=grant['report_action_request'].get('action') == 'recover')
         saved = await service.sdk.threads.get_state(tid)
         try:
             validate_baseline(saved, grant)

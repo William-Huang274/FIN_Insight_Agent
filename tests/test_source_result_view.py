@@ -12,6 +12,38 @@ from sec_agent.agent_runtime.deepseek_structured_agents import ReasoningPreservi
 from sec_agent.agent_runtime.research_orientation import orientation_source_view
 
 
+def test_native_navigation_factors_receipts_without_losing_readback_or_warnings():
+    retrieval = {'mode': 'hybrid', 'dense_node_ids': ['NODE::a', 'NODE::b'],
+                 'fallback': 'dense unavailable', 'unknown_diagnostic': {'x': 9}}
+    identity = {'source_revision': 'v1', 'source_truncated': True, 'scope': 'org'}
+    body = {'operation': 'search', 'read_only': True, 'source_snapshot_sha256': 'abc',
+            'items': [{**candidate(), 'retrieval': deepcopy(retrieval),
+                       'organization_source': deepcopy(identity), 'preview': f'USD million {i}',
+                       'original_source': {'period': f'FY{i}'}} for i in (25, 26)],
+            'notice': 'Read before citation. Retrieval: ' + str(retrieval) + ' Source is truncated.',
+            'next_offset': 2, 'total_matches': 7}
+    original = deepcopy(body)
+    message = ToolMessage(content=json.dumps(body), name='read_source_document', tool_call_id='c1')
+    view = json.loads(source_message_views([message])[0].content)
+    assert body == original and json.loads(message.content) == original
+    assert view['shared_retrieval'] == retrieval
+    assert view['shared_organization_source'] == identity
+    assert view['notice'].endswith(' Source is truncated.')
+    assert 'Read before citation.' in view['notice']
+    for item, old in zip(view['items'], body['items']):
+        for key in ('preview', 'readback', 'document_id', 'original_source', 'document_coverage'):
+            assert item[key] == old[key]
+        assert item['retrieval_ref'] == '#/shared_retrieval'
+        assert item['organization_source_ref'] == '#/shared_organization_source'
+    assert view['next_offset'] == 2 and view['total_matches'] == 7
+    assert source_result_view(view) == view
+    # Contradictory identities remain local, never inferred or coalesced.
+    body['items'][1]['organization_source']['source_revision'] = 'v2'
+    conflict = source_result_view(body)
+    assert 'shared_organization_source' not in conflict
+    assert conflict['items'][1]['organization_source']['source_revision'] == 'v2'
+
+
 def candidate():
     metadata = {"entity_id": "ACME", "period_end": "2026-06-30", "form": "10-Q",
         "publication_date": "2026-08-01", "origin_url": "https://example.org/report",

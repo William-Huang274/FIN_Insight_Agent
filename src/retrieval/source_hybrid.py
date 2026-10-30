@@ -26,8 +26,9 @@ def cache_path():
 
 
 class CachedRetrieval(Embeddings):
-    def __init__(self, cache, api, scope, *, prepare=False):
+    def __init__(self, cache, api, scope, *, prepare=False, retry_authorization=None):
         self.cache, self.api, self.scope, self.prepare = cache, api, scope, prepare
+        self.retry_authorization = retry_authorization
         self.calls = self.hits = 0
 
     def key(self, operation, payload):
@@ -40,7 +41,9 @@ class CachedRetrieval(Embeddings):
         if saved and saved.get('result'):
             self.hits += 1
             return saved['result']
-        if saved:
+        retry = (saved and saved.get('status') == 'failed_usage_unknown' and self.retry_authorization
+                 and self.retry_authorization not in saved.get('retry_authorizations', []))
+        if saved and not retry:
             raise RuntimeError('检索请求待完成或曾失败，未自动重发')
         basis = {'node_purpose': operation+' for original source navigation',
             'input_scale': len(json.dumps(payload, ensure_ascii=False)),
@@ -50,16 +53,21 @@ class CachedRetrieval(Embeddings):
             'comparable_run_evidence': 'Existing Qwen working-paper adapter; original-source retrieval under qualification',
             'reasoning_profile': 'Embedding/reranking, no generative reasoning',
             'stop_truncation_behavior': 'Explicit corpus preparation; search at most query embedding and rerank; no retry of failed/unknown calls'}
-        if not self.cache.add(key, {'status': 'started', 'basis': basis}):
+        retained = ({'prior_attempts': [*saved.get('prior_attempts', []),
+                    {k: v for k, v in saved.items() if k not in {'prior_attempts', 'retry_authorizations'}}],
+                    'retry_authorizations': [*saved.get('retry_authorizations', []), self.retry_authorization]}
+                    if retry else {'retry_authorizations': [self.retry_authorization]} if self.retry_authorization else {})
+        claim = {'status': 'started', 'basis': basis, **retained}
+        if not (self.cache.compare_and_set(key, saved, claim) if retry else self.cache.add(key, claim)):
             raise RuntimeError('相同检索请求正在处理中')
         self.calls += 1
         try:
             response = self.api.embed(payload) if operation == 'embedding' else self.api.rerank(payload[0], payload[1])
             result = asdict(response)
-            self.cache[key] = {'status':'completed', 'basis':basis, 'result':result}
+            self.cache[key] = {'status':'completed', 'basis':basis, 'result':result, **retained}
             return result
         except Exception:
-            self.cache[key] = {'status':'failed_usage_unknown', 'basis':basis}
+            self.cache[key] = {'status':'failed_usage_unknown', 'basis':basis, **retained}
             raise
 
     def embed_documents(self, texts):

@@ -44,7 +44,7 @@ class RootCommand(BaseModel):
     previous_run_id: UUID
     checkpoint_id: UUID
     state_digest: str = Field(pattern=r'^sha256:[a-f0-9]{64}$')
-    action: Literal['continue'] = 'continue'
+    action: Literal['continue', 'recover'] = 'continue'
     message: str = Field(min_length=1, max_length=16000)
     delivery_intent: Literal['answer', 'workpaper', 'report'] = 'answer'
     require_report_review: bool = Field(default=False, strict=True)
@@ -108,9 +108,11 @@ def validate_baseline(state, grant):
     if on_demand(grant):
         values = state.get('values') or {}
         if (state.get('checkpoint', {}).get('checkpoint_id') != p['checkpoint_id']
-                or baseline_digest(state) != p['state_digest'] or state.get('next')
+                or baseline_digest(state) != p['state_digest']
                 or values.get('question') != grant['question']
-                or values.get('task_outcome', {}).get('run_id') != p['previous_run_id']):
+                or (p['action'] == 'continue' and (state.get('next')
+                    or values.get('task_outcome', {}).get('run_id') != p['previous_run_id']))
+                or (p['action'] == 'recover' and not state.get('next'))):
             raise ValueError('organization_root_checkpoint_mismatch')
         return
     validate_report(state.get('values') or {}, grant)
@@ -136,7 +138,13 @@ def action_request(thread, grant):
         finsight_organization_report_action=action_context(grant),
         finsight_organization_start=None, finsight_organization_continuation=None)
     args = {'config': config, 'checkpoint_id': grant['report_action_request']['checkpoint_id']}
-    if on_demand(grant):
+    if on_demand(grant) and grant['report_action_request']['action'] == 'recover':
+        # Resume the latest failed task and its pending subgraph writes. An
+        # explicit checkpoint_id would fork/replay instead of native resume.
+        # Its identity is checked twice, before dispatch and native admission.
+        args.pop('checkpoint_id')
+        args['input'] = None
+    elif on_demand(grant):
         args['input'] = {'question': grant['question'], 'messages': [{'role': 'user', 'content': grant['report_action_request']['message']}]}
     else:
         args['command'] = {'resume': authorized_action(grant).model_dump(mode='json', exclude_none=True)}

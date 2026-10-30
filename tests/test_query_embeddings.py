@@ -58,6 +58,40 @@ def test_unknown_failure_persists_without_automatic_resubmission(tmp_path):
     assert api.calls == 1
 
 
+def test_explicit_recovery_retains_unknown_usage_and_does_not_retry_new_failure(tmp_path):
+    from retrieval.query_embeddings import authorized_query_recovery
+    from sec_agent.adapters.local_records import LocalRecords
+    api = Api(); api.error = TimeoutError('unknown')
+    source = QueryEmbeddingSource(tmp_path, api, model=api.embedding_model)
+    with pytest.raises(TimeoutError): request(source)
+    with authorized_query_recovery('wrong-scope', 'command'):
+        with pytest.raises(RuntimeError): request(source)
+    with authorized_query_recovery('organization-A', 'command'):
+        with pytest.raises(TimeoutError): request(source)
+        with pytest.raises(RuntimeError): request(source)
+    assert api.calls == 2
+    api.error = None
+    with authorized_query_recovery('organization-A', 'next-command'):
+        assert request(source)[1]['provider_calls'] == 1
+    assert request(source)[1]['cache_hit']
+    with LocalRecords(tmp_path) as db:
+        key = db.db.execute('SELECT key FROM records').fetchone()[0]
+        record = db.get(key)
+        assert len(record['prior_attempts']) == 2
+        assert all(x['status'] == 'failed_usage_unknown' for x in record['prior_attempts'])
+        assert record['retry_authorizations'] == ['command', 'next-command']
+
+
+def test_recovery_does_not_retry_a_new_paid_failure(tmp_path):
+    from retrieval.query_embeddings import authorized_query_recovery
+    api = Api(); api.error = TimeoutError('new failure')
+    source = QueryEmbeddingSource(tmp_path, api, model=api.embedding_model)
+    with authorized_query_recovery('organization-A', 'command'):
+        with pytest.raises(TimeoutError): request(source)
+        with pytest.raises(RuntimeError): request(source)
+    assert api.calls == 1
+
+
 @pytest.mark.parametrize('override', [
     {'model': 'qwen3.7-text-embedding'}, {'dimensions': 768},
     {'index_digest': 'latest'}, {'scope': ''},

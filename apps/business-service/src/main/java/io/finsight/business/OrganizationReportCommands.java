@@ -22,7 +22,7 @@ class OrganizationReportCommands {
     record Create(@NotNull UUID id, @NotNull UUID previous_run_id, @NotNull UUID checkpoint_id,
         @NotBlank @Pattern(regexp="sha256:[a-f0-9]{64}") String state_digest,
         @Min(0) int report_version, @Pattern(regexp="[a-f0-9]{64}") String report_digest,
-        @NotBlank @Pattern(regexp="ask|revise|continue") String action,
+        @NotBlank @Pattern(regexp="ask|revise|continue|recover") String action,
         @NotBlank @Size(max=16000) String message,
         @Pattern(regexp="quick|deep") String answer_mode, @Valid Target target,
         @Pattern(regexp="answer|workpaper|report") String delivery_intent, Boolean require_report_review) {}
@@ -80,7 +80,7 @@ class OrganizationReportCommands {
         if(!enabled)throw new ApiFailure(503,"组织报告交互尚未启用");
     }
     private void validate(Create input) {
-        if (input.action().equals("continue")) {
+        if (Set.of("continue","recover").contains(input.action())) {
             if(input.report_version()!=0 || input.report_digest()!=null || input.answer_mode()!=null || input.target()!=null)
                 throw new ApiFailure(422,"连续工作不接受旧报告阶段参数");
             if(Boolean.TRUE.equals(input.require_report_review())&&!"report".equals(input.delivery_intent()))
@@ -129,7 +129,7 @@ class OrganizationReportCommands {
         requireEnabled(); validate(input);
         String kind=routeKind(request);
         if(kind.equals("root_task")&&!onDemandEnabled)throw new ApiFailure(503,"按需工作尚未启用");
-        if (kind.equals("root_task") != input.action().equals("continue"))
+        if (kind.equals("root_task") != Set.of("continue","recover").contains(input.action()))
             throw new ApiFailure(422,"动作与入口合同不匹配");
         String actor=(String)request.getAttribute("owner");
         String fingerprint=Delegation.digest(json.valueToTree(input).toString().getBytes(StandardCharsets.UTF_8));
@@ -146,7 +146,7 @@ class OrganizationReportCommands {
             }
             if(!input.previous_run_id().equals(previousRun(execution)))
                 throw new ApiFailure(409,"前序运行已变化，请刷新报告后重试");
-            if(!db.queryForList("SELECT id FROM organization_report_command WHERE command_kind IN ('report','root_task') AND execution_id=? AND checkpoint_id=? AND status<>'rejected'",execution,input.checkpoint_id()).isEmpty())
+            if(!db.queryForList("SELECT id FROM organization_report_command WHERE command_kind IN ('report','root_task') AND execution_id=? AND checkpoint_id=? AND request_body::jsonb->>'previous_run_id'=? AND status<>'rejected'",execution,input.checkpoint_id(),input.previous_run_id().toString()).isEmpty())
                 throw new ApiFailure(409,"该报告快照已有操作，请核对原记录");
             var start=db.queryForMap("SELECT request_body FROM organization_native_start WHERE execution_id=?",execution);
             var payload=json.valueToTree(input);
@@ -156,6 +156,14 @@ class OrganizationReportCommands {
                 body.remove(List.of("report_version","report_digest","answer_mode","target"));
                 body.put("delivery_intent",input.delivery_intent()==null?"answer":input.delivery_intent());
                 body.put("require_report_review",Boolean.TRUE.equals(input.require_report_review()));
+                if(input.action().equals("recover")) {
+                    // Recover the previous user turn, not the browser's new
+                    // delivery selection. The acknowledgement stays in audit.
+                    var prior=db.queryForList("SELECT request_body FROM organization_report_command WHERE execution_id=? AND run_id=? AND status='received'",execution,input.previous_run_id());
+                    var options=prior.isEmpty()?((JsonNode)prepared.get("prepare_request")).path("execution"):parse(prior.getFirst().get("request_body"));
+                    body.put("delivery_intent",options.path("delivery_intent").asText("answer"));
+                    body.put("require_report_review",options.path("require_report_review").asBoolean(false));
+                }
             } else body.remove(List.of("delivery_intent","require_report_review"));
             body.put("contract_version",onDemand ? "organization_root_action.v1" : "organization_report_action.v1").put("command_id",input.id().toString())
                 .put("execution_id",execution.toString()).put("project_id",project.toString())

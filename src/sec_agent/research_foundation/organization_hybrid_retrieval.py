@@ -14,7 +14,7 @@ from uuid import UUID
 
 import numpy as np
 
-from .organization_execution_access import OrganizationExecutionUnavailable
+from .organization_execution_access import OrganizationExecutionUnavailable, OrganizationSourceStorageUnavailable
 
 POLICY = 'organization-cosine-bm25-rrf.v1'
 FORMAT = 'organization-prepared-vectors.v1'
@@ -216,8 +216,13 @@ class OrganizationHybridRetrieval:
         """Explicit warm-up and query entry share one verified release lifetime."""
         from .organization_index_release import load_release
         pinned = manifest['retrieval_index']
-        return load_release(self.root, manifest['organization_id'], pinned['release_id'], pinned,
-                            cache=self.release_cache)
+        try:
+            return load_release(self.root, manifest['organization_id'], pinned['release_id'], pinned,
+                                cache=self.release_cache)
+        except OrganizationExecutionUnavailable:
+            raise
+        except (OSError, ValueError, KeyError, sqlite3.Error):
+            raise OrganizationSourceStorageUnavailable('retrieval_release_unreadable_or_version_mismatch') from None
 
     def rank(self, rows, query, snapshot, literal, *, source_verifier=None, graph=None, lexical_policy=None):
         from .organization_source_navigation import OrganizationSourceNavigation

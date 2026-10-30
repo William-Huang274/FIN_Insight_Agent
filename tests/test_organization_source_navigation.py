@@ -6,7 +6,7 @@ from uuid import uuid4
 import pytest
 
 from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation, build_organization_source_server
-from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionUnavailable
+from sec_agent.research_foundation.organization_execution_access import OrganizationExecutionUnavailable, OrganizationSourceSelectionError
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, source_items_from_tool
 from test_organization_research_inputs import fixture
@@ -63,7 +63,7 @@ def test_other_source_spaces_never_fall_through_to_host(navigation, space):
 def test_foreign_document_node_and_page_do_not_resolve_by_guessing(navigation):
     nav, _, _ = navigation
     document = nav.navigate(request('catalog')).items[0]['document_id']
-    with pytest.raises(OrganizationExecutionUnavailable):
+    with pytest.raises(OrganizationSourceSelectionError):
         nav.navigate(request('read', document_id='ORGDOC::' + str(uuid4())))
     with pytest.raises(ValueError, match='source_node_not_in_selected_document'):
         nav.navigate(request('read', document_id=document, node_id='ORGSECTION::foreign'))
@@ -210,7 +210,7 @@ def test_separate_organization_sessions_do_not_share_observations(navigation, tm
     reader, _ = runtime_at(shared, runtime_grant(preparation))
     other = OrganizationSourceNavigation(reader, workbench_url='https://workbench.example.test')
     with pytest.raises(ValueError, match='not_observed'): other.source(first['passage_id'])
-    with pytest.raises(OrganizationExecutionUnavailable): other.navigate(first['readback'])
+    with pytest.raises(OrganizationSourceSelectionError): other.navigate(first['readback'])
 
 
 def test_permission_change_after_navigation_drops_entire_response(navigation, monkeypatch):

@@ -2,6 +2,7 @@
 from pathlib import Path
 import json
 from .organization_hybrid_retrieval import digest
+from .organization_execution_access import OrganizationSourceStorageUnavailable
 
 
 def identity(manifest):
@@ -28,11 +29,16 @@ def publish(root, manifest, descriptors):
 def load(root, manifest):
     path=Path(root)/'document-catalogs'/(identity(manifest)+'.json')
     if not path.exists():
-        raise ValueError('document_catalog_not_published_prepare_metadata_offline_no_runtime_corpus_scan')
-    saved=json.loads(path.read_text(encoding='utf8'));value=saved['value']
-    if saved['digest']!=digest(value) or value['identity']!=identity(manifest):
-        raise ValueError('document_catalog_publication_mismatch')
-    return value['documents']
+        raise OrganizationSourceStorageUnavailable('document_catalog_not_published_prepare_metadata_offline_no_runtime_corpus_scan')
+    try:
+        saved=json.loads(path.read_text(encoding='utf8'));value=saved['value']
+        if saved['digest']!=digest(value) or value['identity']!=identity(manifest):
+            raise OrganizationSourceStorageUnavailable('document_catalog_publication_mismatch')
+        return value['documents']
+    except OrganizationSourceStorageUnavailable:
+        raise
+    except (OSError, ValueError, KeyError, TypeError):
+        raise OrganizationSourceStorageUnavailable('document_catalog_unreadable') from None
 
 
 def publish_from_receipts(reader, root):

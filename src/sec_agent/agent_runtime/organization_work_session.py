@@ -18,6 +18,28 @@ from .conversation_agent import GrantedTool
 from .on_demand_research import OnDemandResearchState
 
 
+def organization_source_tool(navigation, check):
+    """Only model selection errors become ordinary paired tool feedback."""
+    from sec_agent.research_foundation.organization_source_request import OrganizationSourceRequest
+    from sec_agent.research_foundation.organization_execution_access import OrganizationSourceSelectionError
+
+    @tool(response_format='content_and_artifact')
+    def read_source_document(request: OrganizationSourceRequest):
+        """Search/catalog/read the task's authorized fixed originals. Candidate IDs are not citations until read."""
+        check()
+        try:
+            result = navigation.navigate(request)
+        except OrganizationSourceSelectionError as exc:
+            check()
+            raise ToolException(str(exc)) from exc
+        body = result.model_dump(mode='json') if hasattr(result, 'model_dump') else result
+        check()
+        return json.dumps(body, ensure_ascii=False), body
+
+    read_source_document.handle_tool_error = True
+    return read_source_document
+
+
 def artifact_reader(data, navigation, question_state):
     """Revalidate native tool artifacts, never model prose or browser records."""
     from .case_artifacts import CaseArtifacts
@@ -47,7 +69,6 @@ async def organization_work_session(*, native, resources, authority, check, orga
     from .delegated_task_graph import current_work_catalog
     from .working_memory import WorkingMemory
     from .working_memory_tools import native_memory_scope, working_memory_tools
-    from sec_agent.research_foundation.organization_source_request import OrganizationSourceRequest
     from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
 
     tid, rid = phase_arguments['thread_id'], phase_arguments['run_id']
@@ -88,15 +109,7 @@ async def organization_work_session(*, native, resources, authority, check, orga
         OrganizationSourceNavigation(organization.reader, workbench_url=organization.workbench_url))
     grants = conversation_tools(thread_id=tid)
 
-    @tool(response_format='content_and_artifact')
-    def read_source_document(request: OrganizationSourceRequest):
-        """Search/catalog/read the task's authorized fixed originals. Candidate IDs are not citations until read."""
-        check()
-        result = navigation.navigate(request)
-        body = result.model_dump(mode='json') if hasattr(result, 'model_dump') else result
-        check()
-        return json.dumps(body, ensure_ascii=False), body
-
+    read_source_document = organization_source_tool(navigation, check)
     grants.append(GrantedTool(read_source_document, 'read', '当前组织任务的固定资料及当前权限'))
     grants.extend(GrantedTool(t, 'working_note_write' if t.name == 'WriteWorkingNote' else 'read',
         '当前组织任务的版本化工作笔记') for t in working_memory_tools('research_partner', owner=owner, workspace=tid))

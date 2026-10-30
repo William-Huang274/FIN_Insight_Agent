@@ -12,7 +12,8 @@ from pathlib import Path
 import sqlite3
 import zlib
 
-from .organization_execution_access import OrganizationExecutionUnavailable
+from .organization_execution_access import (OrganizationExecutionUnavailable,
+    OrganizationAuthorizationUnavailable, OrganizationSourceStorageUnavailable, OrganizationSourceSelectionError)
 
 FORMAT = 'organization-candidate-navigation.v1'
 
@@ -123,7 +124,7 @@ class VerifiedCandidateIndex:
                 # This is a content proof, never a current local/Java grant.
                 version = current_versions[item['ref']['project_id']][item['ref']['version_id']]
                 if version['access_status'] != 'active':
-                    raise OrganizationExecutionUnavailable('organization_candidate_current_local_access_denied')
+                    raise OrganizationAuthorizationUnavailable('organization_candidate_current_local_access_denied')
                 if version != saved['version'] or version['ref'] != item['ref']:
                     saved = None
             if saved is None:
@@ -193,7 +194,7 @@ class VerifiedCandidateIndex:
         self.reader._after(before)
         self.hybrid.release_cache.check()
         if self.observer.epoch() != epoch:
-            raise OrganizationExecutionUnavailable('organization_candidate_storage_changed_during_warmup')
+            raise OrganizationSourceStorageUnavailable('organization_candidate_storage_changed_during_warmup')
         def checked_entries():
             for entry in pending:
                 self._check_cancelled()
@@ -214,7 +215,7 @@ class VerifiedCandidateIndex:
     def check(self):
         if self.generation is None or self.observer.epoch() != self.epoch:
             self.generation = None
-            raise OrganizationExecutionUnavailable('organization_candidate_source_generation_changed')
+            raise OrganizationSourceStorageUnavailable('organization_candidate_source_generation_changed')
         self.hybrid.release_cache.check()
 
     def verify_rows(self, rows, before):
@@ -229,7 +230,7 @@ class VerifiedCandidateIndex:
         rows = list(self.rows.values())
         if request.document_id:
             if request.document_id not in self.origins:
-                raise OrganizationExecutionUnavailable('所选原文不属于本次固定组织输入。')
+                raise OrganizationSourceSelectionError()
             rows = [row for row in rows if row['parent_document_id'] == request.document_id]
         if request.node_id:
             rows = [row for row in rows if request.node_id in (row['node_id'],

@@ -603,12 +603,14 @@ class CaseModelAudit(AgentMiddleware):
 
     async def awrap_tool_call(self, request, handler):
         import asyncio
-        if self.source_access_check:
-            await asyncio.to_thread(self.source_access_check)
-        result = await self._execute_tool_call(request, handler)
-        if self.source_access_check:
-            await asyncio.to_thread(self.source_access_check)
-        return result
+        async def checked_handler(current):
+            if self.source_access_check:
+                await asyncio.to_thread(self.source_access_check)
+            result = await handler(current)
+            if self.source_access_check:
+                await asyncio.to_thread(self.source_access_check)
+            return result
+        return await self._execute_tool_call(request, checked_handler)
 
     async def _execute_tool_call(self, request, handler):
         if not self.stream_public:
@@ -626,13 +628,27 @@ class CaseModelAudit(AgentMiddleware):
         start = perf_counter()
         try:
             result = await handler(request)
-        except BaseException:
-            emit({**event, "event": "outcome", "status": "error"})
+        except BaseException as exc:
+            from sec_agent.research_foundation.organization_execution_access import (
+                OrganizationAuthorizationUnavailable, OrganizationSourceStorageUnavailable)
+            failure = ({'source_failure': exc.feedback()} if isinstance(exc,
+                (OrganizationAuthorizationUnavailable, OrganizationSourceStorageUnavailable)) else {})
+            emit({**event, "event": "outcome", "status": "error", **failure})
             raise
         messages = result.update.get("messages", []) if isinstance(result, Command) else [result]
+        selection_feedback = {}
+        if request.tool_call['name'] == 'read_source_document':
+            for message in messages:
+                if isinstance(message, ToolMessage) and message.status == 'error' and isinstance(message.content, str):
+                    try:
+                        feedback = json.loads(message.content)
+                    except ValueError:
+                        continue
+                    if isinstance(feedback, dict) and feedback.get('category') == 'source_selection':
+                        selection_feedback = {'source_failure': feedback}
         emit({**event, "event": "outcome", "status": "error" if any(
             isinstance(m, ToolMessage) and m.status == "error" for m in messages) else "success",
-            "elapsed_ms": round((perf_counter()-start)*1000, 3)})
+            "elapsed_ms": round((perf_counter()-start)*1000, 3), **selection_feedback})
         return result
 
     async def awrap_model_call(self, request, handler):

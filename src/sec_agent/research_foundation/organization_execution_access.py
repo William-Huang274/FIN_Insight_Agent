@@ -23,8 +23,49 @@ class OrganizationExecutionUnavailable(ProjectAssetUnavailable):
     """Failure must stop tools and the next model request, not become empty evidence."""
 
 
+class OrganizationAuthorizationUnavailable(OrganizationExecutionUnavailable):
+    category = 'authorization'
+
+    def __init__(self, code='authorization_unconfirmed'):
+        self.code = code
+        super().__init__(json.dumps(self.feedback(), ensure_ascii=False))
+
+    def feedback(self):
+        return {'category': self.category, 'code': self.code, 'stop_required': True,
+                'message': '当前任务的资料读取权限无法确认或已经失效，停止读取。不可用旧授权继续读取，不能据此判断资料不存在或未披露。',
+                'next_action': '由用户或服务维护方核对访问权限；恢复后沿原任务停点继续。'}
+
+
+class OrganizationSourceStorageUnavailable(OrganizationExecutionUnavailable):
+    category = 'storage_or_version'
+
+    def __init__(self, code='source_storage_unavailable'):
+        self.code = code
+        super().__init__(json.dumps(self.feedback(), ensure_ascii=False))
+
+    def feedback(self):
+        return {'category': self.category, 'code': self.code, 'stop_required': True,
+                'message': '当前来源的存储、解析或固定版本无法可靠读取，停止本次执行。不是资料不存在或未披露，也不要自行改用其他版本。',
+                'next_action': '维护方修复指定对象的读取或版本问题后，复用既有结果恢复。'}
+
+
+class OrganizationSourceSelectionError(ValueError):
+    """Invalid model choice after authority checks; never an access grant."""
+    category = 'source_selection'
+
+    def __init__(self):
+        super().__init__(json.dumps(self.feedback(), ensure_ascii=False))
+
+    def feedback(self):
+        return {'category': self.category, 'code': 'document_not_in_fixed_catalog',
+                'stop_required': False, 'operation_executed': False,
+                'message': '所选文档 ID 不在本任务的固定资料目录中，未执行该文档的搜索或读取。此结果不代表相关披露不存在。',
+                'next_action': '使用已返回目录中的完整 document_id；需要其他文件时调用目录查询。不要猜测 ID、拼接版本或绕过资料范围。',
+                'readback': {'tool': 'read_source_document', 'request': {'operation': 'catalog', 'source_space': 'organization'}}}
+
+
 def _unavailable():
-    return OrganizationExecutionUnavailable('组织执行授权或固定资料当前不可核实；停止本次读取，不自动重试。')
+    return OrganizationAuthorizationUnavailable()
 
 
 class OrganizationExecutionAuthority:
@@ -172,7 +213,7 @@ class OrganizationExecutionReader:
         try:
             result = self.workspace.read_source('organization:' + manifest['organization_id'], binding['ref'])
             if result['version']['ref'] != binding['ref']:
-                raise _unavailable()
+                raise OrganizationSourceStorageUnavailable('source_version_mismatch')
             from .project_source_captures import validate_metric_cutoff, financial_capture_text
             capture = result.get('capture') or {}
             if capture.get('kind') == 'library_source':
@@ -182,8 +223,12 @@ class OrganizationExecutionReader:
             if capture.get('kind') == 'financial':
                 text = financial_capture_text(capture)
                 result = {**result, 'text': text[:100000], 'truncated': len(text) > 100000}
-        except (KeyError, OSError, ValueError, AssetConflict, sqlite3.Error):
+        except OrganizationExecutionUnavailable:
+            raise
+        except ProjectAssetUnavailable:
             raise _unavailable() from None
+        except (KeyError, OSError, ValueError, AssetConflict, sqlite3.Error):
+            raise OrganizationSourceStorageUnavailable() from None
         return result
 
     @staticmethod

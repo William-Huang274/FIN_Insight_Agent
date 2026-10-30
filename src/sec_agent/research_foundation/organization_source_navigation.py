@@ -13,7 +13,8 @@ from threading import RLock
 
 from .source_document_navigation import SourceDocumentRequest, navigate_source_nodes
 from .source_bound_calculator import ObservedSourceRegistry, SourceBoundCalculation, calculate_from_sources
-from .organization_execution_access import OrganizationExecutionUnavailable
+from .organization_execution_access import (OrganizationExecutionUnavailable,
+    OrganizationSourceSelectionError, OrganizationSourceStorageUnavailable)
 from .organization_source_filter import OrganizationSourceFilterReceipt
 
 
@@ -89,6 +90,8 @@ class OrganizationSourceNavigation:
             if request.operation != 'search' or self.hybrid is None:
                 return self._navigate(request)
             before, manifest, _ = self.reader._grant()
+            if request.document_id and request.document_id not in {self._identity(i) for i in manifest['inputs']}:
+                raise OrganizationSourceSelectionError()
             pinned = manifest.get('retrieval_index')
             if self.table_completion and pinned is None and request.source_space == 'organization':
                 raise ValueError('organization_table_completion_requires_verified_navigation')
@@ -108,7 +111,7 @@ class OrganizationSourceNavigation:
                 self.hybrid.release_cache.check()
                 if cache.epoch() != epoch:
                     cache.entry = None
-                    raise OrganizationExecutionUnavailable('organization_search_storage_changed_during_cache_read')
+                    raise OrganizationSourceStorageUnavailable('organization_search_storage_changed_during_cache_read')
                 self.observed.remember('read_source_document', result.model_dump(mode='json'))
                 return result
             if 'navigation_index' in release_index:
@@ -116,7 +119,7 @@ class OrganizationSourceNavigation:
                 self.reader._after(before)
                 self.hybrid.release_cache.check()
                 if cache.epoch() != epoch:
-                    raise OrganizationExecutionUnavailable('organization_candidate_source_generation_changed')
+                    raise OrganizationSourceStorageUnavailable('organization_candidate_source_generation_changed')
                 cache.put(key, epoch, result)
                 self.observed.remember('read_source_document', result.model_dump(mode='json'))
                 return result
@@ -131,7 +134,7 @@ class OrganizationSourceNavigation:
                 if cache.epoch() != epoch:
                     cache.entry = None
                     projection_cache.reset(None)
-                    raise OrganizationExecutionUnavailable('organization_search_storage_changed_during_projection')
+                    raise OrganizationSourceStorageUnavailable('organization_search_storage_changed_during_projection')
             result = self._navigate(request, projection_cache=projection_cache, storage_check=storage_check)
             self.reader._after(before)
             self.hybrid.release_cache.check()
@@ -159,7 +162,7 @@ class OrganizationSourceNavigation:
                 continue
             saved = descriptors.get(item['resource_id'], {})
             if saved and saved['ref'] != item['ref']:
-                raise OrganizationExecutionUnavailable('document_catalog_version_mismatch')
+                raise OrganizationSourceStorageUnavailable('document_catalog_version_mismatch')
             info = saved.get('metadata' if request.organization_metadata_policy == 'sec_cover.v2' else 'original_metadata', {})
             metadata[document] = info
             query = request.query.strip().casefold()
@@ -174,7 +177,7 @@ class OrganizationSourceNavigation:
                     'execution_id':self.reader.authority.execution_id,'manifest_digest':self.reader.authority.manifest_digest},
                 'readback':{'source_space':'organization','operation':'outline','document_id':document}})
         if request.document_id and not metadata:
-            raise OrganizationExecutionUnavailable('所选原文不属于本次固定组织输入。')
+            raise OrganizationSourceSelectionError()
         receipt = None
         if request.organization_filter is not None:
             selected, receipt = select_documents(metadata, request.organization_filter)
@@ -369,7 +372,7 @@ class OrganizationSourceNavigation:
         selected = {self._identity(item): item for item in manifest['inputs']}
         if request.document_id:
             if request.document_id not in selected:
-                raise OrganizationExecutionUnavailable('所选原文不属于本次固定组织输入。')
+                raise OrganizationSourceSelectionError()
             selected = {request.document_id: selected[request.document_id]}
         by_resource = {item['resource_id']: (document_id, item) for document_id, item in selected.items()}
         def project(resource_id, result):
@@ -502,7 +505,7 @@ class OrganizationSourceNavigation:
             current = self.navigate(item['readback'])
             matched = next((row for row in current.items if row.get('passage_id') == source_id), None)
             if matched != item:
-                raise OrganizationExecutionUnavailable('原文回读与已记录引用不一致。')
+                raise OrganizationSourceStorageUnavailable('citation_source_version_mismatch')
         return item
 
     def calculate(self, request, *, source_lookup=None):

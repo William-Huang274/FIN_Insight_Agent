@@ -144,6 +144,9 @@ def test_selected_profile_uses_existing_factory_and_preserves_research_limits(mo
     root=Path(__file__).resolve().parents[1]
     original=json.loads((root/'configs/research/runtime/conversation.json').read_text(encoding='utf-8'))
     baseline=json.loads((root/'configs/research/runtime/continuous_context_baseline.json').read_text(encoding='utf-8'))
+    assert baseline['summary']['profile']['reasoning_effort'] == 'high'
+    assert baseline['summary']['budget']['max_output_tokens'] == 12000
+    assert baseline['summary']['budget']['max_transport_attempts'] == 1
     spec={**original,**baseline}
     assert spec['limits']==original['limits'] and spec['budget']==original['budget'] and spec['profile']==original['profile']
     monkeypatch.setenv('DEEPSEEK_API_KEY','offline-fixture')

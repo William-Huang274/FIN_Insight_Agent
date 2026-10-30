@@ -8,7 +8,7 @@
     "profile": {
       "model": "deepseek-flash",
       "thinking": "enabled",
-      "reasoning_effort": "low"
+      "reasoning_effort": "high"
     },
     "trigger_tokens": 32000,
     "keep_tokens": 12000,
@@ -25,8 +25,8 @@
       "comparable_run_evidence": "Two saved continuations, 16 real requests; offline policy and native checkpoint replay only. No claim of measured token savings, cache hit improvements or better research decisions. Authorize real verification separately.",
       "reasoning_profile": "agentic_message_history_thinking_enabled",
       "max_input_characters": 360000,
-      "max_output_tokens": 4096,
-      "timeout_seconds": 90,
+      "max_output_tokens": 12000,
+      "timeout_seconds": 180,
       "max_transport_attempts": 1,
       "retry_policy": "none",
       "truncation_stop_behavior": "fail_closed_no_partial_promotion",

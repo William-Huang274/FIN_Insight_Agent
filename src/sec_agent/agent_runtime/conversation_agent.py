@@ -79,6 +79,7 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
         prompt += NAVIGATION_GUIDANCE
         navigation = [ContextOrientationMiddleware()]
     from .model_context import RequestSummaryState
+    from .native_tool_results import NativeToolResultMiddleware
     return create_agent(model=model, tools=[g.tool for g in grants], system_prompt=prompt,
         state_schema=state_schema or RequestSummaryState,
         checkpointer=checkpointer, middleware=[
@@ -88,5 +89,6 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
             # Native limits enforce execution bounds without changing the research
             # task or removing tools from the final authorized model request.
             # Blocked tool calls retain paired error receipts for normal feedback.
-            ToolCallLimitMiddleware(run_limit=tool_calls, exit_behavior="continue"), *navigation, *middleware],
+            ToolCallLimitMiddleware(run_limit=tool_calls, exit_behavior="continue"), *navigation, *middleware,
+            NativeToolResultMiddleware()],
         name="conversation")

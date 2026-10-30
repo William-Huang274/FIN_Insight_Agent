@@ -54,6 +54,14 @@ def validate_contract(contract):
     return contract
 
 
+RELEASE_PROOF_CONTRACT = 'organization-sealed-release-proof.v1'
+
+
+def release_verification_key(directory, signature, expected):
+    return canonical_digest({'directory': str(directory), 'signature': signature,
+        'expected': expected, 'proof_contract': RELEASE_PROOF_CONTRACT})
+
+
 def load_release(root, organization_id, release_id, expected=None, *, cache=None):
     if cache is not None:
         return cache.load(root, organization_id, release_id, expected)
@@ -138,7 +146,7 @@ class ReleaseLoadCache:
     after every use detect ordinary replacement, mutation, deletion and races;
     full hashes remain mandatory before the first durable verification receipt.
     A new process may reuse that receipt only for the same frozen contract,
-    implementation and unchanged file identities. This is not protection against
+    semantic proof contract and unchanged file identities. This is not protection against
     a malicious host able to forge filesystem metadata or mutate this process.
     Never rewrite a published release, even while the service is stopped.
     """
@@ -201,10 +209,7 @@ class ReleaseLoadCache:
             import sqlite3
             # A host-owned receipt only: no data or positive authorization is
             # stored here. SQLite serializes publication across processes.
-            from . import organization_vector_math
-            receipt_key = canonical_digest({'directory':str(directory), 'signature':before,
-                'expected':expected, 'loader':sha256(Path(__file__).read_bytes()).hexdigest(),
-                'vector_validator':sha256(Path(organization_vector_math.__file__).read_bytes()).hexdigest()})
+            receipt_key = release_verification_key(directory, before, expected)
             with closing(sqlite3.connect(Path(root)/'verified-releases.sqlite', timeout=10)) as db, db:
                 db.execute('CREATE TABLE IF NOT EXISTS verified(key TEXT PRIMARY KEY)')
                 verified = db.execute('SELECT 1 FROM verified WHERE key=?', (receipt_key,)).fetchone()

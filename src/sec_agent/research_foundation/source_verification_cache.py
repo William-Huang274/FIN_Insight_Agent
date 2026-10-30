@@ -16,6 +16,11 @@ import zlib
 
 
 FORMAT = 'organization-source-verification.v1'
+# Semantic proof contract, not a deployment/build hash. Change this when the
+# meaning/required fields of a source projection proof changes, and prepare or
+# explicitly migrate that contract before serving it. Runtime feedback, logging,
+# ranking and permissions do not redefine a previously verified projection.
+PROOF_CONTRACT = 'organization-source-projection-proof.v1'
 TABLES = {'attachments': 'id', 'attachment_origins': 'object_id',
           'attachment_captures': 'object_id'}
 
@@ -68,33 +73,10 @@ def versions(observer):
         db.execute('ROLLBACK')
 
 
-def implementation_digest():
-    # A stale receipt cannot bypass changed projection/cutoff/metadata rules.
-    root = Path(__file__).parent
-    files = [root/name for name in ('source_verification_cache.py', 'organization_candidate_index.py',
-        'organization_source_projection.py', 'organization_source_filter.py', 'sec_cover_metadata.py', 'organization_graph_index.py',
-        'organization_execution_access.py', 'project_source_captures.py', 'asset_workspace.py',
-        'task_attachments.py', 'project_asset_versions.py', 'project_asset_access.py', 'prepared_source_metadata.py')]
-    files.append(root.parents[1]/'retrieval'/'library_source_bundle.py')
-    files.append(root.parents[1]/'retrieval'/'source_structure.py')
-    files.append(root.parents[1]/'retrieval'/'table_dependencies.py')
-    files.append(root.parents[1]/'retrieval'/'table_completion.py')
-    files.append(root.parents[1]/'retrieval'/'source_table_periods.py')
-    files.append(root.parents[1]/'retrieval'/'source_table_storage.py')
-    files.append(root.parents[1]/'retrieval'/'fact_period_matching.py')
-    files.append(root.parents[1]/'retrieval'/'financial_query_needs.py')
-    files.append(root.parents[1]/'retrieval'/'filing_document_identity.py')
-    files.append(root.parents[1]/'retrieval'/'source_window_candidates.py')
-    files.append(root.parents[1]/'retrieval'/'source_window_selection.py')
-    files.append(root.parents[1]/'retrieval'/'source_structure_selection.py')
-    files.append(root.parents[1]/'retrieval'/'rerank_document_context.py')
-    return sha256(b''.join(path.read_bytes() for path in files)).hexdigest()
-
-
 class SourceVerificationCache:
     def __init__(self, root):
         self.path = Path(root)/'source-verification.sqlite'
-        self.code = implementation_digest()
+        self.contract = PROOF_CONTRACT
         with closing(sqlite3.connect(self.path, timeout=10)) as db, db:
             db.execute('CREATE TABLE IF NOT EXISTS receipts(key TEXT PRIMARY KEY,payload TEXT NOT NULL,digest TEXT NOT NULL)')
 
@@ -103,7 +85,7 @@ class SourceVerificationCache:
         token = version['tokens'].get(item['ref']['version_id']) if version else None
         if token is None:
             return None
-        return digest({'format': FORMAT, 'code': self.code, 'store': version['store'], 'token': token,
+        return digest({'format': FORMAT, 'proof_contract': self.contract, 'store': version['store'], 'token': token,
                        'item': item, 'organization_id': manifest['organization_id'],
                        'research_as_of': manifest['research_as_of'], 'index': manifest['retrieval_index']})
 

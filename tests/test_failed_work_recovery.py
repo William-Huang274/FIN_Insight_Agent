@@ -15,6 +15,64 @@ from sec_agent.agent_runtime.on_demand_research import OnDemandResearchState
 from sec_agent.agent_runtime.native_subgraph_config import native_subgraph_config
 
 
+def test_completed_tool_survives_sibling_failure_before_outer_tool_node_commits():
+    from langchain.agents.middleware import AgentMiddleware
+    calls = {'catalog': 0, 'search': 0}
+    completed = asyncio.Event()
+    authority = {'allowed': True, 'checks': 0}
+    @tool
+    def catalog():
+        """Read a fixed catalog."""
+        calls['catalog'] += 1
+        return {'source': 'immutable', 'period': 'FY2026'}
+    @tool
+    async def search():
+        """Read another source."""
+        calls['search'] += 1
+        if calls['search'] == 1:
+            await completed.wait()
+            raise RuntimeError('storage_failure')
+        return 'read-complete'
+    class CommitRace(AgentMiddleware):
+        async def awrap_tool_call(self, request, handler):
+            authority['checks'] += 1
+            if not authority['allowed']:
+                raise PermissionError('current_access_revoked')
+            result = await handler(request)
+            if request.tool_call['name'] == 'catalog' and calls['search'] == 1:
+                # Real failure timing: tool returned; enclosing Send task has
+                # not committed its messages when the sibling cancels it.
+                completed.set()
+                await asyncio.sleep(60)
+            return result
+    class Model(FakeMessagesListChatModel):
+        def bind_tools(self, *a, **kw): return self
+    model = Model(responses=[AIMessage(content='', tool_calls=[
+        {'name':'catalog','args':{},'id':'ok'}, {'name':'search','args':{},'id':'fail'}]),
+        AIMessage(content='done')])
+    saver = InMemorySaver()
+    def build():
+        return build_conversation_agent(model=model, grants=[GrantedTool(t,'read','fixed') for t in (catalog,search)],
+            permission_mode='request_standard', checkpointer=saver, middleware=[CommitRace()])
+    config = {'configurable': {'thread_id': 'cancelled-outer-tool'}}
+    async def run():
+        with pytest.raises(RuntimeError, match='storage_failure'):
+            await build().ainvoke({'messages':[('user','research')]}, config)
+        assert calls == {'catalog':1,'search':1}
+        authority['allowed'] = False
+        with pytest.raises(PermissionError, match='current_access_revoked'):
+            await build().ainvoke(None, config)
+        assert calls == {'catalog':1,'search':1}
+        authority['allowed'] = True
+        result = await build().ainvoke(None, config)
+        assert authority['checks'] >= 4
+        assert calls == {'catalog':1,'search':2}
+        messages = [m for m in result['messages'] if m.type=='tool']
+        assert {m.tool_call_id for m in messages} == {'ok','fail'}
+        assert 'immutable' in next(m.content for m in messages if m.tool_call_id=='ok')
+    asyncio.run(run())
+
+
 def test_native_nested_resume_reuses_successes_and_retries_only_failed_task():
     calls = {'catalog': 0, 'search': 0}
     @tool

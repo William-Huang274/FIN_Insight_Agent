@@ -603,6 +603,8 @@ class CaseModelAudit(AgentMiddleware):
 
     async def awrap_tool_call(self, request, handler):
         import asyncio
+        from .native_tool_results import tool_result_reused
+        tool_result_reused.set(False)
         async def checked_handler(current):
             if self.source_access_check:
                 await asyncio.to_thread(self.source_access_check)
@@ -646,7 +648,9 @@ class CaseModelAudit(AgentMiddleware):
                         continue
                     if isinstance(feedback, dict) and feedback.get('category') == 'source_selection':
                         selection_feedback = {'source_failure': feedback}
-        emit({**event, "event": "outcome", "status": "error" if any(
+        from .native_tool_results import tool_result_reused
+        emit({**event, "event": "outcome", "execution_source":
+            "native_checkpoint" if tool_result_reused.get() else "tool_execution", "status": "error" if any(
             isinstance(m, ToolMessage) and m.status == "error" for m in messages) else "success",
             "elapsed_ms": round((perf_counter()-start)*1000, 3), **selection_feedback})
         return result

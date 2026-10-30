@@ -65,8 +65,11 @@ def parse(raw: bytes, title: str, parser: str, form: str = "") -> dict:
                               config=ParserConfig(form=resolution['form'],enable_parallel=False))
         blocks = []
 
-        def visit(node):
+        def visit(node, address='0', parent=None):
             kind = node.type.name.lower()
+            identity = {'native_container_id': address, 'native_parent_id': parent,
+                        'native_role': kind, 'semantic_role': getattr(node, 'semantic_role', None)}
+            before = len(blocks)
             if kind == "table":
                 def cells(row):
                     return [{"text": c.text(), "rowspan": c.rowspan,
@@ -86,14 +89,29 @@ def parse(raw: bytes, title: str, parser: str, form: str = "") -> dict:
                 blocks.append({'kind': kind, 'text': node.text(),
                                'level': node.level, 'parser_path': str(node.path),
                                'metadata': node.metadata})
+            elif kind in {'paragraph', 'list_item'} and not any(
+                    n.type.name.lower() in {'table', 'heading', 'paragraph', 'list_item'}
+                    for c in node.children for n in walk(c)):
+                # The maintained parser preserves inline word boundaries here.
+                # Flattening children loses both those boundaries and the role.
+                blocks.append({'kind': 'text', 'text': node.text(),
+                               'parser_path': str(node.path), 'metadata': node.metadata})
             elif node.children:
-                for child in node.children:
-                    visit(child)
+                for index, child in enumerate(node.children):
+                    visit(child, f'{address}/{index}', address)
+                return
             else:
                 text = node.text()
                 if text:
                     blocks.append({"kind": kind, "text": text,
                                    "parser_path": str(node.path), "metadata": node.metadata})
+            for block in blocks[before:]:
+                block.update(identity)
+
+        def walk(node):
+            yield node
+            for child in node.children:
+                yield from walk(child)
 
         visit(document.root)
         return {"blocks": blocks, "text": "\n\n".join(b["text"] for b in blocks),
@@ -136,7 +154,7 @@ def parse(raw: bytes, title: str, parser: str, form: str = "") -> dict:
         import trafilatura
         xml = trafilatura.extract(raw, output_format="xml", include_tables=True,
                                   include_comments=False, include_formatting=True,
-                                  include_links=False, favor_recall=True)
+                                  include_links=False, favor_recall=True, with_metadata=True)
         if not xml:
             raise ValueError("empty_extraction")
         root = ET.fromstring(xml)
@@ -151,7 +169,7 @@ def parse(raw: bytes, title: str, parser: str, form: str = "") -> dict:
                     visit(child)
 
         visit(root)
-        return {"xml": xml, "blocks": blocks,
+        return {"xml": xml, "blocks": blocks, 'document_metadata':dict(root.attrib),
                 "text": "\n\n".join(b["text"] for b in blocks)}
     raise ValueError(f"unsupported_parser: {parser}")
 

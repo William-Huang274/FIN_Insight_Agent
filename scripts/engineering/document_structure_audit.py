@@ -8,6 +8,7 @@ from retrieval.narrative_chunks import sentence_groups
 from probe_document_parsers import parse
 from restore_parser_paragraphs import restore
 from structured_web_blocks import normalize_web
+from source_structure_contract import attach_source_structure, reconcile_chapters
 
 
 def norm(text):return ' '.join(text.split())
@@ -16,7 +17,7 @@ def norm(text):return ' '.join(text.split())
 def outline(blocks):
     headings=[];stack=[];issues=[]
     for i,b in enumerate(blocks):
-        if b['kind']!='heading':continue
+        if b['kind']!='heading' or b.get('chapter_occurrence_of') or b.get('heading_usage')=='navigation_reference':continue
         level=b.get('level')
         if type(level)!=int or level<1:
             issues.append({'kind':'heading_level_unknown','block':i});stack=[]
@@ -82,6 +83,7 @@ def inspect(raw,job):
         output=parse(raw,job['title'],route,job.get('form') or '')
         blocks=output['blocks'] if route=='edgartools' else normalize_web(output)
         blocks,repairs=restore(blocks,raw)
+        blocks,structure=attach_source_structure(blocks,raw,output.get('document_metadata'),route=='edgartools')
         tree=html.fromstring(raw)
         explicit=[{'text':norm(''.join(n.itertext())),'level':int(n.tag[1]),
                    'xpath':tree.getroottree().getpath(n)} for n in tree.xpath('//h1|//h2|//h3|//h4|//h5|//h6')
@@ -91,6 +93,7 @@ def inspect(raw,job):
         extra={'explicit_html_headings':explicit,'unmatched_explicit_headings':missing,
                'parser_sections':output.get('sections',{}),'form_resolution':output.get('form_resolution'),
                'original_tables':len(tree.xpath('//table'))}
+        extra.update(structure)
         del output,tree
         if missing:issues.append({'kind':'explicit_heading_not_retained_as_heading','count':len(missing)})
         if route=='trafilatura_xml' and extra['original_tables']>sum(b['kind']=='table' for b in blocks):
@@ -104,9 +107,12 @@ def inspect(raw,job):
             issues.append({'kind':'datamule_comparator_failed','error':type(exc).__name__,'detail':str(exc)[:500]})
     else:
         text=raw.decode('utf-8-sig');route='markdown_or_plain_text';blocks=markdown_blocks(text)
+    chapters=reconcile_chapters(blocks,route=='edgartools',extra.get('source_containers',()))
+    extra['chapter_tree']=chapters
     headings,heading_issues=outline(blocks);issues+=heading_issues
     chunks=[];stack=[]
     for i,b in enumerate(blocks):
+        chapter_path=b.get('chapter_blocks',[])
         if b['kind']=='heading':
             level=b.get('level')
             if not isinstance(level,int):stack=[]
@@ -115,11 +121,13 @@ def inspect(raw,job):
                 stack.append((level,i))
             continue
         if b['kind']=='table':
-            chunks.append({'kind':'table','block':i,'heading_path':[n for _,n in stack],
+            chunks.append({'kind':'table','block':i,'heading_path':chapter_path,
+                           'chapter_ids':b.get('chapter_ids',[]),'source_container_id':b.get('source_container_id'),
                            'representation':'original_table_cells_not_numeric_SQL_replacement'})
             continue
         for start,end,text in sentence_groups(b['text']):
-            chunks.append({'kind':'prose','block':i,'start':start,'end':end,'heading_path':[n for _,n in stack]})
+            chunks.append({'kind':'prose','block':i,'start':start,'end':end,'heading_path':chapter_path,
+                           'chapter_ids':b.get('chapter_ids',[]),'source_container_id':b.get('source_container_id')})
             if len(text.encode())>6000:issues.append({'kind':'oversize_complete_sentence','block':i,'start':start,'end':end})
     if not headings and sum(len(b['text']) for b in blocks)>20000:
         issues.append({'kind':'long_document_without_recognized_heading'})

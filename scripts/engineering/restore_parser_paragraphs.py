@@ -10,7 +10,10 @@ def normalize(text):
 
 def restore(blocks, raw):
     from lxml import html
-    tree = html.fromstring(raw)
+    try:
+        raw.decode('utf-8-sig')
+        tree = html.fromstring(raw,parser=html.HTMLParser(encoding='utf-8'))
+    except UnicodeDecodeError: tree = html.fromstring(raw)
     candidates = defaultdict(list)
     short_candidates = defaultdict(list)
     # Leaf paragraph containers may contain spans, links and iXBRL tags, but
@@ -60,6 +63,7 @@ def restore(blocks, raw):
             end, original, xpath = proofs[0]
             receipt = {'original_xpath': xpath, 'original_normalized_sha256': sha256(original.encode()).hexdigest(),
                        'parser_block_start': i, 'parser_block_end': end + 1,
+                       'native_container_ids': [b.get('native_container_id') for b in blocks[i:end+1]],
                        'basis': 'complete_exact_original_leaf_paragraph'}
             output.append({'kind': 'text', 'text': original, 'restoration': receipt})
             receipts.append(receipt); i = end + 1

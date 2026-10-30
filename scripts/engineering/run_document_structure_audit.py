@@ -27,6 +27,7 @@ def identity(manifest):
            'scripts/engineering/document_structure_audit.py','scripts/engineering/probe_document_parsers.py',
            'scripts/engineering/restore_parser_paragraphs.py','src/retrieval/narrative_chunks.py',
            'scripts/engineering/structured_web_blocks.py',
+           'scripts/engineering/source_structure_contract.py',
            'src/retrieval/object_view_compiler_v2.py']
     packages={}
     for name in ['edgartools','datamule','doc2dict','trafilatura','lxml','pypdf']:

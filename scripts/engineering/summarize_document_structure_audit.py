@@ -35,7 +35,7 @@ def summarize(manifest,directory,output):
         with gzip.open(path,'rt',encoding='utf8') as f:d=json.load(f)
         own=validate_chunks(d);section=d.get('parser_sections',{})
         row.update(sections=len(section),section_methods=dict(Counter(s['method'] for s in section.values())),
-                   form_resolution=d.get('form_resolution'),prechunk_conservation_issues=own,
+                   form_resolution=d.get('form_resolution'),prechunk_conservation_issues=list(own),
                    heading_examples=d['outline'][:12])
         if section and any(s['end']<=s['start'] for s in section.values()):
             own.append({'kind':'section_offsets_not_usable_as_original_text_coordinates'})

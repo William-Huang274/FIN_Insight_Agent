@@ -10,6 +10,7 @@ import document_structure_audit as audit
 from probe_document_parsers import parse,resolve_form
 from structured_web_blocks import normalize_web as normalize_fragment
 from finalize_structure_prechunks import classify
+from summarize_document_structure_audit import summarize
 
 
 def test_outline_parent_and_unknown_level():
@@ -88,3 +89,35 @@ def test_finalization_reuses_structural_surface_without_hiding_nil_values():
     result=classify(doc)
     assert [r['role'] for r in result['records']]==['retained_structure']*2+['prose_candidate']*4
     assert result['published'] is False
+
+
+def test_summary_keeps_hierarchy_defects_separate_from_text_conservation(tmp_path):
+    import gzip,json
+    from hashlib import sha256
+    document={'route':'edgartools','blocks':[
+        {'kind':'heading','text':'PART I','level':1},
+        {'kind':'heading','text':'ITEM 1. BUSINESS','level':1},
+        {'kind':'text','text':'Text.'}],
+        'pre_chunks':[{'kind':'prose','block':2,'start':0,'end':5,'heading_path':[1]}],
+        'outline':[{'block':0,'title':'PART I','level':1},{'block':1,'title':'ITEM 1. BUSINESS','level':1}],
+        'issues':[]}
+    (tmp_path/'receipts').mkdir();(tmp_path/'documents').mkdir()
+    raw=gzip.compress(json.dumps(document).encode());(tmp_path/'documents'/'raw.json.gz').write_bytes(raw)
+    (tmp_path/'receipts'/'raw.json').write_text(json.dumps({'id':'raw','status':'inspected','artifact_sha256':sha256(raw).hexdigest()}))
+    manifest=tmp_path/'manifest.json'
+    manifest.write_text(json.dumps({'jobs':[{'id':'raw','title':'Title','url':'https://example.org','bindings':['source']}],
+                                    'sources':[{'document_id':'source'}]}))
+    output=tmp_path/'summary.json';summarize(manifest,tmp_path,output)
+    row=json.loads(output.read_bytes())['documents'][0]
+    assert row['prechunk_conservation_issues']==[]
+    assert row['additional_diagnostic_issues'][0]['kind']=='item_heading_not_nested_below_preceding_part'
+
+
+def test_prose_groups_follow_heading_and_table_boundaries():
+    bodies=['A'*4000,'B'*4000,'C'*4000,'0','D','E']
+    doc={'blocks':[{'kind':'table' if i==3 else 'text','text':text} for i,text in enumerate(bodies)],
+         'outline':[], 'pre_chunks':[{'kind':'table' if i==3 else 'prose','block':i,
+             'start':0,'end':len(text),'heading_path':[1] if i<5 else [2]} for i,text in enumerate(bodies)]}
+    result=classify(doc)
+    assert [g['atomic_record_indices'] for g in result['prose_groups']]==[[0,1],[2],[4],[5]]
+    assert result['counts']['table_candidate']==1

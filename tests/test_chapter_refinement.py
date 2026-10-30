@@ -28,6 +28,23 @@ def test_distinct_paragraphs_and_ambiguous_originals_are_never_joined():
     assert not join_heading_fragments(blocks,[source,{**source,'id':'other:p'}])[1]
 
 
+def test_fragment_starting_with_text_keeps_consistent_native_heading_level():
+    blocks=[{'kind':'text','text':'Complete ','native_role':'text','native_parent_id':'p'},
+            {'kind':'heading','level':2,'text':'Title','native_role':'heading','native_parent_id':'p'}]
+    result,receipts=join_heading_fragments(blocks,[heading_source('Complete Title')])
+    assert result[0]['level']==2
+    assert receipts[0]['level_basis']=='consistent_native_heading_level'
+
+
+def test_conflicting_native_levels_are_not_silently_selected():
+    blocks=[{'kind':'heading','level':2,'text':'Complete ','native_role':'heading','native_parent_id':'p'},
+            {'kind':'heading','level':3,'text':'Title','native_role':'heading','native_parent_id':'p'}]
+    result,receipts=join_heading_fragments(blocks,[heading_source('Complete Title')])
+    assert result[0]['level'] is None and receipts[0]['native_heading_levels']==[2,3]
+    result,receipts=join_heading_fragments(blocks,[{**heading_source('Complete Title'),'level':1}])
+    assert result[0]['level']==1 and receipts[0]['level_basis']=='explicit_original_level'
+
+
 def table(*rows):
     return {'kind':'table','text':' | '.join(c for r in rows for c in r),
             'headers':[[{'text':c} for c in r] for r in rows],'rows':[],'footer':[]}

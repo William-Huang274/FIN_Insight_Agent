@@ -49,9 +49,21 @@ def join_heading_fragments(blocks,sources):
                         break
         if len(proofs)==1:
             end,row=proofs[0]
+            # A fragment may start as text and end as a native heading. Copying
+            # only the first fragment silently discards the parser's level.
+            native_levels=sorted({b['level'] for b in blocks[i:end+1]
+                                  if b.get('kind')=='heading' and type(b.get('level')) is int
+                                  and b['level']>0})
+            original_level=row.get('level')
+            resolved_level=(original_level if type(original_level) is int and original_level>0
+                            else native_levels[0] if len(native_levels)==1 else None)
             receipt={'basis':'complete_original_heading_shared_native_parent',
-                     'input_blocks':list(range(i,end+1)),'native_parent_id':parent,'source_container_id':row['id']}
+                     'input_blocks':list(range(i,end+1)),'native_parent_id':parent,'source_container_id':row['id'],
+                     'native_heading_levels':native_levels,'restored_level':resolved_level,
+                     'level_basis':'explicit_original_level' if type(original_level) is int and original_level>0
+                     else 'consistent_native_heading_level' if len(native_levels)==1 else 'unresolved'}
             merged={**first,'kind':'heading','text':row['text'],'source_container_id':row['id'],
+                    'level':resolved_level,
                     'source_parent_id':row['parent_id'],'source_role':row['role'],
                     'source_container_candidates':[row['id']],'source_location_status':'unique_complete_container',
                     'heading_basis':receipt['basis'],'source_font_size_pt':row.get('font_size_pt'),

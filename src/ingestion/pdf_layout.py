@@ -151,6 +151,9 @@ def parse_captured_pdf_layout(
                 extraction_mode = "native_pdf_layout"
 
             lines = _cluster_words_into_lines(words)
+            from ingestion.pdf_structure_candidates import ruled_structure_candidates
+
+            structural_candidates = ruled_structure_candidates(page)
             tables = _detect_table_regions(
                 page=page,
                 words=words,
@@ -212,6 +215,10 @@ def parse_captured_pdf_layout(
                     "words": words,
                     "lines": lines,
                     "table_regions": tables,
+                    # Additive structural observations are not financial table
+                    # objects. Keep original text and the existing authority
+                    # boundary until semantic role/object binding is qualified.
+                    "structural_candidates": structural_candidates,
                     "footnotes": footnotes,
                     "text_blocks": text_blocks,
                     "ocr_receipt": ocr_receipt,
@@ -232,7 +239,7 @@ def parse_captured_pdf_layout(
     return {
         "schema_version": PARSED_PDF_LAYOUT_SCHEMA_VERSION,
         "parser_adapter": "pdfplumber_layout_plus_rapidocr_v2",
-        "parser_revision": "preserve_unassigned_page_lines_v1",
+        "parser_revision": "preserve_lines_and_ruled_structure_v2",
         "capture_schema_version": str(capture.get("schema_version") or ""),
         "capture_id": str(
             capture.get("task_id")

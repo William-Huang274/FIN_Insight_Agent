@@ -40,6 +40,7 @@ def main():
     plan={'manifest_sha256':sha256(a.manifest.read_bytes()).hexdigest(),
           'implementation_sha256':sha256(Path(__file__).read_bytes()).hexdigest(),
           'adapter_sha256':sha256((ROOT/'src/ingestion/pdf_layout.py').read_bytes()).hexdigest(),
+          'structure_adapter_sha256':sha256((ROOT/'src/ingestion/pdf_structure_candidates.py').read_bytes()).hexdigest(),
           'packages':{n:version(n) for n in ['pdfplumber','pdfminer.six','pypdf']},
           'pages_one_based':{k:sorted(v) for k,v in selections.items()},'ocr':'disabled_not_installed_or_called',
           'publication_metadata':'unknown_not_evaluated','provider_calls':0,'production_enabled':False}

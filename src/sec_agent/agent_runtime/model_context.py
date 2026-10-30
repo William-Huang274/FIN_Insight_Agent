@@ -1426,6 +1426,30 @@ class RequestSummaryState(AgentState):
     # Optional summary failed; do not retry automatically on the next model turn.
     # A trusted host may explicitly clear this after a new recovery decision.
     request_summary_failure: NotRequired[dict | None]
+    request_summary_recovery_id: NotRequired[str]
+
+
+async def resume_failed_summary(agent, config, recovery_id):
+    """Explicit host recovery only; checkpoint the reset without editing research.
+
+    Keep the failed checkpoint and audit. Re-enter the summary hook through its
+    actual graph predecessor, preserving messages, receipts and summary counts.
+    One signed command cannot reset another failure from its own retry.
+    """
+    if not recovery_id:
+        return False
+    saved = await agent.aget_state(config)
+    values = saved.values
+    if not values.get('request_summary_failure') or values.get('request_summary_recovery_id') == recovery_id:
+        return False
+    target = 'RequestSummaryMiddleware.before_model'
+    predecessors = [e.source for e in agent.get_graph().edges if e.target == target]
+    if len(predecessors) != 1 or predecessors[0] == '__start__':
+        raise ValueError('summary_recovery_boundary_ambiguous')
+    await agent.aupdate_state(config, {'request_summary_failure': None,
+                                     'request_summary_recovery_id': recovery_id},
+                              as_node=predecessors[0])
+    return True
 
 
 class RequestSummaryMiddleware(AgentMiddleware):
@@ -1457,6 +1481,7 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
         self.navigation_trigger_tokens = navigation_trigger_tokens
         self.history_projection = None
         self.state_projection = None
+        self.authorized_recovery_id = None
 
     def _working_state(self, state):
         if self.history_projection is None and self.state_projection is None:

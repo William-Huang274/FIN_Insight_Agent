@@ -117,6 +117,8 @@ async def organization_work_session(*, native, resources, authority, check, orga
         root_thread_id=tid, root_run_id=rid, specification=spec, settings=phase_arguments['settings'], environment=environment))
     summary = summary_middleware(spec, public=phase_arguments['public_sink'], private=phase_arguments['private_sink'],
         access_check=check, budget_scope=budget)
+    if grant.get('report_action_request', {}).get('action') == 'recover':
+        summary.authorized_recovery_id = grant['report_command_id']
     audit.working_note_context = lambda: current_work_catalog(memory)
     with organization(run_invocation_id='on-demand:' + rid, source_read_enabled=True) as data:
         reader = lambda state: artifact_reader(data, navigation, state)

@@ -189,7 +189,12 @@ def build_on_demand_research_agent(*, model, grants, artifacts, operation_runner
                 ('; the user requires an independent check of the current report before delivery.' if required_report_review else ''))
         before = {m.id for m in state.get('messages', []) if m.id}
         from .native_subgraph_config import native_subgraph_config
-        result = await agent.ainvoke({**state, 'research_operation': None, 'delivery': None}, native_subgraph_config(config))
+        from .model_context import resume_failed_summary
+        recovery_id = next((m.authorized_recovery_id for m in middleware
+                            if getattr(m, 'authorized_recovery_id', None)), None)
+        recovered = await resume_failed_summary(agent, native_subgraph_config(config), recovery_id)
+        result = await agent.ainvoke(None if recovered else {**state, 'research_operation': None, 'delivery': None},
+                                    native_subgraph_config(config))
         from langchain_core.messages import AIMessage
         new_messages = [m for m in result.get('messages', []) if isinstance(m, AIMessage) and m.id not in before]
         used += len(new_messages)

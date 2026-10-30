@@ -36,10 +36,12 @@ def main():
     import pdfplumber
     import psutil
     from ingestion.pdf_structure_candidates import ruled_structure_candidates
+    from ingestion.pdf_text_orientation import character_orientation_profile
 
     identity = {'plan_sha256': sha256(plan_bytes).hexdigest(), 'plan': plan,
                 'implementation_sha256': sha256(Path(__file__).read_bytes()).hexdigest(),
                 'adapter_sha256': sha256((ROOT / 'src/ingestion/pdf_structure_candidates.py').read_bytes()).hexdigest(),
+                'orientation_adapter_sha256': sha256((ROOT / 'src/ingestion/pdf_text_orientation.py').read_bytes()).hexdigest(),
                 'packages': {name: version(name) for name in ['pdfplumber', 'pdfminer.six']},
                 'ocr_calls': 0, 'model_calls': 0, 'production_enabled': False}
     (args.output / 'identity.json').write_text(json.dumps(identity, indent=2), encoding='utf8')
@@ -70,6 +72,7 @@ def main():
                             round(math.degrees(math.atan2(c['matrix'][1], c['matrix'][0])), 1)
                             for c in page.chars if c.get('matrix'))),
                         'ocr_need': 'not_inferred_from_word_count_alone',
+                        'orientation_evidence': character_orientation_profile(page.chars),
                     }
                     artifact = args.output / f"{doc['sha256']}-page-{number}.json"
                     artifact.write_text(json.dumps(output, ensure_ascii=False), encoding='utf8')

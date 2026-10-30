@@ -25,6 +25,7 @@ import trafilatura
 from pypdf import PdfReader
 
 from sec_agent.research_foundation.industry_data import SCHEMA
+from financial_facts.acquisition_window import financial_period_floor, within_financial_window
 
 
 def dumps(x): return json.dumps(x,ensure_ascii=False,sort_keys=True,default=str)
@@ -208,17 +209,19 @@ class Collector:
         self.gap(e,'financial_reports','filing_read_pending',{'filings':len(eligible),'since':self.plan['filings_since'],'catalogue_is_not_full_text':True})
 
     def facts(self,c):
+        period_floor=financial_period_floor(self.plan)
         url=f"https://data.sec.gov/api/xbrl/companyfacts/CIK{int(c['cik']):010d}.json"
         raw,_=self.get(url);data=json.loads(raw); e=c['entity_id']
         if int(data['cik'])!=int(c['cik']):raise ValueError('companyfacts_identity_mismatch')
         sid=self.source(e,url,c['name']+' · SEC XBRL 财务数据','financial_api',dumps({'entityName':data['entityName'],'cik':data['cik'],'taxonomies':list(data.get('facts',{}))}),
-            metadata={'data_table':'financial_points','coverage':'all concepts, all units, all filed vintages within window','known_at':self.as_of})
+            metadata={'data_table':'financial_points','coverage':'all concepts, all units, all filed vintages within window','known_at':self.as_of,
+                      'financial_period_since':period_floor,'financial_period_through':self.as_of})
         rows=[]
         for tax,concepts in data.get('facts',{}).items():
             for concept,fact in concepts.items():
                 for unit,values in fact.get('units',{}).items():
                     for v in values:
-                        if not (self.plan['filings_since']<=v.get('end','')<=self.as_of and v.get('filed','')<=self.as_of):continue
+                        if not within_financial_window(v,self.plan):continue
                         rows.append((identity(e,tax,concept,unit,v),e,tax,concept,(fact.get('label') or '').strip() or f'{tax}:{concept}',str(v['val']),unit,
                           v.get('start'),v['end'],v['filed'],v.get('fy'),v.get('fp'),v.get('form',''),v.get('accn',''),sid,dumps(v)))
         self.sql('INSERT OR IGNORE INTO financial_points VALUES('+','.join('?'*16)+')',rows,many=True)

@@ -6,6 +6,7 @@ explicitly unassigned adjacent source context. This does not infer ownership.
 """
 from hashlib import sha256
 import json
+from retrieval.narrative_chunks import sentence_groups
 
 
 def split_text(text, limit=6000):
@@ -105,9 +106,11 @@ def build_units(parsed, sample):
             elif head.strip():
                 emit(head, [{'block': number, 'header_only': True}], 'table', context)
         else:
-            for a, b, part in split_text(text):
+            for a, b, part in sentence_groups(text):
                 if pending and len(('\n'.join(x[1] for x in pending) + part + context).encode()) > 10000:
                     flush()
-                pending.append(({'block': number, 'start': a, 'end': b}, part))
+                pending.append(({'block': number, 'start': a, 'end': b,
+                                 'segmentation': 'original_paragraph_sentence_groups.v1',
+                                 'oversize_sentence': len(part.encode('utf8')) > 6000}, part))
     flush()
     return units

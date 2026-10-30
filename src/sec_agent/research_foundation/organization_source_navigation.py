@@ -81,6 +81,8 @@ class OrganizationSourceNavigation:
         # One observer connection and one bounded result per navigation session.
         # Serializing this instance also prevents concurrent cache publication.
         with self._navigation_lock:
+            if request.operation == 'catalog':
+                return self._catalog(request)
             if (self.table_completion and request.operation == 'search'
                     and request.source_space == 'organization' and self.hybrid is None):
                 raise ValueError('organization_table_completion_requires_verified_navigation')
@@ -137,6 +139,56 @@ class OrganizationSourceNavigation:
             cache.put(key, epoch, result)
             self.observed.remember('read_source_document', result.model_dump(mode='json'))
             return result
+
+    def _catalog(self, request):
+        from .source_document_navigation import SourceDocumentResult
+        from .organization_source_filter import select_documents, filter_notice
+        before, manifest, _ = self.reader._grant()
+        if request.entity_id or request.node_id or request.page_start is not None or request.page_end is not None:
+            raise ValueError('catalog_requires_document_metadata_not_passage_locator')
+        descriptors = {}
+        if manifest.get('retrieval_index'):
+            if self.hybrid is None:
+                raise ValueError('document_catalog_requires_published_storage')
+            from .organization_document_catalog import load
+            descriptors = load(self.hybrid.root, manifest)
+        rows, metadata = [], {}
+        for item in manifest['inputs']:
+            document = self._identity(item)
+            if request.document_id and document != request.document_id:
+                continue
+            saved = descriptors.get(item['resource_id'], {})
+            if saved and saved['ref'] != item['ref']:
+                raise OrganizationExecutionUnavailable('document_catalog_version_mismatch')
+            info = saved.get('metadata' if request.organization_metadata_policy == 'sec_cover.v2' else 'original_metadata', {})
+            metadata[document] = info
+            query = request.query.strip().casefold()
+            if query not in ('', '*') and query not in ' '.join(str(x or '') for x in
+                    [item['title'], *info.values()]).casefold():
+                continue
+            rows.append({'document_id':document, 'title':item['title'], 'company':info.get('company_name'),
+                'organization_metadata':info, 'result_state':'document_catalog_entry',
+                'writer_citable':False,'numeric_fact_authority':False,
+                'source_url':self.workbench_url+f"/api/v1/asset-workspace/organization-projects/{manifest['project_id']}/resources/{item['resource_id']}",
+                'organization_source':{'resource_id':item['resource_id'],'ref':deepcopy(item['ref']),
+                    'execution_id':self.reader.authority.execution_id,'manifest_digest':self.reader.authority.manifest_digest},
+                'readback':{'source_space':'organization','operation':'outline','document_id':document}})
+        if request.document_id and not metadata:
+            raise OrganizationExecutionUnavailable('所选原文不属于本次固定组织输入。')
+        receipt = None
+        if request.organization_filter is not None:
+            selected, receipt = select_documents(metadata, request.organization_filter)
+            receipt['metadata_policy'] = request.organization_metadata_policy
+            rows = [r for r in rows if r['document_id'] in selected]
+        rows.sort(key=lambda r:(str(r['company']),r['title'],r['document_id']))
+        page=rows[request.offset:request.offset+request.limit]
+        end=request.offset+len(page)
+        self.reader._after(before)
+        return SourceDocumentResult(operation='catalog',items=tuple(page),total_matches=len(rows),
+            next_offset=end if end<len(rows) else None,
+            source_snapshot_sha256=self.reader.authority.manifest_digest[7:],
+            **({'organization_filter_receipt':receipt} if receipt is not None else {}),
+            notice='Document metadata only; no original text read. Follow outline, then read selected source windows.' + (filter_notice(receipt) if receipt else ''))
 
     def _warm_candidates(self, before, manifest, epoch):
         from .organization_hybrid_retrieval import digest
@@ -306,7 +358,7 @@ class OrganizationSourceNavigation:
             raise ValueError('organization_filtered_search_requires_prepared_candidate_index')
         if request.source_space=='organization' and request.entity_id:
             raise ValueError('organization_graph_requires_published_candidate_navigation')
-        if request.source_space != 'organization' or request.operation not in {'catalog', 'outline', 'search', 'read'}:
+        if request.source_space != 'organization' or request.operation not in {'outline', 'search', 'read'}:
             raise ValueError('organization_source_supports_catalog_outline_search_read_only')
         # Bound projections have character offsets, not invented PDF page labels.
         if request.page_start is not None or request.page_end is not None:
@@ -320,15 +372,8 @@ class OrganizationSourceNavigation:
                 raise OrganizationExecutionUnavailable('所选原文不属于本次固定组织输入。')
             selected = {request.document_id: selected[request.document_id]}
         by_resource = {item['resource_id']: (document_id, item) for document_id, item in selected.items()}
-        routing, routing_evidence = {}, {}
         def project(resource_id, result):
             document_id, item = by_resource[resource_id]
-            if request.operation == 'catalog':
-                from .organization_source_filter import source_metadata_details, original_source_metadata
-                if request.organization_metadata_policy == 'sec_cover.v2':
-                    routing[document_id], routing_evidence[document_id] = source_metadata_details(result.get('source_bundle'))
-                else:
-                    routing[document_id] = original_source_metadata(result.get('source_bundle'))
             nodes = []
             if result.get('needs_vision'):
                 raise ValueError('organization_original_requires_vision_not_enabled')
@@ -394,18 +439,6 @@ class OrganizationSourceNavigation:
             nodes.extend(projected)
             provenance[document_id] = origin
             originals.update(source_origins)
-        filter_receipt = None
-        if request.operation == 'catalog' and request.organization_filter is not None:
-            from .organization_source_filter import select_documents, filter_notice
-            documents, filter_receipt = select_documents(routing, request.organization_filter)
-            filter_receipt['metadata_policy'] = request.organization_metadata_policy
-            nodes = [row for row in nodes if row['parent_document_id'] in documents]
-            if request.document_id and not nodes:
-                from .source_document_navigation import SourceDocumentResult
-                self.reader._after(before)
-                return SourceDocumentResult(operation='catalog', items=(), next_offset=None, total_matches=0,
-                    organization_filter_receipt=OrganizationSourceFilterReceipt.model_validate(filter_receipt),
-                    notice=filter_notice(filter_receipt), source_snapshot_sha256=self.reader.authority.manifest_digest[7:])
         if request.operation == 'outline':
             nodes = [row for row in nodes if row['node_kind'] == 'section']
         if storage_check is not None:
@@ -444,14 +477,6 @@ class OrganizationSourceNavigation:
             ranker=rank if self.hybrid is not None else None,
             lexical_scorer=lexical_score if projection_cache is not None else None)
         result = self._decorate(result, provenance, originals)
-        if request.operation == 'catalog':
-            result = result.model_copy(update={'items': tuple({**row, 'organization_metadata': routing[row['document_id']],
-                **({'organization_metadata_evidence': routing_evidence[row['document_id']]}
-                   if row['document_id'] in routing_evidence else {})}
-                for row in result.items)})
-        if filter_receipt is not None:
-            result = result.model_copy(update={'notice': result.notice + filter_notice(filter_receipt),
-                'organization_filter_receipt': OrganizationSourceFilterReceipt.model_validate(filter_receipt)})
         # Revoking any earlier input while scanning later inputs invalidates the entire result.
         self.reader._after(before)
         if projection_cache is None:

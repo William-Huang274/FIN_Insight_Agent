@@ -156,6 +156,9 @@ def test_report_role_is_consumed_before_all_channels_and_does_not_cache_access(t
 
 def test_filter_precedes_dense_lexical_graph_and_preserves_release_and_readback(tmp_path, monkeypatch):
     nav, reader, state, directory, grant = scoped_fixture(tmp_path, monkeypatch)
+    nav.warm_release()  # Explicit fixture publication preparation, never a catalog request.
+    from sec_agent.research_foundation.organization_document_catalog import publish_from_receipts
+    publish_from_receipts(reader, nav.hybrid.root)
     # All queries share content and vectors; metadata, not relevance labels, selects the issuer.
     files = {p.name: sha256(p.read_bytes()).hexdigest() for p in directory.iterdir() if p.is_file()}
     catalog = nav.navigate({'source_space': 'organization', 'operation': 'catalog'})

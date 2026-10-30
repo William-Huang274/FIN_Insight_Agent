@@ -215,14 +215,13 @@ def test_separate_organization_sessions_do_not_share_observations(navigation, tm
 
 def test_permission_change_after_navigation_drops_entire_response(navigation, monkeypatch):
     nav, state, _ = navigation
-    import sec_agent.research_foundation.organization_source_navigation as module
-    navigate = module.navigate_source_nodes
-    def revoke_after_navigation(*args, **kwargs):
-        result = navigate(*args, **kwargs)
+    original = nav.reader._after
+    def revoked(before):
         state['status'] = 404
-        return result
-    monkeypatch.setattr(module, 'navigate_source_nodes', revoke_after_navigation)
+        return original(before)
+    monkeypatch.setattr(nav.reader, '_after', revoked)
     with pytest.raises(OrganizationExecutionUnavailable): nav.navigate(request('catalog'))
+
 
 
 def test_mid_projection_revocation_cannot_publish_observations(navigation, monkeypatch):
@@ -239,3 +238,35 @@ def test_mid_projection_revocation_cannot_publish_observations(navigation, monke
     with pytest.raises(OrganizationExecutionUnavailable):
         nav.navigate(request('read', document_id=document))
     assert published == []
+
+
+def test_catalog_never_reads_or_projects_originals(navigation, monkeypatch):
+    nav, _, _ = navigation
+    def forbidden(*a, **k): raise AssertionError('catalog read original')
+    monkeypatch.setattr(nav.reader, '_read_storage', forbidden)
+    monkeypatch.setattr(nav.reader, '_project_sources', forbidden)
+    result = nav.navigate(request('catalog'))
+    assert result.items and result.items[0]['readback']['operation'] == 'outline'
+    assert not result.items[0]['writer_citable']
+
+
+def test_published_catalog_missing_never_scans(navigation, monkeypatch, tmp_path):
+    from types import SimpleNamespace
+    nav, _, _ = navigation
+    original = nav.reader._grant
+    def grant():
+        before, manifest, bindings = original()
+        manifest = deepcopy(manifest); manifest['retrieval_index'] = {'release_id':'test'}
+        return before, manifest, bindings
+    monkeypatch.setattr(nav.reader, '_grant', grant)
+    monkeypatch.setattr(nav.reader, '_read_storage', lambda *a: pytest.fail('read original'))
+    nav.hybrid = SimpleNamespace(root=tmp_path)
+    with pytest.raises(ValueError, match='document_catalog_not_published'):
+        nav.navigate(request('catalog'))
+    from sec_agent.research_foundation.organization_document_catalog import publish
+    _, manifest, _ = grant()
+    descriptors = {i['resource_id']:{'ref':i['ref'], 'original_metadata':{'company_name':'Example Corp'}} for i in manifest['inputs']}
+    publish(tmp_path, manifest, descriptors)
+    result = nav.navigate(request('catalog', query='Example'))
+    assert result.total_matches == len(descriptors)
+    assert nav.navigate(request('catalog', query='missing')).total_matches == 0

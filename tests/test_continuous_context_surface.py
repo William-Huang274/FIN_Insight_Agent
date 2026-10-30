@@ -170,3 +170,29 @@ def test_larger_summary_not_promoted_or_automatically_retried():
         assert state["messages"] == original["messages"] and "request_summary" not in state
         assert await middleware.abefore_model(state,None) is None and len(calls)==1
     asyncio.run(run())
+
+def test_continuous_summary_receives_task_and_correction_without_changing_cutoff():
+    async def run():
+        calls=[]
+        middleware=summary_policy(calls, 'Fixture working memory.')
+        rows=fixture()
+        rows[0].content='Original task with literal {messages} and {"period": "FY2026"}.'
+        rows.insert(1,HumanMessage(id='correction',content='Compare cash flow; do not produce a report yet.'))
+        original=deepcopy(rows)
+        native_prompt=middleware.native.summary_prompt
+        update=await middleware.abefore_model({'messages':rows},None)
+        assert update and 'request_summary' in update
+        prompt=calls[0]
+        assert rows[0].content.replace('"','\\"') in prompt
+        assert rows[1].content in prompt
+        assert '## SESSION INTENT' not in prompt
+        assert 'HISTORICAL PREFIX TO SUMMARIZE:' in prompt
+        assert middleware.native.summary_prompt==native_prompt
+        assert rows==original
+        view=middleware.projected_messages({'messages':rows,**update})
+        assert view[0]==rows[0] and rows[1] in view and view[-2:]==rows[-2:]
+        # A different request using the same middleware must not inherit task data.
+        other=fixture();other[0].content='Independent second task'
+        await middleware.abefore_model({'messages':other},None)
+        assert 'Independent second task' in calls[1] and 'Original task with literal' not in calls[1]
+    asyncio.run(run())

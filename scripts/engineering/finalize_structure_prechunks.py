@@ -28,7 +28,7 @@ def classify(document):
     for c in document['pre_chunks']:
         b=document['blocks'][c['block']]
         text=b['text'] if c['kind']=='table' else b['text'][c['start']:c['end']]
-        role='retained_structure' if structural_only(text) else 'table_candidate' if c['kind']=='table' else 'prose_candidate'
+        role='retained_structure' if structural_only(text) or b.get('structural_heading') else 'table_candidate' if c['kind']=='table' else 'prose_candidate'
         records.append({**c,'role':role,'text_sha256':sha256(text.encode()).hexdigest(),
                         'heading_path_status':'parser_hypothesis_not_independently_verified',
                         'financial_semantics_inferred':False})

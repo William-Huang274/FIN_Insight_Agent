@@ -236,7 +236,7 @@ class VerifiedCandidateIndex:
             rows = [row for row in rows if request.node_id in (row['node_id'],
                 'PASSAGE::'+row['node_id']+'::'+row['content_sha256'][:16])]
             if not rows:
-                raise ValueError('source_node_not_in_selected_document')
+                raise OrganizationSourceSelectionError(document_id=request.document_id)
         return rows
 
     def materialize(self, rows, manifest):

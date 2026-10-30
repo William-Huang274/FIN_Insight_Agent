@@ -46,6 +46,34 @@ def test_search_selection_rejected_before_index_loading(navigation, monkeypatch)
                       'document_id': 'ORGDOC::unknown:version'})
 
 
+@pytest.mark.parametrize('published', [False, True])
+def test_node_selection_feedback_keeps_document_pair_and_readable_entry(navigation, tmp_path, monkeypatch, published):
+    if published:
+        from test_organization_candidate_index import prepared, query
+        nav, _, state, _, _ = prepared(tmp_path, monkeypatch)
+        document = nav.navigate(query()).items[0]['document_id']
+        candidate = nav._candidate_index
+        monkeypatch.setattr(candidate, 'materialize', lambda *a: pytest.fail('unknown node read a body'))
+    else:
+        nav, state, _ = navigation
+        document = nav.navigate({'operation': 'catalog'}).items[0]['document_id']
+    tool = organization_source_tool(nav, nav.reader.check)
+    proposal = call({'operation': 'read', 'document_id': document, 'node_id': 'ORGSECTION::unobserved:leaf'})
+    original = deepcopy(proposal)
+    result = tool.invoke(proposal)
+    feedback = json.loads(result.content)
+    assert proposal == original and result.status == 'error' and result.artifact is None
+    assert feedback['code'] == 'source_node_not_in_selected_document'
+    assert feedback['stop_required'] is False and feedback['operation_executed'] is False
+    assert feedback['readback']['request'] == {
+        'operation': 'outline', 'source_space': 'organization', 'document_id': document}
+    monkeypatch.undo()
+    outline = tool.invoke(call(feedback['readback']['request'], 'outline'))
+    assert outline.status == 'success' and document in outline.content
+    state['status'] = 403
+    with pytest.raises(OrganizationAuthorizationUnavailable): tool.invoke(proposal)
+
+
 @pytest.mark.parametrize('failure', [None, OrganizationAuthorizationUnavailable, OrganizationSourceStorageUnavailable])
 def test_native_tool_feedback_or_stop_before_next_model(failure):
     checked = []

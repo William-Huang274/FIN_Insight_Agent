@@ -53,10 +53,20 @@ class OrganizationSourceSelectionError(ValueError):
     """Invalid model choice after authority checks; never an access grant."""
     category = 'source_selection'
 
-    def __init__(self):
+    def __init__(self, *, document_id=None):
+        # Only pass a document identity after the fixed catalog accepted it.
+        # Never disclose a different document containing the supplied node.
+        self.document_id = document_id
         super().__init__(json.dumps(self.feedback(), ensure_ascii=False))
 
     def feedback(self):
+        if self.document_id is not None:
+            return {'category': self.category, 'code': 'source_node_not_in_selected_document',
+                    'stop_required': False, 'operation_executed': False,
+                    'message': '文档在当前固定目录中，但所选 node_id 不属于该文档的可读节点，未返回原文。不能据此判断相关披露不存在。',
+                    'next_action': '从该文档已返回的搜索结果或提纲选择完整 node_id，保留同一条结果中的 document_id 与 node_id 配对；不要自行拼接或猜测节点。',
+                    'readback': {'tool': 'read_source_document', 'request': {
+                        'source_space': 'organization', 'operation': 'outline', 'document_id': self.document_id}}}
         return {'category': self.category, 'code': 'document_not_in_fixed_catalog',
                 'stop_required': False, 'operation_executed': False,
                 'message': '所选文档 ID 不在本任务的固定资料目录中，未执行该文档的搜索或读取。此结果不代表相关披露不存在。',

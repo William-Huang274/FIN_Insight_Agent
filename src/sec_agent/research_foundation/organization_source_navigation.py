@@ -475,10 +475,16 @@ class OrganizationSourceNavigation:
                 receipt.update(projection_cache_hits=projection_cache.hits,
                                projection_cache_bytes=projection_cache.size)
             return ranked, receipt
-        result = navigate_source_nodes(nodes, request, snapshot=self.reader.authority.manifest_digest[7:],
-            allowed_space='organization', hybrid_enabled=False,
-            ranker=rank if self.hybrid is not None else None,
-            lexical_scorer=lexical_score if projection_cache is not None else None)
+        try:
+            result = navigate_source_nodes(nodes, request, snapshot=self.reader.authority.manifest_digest[7:],
+                allowed_space='organization', hybrid_enabled=False,
+                ranker=rank if self.hybrid is not None else None,
+                lexical_scorer=lexical_score if projection_cache is not None else None)
+        except ValueError as exc:
+            if str(exc) != 'source_node_not_in_selected_document':
+                raise
+            self.reader._after(before)
+            raise OrganizationSourceSelectionError(document_id=request.document_id) from exc
         result = self._decorate(result, provenance, originals)
         # Revoking any earlier input while scanning later inputs invalidates the entire result.
         self.reader._after(before)

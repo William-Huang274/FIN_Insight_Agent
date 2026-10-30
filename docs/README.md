@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[全库结构识别与预分块验收](engineering/full_library_structure_audit.zh-CN.md)：先检查原件结构、章节层级和文本完整性；区分原件、衍生表示、执行状态与结构准确性，不重新生成向量。
+
 [原件结构修复后的检索归因验收](engineering/parser_upstream_ablation.zh-CN.md)：94 问旧/新表示对照、R01–R30 复核边界；离线结果不代表服务或金融质量验收。
 
 当前0.1.4研究runtime开发与测点顺序见[按Agent流转的分段资格路线](engineering/runtime_flow_qualification.zh-CN.md)。

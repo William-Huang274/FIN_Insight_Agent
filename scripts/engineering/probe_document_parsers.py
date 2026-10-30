@@ -13,6 +13,7 @@ import json
 import ipaddress
 from pathlib import Path
 import socket
+import re
 import sys
 import time
 from xml.etree import ElementTree as ET
@@ -37,10 +38,31 @@ def local_socket_only(original):
     return connect
 
 
+def resolve_form(raw: bytes, title: str, form: str = '') -> dict:
+    """Expose filing-type provenance; conflicts never silently pick a type."""
+    from lxml import html
+    tree=html.fromstring(raw)
+    values={}
+    if form:values['declared_form']=form.strip().upper()
+    types={''.join(n.itertext()).strip().upper() for n in tree.xpath('//*[@name]')
+           if n.get('name','').split(':')[-1].lower()=='documenttype'}
+    if len(types)==1:values['original_dei_document_type']=next(iter(types))
+    if len(types)>1:return {'form':None,'status':'conflicting_original_types','evidence':sorted(types)}
+    if not values:
+        match=re.search(r'(?<![A-Z0-9])(?:10-K|10-Q|8-K|20-F|40-F|6-K)(?:/A)?(?![A-Z0-9])',title.upper())
+        if match:values['catalog_title_hint']=match[0]
+    resolved=set(values.values())
+    return {'form':next(iter(resolved)) if len(resolved)==1 else None,
+            'status':'resolved' if len(resolved)==1 else 'conflict' if resolved else 'unknown',
+            'evidence':values}
+
+
 def parse(raw: bytes, title: str, parser: str, form: str = "") -> dict:
     if parser == "edgartools":
-        from edgar.documents import parse_html
-        document = parse_html(raw.decode("utf-8-sig"))
+        from edgar.documents import parse_html, ParserConfig
+        resolution=resolve_form(raw,title,form)
+        document = parse_html(raw.decode("utf-8-sig"),
+                              config=ParserConfig(form=resolution['form'],enable_parallel=False))
         blocks = []
 
         def visit(node):
@@ -58,6 +80,12 @@ def parse(raw: bytes, title: str, parser: str, form: str = "") -> dict:
                                "text": "\n".join([node.caption or ""] + [" | ".join(c["text"] for c in row) for row in headers + rows + footer]),
                                "parser_path": str(node.path),
                                "metadata": node.metadata})
+            elif kind == 'heading':
+                # Heading children are inline styling, not independent prose.
+                # Keep the parser's level; do not infer every heading as H1.
+                blocks.append({'kind': kind, 'text': node.text(),
+                               'level': node.level, 'parser_path': str(node.path),
+                               'metadata': node.metadata})
             elif node.children:
                 for child in node.children:
                     visit(child)
@@ -71,8 +99,12 @@ def parse(raw: bytes, title: str, parser: str, form: str = "") -> dict:
         return {"blocks": blocks, "text": "\n\n".join(b["text"] for b in blocks),
                 "display_text": document.text(),
                 "xbrl_facts": [f.to_dict() for f in document.xbrl_facts],
+                'form_resolution':resolution,
                 "sections": {k: {"title": s.title, "start": s.start_offset,
-                                  "end": s.end_offset} for k, s in document.sections.items()}}
+                                  "end": s.end_offset,'part':s.part,'item':s.item,
+                                  'method':s.detection_method,'confidence':s.confidence,
+                                  'validated':s.validated,'warnings':s.warnings}
+                             for k, s in document.sections.items()}}
     if parser == "doc2dict":
         from doc2dict import html2dict, flatten_dict
         native = html2dict(raw.decode("utf-8-sig"))

@@ -50,7 +50,18 @@ _COMMON_NONTERMINAL_ABBREVIATIONS = frozenset(
 def _period_is_nonterminal_abbreviation(text: str, period_index: int) -> bool:
     """Return whether a full stop belongs to a bounded abbreviation."""
 
-    prefix = text[: period_index + 1]
+    # Both expressions can only match ASCII letters and dots. Restrict their
+    # input to that suffix instead of copying/scanning the entire document for
+    # every full stop (quadratic on flattened long disclosures). Do not use a
+    # fixed character window: arbitrarily long initialisms keep their meaning.
+    start = period_index
+    while start > 0 and (
+        text[start - 1] == "."
+        or "a" <= text[start - 1] <= "z"
+        or "A" <= text[start - 1] <= "Z"
+    ):
+        start -= 1
+    prefix = text[start : period_index + 1]
     initialism = re.search(r"([A-Za-z](?:\.[A-Za-z])+\.)$", prefix)
     if initialism is not None:
         return True

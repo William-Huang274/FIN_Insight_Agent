@@ -232,6 +232,7 @@ def parse_captured_pdf_layout(
     return {
         "schema_version": PARSED_PDF_LAYOUT_SCHEMA_VERSION,
         "parser_adapter": "pdfplumber_layout_plus_rapidocr_v2",
+        "parser_revision": "preserve_unassigned_page_lines_v1",
         "capture_schema_version": str(capture.get("schema_version") or ""),
         "capture_id": str(
             capture.get("task_id")
@@ -285,6 +286,7 @@ def public_pdf_layout_projection(parsed: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "schema_version": parsed.get("schema_version"),
         "parser_adapter": parsed.get("parser_adapter"),
+        "parser_revision": parsed.get("parser_revision"),
         "capture_id": parsed.get("capture_id"),
         "route_id": parsed.get("route_id"),
         "source_owner_ticker": parsed.get("source_owner_ticker"),
@@ -814,8 +816,11 @@ def _compile_text_blocks(
         line
         for line in lines
         if int(line["line_index"]) not in excluded_line_indices
-        and float(line["bbox"][1]) < 555
-        and len(str(line.get("text") or "")) >= 2
+        # Page geometry varies. A fixed vertical cutoff silently dropped lower
+        # body text, and a length cutoff dropped valid single-character text.
+        # Preserve all unassigned nonblank lines; roles/order need their own
+        # evidence and must not be guessed by suppressing source content.
+        and str(line.get("text") or "").strip()
     ]
     columns: dict[str, list[Mapping[str, Any]]] = {"left": [], "right": []}
     for line in candidates:
@@ -861,6 +866,7 @@ def _text_block(
     )
     return {
         "block_index": index,
+        "source_line_indices": [int(line["line_index"]) for line in lines],
         "column": column,
         "text": text,
         "bbox": _round_bbox(bbox),

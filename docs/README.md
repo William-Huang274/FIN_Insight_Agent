@@ -16,6 +16,8 @@ Lead初步判断的依据边界、具体任务依赖和分阶段模型试验见[
 
 专家接续时的原件保留、准确回读、目录条目投影和工作笔记替代见[研究上下文生命周期](engineering/research_context_lifecycle.zh-CN.md)。
 
+DS Harness / Codex 源码机制与 FIN 原生历史结合的候选选择、16 请求离线回放及未部署边界见[连续研究上下文基线](engineering/continuous_context_baseline.zh-CN.md)。
+
 FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工修订的本地金融研究工作台。
 
 报告网页阅读、PDF 排版及导出与研究验收的边界见[报告阅读与导出](engineering/report_delivery.zh-CN.md)。

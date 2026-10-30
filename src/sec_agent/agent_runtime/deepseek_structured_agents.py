@@ -1347,7 +1347,7 @@ class ReasoningPreservingChatDeepSeek(ChatDeepSeek):
 
     tool_context_trigger_tokens: int | None = Field(default=None, ge=1, exclude=True)
     tool_context_keep: int = Field(default=6, ge=1, le=64, exclude=True)
-    tool_context_policy: Literal["legacy_window", "task_boundary"] = Field(default="legacy_window", exclude=True)
+    tool_context_policy: Literal["legacy_window", "task_boundary", "continuous_surface"] = Field(default="legacy_window", exclude=True)
     research_checkpoint_tokens: int | None = Field(default=None, ge=1, exclude=True)
     research_checkpoint_reserve_tokens: int = Field(default=8192, ge=1, exclude=True)
     # Qualification-only until paired financial quality passes. Default requests
@@ -1453,7 +1453,7 @@ class DeepSeekStructuredAgentAdapter:
                 extra_body=({"enable_thinking": profile.thinking == "enabled", "preserve_thinking": True}
                             if config.provider == "qwen" else {"thinking": {"type": profile.thinking}}),
                 **({"tool_context_trigger_tokens": context_editing["trigger_tokens"],
-                    "tool_context_keep": context_editing["keep"],
+                    "tool_context_keep": context_editing.get("keep", 6),
                     "tool_context_policy": context_editing.get("policy", "legacy_window"),
                     "research_checkpoint_tokens": context_editing.get("checkpoint_trigger_tokens"),
                     "research_checkpoint_reserve_tokens": context_editing.get("checkpoint_reserve_tokens", 8192)} if context_editing else {}),

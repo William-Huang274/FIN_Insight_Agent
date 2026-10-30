@@ -23,6 +23,23 @@ def test_source_only_agent_consumes_method_without_financial_database():
     assert len(response.content) > 1000
 
 
+def test_saved_result_json_pointer_returns_exact_item_without_new_dispatch():
+    import json
+    from types import SimpleNamespace
+    from langchain_core.tools import ToolException
+    reader=next(g.tool for g in conversation_tools(thread_id="pointer") if g.tool.name=="read_saved_result")
+    item={"passage_id":"PASSAGE::p", "text":"exact qualifiers", "period":"FY2025", "unit":"USD"}
+    rows=[ToolMessage(name="read_source_document",tool_call_id="saved",content=json.dumps({"items":[item]}))]
+    runtime=SimpleNamespace(state={"messages":rows})
+    result=reader.func(tool_call_id="saved",runtime=runtime,json_pointer="/items/0")
+    assert json.loads(result["content"])==item and result["new_tool_dispatch"] is False
+    assert reader.func(tool_call_id="saved",runtime=runtime,json_pointer="/items/0/text",offset=6,max_characters=4)["content"]=="qual"
+    with pytest.raises(ToolException):
+        reader.func(tool_call_id="saved",runtime=runtime,json_pointer="/items/3")
+    with pytest.raises(ToolException):
+        reader.func(tool_call_id="saved",runtime=SimpleNamespace(state={"messages":[]}),json_pointer="/items/0")
+
+
 def test_recreated_agent_calculates_from_checkpoint_artifacts_and_isolates_threads():
     checkpoint = InMemorySaver()
     config = {"configurable": {"thread_id": "source-owner"}}

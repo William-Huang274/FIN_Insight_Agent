@@ -50,12 +50,16 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
     grants.extend(GrantedTool(t, "read", "本对话原生checkpoint的分区目录与公开消息")
                   for t in context_navigation_tools())
     @tool
-    def read_saved_result(tool_call_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 6000):
+    def read_saved_result(tool_call_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 6000,
+                          json_pointer: str | None = None):
         """Read a prior successful data tool result from this conversation's original checkpoint.
 
         Use the original tool_call_id when an old result was omitted from the
         current request. No web/SQL request is repeated. Pagination preserves
         exact original text; it is not a new source or permission grant.
+        Optional json_pointer selects an exact field/item in a saved JSON result,
+        e.g. /items/2 returned by a context locator. Offset then applies to that
+        selected value; omit the pointer to read the original serialized receipt.
         """
         if offset < 0 or not 1 <= max_characters <= 24000:
             raise ToolException("请选择非负字符偏移和1至24000字符的窗口")
@@ -67,10 +71,18 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         if saved is None:
             raise ToolException("当前对话没有这条成功数据读取记录；不能跨窗口猜测或回放失败操作")
         content = saved.content if isinstance(saved.content, str) else json.dumps(saved.content, ensure_ascii=False)
+        if json_pointer is not None:
+            import jsonpointer
+            try:
+                selected = jsonpointer.resolve_pointer(json.loads(content), json_pointer)
+            except (ValueError, TypeError, jsonpointer.JsonPointerException) as exc:
+                raise ToolException("保存结果中没有该JSON路径；使用已返回的original_json_pointer，或省略json_pointer读取原回执") from exc
+            content = selected if isinstance(selected, str) else json.dumps(selected, ensure_ascii=False)
         return {"original_tool": saved.name, "original_tool_call_id": tool_call_id,
                 "content": content[offset:offset+max_characters], "offset": offset,
                 "next_offset": offset+max_characters if offset+max_characters < len(content) else None,
-                "total_characters": len(content), "new_tool_dispatch": False}
+                  "total_characters": len(content), "new_tool_dispatch": False,
+                  **({"json_pointer": json_pointer} if json_pointer is not None else {})}
     grants.append(GrantedTool(read_saved_result, "read", "本对话原生checkpoint中的成功数据读取记录"))
     if attachment_store is not None:
         from sec_agent.research_foundation.public_library import library_nodes

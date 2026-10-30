@@ -1,0 +1,63 @@
+# 连续研究上下文基线：离线选择与接入边界
+
+状态：已实现可选策略与离线回放；未切换服务、未调用付费模型。适用对象是原生连续会话 / research partner，不改变历史冻结专家流程的协议。
+
+## 选择
+
+采用一条路径：**原生完整记录 → 无损请求视图 → 压力下归档已消费导航 → 统一历史检查点 → 原任务、最近用户更正、工作摘要、原件索引及近期完整工具批次**。
+
+配置片段：`configs/research/runtime/continuous_context_baseline.json`。部署准备时只替换现有 conversation 配置的 `context_editing` 和 `summary` 两个完整节点，其他模型路由、工具权限、研究调用额度、总费用预算与研究请求上限保持原样。它不是第二个 workflow、第二个记忆库或一个独立服务。此轮不修改已挂载配置。
+
+- 无损阶段：相同来源元数据按完整内容 SHA 共享；不同版本、期间、未知字段不得合并。现有精确相同读取去重继续复用。
+- 导航阶段：估算消息超过 12,000 token，且提供原记录读取工具时，已被模型消费的 catalog / outline / search 变成候选索引。保留全部候选身份、标题和准确原记录路径，不挑来源。最后一批首次交付的结果不得归档。正文、计算、错误和未知格式不由这一阶段清除。
+- 检查点：投影后的工作历史超过约 32,000 token 时，使用现有 LangChain SummarizationMiddleware 选择旧前缀；近期保留目标为 12,000 token，并保持完整调用/回执配对。不是“只保留最后两个工具”，也不是每个用户回合最多整理一次。第一条用户任务和最近遗漏的用户更正继续原文保留。
+- 原件索引：被压缩前缀中 PASSAGE / CALC 身份与原 tool_call_id、JSON Pointer 由代码保存；不是由摘要模型猜写。`read_saved_result` 从当前对话原生 checkpoint 按准确字段和字符窗口回读，不重新检索，也不跨窗口授权。
+- 接续：摘要绑定整个原前缀的指纹，不只核对首尾 ID；正常和恢复请求使用同一个投影入口。摘要必须实际缩小输入；失败、截断和未缩小的摘要不推进，不自动重试，旧原件仍存在。
+- 限额：沿用现有最多两次摘要和调用/费用准入。估算阈值用于整理时机，实际 SDK 请求包含工具、thinking 等字段后的准入仍独立执行；不能把估算当作供应商 token 或账单。
+
+`continuous_surface` 在 `project_tool_history` 的入口直接返回，**不再执行**旧 `ClearToolUsesEdit keep=2`、历史专家释放规则或 task-boundary fallback。摘要调用也使用同一 surface，不先执行另一套 keep=2。新摘要替换旧的多段“重新对账”尾注，不能把读历史变成每轮仪式。旧路径只用于未迁移的冻结配置，不与新路径串联。
+
+## 上游代码依据
+
+此次复用的是机制，不是引入三套运行框架。
+
+| 来源 | 实际查看的实现 | 借鉴与边界 |
+|---|---|---|
+| DeepSeek Harness `ce7073d51254c26cd63b22a60835b8f948deb447` | `packages/core/session/src/surface.ts`；`packages/compaction/compaction-basic/src/{index,config,region,summarizer}.ts` | 完整日志与模型 surface 分离；先减少可省内容、重新计量，再选工具配对安全的旧前缀；检查摘要是否缩小、替换范围是否仍有效。没有直接复制默认 80% 阈值或字符头尾裁剪。 |
+| Codex `eab2603712f90ec08ac44207a04eed158be293a3` | `codex-rs/core/src/context_manager/history.rs`、`compact.rs`、`compact_remote_v2.rs`、`async_compaction.rs` 及恢复测试 | 原记录与请求视图分离，保留来源/版本身份；配对与恢复一致；过时的压缩结果不能进入新状态。不移植 OpenAI 专用 opaque compaction，也不新增后台并发压缩任务。 |
+| FIN 当前研究基线 `959db433` | `model_context.py`、`source_result_view.py`、`conversation_summary.py`、`conversation_tools.py` | 保留原生 LangGraph checkpoint、来源/计算复原、权限、审计和预算。更改请求编译及摘要触发，不重写金融判断。 |
+
+源码链接：[DS region](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/compaction/compaction-basic/src/region.ts)、[DS config](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/compaction/compaction-basic/src/config.ts)、[Codex history](https://github.com/openai/codex/blob/eab2603712f90ec08ac44207a04eed158be293a3/codex-rs/core/src/context_manager/history.rs)。版本用于可复现，不声明是后续最新 HEAD。只做了上游源码与测试阅读，没有声称运行过它们完整测试。
+
+## 真实记录回放与候选淘汰
+
+样本为同一个 NVIDIA 小研究任务的两段已保存接续，共 **16 个真实请求**；不是 16 道独立研究题。保留原请求、失败、成功读取和模型响应，不修改研究提案。离线脚本禁用 socket 外连。
+
+以下是原有已接受摘要与原始后缀上，真正经 SDK 消息序列化后的字符量，**包含保留的 reasoning 字段、不含未存档的原工具 schema**。不能拿字符当 token，也不能与账本完整输入字符量混算：
+
+| 候选 | 16 请求的 SDK 消息字符范围 | 判断 |
+|---|---:|---|
+| 当前 keep=2 | 63,006–135,162 | 体量小，但每次有 29–46 项旧结果退出；没有证明模型不需要重新读取。 |
+| 仅无损去重 | 523,703–785,765 | 保留得多，但不能成为有界连续研究策略。 |
+| 导航归档＋无损视图，尚未做检查点 | 225,101–400,252 | 能去掉导航负担，仍不足以独立收口；必须接统一检查点。 |
+
+导航候选的 **1,390 次原记录条目回读检查**经过实际 `read_saved_result` 函数和权限范围内的原消息查找，恢复出完整原条目，包括期间、单位、未知字段和来源信息。所有候选个数保留；首次交付、错误及 canonical journal 不变。这里没有跑数据库、RAG 或供应商请求。
+
+另试过“检查点之前再按 token 窗口退出部分证据”的原型；真实请求中重复投影不能保持相同保留集合，因此淘汰。相关原型和失败记录仅保存在本地诊断目录，未作为另一套运行策略留在维护代码中。
+
+对检查点的 6k / 12k / 24k 近期保留窗口，使用完整原始历史、真实 native middleware 和**明确标注的固定假摘要**做 48 次结构回放。它验证配对、首次交付、来源索引、重开一致性、原件不变以及实际摘要输入构造；不能证明真实摘要质量或真实输出长度。12k 窗口在本样本保留更多近期完整动作，同时给研究请求留下比 24k 更大的工具与摘要空间，因此选为首个候选参数；6k 不作为默认激进设置。不是用未来动作倒推当轮应该保留哪条证据。
+
+12k 窗口的真实待摘要 prompt 最大约 **294,491 字符**。旧摘要上限 60,000 字符无法容纳它，所以配置片段显式提出 **360,000 字符输入上限、4,096 输出 token、low thinking、无自动重试**。这是可见的容量/费用变更，不是免费优化；当前未激活，也不扩大主研究费用或调用许可。第一次压缩会有一次额外模型成本，是否能抵消反复回读需真实验证。
+
+## 复现
+
+```powershell
+python scripts/engineering/replay_continuous_context.py --audit <第一段私有JSONL> --audit <第二段私有JSONL> --output <本地结果JSON>
+python -m pytest -q tests/test_continuous_context_surface.py tests/test_request_summary.py tests/test_conversation_tools.py tests/test_context_navigation.py tests/test_model_context.py tests/test_source_result_view.py
+```
+
+私有输入、原始 reasoning 和回放输出不进入 Git。脚本支持任意同格式记录，没有写死本机路径、call ID、公司或结论。它明确分开真实请求投影指标和假摘要结构回放指标。
+
+## 尚未证明
+
+离线不能证明摘要保留了正确的研究重点、模型会主动使用回读入口、金融推理更好、缓存命中提高或全流程费用下降。冻结接入前还需按当前服务真实工具集复核完整 SDK 请求上限；历史摘要次数和费用记录不能清零。后续获准的小范围真实验证应接续同一研究，记录摘要自身费用、研究总输入、重复读取和研究推进，不从头重跑 case，也不把本地假摘要写入真实 checkpoint。

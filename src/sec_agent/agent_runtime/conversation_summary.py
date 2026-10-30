@@ -19,4 +19,6 @@ def summary_middleware(specification, *, public, private, access_check, budget_s
                            SecretStr(os.environ['DEEPSEEK_API_KEY']))
     return RequestSummaryMiddleware(model=model, audited_model=audit.model_runnable(model),
         trigger_tokens=spec['trigger_tokens'], keep_tokens=spec['keep_tokens'], max_summaries=2,
-        per_user_turn=spec.get('per_user_turn', False))
+        per_user_turn=spec.get('per_user_turn', False),
+        context_policy=specification.get('context_editing', {}).get('policy', 'legacy_window'),
+        navigation_trigger_tokens=specification.get('context_editing', {}).get('trigger_tokens'))

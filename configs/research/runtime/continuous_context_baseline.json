@@ -1,0 +1,36 @@
+{
+  "context_editing": {
+    "policy": "continuous_surface",
+    "trigger_tokens": 12000
+  },
+  "summary": {
+    "per_user_turn": false,
+    "profile": {
+      "model": "deepseek-flash",
+      "thinking": "enabled",
+      "reasoning_effort": "low"
+    },
+    "trigger_tokens": 32000,
+    "keep_tokens": 12000,
+    "budget": {
+      "node_role": "specialist",
+      "node_purpose": "Optional pressure-based working-memory checkpoint over the native conversation journal; at most two accepted summaries per thread under the existing audited call and cost scope",
+      "input_scale": "Exact source views and calculation receipts in an older pair-safe prefix after consumed navigation is indexed. Offline 16-request replay measured up to 294491 characters for the 12000-token tail before SDK envelope; ceiling 360000 characters. Research request/tool limits remain separately enforced.",
+      "required_outputs": [
+        "Current research question, user corrections, completed and pending work without adding a research conclusion",
+        "Important evidence, company, period, unit, calculation identity and unresolved disagreements; exact originals remain in native checkpoint readers"
+      ],
+      "schema_burden": "Plain working-memory summary, not a report or an extra planning form",
+      "materiality_quality_risk": "Lossy summary can omit important qualifiers; deterministic replay proves restoration and identities only. Full evidence remains readable. Reject nonshrinking, empty or truncated summaries; do not retry automatically.",
+      "comparable_run_evidence": "Two saved continuations, 16 real requests; offline policy and native checkpoint replay only. No claim of measured token savings, cache hit improvements or better research decisions. Authorize real verification separately.",
+      "reasoning_profile": "agentic_message_history_thinking_enabled",
+      "max_input_characters": 360000,
+      "max_output_tokens": 4096,
+      "timeout_seconds": 90,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    }
+  }
+}

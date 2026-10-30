@@ -95,11 +95,11 @@ def test_summary_keeps_hierarchy_defects_separate_from_text_conservation(tmp_pat
     import gzip,json
     from hashlib import sha256
     document={'route':'edgartools','blocks':[
-        {'kind':'heading','text':'PART I','level':1},
+        {'kind':'heading','text':'PART I. FINANCIAL INFORMATION','level':1},
         {'kind':'heading','text':'ITEM 1. BUSINESS','level':1},
         {'kind':'text','text':'Text.'}],
         'pre_chunks':[{'kind':'prose','block':2,'start':0,'end':5,'heading_path':[1]}],
-        'outline':[{'block':0,'title':'PART I','level':1},{'block':1,'title':'ITEM 1. BUSINESS','level':1}],
+        'outline':[{'block':0,'title':'PART I. FINANCIAL INFORMATION','level':1},{'block':1,'title':'ITEM 1. BUSINESS','level':1}],
         'issues':[]}
     (tmp_path/'receipts').mkdir();(tmp_path/'documents').mkdir()
     raw=gzip.compress(json.dumps(document).encode());(tmp_path/'documents'/'raw.json.gz').write_bytes(raw)

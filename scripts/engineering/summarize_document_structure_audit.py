@@ -42,7 +42,7 @@ def summarize(manifest,directory,output):
         part=None
         for h in d['outline']:
             text=' '.join(h['title'].split()).upper()
-            if re.fullmatch(r'PART [IVX]+',text):part=h
+            if re.match(r'^PART\s+[IVX]+\b',text):part=h
             elif part and re.match(r'ITEM\s+\d',text) and h['level'] and part['level'] and h['level']<=part['level']:
                 own.append({'kind':'item_heading_not_nested_below_preceding_part','block':h['block']})
         row['additional_diagnostic_issues']=own
@@ -55,6 +55,8 @@ def summarize(manifest,directory,output):
         id=job_for_binding.get(s['document_id']);status=by_id[id]['status'] if id else 'original_unresolved'
         families[s.get('provisional_family','unknown')][status]+=1
     result={'source_bindings':len(frozen['sources']),'unique_originals':len(rows),
+            'diagnostic_implementation_sha256':sha256(Path(__file__).read_bytes()).hexdigest(),
+            'manifest_sha256':sha256(manifest.read_bytes()).hexdigest(),
             'status':dict(Counter(r['status'] for r in rows)),'routes':dict(routes),
             'family_binding_status':{k:dict(v) for k,v in families.items()},
             'issue_occurrences_not_gold_errors':dict(issues),'documents':rows,

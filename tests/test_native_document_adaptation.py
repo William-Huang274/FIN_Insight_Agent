@@ -79,6 +79,31 @@ def test_sec_path_match_does_not_authorize_changed_or_ambiguous_text():
     assert doc['blocks'][2]['chapter_ids']==['chapter:1']
 
 
+@pytest.mark.parametrize('heading_table', [True, False])
+@pytest.mark.parametrize('other_boundary', [True, False])
+def test_toc_cell_anchor_only_expands_to_verified_whole_heading_table(heading_table, other_boundary):
+    from hashlib import sha256
+    native, old = sec_fixture()
+    raw='<html><body><table><tr><td id="start">Item 6</td><td>Reserved</td></tr></table><a id="end"></a></body></html>'
+    digest=sha256(raw.encode()).hexdigest(); sid=digest+':/html/body/table'
+    native['source_sha256']=digest
+    native['native']['metadata']={'fields':{'original_html':raw}}
+    native['native']['nodes'][-1]['fields']['children']=[]
+    native['native']['toc_boundaries']={'item1':dict(fields=dict(anchor_id='start',end_element_id='end'),element_paths={})}
+    if other_boundary:
+        native['native']['toc_boundaries']['other']=copy.deepcopy(native['native']['toc_boundaries']['item1'])
+    old['source_containers']=[dict(id=sid,text='Item 6 Reserved',text_sha256=sha256(b'Item 6 Reserved').hexdigest(),parent_id=None,table_id=None)]
+    old['blocks']=[dict(kind='table',text='Item 6 | Reserved',source_container_id=sid,
+                        source_location_status='unique_complete_container',chapter_ids=[],
+                        structural_heading='Item 6 Reserved' if heading_table else None,
+                        source_table_role='section_heading_container' if heading_table else 'data_table')]
+    old['chapter_tree']=[]
+    doc=adapt(native,old,native_paths_verified=False)
+    expected=heading_table and not other_boundary
+    assert bool(doc['native_boundary_adjustments']) is expected
+    assert (doc['blocks'][0]['native_section_binding']['candidates']==['item1']) is expected
+
+
 def test_toc_boundaries_use_whole_original_containers_and_reject_duplicate_anchors():
     from hashlib import sha256
     native, old = sec_fixture()

@@ -149,17 +149,45 @@ def edgar_document(capture, previous, *, native_paths_verified=True):
                 found = dom.xpath('//*[@id=$anchor or @name=$anchor]', anchor=anchor)
             return positions[found[0]] if len(found) == 1 else None
         source_rows = {r['id']: r for r in document.get('source_containers', [])}
+        heading_tables = {}
+        for block in blocks:
+            sid = block.get('source_container_id')
+            if (block['kind'] == 'table' and block.get('structural_heading')
+                    and block.get('source_table_role') == 'section_heading_container'
+                    and block.get('source_location_status') == 'unique_complete_container'
+                    and sid in source_rows and sid.startswith(capture['source_sha256'] + ':')):
+                element = path_index.get(sid.split(':', 1)[1])
+                if element is not None and element.tag == 'table':
+                    heading_tables[sid] = element
+        starts = {key: endpoint(b['fields'], b['element_paths'], 'start')
+                  for key, b in native['toc_boundaries'].items()}
+        adjustments = []
         for key, boundary in native['toc_boundaries'].items():
             if key not in native['sections']: continue
             start = endpoint(boundary['fields'], boundary['element_paths'], 'start')
             end = endpoint(boundary['fields'], boundary['element_paths'], 'end')
             if start is None or end is None or end <= start:
                 issues.append(dict(kind='native_toc_boundary_unresolved', section=key)); continue
+            # A SEC heading can be a complete one-row layout table, with the
+            # anchor on its first cell. Preserve that physical heading container,
+            # but never lift an ordinary data table or a multi-section table.
+            candidates = [(sid, element) for sid, element in heading_tables.items()
+                          if positions[element] < start <= ends[element] < end
+                          and not any(other != key and pos is not None
+                                      and positions[element] <= pos <= ends[element]
+                                      for other, pos in starts.items())]
+            if len(candidates) == 1:
+                sid, element = candidates[0]
+                adjustments.append(dict(section=key, source_container_id=sid,
+                                        native_start=start, adapted_start=positions[element],
+                                        basis='verified_section_heading_table_contains_unique_anchor'))
+                start = positions[element]
             for sid, row in source_rows.items():
                 if not sid.startswith(capture['source_sha256'] + ':'): continue
                 found = path_index.get(sid.split(':', 1)[1])
                 if found is not None and start <= positions[found] and ends[found] < end:
                     dom_membership[sid].add(key)
+        document['native_boundary_adjustments'] = adjustments
     for i, block in enumerate(blocks):
         ref = paths.get(block.get('native_container_id')) if native_paths_verified else None
         fields = nodes[ref]['fields'] if ref else {}

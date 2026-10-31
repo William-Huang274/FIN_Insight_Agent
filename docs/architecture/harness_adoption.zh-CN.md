@@ -1,6 +1,6 @@
 # 研究工作台采用上游 harness：选型与替换边界
 
-2026-10-31。状态：**选定 DS Harness / ACP 作为下一阶段集成候选，尚未通过部署准入**。Codex app-server 保留为对照实现。本次不更换实际服务、不调用付费模型、不迁移历史运行。此前按需研究 A/B/C/D/E 的产品能力继续保留；本文件调整其执行内核的归属，不另建第二套业务流程。
+2026-10-31。状态：**DS Harness 固定发行包的 ACP 进程、DS/Qwen 协议和金融工具夹具已通过；Java/BFF 真实组合及 NVIDIA 真实接续尚未通过部署准入**。Codex app-server 保留为对照实现。用户已授权以现有 NVIDIA case 验证；当前仍未切换生产或调用付费模型。此前按需研究 A/B/C/D/E 的产品能力继续保留；本文件调整其执行内核的归属，不另建第二套业务流程。
 
 ## 1. 决策与证据强度
 
@@ -11,7 +11,7 @@
 1. **DS Harness 原生 ACP 服务进程**：当前研究以 DS 为主，并要求保留 Qwen 路由。其原生 DeepSeek Messages 适配保留 thinking/tool replay；pi-ai 插件提供其他协议扩展点；ACP 有会话创建、恢复、关闭、取消、MCP 接入和模型选择。适配层只翻译宿主命令与事件，不控制每一轮研究。
 2. **Codex app-server**：工具、持久会话、压缩和取消的服务接口清晰，已完成本项目进程级无模型工具链验证。固定源码中的 WireApi 仅接受 Responses，不能把我们已有 Chat Completions 地址直接换上；DS 已提供 Responses 也不意味着所有返回字段、thinking 回传、Qwen 路由已兼容。若 DS 候选无法用公开扩展点满足准入，而 Codex 的实际供应商路径可用，再调整选择。
 
-这是适配成本判断，不是模型质量排名。两边证据不对称：Codex 已运行完整 app-server；DS 仅核对核心源码并执行原始 SDK 传输模块，**尚未运行完整 ACP/Agent**。磁盘空间有限，本轮未安装整套 DS 依赖。不能把 DS 的传输测试称为其 Agent 生命周期通过，也不把本机 Codex alpha 二进制直接作为生产发行版。
+这是适配成本判断，不是模型质量排名。两边均已运行完整服务进程的无模型夹具。DS 使用官方 Python runtime wheel `0.2.1rc2`，二进制报告 `0.2.1-rc.2`；没有构建整个 monorepo。源码审阅 SHA 与发行二进制没有建立可复现构建对应关系，不能混称同一构建。不能把夹具通过当作供应商真实模型、研究质量或 Java/BFF 生产接入通过。
 
 ## 2. 固定来源，实际读实现
 
@@ -20,7 +20,7 @@ DS 源码固定 `ce7073d51254c26cd63b22a60835b8f948deb447`；Codex 固定 `eab26
 | 能力 | DS 实现证据 | Codex 实现证据 | 结论/待验 |
 |---|---|---|---|
 | 模型协议 | `packages/llm/llm-deepseek/src/{adapter,serialize}.ts`；`llm-pi-ai/src/{adapter,models,catalog}.ts` | `codex-rs/model-provider-info/src/lib.rs` | DS 原生 thinking/signature 与工具配对有代码；pi-ai 支持协议与兼容配置不等于 Qwen 实际请求通过。Codex Responses-only 源码明确拒绝旧 chat 配置 |
-| 服务生命周期 | `packages/acp/acp/src/{index,session,model-control}.ts` | `codex-rs/app-server-protocol/src/protocol/v2/{thread,turn}.rs` | ACP 的 new/resume/close/cancel 不能与 SDK 的 prompt/resume/wait 混为一谈 |
+| 服务生命周期 | `packages/acp/acp/src/{index,session,model-control}.ts` | `codex-rs/app-server-protocol/src/protocol/v2/{thread,turn}.rs` | ACP new/resume/prompt/cancel 已做真实进程夹具；不能与 SDK 的 prompt/resume/wait 混为一谈 |
 | 工具 | `packages/mcp/mcp-client/src/index.ts` | `codex-rs/app-server/src/dynamic_tools.rs`，thread/start 的 dynamicTools | 优先使用受权 MCP；Codex dynamicTools 当前为实验能力，需锁版本 |
 | 持久化 | `packages/session/session-persistence-jsonl/src/{index,storage,lease}.ts` | thread/resume；本轮真实进程重启测试 | 持久文件不等于企业权限服务；工作区/租户隔离由宿主配置、工具访问验证负责 |
 | 压缩 | `packages/compaction/compaction-basic/src/{index,config,summarizer}.ts` | `codex-rs/core/src/{compact.rs,session/turn.rs}` | 采用上游机制，不移植 FIN 两次摘要上限、独立历史退出器。压缩质量待真实模型验证 |
@@ -49,7 +49,7 @@ ACP session/cancel 是当前工作的取消；业务“关闭研究执行”另�
 
 保留现有原文查询、SQL、来源绑定计算器、工作笔记、稿件保存与版本校验、报告导出。上游调用 MCP 或工具适配器；宿主身份与资料权限不由模型传入。FIN 工具返回合理大小的正文窗口、结果和准确回读入口，不在工具内另做会话压缩。
 
-当前 `organization_work_session.artifact_reader` 等路径从 LangChain 消息/artifact 恢复观察。采用新底座时须改为读取宿主保存的**成功工具观察**，复用现有来源记录/存储，不把普通模型文本或摘要视为来源。原文/计算记录不依赖上游摘要保真；不新增一套“判断真值库”。
+`organization_work_session.artifact_reader` 保留历史消息适配，但来源提取已归并为 `source_bound_calculator.sources_from_receipts`，原文读取抽出 `read_authorized_source`，来源恢复抽出 `artifact_reader_from_sources`。新底座可直接使用宿主保存的**成功工具观察**；旧入口也调用相同实现，不复制两套来源规则。授权检查、来源版本恢复继续由现行 navigation 承担，不把普通模型文本或摘要视为来源。原文/计算记录不依赖上游摘要保真；不新增一套“判断真值库”。
 
 已有 `WorkingMemory` 和 `calculate_from_sources` 可脱离 Agent 循环执行，本轮验证了这点。尚含 `ToolRuntime`/`Command(update=...)` 的交付、操作与委派边界需要抽出其业务服务，不能把整个 LangGraph Agent 当作每个 DS 工具的隐式后继。
 
@@ -99,12 +99,30 @@ python -m pytest -q tests/test_working_memory.py tests/test_source_bound_quantit
 
 本轮相关维护组件测试 70 项通过，active baseline、秘密扫描和 diff 检查通过。探针是显式运行的工程资格入口，不进入安装、CI 的默认依赖，不下载模型、不要求私有资料，也不注册生产服务。
 
-## 6. 进入正式替换前只补这些资格
+## 6. 固定 DS 发行包的进一步资格结果
+
+官方 `deepseek-harness-runtime-bin==0.2.1rc2` Windows wheel SHA256：
+`d38c18f5117859feedaaa791a0eea37b8644bc187118e7e6f3afa231a5381cb7`。
+通过公开 profile overlay 组合最小 ACP 服务，无 core fork。关闭默认 shell、文件工具、会话日志及插件清单上传和自动重试；模型仅见 FIN 测试 MCP。
+
+维护探针为 `scripts/engineering/probe_dsh_acp.py`；接入 seam 和内部合同在
+[`integrations/deepseek-harness`](../../integrations/deepseek-harness/README.md)。
+
+- DS Messages 与 Qwen Chat 两条路各通过完整进程链：各 19 次 loopback 请求、8 次工具执行、两版成果、一次进程重启恢复。6 次压缩开始，其中 5 次成功保存摘要，最后一次在取消测试中停止。不是 6 份成功摘要，也不是 19 次付费调用。
+- DS thinking signature、Qwen reasoning_content 随后续工具历史回传，工具调用与结果配对正常。Qwen `enable_thinking` 实际进入请求。由夹具模拟响应，尚未证明真实供应商当前接口可用。
+- 上游 `llm/stream` 公共钩子覆盖普通与压缩调用；各 19 次调用均先登记再取得终态回执。取消后继续请求被 FIN 边界拦住，供应商新增请求为 0。
+- 发现原生压缩失败后可能继续尝试正常研究请求，故 FIN 薄边界在失败后停止本执行后续转发；没有改摘要内容或重写核心循环。未知用量仍需保留预留金额，不能把一个已保存的错误终态计为零成本。
+- 提取成功来源观察与受权读取的公共业务函数，旧消息入口调用同一函数。原 NVIDIA 停点包含 87 条消息、56 条工具回执（51 成功、5 失败）。与修改前固定提交比较，13 份原文、5 份计算对象完全一致；未使用旧错误摘要，也未把旧历史伪装为 DS 原生历史。
+- Python 相关回归 87 项、Node dispatch 测试 2 项通过。没有重做研究、embedding 或知识库发布。
+
+仍未完成：生产请求账本端点与现有 PostgreSQL 预算/Java 授权的连接、真实受权工具与报告业务的完整接入、服务部署及 NVIDIA 真实压缩质量。夹具的 host 回执不能替代这些验收。磁盘曾出现 Z=0、D 低于 100 MB；后续证据改存隔离目录，未删除他人的资料，未在账本缺少空间时发起付费调用。
+
+## 7. 进入正式替换前的剩余资格
 
 1. 锁定 DS 可部署发行版，运行原生 ACP：同一工具链、进程重启、主动取消、重复命令及异常退出；新组件在隔离环境运行，不占用当前服务。
 2. 用供应商协议夹具验证 DS/Qwen 请求、thinking、工具、usage、失败与超时；验证预算覆盖所有请求。无模型测试不等于供应商实测。
 3. 接入真实受权 MCP、现有 Java/BFF 命令和成果接口；复用现有检索发布，校验撤权与版本、导出。用工具权限控制访问，不将 shell 全开作为接入捷径。
-4. 按新的 TokenBudgetBasis 才开始有界真实研究，检查自然工具选择、跨压缩接续和研究质量；不得借选型授权重跑旧 case 或自动重发失败付费调用。
+4. 用户已授权以现有 NVIDIA case 验收。新的 TokenBudgetBasis 记录原题、输入规模、所需交付、质量风险、thinking、模型能力和停止条件。采用实际模型窗口及上游压力触发；不沿用两次摘要终身上限、小窗口或几次调用后强制收尾。主模型与摘要的输出容量分别配置，遵守供应商能力。宿主持续记录费用/输入规模/新材料/成果变化；正常读取不算无进展，多轮相同动作且没有新依据或成果才考虑中断。失败、未知计费、截断和执行故障仍须停住。监督不自动授权付费重试，不重跑已成功研究。
 5. 对照通过后切换唯一新建路径，删除被替代的运行时挂载和冲突配置。旧 checkpoint 的只读/运维兼容单独隔离；不维护两套活跃研究流程。
 
 若第一/二项需要维护大量上游内部补丁，停止扩张该适配并改评 Codex 路线。不会为了兑现“选定”二字，把未验证候选强行上线。

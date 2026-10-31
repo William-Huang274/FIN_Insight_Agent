@@ -67,6 +67,32 @@ def test_parent_source_view_preserves_delegated_evidence_but_not_model_claims(na
         content='failed', status='error', artifact={'source_items': {identity: original}})]}).source_snapshot() == {}
 
 
+def test_framework_neutral_source_handoff_reuses_authorized_navigation(navigation):
+    from sec_agent.agent_runtime.organization_work_session import read_authorized_source, artifact_reader_from_sources
+    from sec_agent.research_foundation.source_bound_calculator import sources_from_receipts
+    nav, state, _ = navigation
+    original = read_first(nav).items[0]
+    data = SimpleNamespace(foundation_binding=SimpleNamespace(case_id='test-root', research_as_of='2026-10-12',
+        snapshot_id='frozen', foundation_digest='frozen'), decision_digest='decision',
+        source_route_catalog_digest='catalog', inventory_snapshot_digest='inventory')
+    identity = original['passage_id']
+    receipt = {'status': 'success', 'name': 'read_delegated_evidence', 'artifact': {'source_items': {identity: original}}}
+    sources = sources_from_receipts([receipt, {**receipt, 'status': 'error'}])
+    assert artifact_reader_from_sources(data, nav, sources).source_snapshot() == {identity: original}
+    assert sources_from_receipts([{**receipt, 'status': 'unknown'}, {**receipt, 'failure': 'lost result'}]) == {}
+    # A wrapper never skips the post-read authorization check, even if navigation
+    # itself returned successfully. This does not require another agent invocation.
+    checks = []
+    def check():
+        checks.append(True)
+        if len(checks) == 2:
+            raise PermissionError('revoked during read')
+    fake = SimpleNamespace(navigate=lambda request: {'operation': 'catalog', 'items': []})
+    with pytest.raises(PermissionError, match='revoked'):
+        read_authorized_source(fake, check, object())
+    assert len(checks) == 2
+
+
 @pytest.mark.parametrize('next_delivery', ['answer', 'workpaper', 'report'])
 def test_native_work_session_uses_same_parent_and_does_not_start_old_graph(continuous, tmp_path, monkeypatch, next_delivery):
     from sec_agent.agent_runtime import research_session_runtime as runtime

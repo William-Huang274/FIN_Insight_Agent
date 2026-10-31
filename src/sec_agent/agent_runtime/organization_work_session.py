@@ -26,26 +26,40 @@ def organization_source_tool(navigation, check):
     @tool(response_format='content_and_artifact')
     def read_source_document(request: OrganizationSourceRequest):
         """Search/catalog/read the task's authorized fixed originals. Candidate IDs are not citations until read."""
-        check()
         try:
-            result = navigation.navigate(request)
+            return read_authorized_source(navigation, check, request)
         except OrganizationSourceSelectionError as exc:
-            check()
             raise ToolException(str(exc)) from exc
-        body = result.model_dump(mode='json') if hasattr(result, 'model_dump') else result
-        check()
-        return json.dumps(body, ensure_ascii=False), body
 
     read_source_document.handle_tool_error = True
     return read_source_document
 
 
+def read_authorized_source(navigation, check, request):
+    """Shared business boundary, callable without starting an old agent loop."""
+    from sec_agent.research_foundation.organization_execution_access import OrganizationSourceSelectionError
+    check()
+    try:
+        result = navigation.navigate(request)
+    except OrganizationSourceSelectionError:
+        check()
+        raise
+    body = result.model_dump(mode='json') if hasattr(result, 'model_dump') else result
+    check()
+    return json.dumps(body, ensure_ascii=False), body
+
+
 def artifact_reader(data, navigation, question_state):
     """Revalidate native tool artifacts, never model prose or browser records."""
-    from .case_artifacts import CaseArtifacts
     from .conversation_handoff import observed_sources
     sources = observed_sources({'values': {'messages': [m.model_dump(mode='json') if hasattr(m, 'model_dump') else m
                                                        for m in question_state.get('messages', [])]}})
+    return artifact_reader_from_sources(data, navigation, sources)
+
+
+def artifact_reader_from_sources(data, navigation, sources):
+    """Restore observed source identities through the existing authorized reader."""
+    from .case_artifacts import CaseArtifacts
     validated = navigation.restore([{'status': 'success', 'content': list(sources.values())}])
     result = CaseArtifacts.from_observed_sources(validated, case_id=data.foundation_binding.case_id,
                                                  research_as_of=data.foundation_binding.research_as_of)

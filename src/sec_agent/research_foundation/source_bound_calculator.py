@@ -78,6 +78,28 @@ def source_items_from_tool(tool_name: str, body: dict) -> dict[str, dict]:
     return {}
 
 
+def sources_from_receipts(receipts) -> dict[str, dict]:
+    """Project trusted successful tool receipts without a framework transcript.
+
+    Callers authenticate this stream; this is not an ingress for model/browser
+    objects. Restored sources still go through the existing authorized reader.
+    """
+    names = {"query_financial_data": "query_company_financial_facts",
+             "read_task_material": "read_source_document", "read_handoff_material": "read_source_document",
+             "read_public_source": "read_source_document", "read_company_library": "read_source_document"}
+    result = {}
+    for receipt in receipts:
+        body = receipt.get("artifact")
+        if receipt.get("status") != "success" or receipt.get("failure") or not isinstance(body, dict):
+            continue
+        name = receipt.get("name")
+        if name in {"read_handoff_evidence", "read_delegated_evidence", "read_saved_knowledge"}:
+            result.update(deepcopy(body.get("source_items", {})))
+        else:
+            result.update(source_items_from_tool(names.get(name, name), body))
+    return result
+
+
 def source_items_from_observations(observations) -> dict[str, dict]:
     """Restore a trusted native notebook's calculator inputs, never model notes.
 

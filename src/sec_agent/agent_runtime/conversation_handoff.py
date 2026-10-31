@@ -10,7 +10,7 @@ from uuid import UUID
 from langchain_core.tools import tool, ToolException
 
 from .conversation_agent import GrantedTool
-from sec_agent.research_foundation.source_bound_calculator import source_items_from_tool
+from sec_agent.research_foundation.source_bound_calculator import sources_from_receipts
 
 
 SURFACE = "finsight_general_conversation"
@@ -29,17 +29,9 @@ def public_history(state):
 
 
 def observed_sources(state):
-    items = {}
-    names = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_handoff_material": "read_source_document", "read_public_source": "read_source_document", "read_company_library": "read_source_document"}
-    for message in state.get("values", {}).get("messages", []):
-        body = message.get("artifact")
-        if message.get("type") != "tool" or message.get("status") == "error" or not isinstance(body, dict):
-            continue
-        if message.get("name") in {"read_handoff_evidence", "read_delegated_evidence", "read_saved_knowledge"}:
-            items.update(body.get("source_items", {}))
-        else:
-            items.update(source_items_from_tool(names.get(message.get("name"), message.get("name")), body))
-    return items
+    return sources_from_receipts({**message, "status": message.get("status", "success")}
+                                for message in state.get("values", {}).get("messages", [])
+                                if message.get("type") == "tool")
 
 
 def answer_sources(messages, answer):

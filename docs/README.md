@@ -2,6 +2,8 @@
 
 [文档结构质量验收协议 v1](engineering/document_structure_quality_protocol.zh-CN.md)：指标分母、严重程度、可用状态与冻结试审口径；无诊断提示不等于质量通过。
 
+[文档结构首轮试审](engineering/document_structure_screening_r1.zh-CN.md)：6 份无诊断原件的源先验核对，分别记录正文保留、封面/界面角色误判及结构化存取范围。
+
 [全库结构识别与预分块验收](engineering/full_library_structure_audit.zh-CN.md)：先检查原件结构、章节层级和文本完整性；区分原件、衍生表示、执行状态与结构准确性，不重新生成向量。
 
 [原件结构修复后的检索归因验收](engineering/parser_upstream_ablation.zh-CN.md)：94 问旧/新表示对照、R01–R30 复核边界；离线结果不代表服务或金融质量验收。

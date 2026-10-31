@@ -6,6 +6,8 @@
 
 [文档解析角色问题的开源实现核查](engineering/document_parser_code_review.zh-CN.md)：EdgarTools 分区调用链、网页提取模式、Markdown token 与 Docling 角色层；固定源码提交和本地小对照。
 
+[解析器原生输出接入契约](engineering/native_document_contract.zh-CN.md)：先保留公开节点、分区、表格、语法 token 和失败状态，再做 FIN 适配；离线接入、依赖兼容与真实原件对照范围。
+
 [全库结构识别与预分块验收](engineering/full_library_structure_audit.zh-CN.md)：先检查原件结构、章节层级和文本完整性；区分原件、衍生表示、执行状态与结构准确性，不重新生成向量。
 
 [原件结构修复后的检索归因验收](engineering/parser_upstream_ablation.zh-CN.md)：94 问旧/新表示对照、R01–R30 复核边界；离线结果不代表服务或金融质量验收。

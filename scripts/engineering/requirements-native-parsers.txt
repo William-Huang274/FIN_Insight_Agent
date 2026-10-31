@@ -1,0 +1,7 @@
+# Optional offline document parsing qualification environment; not production upgrades.
+edgartools==5.62.1
+datamule==5.0.2
+doc2dict==0.7.3
+trafilatura==2.2.0
+markdown-it-py==4.2.0
+mdit-py-plugins==0.6.1

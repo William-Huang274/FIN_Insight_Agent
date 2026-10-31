@@ -126,6 +126,18 @@ def capture_edgar_document(document, raw, options):
               "headings": [encoder.encode(h) for h in document.headings],
               "xbrl_facts": encoder.encode(document.xbrl_facts),
               "serialization_policy": "public_node_and_dataclass_fields; private caches/callables excluded; no numeric cell coercion"}
+    if any(s['fields']['detection_method'] == 'toc' for s in sections.values()):
+        # TOC sections expose lazy text but no node membership. Preserve the
+        # maintained extractor's public boundary objects as a separate surface.
+        from edgar.documents.extractors.toc_section_extractor import SECSectionExtractor
+        extractor = SECSectionExtractor(document, form=options.get('form_resolution', {}).get('form'))
+        native['toc_boundaries'] = {}
+        for name, boundary in extractor.section_boundaries.items():
+            entry = encoder.encode(boundary)
+            entry['element_paths'] = {field: element.getroottree().getpath(element)
+                                      for field in ('start_element', 'end_element')
+                                      if (element := getattr(boundary, field)) is not None}
+            native['toc_boundaries'][name] = entry
     return _envelope(raw, "edgartools", ["edgartools", "lxml"], options, native)
 
 

@@ -1,5 +1,7 @@
 # FinSight 文档
 
+执行内核收缩与上游选型见[采用成熟 harness 的边界与资格](architecture/harness_adoption.zh-CN.md)：DS Harness / ACP 为集成候选，当前服务未切换；Codex 无模型工具链与 DS 传输层验证的范围分别记录。
+
 连续问答、底稿、委派、复核与成文的统一入口设计见[研究伙伴产品边界](product/research_partner_workflow.zh-CN.md)与[按需研究运行时第一阶段](architecture/on_demand_research_runtime.zh-CN.md)。A1 交付意图合同与 A2 Java/BFF 准备准入离线回归通过；C研究侧内部统一主入口与按需操作已实现，尚未公开部署。目标是新任务仅保留一个生产调度入口，旧完整图仅作历史运行兼容。
 
 [B/D父子任务工程验收](engineering/delegated_task_acceptance.zh-CN.md)记录内部执行、材料与版本交接、命令迁移及离线证据。[C按需操作工程验收](engineering/on_demand_operation_acceptance.zh-CN.md)记录新路径固定后继退出、版本化操作与内部入口。[E连续研究服务验收](engineering/continuous_work_service_acceptance.zh-CN.md)记录公开接线、唯一新建入口、版本合同、隔离实际服务和浏览器验收范围。隔离环境已接入冻结全库；实际验证发现并修复派发前中断无法核对、连续任务交付配置未传入成文执行器的问题。共享生产部署尚未开放，具体通过项及待验项以该文档为准。先用检索方明确认可的稳定联调版本开展Agent测试，不等待下一轮检索改造全部结束；检索质量限制单列。

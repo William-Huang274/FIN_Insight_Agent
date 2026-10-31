@@ -42,6 +42,33 @@ def _all_bold(element):
     return True
 
 
+def following_after_blank_layout(element):
+    """Cross only demonstrably empty inline/block formatting siblings.
+
+    Anchors, media, tables, visible tails and unknown elements are boundaries.
+    Class-based styling may generate visible content, so is not assumed empty.
+    """
+    following = element.getnext(); skipped = []
+    if normalized(element.tail or ''):
+        return None, skipped
+    allowed = {'div', 'p', 'span', 'font', 'br'}
+    while following is not None:
+        if not isinstance(following.tag, str):
+            break
+        if normalized(''.join(following.itertext())) or normalized(following.tail or ''):
+            break
+        nodes = list(following.iter())
+        if any(not isinstance(n.tag, str) or n.tag not in allowed for n in nodes):
+            break
+        if any(any(k in n.attrib for k in ('id', 'name', 'class', 'role', 'src', 'href'))
+               or re.search(r'background|border|content\s*:|url\(', n.get('style', ''), re.I)
+               for n in nodes):
+            break
+        skipped.append(following.getroottree().getpath(following))
+        following = following.getnext()
+    return following, skipped
+
+
 def source_containers(raw):
     try:
         raw.decode('utf-8-sig')
@@ -111,8 +138,15 @@ def source_containers(raw):
     for row in rows:
         if row['role']=='styled_heading_candidate':
             large=bool(body_size and row['font_size_pt'] and row['font_size_pt']>body_size*1.15)
-            el=elements[row['id']]; following=el.getnext()
-            followed_by_prose=following is not None and len(normalized(''.join(following.itertext())))>180
+            el=elements[row['id']]; following, skipped=following_after_blank_layout(el)
+            followed_by_prose=(following is not None and isinstance(following.tag, str)
+                               and len(normalized(''.join(following.itertext())))>180)
+            if skipped:
+                followed_by_prose=bool(followed_by_prose and following.tag in {'p','div'}
+                    and not following.xpath('.//table|.//img|.//svg|.//video|.//h1|.//h2|.//h3|.//h4|.//h5|.//h6'))
+                row['blank_layout_context']={'skipped_xpaths':skipped,
+                    'following_xpath':root.getpath(following) if following is not None else None,
+                    'followed_by_prose':followed_by_prose}
             row['heading_eligible']=bool(large or row['referenced_anchor'] or (not row['table_id'] and followed_by_prose))
             row['role_basis']='whole_container_bold_referenced_anchor' if row['referenced_anchor'] else 'whole_container_bold_larger_font' if large else 'whole_container_bold_followed_by_prose' if row['heading_eligible'] else 'whole_container_bold_only'
             if row['table_id'] and not large:

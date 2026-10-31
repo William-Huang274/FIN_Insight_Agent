@@ -3,6 +3,35 @@ import sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'/'engineering'))
 from source_structure_contract import attach_source_structure,source_containers,reconcile_chapters
+
+
+def test_heading_context_crosses_only_empty_layout_siblings():
+    raw=('<div><b>Business outlook</b></div><div><font><br/></font></div>'
+         '<p>'+'Ordinary business description. '*12+'</p>').encode()
+    blocks,extra=attach_source_structure([{'kind':'text','text':'Business outlook'}],raw,sec=True)
+    assert blocks[0]['kind']=='heading'
+    title=next(r for r in extra['source_containers'] if r['text']=='Business outlook')
+    assert len(title['blank_layout_context']['skipped_xpaths'])==1
+
+
+def test_visible_or_structural_boundaries_are_not_skipped():
+    for middle in ['<div><img src="slide.png"/></div>','<div>Qualifier</div>',
+                   '<table><tr><td></td></tr></table>','<div id="anchor"><br/></div>',
+                   '<div class="generated"></div>','<div><br/></div>visible tail',
+                   '<!-- source comment -->', '<div><br/></div><!-- source comment -->',
+                   'Visible qualifier<div><br/></div>',
+                   '<hr/>','<div style="border:1px solid"></div>']:
+        raw=('<div><b>Business outlook</b></div>'+middle+'<p>'+'Description. '*30+'</p>').encode()
+        blocks,_=attach_source_structure([{'kind':'text','text':'Business outlook'}],raw,sec=True)
+        assert blocks[0]['kind']=='text',middle
+
+
+def test_empty_layout_does_not_cross_parent_or_promote_table():
+    for ending in ['</section><p>'+'Description. '*30+'</p>',
+                   '<table><tr><td>'+'Value '*50+'</td></tr></table></section>']:
+        raw=('<section><div><b>Business outlook</b></div><div><br/></div>'+ending).encode()
+        blocks,_=attach_source_structure([{'kind':'text','text':'Business outlook'}],raw,sec=True)
+        assert blocks[0]['kind']=='text'
 from probe_document_parsers import parse
 from validate_source_structure_audit import validate
 

@@ -54,3 +54,20 @@ test('lost stream keeps original chunks and unresolved receipt; no silent replay
     assert.equal(receipts.at(-1).body.chunks[0].text, 'saved fragment')
   } finally { server.closeAllConnections(); server.close(); delete process.env.FIN_TEST_DISPATCH_TOKEN }
 })
+
+test('host missing-usage stop prevents another call even after an upstream success', async () => {
+  const server = createServer(async (req, res) => {
+    for await (const _ of req) { /* consume */ }
+    res.end(JSON.stringify(req.url === '/calls/reserve' ? {status:'reserved'} : {status:'saved', stopRequired:true}))
+  })
+  server.listen(0, '127.0.0.1'); await once(server, 'listening')
+  process.env.FIN_TEST_DISPATCH_TOKEN = 'synthetic-only'
+  try {
+    let stream, forwarded = 0
+    apply({on(_, handler) {stream = handler}}, {endpoint:`http://127.0.0.1:${server.address().port}`,tokenEnv:'FIN_TEST_DISPATCH_TOKEN'})
+    const success = async function* () {forwarded++; yield {type:'finish',reason:{kind:'stop'}}}
+    await assert.rejects(async () => {for await (const _ of stream({}, success)) { /* consume */ }}, /host saved/)
+    await assert.rejects(async () => {for await (const _ of stream({}, success)) { /* consume */ }}, /stopped/)
+    assert.equal(forwarded, 1)
+  } finally { server.closeAllConnections(); server.close(); delete process.env.FIN_TEST_DISPATCH_TOKEN }
+})

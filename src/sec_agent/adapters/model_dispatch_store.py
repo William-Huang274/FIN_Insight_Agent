@@ -91,7 +91,8 @@ class ModelDispatchStore:
             totals = self._totals(db, owner, budget)
             return {**row, **totals, 'available_micros': row['limit_micros'] - totals['known'] - totals['held']}
 
-    def reserve(self, owner, budget, key, fingerprint, reserved, basis, *, currency, delivery=False):
+    def reserve(self, owner, budget, key, fingerprint, reserved, basis, *, currency, delivery=False,
+                execution_scope=None):
         amount(reserved, positive=True)
         if not key or not fingerprint or not isinstance(basis, dict) or not basis:
             raise ValueError('dispatch_binding_missing')
@@ -108,6 +109,16 @@ class ModelDispatchStore:
                     raise DispatchBlocked('prior_dispatch_unresolved_no_retry')
                 return prior
             totals = self._totals(db, owner, budget)
+            if execution_scope is not None:
+                if basis.get('harness_execution_scope') != execution_scope:
+                    raise DispatchBlocked('dispatch_execution_scope_mismatch')
+                blocked = db.execute('''SELECT 1 FROM fin_model_dispatch
+                    WHERE owner_id=%s AND budget_id=%s AND basis->>'harness_execution_scope'=%s
+                    AND (status != 'received' OR actual_micros IS NULL
+                         OR response->>'stop_required'='true') LIMIT 1''',
+                    (owner, budget, execution_scope)).fetchone()
+                if blocked:
+                    raise DispatchBlocked('harness_execution_has_unresolved_or_failed_call')
             floor = 0 if delivery else envelope['delivery_floor_micros']
             if totals['known'] + totals['held'] + reserved + floor > envelope['limit_micros']:
                 raise DispatchBlocked('research_budget_exhausted_delivery_reserve_preserved')
@@ -117,6 +128,14 @@ class ModelDispatchStore:
                 VALUES (%s,%s,%s,%s,%s,%s,'dispatched',%s)''',
                 (owner, budget, key, call_id, fingerprint, reserved, Jsonb(basis)))
             return {'status': 'dispatched', 'call_id': call_id}
+
+    def lookup(self, owner, budget, key):
+        """Read an owned request for idempotent host acknowledgment, never resend it."""
+        with self.connection() as db:
+            self._budget(db, owner, budget)
+            return db.execute('''SELECT * FROM fin_model_dispatch
+                WHERE owner_id=%s AND budget_id=%s AND call_key=%s''',
+                (owner, budget, key)).fetchone()
 
     def received(self, owner, budget, key, response, actual):
         if actual is not None:

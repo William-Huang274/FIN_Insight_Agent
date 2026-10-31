@@ -45,8 +45,12 @@ export function apply(ctx, config) {
         if (!success) stopped = true
         // Preserve the original terminal, including max-tokens, without turning
         // a saved response into successful research. Host persists before yield.
-        await post('/calls/settle', { requestId, chunks, terminal: reason, stopRequired: !success })
+        const receipt = await post('/calls/settle', { requestId, chunks, terminal: reason, stopRequired: !success })
+        if (receipt.stopRequired) stopped = true
         settled = true
+        if (receipt.stopRequired && success) {
+          throw new Error('FIN host saved the response but stopped execution; inspect its durable receipt')
+        }
         yield chunk
       }
       if (!settled) throw new Error('FIN provider stream ended without a terminal result')

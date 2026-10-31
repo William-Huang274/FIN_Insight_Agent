@@ -119,6 +119,14 @@ python -m pytest -q tests/test_working_memory.py tests/test_source_bound_quantit
 
 ## 7. 进入正式替换前的剩余资格
 
+2026-11-01 更新：已增加 `harness_dispatch_host` 内部 HTTP 宿主，复用现有
+PostgreSQL 预算事务，接收维护中的 Java 运行准入 callable，并保留原始回执与
+未知费用占用。单执行的失败阻断进入持久账本，不能靠重启清掉；正常连续调用
+没有两次摘要或固定几轮的限制。实际部署仍需完成提供商原始 usage 绑定及
+Java/BFF 生命周期组合，不能将 HTTP 夹具通过当作已经接上真实授权和工具。
+相关 Python 回归 38 项、Node 边界 3 项通过，真实 PostgreSQL 和部署组合仍待
+验证。未切换服务、未发起付费模型请求，NVIDIA 停点继续保留。
+
 1. 锁定 DS 可部署发行版，运行原生 ACP：同一工具链、进程重启、主动取消、重复命令及异常退出；新组件在隔离环境运行，不占用当前服务。
 2. 用供应商协议夹具验证 DS/Qwen 请求、thinking、工具、usage、失败与超时；验证预算覆盖所有请求。无模型测试不等于供应商实测。
 3. 接入真实受权 MCP、现有 Java/BFF 命令和成果接口；复用现有检索发布，校验撤权与版本、导出。用工具权限控制访问，不将 shell 全开作为接入捷径。

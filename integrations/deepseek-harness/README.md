@@ -26,12 +26,33 @@ Reasoning is part of output. ACP used/size is context occupancy, not billing.
 The raw wire boundary still needs to be connected to the actual provider route;
 upstream normalized defaults must not turn absent provider usage into zero cost.
 
-Current qualification uses an authenticated loopback fixture for this contract.
-The production HTTP handler, existing PostgreSQL dispatch store and Java/BFF run
-admission are **not yet wired**. Do not enable this plugin against a stub host in
+`harness_dispatch_host.HarnessDispatchHost` now implements this contract with a
+FastAPI router and the existing `ModelDispatchStore`. Composition must supply a
+Java **run-admission** authority, server-owned owner/budget binding, a dated price,
+validated `TokenBudgetBasis`, private receipt directory and a trusted raw-wire
+usage observer. The router has no browser identity or model-controlled budget.
+It is not yet mounted in production. Provider-wire routing and Java/BFF lifecycle
+composition remain unqualified; do not enable it against stub grants or usage in
 a paid run. Ordinary successful calls must not encounter a tiny fixed call cap;
 continuous usage/progress monitoring belongs to the host. Native model capacity,
 output capacity, financial authorization and cancellation still apply.
+
+Request/response originals are fsynced before acknowledgment; the PostgreSQL row
+holds a content-addressed reference, avoiding its 4 MB inline response limit.
+The normal budget row lock also serializes unresolved requests within one harness
+execution, while other authorized children can share the budget. An unknown cost
+retains its reservation; a known-cost failed output retains its actual charge.
+Both stop that execution durably across host restart. A new authorized execution
+does not erase old financial holds. Duplicate settlement can acknowledge exactly
+the same saved response; duplicate reserve cannot authorize a provider resend.
+Revocation stops the next dispatch but cannot prevent saving an in-flight receipt.
+
+The host can stop an upstream success when its wire usage is missing or its wire
+terminal indicates truncation. The plugin saves that response then raises before
+releasing a successful terminal; it must not report the task complete. No model
+conclusion is rewritten. Unit/HTTP protocol tests use synthetic grants and an
+in-memory store; real PostgreSQL coverage is opt-in in
+`tests/integration/test_model_dispatch_budget.py`, not a claimed live acceptance.
 
 Run the opt-in process probe with a new evidence directory and a fixed binary:
 

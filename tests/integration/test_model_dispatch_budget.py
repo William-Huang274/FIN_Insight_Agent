@@ -13,6 +13,31 @@ def db_code(native, body):
     return native.compose('exec', '-T', 'api', 'python', '-c', prelude + body)
 
 
+def test_harness_execution_scope_durable_stop_and_independent_child(native):
+    output = db_code(native, '''
+s.create_budget('alice','harness-scopes','USD',10000,0)
+def reserve(key,scope):
+    return s.reserve('alice','harness-scopes',key,key,100,
+        {'harness_execution_scope':scope},currency='USD',execution_scope=scope)
+reserve('a1','run-a')
+assert s.lookup('alice','harness-scopes','a1')['status']=='dispatched'
+try: reserve('a2','run-a')
+except DispatchBlocked: pass
+else: raise AssertionError('inflight predecessor allowed')
+reserve('b1','run-b')
+s.received('alice','harness-scopes','b1',{'stop_required':False},10)
+reserve('b2','run-b')
+s.received('alice','harness-scopes','b2',{'stop_required':False},10)
+s.received('alice','harness-scopes','a1',{'stop_required':True},10)
+try: reserve('a3','run-a')
+except DispatchBlocked: pass
+else: raise AssertionError('failed predecessor allowed')
+assert s.lookup('alice','harness-scopes','b1')['actual_micros']==10
+print(json.dumps(s.snapshot('alice','harness-scopes')))
+''')
+    native.save('harness_execution_scopes', json.loads(output))
+
+
 def test_postgres_competing_children_settlement_and_delivery_floor(native):
     output = db_code(native, '''
 from concurrent.futures import ThreadPoolExecutor

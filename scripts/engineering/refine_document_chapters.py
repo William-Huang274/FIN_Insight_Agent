@@ -78,6 +78,33 @@ def compact_title(text):
     return ''.join(c.casefold() for c in text if c.isalnum())
 
 
+def has_native_signature_section(sections):
+    identifier=re.compile(r'^(?:part_[ivx]+_)?signatures?$',re.I)
+    title=re.compile(r'^(?:Part\s+[IVX]+\s*[-–:]\s*)?Signatures?$',re.I)
+    return any(identifier.fullmatch(str(key)) or identifier.fullmatch(s.get('title','').strip())
+               or title.fullmatch(s.get('title','').strip()) for key,s in sections.items())
+
+
+def signature_attestation(blocks, index, sources):
+    """Use the next complete original paragraph, never remote matching text."""
+    for following in blocks[index+1:]:
+        text=normalized(following['text'])
+        if not text:continue
+        source=sources.get(following.get('source_container_id'))
+        if (following['kind']!='text' or not source
+                or following.get('source_location_status')!='unique_complete_container'
+                or text!=source['text'] or source.get('excluded_navigation') or source.get('table_id')):
+            return None
+        if (re.match(r'^Pursuant to the requirements of\b',text,re.I)
+                and re.search(r'\bSecurities Exchange Act of 1934\b',text,re.I)
+                and re.search(r'\bregistrant\b',text,re.I)
+                and re.search(r'\bcaused this report to be signed\b',text,re.I)
+                and re.search(r'\bduly authorized\b',text,re.I)):
+            return source['id']
+        return None
+    return None
+
+
 def table_heading(block,source):
     if not source or source.get('internal_link_only') or source.get('excluded_navigation'):return None
     rows=[]
@@ -105,15 +132,29 @@ def refine(document):
     sec=d['route']=='edgartools'
     native_titles=[compact_title(s['title']) for s in d.get('parser_sections',{}).values()
                    if re.match(r'^Item\s+\d',s.get('title',''),re.I)]
+    native_signatures=has_native_signature_section(d.get('parser_sections',{}))
     multi_item=re.compile(r'^Items?\s+\d+[A-Z]?(?:\.\d+)?(?:\s*(?:,|&|and)\s*\d+[A-Z]?(?:\.\d+)?)+\.?$',re.I)
     repeats=Counter(normalized(b['text']) for b in blocks if b['kind']=='heading')
     changes=[]
     for i,b in enumerate(blocks):
-        for key in ('chapter_ids','chapter_blocks','chapter_occurrence_of','embedded_chapter_ids'):
+        for key in ('chapter_ids','chapter_blocks','chapter_occurrence_of','embedded_chapter_ids',
+                    'sec_section_boundary','sec_section_boundary_basis'):
             b.pop(key,None)
         if 'parser_level' in b:b['level']=b.pop('parser_level')
         source=by_id.get(b.get('source_container_id'))
         if not sec:continue
+        if (b['kind']=='heading' and source
+                and not source.get('excluded_navigation') and not source.get('table_id')
+                and b.get('source_location_status')=='unique_complete_container'
+                and re.fullmatch(r'SIGNATURES?', normalized(b['text']), re.I)
+                and normalized(b['text'])==source['text']):
+            attestation=signature_attestation(blocks,i,by_id) if not native_signatures else None
+            if native_signatures or attestation:
+                basis=('native_signature_section_and_complete_original_container' if native_signatures
+                       else 'complete_original_signature_heading_and_attestation')
+                b.update(sec_section_boundary='signatures',sec_section_boundary_basis=basis)
+                changes.append({'block':i,'basis':basis,'source_container_id':source['id'],
+                                'attestation_source_container_id':attestation})
         if b['kind']=='heading' and multi_item.fullmatch(normalized(b['text'])) and repeats[normalized(b['text'])]>1:
             b.update(heading_usage='navigation_reference',heading_reference_role='repeated_multi_item_running_label')
             changes.append({'block':i,'basis':'repeated_multi_item_running_label'})

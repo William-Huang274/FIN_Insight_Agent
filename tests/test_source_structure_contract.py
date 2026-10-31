@@ -123,6 +123,31 @@ def test_8k_decimal_items_remain_distinct():
     assert len(reconcile_chapters(blocks,True))==3
 
 
+def test_root_item_bounds_styled_subsections_even_with_larger_fonts():
+    labels=['Item 5.02 Officers','(b)','Details','(c)','Item 9.01 Exhibits','Exhibit description']
+    blocks=[{'kind':'heading','text':text,'level':1,'source_font_size_pt':size}
+            for text,size in zip(labels,[10,12,9,12,10,20])]
+    tree=reconcile_chapters(blocks,True)
+    assert [n['level'] for n in tree]==[1,2,3,2,1,2]
+    assert [n['parent_id'] for n in tree]==[None,'chapter:0','chapter:1','chapter:0',None,'chapter:4']
+
+
+def test_part_scope_and_trusted_signature_boundary_are_distinct():
+    blocks=[{'kind':'heading','text':t,'level':1,'source_font_size_pt':10}
+            for t in ['PART I','Part introduction','Item 1. Statements','Accounting policies','SIGNATURES','Officer']]
+    blocks[4]['sec_section_boundary']='signatures'
+    tree=reconcile_chapters(blocks,True)
+    assert [n['level'] for n in tree[:4]]==[1,2,2,3]
+    assert tree[4]['parent_id'] is None and tree[4]['basis']=='sec_signature_boundary'
+    assert 'chapter:2' not in blocks[5]['chapter_ids']
+
+
+def test_non_sec_font_and_explicit_level_behavior_is_unchanged():
+    blocks=[{'kind':'heading','text':text,'level':1,'source_font_size_pt':10}
+            for text in ['Item 1. Some article','Another article']]
+    assert all(n['parent_id'] is None for n in reconcile_chapters(blocks,False))
+
+
 def test_native_paragraph_keeps_word_boundaries_and_container_role(monkeypatch):
     from types import SimpleNamespace as NS,ModuleType
     def leaf(text):return NS(type=NS(name='TEXT'),children=[],text=lambda:text,path='TEXT',metadata={})

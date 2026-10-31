@@ -107,3 +107,70 @@ def test_combined_running_label_is_not_selected_over_complete_original_title():
         'source_containers':[],'issues':[]}
     result=refine(doc)
     assert result['chapter_tree'][1]['title']=='Item 3. Risks'
+
+
+def test_signature_boundary_needs_native_section_and_unique_original_container():
+    import copy
+    doc={'route':'edgartools','blocks':[
+        {'kind':'heading','text':'Item 5.02 Officers','level':1},
+        {'kind':'heading','text':'SIGNATURES','level':1,'source_container_id':'p',
+         'source_location_status':'unique_complete_container'}],
+        'source_containers':[{'id':'p','role':'styled_heading_candidate','text':'SIGNATURES'}],
+        'parser_sections':{'signatures':{'title':'Signatures'}},'issues':[]}
+    result=refine(copy.deepcopy(doc))
+    assert result['chapter_tree'][1]['basis']=='sec_signature_boundary'
+    assert result['chapter_tree'][1]['parent_id'] is None
+    for change in ['no_native','ambiguous','navigation','table']:
+        other=copy.deepcopy(doc)
+        if change=='no_native':other['parser_sections']={}
+        elif change=='ambiguous':other['blocks'][1]['source_location_status']='ambiguous'
+        elif change=='navigation':other['source_containers'][0]['excluded_navigation']=True
+        else:other['source_containers'][0]['table_id']='table'
+        result=refine(other)
+        assert result['chapter_tree'][1]['basis']!='sec_signature_boundary'
+
+
+def test_original_attestation_can_support_signature_without_native_section():
+    import copy
+    text=('Pursuant to the requirements of the Securities Exchange Act of 1934, '
+          'the Registrant has duly caused this report to be signed on its behalf '
+          'by the undersigned hereunto duly authorized.')
+    doc={'route':'edgartools','issues':[],'blocks':[
+        {'kind':'heading','text':'Item 9.01 Exhibits','level':1},
+        {'kind':'heading','text':'SIGNATURES','level':1,'source_container_id':'heading',
+         'source_location_status':'unique_complete_container'},
+        {'kind':'text','text':'\n'},
+        {'kind':'text','text':text,'source_container_id':'body','source_location_status':'unique_complete_container'}],
+        'source_containers':[{'id':'heading','role':'styled_heading_candidate','text':'SIGNATURES'},
+                             {'id':'body','role':'paragraph','text':text}]}
+    result=refine(copy.deepcopy(doc))
+    assert result['chapter_tree'][1]['basis']=='sec_signature_boundary'
+    assert result['blocks'][3]['chapter_ids']==['chapter:1']
+    for change in ['intervening','ambiguous','source_mismatch','quoted']:
+        other=copy.deepcopy(doc)
+        other['blocks'][1]['sec_section_boundary']='signatures'  # stale derived flags must not be trusted
+        if change=='intervening':other['blocks'][2]['text']='Unrelated intervening paragraph.'
+        elif change=='ambiguous':other['blocks'][3]['source_location_status']='ambiguous'
+        elif change=='source_mismatch':other['source_containers'][1]['text']='Different original.'
+        else:
+            other['blocks'][3]['text']='Quoted statement: '+text
+            other['source_containers'][1]['text']='Quoted statement: '+text
+        result=refine(other)
+        assert result['chapter_tree'][1]['basis']!='sec_signature_boundary'
+
+
+def test_native_signature_section_identifiers_and_statutory_prefixes():
+    from refine_document_chapters import has_native_signature_section, signature_attestation
+    for sections in [{'part_ii_signatures':{'title':'part_ii_signatures'}},
+                     {'part_iv_signatures':{'title':'part_iv_signatures'}},
+                     {'section_20':{'title':'Part IV - Signatures'}}]:
+        assert has_native_signature_section(sections)
+    for sections in [{'note_signatures':{'title':'Note about signatures'}},
+                     {'item_2':{'title':'Electronic signatures policy'}}]:
+        assert not has_native_signature_section(sections)
+    text=('Pursuant to the requirements of Section 13 or 15(d) of the Securities Exchange Act of 1934, '
+          'the registrant has duly caused this report to be signed on its behalf by the undersigned, '
+          'thereunto duly authorized.')
+    blocks=[{'kind':'heading','text':'SIGNATURES'},
+            {'kind':'text','text':text,'source_container_id':'original','source_location_status':'unique_complete_container'}]
+    assert signature_attestation(blocks,0,{'original':{'id':'original','text':text}})=='original'

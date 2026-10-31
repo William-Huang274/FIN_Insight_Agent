@@ -253,19 +253,27 @@ Repeated running labels restore their existing path, rather than adding nodes.
         part = PART.match(text) if sec else None
         item = ITEM.match(text) if sec else None
         key = None
-        if part:
+        signature_boundary = sec and block.get('sec_section_boundary') == 'signatures'
+        if signature_boundary:
+            active_part = None; stack = []; level = 1
+        elif part:
             active_part = part[1].upper(); level = 1; key = ('part', active_part)
         elif item:
             level = 2 if active_part else 1; key = ('item', active_part, item[1].upper())
         elif sec and isinstance(level, int):
+            formal = next((n for n in reversed(stack) if n['basis']=='sec_part_item_label'), None)
+            minimum_level = formal['level'] + 1 if formal else 1
             if block.get('source_font_size_pt'):
-                size=block['source_font_size_pt'];level=3 if active_part else 1
+                size=block['source_font_size_pt'];level=minimum_level
                 for ancestor in reversed(stack):
+                    # Font heuristics operate inside the current formal section.
+                    # In 8-K filings an Item can be a root without any Part.
+                    if ancestor is formal:break
                     other=ancestor.get('font_size_pt')
                     if ancestor['basis']=='sec_part_item_label' or not other:continue
                     if other==size:level=ancestor['level'];break
                     if other>size:level=ancestor['level']+1;break
-            elif active_part:level = max(3, level)
+            level=max(minimum_level,level)
         if key in known:
             node = known[key]; block['chapter_occurrence_of'] = node['id']
             node['occurrence_blocks'].append(index)
@@ -285,7 +293,7 @@ Repeated running labels restore their existing path, rather than adding nodes.
                     'parent_id': stack[-1]['id'] if stack else None,
                     'source_container_id': block.get('source_container_id'),
                     'font_size_pt':block.get('source_font_size_pt'),
-                    'basis': 'sec_part_item_label' if key else block.get('heading_basis', 'parser_heading'),
+                    'basis': 'sec_signature_boundary' if signature_boundary else 'sec_part_item_label' if key else block.get('heading_basis', 'parser_heading'),
                     'occurrence_blocks': [index]}
             nodes.append(node); by_id[node['id']] = node
             if key: known[key] = node

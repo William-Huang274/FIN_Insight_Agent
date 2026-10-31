@@ -139,6 +139,19 @@ def _load_release(root, organization_id, release_id, expected=None, *, verified_
         raise ValueError('organization_index_release_unavailable') from None
 
 
+from functools import lru_cache
+
+
+@lru_cache(maxsize=2)
+def process_release_cache(root, organization_id, release_id):
+    """Bounded process-local immutable release metadata; never access grants.
+
+    Each caller still supplies and validates its frozen contract. File signatures
+    are checked by load/check on every use; concurrent loads share the same lock.
+    """
+    return ReleaseLoadCache()
+
+
 class ReleaseLoadCache:
     """One verified host-owned release, not an authorization cache.
 
@@ -213,7 +226,11 @@ class ReleaseLoadCache:
             with closing(sqlite3.connect(Path(root)/'verified-releases.sqlite', timeout=10)) as db, db:
                 db.execute('CREATE TABLE IF NOT EXISTS verified(key TEXT PRIMARY KEY)')
                 verified = db.execute('SELECT 1 FROM verified WHERE key=?', (receipt_key,)).fetchone()
-            value = _load_release(root, organization_id, release_id, expected, verified_files=bool(verified))
+            from .preparation_observability import preparation_span
+            with preparation_span('release_load') as timing:
+                timing['durable_proof_hit'] = bool(verified)
+                value = _load_release(root, organization_id, release_id, expected, verified_files=bool(verified))
+                timing['records'] = len(value[1]['records'])
             if self._signature(directory) != before:
                 raise ValueError('organization_index_release_changed_during_load')
             if not verified:

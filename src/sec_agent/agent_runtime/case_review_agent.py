@@ -586,15 +586,16 @@ class CaseModelAudit(AgentMiddleware):
         return [*([ReviewExecutionBoundary()] if self.review_execution_control else []),
             *([self.context_summary] if self.context_summary else []), *self.extra_middlewares, self]
 
-    def model_runnable(self, model):
+    def model_runnable(self, model, *, tools=()):
         """The native summarizer uses this same fee/error/private-audit hook."""
         async def invoke(value, config):
             messages = model._convert_input(value).to_messages()
             async def handler(request):
-                raw = await request.model.ainvoke(request.messages, config=config)
+                raw = await request.model.ainvoke(request.messages, config=config,
+                    **({'tools': [convert_to_openai_tool(t) for t in tools]} if tools else {}))
                 return ModelResponse(result=[raw])
             result = await self.awrap_model_call(ModelRequest(model=model, messages=messages,
-                tools=[], state={"messages": messages}), handler)
+                tools=list(tools), state={"messages": messages}), handler)
             raw = result.result[-1]
             if not raw.text.strip() or raw.tool_calls or raw.invalid_tool_calls:
                 raise ValueError("context_summary_empty_or_tool_response")

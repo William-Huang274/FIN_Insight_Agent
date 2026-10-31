@@ -1,6 +1,6 @@
 """Run-scoped retrieval readiness; no permission leases or implicit latest release.
 
-Initial preparation precedes model/tool access. Source-store changes schedule one
+Preparation occurs when a retrieval tool first needs the fixed release. Source-store changes schedule one
 bounded background refresh and fail closed until its complete generation is ready.
 Each stage keeps its own observations while reusing verified retrieval state.
 """
@@ -27,11 +27,17 @@ class OrganizationRetrievalLifecycle:
         self._cancel = Event()
 
     def _build(self):
-        self.reader._after(self.grant)
-        navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url,
-            retrieval_root=self.retrieval_root, preparation_cancel=self._cancel.is_set)
-        navigation.warm_release()
-        self.reader._after(self.grant)
+        from .preparation_observability import preparation_span
+        with preparation_span('retrieval_prepare') as timing:
+            self.reader._after(self.grant)
+            navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url,
+                retrieval_root=self.retrieval_root, preparation_cancel=self._cancel.is_set)
+            navigation.warm_release()
+            self.reader._after(self.grant)
+            candidate = navigation._candidate_index
+            if candidate is not None:
+                timing.update(original_reads=candidate.original_reads, proof_hits=candidate.verification_hits,
+                              nodes=len(candidate.rows))
         return navigation
 
     def prepare(self, *, retry_failed=False):
@@ -120,7 +126,10 @@ class OrganizationRetrievalLifecycle:
         return self.status()
 
     def navigation(self):
-        self.prepare()
+        self.reader._after(self.grant)
+        with self._lock:
+            if self._state in {'failed', 'closed'}:
+                raise OrganizationExecutionUnavailable('organization_retrieval_' + self._state)
         # Stage-local observations only; access() lends the run-owned retriever.
         navigation = OrganizationSourceNavigation(self.reader, workbench_url=self.workbench_url)
         navigation._retrieval_lifecycle = self
@@ -128,6 +137,9 @@ class OrganizationRetrievalLifecycle:
 
     @contextmanager
     def access(self, navigation):
+        # Summary, saved-result reading and local calculation restoration do not
+        # require a full retrieval generation. An actual query prepares it here.
+        self.prepare()
         with self._lock:
             self._check_ready()
             if navigation.reader is not self.reader or navigation.workbench_url != self.workbench_url.rstrip('/'):

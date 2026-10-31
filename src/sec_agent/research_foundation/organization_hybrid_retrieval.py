@@ -216,6 +216,9 @@ class OrganizationHybridRetrieval:
         """Explicit warm-up and query entry share one verified release lifetime."""
         from .organization_index_release import load_release
         pinned = manifest['retrieval_index']
+        from .organization_index_release import process_release_cache
+        self.release_cache = process_release_cache(str(self.root.resolve()),
+            manifest['organization_id'], pinned['release_id'])
         try:
             return load_release(self.root, manifest['organization_id'], pinned['release_id'], pinned,
                                 cache=self.release_cache)

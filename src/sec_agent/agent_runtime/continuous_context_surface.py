@@ -60,11 +60,35 @@ def _archive_navigation(message, body):
 def _intern_provenance(messages):
     """Exact, in-request references; never merge source periods or revisions."""
     result, known = [], {}
-    keys = {"organization_source", "original_source", "retrieval", "shared_retrieval", "shared_organization_source"}
+    from collections import Counter
+    keys = {"organization_source", "original_source", "retrieval", "shared_retrieval",
+            "shared_organization_source", "source_provenance", "source_locator"}
+    notices = {"notice", "authority_note"}
+    counts = Counter()
+
+    def eligible(key, item):
+        return ((key in keys and isinstance(item, dict) and len(_json(item)) >= 256)
+                or (key in notices and isinstance(item, str) and len(item) >= 128))
+
+    def envelope(body):
+        return body is not None and (("source_snapshot_sha256" in body and isinstance(body.get("items"), list))
+            or ("calculation_id" in body and isinstance(body.get("operands"), dict)))
+
+    def count(value):
+        if isinstance(value, list):
+            for item in value: count(item)
+        elif isinstance(value, dict):
+            for key, item in value.items():
+                if eligible(key, item): counts[_json(item)] += 1
+                count(item)
+
+    for message in messages:
+        body = _body(message)
+        if envelope(body): count(body)
     for message in messages:
         body = _body(message)
         # Restrict to known source envelopes, not arbitrary user/tool JSON.
-        if body is None or not ("source_snapshot_sha256" in body and isinstance(body.get("items"), list)):
+        if not envelope(body):
             result.append(message)
             continue
         definitions = {}
@@ -77,7 +101,7 @@ def _intern_provenance(messages):
             row = {}
             for key, item in value.items():
                 serialized = _json(item)
-                if key in keys and isinstance(item, dict) and len(serialized) >= 512:
+                if eligible(key, item) and counts[serialized] > 1:
                     digest = hashlib.sha256(serialized.encode()).hexdigest()
                     ref = "provenance:" + digest
                     if ref not in known:
@@ -93,7 +117,7 @@ def _intern_provenance(messages):
         view = visit(body)
         if definitions:
             view["context_provenance"] = definitions
-        result.append(message.model_copy(update={"content": _json(view)}))
+        result.append(message.model_copy(update={"content": _json(view)}) if view != body else message)
     return result
 
 

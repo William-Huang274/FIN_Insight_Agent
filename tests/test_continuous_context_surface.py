@@ -183,10 +183,12 @@ def test_continuous_summary_receives_task_and_correction_without_changing_cutoff
         update=await middleware.abefore_model({'messages':rows},None)
         assert update and 'request_summary' in update
         prompt=calls[0]
-        assert rows[0].content.replace('"','\\"') in prompt
-        assert rows[1].content in prompt
-        assert '## SESSION INTENT' not in prompt
-        assert 'HISTORICAL PREFIX TO SUMMARIZE:' in prompt
+        assert prompt[0] == rows[0]
+        assert rows[1].content in prompt[-1].content
+        assert '## SESSION INTENT' not in str(prompt)
+        assert 'Create a concise continuation checkpoint' in prompt[-1].content
+        assert any(isinstance(m, ToolMessage) for m in prompt)
+        assert 'opaque-' not in str(prompt)
         assert middleware.native.summary_prompt==native_prompt
         assert rows==original
         view=middleware.projected_messages({'messages':rows,**update})
@@ -194,5 +196,5 @@ def test_continuous_summary_receives_task_and_correction_without_changing_cutoff
         # A different request using the same middleware must not inherit task data.
         other=fixture();other[0].content='Independent second task'
         await middleware.abefore_model({'messages':other},None)
-        assert 'Independent second task' in calls[1] and 'Original task with literal' not in calls[1]
+        assert 'Independent second task' in str(calls[1]) and 'Original task with literal' not in str(calls[1])
     asyncio.run(run())

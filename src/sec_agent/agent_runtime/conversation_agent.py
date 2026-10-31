@@ -80,6 +80,10 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
         navigation = [ContextOrientationMiddleware()]
     from .model_context import RequestSummaryState
     from .native_tool_results import NativeToolResultMiddleware
+    from .model_context import RequestSummaryMiddleware
+    for item in middleware:
+        if isinstance(item, RequestSummaryMiddleware):
+            item.bind_context(prompt, [g.tool for g in grants])
     return create_agent(model=model, tools=[g.tool for g in grants], system_prompt=prompt,
         state_schema=state_schema or RequestSummaryState,
         checkpointer=checkpointer, middleware=[

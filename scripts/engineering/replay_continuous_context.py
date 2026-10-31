@@ -39,7 +39,8 @@ async def checkpoint_replay(record, keep):
     canonical=[m for m in original if m.type!="system"]
     before=prefix_fingerprint(canonical); prompts=[]
     def summarize(value):
-        prompts.append(len(value))
+        prompts.append(len(value) if isinstance(value,str) else len(encoded([
+            m.model_dump(mode='json',exclude={'artifact','response_metadata','usage_metadata'}) for m in value])))
         # Deliberately NOT financial text. No quality/accuracy claim or future
         # model input may be derived from this fixture.
         return AIMessage(content="OFFLINE LIFECYCLE STUB; NOT A RESEARCH SUMMARY. " * 50)

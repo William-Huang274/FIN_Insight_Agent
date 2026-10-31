@@ -78,8 +78,10 @@ class VerifiedCandidateIndex:
                            manifest['retrieval_index']['release_id']])
         with FileLock(str(self.hybrid.root/f'.source-verify-{lock_key}.lock'), timeout=60), PendingSourceReceipts() as pending:
             from contextlib import ExitStack
-            with ExitStack() as resources:
+            from .preparation_observability import preparation_span
+            with ExitStack() as resources, preparation_span('candidate_prepare') as timing:
                 self._prepare(before, manifest, epoch, pending, resources)
+                timing.update(proof_hits=self.verification_hits, original_reads=self.original_reads, nodes=len(self.rows))
 
     def _prepare(self, before, manifest, epoch, pending, resources):
         self._check_cancelled()
@@ -112,9 +114,12 @@ class VerifiedCandidateIndex:
         by_space = defaultdict(set)
         for item in allowed.values():
             by_space[item['ref']['project_id']].add(item['ref']['version_id'])
-        current_versions = {space: self.reader.workspace.document_version_batch(
-            'organization:'+manifest['organization_id'], space, sorted(ids))
-            for space, ids in by_space.items()}
+        from .preparation_observability import preparation_span
+        with preparation_span('source_version_batch') as timing:
+            current_versions = {space: self.reader.workspace.document_version_batch(
+                'organization:'+manifest['organization_id'], space, sorted(ids))
+                for space, ids in by_space.items()}
+            timing['sources'] = sum(len(ids) for ids in by_space.values())
         from .prepared_source_metadata import prepare as prepare_metadata, restore as restore_metadata
         proof_rows = resources.enter_context(closing(proofs.iter_get(
             proofs.key(revision, item, manifest) for item in allowed.values())))

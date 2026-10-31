@@ -124,7 +124,9 @@ async def organization_graph(config, native, thread):
     kind = active[0]
     continuing, reporting = kind == 'continuation', kind == 'report_action'
     authority = command_types[kind](resources, run_id=run_id, context=ids['finsight_organization_' + kind])
-    grant = await admit(native, config, thread, authority)
+    from sec_agent.research_foundation.preparation_observability import preparation_span
+    with preparation_span('native_admission'):
+        grant = await admit(native, config, thread, authority)
     from .organization_native_contract import on_demand
     continuous = on_demand(grant)
     if continuous and os.getenv('FINSIGHT_ON_DEMAND_ENABLED') != '1':
@@ -148,9 +150,12 @@ async def organization_graph(config, native, thread):
         workbench_url=settings['workbench_url'],
         retrieval_root=os.getenv('FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT'))
     try:
-        # Full retrieval preparation is admission work, before model/tool access.
-        # The same factory owns verified state across lead/expert/review stages.
-        await asyncio.to_thread(organization.prepare_retrieval)
+        # Admit the current task now; retrieve/verify a release only if a tool
+        # actually uses it. Model access and saved-source restoration retain
+        # their own current authorization checks.
+        if not continuous:
+            # Frozen legacy workflows retain their original admission contract.
+            await asyncio.to_thread(organization.prepare_retrieval)
         check()
         public, private = host.session_audit_sinks(Path(settings['audit_root']) / thread_id / run_id)
         budget = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,

@@ -12,15 +12,18 @@
     },
     "trigger_tokens": 32000,
     "keep_tokens": 12000,
+    "segment_tokens": 32000,
+    "segment_characters": 120000,
+    "target_tokens": 2000,
     "budget": {
       "node_role": "specialist",
       "node_purpose": "Optional pressure-based working-memory checkpoint over the native conversation journal; at most two accepted summaries per thread under the existing audited call and cost scope",
-      "input_scale": "Exact source views and calculation receipts in an older pair-safe prefix after consumed navigation is indexed. Offline 16-request replay measured up to 294491 characters for the 12000-token tail before SDK envelope; ceiling 360000 characters. Research request/tool limits remain separately enforced.",
+      "input_scale": "Structured pair-safe segments target at most 32000 estimated tokens and 120000 message characters, including stable system/task and final checkpoint instruction; full SDK ceiling remains independently enforced. Oversized indivisible batches stop without truncating evidence. At most two accepted segments under the existing thread allowance.",
       "required_outputs": [
         "Current research question, user corrections, completed and pending work without adding a research conclusion",
         "Important evidence, company, period, unit, calculation identity and unresolved disagreements; exact originals remain in native checkpoint readers"
       ],
-      "schema_burden": "Plain working-memory summary, not a report or an extra planning form",
+      "schema_burden": "Plain continuation checkpoint, approximately 2000 output tokens as a soft target, not a report or planning form. Thinking and final text share the unchanged 12000-token provider cap.",
       "materiality_quality_risk": "Lossy summary can omit important qualifiers; deterministic replay proves restoration and identities only. Full evidence remains readable. Reject nonshrinking, empty or truncated summaries; do not retry automatically.",
       "comparable_run_evidence": "Two saved continuations, 16 real requests; offline policy and native checkpoint replay only. No claim of measured token savings, cache hit improvements or better research decisions. Authorize real verification separately.",
       "reasoning_profile": "agentic_message_history_thinking_enabled",

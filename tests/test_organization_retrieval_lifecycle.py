@@ -63,6 +63,8 @@ def test_parallel_stage_open_warms_once_and_keeps_observations_separate(tmp_path
     try:
         with ThreadPoolExecutor(max_workers=3) as executor:
             stages=list(executor.map(lambda _:manager.navigation(),range(3)))
+            assert not calls and manager.status()['generation']==0
+            list(executor.map(lambda stage: stage.navigate(query()), stages))
         assert len(calls)==2 and manager.status()['generation']==1
         calls.clear()
         first=stages[0].navigate(query())
@@ -104,7 +106,7 @@ def test_write_refreshes_once_in_background_without_blocking_or_serving_stale(tm
         # starts a second worker. Queries remain denied until completion.
         assert manager.status()=={'state':'refreshing','generation':1,'failure_type':None}
         for _ in range(3):
-            with pytest.raises(OrganizationExecutionUnavailable,match='refreshing'):
+            with pytest.raises(OrganizationExecutionUnavailable,match='refresh_pending'):
                 stage.navigate(query())
         assert len(calls)==1 and manager.status()['state']=='refreshing'
         release.set()
@@ -122,6 +124,7 @@ def test_write_refreshes_once_in_background_without_blocking_or_serving_stale(tm
 def test_non_candidate_corruption_fails_refresh_without_automatic_retry(tmp_path,monkeypatch):
     manager,reader,_,_,grant=lifecycle(tmp_path,monkeypatch)
     stage=manager.navigation()
+    manager.prepare()
     second=grant['manifest']['inputs'][1]['ref']['version_id']
     change_store(reader,second)
     try:
@@ -276,7 +279,10 @@ def test_idle_stages_do_not_pin_replaced_generation_or_closed_caches(tmp_path, m
             stages[2].navigate(query())
         manager.wait_for_refresh(10)
         gc.collect()
-        assert old() is None and old_loader() is None
+        assert old() is None
+        # Only immutable release metadata now outlives a run. It owns no reader,
+        # authority, observations or current source generation.
+        assert old_loader() is manager._navigation.hybrid.release_cache
         assert items(stages[0].navigate(query())) == items(expected)
         current = weakref.ref(manager._navigation._candidate_index)
     finally:

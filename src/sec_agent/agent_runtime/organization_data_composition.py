@@ -127,8 +127,10 @@ class OrganizationDataFactory:
             if any(getattr(case_artifacts, key, None) != value for key, value in expected.items()):
                 raise ValueError('organization_case_artifacts_scope_mismatch')
             artifact_sources = case_artifacts.source_snapshot()
-        validated = navigation.restore([*restored_observations,
-            {'status':'success', 'content':list(artifact_sources.values())}])
+        from sec_agent.research_foundation.preparation_observability import preparation_span
+        with preparation_span('saved_source_restoration'):
+            validated = navigation.restore([*restored_observations,
+                {'status':'success', 'content':list(artifact_sources.values())}])
         if case_artifacts is not None:
             # Only regenerated originals/calculations enter review tools. Keep
             # paper aliases; retain untouched author checkpoints separately.

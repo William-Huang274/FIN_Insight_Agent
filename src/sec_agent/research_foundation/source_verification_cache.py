@@ -13,6 +13,36 @@ import sqlite3
 import struct
 import tempfile
 import zlib
+from functools import lru_cache
+
+
+def _file_identity(path):
+    s = Path(path).stat()
+    return s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns
+
+
+@lru_cache(maxsize=1)
+def _receipt_rows(path, signature, keys):
+    """One bounded generation of immutable compressed bytes, never grants.
+
+    Current revision keys and file identity are required on every use. Larger
+    scopes use the existing streaming reader rather than growing cached memory.
+    """
+    from .preparation_observability import preparation_span
+    rows, size = [], 0
+    with preparation_span('proof_cache_read') as timing, closing(sqlite3.connect(
+            Path(path).resolve().as_uri()+'?mode=ro', uri=True, timeout=10)) as db:
+        for key in keys:
+            row = db.execute('SELECT payload,digest FROM receipts WHERE key=?', (key,)).fetchone() if key else None
+            size += len(row[0]) if row else 0
+            if size > 128 * 1024 * 1024:
+                timing['streaming_fallback'] = True
+                return None
+            rows.append(row)
+        timing.update(rows=len(rows), compressed_bytes=size)
+    if _file_identity(path) != signature:
+        return None
+    return tuple(rows)
 
 
 FORMAT = 'organization-source-verification.v1'
@@ -107,6 +137,12 @@ class SourceVerificationCache:
 
     def iter_get(self, keys):
         """One connection, one decoded receipt at a time; no corpus-sized map."""
+        keys = tuple(keys)
+        rows = _receipt_rows(str(self.path.resolve()), _file_identity(self.path), keys)
+        if rows is not None:
+            for key, row in zip(keys, rows):
+                yield key, self._decode(row)
+            return
         with closing(sqlite3.connect(self.path, timeout=10)) as db:
             for key in keys:
                 row = db.execute('SELECT payload,digest FROM receipts WHERE key=?', (key,)).fetchone() if key else None

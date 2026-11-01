@@ -62,6 +62,13 @@ async def organization_harness_session(*, native, resources, authority, check, o
         raise ValueError('harness_executable_release_mismatch')
     directory = Path(environment['FINSIGHT_HARNESS_STATE_ROOT']).resolve() / tid
     directory.mkdir(parents=True, exist_ok=True)
+    # A host-declared legacy import starts a distinct native ACP lineage. The
+    # old failed ACP attempt remains untouched; its empty handoff/error history
+    # must not become the starting history for the corrected migration.
+    import_digest = options.get('legacy_receipt_import', {}).get('sha256')
+    if import_digest is not None and (len(import_digest) != 64 or any(c not in '0123456789abcdef' for c in import_digest)):
+        raise ValueError('harness_legacy_import_digest_invalid')
+    session_directory = directory / ('import-' + import_digest) if import_digest else directory
     run_directory = directory / rid
     run_directory.mkdir(exist_ok=True)
     owner = 'organization:' + grant['organization_id']
@@ -143,7 +150,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
             await bridge.begin_command(grant.get('report_command_id', rid),
                 recovering=action.get('action') == 'recover')
             if action.get('action') == 'recover':
-                recovered = completed_recovery(directory, previous_run_id=action['previous_run_id'], binding=binding)
+                recovered = completed_recovery(session_directory, previous_run_id=action['previous_run_id'], binding=binding)
                 if recovered is not None:
                     _persist(run_directory / 'turn.private.json', {**recovered, 'reused_from_run': action['previous_run_id']})
                     return await project(state, recovered)
@@ -158,13 +165,13 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 _persist(patch_path, patch)
                 child_env = {k: v for k, v in environment.items() if k.upper() in {
                     'PATH', 'SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP', 'COMSPEC', 'PATHEXT'}}
-                child_env.update(DSH_HOME=str(directory / 'native'), HOME=str(directory), USERPROFILE=str(directory),
+                child_env.update(DSH_HOME=str(session_directory / 'native'), HOME=str(session_directory), USERPROFILE=str(session_directory),
                                  FIN_HARNESS_LOCAL_TOKEN=token, NO_PROXY='127.0.0.1,localhost')
                 servers = [HttpMcpServer(type='http', name='financial', url=endpoint + '/business/',
                             headers=[HttpHeader(name='Authorization', value='Bearer ' + token)])]
-                new_session = not (directory / 'session-binding.json').exists()
+                new_session = not (session_directory / 'session-binding.json').exists()
                 async with admitted_acp_session(binary=str(binary), arguments=['--profile', 'sdk-minimal', '--patch', str(patch_path)],
-                        environment=child_env, directory=directory, binding=binding, run_id=rid,
+                        environment=child_env, directory=session_directory, binding=binding, run_id=rid,
                         authority=active_authority, stop=bridge.stop, mcp_servers=servers) as session:
                     request = state['messages'][-1].content
                     if new_session:

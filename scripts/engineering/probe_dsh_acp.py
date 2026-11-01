@@ -6,6 +6,7 @@ MCP fixture deliberately reuses FIN's calculator and versioned working memory.
 from __future__ import annotations
 
 import argparse
+from contextlib import ExitStack
 import json
 import os
 from pathlib import Path
@@ -71,7 +72,7 @@ def mcp_fixture(output: Path):
         print(json.dumps(response), flush=True)
 
 
-def run(binary: str, output: Path, protocol: str = "deepseek", fail_compaction=False):
+def run(binary: str, output: Path, protocol: str = "deepseek", fail_compaction=False, metered=False):
     output.mkdir(parents=True, exist_ok=False)
     work = output / "workspace"
     work.mkdir()
@@ -187,6 +188,11 @@ def run(binary: str, output: Path, protocol: str = "deepseek", fail_compaction=F
 
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
+    services = ExitStack()
+    service_port, service_token = server.server_port, 'synthetic-dispatch-only'
+    if metered:
+        from harness_dispatch_fixture import metered_fixture
+        service_port, service_token = services.enter_context(metered_fixture(output, server.server_port, protocol, accounting))
     diagnostic = output / "diagnostic.mjs"
     diagnostic.write_text("import {inspect} from 'node:util'; export function apply(ctx) {ctx.logger.exporter({export(m) {process.stderr.write(inspect(m,{depth:8})+'\\n')}})}", encoding="utf8")
     disabled = ["sdk-app-startup", "sdk-jsonrpc-server", "session-log-deepseek", "plugin-package-inventory-deepseek", "tool-fs", "tool-working-directory", "persistent-bash", "persistent-pwsh", "llm-retry"]
@@ -206,10 +212,24 @@ def run(binary: str, output: Path, protocol: str = "deepseek", fail_compaction=F
                       "compat": {"thinkingFormat": "qwen", "supportsDeveloperRole": False, "supportsReasoningEffort": False, "maxTokensField": "max_tokens"},
                       "models": [{"id": "fixture-model", "contextWindow": 16000, "maxTokens": 2048, "reasoningEfforts": {"off": None, "high": "high"}}]
                   }}}}]}, {"id": "fin-acp", "config": {"provider": "fin-qwen", "model": "fixture-model"}}]
+    if metered:
+        # Both model transport and accounting go through the actual FIN host.
+        patch = json.loads(json.dumps(patch).replace(f'127.0.0.1:{server.server_port}', f'127.0.0.1:{service_port}'))
+        # The stress prompt must fit the declared model capacity. Use an early
+        # pressure threshold for this fixture, not an over-capacity request that
+        # pi-ai silently clamps to max_tokens=1. Neither is a production default.
+        for item in patch:
+            if item.get('id') == 'compaction-basic':
+                item['config']['thresholdRatio'] = .2
+            if item.get('id') == 'llm-deepseek' and 'config' in item:
+                item['config']['models'][0]['contextWindow'] = 64000
+            for added in item.get('insert', []):
+                if added['id'] == 'fin-pi-ai':
+                    added['config']['providers']['fin-qwen']['models'][0]['contextWindow'] = 64000
     patch_file.write_text(json.dumps(patch, indent=2), encoding="utf8")
     # Minimal allowlist: never expose real provider keys or default user homes.
     env = {k: v for k, v in os.environ.items() if k.upper() in {"PATH", "SYSTEMROOT", "WINDIR", "TEMP", "TMP", "COMSPEC", "PATHEXT"}}
-    env.update(DSH_HOME=str(output / "home"), FIN_FIXTURE_KEY="local-fixture-not-a-key", FIN_DISPATCH_FIXTURE="synthetic-dispatch-only", NO_PROXY="127.0.0.1,localhost")
+    env.update(DSH_HOME=str(output / "home"), FIN_FIXTURE_KEY=service_token if metered else "local-fixture-not-a-key", FIN_DISPATCH_FIXTURE=service_token, NO_PROXY="127.0.0.1,localhost")
     proc, err, serial = None, None, 0
     inbox = queue.Queue()
 
@@ -341,6 +361,7 @@ def run(binary: str, output: Path, protocol: str = "deepseek", fail_compaction=F
         release.set()
         stop()
         server.shutdown()
+        services.close()
         (output / "events.json").write_text(json.dumps(events, indent=2), encoding="utf8")
 
 
@@ -351,10 +372,11 @@ if __name__ == "__main__":
     parser.add_argument("--mcp", type=Path)
     parser.add_argument("--protocol", choices=["deepseek", "qwen"], default="deepseek")
     parser.add_argument("--fail-compaction", action="store_true")
+    parser.add_argument("--metered", action="store_true", help="Use actual FIN HTTP host and explicitly provisioned PostgreSQL fixture")
     args = parser.parse_args()
     if args.mcp:
         mcp_fixture(args.mcp)
     else:
         if not args.binary or not args.output:
             parser.error("--binary and --output are required")
-        run(args.binary, args.output.resolve(), args.protocol, args.fail_compaction)
+        run(args.binary, args.output.resolve(), args.protocol, args.fail_compaction, args.metered)

@@ -47,6 +47,7 @@ class HarnessDispatchHost:
         self.receipts.mkdir(parents=True, exist_ok=True)
         self.wire_usage = wire_usage
         self.lock = Lock()
+        self._wire_pending = None
 
     def _key(self, request_id):
         return self.scope + ':' + str(UUID(request_id))
@@ -101,7 +102,47 @@ class HarnessDispatchHost:
             # responses need explicit session restoration at the host boundary.
             if prior['status'] != 'dispatched':
                 raise DispatchBlocked('harness_request_already_received_no_resend')
+            self._wire_pending = (str(UUID(request_id)), request)
             return {'status': 'reserved', 'call_id': str(prior['call_id'])}
+
+    def claim_wire(self, body):
+        """Bind exactly one HTTP inference to this execution's admitted call.
+
+        The profile points at an execution-private loopback proxy. Provider keys
+        never enter the harness process. The existing store serializes calls;
+        this exclusive receipt also prevents a provider SDK retry or host restart
+        from forwarding the same reservation twice. No model-supplied call ID.
+        """
+        with self.lock:
+            if self._wire_pending is None:
+                raise DispatchBlocked('harness_wire_without_reservation')
+            request_id, request = self._wire_pending
+            grant = self.authority()
+            if (grant.get('execution_id') != self.execution_id
+                    or grant.get('authorized_run_id') != self.run_id
+                    or grant.get('manifest_digest') != self.manifest_digest):
+                raise DispatchBlocked('harness_java_run_binding_mismatch')
+            row = self.store.lookup(self.owner, self.budget, self._key(request_id))
+            if row is None or row['status'] != 'dispatched':
+                raise DispatchBlocked('harness_wire_reservation_not_active')
+            if (body.get('model') != request['model'] or body.get('stream') is not True
+                    or body.get('max_tokens') != request.get('maxTokens')):
+                self._persist(request_id, 'wire_rejected', {'reason': 'request_binding_mismatch', 'body': body})
+                raise DispatchBlocked('harness_wire_request_binding_mismatch')
+            # Provider serialization includes schemas and protocol wrappers.
+            if len(_bytes(body).decode('utf8')) > self.basis['max_input_characters']:
+                raise DispatchBlocked('harness_wire_exceeds_declared_input_basis')
+            saved = self._persist(request_id, 'wire_request', body)
+            claim = self.receipts / (request_id + '.wire-claimed.json')
+            try:
+                with claim.open('xb') as stream:
+                    stream.write(_bytes(saved))
+                    stream.flush()
+                    os.fsync(stream.fileno())
+            except FileExistsError:
+                raise DispatchBlocked('harness_wire_already_dispatched_no_resend') from None
+            self._wire_pending = None
+            return request_id
 
     def settle(self, request_id, chunks, terminal=None, *, unknown=False):
         key = self._key(request_id)

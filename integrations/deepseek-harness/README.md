@@ -23,15 +23,17 @@ reservations; a process-local stop flag alone is **not** recovery authorization.
 `harness_usage.WireUsage` handles raw DS Messages / Qwen Chat usage differences.
 DS Messages uncached input excludes cache reads; Qwen prompt input includes them.
 Reasoning is part of output. ACP used/size is context occupancy, not billing.
-The raw wire boundary still needs to be connected to the actual provider route;
-upstream normalized defaults must not turn absent provider usage into zero cost.
+`harness_provider_transport.HarnessProviderTransport` connects that meter to an
+execution-private loopback provider route. It uses HTTPX and httpx-sse, preserves
+raw event payloads outside Git, and never retries. Provider credentials stay in
+the host; the upstream process receives only an opaque loopback credential.
 
 `harness_dispatch_host.HarnessDispatchHost` now implements this contract with a
 FastAPI router and the existing `ModelDispatchStore`. Composition must supply a
 Java **run-admission** authority, server-owned owner/budget binding, a dated price,
 validated `TokenBudgetBasis`, private receipt directory and a trusted raw-wire
 usage observer. The router has no browser identity or model-controlled budget.
-It is not yet mounted in production. Provider-wire routing and Java/BFF lifecycle
+It is not yet mounted in production. Java/BFF lifecycle and business-tool
 composition remain unqualified; do not enable it against stub grants or usage in
 a paid run. Ordinary successful calls must not encounter a tiny fixed call cap;
 continuous usage/progress monitoring belongs to the host. Native model capacity,
@@ -51,8 +53,19 @@ The host can stop an upstream success when its wire usage is missing or its wire
 terminal indicates truncation. The plugin saves that response then raises before
 releasing a successful terminal; it must not report the task complete. No model
 conclusion is rewritten. Unit/HTTP protocol tests use synthetic grants and an
-in-memory store; real PostgreSQL coverage is opt-in in
-`tests/integration/test_model_dispatch_budget.py`, not a claimed live acceptance.
+in-memory store. The `--metered` process probe uses this actual HTTP host, wire
+proxy and a real PostgreSQL database, with a nonprivileged worker role. Its
+authority, prices and model responses are still synthetic; it does not claim
+Java run admission or research-quality acceptance.
+
+One reservation admits exactly one inference HTTP request. The host's existing
+budget transaction serializes calls within the execution; an exclusive durable
+wire-claim receipt prevents transport retries/replays. The serialized model and
+output allowance must match the admitted request, including compaction. A model
+adapter silently reducing output to one token is an execution mismatch, not a
+valid way to satisfy a smaller budget. Raw wire receipts are flushed during the
+stream and fsynced before terminal acknowledgment; every token delta does not
+cause a separate fsync. Missing terminal/usage retains the unknown-cost hold.
 
 Run the opt-in process probe with a new evidence directory and a fixed binary:
 
@@ -61,11 +74,22 @@ python scripts/engineering/probe_dsh_acp.py --binary <dsh-binary> --output <new-
 python scripts/engineering/probe_dsh_acp.py --binary <dsh-binary> --output <another-new-directory> --protocol qwen
 node --test tests/harness_dispatch.test.mjs
 python scripts/engineering/probe_dsh_acp.py --binary <dsh-binary> --output <new-failure-directory> --fail-compaction
+python scripts/engineering/probe_dsh_acp.py --binary <dsh-binary> --output <new-metered-directory> --metered
 ```
 
 The probe isolates DSH_HOME, credentials and workspace. It replaces the shipped
 SDK server with ACP through a profile overlay, disables shell/filesystem tools,
 session-log upload, inventory upload and automatic retries, and mounts only the
-four synthetic MCP tools. Its 16k window exists to induce compaction cheaply in
-a fixture; it is **not a FIN deployment default**. No financial conclusion or
+four synthetic MCP tools. `--metered` requires operator-provisioned
+`FIN_HARNESS_FIXTURE_WORKER_DSN` and `FIN_HARNESS_FIXTURE_PROVISIONER_DSN`, with the
+existing 003/004 budget schema and roles. It creates a separately named synthetic
+budget, not a new allowance for any research task. The full probe tests process
+restart, multiple compactions, cancellation, and no post-failure forwarding.
+
+The original 16k stress fixture could make pi-ai clamp an oversized input's
+output allowance to one token, unnoticed by a fake accounting host. The metered
+fixture declares 64k capacity and triggers compaction early at 20%, so its large
+test input still fits the declared model. Both values are **qualification-only,
+not FIN deployment defaults**. Production must use the chosen model's actual
+capacity and suitable native pressure threshold. No financial conclusion or
 real supplier compatibility is certified by a deterministic model response.

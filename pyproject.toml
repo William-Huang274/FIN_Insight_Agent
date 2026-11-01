@@ -59,6 +59,7 @@ agent-runtime = [
   "simpleeval==1.0.7",
   "pillow==12.3.0",
   "pypdfium2==5.13.0",
+  "httpx-sse>=0.4,<0.5",
 ]
 complex-pdf = [
   "pdfplumber>=0.11.9",

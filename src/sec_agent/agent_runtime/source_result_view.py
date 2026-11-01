@@ -46,6 +46,30 @@ def _shared_navigation_metadata(row):
             # retain all surrounding source/coverage warnings verbatim.
             row['notice'] = row['notice'].replace('Retrieval: ' + str(shared),
                 'Retrieval: see shared_retrieval (same receipt for every item).')
+    # Node-specific locators stay on each row. Only equal document-level
+    # fields are inherited, so a partial capture or a different revision can
+    # never silently become a complete/equivalent original.
+    if 'shared_original_sources' not in row:
+        groups = {}
+        for item in items:
+            if isinstance(item, dict) and item.get('document_id') and isinstance(item.get('original_source'), dict):
+                groups.setdefault(item['document_id'], []).append(item)
+        shared_sources = []
+        for document, members in groups.items():
+            if len(members) < 2 or any('original_source_ref' in item for item in members):
+                continue
+            common = {k: v for k, v in members[0]['original_source'].items()
+                      if all(k in item['original_source'] and item['original_source'][k] == v for item in members)}
+            if len(json.dumps(common, ensure_ascii=False)) < 200:
+                continue
+            ref = '#/shared_original_sources/' + str(len(shared_sources)) + '/fields'
+            shared_sources.append({'document_id': document, 'fields': common})
+            for item in members:
+                item['original_source'] = {k: v for k, v in item['original_source'].items() if k not in common}
+                item['original_source_ref'] = ref
+        if shared_sources:
+            row['shared_original_sources'] = shared_sources
+            row['original_source_inheritance'] = 'Merge referenced fields with each item.original_source; locators and differing fields remain on each item.'
     return row
 
 
@@ -128,6 +152,30 @@ def _metadata(value):
     return row
 
 
+def _shared_calculation_metadata(row):
+    if row.get('result_state') != 'non_authoritative_metric' or not isinstance(row.get('operands'), dict):
+        return row
+    if 'shared_source_provenance' in row:
+        return row
+    groups = {}
+    for operand in row['operands'].values():
+        if isinstance(operand, dict) and isinstance(operand.get('source_provenance'), dict):
+            key = json.dumps(operand['source_provenance'], sort_keys=True, ensure_ascii=False)
+            groups.setdefault(key, []).append(operand)
+    shared = []
+    for members in groups.values():
+        if len(members) < 2 or any('source_provenance_ref' in item for item in members):
+            continue
+        ref = '#/shared_source_provenance/' + str(len(shared))
+        shared.append(members[0]['source_provenance'])
+        for item in members:
+            del item['source_provenance']
+            item['source_provenance_ref'] = ref
+    if shared:
+        row['shared_source_provenance'] = shared
+    return row
+
+
 def source_result_view(value):
     """Idempotent request-only projection shared by fresh and restored reads."""
     if isinstance(value, Mapping):
@@ -148,7 +196,7 @@ def source_result_view(value):
                 row.pop("metadata")
         if row.get('result_state') == 'retrieval_candidate':
             row = _company_source_menu(row)
-        return _shared_navigation_metadata(row)
+        return _shared_calculation_metadata(_shared_navigation_metadata(row))
     if isinstance(value, (list, tuple)):
         return [source_result_view(v) for v in value]
     return value

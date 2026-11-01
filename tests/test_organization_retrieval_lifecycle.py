@@ -95,6 +95,8 @@ def test_parallel_stage_open_warms_once_and_keeps_observations_separate(tmp_path
         assert stages[0].observed is not stages[1].observed
         assert all(stage._candidate_index is None for stage in stages)
         assert manager._navigation._candidate_index is not None
+        assert manager._navigation._lexical_statistics.metadata is not None
+        assert all(stage._lexical_statistics is None for stage in stages)
     finally:
         manager.close()
 

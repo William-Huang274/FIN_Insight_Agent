@@ -85,7 +85,8 @@ class SourceDocumentRequest(BaseModel):
     character_offset: int | None = Field(default=None, ge=0,
         description="Explicit character window for a local/upload node read. Copy readback/next_readback; offset still paginates nodes. A window is not the complete section/table.")
     limit: int = Field(default=8, ge=1, le=20)
-    max_characters: int = Field(default=24000, ge=2000, le=80000)
+    max_characters: int = Field(default=24000, ge=100, le=80000,
+        description='Maximum returned text window (100–80000 characters). Small windows may split tables; use next_readback for exact continuation.')
     include_domains: tuple[str, ...] = Field(default_factory=tuple, max_length=12)
     start_published_date: date | None = None
     end_published_date: date | None = None

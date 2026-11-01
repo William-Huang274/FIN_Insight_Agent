@@ -20,6 +20,29 @@ from mcp.server import Server
 from mcp import types
 
 from .on_demand_research import OnDemandResearchState
+from .conversation_tools import SAVED_RESULT_TOOLS
+from .source_result_view import source_result_view
+
+
+def model_receipt(result):
+    """Presentation only; canonical ToolMessage/artifact remains in the ledger.
+
+    The pinned native MCP client renders text content, not structuredContent.
+    Put both the usable receipt key and projected result in that visible lane.
+    """
+    body = result.content
+    if isinstance(body, str):
+        try:
+            body = json.loads(body)
+        except ValueError:
+            pass
+    value = {'receipt_id': result.tool_call_id, 'status': result.status,
+             'result': source_result_view(body) if result.status == 'success' else body}
+    if result.status == 'success' and result.name in SAVED_RESULT_TOOLS:
+        value['original_readback'] = {'tool': 'read_saved_result',
+            'arguments': {'tool_call_id': result.tool_call_id},
+            'format': 'Exact canonical JSON; json_pointer and offsets address the original, not this presentation.'}
+    return value
 
 
 class HarnessBusinessState(OnDemandResearchState):
@@ -140,10 +163,11 @@ class HarnessBusinessTools:
         # host receipt id and return it for exact readback. Native ACP persists
         # the result; a recovery loads it instead of replaying successful calls.
         result = await self.execute(params.name, params.arguments or {})
-        text = result.content if isinstance(result.content, str) else json.dumps(result.content, ensure_ascii=False)
+        view = model_receipt(result)
+        text = json.dumps(view, ensure_ascii=False, separators=(',', ':'))
         return types.CallToolResult(content=[types.TextContent(type='text', text=text)],
             is_error=result.status == 'error',
-            structured_content={'receipt_id': result.tool_call_id, 'result': text})
+            structured_content=view)
 
     async def execute(self, name, arguments):
         async with self.lock:

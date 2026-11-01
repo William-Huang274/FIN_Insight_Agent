@@ -1,5 +1,6 @@
 """Versioned FIN artifact operations reused by the ACP tool host."""
 import json
+from typing import Literal
 
 from langchain_core.tools import tool, ToolException
 from langchain_core.messages import ToolMessage
@@ -30,7 +31,9 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
             return Command(update={'report_draft': report, 'report_draft_base_version': base_version,
                 'messages': [ToolMessage(tool_call_id=runtime.tool_call_id, status='error', content=json.dumps({
                     'status': 'draft_saved_needs_repair', 'error': str(exc), 'base_version': base_version,
-                    'next_tool': 'repair_report_fields', 'remedy': 'Send changed fields only; original draft is saved, not accepted.'}))]})
+                    'next_tool': 'repair_report_fields',
+                    'readback': {'tool': 'read_current_report', 'arguments': {'view': 'draft'}},
+                    'remedy': 'Send changed fields only; original draft is saved, not accepted.'}))]})
         return accepted(runtime, bound)
 
     @tool
@@ -54,15 +57,27 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         return save_candidate(candidate, base_version, runtime)
 
     @tool
-    def read_current_report(runtime: ToolRuntime, offset: int = 0, max_characters: int = 6000):
-        """Read current report prose and version in exact windows; no model-generated summary."""
-        report = runtime.state.get('report')
+    def read_current_report(runtime: ToolRuntime, offset: int = 0, max_characters: int = 6000,
+                            view: Literal['accepted', 'draft'] = 'accepted',
+                            field: Literal['narrative_markdown', 'title', 'charts', 'all'] = 'narrative_markdown'):
+        """Read exact report fields for editing. Default is unescaped narrative prose.
+
+        view=draft reads the saved but unaccepted proposal for repair_report_fields;
+        view=accepted reads the saved version for edit_research_report. A draft is
+        not accepted or delivered. field=all returns the serialized author fields.
+        """
+        report = runtime.state.get('report_draft' if view == 'draft' else 'report')
         if not report:
-            return {'found': False, 'report_version': 0}
+            return {'found': False, 'view': view, 'report_version': runtime.state.get('report_version', 0)}
         if offset < 0 or not 1 <= max_characters <= 12000:
             raise ToolException('invalid_read_window')
-        text = json.dumps(report_model_view(report), ensure_ascii=False)
-        return {'found': True, 'report_version': runtime.state['report_version'], 'digest': canonical_sha256(report),
+        fields = report if view == 'draft' else report_model_view(report)
+        value = fields if field == 'all' else fields.get(field, '')
+        text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
+        return {'found': True, 'view': view, 'field': field, 'accepted': view == 'accepted',
+                'report_version': runtime.state.get('report_version', 0),
+                'base_version': runtime.state.get('report_draft_base_version') if view == 'draft' else runtime.state.get('report_version', 0),
+                'digest': canonical_sha256(report), 'total_characters': len(text),
                 'text': text[offset:offset+max_characters], 'offset': offset,
                 'next_offset': offset+max_characters if offset+max_characters < len(text) else None}
 
@@ -106,7 +121,11 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
                  'review_status': 'not_assessed_in_this_record'}
         return Command(update={'delivery': value, 'messages': [ToolMessage(tool_call_id=runtime.tool_call_id,
             content=json.dumps(value))]})
-    tools = [save_research_report, repair_report_fields, read_current_report, edit_research_report, deliver_working_note, deliver_current_report]
+    tools = [save_research_report, repair_report_fields, read_current_report, edit_research_report]
+    if delivery_intent == 'workpaper':
+        tools.append(deliver_working_note)
+    elif delivery_intent == 'report' and not require_review:
+        tools.append(deliver_current_report)
     for t in tools:
         t.handle_tool_error = True
     return [GrantedTool(t, 'read' if t is read_current_report else 'task_artifact_write',

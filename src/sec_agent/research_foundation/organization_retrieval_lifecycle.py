@@ -145,20 +145,20 @@ class OrganizationRetrievalLifecycle:
             if navigation.reader is not self.reader or navigation.workbench_url != self.workbench_url.rstrip('/'):
                 raise OrganizationExecutionUnavailable('organization_retrieval_scope_mismatch')
             shared = self._navigation
-            for field in ('hybrid', '_search_cache', '_projection_cache', '_candidate_index'):
+            for field in ('hybrid', '_search_cache', '_projection_cache', '_candidate_index', '_lexical_statistics'):
                 setattr(navigation, field, getattr(shared, field))
             try:
                 yield
             finally:
                 # Retrieval caches can be populated by legacy paths. Observed
                 # sources and calculations always remain private to each stage.
-                for field in ('_search_cache', '_projection_cache', '_candidate_index'):
+                for field in ('_search_cache', '_projection_cache', '_candidate_index', '_lexical_statistics'):
                     setattr(shared, field, getattr(navigation, field))
                 # Stage objects may survive for the entire research graph. They
                 # must not pin an obsolete full-corpus generation after refresh
                 # or keep it alive after lifecycle.close(). The next access
                 # attaches the current generation under this same lock.
-                for field in ('hybrid', '_search_cache', '_projection_cache', '_candidate_index'):
+                for field in ('hybrid', '_search_cache', '_projection_cache', '_candidate_index', '_lexical_statistics'):
                     setattr(navigation, field, None)
 
     def catalog(self, navigation, request):

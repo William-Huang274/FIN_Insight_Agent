@@ -76,6 +76,12 @@ async def test_real_process_tools_restart_compaction_and_cancel(tmp_path, monkey
         else:
             step = progress['step']
             progress['step'] += 1
+            if step in (1, 2, 3):
+                # Inspect the actual request produced by the pinned upstream
+                # process, not just the MCP structured-content side channel.
+                assert 'receipt_id' in json.dumps(body['messages'])
+            if step == 1:
+                assert 'original_readback' in json.dumps(body['messages'])
             if step == 0:
                 name, args = 'query_financial_data', {}
             elif step == 1:

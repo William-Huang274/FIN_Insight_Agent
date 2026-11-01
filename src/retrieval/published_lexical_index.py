@@ -34,6 +34,7 @@ class PublishedLexicalStatistics:
         self.entry = None
         self.hit = False
         self._entries = OrderedDict()
+        self.metadata = None
 
     def get(self, key):
         packed = self._entries.pop(key, None)
@@ -59,13 +60,9 @@ class PublishedLexicalStatistics:
 
 
 def _population_key(path, identities):
-    resolved = Path(path).resolve()
-    stat = resolved.stat()
-    hasher = sha256(repr((str(resolved), stat.st_dev, stat.st_ino, stat.st_size,
-                         stat.st_mtime_ns, stat.st_ctime_ns)).encode())
-    for identity in identities:
-        hasher.update(json.dumps(identity, separators=(',', ':'), ensure_ascii=False).encode())
-        hasher.update(b'\n')
+    from .lexical_metadata import file_identity
+    hasher = sha256(repr(file_identity(path)).encode())
+    hasher.update(json.dumps(identities, separators=(',', ':'), ensure_ascii=False).encode())
     return hasher.hexdigest()
 
 
@@ -144,7 +141,7 @@ def scores(path, rows, query):
                                         for row in rows), query)
 
 
-def scores_from_identities(path, identities, query, *, population_cache=None, vocabulary_only=False):
+def scores_from_identities(path, identities, query, *, population_cache=None, vocabulary_only=False, metadata_index=None):
     """Score already verified (node ID, body SHA, lexical input SHA) identities.
 
     This lower-level entry does not prove originals or permissions. Published
@@ -155,14 +152,23 @@ def scores_from_identities(path, identities, query, *, population_cache=None, vo
     if population_cache is not None:
         population_cache.hit = False
     key = _population_key(path, identities) if population_cache is not None else None
+    metadata_index = metadata_index or getattr(population_cache, 'metadata', None)
+    if metadata_index is not None:
+        if Path(path).resolve() != metadata_index.source:
+            raise ValueError('published_lexical_metadata_wrong_source')
+        metadata_index.check()
     uri = Path(path).resolve().as_uri() + '?mode=ro'
     with closing(sqlite3.connect(uri, uri=True)) as db:
         if db.execute("SELECT value FROM metadata WHERE key='format'").fetchone() != (FORMAT.encode(),):
             raise ValueError('published_lexical_format_mismatch')
-        total = db.execute('SELECT COUNT(*) FROM nodes').fetchone()[0]
+        table = 'nodes'
+        if metadata_index is not None:
+            db.execute('ATTACH DATABASE ? AS meta', (metadata_index.path.as_uri() + '?mode=ro',))
+            table = 'meta.nodes'
+        total = db.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0]
         columns = 'position,node_id,content_digest,lexical_digest,length'
         if len(identities) >= total:
-            entries = db.execute(f'SELECT {columns} FROM nodes ORDER BY position').fetchall()
+            entries = db.execute(f'SELECT {columns} FROM {table} ORDER BY position').fetchall()
         else:
             # Use the node_id index for every proper subset. A local SQLite
             # batch is not a network round trip: loading the entire release
@@ -172,7 +178,9 @@ def scores_from_identities(path, identities, query, *, population_cache=None, vo
             for start in range(0, len(identities), IDENTITY_BATCH):
                 ids = [row[0] for row in identities[start:start+IDENTITY_BATCH]]
                 placeholders = ','.join('?' for _ in ids)
-                entries.extend(db.execute(f'SELECT {columns} FROM nodes WHERE node_id IN ({placeholders})', ids))
+                entries.extend(db.execute(f'SELECT {columns} FROM {table} WHERE node_id IN ({placeholders})', ids))
+        if metadata_index is not None:
+            metadata_index.check()
         by_id = {entry[1]: entry for entry in entries}
         selected = []
         for node_id, content_digest, input_digest in identities:

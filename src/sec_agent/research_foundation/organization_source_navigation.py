@@ -66,7 +66,10 @@ class OrganizationSourceNavigation:
                 if self._search_cache is None:
                     from .organization_search_cache import OrganizationSearchCache
                     self._search_cache = OrganizationSearchCache(self.reader.workspace.library.documents.path)
-                self._warm_candidates(before, manifest, self._search_cache.epoch())
+                candidates = self._warm_candidates(before, manifest, self._search_cache.epoch())
+                from retrieval.lexical_metadata import prepare as prepare_lexical_metadata
+                self._lexical_statistics.metadata = prepare_lexical_metadata(
+                    candidates.directory / 'lexical.sqlite', self.hybrid.root)
             self.reader._after(before)
             self.hybrid.release_cache.check()
             return dict(contract)
@@ -264,7 +267,7 @@ class OrganizationSourceNavigation:
         scores, overlap, has_terms = scores_from_identities(candidates.directory/'lexical.sqlite',
             ((row['node_id'],row['content_sha256'],row['lexical_input_sha256']) for row in rows),
             tokenize(request.query), population_cache=None if planned_lexical else self._lexical_statistics,
-            vocabulary_only=planned_lexical)
+            vocabulary_only=planned_lexical, metadata_index=self._lexical_statistics.metadata)
         literal = [rows[i] for i in sorted(overlap, key=lambda i:(-float(scores[i]),rows[i]['node_id']))]
         needs, lanes = None, []
         if planned_lexical:

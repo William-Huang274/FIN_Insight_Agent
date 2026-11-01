@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[SEC 原生适配首轮原件抽样审核](engineering/native_structure_source_review_r1.zh-CN.md)：6 类资料原件对照，记录主章节改善、名称与归属退步、无诊断样本的旧错误及后续修复顺序。
+
 [文档结构质量验收协议 v1](engineering/document_structure_quality_protocol.zh-CN.md)：指标分母、严重程度、可用状态与冻结试审口径；无诊断提示不等于质量通过。
 
 [文档结构首轮试审](engineering/document_structure_screening_r1.zh-CN.md)：6 份无诊断原件的源先验核对，分别记录正文保留、封面/界面角色误判及结构化存取范围。

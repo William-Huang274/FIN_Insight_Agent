@@ -19,7 +19,7 @@ def test_upload_document_id_feedback_precedes_masked_remote_failure():
     SourceDocumentRequest(source_space="uploads", operation="search", query="segment", document_id="a25d79583063485c8b6d4b8c137178ed")
 
 
-def test_batched_metadata_uses_exact_row_lookup_and_keeps_scope_and_order(tmp_path, monkeypatch):
+def test_batched_metadata_uses_covering_index_and_keeps_scope_and_order(tmp_path, monkeypatch):
     store, thread, other = TaskAttachmentStore(tmp_path), str(uuid4()), str(uuid4())
     seed = store.add(thread, 'seed.md', b'Original source.')['document_id']
     foreign = store.add(other, 'private.md', b'Other space.')['document_id']
@@ -44,9 +44,15 @@ def test_batched_metadata_uses_exact_row_lookup_and_keeps_scope_and_order(tmp_pa
     query = next(sql for sql in statements if sql.startswith('SELECT a.id,a.name'))
     with connect() as db:
         plan = [row[3] for row in db.execute('EXPLAIN QUERY PLAN '+query)]
-    # Guard the observed optimizer regression: no whole-space attachment scan
-    # even with a 256-ID request ordered by insertion row, on a shared database.
-    assert any('SEARCH a ' in step and ('rowid=?' in step or 'INTEGER PRIMARY KEY' in step) for step in plan)
+    # Exact row lookup still touches BLOB overflow pages for later metadata
+    # columns. This read must be covered, with scope and selected IDs enforced.
+    assert any('SEARCH a USING COVERING INDEX attachments_metadata' in step
+               and 'thread=? AND id=?' in step for step in plan)
+    with connect() as db:
+        db.execute('DROP INDEX attachments_metadata')
+    # Additive migration supports old stores without rewriting their sources.
+    reopened = TaskAttachmentStore(tmp_path)
+    assert reopened.list(thread, ids=selected) == result
     assert store.list(thread, ids=[]) == []
 
 

@@ -129,6 +129,10 @@ class TaskAttachmentStore:
             from .source_verification_cache import install
             install(db)
             db.execute('CREATE INDEX IF NOT EXISTS attachments_thread ON attachments(thread)')
+            # Directory/version reads must not visit the large body/pages row.
+            # SQLite can traverse overflow pages even when SELECT omits BLOBs
+            # if later columns (digest/created) live after those payloads.
+            db.execute('CREATE INDEX IF NOT EXISTS attachments_metadata ON attachments(thread,id,name,kind,digest,created)')
             # Additive, transactional migration; directory reads never load pages/body.
             db.execute('CREATE TABLE IF NOT EXISTS attachment_summaries '
                        '(object_id TEXT PRIMARY KEY, bytes INTEGER, sections INTEGER, needs_vision INTEGER, excerpt TEXT)')
@@ -216,18 +220,15 @@ class TaskAttachmentStore:
         with self.connect() as db:
             if ids is not None and not ids:
                 return []
-            # Resolve the exact IDs through their covering primary-key index
-            # before reading rows. With many IDs plus ORDER BY a.rowid, SQLite
-            # can otherwise scan every (large) attachment in the whole scope.
-            # The outer scope predicate still enforces the caller's boundary.
-            condition = (' AND a.rowid IN (SELECT rowid FROM attachments WHERE id IN ('+
-                         ','.join('?' for _ in ids)+'))') if ids is not None else ''
+            # The covering metadata index serves both scope and selected IDs.
+            # Insertion order remains stable without loading attachment rows.
+            condition = (' AND a.id IN ('+','.join('?' for _ in ids)+')') if ids is not None else ''
             rows = db.execute('SELECT a.id,a.name,a.kind,a.digest,a.created,s.bytes,s.sections,s.needs_vision,s.excerpt '
-                              'FROM attachments a JOIN attachment_summaries s ON s.object_id=a.id '
+                              'FROM attachments a INDEXED BY attachments_metadata JOIN attachment_summaries s ON s.object_id=a.id '
                               'WHERE a.thread=?'+condition+' ORDER BY a.rowid',
                               (str(UUID(str(thread_id))), *(ids or []))).fetchall()
             origins = {r['object_id']: json.loads(r['origin']) for r in db.execute(
-                'SELECT o.* FROM attachment_origins o JOIN attachments a ON a.id=o.object_id WHERE a.thread=?'+condition,
+                'SELECT o.* FROM attachment_origins o JOIN attachments a INDEXED BY attachments_metadata ON a.id=o.object_id WHERE a.thread=?'+condition,
                 (str(thread_id), *(ids or [])))}
             access = {r['asset']:r['revoked'] for r in db.execute(
                 "SELECT asset,revoked FROM project_asset_access WHERE scope=? AND kind='document'"+

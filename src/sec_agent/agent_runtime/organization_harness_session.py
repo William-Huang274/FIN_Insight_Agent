@@ -113,10 +113,13 @@ async def organization_harness_session(*, native, resources, authority, check, o
         def active_authority():
             bridge.access()
             return authority()
+        def dispatch_authority():
+            bridge.model_access()
+            return authority()
         token = secrets.token_urlsafe(32)
         role = budget.roles['lead']
         dispatch = HarnessDispatchHost(store=budget.store, owner=budget.owner, budget=budget.budget,
-            execution_id=tid, run_id=rid, manifest_digest=grant['manifest_digest'], authority=active_authority,
+            execution_id=tid, run_id=rid, manifest_digest=grant['manifest_digest'], authority=dispatch_authority,
             prices=budget.prices[options['model']], provider=options['provider'], basis=options['token_budget_basis'],
             reservation_micros=role['reservation_micros'], reservation_basis=role['reservation_basis'],
             receipts=run_directory / 'wire', wire_usage=lambda _: None, public_sink=phase_arguments['public_sink'])

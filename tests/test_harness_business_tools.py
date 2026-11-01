@@ -137,6 +137,35 @@ async def test_interrupted_read_resumes_exact_pending_call_preserving_successes(
 
 
 @pytest.mark.anyio
+async def test_client_timeout_cannot_dispatch_while_server_read_is_unresolved(tmp_path):
+    import asyncio
+    started, release = asyncio.Event(), asyncio.Event()
+    @tool
+    async def slow_read():
+        """Simulate an MCP server read outliving its client timeout."""
+        started.set()
+        await release.wait()
+        return 'late original result'
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'tools.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=[GrantedTool(slow_read, 'read', 'fixture')],
+            checkpointer=saver, thread_id='t', check=lambda: None)
+        await bridge.initialize({'messages': []})
+        task = asyncio.create_task(bridge.execute('slow_read', {}))
+        await started.wait()
+        with pytest.raises(RuntimeError, match='effect_unresolved'):
+            bridge.model_access()
+        release.set()
+        with pytest.raises(RuntimeError, match='stopped'):
+            await task
+        with pytest.raises(RuntimeError, match='stopped'):
+            bridge.model_access()
+        restored = HarnessBusinessTools(grants=[GrantedTool(slow_read, 'read', 'fixture')],
+            checkpointer=saver, thread_id='t', check=lambda: None)
+        await restored.initialize({}, recovering=True)
+        assert (await restored.state())['messages'][-1].content == 'late original result'
+
+
+@pytest.mark.anyio
 async def test_recovery_does_not_replay_unknown_write_effect(tmp_path):
     writes = []
     @tool

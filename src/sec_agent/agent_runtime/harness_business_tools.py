@@ -55,6 +55,15 @@ class HarnessBusinessTools:
             raise RuntimeError('harness_execution_stopped')
         self.check()
 
+    def model_access(self):
+        # An MCP client can time out before the server's tool task ends. The
+        # upstream loop may then request another model turn. Do not turn an
+        # unresolved tool effect into a paid opportunity to guess what happened.
+        if self.lock.locked():
+            self.stop()
+            raise RuntimeError('harness_tool_effect_unresolved_before_model_dispatch')
+        self.access()
+
     async def _checkpoint_call(self, method, *args, **kwargs):
         # MCP is served from inside the Agent Server's graph task. Its ambient
         # replay/checkpoint callbacks belong to that outer run, not this

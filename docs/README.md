@@ -1,6 +1,6 @@
 # FinSight 文档
 
-执行内核收缩与上游选型见[采用成熟 harness 的边界与资格](architecture/harness_adoption.zh-CN.md)：DS Harness / ACP 为集成候选，当前服务未切换；Codex 无模型工具链与 DS 传输层验证的范围分别记录。
+执行内核收缩与上游选型见[采用成熟 harness 的边界与资格](architecture/harness_adoption.zh-CN.md)：DS Harness / ACP 已接入隔离服务的指定迁移任务，Java/BFF 恢复与真实工具回读已运行；完整研究、真实压缩及全部新任务入口切换仍待验收。Codex 无模型工具链与 DS 传输层验证的范围分别记录。
 
 连续问答、底稿、委派、复核与成文的统一入口设计见[研究伙伴产品边界](product/research_partner_workflow.zh-CN.md)与[按需研究运行时第一阶段](architecture/on_demand_research_runtime.zh-CN.md)。A1 交付意图合同与 A2 Java/BFF 准备准入离线回归通过；C研究侧内部统一主入口与按需操作已实现，尚未公开部署。目标是新任务仅保留一个生产调度入口，旧完整图仅作历史运行兼容。
 

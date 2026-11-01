@@ -45,7 +45,8 @@ def finish(document):
         while parent and parent.get('navigation_status') == 'compatibility_only':
             parent = by_id.get(parent.get('parent_id'))
         row['parent_block'] = parent['block'] if parent else None
-        row['level'] = max(1, row['level'] - hidden_ancestors)
+        if row['level'] is not None:
+            row['level'] = max(1, row['level'] - hidden_ancestors)
     document['native_adaptation_version'] = 'native_structure_v2'
     document['quality_status'] = 'requires_original_based_quality_review'
     from validate_source_structure_audit import validate

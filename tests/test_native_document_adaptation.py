@@ -66,6 +66,27 @@ def sec_fixture():
     return capture,dict(route='edgartools',blocks=blocks,chapter_tree=tree,source_containers=[])
 
 
+def test_no_native_scope_preserves_unknown_level_without_inventing_one():
+    native, previous = sec_fixture()
+    native['native']['sections'] = {}
+    previous['chapter_tree'][0]['level'] = None
+    before = copy.deepcopy(previous)
+    result = adapt(native, previous)
+    assert result['outline'][0]['level'] is None
+    assert result['chapter_tree'][0]['level'] is None
+    assert previous == before
+
+
+def test_hidden_parent_does_not_turn_unknown_level_into_guessed_depth():
+    from native_document_adaptation import finish
+    _, previous = sec_fixture()
+    previous['chapter_tree'][0]['navigation_status'] = 'compatibility_only'
+    previous['chapter_tree'][1].update(level=None, parent_id='chapter:0')
+    result = finish(previous)
+    assert result['outline'][0]['level'] is None
+    assert result['outline'][0]['parent_block'] is None
+
+
 def test_sec_consumes_membership_without_rewriting_text_or_hiding_unscoped_headings():
     native, old=sec_fixture(); before=copy.deepcopy(old)
     doc=adapt(native,old)

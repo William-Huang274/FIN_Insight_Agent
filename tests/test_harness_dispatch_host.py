@@ -181,3 +181,16 @@ def test_declared_model_and_limits_cannot_be_changed_by_request(setup):
     for bad in [{**request, 'model':'unpriced'}, {**request, 'messages':['x'*1_000_001]}]:
         with pytest.raises(DispatchBlocked): host.reserve(str(uuid4()), bad)
     assert not args['store'].rows
+
+
+def test_host_capacity_above_legacy_ceiling_still_enforces_admission(setup):
+    _, args, _, _, request = setup
+    args['basis'] = {**args['basis'], 'max_input_characters': 8_000_000, 'max_output_tokens': 65_536}
+    host = HarnessDispatchHost(**args)
+    with pytest.raises(DispatchBlocked, match='output_basis'):
+        host.reserve(str(uuid4()), {**request, 'maxTokens': 65_537})
+    with pytest.raises(DispatchBlocked, match='input_basis'):
+        host.reserve(str(uuid4()), {**request, 'maxTokens': 65_536, 'messages': ['x'*8_000_001]})
+    assert not args['store'].rows
+    assert host.reserve(str(uuid4()), {**request, 'maxTokens': 65_536,
+        'messages': ['x'*1_000_001]})['status'] == 'reserved'

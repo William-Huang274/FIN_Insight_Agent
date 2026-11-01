@@ -13,6 +13,7 @@ import json
 from uuid import uuid4
 
 from langchain_core.messages import AIMessage, ToolMessage
+from langchain_core.runnables.config import set_config_context
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode
 from mcp.server import Server
@@ -23,6 +24,7 @@ from .on_demand_research import OnDemandResearchState
 
 class HarnessBusinessState(OnDemandResearchState):
     harness_command_id: str
+    harness_import_digest: str
     report_draft: dict | None
     report_draft_base_version: int | None
 
@@ -52,31 +54,57 @@ class HarnessBusinessTools:
             raise RuntimeError('harness_execution_stopped')
         self.check()
 
+    async def _checkpoint_call(self, method, *args, **kwargs):
+        # MCP is served from inside the Agent Server's graph task. Its ambient
+        # replay/checkpoint callbacks belong to that outer run, not this
+        # independent, persistent tool ledger. Retain other ContextVars (notably
+        # the finance authorization scope), replacing only Runnable context.
+        with set_config_context(self.config) as context:
+            return await asyncio.create_task(method(*args, **kwargs), context=context)
+
     async def initialize(self, admitted_state):
         """Import genuine old receipts once, never an old generated summary."""
         async with self.lock:
             await asyncio.to_thread(self.access)
-            current = await self.graph.aget_state(self.config)
+            current = await self._checkpoint_call(self.graph.aget_state, self.config)
             if current.next:
                 # Unknown effects need reconciliation, not a replay that might
                 # append the same note or dispatch a paid data request twice.
                 raise RuntimeError('harness_business_tool_interrupted_reconcile_before_resume')
             if not current.values:
-                await self.graph.aupdate_state(self.config, admitted_state, as_node='tools')
+                await self._checkpoint_call(self.graph.aupdate_state, self.config, admitted_state, as_node='tools')
 
     async def state(self):
         await asyncio.to_thread(self.access)
-        return (await self.graph.aget_state(self.config)).values
+        return (await self._checkpoint_call(self.graph.aget_state, self.config)).values
+
+    async def import_receipts(self, imported):
+        """One explicit migration, with stable ids and no state replacement."""
+        async with self.lock:
+            await asyncio.to_thread(self.access)
+            current = await self._checkpoint_call(self.graph.aget_state, self.config)
+            prior = current.values.get('harness_import_digest')
+            if prior:
+                if prior != imported['harness_import_digest']:
+                    raise ValueError('harness_legacy_import_identity_changed')
+                return
+            if current.next:
+                raise RuntimeError('harness_business_tool_interrupted_reconcile_before_import')
+            known = {m.id: m for m in current.values.get('messages', []) if m.id}
+            for message in imported['messages']:
+                if message.id in known and message != known[message.id]:
+                    raise ValueError('harness_legacy_import_message_conflict')
+            await self._checkpoint_call(self.graph.aupdate_state, self.config, imported, as_node='tools')
 
     async def begin_command(self, command_id, *, recovering=False):
         async with self.lock:
             await asyncio.to_thread(self.access)
-            current = (await self.graph.aget_state(self.config)).values
+            current = (await self._checkpoint_call(self.graph.aget_state, self.config)).values
             if current.get('harness_command_id') != command_id:
                 changes = {'harness_command_id': command_id}
                 if not recovering:
                     changes['delivery'] = None
-                await self.graph.aupdate_state(self.config, changes, as_node='tools')
+                await self._checkpoint_call(self.graph.aupdate_state, self.config, changes, as_node='tools')
 
     async def list_tools(self, ctx, params):
         await asyncio.to_thread(self.access)
@@ -101,7 +129,7 @@ class HarnessBusinessTools:
             call_id = 'fin-tool-' + str(uuid4())
             try:
                 with self.scope():
-                    output = await self.graph.ainvoke({'messages': [AIMessage(content='', tool_calls=[
+                    output = await self._checkpoint_call(self.graph.ainvoke, {'messages': [AIMessage(content='', tool_calls=[
                         {'name': name, 'args': arguments, 'id': call_id, 'type': 'tool_call'}])]}, self.config)
                 await asyncio.to_thread(self.access)
                 return next(m for m in reversed(output['messages'])

@@ -96,6 +96,11 @@ async def organization_harness_session(*, native, resources, authority, check, o
     async with AsyncSqliteSaver.from_conn_string(str(directory / 'business-checkpoint.sqlite')) as saver:
         bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope)
         await bridge.initialize({**admitted, 'question': grant['question']})
+        if options.get('legacy_receipt_import'):
+            from .harness_legacy_import import legacy_receipts
+            await asyncio.to_thread(check)
+            imported = await asyncio.to_thread(legacy_receipts, options['legacy_receipt_import'], grant=grant)
+            await bridge.import_receipts(imported)
         def active_authority():
             bridge.access()
             return authority()
@@ -165,9 +170,10 @@ async def organization_harness_session(*, native, resources, authority, check, o
                     if new_session:
                         # Explicit lineage only: never insert an old summary or
                         # old assistant/tool messages into the new native log.
-                        receipts = [m for m in admitted.get('messages', []) if isinstance(m, ToolMessage)]
+                        receipts = [m for m in (await bridge.state()).get('messages', []) if isinstance(m, ToolMessage)]
                         request = json.dumps({'original_question': grant['question'], 'current_command': request,
                             'handoff': {'kind': 'imported_fin_tool_records_not_native_acp_history', 'checkpoint_id': checkpoint,
+                                'source_checkpoint': options.get('legacy_receipt_import', {}).get('source_checkpoint'),
                                 'successful_receipts': [{'tool_call_id': m.tool_call_id, 'tool': m.name}
                                                        for m in receipts if m.status == 'success' and m.name in SAVED_RESULT_TOOLS],
                                 'readback': 'browse_context for saved receipt keys; read_saved_result for exact contents; ReadWorkingNote/SearchWorkingNotes for saved understanding'}}, ensure_ascii=False)

@@ -20,6 +20,32 @@ from sec_agent.agent_runtime.harness_acp_session import admitted_acp_session
 
 
 @pytest.mark.anyio
+async def test_business_graph_inside_parent_task_keeps_its_own_checkpoint(tmp_path):
+    from langgraph.graph import StateGraph, START, END
+    from langgraph.checkpoint.memory import InMemorySaver
+    from sec_agent.agent_runtime.harness_business_tools import HarnessBusinessState
+    @tool
+    def read_existing():
+        """Read the saved research fixture."""
+        return 'existing evidence'
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'tools.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=[GrantedTool(read_existing, 'read', 'fixture')],
+            checkpointer=saver, thread_id='fixture', check=lambda: None)
+        await bridge.initialize({'question': 'original', 'messages': []})
+        async def work(state):
+            receipt = await bridge.execute('read_existing', {})
+            assert receipt.content == 'existing evidence'
+            return {'messages': [receipt]}
+        g = StateGraph(HarnessBusinessState)
+        g.add_node('work', work); g.add_edge(START, 'work'); g.add_edge('work', END)
+        parent = g.compile(checkpointer=InMemorySaver())
+        await parent.ainvoke({'question': 'outer', 'messages': []}, {'configurable': {'thread_id': 'fixture'}})
+        business = await bridge.state()
+        assert business['question'] == 'original'
+        assert len([m for m in business['messages'] if isinstance(m, ToolMessage)]) == 1
+
+
+@pytest.mark.anyio
 async def test_real_calculator_preserves_sources_across_bridge_restart(tmp_path):
     source = {'numeric_fact_id': 'NUMFACT::test', 'result_state': 'numeric_fact',
               'numeric_fact_authority': True, 'value_decimal': '120', 'unit': 'USD million',

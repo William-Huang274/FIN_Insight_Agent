@@ -99,6 +99,64 @@ async def test_tool_failure_stops_following_calls_but_selection_feedback_does_no
 
 
 @pytest.mark.anyio
+async def test_interrupted_read_resumes_exact_pending_call_preserving_successes(tmp_path):
+    calls = []
+    broken = True
+    @tool
+    def read_research_source(key: str):
+        """Read the original source."""
+        calls.append(key)
+        if key == 'second' and broken:
+            raise OSError('storage unavailable')
+        return 'original:' + key
+    grants = [GrantedTool(read_research_source, 'read', 'fixture')]
+    grants += [g for g in conversation_tools(thread_id='t') if g.tool.name == 'read_saved_result']
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'tools.sqlite')) as saver:
+        first = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='t', check=lambda: None)
+        await first.initialize({'messages': [], 'question': 'original'})
+        saved = await first.execute('read_research_source', {'key': 'first'})
+        with pytest.raises(OSError):
+            await first.execute('read_research_source', {'key': 'second'})
+        second = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='t', check=lambda: None)
+        with pytest.raises(RuntimeError, match='reconcile_before_resume'):
+            await second.initialize({})
+        broken = False
+        recovery = await second.initialize({}, recovering=True)
+        assert recovery['tool'] == 'read_research_source'
+        messages = (await second.state())['messages']
+        assert saved in messages
+        assert messages[-1].content == 'original:second'
+        assert messages[-1].tool_call_id == recovery['receipt_id']
+        assert await second.initialize({}, recovering=True) is None
+        assert calls == ['first', 'second', 'second']
+        reread = await second.execute('read_saved_result', {'tool_call_id': recovery['receipt_id']})
+        assert reread.status == 'success' and 'original:second' in reread.content
+        assert calls == ['first', 'second', 'second']
+        history = [s async for s in saver.alist(second.config)]
+        assert any(any(w[1] == '__error__' for w in (s.pending_writes or [])) for s in history)
+
+
+@pytest.mark.anyio
+async def test_recovery_does_not_replay_unknown_write_effect(tmp_path):
+    writes = []
+    @tool
+    def save_note():
+        """Save a note and simulate an unknown acknowledgement."""
+        writes.append('saved')
+        raise OSError('acknowledgement missing')
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'tools.sqlite')) as saver:
+        grants = [GrantedTool(save_note, 'working_note_write', 'fixture')]
+        first = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='t', check=lambda: None)
+        await first.initialize({'messages': []})
+        with pytest.raises(OSError):
+            await first.execute('save_note', {})
+        second = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='t', check=lambda: None)
+        with pytest.raises(RuntimeError, match='reconcile_before_resume'):
+            await second.initialize({}, recovering=True)
+        assert writes == ['saved']
+
+
+@pytest.mark.anyio
 async def test_session_binding_resume_completed_reuse_and_private_events(tmp_path):
     from acp.schema import InitializeResponse, NewSessionResponse, PromptResponse, AgentMessageChunk, TextContentBlock
     actions = []

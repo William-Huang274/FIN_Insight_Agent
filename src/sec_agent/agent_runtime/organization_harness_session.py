@@ -101,7 +101,10 @@ async def organization_harness_session(*, native, resources, authority, check, o
     scope = lambda: native_memory_scope(owner, tid, access_check=check, allow_remote_search=False)
     async with AsyncSqliteSaver.from_conn_string(str(directory / 'business-checkpoint.sqlite')) as saver:
         bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope)
-        await bridge.initialize({**admitted, 'question': grant['question']})
+        recovery_receipt = await bridge.initialize({**admitted, 'question': grant['question']},
+            recovering=grant.get('report_action_request', {}).get('action') == 'recover')
+        if recovery_receipt:
+            _persist(run_directory / 'tool-recovery.json', recovery_receipt)
         if options.get('legacy_receipt_import'):
             from .harness_legacy_import import legacy_receipts
             await asyncio.to_thread(check)
@@ -173,6 +176,9 @@ async def organization_harness_session(*, native, resources, authority, check, o
                         environment=child_env, directory=session_directory, binding=binding, run_id=rid,
                         authority=active_authority, stop=bridge.stop, mcp_servers=servers) as session:
                     request = state['messages'][-1].content
+                    if recovery_receipt:
+                        request = json.dumps({'current_command': request,
+                            'runtime_recovery': recovery_receipt}, ensure_ascii=False)
                     if new_session:
                         # Explicit lineage only: never insert an old summary or
                         # old assistant/tool messages into the new native log.

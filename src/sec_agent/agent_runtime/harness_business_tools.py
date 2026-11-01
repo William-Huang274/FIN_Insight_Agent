@@ -36,6 +36,7 @@ class HarnessBusinessTools:
         self.stopped = False
         self.config = {'configurable': {'thread_id': thread_id}}
         self.tools = {g.tool.name: g.tool for g in grants}
+        self.effects = {g.tool.name: g.effect for g in grants}
         if len(self.tools) != len(grants) or any(g.effect not in {'read', 'working_note_write', 'task_artifact_write'} for g in grants):
             raise ValueError('harness_business_grant_not_admitted')
         graph = StateGraph(HarnessBusinessState)
@@ -62,15 +63,29 @@ class HarnessBusinessTools:
         with set_config_context(self.config) as context:
             return await asyncio.create_task(method(*args, **kwargs), context=context)
 
-    async def initialize(self, admitted_state):
+    async def initialize(self, admitted_state, *, recovering=False):
         """Import genuine old receipts once, never an old generated summary."""
         async with self.lock:
             await asyncio.to_thread(self.access)
             current = await self._checkpoint_call(self.graph.aget_state, self.config)
             if current.next:
-                # Unknown effects need reconciliation, not a replay that might
-                # append the same note or dispatch a paid data request twice.
-                raise RuntimeError('harness_business_tool_interrupted_reconcile_before_resume')
+                calls = getattr(current.values.get('messages', [])[-1], 'tool_calls', [])
+                # Each bridge operation has one call. Only a signed recovery
+                # may resume a read; unknown write effects remain blocked.
+                if (not recovering or tuple(current.next) != ('tools',) or len(calls) != 1
+                        or self.effects.get(calls[0]['name']) != 'read'):
+                    raise RuntimeError('harness_business_tool_interrupted_reconcile_before_resume')
+                with self.scope():
+                    output = await self._checkpoint_call(self.graph.ainvoke, None, self.config)
+                await asyncio.to_thread(self.access)
+                receipt = next(m for m in reversed(output['messages'])
+                    if isinstance(m, ToolMessage) and m.tool_call_id == calls[0]['id'])
+                if receipt.status != 'success':
+                    raise RuntimeError('harness_business_read_recovery_not_successful')
+                return {'kind': 'recovered_read_receipt', 'tool': calls[0]['name'],
+                        'receipt_id': receipt.tool_call_id,
+                        'readback': 'read_saved_result',
+                        'previous_error_retained_in_checkpoint_history': True}
             if not current.values:
                 await self._checkpoint_call(self.graph.aupdate_state, self.config, admitted_state, as_node='tools')
 

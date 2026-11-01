@@ -16,6 +16,8 @@ def audit(directory):
     for row in summary['rows']:
         sid=row['source_sha256']; status=row['status']
         families.setdefault(row['family'],Counter())[status]+=1
+        if status not in {'adapted_requires_quality_review', 'existing_route_retained_not_native_adapted', 'native_captured_adaptation_pending'}:
+            findings.append(dict(id=sid,problem='qualification_row_not_successful',status=status))
         if status!='adapted_requires_quality_review':continue
         capture=Path(row.get('capture_directory',directory/'captures'/sid)); adapted=directory/'adapted'/sid
         receipt=json.loads((capture/'receipt.json').read_bytes()); record=row['receipt']

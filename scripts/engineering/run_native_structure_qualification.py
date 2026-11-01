@@ -10,8 +10,25 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import shutil
 
 HERE = Path(__file__).resolve().parent
+
+
+def run_child(command, log, timeout):
+    """Keep a failed/timeout attempt visible; never retry implicitly."""
+    try:
+        result = subprocess.run(command, capture_output=True, text=True,
+                                encoding='utf-8', errors='replace', timeout=timeout)
+        output = result.stdout + result.stderr
+        status = result.returncode
+    except subprocess.TimeoutExpired as exc:
+        def decode(value):
+            return value.decode('utf-8', errors='replace') if isinstance(value, bytes) else value or ''
+        output = decode(exc.stdout) + decode(exc.stderr) + '\nqualification_child_timeout\n'
+        status = 124
+    log.write_text(output, encoding='utf-8')
+    return status
 
 
 def route(row):
@@ -40,7 +57,11 @@ def main():
     p.add_argument('--plan',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--reuse-captures',type=Path)
+    p.add_argument('--minimum-free-mib', type=int, default=2048)
+    p.add_argument('--child-timeout-seconds', type=int, default=600)
     a=p.parse_args(); a.output.mkdir(parents=True,exist_ok=True)
+    if a.minimum_free_mib < 0 or a.child_timeout_seconds <= 0:
+        raise ValueError('invalid_resource_limit')
     stamp=identity(a.manifest,a.plan);stamp['reuse_captures']=str(a.reuse_captures) if a.reuse_captures else None
     path=a.output/'identity.json'
     if path.exists() and json.loads(path.read_bytes()) != stamp:
@@ -48,13 +69,15 @@ def main():
     path.write_text(json.dumps(stamp,indent=2),encoding='utf-8')
     plan=[json.loads(l) for l in a.plan.read_text(encoding='utf-8-sig').splitlines() if l.strip()]
     results=[]
-    def save():
+    def save(stop_reason=None):
         summary=dict(planned_originals=len(plan),processed_rows=len(results),
+                     pending_originals=len(plan)-len(results),stop_reason=stop_reason,
                      statuses=dict(Counter(r['status'] for r in results)),rows=results,
                      full_library_quality_pass=False,provider_calls=0,published=False)
         temp=a.output/'summary.tmp'
         temp.write_text(json.dumps(summary,ensure_ascii=False,indent=2),encoding='utf-8')
         temp.replace(a.output/'summary.json')
+    save('running')
     for row in plan:
         source=row['original_id']; parser, can_adapt=route(row)
         result=dict(source_sha256=source,family=row['family'],title=row['title'],route=parser)
@@ -64,13 +87,20 @@ def main():
         capture=(a.reuse_captures or (a.output/'captures'))/source; projection=a.output/'adapted'/source
         result['capture_directory']=str(capture)
         receipt=capture/'receipt.json'
+        if shutil.disk_usage(a.output).free < a.minimum_free_mib * 1024 * 1024:
+            save('insufficient_output_disk_space'); return 3
         if not receipt.exists():
             if a.reuse_captures:
                 result['status']='native_capture_failed';results.append(result);save();continue
             command=[sys.executable,str(HERE/'native_document_capture.py'),'--manifest',str(a.manifest),
                      '--id',source,'--route',parser,'--compare-fin','--output',str(capture)]
-            run=subprocess.run(command,capture_output=True,text=True,encoding='utf-8',errors='replace')
-            (a.output/(source+'.capture.log')).write_text(run.stdout+run.stderr,encoding='utf-8')
+            if capture.exists():
+                result['status']='native_capture_incomplete_attempt_requires_review'
+                results.append(result); save(); continue
+            code=run_child(command,a.output/(source+'.capture.log'),a.child_timeout_seconds)
+            if code != 0:
+                result.update(status='native_capture_failed',child_exit_code=code)
+                results.append(result);save();continue
         if not receipt.exists() or json.loads(receipt.read_bytes())['status']!='captured':
             result['status']='native_capture_failed'; results.append(result); save(); continue
         native_receipt=json.loads(receipt.read_bytes())
@@ -85,11 +115,16 @@ def main():
         else:
             adapted_receipt=projection/'receipt.json'
             if not adapted_receipt.exists():
+                if projection.exists():
+                    result['status']='native_adaptation_incomplete_attempt_requires_review'
+                    results.append(result);save();continue
                 command=[sys.executable,str(HERE/'native_document_adaptation.py'),
                          '--capture',str(capture),'--output',str(projection),
                          '--baseline-artifact',row['artifact_path'],'--baseline-sha256',row['artifact_sha256']]
-                run=subprocess.run(command,capture_output=True,text=True,encoding='utf-8',errors='replace')
-                (a.output/(source+'.adapt.log')).write_text(run.stdout+run.stderr,encoding='utf-8')
+                code=run_child(command,a.output/(source+'.adapt.log'),a.child_timeout_seconds)
+                if code != 0:
+                    result.update(status='adaptation_failed',child_exit_code=code)
+                    results.append(result);save();continue
             if adapted_receipt.exists():
                 record=json.loads(adapted_receipt.read_bytes())
                 if sha256((projection/'document.json.gz').read_bytes()).hexdigest()!=record['artifact_sha256']:
@@ -99,7 +134,8 @@ def main():
                 result['status']='adaptation_failed'
         results.append(result); save()
         print(json.dumps(dict(completed=len(results),total=len(plan),id=source,status=result['status'])),flush=True)
-    return int(any(r['status'] in {'native_capture_failed','adaptation_failed'} for r in results))
+    save('completed')
+    return int(any('failed' in r['status'] or 'incomplete_attempt' in r['status'] for r in results))
 
 
 if __name__=='__main__':raise SystemExit(main())

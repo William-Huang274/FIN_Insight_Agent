@@ -117,3 +117,16 @@ python scripts/engineering/build_native_structure_expansion_plan.py --bindings <
 首次全库扩量计划实际核对 1,742 条绑定、1,187 个原件的基线：734 SEC、19 Markdown、84 网页、45 PDF、305 JSON/XML；另有 409 条缺原件来源。540 个原件无当前诊断，647 个有诊断，两组均保留审核要求。753 个 SEC/Markdown 原件具备候选适配输入条件，表示可启动处理，不表示已执行或质量合格。该计划只读既有原件和基线，不改产品选择。
 
 随后完成全部 19 份 Markdown 模型卡的原生捕获、章节及预分块，输入使用上述冻结计划，未调用模型。19 份源行分区均可完整还原，执行失败为零；原生语法含 222 个标题、23 张表、19 个前置元数据块。16 份原件含 65 个嵌入 HTML 块，继续标记结构待解析；9 份含表格，需要核对单元格与原行，不能用源文保留替代表格正确性。该批是该路径全量工程复验，不是独立质量保留集，也不代表这些结构全部识别正确。
+
+## 8. 网页原生结构消费及批量运行保护
+
+`native_web_adaptation.py` 消费已冻结的 Trafilatura 正文 XML，保存完整元素树字段、属性、链接、文本与尾文本。显式标题级别驱动候选章节，段落与列表沿原生顺序分块；表格保存完整 XML、单元格与原生跨行跨列字段，评论独立保留。元数据标题不自动提升为原件主标题，未知级别保留未知；此路径不新增财务事实。
+
+原生 XML 路径只能证明在提取结果内的位置，不能冒充原 HTML 的定位。候选文档明确记录 `original_location_status=not_mapped_from_native_xml`、`page_purpose=unreviewed` 及原正文覆盖未验证。所有原生文本分区需可还原，既有修复基线通过摘要核对并单独保留，不用新候选覆盖。该机制检查“适配是否丢掉库的输出”，原库是否提取错正文、遗漏网页内容仍须对照原件审核。
+
+```powershell
+python scripts/engineering/native_web_adaptation.py --capture <capture-dir> --baseline-artifact <repaired-baseline.json.gz> --baseline-sha256 <sha256> --output <new-candidate-dir>
+python scripts/engineering/audit_native_web_results.py --directory <web-qualification-dir> --output <integrity.json>
+```
+
+SEC 批量驱动增加 `--minimum-free-mib`（默认 2048）和 `--child-timeout-seconds`（默认 600）。开始每份前检查产物盘余量，超时保留部分日志及退出状态；不隐式重试存在但无完整回执的失败目录。汇总同时保留完整计划数、已处理数与未处理数。空间不足返回 3；单份失败不删除分母，不授予质量通过。工程审核把失败/未完成尝试列为发现，不能因其没有候选产物而漏报。

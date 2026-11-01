@@ -9,6 +9,17 @@ from native_document_adaptation import adapt
 from finalize_structure_prechunks import classify
 
 
+def test_title_audit_distinguishes_identifiers_from_unresolved_internal_keys():
+    from audit_native_chapter_compatibility import internal_key_displayed
+    def node(title, status='heading_not_bound'):
+        return dict(title=title, native_section_key=title, title_binding=dict(status=status))
+    assert internal_key_displayed(node('part_i_item_1'))
+    assert not internal_key_displayed(node('Item 5'))
+    assert not internal_key_displayed(node('Item 3.03'))
+    assert not internal_key_displayed(node('SIGNATURES', 'bound_heading'))
+    assert internal_key_displayed(node('Item 5_unverified_internal'))
+
+
 def test_markdown_tokens_drive_chapters_tables_and_lossless_source_partition():
     pytest.importorskip('mdit_py_plugins')
     raw = b'---\nlicense: apache\n---\n\nTitle\n=====\n\n## Detail\n\nComplete sentence. Next sentence.\n\n| A | B |\n|---|---|\n| 1 | 2 |\n'
@@ -59,10 +70,12 @@ def test_sec_consumes_membership_without_rewriting_text_or_hiding_unscoped_headi
     native, old=sec_fixture(); before=copy.deepcopy(old)
     doc=adapt(native,old)
     assert [b['text'] for b in doc['blocks']] == [b['text'] for b in old['blocks']]
-    assert doc['blocks'][0]['chapter_ids'] == []
+    assert doc['blocks'][0]['chapter_ids'] == ['chapter:0']
+    assert doc['blocks'][0]['chapter_binding_status'] == 'prior_scope_unverified'
+    assert all(n['title'] != 'Cover' for n in doc['outline'])
     assert doc['unscoped_chapter_tree'][0]['title'] == 'Cover'
     assert doc['blocks'][2]['chapter_ids'] == ['native-section:item1']
-    assert doc['chapter_tree'][0]['native_section']['validated'] is False
+    assert next(n for n in doc['chapter_tree'] if n['id']=='native-section:item1')['native_section']['validated'] is False
     assert old == before
 
 
@@ -70,13 +83,104 @@ def test_sec_path_match_does_not_authorize_changed_or_ambiguous_text():
     native, old=sec_fixture(); old['blocks'][2]['text']='Expanded body spanning another section.'
     doc=adapt(native,old)
     assert doc['blocks'][2]['native_section_binding']['status']=='unresolved_native_membership'
-    assert doc['blocks'][2]['chapter_ids']==[]
+    assert doc['blocks'][2]['chapter_ids']==['native-section:item1']
+    assert doc['blocks'][2]['chapter_binding_status']=='prior_scope_unverified'
     native, old=sec_fixture()
     native['native']['sections']['another']=copy.deepcopy(native['native']['sections']['item1'])
     doc=adapt(native,old)
     assert doc['blocks'][2]['native_section_binding']['status']=='ambiguous_native_membership'
     assert doc['native_tree_status']=='existing_tree_retained_no_native_scope'
     assert doc['blocks'][2]['chapter_ids']==['chapter:1']
+
+
+def test_partial_membership_preserves_table_and_subheading_with_explicit_prior_status():
+    native, old = sec_fixture()
+    old['blocks'].extend([
+        dict(kind='heading',text='Equity',chapter_ids=['chapter:1','chapter:3']),
+        dict(kind='table',text='100',rows=[[{'text':'100'}]],chapter_ids=['chapter:1','chapter:3'],embedded_chapter_ids=['chapter:3']),
+    ])
+    old['chapter_tree'].append(dict(id='chapter:3',block=3,title='Equity',level=2,parent_id='chapter:1',basis='source_heading'))
+    before=copy.deepcopy(old)
+    doc=adapt(native,old)
+    assert doc['blocks'][4]['chapter_ids']==['native-section:item1','chapter:3']
+    assert doc['blocks'][4]['embedded_chapter_ids']==['chapter:3']
+    assert doc['blocks'][4]['native_section_binding']['status']=='unresolved_native_membership'
+    assert doc['blocks'][4]['chapter_binding_status']=='prior_scope_unverified'
+    assert next(n for n in doc['chapter_tree'] if n['id']=='chapter:3')['parent_id']=='native-section:item1'
+    assert next(c for c in doc['pre_chunks'] if c['block']==4)['chapter_ids']==doc['blocks'][4]['chapter_ids']
+    assert old==before
+
+
+def test_navigation_skips_unverified_ancestor_but_preserves_full_evidence_path():
+    native,old=sec_fixture()
+    native['native']['nodes'].append(dict(ref='d',rendered_text='Detail',fields={'type':{'name':'HEADING'},'children':[]}))
+    native['native']['nodes'][0]['fields']['children'].append({'$node':'d'})
+    native['native']['nodes'][-2]['fields']['children'].append({'$node':'d'})
+    old['blocks'].extend([
+        dict(kind='heading',text='Unmapped heading',chapter_ids=['chapter:1','chapter:3']),
+        dict(kind='heading',text='Detail',native_container_id='0/3',chapter_ids=['chapter:1','chapter:3','chapter:4'])])
+    old['chapter_tree'].extend([
+        dict(id='chapter:3',block=3,title='Unmapped heading',level=2,parent_id='chapter:1',basis='old'),
+        dict(id='chapter:4',block=4,title='Detail',level=3,parent_id='chapter:3',basis='old')])
+    doc=adapt(native,old)
+    assert doc['blocks'][4]['chapter_ids']==['native-section:item1','chapter:3','chapter:4']
+    row=next(n for n in doc['outline'] if n['block']==4)
+    assert row['parent_block']==1
+    assert row['level']==2
+
+
+def test_internal_section_key_uses_bound_title_and_keeps_original_key():
+    native,old=sec_fixture()
+    native['native']['sections']['item1']['fields'].update(title='part_i_item_1',name='part_i_item_1',item='1')
+    native['native']['nodes'][2]['rendered_text']='Item 1. Business'
+    old['blocks'][1]['text']='Item 1. Business';old['chapter_tree'][1]['title']='Item 1. Business'
+    doc=adapt(native,old);node=next(n for n in doc['chapter_tree'] if n['id']=='native-section:item1')
+    assert node['title']=='Item 1. Business'
+    assert node['title_binding']['status']=='bound_heading'
+    assert node['native_section']['title']=='part_i_item_1'
+
+
+def test_decimal_item_identity_and_part_caption_are_compatible_without_duplicates():
+    native,old=sec_fixture()
+    native['native']['sections']['item1']['fields'].update(title='item_303',name='item_303',item='303',part='II')
+    native['native']['nodes'][2]['rendered_text']='Item 3.03 Material Modification to Rights.'
+    old['blocks'][1]['text']='Item 3.03 Material Modification to Rights.'
+    old['chapter_tree'][1].update(title=old['blocks'][1]['text'],parent_id='chapter:0',level=2)
+    old['chapter_tree'][0]['title']='PART II – OTHER INFORMATION'
+    old['blocks'][0]['text']='PART II – OTHER INFORMATION'
+    old['blocks'][2]['text']='Unmapped expanded text.'
+    old['blocks'][2]['chapter_ids']=['chapter:0','chapter:1']
+    doc=adapt(native,old)
+    assert doc['blocks'][2]['chapter_ids']==['native-part:II','native-section:item1']
+    assert next(n for n in doc['chapter_tree'] if n['id']=='native-section:item1')['title']==old['blocks'][1]['text']
+
+
+def test_unbound_title_does_not_promote_first_body_or_erase_its_old_heading():
+    native,old=sec_fixture()
+    native['native']['sections']['item1']['fields'].update(title='item1',name='item1',item='1')
+    native['native']['nodes'][-1]['fields']['children']=[{'$node':'c'}]
+    old['blocks'][2].update(kind='heading',text='Body.',chapter_ids=['chapter:1','chapter:2'])
+    old['chapter_tree'].append(dict(id='chapter:2',block=2,title='Body.',level=2,parent_id='chapter:1',basis='old'))
+    doc=adapt(native,old);nodes={n['id']:n for n in doc['chapter_tree']}
+    assert nodes['native-section:item1']['title']=='Item 1'
+    assert nodes['native-section:item1']['title_binding']['status']=='heading_not_bound'
+    assert 'chapter:2' in nodes
+    assert doc['blocks'][2]['chapter_ids']==['native-section:item1','chapter:2']
+
+
+def test_bound_body_does_not_inherit_a_different_native_section_from_old_tree():
+    native,old=sec_fixture()
+    native['native']['nodes'].extend([
+        dict(ref='d',rendered_text='Item 2',fields={'type':{'name':'HEADING'},'children':[]}),
+        dict(ref='s2',fields={'type':{'name':'SECTION'},'children':[{'$node':'d'}]}),
+    ])
+    native['native']['nodes'][0]['fields']['children'].append({'$node':'d'})
+    native['native']['sections']['item2']={'fields':dict(node={'$node':'s2'},title='Item 2')}
+    old['blocks'].append(dict(kind='heading',text='Item 2',native_container_id='0/3',chapter_ids=['chapter:3']))
+    old['chapter_tree'].append(dict(id='chapter:3',block=3,title='Item 2',level=1,parent_id=None,basis='old'))
+    old['blocks'][2]['chapter_ids']=['chapter:3']
+    doc=adapt(native,old)
+    assert doc['blocks'][2]['chapter_ids']==['native-section:item1']
 
 
 @pytest.mark.parametrize('heading_table', [True, False])

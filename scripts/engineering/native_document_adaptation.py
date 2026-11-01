@@ -7,6 +7,7 @@ from collections import defaultdict
 from copy import deepcopy
 from hashlib import sha256
 import json
+import re
 from pathlib import Path
 import sys
 
@@ -31,13 +32,21 @@ def finish(document):
             for start, end, _ in sentence_groups(block['text']):
                 chunks.append(dict(common, kind='prose', start=start, end=end))
     document['pre_chunks'] = chunks
+    visible = [n for n in document['chapter_tree'] if n.get('navigation_status') != 'compatibility_only']
     document['outline'] = [dict(block=n['block'], title=n['title'], level=n['level'],
-                               parent_block=None, basis=n['basis']) for n in document['chapter_tree']]
+                               parent_block=None, basis=n['basis']) for n in visible]
     by_id = {n['id']: n for n in document['chapter_tree']}
-    for row, node in zip(document['outline'], document['chapter_tree']):
+    for row, node in zip(document['outline'], visible):
         parent = by_id.get(node.get('parent_id'))
+        cursor = parent; hidden_ancestors = 0
+        while cursor:
+            hidden_ancestors += cursor.get('navigation_status') == 'compatibility_only'
+            cursor = by_id.get(cursor.get('parent_id'))
+        while parent and parent.get('navigation_status') == 'compatibility_only':
+            parent = by_id.get(parent.get('parent_id'))
         row['parent_block'] = parent['block'] if parent else None
-    document['native_adaptation_version'] = 'native_structure_v1'
+        row['level'] = max(1, row['level'] - hidden_ancestors)
+    document['native_adaptation_version'] = 'native_structure_v2'
     document['quality_status'] = 'requires_original_based_quality_review'
     from validate_source_structure_audit import validate
     errors = validate(document)
@@ -105,6 +114,47 @@ def markdown_document(capture):
                                for i, b in enumerate(blocks) if b['kind'] == 'table'],
                        source_sha256=capture['source_sha256'], source_containers=[],
                        source_line_partition_complete=True))
+
+
+def section_display_title(key, fields, indices, blocks):
+    """Resolve a display label from a bound heading, never from body prose.
+
+    The upstream title can be an internal key. Keep that key separately and
+    leave a missing/ambiguous label explicit instead of inventing a heading.
+    """
+    item = fields.get('item')
+    if item:
+        pattern = re.compile(r'^item\s+(\d+(?:\.\d+)?[a-z]?)(?=[.\s:—–-]|$)', re.I)
+    elif 'signature' in key.lower():
+        pattern = re.compile(r'^signatures?\s*$', re.I)
+    else:
+        pattern = None
+    candidates = []
+    for i in indices:
+        b = blocks[i]
+        if b['kind'] != 'heading' and not b.get('structural_heading'):
+            continue
+        label = ' '.join(str(b.get('structural_heading') or b['text']).split())
+        if not label or len(label) > 500:
+            continue
+        if pattern and not pattern.match(label):
+            continue
+        if item and pattern.match(label).group(1).replace('.', '').lower() != str(item).replace('.', '').lower():
+            continue
+        if not pattern and normalized(label) != normalized(str(fields.get('title', ''))):
+            continue
+        candidates.append((i, label))
+    labels = {normalized(label) for _, label in candidates}
+    if len(labels) == 1:
+        i, label = candidates[0]
+        return label, i, dict(status='bound_heading', block=i,
+                              source_container_id=blocks[i].get('source_container_id'),
+                              membership_basis=blocks[i]['native_section_binding']['basis'])
+    fallback = str(fields.get('title') or '')
+    if fallback == key or fallback == fields.get('name'):
+        fallback = 'Item ' + str(item) if item else 'Signatures' if 'signature' in key.lower() else 'Section'
+    return fallback, min(indices), dict(status='ambiguous_heading' if candidates else 'heading_not_bound',
+                                        candidates=[i for i, _ in candidates])
 
 
 def edgar_document(capture, previous, *, native_paths_verified=True):
@@ -226,7 +276,8 @@ def edgar_document(capture, previous, *, native_paths_verified=True):
     old_by_id = {n['id']: n for n in old_tree}
     scope = {i: key for key, indices in assigned.items() for i in indices}
     for key, indices in sorted(assigned.items(), key=lambda item: min(item[1])):
-        section = native['sections'][key]; fields = section['fields']; anchor = min(indices)
+        section = native['sections'][key]; fields = section['fields']
+        title, anchor, title_binding = section_display_title(key, fields, indices, blocks)
         part = fields.get('part'); parent = None
         if part:
             parent = 'native-part:' + str(part)
@@ -234,35 +285,70 @@ def edgar_document(capture, previous, *, native_paths_verified=True):
                 parts[part] = dict(id=parent, block=anchor, title='Part '+str(part), level=1,
                                    parent_id=None, basis='native_section_part', source_container_id=None)
                 tree.append(parts[part])
-        node = dict(id='native-section:'+key, block=anchor, title=fields['title'], level=2 if part else 1,
+        node = dict(id='native-section:'+key, block=anchor, title=title, level=2 if part else 1,
                     parent_id=parent, basis='native_section_node_membership', source_container_id=None,
-                    native_section=deepcopy(fields), native_quality_status='upstream_hypothesis')
+                    native_section=deepcopy(fields), native_section_key=key, title_binding=title_binding,
+                    native_quality_status='upstream_hypothesis')
         tree.append(node); section_nodes[key] = node
-    # Existing subheading repairs survive inside their own native section. A
-    # heading outside proved membership remains in a separate unresolved ledger.
-    retained = {}
+    # Replace only proved section headings, not the first arbitrary body block.
+    replacements = {}
     for old in old_tree:
         key = scope.get(old['block'])
-        if not key or old['block'] == section_nodes[key]['block']:
-            continue
-        node = deepcopy(old); root = section_nodes[key]
-        parent = retained.get(old.get('parent_id'))
-        node['parent_id'] = parent['id'] if parent and scope.get(parent['block']) == key else root['id']
-        node['level'] = (parent['level'] if parent and node['parent_id'] == parent['id'] else root['level']) + 1
-        tree.append(node); retained[node['id']] = node
+        if key and section_nodes[key]['title_binding']['status'] == 'bound_heading' and old['block'] == section_nodes[key]['block']:
+            replacements[old['id']] = section_nodes[key]['id']
+            parent = old_by_id.get(old.get('parent_id'))
+            part = native['sections'][key]['fields'].get('part')
+            if parent and part and re.match(r'^part\s+' + re.escape(str(part)) + r'(?:\s|[.:—–-]|$)', parent['title'], re.I):
+                replacements[parent['id']] = parts[part]['id']
+    retained = {}; by_id = {n['id']: n for n in tree}
+    def retain(cid, visiting=frozenset()):
+        if cid in replacements: return by_id[replacements[cid]]
+        if cid in retained: return retained[cid]
+        if cid in visiting: raise ValueError('previous_chapter_cycle')
+        old = old_by_id[cid]; node = deepcopy(old); key = scope.get(old['block'])
+        parent = retain(old['parent_id'], visiting | {cid}) if old.get('parent_id') in old_by_id else None
+        if key:
+            root = section_nodes[key]
+            # Native membership wins over an incompatible old ancestor.
+            cursor = parent
+            while cursor and cursor['id'] != root['id']:
+                cursor = by_id.get(cursor.get('parent_id'))
+            if cursor is None: parent = root
+            node['chapter_binding_status'] = 'native_scope_existing_heading'
+        else:
+            node['chapter_binding_status'] = 'prior_scope_unverified'
+            node['navigation_status'] = 'compatibility_only'
+        node['parent_id'] = parent['id'] if parent else None
+        node['level'] = parent['level'] + 1 if parent else old['level']
+        retained[cid] = node; by_id[cid] = node; tree.append(node)
+        return node
+    for old in old_tree: retain(old['id'])
     document['unscoped_chapter_tree'] = [n for n in old_tree if n['block'] not in scope]
-    by_id = {n['id']: n for n in tree}
+    document['chapter_replacements'] = replacements
+    def ancestors(cid):
+        chain = []; node = by_id.get(cid)
+        while node:
+            chain.append(node['id']); node = by_id.get(node.get('parent_id'))
+        return list(reversed(chain))
     for i, block in enumerate(blocks):
-        block['previous_chapter_ids'] = block.get('chapter_ids', [])
+        block['previous_chapter_ids'] = list(block.get('chapter_ids', []))
         key = scope.get(i); ids = []
         if key:
             root = section_nodes[key]
-            if root['parent_id']: ids.append(root['parent_id'])
-            ids.append(root['id'])
-            ids.extend(cid for cid in block['previous_chapter_ids'] if cid in retained and scope.get(old_by_id[cid]['block']) == key)
+            ids = ancestors(root['id'])
+            for cid in block['previous_chapter_ids']:
+                mapped = replacements.get(cid, cid)
+                chain = ancestors(mapped)
+                if root['id'] in chain:
+                    ids = list(dict.fromkeys(ids + chain))
+            block['chapter_binding_status'] = 'native_scope_with_prior_subheadings' if any(by_id[c].get('chapter_binding_status') == 'prior_scope_unverified' for c in ids) else 'native_scope'
+        else:
+            for cid in block['previous_chapter_ids']:
+                ids = list(dict.fromkeys(ids + ancestors(replacements.get(cid, cid))))
+            block['chapter_binding_status'] = 'prior_scope_unverified' if ids else 'no_prior_scope'
         block['chapter_ids'] = ids
         block['chapter_blocks'] = [by_id[cid]['block'] for cid in ids]
-        block['embedded_chapter_ids'] = [cid for cid in block.get('embedded_chapter_ids', []) if cid in retained]
+        block['embedded_chapter_ids'] = list(dict.fromkeys(replacements.get(cid, cid) for cid in block.get('embedded_chapter_ids', []) if cid in old_by_id))
     document.update(chapter_tree=tree, native_section_coverage=dict(total_sections=len(native['sections']),
                     sections_with_bound_blocks=len(assigned), bound_blocks=len(scope), total_blocks=len(blocks)),
                     native_section_issues=issues, source_sha256=capture['source_sha256'])

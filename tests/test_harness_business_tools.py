@@ -31,7 +31,7 @@ async def test_real_calculator_preserves_sources_across_bridge_restart(tmp_path)
         return json.dumps(body), body
     grants = [GrantedTool(query_financial_data, 'read', 'fixture source')]
     grants += [g for g in conversation_tools(thread_id='fixture')
-               if g.tool.name in {'calculate_research_metric', 'read_saved_result'}]
+               if g.tool.name in {'calculate_research_metric', 'read_saved_result', 'browse_context'}]
     params = {'request': {'expression': 'revenue / 2',
               'operands': {'revenue': {'source_id': 'NUMFACT::test'}},
               'result_unit': 'USD million', 'rationale': 'fixture arithmetic'}}
@@ -50,6 +50,8 @@ async def test_real_calculator_preserves_sources_across_bridge_restart(tmp_path)
         read = await second.execute('read_saved_result', {'tool_call_id': receipt.tool_call_id})
         assert '120' in read.content
         assert len([m for m in (await second.state())['messages'] if isinstance(m, ToolMessage)]) == 3
+        catalog = await second.execute('browse_context', {'region': 'numbers'})
+        assert receipt.tool_call_id in catalog.content
         schema = await second.list_tools(None, None)
         assert all('runtime' not in t.input_schema.get('properties', {}) for t in schema.tools)
 

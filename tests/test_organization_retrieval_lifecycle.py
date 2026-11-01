@@ -18,6 +18,26 @@ def lifecycle(tmp_path, monkeypatch):
     return manager, reader, state, directory, grant
 
 
+def test_catalog_through_lifecycle_never_warms_or_reads_originals(tmp_path, monkeypatch):
+    manager, reader, _, _, _ = lifecycle(tmp_path, monkeypatch)
+    from sec_agent.research_foundation.organization_document_catalog import publish
+    _, manifest, _ = reader._grant()
+    publish(tmp_path / 'indices', manifest, {row['resource_id']: {
+        'ref': row['ref'], 'metadata': {}, 'original_metadata': {}} for row in manifest['inputs']})
+    stage = manager.navigation()
+    monkeypatch.setattr(manager, 'prepare', lambda **kw: pytest.fail('metadata triggered full preparation'))
+    monkeypatch.setattr(reader, '_read_storage', lambda *a, **kw: pytest.fail('metadata read an original'))
+    try:
+        result = stage.navigate({'source_space': 'organization', 'operation': 'catalog'})
+        assert result.items and all(row['result_state'] == 'document_catalog_entry' for row in result.items)
+        assert manager.status()['generation'] == 0
+        assert manager._navigation is None and stage._candidate_index is None
+    finally:
+        manager.close()
+    with pytest.raises(OrganizationExecutionUnavailable, match='closed'):
+        stage.navigate({'source_space': 'organization', 'operation': 'catalog'})
+
+
 def test_close_cancels_warmup_between_sources_without_publishing(tmp_path, monkeypatch):
     manager, reader, _, _, _ = lifecycle(tmp_path, monkeypatch)
     entered, release = Event(), Event()

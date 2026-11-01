@@ -72,7 +72,10 @@ class OrganizationSourceNavigation:
             return dict(contract)
 
     def navigate(self, request):
+        request = SourceDocumentRequest.model_validate(request)
         if self._retrieval_lifecycle is not None:
+            if request.operation == 'catalog':
+                return self._retrieval_lifecycle.catalog(self, request)
             with self._retrieval_lifecycle.access(self):
                 return self._navigate_ready(request)
         return self._navigate_ready(request)
@@ -143,7 +146,7 @@ class OrganizationSourceNavigation:
             self.observed.remember('read_source_document', result.model_dump(mode='json'))
             return result
 
-    def _catalog(self, request):
+    def _catalog(self, request, *, retrieval_root=None):
         from .source_document_navigation import SourceDocumentResult
         from .organization_source_filter import select_documents, filter_notice
         before, manifest, _ = self.reader._grant()
@@ -151,10 +154,11 @@ class OrganizationSourceNavigation:
             raise ValueError('catalog_requires_document_metadata_not_passage_locator')
         descriptors = {}
         if manifest.get('retrieval_index'):
-            if self.hybrid is None:
+            root = retrieval_root if retrieval_root is not None else self.hybrid.root if self.hybrid is not None else None
+            if root is None:
                 raise ValueError('document_catalog_requires_published_storage')
             from .organization_document_catalog import load
-            descriptors = load(self.hybrid.root, manifest)
+            descriptors = load(root, manifest)
         rows, metadata = [], {}
         for item in manifest['inputs']:
             document = self._identity(item)

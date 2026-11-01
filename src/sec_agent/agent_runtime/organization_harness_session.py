@@ -18,7 +18,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from .conversation_agent import GrantedTool, research_system_prompt
-from .conversation_tools import conversation_tools
+from .conversation_tools import conversation_tools, SAVED_RESULT_TOOLS
 from .harness_acp_session import admitted_acp_session, completed_recovery, _persist
 from .harness_business_tools import HarnessBusinessTools
 from .harness_dispatch_host import HarnessDispatchHost
@@ -169,8 +169,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
                         request = json.dumps({'original_question': grant['question'], 'current_command': request,
                             'handoff': {'kind': 'imported_fin_tool_records_not_native_acp_history', 'checkpoint_id': checkpoint,
                                 'successful_receipts': [{'tool_call_id': m.tool_call_id, 'tool': m.name}
-                                                       for m in receipts if m.status == 'success'],
-                                'readback': 'read_saved_result; ReadWorkingNote/SearchWorkingNotes for saved understanding'}}, ensure_ascii=False)
+                                                       for m in receipts if m.status == 'success' and m.name in SAVED_RESULT_TOOLS],
+                                'readback': 'browse_context for saved receipt keys; read_saved_result for exact contents; ReadWorkingNote/SearchWorkingNotes for saved understanding'}}, ensure_ascii=False)
                     result = await session.prompt(request)
                     if result['status'] != 'completed':
                         raise RuntimeError('harness_prompt_not_completed:' + result['stop_reason'])

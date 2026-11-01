@@ -20,6 +20,11 @@ from sec_agent.research_foundation.report_charts import ReportChart, bind_report
 from .conversation_agent import GrantedTool
 
 
+SAVED_RESULT_TOOLS = frozenset({"read_public_source", "read_company_library", "query_financial_data", "read_task_material", "calculate_research_metric",
+    "create_report_chart", "list_financial_data", "ReadWorkingNote", "read_handoff_material", "read_handoff_evidence",
+    "read_source_document", "read_delegated_evidence", "read_delegated_note"})
+
+
 class TaskMaterialRequest(SourceDocumentRequest):
     """An upload reader cannot select a web or another repository backend."""
     source_space: Literal["uploads"] = "uploads"
@@ -63,11 +68,8 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         """
         if offset < 0 or not 1 <= max_characters <= 24000:
             raise ToolException("请选择非负字符偏移和1至24000字符的窗口")
-        allowed = {"read_public_source", "read_company_library", "query_financial_data", "read_task_material", "calculate_research_metric",
-                   "create_report_chart", "list_financial_data", "ReadWorkingNote", "read_handoff_material", "read_handoff_evidence",
-                   "read_source_document", "read_delegated_evidence", "read_delegated_note"}
         saved = next((m for m in runtime.state.get("messages", []) if isinstance(m, ToolMessage)
-                      and m.tool_call_id == tool_call_id and m.name in allowed and m.status == "success"), None)
+                      and m.tool_call_id == tool_call_id and m.name in SAVED_RESULT_TOOLS and m.status == "success"), None)
         if saved is None:
             raise ToolException("当前对话没有这条成功数据读取记录；不能跨窗口猜测或回放失败操作")
         content = saved.content if isinstance(saved.content, str) else json.dumps(saved.content, ensure_ascii=False)

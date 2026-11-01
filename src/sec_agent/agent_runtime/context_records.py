@@ -14,6 +14,7 @@ RESULT_REGIONS = {
     "read_public_source": ("sources", "网页原文"),
     "read_company_library": ("sources", "公共公司资料"),
     "read_task_material": ("sources", "任务资料原文"),
+    "read_source_document": ("sources", "组织授权资料原文"),
     "read_handoff_material": ("sources", "交接资料原文"),
     "read_handoff_evidence": ("sources", "交接原始凭证"),
 }

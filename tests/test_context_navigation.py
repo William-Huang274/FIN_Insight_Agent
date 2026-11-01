@@ -39,6 +39,9 @@ def test_regions_keys_failures_and_literal_fallback():
     assert [r["key"] for r in numbers] == ["opaque-7a"]
     assert numbers[0]["read_tool"] == "read_saved_result"
     assert browse_checkpoint(rows, "sources")["items"][0]["key"] == "source"
+    rows.append(ToolMessage(name="read_source_document", tool_call_id="organization-source", content="original"))
+    latest = browse_checkpoint(rows, "sources")["items"][0]
+    assert latest['key'] == 'organization-source' and latest['read_tool'] == 'read_saved_result'
     assert all(r["region"] == "conversation" for r in browse_checkpoint(rows, "conversation")["items"])
     assert browse_checkpoint(rows, "numbers", "经营现金流")["total_matches"] == 0
     # An alias miss has an explicit blank-browse fallback; no semantic claim.

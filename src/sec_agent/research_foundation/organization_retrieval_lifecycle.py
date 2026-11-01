@@ -161,6 +161,20 @@ class OrganizationRetrievalLifecycle:
                 for field in ('hybrid', '_search_cache', '_projection_cache', '_candidate_index'):
                     setattr(navigation, field, None)
 
+    def catalog(self, navigation, request):
+        """Metadata routing does not admit/build a full retrieval generation."""
+        self.reader._after(self.grant)
+        with self._lock:
+            if self._state == 'closed':
+                raise OrganizationExecutionUnavailable('organization_retrieval_closed')
+            if navigation.reader is not self.reader or navigation.workbench_url != self.workbench_url.rstrip('/'):
+                raise OrganizationExecutionUnavailable('organization_retrieval_scope_mismatch')
+        # _catalog rechecks authority before/after reading only the fixed
+        # document descriptors and validates their source-version bindings.
+        result = navigation._catalog(request, retrieval_root=self.retrieval_root)
+        self.reader._after(self.grant)
+        return result
+
     def close(self):
         self._cancel.set()
         with self._lock:

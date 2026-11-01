@@ -28,7 +28,7 @@
 | `calculate_research_metric` | 相同来源溯源对象按引用共享；每个操作数的原句、字面值、来源ID、期间/单位、表达式、结果和语义未验证标记保留。原计算artifact不去重、不改写。 |
 | `read_research_source` | 只恢复选定来源及计算依赖，当前授权检查不省略；补入历史目录，使回执可发现。 |
 | `browse_context`、`read_context_turn` | 元数据目录12项/页、公开消息6000字符/页；不展示私有推理，不执行检索API，不把历史助手文字当事实。 |
-| `read_saved_result` | 按准确回执ID和可选JSON pointer读原始记录，默认6000、最多24000字符；不会重新执行原工具。指针/字符位置始终针对原始回执，不针对共享字段后的模型视图。 |
+| `read_saved_result` | 按准确回执ID和可选JSON pointer读原始记录，默认6000、最多24000字符；不会重新执行原工具。返回当前JSON对象的有界字段目录、准确指针和短标量原值，避免为寻找结果猜字符位置。指针/字符位置始终针对原始回执，不针对共享字段后的模型视图。 |
 | `get_research_method` | 空ID返回方法目录，支持具体章节；方法与来源权限分离，不为减少体量删掉用户已要求的教学内容。 |
 | `SearchWorkingNotes`、`ReadWorkingNote`、`WriteWorkingNote` | 当前接入禁用远程笔记向量调用。目录只带预览，正文分页；保存返回ID/版本，不回传整篇。保留同标题版本冲突与append/replace语义，不要求每步写笔记。 |
 | `save_research_report`、`repair_report_fields` | 校验失败保存未接受草稿，只修变化字段；新增准确草稿回读，错误回执返回该入口。保存不代表交付或独立复核。 |

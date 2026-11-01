@@ -49,6 +49,34 @@ def public_text(message):
                      if isinstance(b, dict) and b.get("type") == "text")
 
 
+def saved_result_field_index(value, pointer=""):
+    """Bounded, exact navigation over a saved JSON value, not a new summary.
+
+    Small scalar values are copied verbatim. Large values remain behind valid
+    RFC6901 pointers; neither their content nor original character offsets change.
+    """
+    if not isinstance(value, (dict, list)):
+        return None
+    entries = value.items() if isinstance(value, dict) else enumerate(value)
+    fields = []
+    for key, child in entries:
+        if len(fields) == 32:
+            break
+        token = str(key).replace("~", "~0").replace("/", "~1")
+        row = {"json_pointer": pointer + "/" + token}
+        if isinstance(child, (dict, list)):
+            row.update(kind="object" if isinstance(child, dict) else "array", items=len(child))
+        elif isinstance(child, str):
+            row.update(kind="string", characters=len(child))
+            if len(child) <= 160:
+                row["value"] = child
+        else:
+            row.update(kind="scalar", value=child)
+        fields.append(row)
+    return {"fields": fields, "total_fields": len(value),
+            "remaining_fields": max(0, len(value) - len(fields))}
+
+
 def checkpoint_index(messages, *, for_search=False):
     calls = {c["id"]: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
     result = []

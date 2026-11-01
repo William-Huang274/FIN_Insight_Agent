@@ -65,6 +65,8 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         Optional json_pointer selects an exact field/item in a saved JSON result,
         e.g. /items/2 returned by a context locator. Offset then applies to that
         selected value; omit the pointer to read the original serialized receipt.
+        JSON results also return field_index with exact pointers and small scalar
+        values, so a result field can be selected without guessing character offsets.
         """
         if offset < 0 or not 1 <= max_characters <= 24000:
             raise ToolException("请选择非负字符偏移和1至24000字符的窗口")
@@ -73,17 +75,27 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         if saved is None:
             raise ToolException("当前对话没有这条成功数据读取记录；不能跨窗口猜测或回放失败操作")
         content = saved.content if isinstance(saved.content, str) else json.dumps(saved.content, ensure_ascii=False)
+        try:
+            parsed = json.loads(content)
+        except (ValueError, TypeError):
+            if json_pointer is not None:
+                raise ToolException("保存结果不是JSON；请省略json_pointer读取原回执")
+            parsed = None
         if json_pointer is not None:
             import jsonpointer
             try:
-                selected = jsonpointer.resolve_pointer(json.loads(content), json_pointer)
+                selected = jsonpointer.resolve_pointer(parsed, json_pointer)
             except (ValueError, TypeError, jsonpointer.JsonPointerException) as exc:
                 raise ToolException("保存结果中没有该JSON路径；使用已返回的original_json_pointer，或省略json_pointer读取原回执") from exc
             content = selected if isinstance(selected, str) else json.dumps(selected, ensure_ascii=False)
+            parsed = selected
+        from .context_records import saved_result_field_index
+        fields = saved_result_field_index(parsed, json_pointer or "")
         return {"original_tool": saved.name, "original_tool_call_id": tool_call_id,
                 "content": content[offset:offset+max_characters], "offset": offset,
                 "next_offset": offset+max_characters if offset+max_characters < len(content) else None,
                   "total_characters": len(content), "new_tool_dispatch": False,
+                  **({"field_index": fields} if fields is not None else {}),
                   **({"json_pointer": json_pointer} if json_pointer is not None else {})}
     grants.append(GrantedTool(read_saved_result, "read", "本对话原生checkpoint中的成功数据读取记录"))
     if attachment_store is not None:

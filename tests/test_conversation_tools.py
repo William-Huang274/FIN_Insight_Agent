@@ -40,6 +40,42 @@ def test_saved_result_json_pointer_returns_exact_item_without_new_dispatch():
         reader.func(tool_call_id="saved",runtime=SimpleNamespace(state={"messages":[]}),json_pointer="/items/0")
 
 
+def test_saved_result_field_navigation_preserves_raw_offsets_and_values():
+    import json
+    from types import SimpleNamespace
+    from langchain_core.tools import ToolException
+    reader = next(g.tool for g in conversation_tools(thread_id="fields") if g.tool.name == "read_saved_result")
+    value = {"operands": {"a/b~": {"literal": "1,000", "provenance": "x" * 15000}},
+             "value_decimal": "0.654737657570672122", "financial_semantics_verified": False}
+    raw = json.dumps(value)
+    saved = ToolMessage(name="calculate_research_metric", tool_call_id="calc", content=raw)
+    runtime = SimpleNamespace(state={"messages": [saved]})
+    result = reader.func(tool_call_id="calc", runtime=runtime, offset=6700, max_characters=1200)
+    assert result["content"] == raw[6700:7900]
+    fields = {r["json_pointer"]: r for r in result["field_index"]["fields"]}
+    assert fields["/value_decimal"]["value"] == value["value_decimal"]
+    assert fields["/financial_semantics_verified"]["value"] is False
+    assert "value" not in fields["/operands"]
+    nested = reader.func(tool_call_id="calc", runtime=runtime, json_pointer="/operands")
+    pointer = nested["field_index"]["fields"][0]["json_pointer"]
+    assert pointer == "/operands/a~1b~0"
+    assert json.loads(reader.func(tool_call_id="calc", runtime=runtime, json_pointer=pointer,
+                                  max_characters=24000)["content"]) == value["operands"]["a/b~"]
+    assert saved.content == raw and result["new_tool_dispatch"] is False
+    saved.content = "not JSON"
+    assert "field_index" not in reader.func(tool_call_id="calc", runtime=runtime)
+    with pytest.raises(ToolException):
+        reader.func(tool_call_id="calc", runtime=runtime, json_pointer="")
+
+
+def test_saved_result_field_index_is_bounded_and_does_not_truncate_values():
+    from sec_agent.agent_runtime.context_records import saved_result_field_index
+    index = saved_result_field_index({str(i): "x" * 161 for i in range(100)})
+    assert len(index["fields"]) == 32 and index["remaining_fields"] == 68
+    assert all("value" not in r and r["characters"] == 161 for r in index["fields"])
+    assert saved_result_field_index([None, False, 3])["fields"][2] == {"json_pointer": "/2", "kind": "scalar", "value": 3}
+
+
 def test_recreated_agent_calculates_from_checkpoint_artifacts_and_isolates_threads():
     checkpoint = InMemorySaver()
     config = {"configurable": {"thread_id": "source-owner"}}

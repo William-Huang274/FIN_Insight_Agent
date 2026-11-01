@@ -587,8 +587,16 @@ class OrganizationSourceNavigation:
                 if fresh is None:
                     raise ValueError('organization_restore_original_not_found')
             else:
-                if saved.get('organization_execution') != self.execution_scope:
+                saved_scope = saved.get('organization_execution')
+                if saved_scope is not None and saved_scope != self.execution_scope:
                     raise ValueError('organization_restore_execution_scope_mismatch')
+                # The shared calculator does not stamp an organization field.
+                # Such a receipt is admissible only through source dependencies
+                # revalidated below, never by attaching a scope to saved prose.
+                if saved_scope is None and not any(o.get('authority') in {
+                        'non_authoritative_source_reported', 'non_authoritative_calculation'}
+                        for o in saved['operands'].values()):
+                    raise ValueError('organization_restore_calculation_scope_unproven')
                 operands = {}
                 for name, operand in saved['operands'].items():
                     authority = operand.get('authority')
@@ -609,7 +617,8 @@ class OrganizationSourceNavigation:
                 request = SourceBoundCalculation(expression=saved['expression'], operands=operands,
                     result_unit=saved['result_unit'], rationale=saved['rationale'])
                 fresh = calculate_from_sources(request, verify)
-                fresh['organization_execution'] = self.execution_scope
+                if saved_scope is not None:
+                    fresh['organization_execution'] = self.execution_scope
             if any(any(candidate.get(key) != value for key, value in fresh.items()) for candidate in candidates):
                 raise ValueError('organization_restore_original_or_calculation_mismatch')
             verified[source_id] = fresh

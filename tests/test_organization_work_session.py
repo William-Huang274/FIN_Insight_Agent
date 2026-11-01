@@ -93,6 +93,24 @@ def test_framework_neutral_source_handoff_reuses_authorized_navigation(navigatio
     assert len(checks) == 2
 
 
+def test_exact_source_read_does_not_restore_unrelated_calculations(navigation):
+    from langchain_core.messages import ToolMessage
+    from sec_agent.agent_runtime.organization_work_session import artifact_reader
+    nav, _, _ = navigation
+    passage = read_first(nav).items[0]
+    identity = passage['passage_id']
+    data = SimpleNamespace(foundation_binding=SimpleNamespace(case_id='test-root', research_as_of='2026-10-12',
+        snapshot_id='frozen', foundation_digest='frozen'), decision_digest='decision',
+        source_route_catalog_digest='catalog', inventory_snapshot_digest='inventory')
+    unrelated = {'calculation_id':'CALC::unrelated','result_state':'non_authoritative_metric',
+                 'organization_execution':{'execution_id':'another-task'},'operands':{}}
+    state={'messages':[ToolMessage(name='read_delegated_evidence',tool_call_id='saved',content='',
+        artifact={'source_items':{identity:passage,'CALC::unrelated':unrelated}})]}
+    assert artifact_reader(data,nav,state,source_ids=[identity]).source_snapshot()=={identity:passage}
+    with pytest.raises(ValueError,match='scope_mismatch'):
+        artifact_reader(data,nav,state)
+
+
 @pytest.mark.parametrize('next_delivery', ['answer', 'workpaper', 'report'])
 def test_native_work_session_uses_same_parent_and_does_not_start_old_graph(continuous, tmp_path, monkeypatch, next_delivery):
     from sec_agent.agent_runtime import research_session_runtime as runtime

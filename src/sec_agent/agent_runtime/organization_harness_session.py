@@ -82,10 +82,9 @@ async def organization_harness_session(*, native, resources, authority, check, o
     grants.append(GrantedTool(organization_source_tool(navigation, check), 'read', '当前组织任务的固定来源'))
     grants.extend(GrantedTool(t, 'working_note_write' if t.name == 'WriteWorkingNote' else 'read',
                   '当前组织任务的版本化工作笔记') for t in working_memory_tools('research_partner', owner=owner, workspace=tid))
-    if checkpoint:
-        from .conversation_handoff import handoff_tools
-        grants.extend(handoff_tools(reference={'source_thread': tid, 'checkpoint_id': checkpoint},
-            sdk=native, owner_id=owner, access_check=check))
+    # The business receipt store is the single historical readback surface.
+    # Exposing a second SDK handoff to the outer checkpoint would advertise an
+    # empty source list when the old research lived in a nested graph.
     from .working_memory import WorkingMemory
     from .harness_artifact_tools import artifact_tools
     memory = WorkingMemory(environment['FINSIGHT_WORKING_MEMORY_PATH'], owner=owner, workspace=tid,
@@ -94,9 +93,9 @@ async def organization_harness_session(*, native, resources, authority, check, o
     require_review = grant.get('report_action_request', {}).get('require_report_review', execution.require_report_review)
     if require_review:
         raise ValueError('harness_independent_review_not_yet_qualified')
-    def artifacts(state):
+    def artifacts(state, **kwargs):
         with organization(run_invocation_id='harness:' + rid, source_read_enabled=True) as data:
-            return artifact_reader(data, navigation, state)
+            return artifact_reader(data, navigation, state, **kwargs)
     grants.append(observed_source_tool(artifacts, check))
     grants.extend(artifact_tools(artifacts=artifacts, memory=memory, delivery_intent=intent, require_review=require_review))
     scope = lambda: native_memory_scope(owner, tid, access_check=check, allow_remote_search=False)

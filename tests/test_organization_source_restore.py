@@ -52,6 +52,35 @@ def test_new_session_reloads_original_and_recomputes_chain_in_dependency_order(a
     assert restored.source(chained['calculation_id']) == chained
 
 
+def test_shared_calculator_identity_restores_via_verified_dependencies(archive):
+    from sec_agent.research_foundation.source_bound_calculator import calculate_from_sources
+    nav, state, _, passage, _, _ = archive
+    plain = calculate_from_sources(SourceBoundCalculation(expression='revenue * 2', operands={
+        'revenue':{'source_id':passage['passage_id'],'quote':passage['passage'],'literal':'123.40'}},
+        result_unit='USD',rationale='Shared calculator'), lambda key: passage)
+    chain = calculate_from_sources(SourceBoundCalculation(expression='previous / 2', operands={
+        'previous':{'source_id':plain['calculation_id']}},result_unit='USD',rationale='Shared chain'),lambda key:plain)
+    assert 'organization_execution' not in plain
+    result = fresh(nav).restore(observations(passage,plain,chain))
+    assert result[plain['calculation_id']] == plain
+    assert result[chain['calculation_id']] == chain
+    corrupt=deepcopy(plain); corrupt['value_decimal']='0'
+    with pytest.raises(ValueError,match='mismatch'):
+        fresh(nav).restore(observations(passage,corrupt))
+    state['status']=404
+    with pytest.raises(OrganizationExecutionUnavailable):
+        fresh(nav).restore(observations(passage,plain,chain))
+
+
+def test_unscoped_assumptions_do_not_establish_organization_authority(archive):
+    from sec_agent.research_foundation.source_bound_calculator import calculate_from_sources
+    nav,*_ = archive
+    value=calculate_from_sources(SourceBoundCalculation(expression='a * 2',operands={
+        'a':{'literal':'3','assumption_note':'Scenario'}},result_unit='USD',rationale='Scenario'), lambda key:None)
+    with pytest.raises(ValueError,match='scope_unproven'):
+        fresh(nav).restore(observations(value))
+
+
 @pytest.mark.parametrize('fault', ['text','reference','execution','missing_scope','value','unit','formula','quote','provenance','authority','duplicate'])
 def test_tampered_batch_never_partially_publishes(archive, fault):
     nav, _, _, passage, calc, chained = archive
@@ -167,6 +196,7 @@ def test_actual_expert_observation_can_feed_reopened_factory_and_mcp(organizatio
             'selection':{'source_space':'organization','operation':'read','document_id':document}}
     with specialist(factory, model) as opened:
         catalog = opened.source_reader(SourceDocumentRequest(source_space='organization',operation='catalog'))
+        assert catalog.get('status') == 'success', catalog
         document = next(row['document_id'] for row in catalog['items'] if 'document_id' in row)
         result = opened.graph.invoke(opened.graph_input.model_dump(mode='json'), {'recursion_limit':32})
     saved = result['notebook']['observations']

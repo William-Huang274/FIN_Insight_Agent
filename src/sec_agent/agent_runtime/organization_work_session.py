@@ -49,11 +49,25 @@ def read_authorized_source(navigation, check, request):
     return json.dumps(body, ensure_ascii=False), body
 
 
-def artifact_reader(data, navigation, question_state):
+def artifact_reader(data, navigation, question_state, *, source_ids=None):
     """Revalidate native tool artifacts, never model prose or browser records."""
     from .conversation_handoff import observed_sources
     sources = observed_sources({'values': {'messages': [m.model_dump(mode='json') if hasattr(m, 'model_dump') else m
                                                        for m in question_state.get('messages', [])]}})
+    if source_ids is not None:
+        selected = {}
+        def include(source_id):
+            if source_id in selected:
+                return
+            if source_id not in sources:
+                raise ToolException('source_not_observed_read_current_source_catalog')
+            selected[source_id] = sources[source_id]
+            for operand in sources[source_id].get('operands', {}).values():
+                if operand.get('source_id'):
+                    include(operand['source_id'])
+        for source_id in source_ids:
+            include(source_id)
+        sources = selected
     return artifact_reader_from_sources(data, navigation, sources)
 
 
@@ -80,7 +94,7 @@ def observed_source_tool(reader, check):
         if offset < 0 or not 100 <= max_characters <= 12000:
             raise ToolException('invalid_source_read_window')
         check()
-        sources = reader(runtime.state).source_snapshot()
+        sources = reader(runtime.state, source_ids=[source_id]).source_snapshot()
         if source_id not in sources:
             raise ToolException('source_not_observed_read_current_source_catalog')
         result = read_source_window(source_id, sources[source_id], offset, max_characters)
@@ -182,7 +196,7 @@ async def organization_work_session(*, native, resources, authority, check, orga
         summary.authorized_recovery_id = grant['report_command_id']
     audit.working_note_context = lambda: current_work_catalog(memory)
     with organization(run_invocation_id='on-demand:' + rid, source_read_enabled=True) as data:
-        reader = lambda state: artifact_reader(data, navigation, state)
+        reader = lambda state, **kwargs: artifact_reader(data, navigation, state, **kwargs)
         grants.append(observed_source_tool(reader, check))
         parent = host.create_on_demand_research_agent(model=model, grants=grants, execution=execution,
             phase_arguments={k: v for k, v in phase_arguments.items() if k != 'execution'}, artifact_reader=reader, permission_mode='request_standard',

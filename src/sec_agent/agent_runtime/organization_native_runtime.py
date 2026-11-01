@@ -160,14 +160,23 @@ async def organization_graph(config, native, thread):
         public, private = host.session_audit_sinks(Path(settings['audit_root']) / thread_id / run_id)
         budget = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,
             metadata=thread['metadata'], environment=os.environ)
+        harness_selected = continuous and thread_id in settings.get('harness_execution_bindings', {})
         phase_arguments = dict(root=root, settings=settings, profile=profile, case=case,
-            thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ['DEEPSEEK_API_KEY']),
+            thread_id=thread_id, run_id=run_id,
+            api_key=None if harness_selected else SecretStr(os.environ['DEEPSEEK_API_KEY']),
             public_sink=public, private_sink=private, studio=studio, execution=execution,
             budget_scope=budget, organization_data_factory=organization, run_access_check=check,
             environment={**os.environ, 'FINSIGHT_RESEARCH_AS_OF':cutoff})
         if continuous:
-            from .organization_work_session import organization_work_session
-            async with organization_work_session(native=native, resources=resources, authority=authority,
+            # Only deployment-owned bindings select the replacement. Browser
+            # commands retain the same Java admission/configuration contract.
+            # A configured harness error must never fall back to another model
+            # loop and spend again on the same work.
+            if harness_selected:
+                from .organization_harness_session import organization_harness_session as work_session
+            else:
+                from .organization_work_session import organization_work_session as work_session
+            async with work_session(native=native, resources=resources, authority=authority,
                     check=check, organization=organization, phase_arguments=phase_arguments, config=config,
                     grant=grant, expected_input=(None if reporting else run_request(thread, grant)['input']), environment=dict(os.environ)) as graph:
                 yield graph.with_config({'recursion_limit': 280})

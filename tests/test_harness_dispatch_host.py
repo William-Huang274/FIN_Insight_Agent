@@ -88,6 +88,8 @@ def finish(reason='stop'):
 
 def test_real_router_auth_reserve_wire_settle_and_idempotent_ack(setup):
     host, args, grant, meters, request = setup
+    public = []
+    host.public_sink = public.append
     app = FastAPI()
     app.include_router(dispatch_router(host, token='x'*32))
     client = TestClient(app)
@@ -101,6 +103,9 @@ def test_real_router_auth_reserve_wire_settle_and_idempotent_ack(setup):
     result = dict(requestId=rid, chunks=finish(), terminal='stop', stopRequired=False)
     assert client.post('/calls/settle', json=result, headers=headers).json() == {'status':'saved','stopRequired':False}
     assert client.post('/calls/settle', json=result, headers=headers).status_code == 200
+    outcomes = [event for event in public if event['event'] == 'outcome']
+    assert len(outcomes) == 1
+    assert outcomes[0]['input_tokens'] == 100 and outcomes[0]['cache_hit_tokens'] == 50
     row = next(iter(args['store'].rows.values()))
     assert row['actual'] == 95
     assert json.loads(open(row['response']['receipt']['path'], encoding='utf8').read())['chunks'] == finish()

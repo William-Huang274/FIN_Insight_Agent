@@ -10,6 +10,7 @@ from hashlib import sha256
 import hmac
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 from uuid import UUID
@@ -29,7 +30,7 @@ def _bytes(value):
 class HarnessDispatchHost:
     def __init__(self, *, store, owner, budget, execution_id, run_id, manifest_digest,
                  authority, prices, basis, provider, reservation_micros,
-                 reservation_basis, receipts, wire_usage):
+                 reservation_basis, receipts, wire_usage, public_sink=None):
         self.store, self.owner, self.budget = store, owner, budget
         self.store.require_runtime_role()
         self.execution_id, self.run_id = str(UUID(execution_id)), str(UUID(run_id))
@@ -48,6 +49,13 @@ class HarnessDispatchHost:
         self.wire_usage = wire_usage
         self.lock = Lock()
         self._wire_pending = None
+        self.public_sink = public_sink
+
+    def _public(self, request_id, event):
+        if self.public_sink:
+            self.public_sink({'call_id': str(request_id), 'actor': 'research_partner',
+                'model': self.prices.model, 'provider_call_attempted': True,
+                'execution_source': 'provider_model', 'recorded_at': datetime.now(timezone.utc).isoformat(), **event})
 
     def _key(self, request_id):
         return self.scope + ':' + str(UUID(request_id))
@@ -142,6 +150,8 @@ class HarnessDispatchHost:
             except FileExistsError:
                 raise DispatchBlocked('harness_wire_already_dispatched_no_resend') from None
             self._wire_pending = None
+            self._public(request_id, {'event': 'started', 'input_characters': len(_bytes(body).decode('utf8')),
+                'max_output_tokens': body.get('max_tokens')})
             return request_id
 
     def settle(self, request_id, chunks, terminal=None, *, unknown=False):
@@ -177,6 +187,12 @@ class HarnessDispatchHost:
             # A received partial is not an accepted artifact. NULL actual keeps
             # its financial hold; the durable stop flag survives host restart.
             self.store.received(self.owner, self.budget, key, response, actual)
+            self._public(request_id, {'event': 'outcome', 'status': 'provider_failed' if stop else 'completed',
+                'usage_reported': usage is not None,
+                **({'input_tokens': usage.input_uncached + usage.input_cached + usage.input_cache_write,
+                    'output_tokens': usage.output, 'total_tokens': usage.input_uncached + usage.input_cached + usage.input_cache_write + usage.output,
+                    'cache_hit_tokens': usage.input_cached, 'cache_miss_tokens': usage.input_uncached,
+                    'reasoning_tokens': usage.reasoning} if usage else {})})
             return {'status': 'saved', 'stopRequired': stop}
 
 

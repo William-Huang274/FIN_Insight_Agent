@@ -93,3 +93,40 @@ test input still fits the declared model. Both values are **qualification-only,
 not FIN deployment defaults**. Production must use the chosen model's actual
 capacity and suitable native pressure threshold. No financial conclusion or
 real supplier compatibility is certified by a deterministic model response.
+
+## Organization task composition (candidate)
+
+`organization_harness_session.py` binds the existing signed Java run to the
+official `agent-client-protocol` Python SDK. It uses native session/new and the
+advertised session/resume (or load) capability; cancellation revokes dispatch
+and tools before session/cancel. No FIN model/summary loop runs inside ACP.
+An already completed predecessor response can be projected after an admitted
+recovery without another model request. Unknown requests retain their receipts.
+
+The host-only `harness_execution_bindings[thread_id]` selects the executable
+path/SHA256, manifest, model/reasoning, protocol/endpoint, secret environment
+name, TokenBudgetBasis and model/output/summary capacity. These must match the
+admitted task and existing budget. `FINSIGHT_HARNESS_STATE_ROOT` is a private
+persistent workspace, not a public document root. Provider keys never enter the
+child environment. Public usage comes from metered wire receipts, not ACP
+context occupancy. Ordinary calls and compaction share the original task budget.
+
+`harness_business_tools.py` uses a maintained ToolNode and SQLite checkpointer
+solely for business execution. Original observations, calculation identities,
+working notes and report versions survive native history compaction. Its paged
+directory and readback tools are reused from FIN; the old orientation/summary
+middleware is absent. Draft repair and local report edits reuse existing source
+binding and version validation. Saved does not mean delivered or independently
+reviewed. Required independent review is explicitly unavailable in this candidate;
+delegation is not yet qualified. It must not silently fall back to the old loop.
+
+Qualification: `tests/test_organization_harness_session.py` tests the composition
+with fixture peers. `FIN_TEST_DSH_BINARY=<fixed-binary> pytest
+tests/integration/test_harness_business_process.py` runs the real ACP process,
+MCP/ToolNode, calculation, note persistence, restart, compaction and cancellation
+against deterministic provider responses. Both Windows and Linux 0.2.1rc2 passed.
+The Linux wheel SHA256 is
+`0a0a4eb85a22cd9339972e6a5ced77a27ec791353a5b220e3e10b8cdbbdeca39`.
+This does not yet certify real Java/BFF queue lifecycle, paid NVIDIA compaction
+faithfulness, or long-run business-checkpoint storage growth. Deployment status
+and real acceptance remain separate from these tests.

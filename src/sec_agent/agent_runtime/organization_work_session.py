@@ -71,6 +71,53 @@ def artifact_reader_from_sources(data, navigation, sources):
     return result
 
 
+def observed_source_tool(reader, check):
+    """Reuse exact authorized source paging without an agent-loop dependency."""
+    @tool
+    def read_research_source(source_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 4000):
+        """Read one observed source ID with current authority and exact paging."""
+        from .case_artifacts import read_source_window
+        if offset < 0 or not 100 <= max_characters <= 12000:
+            raise ToolException('invalid_source_read_window')
+        check()
+        sources = reader(runtime.state).source_snapshot()
+        if source_id not in sources:
+            raise ToolException('source_not_observed_read_current_source_catalog')
+        result = read_source_window(source_id, sources[source_id], offset, max_characters)
+        check()
+        return result
+    read_research_source.handle_tool_error = True
+    return GrantedTool(read_research_source, 'read', '已观察来源的当前授权回读')
+
+
+def validate_work_input(state, *, check, grant, admitted_values, expected_input):
+    check()
+    # Inputs are frozen at the business command. The saved history may
+    # grow, but callers cannot replace the task or inject source objects.
+    if state.get('question') != grant['question']:
+        raise ValueError('organization_work_question_mismatch')
+    messages = state.get('messages', [])
+    # A forged native input must not replace saved reports, findings,
+    # observations or task status while retaining a plausible question.
+    for key in set(state) | set(admitted_values):
+        if key not in {'messages', 'question'} and state.get(key) != admitted_values.get(key):
+            raise ValueError('organization_work_state_injection:' + key)
+    if expected_input is None:
+        from langchain_core.messages import convert_to_messages, message_to_dict, messages_from_dict
+        before = [messages_from_dict([{'type': m['type'], 'data': m}])[0]
+                  if isinstance(m, dict) and m.get('type') in {'human', 'ai', 'system', 'tool', 'function', 'chat'}
+                  else convert_to_messages([m])[0] for m in admitted_values.get('messages', [])]
+        if ([message_to_dict(m) for m in messages[:-1]] != [message_to_dict(m) for m in before]):
+            raise ValueError('organization_work_history_injection')
+    if expected_input is not None and (len(messages) != 1 or messages[0].content != grant['question']
+            or getattr(messages[0], 'type', None) != 'human'):
+        raise ValueError('organization_work_initial_input_mismatch')
+    if expected_input is None and (not messages or getattr(messages[-1], 'type', None) != 'human'
+            or messages[-1].content != grant['report_action_request']['message']):
+        raise ValueError('organization_work_continuation_input_mismatch')
+    return {}
+
+
 @asynccontextmanager
 async def organization_work_session(*, native, resources, authority, check, organization, phase_arguments,
                                     config, grant, expected_input, environment):
@@ -136,21 +183,7 @@ async def organization_work_session(*, native, resources, authority, check, orga
     audit.working_note_context = lambda: current_work_catalog(memory)
     with organization(run_invocation_id='on-demand:' + rid, source_read_enabled=True) as data:
         reader = lambda state: artifact_reader(data, navigation, state)
-        @tool
-        def read_research_source(source_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 4000):
-            """Read one source ID from the observed_sources catalog. Rechecks current source authority; preserves original identity and exact paging."""
-            from .case_artifacts import read_source_window
-            if offset < 0 or not 100 <= max_characters <= 12000:
-                raise ToolException('invalid_source_read_window')
-            check()
-            sources = reader(runtime.state).source_snapshot()
-            if source_id not in sources:
-                raise ToolException('source_not_observed_read_current_source_catalog')
-            result = read_source_window(source_id, sources[source_id], offset, max_characters)
-            check()
-            return result
-        read_research_source.handle_tool_error = True
-        grants.append(GrantedTool(read_research_source, 'read', '已观察来源的当前授权回读'))
+        grants.append(observed_source_tool(reader, check))
         parent = host.create_on_demand_research_agent(model=model, grants=grants, execution=execution,
             phase_arguments={k: v for k, v in phase_arguments.items() if k != 'execution'}, artifact_reader=reader, permission_mode='request_standard',
             middleware=[summary, audit], working_memory=memory, server_managed_persistence=True,
@@ -158,31 +191,8 @@ async def organization_work_session(*, native, resources, authority, check, orga
             **spec['limits'])
 
         async def guard(state, config: RunnableConfig):
-            check()
-            # Inputs are frozen at the business command. The saved history may
-            # grow, but callers cannot replace the task or inject source objects.
-            if state.get('question') != grant['question']:
-                raise ValueError('organization_work_question_mismatch')
-            messages = state.get('messages', [])
-            # A forged native input must not replace saved reports, findings,
-            # observations or task status while retaining a plausible question.
-            for key in set(state) | set(admitted_values):
-                if key not in {'messages', 'question'} and state.get(key) != admitted_values.get(key):
-                    raise ValueError('organization_work_state_injection:' + key)
-            if expected_input is None:
-                from langchain_core.messages import convert_to_messages, message_to_dict, messages_from_dict
-                before = [messages_from_dict([{'type': m['type'], 'data': m}])[0]
-                          if isinstance(m, dict) and m.get('type') in {'human', 'ai', 'system', 'tool', 'function', 'chat'}
-                          else convert_to_messages([m])[0] for m in admitted_values.get('messages', [])]
-                if ([message_to_dict(m) for m in messages[:-1]] != [message_to_dict(m) for m in before]):
-                    raise ValueError('organization_work_history_injection')
-            if expected_input is not None and (len(messages) != 1 or messages[0].content != grant['question']
-                    or getattr(messages[0], 'type', None) != 'human'):
-                raise ValueError('organization_work_initial_input_mismatch')
-            if expected_input is None and (not messages or getattr(messages[-1], 'type', None) != 'human'
-                    or messages[-1].content != grant['report_action_request']['message']):
-                raise ValueError('organization_work_continuation_input_mismatch')
-            return {}
+            return validate_work_input(state, check=check, grant=grant,
+                                       admitted_values=admitted_values, expected_input=expected_input)
 
         async def work(state, config: RunnableConfig):
             # Admission validates the immutable native configuration. A signed

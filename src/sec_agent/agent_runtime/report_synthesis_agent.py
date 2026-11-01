@@ -527,6 +527,44 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
     return {ref: bound[ref] if ref in bound else direct[ref] for ref in refs}
 
 
+def chart_lookup(runtime, current):
+    sources = chart_calculation_sources(runtime.state.get("synthesis", {}), runtime.state.get("report", {}))
+    for ref, item in observed_sources(runtime.state.get("messages", [])).items():
+        if ref in sources and sources[ref] != item:
+            raise ValueError("saved_chart_calculation_conflict:" + ref)
+        sources[ref] = item
+    return lambda ref: sources[ref] if ref in sources else current.source_item(ref)
+
+
+def patch_report_fields(candidate, fields):
+    candidate = deepcopy(candidate)
+    if not fields:
+        raise ValueError('provide_changed_fields')
+    for path, value in fields.items():
+        parts = path.split('.')
+        if parts[0] not in {'title', 'narrative_markdown', 'charts'}:
+            raise ValueError('unknown_report_field:' + path)
+        parent = candidate
+        for part in parts[:-1]:
+            parent = parent[int(part)] if isinstance(parent, list) else parent[part]
+        key = int(parts[-1]) if isinstance(parent, list) else parts[-1]
+        parent[key] = deepcopy(value)
+    return candidate
+
+
+def bind_report_candidate(candidate, artifacts, state):
+    """Shared FIN source/schema binding; does not run or certify a model review."""
+    report = CaseReport.model_validate(candidate)
+    current = artifacts.with_revisions(state.get("revisions", {}))
+    citations = report_citations(report, current, state.get("messages", []),
+        prior_citations={**state.get("synthesis", {}).get("citations", {}),
+                         **state.get("report", {}).get("citations", {})})
+    from types import SimpleNamespace
+    charts = bind_report_charts(report.charts, chart_lookup(SimpleNamespace(state=state), current))
+    return {**report.model_dump(mode="json", exclude={"charts"}), "citations": citations,
+            **({"charts": charts} if charts else {})}
+
+
 def output_message(runtime, output=None, error=None):
     return Command(update={**({"output": output} if output is not None else {}), "messages": [ToolMessage(
         tool_call_id=runtime.tool_call_id,
@@ -635,14 +673,6 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         citations.update(runtime.state.get("synthesis", {}).get("citations", {}))
         citations.update(runtime.state.get("report", {}).get("citations", {}))
         return citations
-
-    def chart_lookup(runtime, current):
-        sources = chart_calculation_sources(runtime.state.get("synthesis", {}), runtime.state.get("report", {}))
-        for ref, item in observed_sources(runtime.state.get("messages", [])).items():
-            if ref in sources and sources[ref] != item:
-                raise ValueError("saved_chart_calculation_conflict:" + ref)
-            sources[ref] = item
-        return lambda ref: sources[ref] if ref in sources else current.source_item(ref)
 
     @tool
     def research_artifact_catalog(runtime: ToolRuntime) -> dict:
@@ -788,12 +818,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         if allow_answers and runtime.state.get("request_action") != "revise":
             return output_message(runtime, error="This is a question, not a report-revision request. Use submit_case_answer.")
         try:
-            report = CaseReport.model_validate(candidate)
-            citations = report_citations(report, artifacts.with_revisions(runtime.state.get("revisions", {})),
-                runtime.state.get("messages", []), prior_citations={**runtime.state.get("synthesis", {}).get("citations", {}),
-                    **runtime.state.get("report", {}).get("citations", {})})
-            current = artifacts.with_revisions(runtime.state.get("revisions", {}))
-            charts = bind_report_charts(report.charts, chart_lookup(runtime, current))
+            accepted = bind_report_candidate(candidate, artifacts, runtime.state)
         except ValueError as exc:
             errors = (exc.issues if isinstance(exc, ReportChartBindingError) else
                 [{'path': '.'.join(map(str, e['loc'])), 'message': e['msg']} for e in exc.errors(include_input=False, include_url=False)]
@@ -803,8 +828,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
                     'status': 'draft_saved_needs_repair', 'errors': errors,
                     'next_tool': 'repair_report_fields',
                     'remedy': 'Your whole draft is retained. Send only changed fields, e.g. {"fields":{"title":"..."}} or {"fields":{"charts.0.unit":"USD"}}. Unchanged prose and citations survive. This draft has not been accepted.'}, ensure_ascii=False))]})
-        return output_message(runtime, {**report.model_dump(mode="json", exclude={"charts"}), "citations": citations,
-            **({"charts": charts} if charts else {})})
+        return output_message(runtime, accepted)
 
     @tool
     def submit_case_report(report: dict[str, Any], runtime: ToolRuntime) -> Command:
@@ -821,17 +845,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         if not candidate:
             return output_message(runtime, error='No pending draft or current revision report; use submit_case_report first.')
         try:
-            if not fields:
-                raise ValueError('provide_changed_fields')
-            for path, value in fields.items():
-                parts = path.split('.')
-                if parts[0] not in {'title', 'narrative_markdown', 'charts'}:
-                    raise ValueError('unknown_report_field:' + path)
-                parent = candidate
-                for part in parts[:-1]:
-                    parent = parent[int(part)] if isinstance(parent, list) else parent[part]
-                key = int(parts[-1]) if isinstance(parent, list) else parts[-1]
-                parent[key] = deepcopy(value)
+            candidate = patch_report_fields(candidate, fields)
         except (KeyError, IndexError, TypeError, ValueError) as exc:
             return output_message(runtime, error='Invalid repair path; saved draft unchanged: ' + str(exc))
         return save_report_candidate(candidate, runtime)

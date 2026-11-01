@@ -60,6 +60,8 @@ agent-runtime = [
   "pillow==12.3.0",
   "pypdfium2==5.13.0",
   "httpx-sse>=0.4,<0.5",
+  "agent-client-protocol==0.12.1",
+  "langgraph-checkpoint-sqlite==3.1.1",
 ]
 complex-pdf = [
   "pdfplumber>=0.11.9",

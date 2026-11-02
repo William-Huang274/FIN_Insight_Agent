@@ -43,5 +43,32 @@ def describe(document):
         elif isinstance(value,list):result.update(kind='unresolved_record_array',record_count=len(value),content_scope='schema_review_required')
         elif 'chart' in keys:result.update(kind='chart_response',content_scope='chart_schema_requires_time_series_contract')
         elif {'data','msg','status'}<=keys:result.update(kind='api_response_envelope',content_scope='status_and_payload_schema_require_review')
+        elif {'cik','name','addresses'}<=keys:
+            result.update(kind='sec_entity_profile',record_count=1,entity_identity={'cik':value['cik'],'name':value['name']},
+                          content_scope='entity_registration_not_filing_body',numeric_coercion=False)
+        elif {'metadata','observations'}<=keys and isinstance(value['metadata'],dict) and isinstance(value['observations'],list):
+            result.update(kind='macro_observation_series',record_count=len(value['observations']),
+                          series_identity=value['metadata'].get('id'),unit=value['metadata'].get('units'),
+                          content_scope='saved_observations_not_historical_vintage_proof',numeric_coercion=False)
+        elif {'data_table','filed_at','period_end','rows'}<=keys and isinstance(value['rows'],int):
+            result.update(kind='sql_table_reference',record_count=0,declared_rows=value['rows'],
+                          target_table=value['data_table'],filed_at=value['filed_at'],period_end=value['period_end'],
+                          content_scope='reference_only_requires_sql_readback',numeric_coercion=False)
+        elif {'indicators','meta','timestamp'}<=keys and isinstance(value['timestamp'],list):
+            counts={'timestamp':len(value['timestamp'])}
+            for group,items in value['indicators'].items():
+                for i,item in enumerate(items):
+                    for field,column in item.items():
+                        if isinstance(column,list):counts[f'{group}/{i}/{field}']=len(column)
+            result.update(kind='market_price_series',record_count=len(value['timestamp']),column_counts=counts,
+                          column_lengths_consistent=len(set(counts.values()))<=1,
+                          content_scope='saved_prices_require_currency_adjustment_and_timezone_validation',numeric_coercion=False)
+        elif {'meta','splits','requested_range','reviewed_through'}<=keys and isinstance(value['splits'],dict):
+            result.update(kind='split_event_review',record_count=len(value['splits']),
+                          reviewed_through=value['reviewed_through'],content_scope='reviewed_range_not_all_corporate_actions',numeric_coercion=False)
+        elif {'list','message','status'}<=keys and isinstance(value['list'],list):
+            result.update(kind='financial_statement_api_response',record_count=len(value['list']),
+                          provider_status=value['status'],success=value['status']=='000',
+                          content_scope='accounts_require_receipt_period_unit_and_revision_validation',numeric_coercion=False)
         else:result.update(kind='unknown_json_schema',content_scope='raw_object_only')
     return result

@@ -1,0 +1,18 @@
+.rs-cite, .org-document button.rs-cite {
+  display: inline;
+  min-height: 0;
+  border: 0;
+  border-radius: 3px;
+  color: var(--accent, #2563eb);
+  background: transparent;
+  font-size: 0.75em;
+  line-height: 1.4;
+  padding: 1px 3px;
+  margin: 0 2px;
+  vertical-align: super;
+  cursor: pointer;
+}
+.rs-cite:hover, .rs-cite:focus-visible {
+  background: var(--line, #e5e7eb);
+  text-decoration: underline;
+}

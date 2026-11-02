@@ -4,6 +4,7 @@ import {remarkBoundCitations} from './remarkBoundCitations';
 import {remarkReportHeadings} from './remarkReportHeadings';
 import {sourceUrl} from './sourceUrl';
 import type {Citation} from '../api/reportSessions';
+import './bound-citations.css';
 
 export function citationPreview(citation: Citation) {
   const sources = citation.sources.map(s => [

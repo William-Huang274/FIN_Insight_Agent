@@ -181,6 +181,7 @@ def edgar_document(capture, previous, *, native_paths_verified=True):
     # Native TOC boundaries address the original DOM, not offsets in a flat
     # string. Only complete source containers inside unique bounds are bound.
     dom_membership = defaultdict(set)
+    source_spans = {}
     if native.get('toc_boundaries'):
         from lxml import html
         original = native['metadata']['fields']['original_html']
@@ -238,7 +239,20 @@ def edgar_document(capture, previous, *, native_paths_verified=True):
                 found = path_index.get(sid.split(':', 1)[1])
                 if found is not None and start <= positions[found] and ends[found] < end:
                     dom_membership[sid].add(key)
+                    source_spans[sid] = (positions[found], ends[found])
         document['native_boundary_adjustments'] = adjustments
+        from native_section_alignment import complete_section_sequences
+        original_membership = {i:membership.get(paths.get(b.get('native_container_id')), set())
+                               for i,b in enumerate(blocks)} if native_paths_verified else {}
+        alignments = complete_section_sequences(blocks, source_rows, dom_membership, source_spans, native['sections'], original_membership)
+        document['native_sequence_alignments'] = alignments
+        for alignment in alignments:
+            for binding in alignment['bindings']:
+                block = blocks[binding['block']]
+                block['prior_source_location_status'] = block.get('source_location_status')
+                block['source_container_id'] = binding['source_id']
+                block['source_location_status'] = 'unique_complete_container'
+                block['source_alignment_basis'] = alignment['basis']
     for i, block in enumerate(blocks):
         ref = paths.get(block.get('native_container_id')) if native_paths_verified else None
         fields = nodes[ref]['fields'] if ref else {}

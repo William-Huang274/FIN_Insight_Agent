@@ -162,3 +162,34 @@ SEC 批量驱动增加 `--minimum-free-mib`（默认 2048）和 `--child-timeout
 - 个例修正只绑定原件摘要及局部坐标，记录依据、依赖版本、适用范围与失效条件；不建立公司或题目特判。模型辅助须另有明确范围和预算，不能直接改写原文或财务事实。
 - 历史诊断与当前版本重评分开。未知级别、短标题、层级跳跃只是线索；每条诊断绑定输入/检测器版本及处理状态，不将旧提示当作本版新测错误数。
 - 待实施的统一流程须支持受影响阶段重算、幂等恢复、失败保留、有限用途与新版本发布；这些是后续合同，不代表生产已接入。局部通过后仍要完成完整受影响范围复验，并按原件质量协议审核未触发提示的材料。
+
+## 11. 原件证据修复与独立路线补充
+
+`document_structure_repairs.py` 和 `document_role_repairs.py` 在冻结结果上做有据修复，不重新生成原件或原生捕获。签署边界要求唯一完整原容器中的 SIGNATURE(S) 标题及紧邻完整法律声明，支持 registrant/registrants；局部范围到下个非日期标题结束。修正后的章节关联保留旧路径和原依据，不修改原生分区成员，也不将原生 TOC 错误标记为已消失。单位标签必须是完整、可核对的原容器文本；6-K 月份还须有共享封面父容器的 Form 6-K 证据。两者保留原文、降为上下文或封面字段，不作后续正文父章节，不自动将单位分配给最近表格。
+
+网页适配承接同一来源摘要的旧原容器。完整文本仅有一个候选时建立原 DOM 定位，多个匹配保留歧义；表格不靠压平文本证明单元格关系。旧主标题只有原容器身份、文本及非导航角色一致才恢复。原 HTML 与原生 XML 坐标仍分别保留；定位部分正文不等于验证全部正文覆盖。
+
+Markdown 嵌入 HTML 使用本地 lxml 子树，保留节点属性、文本/尾文本、显式标题层级、物理表格单元格/跨度与图片引用，坐标限定在原 Markdown 行区间内。原 raw 文本不改写，表内标题不提升为正文章节，HTML 与单位上下文不混入普通正文分块。局部 DOM 结构不证明浏览器版式、图片用途或财务表归属。
+
+`pdf_native_structure.py` 单独保存 PyMuPDF 原生字形跨度、字体、行方向、页内坐标、旋转变换、绘图面板及有框表候选；不将候选合并成已核实读序，不执行 OCR。`structured_source_contract.py` 按 RSS、13F、Companyfacts、申报目录等模式提供记录定位和用途合同；未知数组、行情、通用 API 包装仍需各自数据集契约。原始数值不强制转浮点，记录计数不代表事实或期间正确。
+
+PyMuPDF 2.0 的表格接口默认 `use_layout=True`，安装本地 layout 扩展后会调用其版面模型。本路线显式关闭该选项，并用禁止 layout hook 的测试验证整个页面读取路径；旧接口若存在无法显式关闭的活动 hook 则报错，不默许调用。使用本地 AI 的版面路线可以另行资格验证，但必须记录模式、模型/资源依赖与质量证据，不能标成纯规则。首轮 PDF 开发产物误写的 `model_calls=0` 已由独立纠正记录撤销；旧证据保留，不混入关闭模型后的统一复验。
+
+批次驱动分别为 `run_document_repair_qualification.py`、`run_native_record_layout_qualification.py`。输入清单、父产物及实现摘要冻结，成功与失败分开保存；前者验证块文本、表格/原 XML/源行和引用，后者对结构化对象重新核原件，对 PDF 逐页保存状态。`audit_document_repair_results.py` 复核文本产物摘要与唯一原件分母。
+
+PDF 资源中断后使用 `resume_pdf_native_qualification.py` 显式接续：先验证输入、工作程序版本、完整回执、页序及每页摘要；只复用完整成功原件，旧不完整尝试原样保留，新尝试进入新目录。每份开始前检查可用内存与磁盘，单份超时保留日志。该能力是离线资格脚本的恢复，不代表产品上传或索引发布流程已经接通。
+
+上述路线仍分别输出工程状态与 `quality_pass=false`。原件完整性、候选结构、经原件审核的结构和可发布结果是不同状态；财务主体、期间、单位适用范围、修订及 SQL/XBRL 关联在领域层另行验收。
+
+资格入口使用参数提供私有路径，产物不进入 Git。inventory 的逐行记录包含 `original_id`、`lane`、已冻结产物目录以及 `existing_baseline`/`existing_baseline_sha256`；manifest 提供只读原件库和来源身份。运行前准备 lxml、psutil、已验证版本的 PyMuPDF 及各路线既有资格依赖；不由脚本在线安装或下载模型。
+
+```text
+python scripts/engineering/run_document_repair_qualification.py --inventory <inventory.jsonl> --output <new-text-dir>
+python scripts/engineering/audit_document_repair_results.py --root <new-text-dir> --output <audit.json>
+python scripts/engineering/run_native_record_layout_qualification.py --manifest <manifest.json> --inventory <inventory.jsonl> --lane structured --output <new-record-dir>
+python scripts/engineering/run_native_record_layout_qualification.py --manifest <manifest.json> --inventory <inventory.jsonl> --lane pdf --output <new-pdf-dir>
+python scripts/engineering/resume_pdf_native_qualification.py --manifest <manifest.json> --inventory <inventory.jsonl> --previous <interrupted-pdf-dir> --output <continuation-dir>
+python scripts/engineering/audit_native_record_layout_results.py --root <completed-dir> --inventory <inventory.jsonl> --lane <pdf-or-structured> --output <audit.json>
+```
+
+内存有限时串行安排文本复验、结构化合同重算与 PDF。结构化重算需要解压/反序列化原对象，不与 PDF 批次叠加；完成后的文件身份核对不等于新的原件质量抽样。资源暂停允许在同身份下接续，解析失败和超时仍先定位原因、保留原尝试；改动工作程序后必须另建版本，不能沿用旧成功表格候选凑成统一通过。

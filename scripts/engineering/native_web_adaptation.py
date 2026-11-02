@@ -4,6 +4,8 @@ Native XML positions are NOT original HTML positions. Previous repaired FIN
 artifacts remain separate and must not be overwritten by this candidate.
 """
 import argparse
+from collections import defaultdict
+from copy import deepcopy
 import gzip
 from hashlib import sha256
 import json
@@ -12,13 +14,48 @@ from pathlib import Path
 from lxml import etree
 from native_document_capture import read_capture
 from native_document_adaptation import finish
-from source_structure_contract import reconcile_chapters
+from source_structure_contract import reconcile_chapters, normalized
 
 
 BLOCK_TAGS = {'head', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'item', 'li', 'code', 'quote', 'table'}
 
 
-def adapt_web(capture):
+def restore_original_bindings(document, previous):
+    """Reuse source-proved baseline identities, never XML paths as HTML paths."""
+    source = document['source_sha256']
+    containers = deepcopy(previous.get('source_containers', []))
+    if any(not r['id'].startswith(source + ':') for r in containers):
+        raise ValueError('web_baseline_source_identity_mismatch')
+    document['source_containers'] = containers
+    index = defaultdict(list)
+    for r in containers:
+        if r.get('text') and not r.get('excluded_navigation'):
+            index[normalized(r['text'])].append(r)
+    for b in document['blocks']:
+        # Flattened table text cannot prove cell topology; retain table uncertainty.
+        choices = [] if b['kind'] == 'table' else [r for r in index.get(normalized(b['text']), [])
+                    if not r.get('table_id') and r.get('tag') != 'table']
+        b['source_container_candidates'] = [r['id'] for r in choices]
+        b['source_location_status'] = 'unique_complete_container' if len(choices) == 1 else 'ambiguous' if choices else 'unresolved'
+        if len(choices) == 1:
+            b['source_container_id'] = choices[0]['id']
+            b['original_location_status'] = 'baseline_complete_original_container'
+        elif choices:
+            b['original_location_status'] = 'ambiguous_original_containers'
+    old_title = previous.get('document_title', {})
+    if old_title.get('status') == 'verified_original_heading':
+        sid = old_title.get('source_container_id')
+        rows = [r for r in containers if r['id'] == sid]
+        if len(rows) != 1 or normalized(rows[0]['text']) != normalized(old_title.get('text', '')) or rows[0].get('excluded_navigation'):
+            raise ValueError('verified_web_title_baseline_inconsistent')
+        document['document_title'] = deepcopy(old_title)
+        document['document_title']['compatibility_basis'] = 'verified_frozen_original_container'
+    document['chapter_tree'] = reconcile_chapters(document['blocks'])
+    document['original_binding_basis'] = 'same_source_frozen_baseline_complete_text_not_full_body_coverage'
+    return document
+
+
+def adapt_web(capture, previous=None):
     native = capture['native']; document = native.get('document')
     if not document or not document.get('body'):
         raise ValueError('native_web_body_unavailable')
@@ -81,6 +118,8 @@ def adapt_web(capture):
                   native_metadata={k:v for k,v in document.items() if k not in ('body','commentsbody')},
                   native_text_partition_complete=True, original_content_coverage_verified=False,
                   page_purpose='unreviewed', document_title=dict(text=document.get('title'), status='metadata_only_not_verified_original_heading'))
+    if previous is not None:
+        result = restore_original_bindings(result, previous)
     return finish(result)
 
 
@@ -94,9 +133,10 @@ def main():
     receipt=json.loads((a.capture/'receipt.json').read_bytes())
     native=read_capture(a.capture/'native.json.gz', expected_sha256=receipt['native_sha256'], expected_source_sha256=receipt['source_sha256'])
     if native['route']!='trafilatura': raise ValueError('wrong_native_route')
-    if sha256(a.baseline_artifact.read_bytes()).hexdigest()!=a.baseline_sha256:
+    baseline_raw = a.baseline_artifact.read_bytes()
+    if sha256(baseline_raw).hexdigest()!=a.baseline_sha256:
         raise ValueError('frozen_baseline_digest_mismatch')
-    doc=adapt_web(native)
+    doc=adapt_web(native, json.loads(gzip.decompress(baseline_raw)))
     from finalize_structure_prechunks import classify
     final=classify(doc)
     a.output.mkdir(parents=True, exist_ok=False)

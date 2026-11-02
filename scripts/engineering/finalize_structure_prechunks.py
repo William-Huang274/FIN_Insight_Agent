@@ -33,7 +33,7 @@ def classify(document):
                         'heading_path_status':'parser_hypothesis_not_independently_verified',
                         'financial_semantics_inferred':False})
         if c['kind']=='table':flush();continue
-        if role in {'code_candidate','html_structure_pending'}:flush();continue
+        if role in {'code_candidate','html_structure_pending','html_structure_candidate','attached_context_candidate'}:flush();continue
         if role=='retained_structure':continue
         path=tuple(c['heading_path']);size=len(text.encode())
         if pending and (path!=pending_path or pending_bytes+1+size>10000):flush()

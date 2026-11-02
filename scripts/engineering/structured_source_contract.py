@@ -40,7 +40,30 @@ def describe(document):
             result.update(kind='sec_submission_catalog',record_count=counts.get('accessionNumber',0),
                 recent_column_counts=counts,column_lengths_consistent=len(set(counts.values()))<=1,
                 content_scope='filing_metadata_not_filing_body')
-        elif isinstance(value,list):result.update(kind='unresolved_record_array',record_count=len(value),content_scope='schema_review_required')
+        elif isinstance(value,list):
+            def matches(fields):
+                return bool(value) and all(isinstance(r,dict) and fields<=set(r) for r in value)
+            if matches({'id','full_name','owner','html_url','default_branch'}) and all(
+                    isinstance(r['id'],int) and isinstance(r['full_name'],str) and
+                    isinstance(r['owner'],dict) and isinstance(r['owner'].get('login'),str) for r in value):
+                result.update(kind='github_repository_catalog',content_scope='repository_metadata_not_readme_or_source_code',
+                    records=[dict(locator='/'+str(i),id=r['id'],full_name=r['full_name'],owner=r['owner']['login'],
+                                  url=r['html_url'],default_branch=r['default_branch']) for i,r in enumerate(value)])
+            elif matches({'id','number','title','body','repository_url','state','user'}) and all(
+                    isinstance(r['id'],int) and isinstance(r['number'],int) and isinstance(r['repository_url'],str)
+                    and isinstance(r['title'],str) and (r['body'] is None or isinstance(r['body'],str)) for r in value):
+                result.update(kind='github_issue_pull_request_records',content_scope='saved_issue_or_pull_request_body_not_complete_discussion',
+                    records=[dict(locator='/'+str(i),id=r['id'],number=r['number'],repository_url=r['repository_url'],
+                                  record_role='pull_request' if isinstance(r.get('pull_request'),dict) else 'issue',
+                                  body_locator='/'+str(i)+'/body') for i,r in enumerate(value)])
+            elif matches({'id','modelId','sha','siblings','tags','author'}) and all(
+                    isinstance(r['id'],str) and r['id']==r['modelId'] and isinstance(r['sha'],str)
+                    and isinstance(r['siblings'],list) and isinstance(r['tags'],list) for r in value):
+                result.update(kind='huggingface_model_catalog',content_scope='model_revision_and_file_metadata_not_model_card_or_weights',
+                    records=[dict(locator='/'+str(i),model_id=r['id'],revision=r['sha'],files_locator='/'+str(i)+'/siblings')
+                             for i,r in enumerate(value)])
+            else:result.update(kind='unresolved_record_array',content_scope='schema_review_required')
+            result.update(record_count=len(value),numeric_coercion=False)
         elif 'chart' in keys:result.update(kind='chart_response',content_scope='chart_schema_requires_time_series_contract')
         elif {'data','msg','status'}<=keys:result.update(kind='api_response_envelope',content_scope='status_and_payload_schema_require_review')
         elif {'cik','name','addresses'}<=keys:

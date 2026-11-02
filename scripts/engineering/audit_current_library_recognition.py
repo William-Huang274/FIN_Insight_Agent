@@ -187,7 +187,7 @@ def run(args):
                         if not d.get('source_object_conserved'):raise ValueError('record_conservation_not_proved')
                         contract=d
                     record['observations']={'record_kind:'+contract['kind']:1}
-                    if contract['kind'].startswith('unknown_'):
+                    if contract['kind'].startswith(('unknown_','unresolved_')):
                         record['issues'].append(dict(kind='unrecognized_record_schema',record_kind=contract['kind']))
                     record['issues'].append(dict(kind='record_consumer_semantics_not_accepted',record_kind=contract['kind'],status='consumer_contract_gap'))
                 else:raise ValueError('unsupported_parser_lane:'+lane)

@@ -22,6 +22,7 @@ from mcp import types
 from .on_demand_research import OnDemandResearchState
 from .conversation_tools import SAVED_RESULT_TOOLS
 from .source_result_view import source_result_view
+from .source_references import present_references, expand_references
 
 
 def model_receipt(result):
@@ -37,7 +38,7 @@ def model_receipt(result):
         except ValueError:
             pass
     value = {'receipt_id': result.tool_call_id, 'status': result.status,
-             'result': source_result_view(body) if result.status == 'success' else body}
+             'result': present_references(source_result_view(body)) if result.status == 'success' else body}
     if result.status == 'success' and result.name in SAVED_RESULT_TOOLS:
         value['original_readback'] = {'tool': 'read_saved_result',
             'arguments': {'tool_call_id': result.tool_call_id},
@@ -175,9 +176,19 @@ class HarnessBusinessTools:
             if name not in self.tools:
                 raise ValueError('harness_tool_not_granted')
             call_id = 'fin-tool-' + str(uuid4())
+            state = (await self._checkpoint_call(self.graph.aget_state, self.config)).values
+            original_arguments = arguments
+            try:
+                arguments = expand_references(arguments, state)
+            except ValueError as exc:
+                receipt = ToolMessage(name=name, tool_call_id=call_id, status='error', content=str(exc))
+                await self._checkpoint_call(self.graph.aupdate_state, self.config, {'messages': [
+                    AIMessage(content='', tool_calls=[{'name': name, 'args': arguments, 'id': call_id, 'type': 'tool_call'}]), receipt]}, as_node='tools')
+                return receipt
             try:
                 with self.scope():
-                    output = await self._checkpoint_call(self.graph.ainvoke, {'messages': [AIMessage(content='', tool_calls=[
+                    output = await self._checkpoint_call(self.graph.ainvoke, {'messages': [AIMessage(content='',
+                        additional_kwargs={'original_tool_arguments': original_arguments} if original_arguments != arguments else {}, tool_calls=[
                         {'name': name, 'args': arguments, 'id': call_id, 'type': 'tool_call'}])]}, self.config)
                 await asyncio.to_thread(self.access)
                 return next(m for m in reversed(output['messages'])

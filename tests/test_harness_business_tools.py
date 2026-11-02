@@ -70,9 +70,15 @@ async def test_real_calculator_preserves_sources_across_bridge_restart(tmp_path)
         second = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='fixture', check=lambda: None)
         await second.initialize({'question': 'do not replace', 'messages': []})
         assert (await second.state())['question'] == 'Original question'
+        from sec_agent.agent_runtime.source_references import reference_handle
+        params['request']['operands']['revenue']['source_id'] = reference_handle('NUMFACT::test')
         computed = await second.execute('calculate_research_metric', params)
         assert computed.status == 'success', computed.content
         assert computed.artifact['value_decimal'] == '60'
+        saved = await second.state()
+        proposal = saved['messages'][-2]
+        assert proposal.tool_calls[0]['args']['request']['operands']['revenue']['source_id'] == 'NUMFACT::test'
+        assert proposal.additional_kwargs['original_tool_arguments']['request']['operands']['revenue']['source_id'] == reference_handle('NUMFACT::test')
         read = await second.execute('read_saved_result', {'tool_call_id': receipt.tool_call_id})
         assert '120' in read.content
         assert len([m for m in (await second.state())['messages'] if isinstance(m, ToolMessage)]) == 3

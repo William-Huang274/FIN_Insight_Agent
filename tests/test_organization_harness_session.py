@@ -89,3 +89,27 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
     assert result['task_outcome']['run_id'] == new_run
     assert starts == ['local']  # no private service, ACP process or provider replay
     assert json.loads((directory / new_run / 'turn.private.json').read_text())['reused_from_run'] == rid
+
+    # Operator-selected pre-generation checkpoint must not inherit the later
+    # outer answer, old business ledger, or the old note workspace.
+    from sec_agent.agent_runtime import harness_legacy_import
+    import_digest = 'b' * 64
+    imported = ToolMessage(content='exact original', name='read_source_document', tool_call_id='retained', id='retained')
+    monkeypatch.setattr(harness_legacy_import, 'legacy_receipts', lambda *a, **k: {
+        'messages': [imported], 'harness_import_digest': import_digest})
+    options.update(isolated_receipt_replay=True, legacy_receipt_import={'sha256': import_digest})
+    saved['values'] = {'messages': [HumanMessage(content='later incorrect answer')], 'question': grant['question']}
+    @asynccontextmanager
+    async def clean_local(**kw):
+        current = await kw['business'].state()
+        assert [m.content for m in current['messages']] == ['exact original']
+        yield 'http://127.0.0.1:9'
+    monkeypatch.setattr(module, 'harness_local_services', clean_local)
+    async with module.organization_harness_session(**common) as graph:
+        result = await graph.ainvoke(initial)
+    assert (directory / ('import-' + import_digest) / 'business-checkpoint.sqlite').exists()
+    assert (directory / 'business-checkpoint.sqlite').exists()
+    options.pop('legacy_receipt_import')
+    with pytest.raises(ValueError, match='requires_pinned_checkpoint'):
+        async with module.organization_harness_session(**common):
+            pass

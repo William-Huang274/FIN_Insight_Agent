@@ -514,7 +514,7 @@ class OrganizationSourceNavigation:
         item = self.observed.get(source_id)
         if item is None:
             raise ValueError('source_not_observed_in_this_organization_tool_session')
-        if item.get('result_state') == 'source_bound_passage':
+        if item.get('result_state') == 'source_bound_passage' and item.get('source_role') != 'external_public_source_unverified':
             current = self.navigate(item['readback'])
             matched = next((row for row in current.items if row.get('passage_id') == source_id), None)
             if matched != item:
@@ -546,7 +546,7 @@ class OrganizationSourceNavigation:
         return {'execution_id': self.reader.authority.execution_id,
                 'manifest_digest': self.reader.authority.manifest_digest}
 
-    def restore(self, observations):
+    def restore(self, observations, *, external_source_lookup=None):
         """Revalidate host-saved originals and calculations; publish only a complete batch.
 
         This is not a model-facing registration API or checkpoint authenticity proof.
@@ -581,7 +581,9 @@ class OrganizationSourceNavigation:
             visiting.add(source_id)
             candidates = pending[source_id]
             saved = candidates[0]
-            if saved['result_state'] == 'source_bound_passage':
+            if saved.get('source_role') == 'external_public_source_unverified' and external_source_lookup is not None:
+                fresh = external_source_lookup(source_id)
+            elif saved['result_state'] == 'source_bound_passage':
                 origin = saved.get('organization_source', {})
                 if any(origin.get(key) != value for key, value in self.execution_scope.items()):
                     raise ValueError('organization_restore_execution_scope_mismatch')

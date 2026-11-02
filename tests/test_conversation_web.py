@@ -1,10 +1,33 @@
 import asyncio
 import json
+from types import SimpleNamespace
 from uuid import uuid4
 
 from sec_agent.agent_runtime.conversation_web import public_web_tool
 from sec_agent.research_foundation.external_sources import ConversationSourceScope
 from test_web_source_navigation import _reader
+
+
+def test_public_web_restores_discovery_between_runs_and_uses_task_cutoff(tmp_path):
+    from langchain_core.messages import ToolMessage
+    tid = str(uuid4())
+    first, _, _ = _reader()
+    second, _, text = _reader()
+    a = public_web_tool(thread_id=tid, run_id=str(uuid4()), method_digest='a'*64,
+        cache_root=tmp_path, reader=first, research_as_of='2026-09-23').tool
+    b = public_web_tool(thread_id=tid, run_id=str(uuid4()), method_digest='a'*64,
+        cache_root=tmp_path, reader=second, research_as_of='2026-09-23').tool
+    async def check():
+        visible, artifact = await a.coroutine(operation='search', query='public filing')
+        assert '2026-09-23' in json.loads(visible)['search_coverage']['research_as_of']
+        assert 'web_navigation_receipts' not in json.loads(visible)
+        doc = json.loads(visible)['items'][0]['document_id']
+        runtime = SimpleNamespace(state={'messages': [ToolMessage(name='read_public_source',
+            tool_call_id='search', content=visible, artifact=artifact)]})
+        read, _ = await b.coroutine(operation='read', document_id=doc, max_characters=1000, runtime=runtime)
+        assert json.loads(read)['items'][0]['passage'] == text[:1000]
+        assert next(iter(second._candidates.values()))[0].research_as_of.startswith('2026-09-23')
+    asyncio.run(check())
 
 
 def test_general_web_reuses_readers_without_claiming_financial_review(tmp_path):

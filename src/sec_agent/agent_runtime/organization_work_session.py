@@ -18,7 +18,7 @@ from .conversation_agent import GrantedTool
 from .on_demand_research import OnDemandResearchState
 
 
-def organization_source_tool(navigation, check):
+def organization_source_tool(navigation, check, *, public_web=False):
     """Only model selection errors become ordinary paired tool feedback."""
     from sec_agent.research_foundation.organization_source_request import OrganizationSourceRequest
     from sec_agent.research_foundation.organization_execution_access import OrganizationSourceSelectionError
@@ -27,7 +27,10 @@ def organization_source_tool(navigation, check):
     def read_source_document(request: OrganizationSourceRequest):
         """Search/catalog/read the task's authorized fixed originals. Candidate IDs are not citations until read."""
         try:
-            return read_authorized_source(navigation, check, request)
+            text, body = read_authorized_source(navigation, check, request)
+            from .source_search_scope import search_scope
+            body = search_scope(body, request, public_web=public_web)
+            return json.dumps(body, ensure_ascii=False), body
         except OrganizationSourceSelectionError as exc:
             raise ToolException(str(exc)) from exc
 
@@ -49,7 +52,7 @@ def read_authorized_source(navigation, check, request):
     return json.dumps(body, ensure_ascii=False), body
 
 
-def artifact_reader(data, navigation, question_state, *, source_ids=None):
+def artifact_reader(data, navigation, question_state, *, source_ids=None, allow_public_sources=False):
     """Revalidate native tool artifacts, never model prose or browser records."""
     from .conversation_handoff import observed_sources
     sources = observed_sources({'values': {'messages': [m.model_dump(mode='json') if hasattr(m, 'model_dump') else m
@@ -68,13 +71,15 @@ def artifact_reader(data, navigation, question_state, *, source_ids=None):
         for source_id in source_ids:
             include(source_id)
         sources = selected
-    return artifact_reader_from_sources(data, navigation, sources)
+    return artifact_reader_from_sources(data, navigation, sources, allow_public_sources=allow_public_sources)
 
 
-def artifact_reader_from_sources(data, navigation, sources):
+def artifact_reader_from_sources(data, navigation, sources, *, allow_public_sources=False):
     """Restore observed source identities through the existing authorized reader."""
     from .case_artifacts import CaseArtifacts
-    validated = navigation.restore([{'status': 'success', 'content': list(sources.values())}])
+    from .public_source_restore import validated_public_source
+    validated = navigation.restore([{'status': 'success', 'content': list(sources.values())}],
+        **({'external_source_lookup': lambda key: validated_public_source(sources[key])} if allow_public_sources else {}))
     result = CaseArtifacts.from_observed_sources(validated, case_id=data.foundation_binding.case_id,
                                                  research_as_of=data.foundation_binding.research_as_of)
     for key in ('snapshot_id', 'foundation_digest'):

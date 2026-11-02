@@ -69,6 +69,16 @@ async def organization_harness_session(*, native, resources, authority, check, o
     if import_digest is not None and (len(import_digest) != 64 or any(c not in '0123456789abcdef' for c in import_digest)):
         raise ValueError('harness_legacy_import_digest_invalid')
     session_directory = directory / ('import-' + import_digest) if import_digest else directory
+    # Explicit operator replay starts before a faulty generation. Keep original
+    # ledgers/notes intact, and do not seed this branch from a later outer answer.
+    # This is a receipt handoff, not a fabricated native conversation fork.
+    clean_import = options.get('isolated_receipt_replay', False)
+    if clean_import and not import_digest:
+        raise ValueError('harness_isolated_replay_requires_pinned_checkpoint')
+    from uuid import uuid5, NAMESPACE_URL
+    memory_workspace = str(uuid5(NAMESPACE_URL, tid + ':' + import_digest)) if clean_import else tid
+    business_directory = session_directory if clean_import else directory
+    business_directory.mkdir(parents=True, exist_ok=True)
     run_directory = directory / rid
     run_directory.mkdir(exist_ok=True)
     owner = 'organization:' + grant['organization_id']
@@ -79,15 +89,21 @@ async def organization_harness_session(*, native, resources, authority, check, o
     grants = [g for g in conversation_tools(thread_id=tid)
               if g.tool.name in {'browse_context', 'read_context_turn', 'read_saved_result',
                                  'get_research_method', 'calculate_research_metric', 'create_report_chart'}]
-    grants.append(GrantedTool(organization_source_tool(navigation, check), 'read', '当前组织任务的固定来源'))
+    public_web = options.get('allow_public_web', False)
+    grants.append(GrantedTool(organization_source_tool(navigation, check, public_web=public_web), 'read', '当前组织任务的固定来源'))
+    if public_web:
+        from .conversation_web import public_web_tool
+        grants.append(public_web_tool(thread_id=tid, run_id=rid,
+            method_digest=sha256(research_system_prompt(['read_public_source', 'get_research_method']).encode('utf-8')).hexdigest(),
+            cache_root=directory / 'public-source-cache', research_as_of=organization.research_as_of))
     grants.extend(GrantedTool(t, 'working_note_write' if t.name == 'WriteWorkingNote' else 'read',
-                  '当前组织任务的版本化工作笔记') for t in working_memory_tools('research_partner', owner=owner, workspace=tid))
+                  '当前组织任务的版本化工作笔记') for t in working_memory_tools('research_partner', owner=owner, workspace=memory_workspace))
     # The business receipt store is the single historical readback surface.
     # Exposing a second SDK handoff to the outer checkpoint would advertise an
     # empty source list when the old research lived in a nested graph.
     from .working_memory import WorkingMemory
     from .harness_artifact_tools import artifact_tools
-    memory = WorkingMemory(environment['FINSIGHT_WORKING_MEMORY_PATH'], owner=owner, workspace=tid,
+    memory = WorkingMemory(environment['FINSIGHT_WORKING_MEMORY_PATH'], owner=owner, workspace=memory_workspace,
                            actor='research_partner', access_check=check, allow_remote_search=False)
     intent = grant.get('report_action_request', {}).get('delivery_intent', execution.delivery_intent)
     require_review = grant.get('report_action_request', {}).get('require_report_review', execution.require_report_review)
@@ -95,13 +111,13 @@ async def organization_harness_session(*, native, resources, authority, check, o
         raise ValueError('harness_independent_review_not_yet_qualified')
     def artifacts(state, **kwargs):
         with organization(run_invocation_id='harness:' + rid, source_read_enabled=True) as data:
-            return artifact_reader(data, navigation, state, **kwargs)
+            return artifact_reader(data, navigation, state, allow_public_sources=public_web, **kwargs)
     grants.append(observed_source_tool(artifacts, check))
     grants.extend(artifact_tools(artifacts=artifacts, memory=memory, delivery_intent=intent, require_review=require_review))
-    scope = lambda: native_memory_scope(owner, tid, access_check=check, allow_remote_search=False)
-    async with AsyncSqliteSaver.from_conn_string(str(directory / 'business-checkpoint.sqlite')) as saver:
+    scope = lambda: native_memory_scope(owner, memory_workspace, access_check=check, allow_remote_search=False)
+    async with AsyncSqliteSaver.from_conn_string(str(business_directory / 'business-checkpoint.sqlite')) as saver:
         bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope)
-        recovery_receipt = await bridge.initialize({**admitted, 'question': grant['question']},
+        recovery_receipt = await bridge.initialize({**({} if clean_import else admitted), 'question': grant['question']},
             recovering=grant.get('report_action_request', {}).get('action') == 'recover')
         if recovery_receipt:
             _persist(run_directory / 'tool-recovery.json', recovery_receipt)
@@ -134,7 +150,10 @@ async def organization_harness_session(*, native, resources, authority, check, o
         async def project(state, result):
             business = await bridge.state()
             from .task_outcome import TaskOutcome
-            output = AIMessage(content=result['text'], additional_kwargs={'harness_session_id': result['session_id']})
+            from .source_references import render_answer_references
+            text, citations, unresolved = render_answer_references(result['text'], business)
+            output = AIMessage(content=text, additional_kwargs={'harness_session_id': result['session_id'],
+                'citation_bindings': citations, 'unresolved_citations': unresolved})
             # Financial observations stay in the existing export/readback
             # projection. They are not transplanted into native ACP history.
             before = {m.id for m in state.get('messages', []) if m.id}
@@ -161,7 +180,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
                     return await project(state, recovered)
             async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token) as endpoint:
                 prompt = research_system_prompt(bridge.tools, 'Research as of: ' + organization.research_as_of +
-                    '\nRequested delivery: ' + intent + '. Save useful working understanding as needed; only deliver the requested artifact form.')
+                    '\nRequested delivery: ' + intent + '. Save useful working understanding as needed; only deliver the requested artifact form.'+
+                    '\nUse returned citation_handle values in source_id fields and [REF-...] citations. They bind exact observed originals/calculations; do not shorten them further. Original long IDs remain compatible.')
                 patch = profile_overlay(model=options['model'], protocol=options['protocol'], endpoint=endpoint,
                     prompt=prompt, context_window=options['context_window'], output_tokens=options['output_tokens'],
                     summary_tokens=options['summary_tokens'], reasoning=options['reasoning'],

@@ -1,0 +1,91 @@
+import json
+from copy import deepcopy
+from hashlib import sha256
+from types import SimpleNamespace
+
+import pytest
+from langchain_core.messages import ToolMessage
+
+from sec_agent.agent_runtime.source_references import (
+    reference_handle, reference_sources, resolve_reference, present_references,
+    expand_references, render_answer_references,
+)
+from sec_agent.agent_runtime.source_search_scope import search_scope
+from sec_agent.agent_runtime.public_source_restore import validated_public_source
+
+
+def source():
+    text = 'Revenue 100; contractual payment terms vary by customer.'
+    digest = sha256(text.encode()).hexdigest()
+    key = 'PASSAGE::WEB::document::0::' + digest[:16]
+    row = dict(result_state='source_bound_passage', passage_id=key, passage=text,
+        source_role='external_public_source_unverified', document_id='WEB::document',
+        content_sha256=digest, source_url='https://example.com/disclosure', numeric_fact_authority=False, writer_citable=True,
+        source_locator=dict(document_id='WEB::document', source_url='https://example.com/disclosure',
+            character_start=0, character_end=len(text), content_sha256=digest, capture_receipt_digest='a'*64))
+    return key, row
+
+
+def state():
+    key, row = source()
+    data = {'operation': 'read', 'items': [row]}
+    return key, {'messages': [ToolMessage(name='read_public_source', tool_call_id='read1',
+                     content=json.dumps(data), artifact=data)]}
+
+
+def test_short_reference_survives_restart_and_does_not_promote_candidates():
+    key, current = state()
+    old = deepcopy(current)
+    sources, handles = reference_sources(current)
+    handle = reference_handle(key)
+    assert handles[handle] == key
+    assert reference_sources(deepcopy(current)) == (sources, handles)
+    body = {'request': {'operands': {'a': {'source_id': handle, 'literal': '100'}}},
+            'report': {'narrative_markdown': '解释 [' + handle + ']'}}
+    expanded = expand_references(body, current)
+    assert expanded['request']['operands']['a']['source_id'] == key
+    assert expanded['report']['narrative_markdown'] == '解释 [' + key + ']'
+    assert current == old and body['request']['operands']['a']['source_id'] == handle
+    with pytest.raises(ValueError, match='unobserved'):
+        expand_references(body, {'messages': []})
+    assert 'citation_handle' not in present_references({'result_state': 'retrieval_candidate', 'passage_id': key})
+    assert present_references(sources[key])['citation_handle'] == handle
+
+
+def test_unique_abbreviations_only_and_display_never_rewrites_conclusions():
+    key, current = state(); sources, handles = reference_sources(current)
+    short = 'PASSAGE::…' + key[-16:]
+    assert resolve_reference(short, sources, handles) == key
+    with pytest.raises(ValueError, match='ambiguous'):
+        resolve_reference(short, {key: {}, 'PASSAGE::another::'+key[-16:]: {}}, {})
+    text = 'This remains a hypothesis [' + reference_handle(key) + ']'
+    rendered, bound, unknown = render_answer_references(text, current)
+    assert rendered.startswith('This remains a hypothesis [REF-')
+    assert 'https://example.com/disclosure' in rendered
+    assert bound[reference_handle(key)]['source_id'] == key and unknown == []
+    calc = 'CALC::' + 'a'*64
+    assert resolve_reference(calc[:30], {calc: {}}, {}) == calc
+    with pytest.raises(ValueError, match='ambiguous'):
+        resolve_reference(calc[:30], {calc: {}, calc[:40]+'b'*24: {}}, {})
+
+
+def test_search_scope_is_not_library_or_disclosure_absence():
+    request = SimpleNamespace(operation='search', query='rare filing', document_id=None,
+                              source_space='organization', offset=0, organization_filter=None)
+    body = dict(items=[], total_matches=0, next_offset=None, source_snapshot_sha256='fixed')
+    value = search_scope(body, request, public_web=True)['search_coverage']
+    assert not value['issuer_non_disclosure_established'] and not value['unfiltered_catalog_returned_in_full']
+    assert 'read_public_source' in value['available_followup_tools']
+    assert 'read_public_source' not in search_scope(body, request)['search_coverage']['available_followup_tools']
+    request.operation='catalog'; request.query=''
+    assert search_scope(body, request)['search_coverage']['unfiltered_catalog_returned_in_full']
+    request.offset=20
+    assert not search_scope(body, request)['search_coverage']['unfiltered_catalog_returned_in_full']
+
+
+def test_public_source_validation_preserves_original_and_rejects_tampering():
+    _, row=source()
+    assert validated_public_source(row)==row
+    for field, value in [('passage','changed'),('numeric_fact_authority', True),('source_url','file:///private')]:
+        with pytest.raises(ValueError):
+            validated_public_source({**row,field:value})

@@ -213,6 +213,27 @@ def test_separate_organization_sessions_do_not_share_observations(navigation, tm
     with pytest.raises(OrganizationSourceSelectionError): other.navigate(first['readback'])
 
 
+def test_host_restored_web_original_keeps_identity_and_requires_explicit_admission(navigation):
+    from test_source_references import source
+    from sec_agent.agent_runtime.public_source_restore import validated_public_source
+    nav, _, _ = navigation
+    org = read_first(nav).items[0]
+    key, web = source()
+    originals = [{'status': 'success', 'content': [org, web]}]
+    with pytest.raises(ValueError, match='scope_mismatch'):
+        nav.restore(originals)
+    restored = nav.restore(originals, external_source_lookup=lambda _: validated_public_source(web))
+    assert restored[key] == web and restored[org['passage_id']]['passage'] == org['passage']
+    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
+    calc = nav.calculate(SourceBoundCalculation.model_validate({'expression': 'revenue / 2', 'operands': {'revenue': {
+        'source_id': key, 'literal': '100', 'quote': 'Revenue 100'}},
+        'result_unit': 'USD million', 'rationale': 'Fixture arithmetic'}))
+    result = nav.restore([{'status': 'success', 'content': [web, calc]}],
+                         external_source_lookup=lambda _: validated_public_source(web))
+    assert result[calc['calculation_id']]['value_decimal'] == '50'
+    assert result[calc['calculation_id']]['operands']['revenue']['source_id'] == key
+
+
 def test_permission_change_after_navigation_drops_entire_response(navigation, monkeypatch):
     nav, state, _ = navigation
     original = nav.reader._after

@@ -134,6 +134,8 @@ def answer_citations(bindings):
         row = deepcopy(original)
         row['source_id'] = source_id
         row['text'] = row.get('text') or row.get('passage') or ''
+        if source_id.startswith('CALC::') and isinstance(row.get('operands'), dict) and row.get('expression'):
+            row['calculation'] = deepcopy(original)
         title = row.get('title') or row.get('document_title') or row.get('name')
         if not title or title == source_id:
             title = '来源绑定计算' if source_id.startswith('CALC::') else '原文摘录'

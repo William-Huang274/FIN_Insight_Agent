@@ -80,6 +80,9 @@ def test_typed_suffix_and_reader_projection_keep_identity_without_inventing_clai
     assert public['claim']['kind'] == 'source_reference'
     assert public['sources'][0]['source_id'] == key
     assert public['sources'][0]['text'] == source()[1]['passage']
+    calculation = {'expression': 'x / y', 'operands': {'x': {'source_id': key, 'literal': '2'}}, 'value_decimal': '2'}
+    calc_view = answer_citations({'REF-test': {'source_id': 'CALC::test', 'source': calculation}})
+    assert calc_view['REF-test']['sources'][0]['calculation'] == calculation
     sources, handles = reference_sources(current)
     ambiguous = {**sources, 'PASSAGE::other::' + key.rsplit('::', 1)[-1]: {}}
     with pytest.raises(ValueError, match='ambiguous'):

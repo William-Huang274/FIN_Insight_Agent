@@ -82,6 +82,12 @@ async def organization_harness_session(*, native, resources, authority, check, o
     run_directory = directory / rid
     run_directory.mkdir(exist_ok=True)
     owner = 'organization:' + grant['organization_id']
+    # Prepare the fixed release before the first paid turn. Otherwise the
+    # first MCP search spends its request deadline loading cached proofs even
+    # though no new original needs verification. The maintained lifecycle owns
+    # reuse; do not introduce a second warm-up/cache implementation here.
+    if organization.retrieval is not None:
+        await asyncio.to_thread(organization.prepare_retrieval)
     navigation = (organization.retrieval.navigation() if organization.retrieval else
                   OrganizationSourceNavigation(organization.reader, workbench_url=organization.workbench_url))
     # Keep the existing paged receipt directory, not its old automatic

@@ -42,13 +42,16 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
         root=Path(__file__).resolve().parents[1])
     environment = dict(FINSIGHT_HARNESS_STATE_ROOT=str(tmp_path / 'sessions'),
         FINSIGHT_WORKING_MEMORY_PATH=str(tmp_path / 'notes.sqlite'), FIXTURE_SECRET='fixture-only')
-    organization = SimpleNamespace(retrieval=SimpleNamespace(navigation=lambda: SimpleNamespace()), research_as_of='2026-09-23')
+    prepared = []
+    organization = SimpleNamespace(retrieval=SimpleNamespace(navigation=lambda: SimpleNamespace()),
+        research_as_of='2026-09-23', prepare_retrieval=lambda: prepared.append(True))
     saved = {'values': {}}
     async def state(*_, **__): return saved
     native = SimpleNamespace(threads=SimpleNamespace(get_state=state))
     starts = []
     @asynccontextmanager
     async def local(**kw):
+        assert prepared  # Cold preparation cannot consume a model tool deadline.
         tools = {t.name for t in (await kw['business'].list_tools(None, None)).tools}
         assert {'browse_context', 'read_research_source', 'calculate_research_metric', 'save_research_report'} <= tools
         starts.append('local')

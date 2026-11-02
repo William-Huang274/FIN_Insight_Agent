@@ -81,6 +81,9 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
     _persist(directory / 'session-binding.json', {'binding': binding, 'session_id': 'native-fixture'})
     _persist(directory / rid / 'turn.private.json', {'status': 'completed', 'session_id': 'native-fixture',
         'text': 'Original answer', 'stop_reason': 'end_turn'})
+    (directory / rid / 'events.private.jsonl').write_text(json.dumps({
+        'session_id': 'native-fixture', 'update': {'sessionUpdate': 'agent_message_chunk',
+            'content': {'type': 'text', 'text': 'Original answer'}}}) + '\n', encoding='utf8')
     new_run = str(uuid4())
     recovery = dict(grant, report_command_id=str(uuid4()), report_action_request={
         'action': 'recover', 'previous_run_id': rid, 'message': 'Continue', 'checkpoint_id': str(uuid4())})

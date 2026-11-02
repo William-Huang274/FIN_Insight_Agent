@@ -29,6 +29,51 @@ def _persist(path: Path, value):
     os.replace(temporary, path)
 
 
+class TurnTextProjection:
+    """Separate pre-tool assistant text from terminal delivery, without rewriting it.
+
+    ACP text chunks are not necessarily a final answer. Tool completion updates
+    may arrive late; only a new tool call starts a new delivery segment.
+    """
+    version = 'acp_terminal_text.v1'
+
+    def __init__(self):
+        self.text, self.progress = [], []
+        self.tool_ids = set()
+
+    def accept(self, value):
+        kind = value.get('sessionUpdate')
+        if kind == 'tool_call' and value['toolCallId'] not in self.tool_ids:
+            self.tool_ids.add(value['toolCallId'])
+            self.progress.extend(self.text)
+            self.text.clear()
+        elif kind == 'agent_message_chunk' and value.get('content', {}).get('type') == 'text':
+            self.text.append(value['content']['text'])
+
+    def fields(self):
+        return {'text': ''.join(self.text), 'progress_text': ''.join(self.progress),
+                'text_projection': self.version}
+
+
+def completed_text_projection(prior, events):
+    """Adapt an old completed receipt using its exact events; never overwrite it."""
+    if prior.get('text_projection') == TurnTextProjection.version:
+        return prior
+    if not events.is_file():
+        raise ValueError('harness_completed_text_events_missing')
+    projection = TurnTextProjection()
+    with events.open(encoding='utf8') as stream:
+        for line in stream:
+            record = json.loads(line)
+            if record['session_id'] != prior['session_id']:
+                raise ValueError('harness_completed_text_session_mismatch')
+            projection.accept(record['update'])
+    fields = projection.fields()
+    if fields['progress_text'] + fields['text'] != prior['text']:
+        raise ValueError('harness_completed_text_events_mismatch')
+    return {**prior, **fields}
+
+
 def completed_recovery(directory, *, previous_run_id, binding):
     """Read a completed predecessor only after Java admitted its recovery.
 
@@ -46,24 +91,24 @@ def completed_recovery(directory, *, previous_run_id, binding):
     session = json.loads(session_path.read_text(encoding='utf8'))
     if session['binding'] != binding or prior['session_id'] != session['session_id']:
         raise ValueError('harness_recovery_response_binding_mismatch')
-    return prior
+    return completed_text_projection(prior, turn_path.with_name('events.private.jsonl'))
 
 
 class HarnessSessionClient:
     """Private event storage and public text are separate; no implicit grants."""
     def __init__(self, events: Path, public: Callable | None = None):
         self.events, self.public = events, public
-        self.text = []
+        self.projection = TurnTextProjection()
 
     async def session_update(self, session_id, update, **kwargs):
         value = update.model_dump(mode='json', by_alias=True, exclude_none=True)
         with self.events.open('a', encoding='utf8') as stream:
             stream.write(json.dumps({'session_id': session_id, 'update': value}, ensure_ascii=False) + '\n')
             stream.flush()
+        self.projection.accept(value)
         if value.get('sessionUpdate') == 'agent_message_chunk':
             content = value.get('content', {})
             if content.get('type') == 'text':
-                self.text.append(content['text'])
                 if self.public:
                     self.public({'type': 'assistant_text', 'text': content['text']})
 
@@ -86,16 +131,16 @@ class HarnessSession:
             if prior.get('prompt_digest') != digest:
                 raise ValueError('harness_run_prompt_identity_changed')
             if prior['status'] == 'completed':
-                return prior
+                return completed_text_projection(prior, self.client.events)
             # A new Java recovery run is required; never resend an uncertain
             # prompt implicitly inside the same run.
             raise RuntimeError('harness_turn_already_started_requires_recovery_command')
         _persist(self.turn_path, {'status': 'started', 'session_id': self.session_id, 'prompt': text, 'prompt_digest': digest})
-        self.client.text.clear()
+        self.client.projection = TurnTextProjection()
         try:
             response = await self.connection.prompt(session_id=self.session_id, prompt=[text_block(text)])
             result = {'status': 'completed', 'session_id': self.session_id,
-                      'stop_reason': response.stop_reason, 'text': ''.join(self.client.text), 'prompt_digest': digest}
+                      'stop_reason': response.stop_reason, **self.client.projection.fields(), 'prompt_digest': digest}
             if response.stop_reason != 'end_turn':
                 result['status'] = 'interrupted'
             _persist(self.turn_path, result)

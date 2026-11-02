@@ -32,3 +32,9 @@ def test_mismatch_keeps_uncertainty():
 def test_idempotent_consumption():
     first,_=repair(fixture());second,changes=repair(first)
     assert not changes and second['blocks']==first['blocks']
+
+
+def test_multiple_items_share_one_part_marker_repair():
+    old=fixture();old['source_part_proofs']*=3
+    new,changes=repair(old)
+    assert len(changes)==1 and new['blocks'][0]['structural_only']

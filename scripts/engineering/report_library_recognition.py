@@ -8,6 +8,7 @@ from pathlib import Path
 from audit_source_binding_lineage import digest,read_json,read_lines
 
 LABELS={
+ 'original_based_role_hierarchy_quality_not_accepted':'原件角色、标题层级及正文归属尚缺独立质量验收',
  'derived_integrity_failure':'已有转录或节点的完整性检查失败',
  'encoding_loss_requires_original':'存在替换字符，需从原件核对编码损失',
  'scoped_derived_content_not_full_original':'仅有转录或局部范围，不能声称覆盖完整原件',

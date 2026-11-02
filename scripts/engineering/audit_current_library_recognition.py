@@ -58,7 +58,11 @@ def run(args):
     from consume_verified_structure_markers import repair
     from finalize_structure_prechunks import classify
     from structured_source_contract import describe
+    code_files=list(Path(__file__).parent.glob('*.py'))+[Path(__file__).parents[2]/'src/retrieval/structural_surface.py']
+    implementation={str(p):digest(p.read_bytes()) for p in code_files}
     rows=read_lines(args.ledger);out=Path(args.output);out.mkdir(parents=True,exist_ok=False)
+    input_identity=dict(ledger_sha256=digest(Path(args.ledger).read_bytes()),
+                       originals_summary_sha256=digest((Path(args.originals)/'summary.json').read_bytes()))
     new_summary=read_json(Path(args.originals)/'summary.json')
     new={r['document_id']:r for r in new_summary['rows']}
     backlog={r['document_id'] for r in rows if r['processing']['stage']=='parse_current_original'}
@@ -138,14 +142,21 @@ def run(args):
                         errors=validate(updated)
                         if errors:raise ValueError('repaired_structure_contract:'+str(errors))
                         chunks=classify(updated)
+                        previous_chunks=classify(d)
+                        role_changes=[dict(block=new['block'],previous=old['role'],current=new['role'])
+                                      for old,new in zip(previous_chunks['records'],chunks['records'],strict=True)
+                                      if old['role']!=new['role']]
                         marker_blocks={c['block'] for c in changes}
                         if any(r['role']!='retained_structure' for r in chunks['records'] if r['block'] in marker_blocks):
                             raise ValueError('proven_marker_still_in_prose')
                         folder=out/'adapted'/digest(path.encode());folder.mkdir(parents=True)
                         packed=gzip.compress(json.dumps(updated,ensure_ascii=False).encode(),compresslevel=3,mtime=0)
                         target=folder/'document.json.gz';target.write_bytes(packed)
-                        (folder/'prechunks.json.gz').write_bytes(gzip.compress(json.dumps(chunks,ensure_ascii=False).encode(),compresslevel=3,mtime=0))
-                        record.update(path=str(target),sha256=digest(packed),changes=changes,parent_path=path,parent_sha256=expected)
+                        chunk_data=gzip.compress(json.dumps(chunks,ensure_ascii=False).encode(),compresslevel=3,mtime=0)
+                        chunk_path=folder/'prechunks.json.gz';chunk_path.write_bytes(chunk_data)
+                        record.update(path=str(target),sha256=digest(packed),changes=changes,parent_path=path,parent_sha256=expected,
+                                      prechunk_role_changes=role_changes,prechunks=dict(path=str(chunk_path),sha256=digest(chunk_data)))
+                        del previous_chunks,chunks
                     observations,found=text_observations(updated)
                     record.update(observations=dict(observations),issues=found+coverage_gaps(lane,observations))
                     for field in ('visible_unknown_levels','compatibility_only_chapters','location:unresolved','location:ambiguous'):
@@ -188,6 +199,7 @@ def run(args):
             cache[key]=record
             counts['unique_artifacts']+=1
             counts['repaired_artifacts']+=bool(record['changes']);counts['repaired_markers']+=len(record['changes'])
+            counts['reclassified_prechunks']+=len(record.get('prechunk_role_changes',[]))
             counts['audit_failed_artifacts']+=record['state']=='audit_failed'
         record=cache[key]
         if source and record.get('source_sha256') and record['source_sha256']!=source['current_sha256']:
@@ -195,12 +207,17 @@ def run(args):
             row['recognition_audit']={'state':'source_rebaseline_required'};results.append(row);counts['source_recheck_failures']+=1;continue
         row['current_parser_artifact']=dict(path=record['path'],sha256=record['sha256'],lane=lane,
             version='whole-library-recognition-review-20261103' if record['changes'] else artifact.get('version','recorded_receipt_version'),quality_pass=False)
+        if record.get('prechunks'):row['current_parser_artifact']['prechunks']=record['prechunks']
         row['recognition_audit']=dict(state=record['state'],observations=record['observations'],marker_repairs=record['changes'])
         row['processing'].update(stage='continue_structure_quality',current_parser_artifact=row['current_parser_artifact'],state=record['state'])
         for issue in record['issues']:issues.append(dict(document_id=bid,source_sha256=row.get('current_source',{}).get('current_sha256') if row.get('current_source') else None,lane=lane,**issue))
         results.append(row);counts['audited_bindings']+=1;versions[row['current_parser_artifact']['version']]+=1
         if (i+1)%100==0:print(json.dumps({'bindings':i+1,'unique_artifacts':len(cache),'failures':counts['audit_failed_artifacts']}),flush=True)
     assert len(results)==len(rows)==len({r['document_id'] for r in results})
+    assert all(digest(Path(p).read_bytes())==value for p,value in implementation.items()),'implementation_changed_during_audit'
+    assert input_identity['ledger_sha256']==digest(Path(args.ledger).read_bytes()),'ledger_changed_during_audit'
+    assert input_identity['originals_summary_sha256']==digest((Path(args.originals)/'summary.json').read_bytes()),'receipts_changed_during_audit'
+    (out/'identity.json').write_text(json.dumps(dict(inputs=input_identity,implementation=implementation),indent=2),encoding='utf8')
     for name,values in [('library-bindings.jsonl',results),('issues.jsonl',issues),('artifact-audits.jsonl',list(cache.values())),('source-rechecks.jsonl',list(source_checks.values()))]:
         (out/name).write_text(''.join(json.dumps(r,ensure_ascii=False)+'\n' for r in values),encoding='utf8')
     summary=dict(total_bindings=len(results),counts=dict(counts),issue_counts=dict(Counter(r['kind'] for r in issues)),

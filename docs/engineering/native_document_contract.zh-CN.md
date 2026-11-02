@@ -235,3 +235,20 @@ python scripts/engineering/audit_library_structure_selection.py --selection <pri
 ```
 
 本规则不包含公司、财年、测试问题或 Reserved 特判。无原生分区的附件/表单、原件本身损坏、复杂表格和页面用途等仍沿各自类型处理；没有证据时不把它们统称为只能手工补丁。
+
+## 14. 原件 Part 层级证明与共享范围复核
+
+`source_part_hierarchy.py` 在完整 Item 标题已证明后，对其 Part 父级独立取证。`source_structure_contract` 保留的容器序列为原 DOM 前序；候选必须是完整的 `PART` 加合法罗马数字标签，排除物理表、表内标签、导航和内部链接，不要求它事先被上游判为标题。带 `Part` 的叙述句不能充当父级。
+
+采用还需要原文中的最近 Part 与原生 Item 元数据一致、解析块能由已有精确原定位或前后完整容器夹定位置，且候选唯一。同一连续 Part 序列有重复标签时，可能是页眉；此时保留旧父级和全部候选，不将最近页眉提升为新章节。原生 Part 值只是交叉核对证据，不能单独决定父级。
+
+证明成立后，章节树与块路径消费相同父节点；物理原文、块身份、原生归属和签署范围保留。冲突历史独立保存，只有证明成立的项才离开当前冲突清单。预分块重新读取修复后的章节路径，不把父级未知自动补成一个猜测值。已有未知子标题的绝对级别不因父级恢复而全部推断。
+
+`qualify_source_part_hierarchy.py` 完整核验 SEC 父回执及输入/产物摘要，代码与依赖摘要冻结，串行运行，资源暂停同身份接续。新代码必须新目录复验；失败目录保留，不静默复用。`audit_library_structure_selection.py` 再独立重算 Part 证明，检查父级是否真正被章节树消费，并复核全库选用分母。
+
+`audit_shared_section_ranges.py` 对全部 SEC 逐份检查共享范围，并回到原生捕获的 HTML 重新计算范围。候选仅按原容器观察分类：目录身份不在原生分区中、同 Item 多个分区身份、范围中未见全部声明 Item、重复 Item 容器、或存在可能拆分的不同 Item 容器。最后一类也不是自动批准拆分；正文里的引用和真实章节边界仍需分辨。每条保留全部分区身份、缺失身份、原容器及摘要，不选择唯一归属。
+
+```text
+python scripts/engineering/qualify_source_part_hierarchy.py --root <completed-heading-parent-dir> --output <new-part-qualification-dir>
+python scripts/engineering/audit_shared_section_ranges.py --root <completed-part-qualification-dir> --captures <frozen-sec-captures> --output <new-shared-range-review-dir>
+```

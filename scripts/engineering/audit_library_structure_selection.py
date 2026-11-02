@@ -19,6 +19,20 @@ def text_observations(d):
     blocks=d['blocks'];nodes=d['chapter_tree'];counts=Counter(blocks=len(blocks),chapters=len(nodes))
     issues=[];units=d.get('source_heading_units',[])
     sources={s['id']:s for s in d.get('source_containers',[])}
+    if 'source_part_proofs' in d:
+        from source_part_hierarchy import proposals
+        reproved={p['unit']:p for p in proposals(d)}
+        for proof in d['source_part_proofs']:
+            counts['source_part_status:'+proof['status']]+=1
+            if not proof.get('changed'):continue
+            fresh=reproved.get(proof['unit'],{})
+            if any(fresh.get(k)!=proof.get(k) for k in ('selected_part','source_id','block','status')):
+                raise ValueError('source_part_evidence_not_reproducible')
+            node=next(n for n in nodes if n['id']==proof['chapter'])
+            parent=next((n for n in nodes if n['id']==node.get('parent_id')),None)
+            if not parent or parent.get('source_container_id')!=proof['source_id'] or parent['block']!=proof['block']:
+                raise ValueError('source_part_proof_not_consumed')
+            counts['source_part_parents_repaired']+=1
     for unit in units:
         native_part=d.get('parser_sections',{}).get(unit['section'],{}).get('part')
         if native_part and unit.get('part') and str(native_part).upper()!=unit['part'].upper():

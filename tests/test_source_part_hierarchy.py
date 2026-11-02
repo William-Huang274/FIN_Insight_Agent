@@ -73,10 +73,11 @@ def test_whole_library_audit_recomputes_proof_and_checks_consumption():
 
 
 def test_qualification_resume_rejects_changed_input(tmp_path,monkeypatch):
-    import gzip,json,pytest,psutil
+    import gzip,json,pytest,psutil,shutil
     from types import SimpleNamespace
     from qualify_source_part_hierarchy import run,digest
     monkeypatch.setattr(psutil,'virtual_memory',lambda:SimpleNamespace(available=2*1024**3))
+    monkeypatch.setattr(shutil,'disk_usage',lambda _:SimpleNamespace(free=4*1024**3))
     root=tmp_path/'prior';folder=root/'x';folder.mkdir(parents=True)
     path=folder/'document.json.gz';path.write_bytes(gzip.compress(json.dumps(fixture()).encode()))
     pre=folder/'prechunks.json.gz';pre.write_bytes(gzip.compress(b'{}'))

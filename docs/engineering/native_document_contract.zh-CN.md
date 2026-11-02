@@ -209,3 +209,29 @@ python scripts/engineering/qualify_sec_sequence_alignment.py --plan <frozen-sele
 局部消歧回归与全 SEC 统一版本验收分开报告。未经过本次重新适配的原件继续保留前一版，不用多个版本的成功数拼成同版全库通过。
 
 本地串行资格运行建议在启动 Python 前设置 `OPENBLAS_NUM_THREADS=1`、`OMP_NUM_THREADS=1`、`MKL_NUM_THREADS=1`，并在资源记录中保存环境值。解析路径的间接 NumPy 导入可初始化不必要的线程池；一次诊断中，导入后线程数从 27 降到 4，专用提交内存从约 792 MiB 降到 53 MiB。同一真实原件的文档、预分块和回执逐字节相同；工作集峰值仅从约 129 MiB 降到 125 MiB，不能把提交内存差值称作释放的物理内存。该证据只说明本机依赖与输入下的运行资源变化，不是解析吞吐或质量成绩，也不替代逐份内存门禁。
+
+## 13. 完整标题单元与范围冲突
+
+`source_heading_units.py` 在已保存的原生捕获和修复结果上恢复逻辑标题，不重新下载、解析或生成向量。物理块、块序号、原文和原表格不改写；一个标题单元可指向多个原物理块。目录展示使用完整原容器文字，组成片段保留为结构记录，不进入普通正文拼组。片段只获得 `verified_heading_unit_component`，不冒充完整原容器的唯一定位。
+
+采用条件包括：原件目录范围可定位；范围内第一个完整 Item 容器与原生 Item 身份一致；该编号的原容器唯一；原件有标题/样式或被目录引用的短容器依据；输出片段能按原顺序精确还原完整文字。已有完整原定位可以直接证明位置；否则必须由两侧已唯一定位的完整正文夹定位置，且不能与其他已确定正文位置冲突。普通完整标题只允许标点周边空白差异，不以全局去空格拼出字词。目录、链接和表内候选不充当正文标题的独立依据。
+
+修正旧目录错位时保存旧位置和状态，不能仅因旧字段写着 unique 就保留已被原件否定的选中位置。原件显示文字、逻辑标题身份、物理块身份和原生分区身份分别保存。原生 `native_section_binding` 不改写：新增原容器标题证据不等于旧解析库的范围问题已消失。
+
+范围消费有更严格的边界：共享目录范围记录全部 section 身份，不选一个作为唯一归属；同一标题对应多个分区身份则暂缓采用。正文归属与已有其他原生分区冲突、或需要抛弃未定位旧小标题时，保留原归属并记录 `source_heading_scope_deferrals`。延伸到文件末尾的 Item 范围不能自动覆盖后面的签署、附录和索引。此前有完整签署证据的节点和块路径受独立兼容检查保护。
+
+`qualify_source_heading_units.py` 为所有计划原件保存输入/原生捕获/输出摘要及逐份回执，未发生修复的原件也在分母中。每十份回收一次串行工作进程，保留内存/磁盘门禁、600 秒工作组超时和失败日志；代码变化另起批次，失败目录不隐式重试。仅资源暂停可以在相同身份核验后接续。
+
+`audit_library_structure_selection.py` 对全库选用账本重核唯一原件及绑定分母、文本结构合同、完整标题消费、PDF 每页摘要/合同及结构化记录的历史证据摘要。输出逐原件状态、逐条未决清单和各路线版本；仍保留缺原件绑定。标题绑定数、结构提示数、原生内容守恒和原件识别准确率必须分开报告。
+
+标题恢复之后必须再执行 `heading_parent_conflicts.py` 的父级兼容阶段：当原生分区的 Part 与原件前置标题推导的 Part 冲突时，不直接选择任何一方。保留完整 Item 标题、两份冲突依据和旧路径，撤销未证明的父级及依赖它的绝对级别，正文继续指向已有 Item/小标题。一个典型原因是较近的 Part 标题被上游标成普通段落，导致仅看“已识别标题”会越过它；后续须修复原件角色与父级证明，不能拿前一个 Part 凑数。全库审核会拒绝仍然选中冲突父级的候选。
+
+此阶段核对全部 SEC 输入；无变更文件保留已有字节并记录同一兼容阶段的回执，有变更才另存文件。分阶段实现摘要、原输入摘要和父回执串联保存，不把前一阶段的部分运行拼成最终通过。旧候选及资源中断保留，父级兼容阶段也支持只对资源暂停做同身份接续。
+
+```text
+python scripts/engineering/qualify_source_heading_units.py --plan <frozen-sec-selection.jsonl> --captures <capture-root> --output <new-sec-dir>
+python scripts/engineering/heading_parent_conflicts.py --root <completed-heading-dir> --output <new-parent-checked-dir>
+python scripts/engineering/audit_library_structure_selection.py --selection <prior-selection.jsonl> --inventory <original-inventory.jsonl> --bindings <binding-inventory.jsonl> --scope <scope.json> --root <prior-repair-root> --sec <completed-parent-checked-dir> --output <new-whole-library-audit-dir>
+```
+
+本规则不包含公司、财年、测试问题或 Reserved 特判。无原生分区的附件/表单、原件本身损坏、复杂表格和页面用途等仍沿各自类型处理；没有证据时不把它们统称为只能手工补丁。

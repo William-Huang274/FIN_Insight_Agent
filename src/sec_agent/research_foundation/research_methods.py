@@ -106,6 +106,20 @@ def get_research_method(method_id: str = "", section: str = "") -> dict:
     return select_method_section(result, section)
 
 
+def preloaded_research_methods(method_ids: list[str]) -> str:
+    """Host-selected existing teaching; no task classifier or new authority."""
+    if not isinstance(method_ids, list) or any(not isinstance(key, str) for key in method_ids):
+        raise ValueError("preloaded_methods_require_id_list")
+    if len(set(method_ids)) != len(method_ids):
+        raise ValueError("preloaded_methods_duplicate_id")
+    if not method_ids:
+        return ""
+    resources = [get_research_method(key) for key in method_ids]
+    return "\n\n已加载研究方法（通用教学，不是本案事实或指定结论）：\n" + "\n\n".join(
+        f"method_id={r['method_id']}; resource_digest={r['resource_digest']}\n{r['content']}"
+        for r in resources)
+
+
 def research_writing_guidance(stage: str) -> str:
     """Project the relevant brief from the same packaged method as the tool.
 

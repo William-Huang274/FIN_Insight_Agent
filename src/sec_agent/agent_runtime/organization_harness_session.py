@@ -29,6 +29,7 @@ from .on_demand_research import OnDemandResearchState
 from .organization_work_session import organization_source_tool, observed_source_tool, validate_work_input, artifact_reader
 from .research_graph_contracts import canonical_sha256
 from .working_memory_tools import native_memory_scope, working_memory_tools
+from sec_agent.research_foundation.research_methods import preloaded_research_methods
 
 
 def native_messages(rows):
@@ -63,6 +64,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
     from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
     tid, rid = phase_arguments['thread_id'], phase_arguments['run_id']
     options = phase_arguments['settings']['harness_execution_bindings'][tid]
+    method_content = preloaded_research_methods(options.get('preloaded_research_methods', []))
     if options['manifest_digest'] != grant['manifest_digest']:
         raise ValueError('harness_deployment_manifest_mismatch')
     execution = phase_arguments['execution']
@@ -205,7 +207,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
             async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token) as endpoint:
                 prompt = research_system_prompt(bridge.tools, 'Research as of: ' + organization.research_as_of +
                     '\nRequested delivery: ' + intent + '. Save useful working understanding as needed; only deliver the requested artifact form.'+
-                    '\nUse returned citation_handle values in source_id fields and [REF-...] citations. They bind exact observed originals/calculations; do not shorten them further. Original long IDs remain compatible.')
+                    '\nUse returned citation_handle values in source_id fields and [REF-...] citations. They bind exact observed originals/calculations; do not shorten them further. Original long IDs remain compatible.') + method_content
                 patch = profile_overlay(model=options['model'], protocol=options['protocol'], endpoint=endpoint,
                     prompt=prompt, context_window=options['context_window'], output_tokens=options['output_tokens'],
                     summary_tokens=options['summary_tokens'], reasoning=options['reasoning'],

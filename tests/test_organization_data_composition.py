@@ -72,6 +72,37 @@ def test_specialist_real_entry_discloses_only_organization_sources_and_reads_via
         assert not opened.graph_input.required_route_obligation_ids
 
 
+def test_isolated_host_replay_keeps_nested_artifact_reader_in_same_note_scope(organization):
+    from types import SimpleNamespace
+    from langchain_core.messages import ToolMessage
+    from sec_agent.agent_runtime.working_memory_tools import native_memory_scope
+    from sec_agent.agent_runtime.working_memory import WorkingMemoryAccessDenied
+    from sec_agent.agent_runtime.organization_work_session import artifact_reader, observed_source_tool
+    from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
+    factory, status = organization
+    grant, manifest, _ = factory.reader._grant()
+    owner = 'organization:' + manifest['organization_id']
+    workspace = 'host-replay-branch'
+    nav = OrganizationSourceNavigation(factory.reader, workbench_url=factory.workbench_url)
+    catalog = nav.navigate(SourceDocumentRequest(source_space='organization',operation='catalog'))
+    original = nav.navigate(SourceDocumentRequest(source_space='organization',operation='read',document_id=catalog.items[0]['document_id'])).model_dump(mode='json')
+    state = {'messages':[ToolMessage(content=json.dumps(original), artifact=original,
+                                    tool_call_id='original',name='read_source_document')]}
+    def reader(current, **kwargs):
+        with factory(run_invocation_id='replay',source_read_enabled=True,memory_workspace=workspace) as data:
+            return artifact_reader(data,nav,current,**kwargs)
+    read = observed_source_tool(reader,factory.reader.check).tool
+    with native_memory_scope(owner,workspace,access_check=factory.reader.check,allow_remote_search=False):
+        result = read.func(source_id=original['items'][0]['passage_id'],runtime=SimpleNamespace(state=state))
+        assert 'Pinned original evidence.' in json.dumps(result)
+        with pytest.raises(WorkingMemoryAccessDenied,match='override_denied'):
+            with factory(run_invocation_id='old-default',source_read_enabled=True):
+                pass
+        status['status']=404
+        with pytest.raises((WorkingMemoryAccessDenied,OrganizationExecutionUnavailable)):
+            read.func(source_id=original['items'][0]['passage_id'],runtime=SimpleNamespace(state=state))
+
+
 @pytest.mark.parametrize('space', ['local','library','uploads','web'])
 def test_specialist_cannot_call_host_spaces_even_with_host_environment(organization, space):
     factory, _ = organization

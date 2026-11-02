@@ -99,7 +99,8 @@ class OrganizationDataFactory:
 
     @contextmanager
     def __call__(self, *, run_invocation_id, environment=None, source_read_enabled=False,
-                 live_web_read_enabled=False, role_method_reader=None, restored_observations=(), case_artifacts=None):
+                 live_web_read_enabled=False, role_method_reader=None, restored_observations=(), case_artifacts=None,
+                 memory_workspace=None):
         if not source_read_enabled or live_web_read_enabled:
             raise ValueError('organization_requires_source_read_without_live_web')
         self.reader._after(self.grant)
@@ -144,7 +145,7 @@ class OrganizationDataFactory:
         server = build_organization_source_server(navigation,
             binding_reader=_MethodBinding(self.foundation, graph_run, self.reader), role_method_reader=role_method_reader,
             case_artifacts=case_artifacts)
-        with organization_memory_scope(self.reader), MCPToolLaneAdapter(server,
+        with organization_memory_scope(self.reader, workspace=memory_workspace), MCPToolLaneAdapter(server,
                 run_binding=graph_run.mcp_run_binding, source_read_enabled=True,
                 organization_sources_only=True) as adapter:
             def guarded(port):

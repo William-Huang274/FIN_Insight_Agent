@@ -110,7 +110,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
     if require_review:
         raise ValueError('harness_independent_review_not_yet_qualified')
     def artifacts(state, **kwargs):
-        with organization(run_invocation_id='harness:' + rid, source_read_enabled=True) as data:
+        with organization(run_invocation_id='harness:' + rid, source_read_enabled=True,
+                          memory_workspace=memory_workspace) as data:
             return artifact_reader(data, navigation, state, allow_public_sources=public_web, **kwargs)
     grants.append(observed_source_tool(artifacts, check))
     grants.extend(artifact_tools(artifacts=artifacts, memory=memory, delivery_intent=intent, require_review=require_review))

@@ -46,6 +46,7 @@ class ModelDispatchStore:
                 AND NOT has_schema_privilege(current_user,'public','CREATE')
                 AND NOT has_table_privilege(current_user,'public.fin_model_budget','INSERT,DELETE,TRUNCATE')
                 AND NOT has_column_privilege(current_user,'public.fin_model_budget','limit_micros','UPDATE')
+                AND NOT has_table_privilege(current_user,'public.fin_model_budget_credit','INSERT,UPDATE,DELETE,TRUNCATE')
                 AND NOT has_table_privilege(current_user,'public.fin_model_dispatch','DELETE,TRUNCATE')
                 AS allowed FROM pg_roles r WHERE r.rolname=session_user''').fetchone()
             if not row or not row['allowed']:
@@ -56,6 +57,7 @@ class ModelDispatchStore:
         sql = Path(__file__).parents[1] / 'agent_runtime/sql/003_model_dispatch_budget_v1.sql'
         with self.connection() as db:
             db.execute(sql.read_text(encoding='utf-8'))
+            db.execute(sql.with_name('005_model_budget_credit_v1.sql').read_text(encoding='utf-8'))
 
     def create_budget(self, owner, budget, currency, limit, delivery_floor):
         if not all(isinstance(v, str) and v.strip() for v in (owner, budget, currency)):
@@ -70,6 +72,33 @@ class ModelDispatchStore:
             row = self._budget(db, owner, budget)
             if (row['currency'], row['limit_micros'], row['delivery_floor_micros']) != (currency, limit, delivery_floor):
                 raise DispatchBlocked('budget_redefinition_forbidden')
+
+    def add_credit(self, owner, budget, authorization_id, currency, credit, authorization_ref):
+        """Provisioner-only, explicit authorization; never a model tool or retry policy.
+
+        An authorization is unique across an owner's envelopes. Replaying it is
+        idempotent; moving it to another budget or changing its amount is rejected.
+        """
+        amount(credit, positive=True)
+        if not all(isinstance(v, str) and v.strip() for v in (authorization_id, authorization_ref)):
+            raise ValueError('budget_credit_authorization_missing')
+        with self.connection() as db:
+            envelope = self._budget(db, owner, budget)
+            if currency != envelope['currency']:
+                raise DispatchBlocked('budget_currency_mismatch')
+            db.execute('''INSERT INTO fin_model_budget_credit
+                (owner_id,budget_id,authorization_id,amount_micros,authorization_ref)
+                VALUES (%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING''',
+                (owner, budget, authorization_id, credit, authorization_ref))
+            row = db.execute('''SELECT * FROM fin_model_budget_credit
+                WHERE owner_id=%s AND authorization_id=%s''', (owner, authorization_id)).fetchone()
+            if (row['budget_id'], row['amount_micros'], row['authorization_ref']) != (budget, credit, authorization_ref):
+                raise DispatchBlocked('budget_credit_redefinition_forbidden')
+
+    def _authorized(self, db, owner, budget, envelope):
+        credit = db.execute('''SELECT COALESCE(SUM(amount_micros),0) AS credits
+            FROM fin_model_budget_credit WHERE owner_id=%s AND budget_id=%s''', (owner, budget)).fetchone()['credits']
+        return {'credited_micros': int(credit), 'authorized_micros': envelope['limit_micros'] + int(credit)}
 
     def _budget(self, db, owner, budget):
         row = db.execute('SELECT * FROM fin_model_budget WHERE owner_id=%s AND budget_id=%s FOR UPDATE',
@@ -89,7 +118,9 @@ class ModelDispatchStore:
         with self.connection() as db:
             row = self._budget(db, owner, budget)
             totals = self._totals(db, owner, budget)
-            return {**row, **totals, 'available_micros': row['limit_micros'] - totals['known'] - totals['held']}
+            authorized = self._authorized(db, owner, budget, row)
+            return {**row, **authorized, **totals,
+                    'available_micros': authorized['authorized_micros'] - totals['known'] - totals['held']}
 
     def reserve(self, owner, budget, key, fingerprint, reserved, basis, *, currency, delivery=False,
                 execution_scope=None):
@@ -120,7 +151,8 @@ class ModelDispatchStore:
                 if blocked:
                     raise DispatchBlocked('harness_execution_has_unresolved_or_failed_call')
             floor = 0 if delivery else envelope['delivery_floor_micros']
-            if totals['known'] + totals['held'] + reserved + floor > envelope['limit_micros']:
+            authorized = self._authorized(db, owner, budget, envelope)
+            if totals['known'] + totals['held'] + reserved + floor > authorized['authorized_micros']:
                 raise DispatchBlocked('research_budget_exhausted_delivery_reserve_preserved')
             call_id = uuid4()
             db.execute('''INSERT INTO fin_model_dispatch

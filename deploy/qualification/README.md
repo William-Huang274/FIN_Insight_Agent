@@ -43,7 +43,7 @@ $env:FIN_NATIVE_ATTEMPT_DIR='D:/FIN_Insight_Agent/.local/fin014/<新的attempt�
 
 2026-09-14起，启用上述binding还必须显式提供`FIN_MODEL_BUDGET_POSTGRES_URI`，使用独立预算数据库及受限worker登录。不会回落Agent Server的`POSTGRES_URI`。原生服务的迁移/管理账号不应获得这个业务库的连接配置；模型工具、浏览器、费用读取端也不获取worker凭据。运行入口检查登录角色、建库/授权等属性、表/列及schema危险权限；这不替代部署时的角色成员关系和网络访问审查。
 
-采用[PostgreSQL原生授权](https://www.postgresql.org/docs/16/sql-grant.html)、[受限视图](https://www.postgresql.org/docs/16/sql-createview.html)和[pg_dump](https://www.postgresql.org/docs/16/app-pgdump.html)。在全新专用数据库，由可信迁移账号依次执行`src/sec_agent/agent_runtime/sql/003_model_dispatch_budget_v1.sql`及`004_model_dispatch_access_v1.sql`。004是显式一次性bootstrap，不由运行图自动执行；它建立三个NOLOGIN组，遇到同名角色会拒绝并回滚。其他数据库/新集群应先核对角色，不盲目覆盖现有授权。不得将其直接应用到旧研究/原生服务库。
+采用[PostgreSQL原生授权](https://www.postgresql.org/docs/16/sql-grant.html)、[受限视图](https://www.postgresql.org/docs/16/sql-createview.html)和[pg_dump](https://www.postgresql.org/docs/16/app-pgdump.html)。在全新专用数据库，由可信迁移账号依次执行`src/sec_agent/agent_runtime/sql/003_model_dispatch_budget_v1.sql`、`005_model_budget_credit_v1.sql`及`004_model_dispatch_access_v1.sql`。`ModelDispatchStore.install()`安装003+005，004仍是显式一次性bootstrap，不由运行图自动执行；它建立三个NOLOGIN组，遇到同名角色会拒绝并回滚。其他数据库/新集群应先核对角色，不盲目覆盖现有授权。不得将其直接应用到旧研究/原生服务库。已完成004的专用预算库只需由迁移账号执行005，再部署新版worker；新增credit不改原预算上限或历史调用。追加必须使用真实授权ID和记录引用，详见[harness预算运维边界](../../docs/architecture/harness_adoption.zh-CN.md#追加预算与完成状态的运维边界)。
 
 | 身份 | 权限与边界 |
 | --- | --- |

@@ -1,5 +1,5 @@
 -- Explicit one-time bootstrap in a DEDICATED model-budget database.
--- Run 003 first as the migration owner. Never run as an application worker.
+-- Run 003 and 005 first as the migration owner. Never run as an application worker.
 -- Roles are cluster objects: on another database provision/reuse reviewed groups
 -- separately; this bootstrap deliberately fails on a colliding role name.
 CREATE ROLE fin_model_worker NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
@@ -24,6 +24,8 @@ FOR EACH ROW EXECUTE FUNCTION public.fin_model_budget_immutable();
 
 GRANT SELECT, UPDATE (owner_id) ON public.fin_model_budget TO fin_model_worker, fin_model_provisioner;
 GRANT INSERT ON public.fin_model_budget TO fin_model_provisioner;
+GRANT SELECT ON public.fin_model_budget_credit TO fin_model_worker;
+GRANT SELECT, INSERT ON public.fin_model_budget_credit TO fin_model_provisioner;
 GRANT SELECT ON public.fin_model_dispatch TO fin_model_worker;
 GRANT INSERT (owner_id,budget_id,call_key,call_id,fingerprint,reserved_micros,status,basis)
     ON public.fin_model_dispatch TO fin_model_worker;
@@ -57,7 +59,11 @@ CREATE VIEW public.fin_model_cost_summary WITH (security_barrier=true) AS
 SELECT b.owner_id, b.budget_id, b.currency, b.limit_micros, b.delivery_floor_micros,
     COALESCE(SUM(d.actual_micros),0) AS known_micros,
     COALESCE(SUM(d.reserved_micros) FILTER (WHERE d.actual_micros IS NULL AND d.call_key IS NOT NULL),0) AS held_micros,
-    COUNT(d.call_key) FILTER (WHERE d.actual_micros IS NULL) AS unsettled
+    COUNT(d.call_key) FILTER (WHERE d.actual_micros IS NULL) AS unsettled,
+    (SELECT COALESCE(SUM(c.amount_micros),0) FROM public.fin_model_budget_credit c
+        WHERE c.owner_id=b.owner_id AND c.budget_id=b.budget_id) AS credited_micros,
+    b.limit_micros + (SELECT COALESCE(SUM(c.amount_micros),0) FROM public.fin_model_budget_credit c
+        WHERE c.owner_id=b.owner_id AND c.budget_id=b.budget_id) AS authorized_micros
 FROM public.fin_model_budget b
 LEFT JOIN public.fin_model_dispatch d USING (owner_id,budget_id)
 WHERE EXISTS (SELECT 1 FROM public.fin_model_cost_access a

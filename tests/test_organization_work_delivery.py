@@ -43,7 +43,7 @@ def test_root_snapshot_does_not_expose_tool_arguments_reasoning_or_runtime_messa
         response = c.get(s.root, headers=s.headers)
         assert response.status_code == 200, response.text
         assert response.json()['runtime_contract'] == 'on_demand.v1'
-        assert response.json()['conversation'] == [{'role': 'user', 'content': 'My question'}, {'role': 'assistant', 'content': 'Visible answer'}]
+        assert response.json()['conversation'] == [{'role': 'user', 'content': 'My question'}, {'role': 'assistant', 'content': 'Visible answer', 'citations': {}}]
         assert 'private' not in response.text and 'Internal receipt' not in response.text and 'hidden' not in response.text
 
 

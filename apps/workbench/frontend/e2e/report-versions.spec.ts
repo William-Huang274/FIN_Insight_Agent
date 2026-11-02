@@ -76,8 +76,8 @@ for (const width of [1440, 1024, 390]) {
     await expect(page.getByText(gap.text, { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "关闭详情", exact: true }).click();
     const conversation = page.getByLabel("研究对话");
-    await expect(conversation.getByRole("button", { name: "依据 2", exact: true })).toHaveCount(1);
-    await expect(conversation.locator("code")).toHaveText("[CALC::fixture]");
+    await expect(conversation.getByRole("button", { name: "依据 2", exact: true })).toHaveCount(2);
+    await expect(conversation.locator("code")).toHaveCount(0);
     await expect(conversation.getByText("CALC::fixture-invented", { exact: true })).toBeVisible();
     await expect(conversation.getByText("[CALC::fixture/suffix]", { exact: true })).toBeVisible();
     await expect(conversation.getByRole("button", { name: "未绑定链接", exact: true })).toHaveCount(0);
@@ -85,7 +85,7 @@ for (const width of [1440, 1024, 390]) {
     await expect(conversation).toContainText("判断编号 P01:C98");
     await expect(conversation).not.toContainText("判断编号 判断编号");
     await expect(conversation.getByRole("button", { name: /P01:C99|NUMFACT::abcdef/ })).toHaveCount(0);
-    await conversation.getByRole("button", { name: "依据 2", exact: true }).click();
+    await conversation.getByRole("button", { name: "依据 2", exact: true }).first().click();
     await page.getByRole("button", { name: "查看捕获片段与上下文" }).click();
     await expect(page.getByRole("heading", { name: "计算过程", exact: true })).toBeVisible();
     await expect(page.getByText("金融语义：未确认", { exact: false })).toBeVisible();

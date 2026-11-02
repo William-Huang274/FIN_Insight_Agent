@@ -19,6 +19,7 @@ from sec_agent.agent_runtime.organization_native_contract import on_demand
 def work_session_view(state):
     """Public deliverables only; tool receipts and reasoning stay in the run log."""
     from sec_agent.agent_runtime.task_outcome import public_task_outcome
+    from sec_agent.agent_runtime.source_references import answer_citations
     values = state.get('values') or {}
     conversation = []
     for message in values.get('messages', []):
@@ -27,7 +28,10 @@ def work_session_view(state):
         role = message.get('role', message.get('type'))
         body = message.get('content')
         if role in {'human', 'user', 'ai', 'assistant'} and isinstance(body, str) and body:
-            conversation.append({'role': 'user' if role in {'human', 'user'} else 'assistant', 'content': body})
+            item = {'role': 'user' if role in {'human', 'user'} else 'assistant', 'content': body}
+            if item['role'] == 'assistant':
+                item['citations'] = answer_citations(message.get('additional_kwargs', {}).get('citation_bindings', {}))
+            conversation.append(item)
     return {'runtime_contract': 'on_demand.v1', 'conversation': conversation,
             'task_outcome': public_task_outcome(values.get('task_outcome')),
             'report': values.get('report'), 'report_version': values.get('report_version'),
@@ -162,6 +166,9 @@ def install_organization_read_routes(router, service):
         records = [s for name in ('report', 'synthesis', 'research_synthesis')
                    for c in (values.get(name) or {}).get('citations', {}).values()
                    for s in c.get('sources', []) if s.get('source_id') == source_id]
+        records.extend(s for message in work_session_view({'values': values})['conversation']
+                       for citation in message.get('citations', {}).values()
+                       for s in citation['sources'] if s['source_id'] == source_id)
         if not records:
             raise HTTPException(404, '引用未与所选研究成果绑定')
         if any(row != records[0] for row in records[1:]):

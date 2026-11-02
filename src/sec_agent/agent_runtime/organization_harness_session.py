@@ -37,6 +37,25 @@ def native_messages(rows):
             else convert_to_messages([m])[0] if isinstance(m, dict) else m for m in rows]
 
 
+def receipt_replay_identity(directory, tid, import_digest, clean_import, replay_id=None):
+    """Host-only branch identity; repeat experiments never reuse later notes.
+
+    No ID preserves the original deployment layout and normal recovery path.
+    A branch still imports the exact pinned receipts, not edited model history.
+    """
+    from uuid import UUID, uuid5, NAMESPACE_URL
+    session = directory / ('import-' + import_digest) if import_digest else directory
+    identity = tid + ':' + str(import_digest)
+    if replay_id is not None:
+        if not clean_import or not import_digest:
+            raise ValueError('harness_replay_id_requires_isolated_import')
+        replay_id = str(UUID(replay_id))
+        session = session / ('replay-' + replay_id)
+        identity += ':' + replay_id
+    workspace = str(uuid5(NAMESPACE_URL, identity)) if clean_import else tid
+    return session, workspace, session if clean_import else directory
+
+
 @asynccontextmanager
 async def organization_harness_session(*, native, resources, authority, check, organization,
         phase_arguments, config, grant, expected_input, environment):
@@ -68,16 +87,14 @@ async def organization_harness_session(*, native, resources, authority, check, o
     import_digest = options.get('legacy_receipt_import', {}).get('sha256')
     if import_digest is not None and (len(import_digest) != 64 or any(c not in '0123456789abcdef' for c in import_digest)):
         raise ValueError('harness_legacy_import_digest_invalid')
-    session_directory = directory / ('import-' + import_digest) if import_digest else directory
     # Explicit operator replay starts before a faulty generation. Keep original
     # ledgers/notes intact, and do not seed this branch from a later outer answer.
     # This is a receipt handoff, not a fabricated native conversation fork.
     clean_import = options.get('isolated_receipt_replay', False)
     if clean_import and not import_digest:
         raise ValueError('harness_isolated_replay_requires_pinned_checkpoint')
-    from uuid import uuid5, NAMESPACE_URL
-    memory_workspace = str(uuid5(NAMESPACE_URL, tid + ':' + import_digest)) if clean_import else tid
-    business_directory = session_directory if clean_import else directory
+    session_directory, memory_workspace, business_directory = receipt_replay_identity(
+        directory, tid, import_digest, clean_import, options.get('receipt_replay_id'))
     business_directory.mkdir(parents=True, exist_ok=True)
     run_directory = directory / rid
     run_directory.mkdir(exist_ok=True)

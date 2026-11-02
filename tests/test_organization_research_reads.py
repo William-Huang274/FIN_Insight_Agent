@@ -87,6 +87,27 @@ def test_viewer_snapshot_report_citation_keep_private_routes_closed(reading):
     assert not s.intake.runs
 
 
+def test_native_answer_citations_survive_public_projection_and_authorized_read(reading):
+    from apps.workbench.backend.organization_research_reads import work_session_view
+    s = reading
+    binding = {'REF-1234567890abcdef': {'source_id': 'PASSAGE::one',
+        'source': {'passage': 'Saved original text', 'document_title': 'Quarterly disclosure',
+                   'source_url': 'https://example.com/filing', 'result_state': 'source_bound_passage'}}}
+    s.values['messages'] = [{'type': 'ai', 'content': 'A tentative interpretation [REF-1234567890abcdef]',
+        'additional_kwargs': {'citation_bindings': binding}}]
+    before = deepcopy(s.values)
+    view = work_session_view({'values': s.values})
+    citation = view['conversation'][0]['citations']['REF-1234567890abcdef']
+    assert citation['claim']['kind'] == 'source_reference'
+    assert citation['sources'][0]['title'] == 'Quarterly disclosure'
+    assert s.values == before
+    with TestClient(s.intake.app()) as c:
+        r = c.get(s.root + '/source', params={'source_id': 'PASSAGE::one', 'checkpoint_id': s.checkpoint_id}, headers=s.headers)
+        assert r.status_code == 200 and r.json()['text'] == 'Saved original text'
+        s.state['status'] = 404
+        assert c.get(s.root + '/source', params={'source_id': 'PASSAGE::one'}, headers=s.headers).status_code == 404
+
+
 @pytest.mark.parametrize('format', ['md', 'html'])
 def test_displayed_checkpoint_keeps_citation_and_export_on_same_saved_version(reading, format):
     s=reading

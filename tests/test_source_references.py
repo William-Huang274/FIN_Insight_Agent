@@ -61,12 +61,43 @@ def test_unique_abbreviations_only_and_display_never_rewrites_conclusions():
     text = 'This remains a hypothesis [' + reference_handle(key) + ']'
     rendered, bound, unknown = render_answer_references(text, current)
     assert rendered.startswith('This remains a hypothesis [REF-')
-    assert 'https://example.com/disclosure' in rendered
+    assert 'https://example.com/disclosure' not in rendered
+    assert bound[reference_handle(key)]['source']['source_url'] == 'https://example.com/disclosure'
     assert bound[reference_handle(key)]['source_id'] == key and unknown == []
     calc = 'CALC::' + 'a'*64
     assert resolve_reference(calc[:30], {calc: {}}, {}) == calc
     with pytest.raises(ValueError, match='ambiguous'):
         resolve_reference(calc[:30], {calc: {}, calc[:40]+'b'*24: {}}, {})
+
+
+def test_typed_suffix_and_reader_projection_keep_identity_without_inventing_claim():
+    from sec_agent.agent_runtime.source_references import answer_citations
+    key, current = state()
+    text = 'A hypothesis [passage::' + key.rsplit('::', 1)[-1] + ']'
+    rendered, bound, unknown = render_answer_references(text, current)
+    assert unknown == [] and rendered == 'A hypothesis [' + reference_handle(key) + ']'
+    public = answer_citations(bound)[reference_handle(key)]
+    assert public['claim']['kind'] == 'source_reference'
+    assert public['sources'][0]['source_id'] == key
+    assert public['sources'][0]['text'] == source()[1]['passage']
+    sources, handles = reference_sources(current)
+    ambiguous = {**sources, 'PASSAGE::other::' + key.rsplit('::', 1)[-1]: {}}
+    with pytest.raises(ValueError, match='ambiguous'):
+        resolve_reference('passage::' + key.rsplit('::', 1)[-1], ambiguous, handles)
+
+
+def test_repeated_clean_replay_keeps_receipts_but_isolates_native_history_and_notes(tmp_path):
+    from sec_agent.agent_runtime.organization_harness_session import receipt_replay_identity
+    from uuid import uuid4
+    original = receipt_replay_identity(tmp_path, 'task', 'a'*64, True)
+    branch_id = str(uuid4())
+    new = receipt_replay_identity(tmp_path, 'task', 'a'*64, True, branch_id)
+    assert new != original and new[0].parent == original[0]
+    assert new[0] == new[2] and new[1] != original[1]
+    assert new == receipt_replay_identity(tmp_path, 'task', 'a'*64, True, branch_id)
+    assert receipt_replay_identity(tmp_path, 'task', None, False) == (tmp_path, 'task', tmp_path)
+    with pytest.raises(ValueError):
+        receipt_replay_identity(tmp_path, 'task', 'a'*64, False, branch_id)
 
 
 def test_search_scope_is_not_library_or_disclosure_absence():

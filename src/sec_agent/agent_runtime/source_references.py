@@ -10,7 +10,7 @@ import re
 from .conversation_handoff import observed_sources
 
 HANDLE = re.compile(r"\bREF-[0-9a-f]{16}\b")
-REFERENCE_TOKEN = r'(?:REF-[0-9a-f]{16}|(?:PASSAGE|CALC|NUMFACT)::[A-Za-z0-9_:.\-…]+)'
+REFERENCE_TOKEN = r'(?:REF-[0-9a-f]{16}|(?:PASSAGE|passage|CALC|NUMFACT)::[A-Za-z0-9_:.\-…]+)'
 
 
 def reference_handle(source_id):
@@ -35,6 +35,15 @@ def resolve_reference(value, sources, handles):
         return value
     if value in handles:
         return handles[value]
+    # Older answers used a typed content-hash suffix. Resolve only the entire
+    # observed suffix, not arbitrary substrings or semantically similar text.
+    suffix = re.fullmatch(r'(?i:PASSAGE)::([0-9a-f]{16,64})', value)
+    if suffix:
+        matches = [key for key in sources if key.startswith('PASSAGE::') and key.rsplit('::', 1)[-1] == suffix[1]]
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            raise ValueError('ambiguous_source_reference:' + value)
     # Legacy author abbreviations are accepted only when the entire pattern
     # uniquely matches an observed identity, never by title or semantic similarity.
     if value.startswith(('PASSAGE::', 'CALC::', 'NUMFACT::')) and ('…' in value or '...' in value):
@@ -104,9 +113,30 @@ def render_answer_references(text, state):
         source = sources[source_id]
         handle = reference_handle(source_id)
         bindings[handle] = {'source_id': source_id, 'source': deepcopy(source)}
-        url = source.get('source_url')
-        if isinstance(url, str) and url.startswith(('https://', 'http://')):
-            return '[' + handle + '](' + url.replace(' ', '%20').replace(')', '%29') + ')'
+        # Binding, display label and source navigation are separate. A bare
+        # bracketed handle lets the shared reader render a numbered citation.
         return '[' + handle + ']'
     rendered = re.sub(r'\[?(' + REFERENCE_TOKEN + r')\]?', replace, text)
     return rendered, bindings, unresolved
+
+
+def answer_citations(bindings):
+    """Adapt saved native bindings to the existing reader's citation contract.
+
+    No inference/approval is manufactured. The exact original identity and
+    calculation payload remain available through the authorized snapshot read.
+    """
+    result = {}
+    for handle, binding in bindings.items():
+        source_id, original = binding.get('source_id'), binding.get('source')
+        if not isinstance(source_id, str) or not isinstance(original, dict):
+            continue
+        row = deepcopy(original)
+        row['source_id'] = source_id
+        row['text'] = row.get('text') or row.get('passage') or ''
+        title = row.get('title') or row.get('document_title') or row.get('name')
+        if not title or title == source_id:
+            title = '来源绑定计算' if source_id.startswith('CALC::') else '原文摘录'
+        row['title'] = title
+        result[handle] = {'claim': {'kind': 'source_reference', 'statement': title}, 'sources': [row]}
+    return result

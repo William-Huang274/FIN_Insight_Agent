@@ -68,6 +68,8 @@ for(const width of [1440,390])test(`organization results read and revoked source
     else if(u.pathname.endsWith('/control'))result={can_operate:false};
     else if(u.pathname===`/api/v1/organization-projects/${project}/research`)result={items:[{execution_id:execution,draft_id:'draft',title:'固定资料研究',run_id:'run'}],next_offset:null};
     else if(u.pathname===`/api/v1/organization-projects/${project}/research/${execution}`)result={title:'固定资料研究',phase:'ready_for_human_review',read_only:true,checkpoint_id:missingCheckpoint?null:checkpoint,
+      conversation:[{role:'assistant',content:'初步解释。[REF-1234567890abcdef](https://example.com/old-link)\n\n再次引用 `REF-1234567890abcdef`。未绑定 [REF-aaaaaaaaaaaaaaaa]。',
+        citations:{'REF-1234567890abcdef':{claim:{kind:'source_reference',statement:'季度披露'},sources:[{source_id:'ORG:S1',title:'季度披露 · 现金流量表',period_end:'2025-12-31',unit:'USD'}]}}}],
       research_orientation:{overview:'已保存的预研究概览',findings:[{finding_id:'F1',judgment:'存在一份固定资料',unresolved:'仍需核对财务含义'}]},
       report:{title:'合成报告',narrative_markdown:'这是用于权限验收的合成正文。\n\n```json\n'+longMetricRecord+'\n```\n\n| 公司 | 原件身份 |\n| --- | --- |\n| NVIDIA | '+('source-identity-'.repeat(40))+' |',citations:{C1:{sources:[{source_id:'ORG:S1'}]}}}};
     else if(u.pathname.includes('/report/export/')){
@@ -87,6 +89,15 @@ for(const width of [1440,390])test(`organization results read and revoked source
   await page.goto(`/workspace/projects?scope=organization&project=${project}&view=results`);
   await page.getByRole('button',{name:/固定资料研究/}).click();
   await expect(page.getByRole('heading',{name:'合成报告',exact:true})).toBeVisible();
+  const reply=page.getByRole('region',{name:'任务交流记录'});
+  const reference=reply.getByRole('button',{name:'依据 1',exact:true});
+  await expect(reference).toHaveCount(2);
+  await expect(reference.first()).toHaveText('[1]');
+  await expect(reference.first()).toHaveAttribute('title','季度披露 · 现金流量表 · 2025-12-31 · USD');
+  await expect(reply.getByRole('link')).toHaveCount(0);
+  await expect(reply).toContainText('[REF-aaaaaaaaaaaaaaaa]');
+  await reference.first().click();
+  await expect(page.getByLabel('引用快照内容')).toContainText('固定引用片段');
   await expect(page.locator('.org-document pre')).toContainText(longMetricRecord);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
   await expect(page.getByText('预研究供确定方向，不表示正式研究完成或结论通过审批。')).toBeVisible();

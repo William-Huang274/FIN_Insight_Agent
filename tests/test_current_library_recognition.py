@@ -11,7 +11,7 @@ from report_library_recognition import run as report
 def test_one_denominator_keeps_pending_failed_and_limited_rows(tmp_path):
     ledger=tmp_path/'ledger.jsonl'
     rows=[dict(document_id=str(i),url='https://example.test/'+str(i),
-        processing={'stage':stage}) for i,stage in enumerate([
+        current_parser_artifact=None,processing={'stage':stage}) for i,stage in enumerate([
             'derived_content_processing','parse_current_original','parse_current_original'])]
     ledger.write_text(''.join(json.dumps(r)+'\n' for r in rows))
     originals=tmp_path/'originals';originals.mkdir()

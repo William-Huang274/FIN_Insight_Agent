@@ -226,7 +226,7 @@ def run(args):
         full_current_original_execution_complete=len(new)==len(backlog) and all(r['status']!='failed' for r in new.values()),
         source_rechecks=len(source_checks),source_rechecks_pass=all(r.get('pass') for r in source_checks.values()),
         ledger_sha256=digest(Path(args.ledger).read_bytes()),new_originals_summary_sha256=digest((Path(args.originals)/'summary.json').read_bytes()))
-    summary['lane_bindings']=dict(Counter(r.get('current_parser_artifact',{}).get('lane','limited_or_pending') for r in results))
+    summary['lane_bindings']=dict(Counter((r.get('current_parser_artifact') or {}).get('lane','limited_or_pending') for r in results))
     summary['unique_artifact_observations']=dict(sum((Counter(r['observations']) for r in cache.values()),Counter()))
     summary['issue_binding_counts']={kind:len({r['document_id'] for r in issues if r['kind']==kind}) for kind in summary['issue_counts']}
     summary['engineering_pass']=not any(counts[k] for k in ('pending_parse_bindings','parse_failures','audit_failed_artifacts','source_recheck_failures','derived_audit_failures'))

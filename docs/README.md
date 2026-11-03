@@ -1,8 +1,8 @@
 # FinSight 文档
 
-[文档解析剩余问题与处理范式](engineering/document_parsing_residuals.zh-CN.md)：全部 1,187 个选用产物核对后的 28 类问题、通用与类型修复边界、单份修正合同及分层验收顺序。
+[文档解析剩余问题与处理范式](engineering/document_parsing_residuals.zh-CN.md)：统一 1,742 条资料绑定的剩余问题、通用与类型修复边界、原件标题绑定合同及分层验收顺序。
 
-[当前资料识别总览](engineering/library_identification_status.zh-CN.md)：734 份 SEC 同版修复复验，以及全库 1,187 原件 / 1,742 来源绑定的分类型证据、已知缺口和使用边界。
+[当前资料识别总览](engineering/library_identification_status.zh-CN.md)：全库 1,742 绑定、1,530 独立解析产物及 66 条限定衍生材料的分类型证据、已知缺口和使用边界。
 
 [SEC 原生适配首轮原件抽样审核](engineering/native_structure_source_review_r1.zh-CN.md)：6 类资料原件对照，记录主章节改善、名称与归属退步、无诊断样本的旧错误及后续修复顺序。
 

@@ -212,3 +212,9 @@ ACP 的 `agent_message_chunk` 同时包含工具之间的公开说明和末轮�
 升级时先由迁移所有者在专用预算数据库执行 `005_model_budget_credit_v1.sql`，再部署新的 store。新库的显式 `install()` 执行003+005，随后004授权初始化；已有004无需重跑。005幂等重放，更新受限费用视图，worker只读credit，provisioner可追加但不能改删，原预算不可变触发器保留。不得让runtime自动执行DDL或持有provisioner凭证。旧limit字段仍表示初始上限，新增authorized_micros表示当前累计授权，不把两者混用于展示或准入。
 
 Java命令 `received` 和其 result 中的 `pending` 是派发回执，reconcile核实是否派发，不追写最终运行结果。运行完成应检查准确run_id的实时状态，以及BFF成果的task_outcome/回答；不能据静态回执触发恢复或重跑。执行已提交、来源绑定通过、独立复核通过分别表达，来源句柄存在不证明对应句子的推论成立。
+
+## 明确授权后的未知用量恢复
+
+失败请求没有用量回执时，原始记录和预算预留继续保留，默认禁止接续。用户明确批准该次补发后，运维可运行 `scripts/engineering/authorize_failed_run_recovery.py`，提供 audit-root、thread-id、run-id、唯一 authorization-id 及 authorization-ref。命令使用宿主 `FINSIGHT_ORGANIZATION_RUNTIME_SECRET` 签署24小时有效的恢复授权，保存于审计根下独立的 operational-recovery-authorizations 目录；不调用模型、不改费用、不将部分结果标成成功。
+
+授权精确绑定旧运行、全部未知失败请求ID和公开调用账本摘要。只有已有明确失败outcome、审计完整的请求可以授权；仅有started、审计损坏或缺失仍阻断。BFF预览与实际派发使用同一校验，只有recover动作可以消费；当前权限、最新运行、活动任务、Java持久命令和检查点校验照常执行。创建后继运行后，旧授权不再能为新的失败提供准入。没有向模型或浏览器暴露签署入口；不能把它当成自动重试策略。正常新请求仍从同一预算扣除原未知预留后申请额度。

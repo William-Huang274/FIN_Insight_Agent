@@ -63,8 +63,20 @@ async def completed_predecessor(service, thread, previous_run_id, *, recover=Fal
     if later:
         raise HTTPException(409, '存在后续运行，请刷新后核对最新操作')
     from .api.v1.report_sessions import public_run_usage
-    _, usage = public_run_usage(service.audit_root, thread['thread_id'], previous_run_id)
+    events, usage = public_run_usage(service.audit_root, thread['thread_id'], previous_run_id)
     if not usage or not usage['recorded_requests'] or usage['unknown_or_pending_requests'] or usage['partial_audit']:
+        # Explicit operator authorization permits one successor of this latest
+        # failed run. It does not change unknown usage or its budget reservation.
+        # Existing latest-run / active-run and Java command checks above remain.
+        if recover and usage and not usage['partial_audit'] and usage['unknown_or_pending_requests']:
+            from sec_agent.adapters.explicit_run_recovery import verified_recovery_authorization
+            try:
+                permitted = verified_recovery_authorization(service.audit_root, thread['thread_id'],
+                    previous_run_id, events, usage, secret=os.getenv('FINSIGHT_ORGANIZATION_RUNTIME_SECRET', ''))
+            except (ValueError, OSError, TypeError, KeyError):
+                permitted = None
+            if permitted:
+                return
         raise HTTPException(409, '前序用量未知或审计不完整，请先核对原运行')
 
 

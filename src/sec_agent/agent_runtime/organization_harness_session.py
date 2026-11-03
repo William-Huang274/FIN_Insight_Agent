@@ -26,7 +26,8 @@ from .harness_provider_transport import HarnessProviderTransport
 from .harness_local_services import harness_local_services
 from .harness_profile import profile_overlay
 from .on_demand_research import OnDemandResearchState
-from .organization_work_session import organization_source_tool, observed_source_tool, validate_work_input, artifact_reader
+from .organization_work_session import (organization_source_tool, observed_source_tool, validate_work_input,
+    select_observed_sources, artifact_reader_from_sources)
 from .research_graph_contracts import canonical_sha256
 from .working_memory_tools import native_memory_scope, working_memory_tools
 from sec_agent.research_foundation.research_methods import preloaded_research_methods
@@ -135,9 +136,13 @@ async def organization_harness_session(*, native, resources, authority, check, o
     if require_review:
         raise ValueError('harness_independent_review_not_yet_qualified')
     def artifacts(state, **kwargs):
+        # Selection feedback must not cross a provider context whose teardown
+        # can wrap ToolException in ExceptionGroup and hide it as an MCP 500.
+        check()
+        sources = select_observed_sources(state, **kwargs)
         with organization(run_invocation_id='harness:' + rid, source_read_enabled=True,
                           memory_workspace=memory_workspace) as data:
-            return artifact_reader(data, navigation, state, allow_public_sources=public_web, **kwargs)
+            return artifact_reader_from_sources(data, navigation, sources, allow_public_sources=public_web)
     grants.append(observed_source_tool(artifacts, check))
     grants.extend(artifact_tools(artifacts=artifacts, memory=memory, delivery_intent=intent, require_review=require_review))
     scope = lambda: native_memory_scope(owner, memory_workspace, access_check=check, allow_remote_search=False)

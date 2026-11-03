@@ -113,9 +113,9 @@ class HarnessBusinessTools:
                 await asyncio.to_thread(self.access)
                 receipt = next(m for m in reversed(output['messages'])
                     if isinstance(m, ToolMessage) and m.tool_call_id == calls[0]['id'])
-                if receipt.status != 'success':
-                    raise RuntimeError('harness_business_read_recovery_not_successful')
-                return {'kind': 'recovered_read_receipt', 'tool': calls[0]['name'],
+                return {'kind': 'recovered_read_receipt' if receipt.status == 'success' else 'recovered_read_feedback',
+                        'status': receipt.status, 'feedback': model_receipt(receipt) if receipt.status == 'error' else None,
+                        'tool': calls[0]['name'],
                         'receipt_id': receipt.tool_call_id,
                         'readback': 'read_saved_result',
                         'previous_error_retained_in_checkpoint_history': True}

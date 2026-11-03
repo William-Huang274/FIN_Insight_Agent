@@ -54,6 +54,12 @@ def read_authorized_source(navigation, check, request):
 
 def artifact_reader(data, navigation, question_state, *, source_ids=None, allow_public_sources=False):
     """Revalidate native tool artifacts, never model prose or browser records."""
+    sources = select_observed_sources(question_state, source_ids=source_ids)
+    return artifact_reader_from_sources(data, navigation, sources, allow_public_sources=allow_public_sources)
+
+
+def select_observed_sources(question_state, *, source_ids=None):
+    """Resolve model selections before entering data-provider context managers."""
     from .conversation_handoff import observed_sources
     sources = observed_sources({'values': {'messages': [m.model_dump(mode='json') if hasattr(m, 'model_dump') else m
                                                        for m in question_state.get('messages', [])]}})
@@ -63,7 +69,13 @@ def artifact_reader(data, navigation, question_state, *, source_ids=None, allow_
             if source_id in selected:
                 return
             if source_id not in sources:
-                raise ToolException('source_not_observed_read_current_source_catalog')
+                raise ToolException(json.dumps({
+                    'code': 'source_not_observed_read_current_source_catalog',
+                    'requested_source_id': source_id,
+                    'meaning': 'This exact ID is not in the observed source receipts; this does not establish that the document is unavailable.',
+                    'readback': {'tool': 'browse_context', 'arguments': {'region': 'sources'}},
+                    'next_step': 'Use the returned read_saved_result entry to obtain the exact saved passage ID or the original read_source_document arguments. Do not construct a passage suffix from a node ID.'
+                }, ensure_ascii=False))
             selected[source_id] = sources[source_id]
             for operand in sources[source_id].get('operands', {}).values():
                 if operand.get('source_id'):
@@ -71,7 +83,7 @@ def artifact_reader(data, navigation, question_state, *, source_ids=None, allow_
         for source_id in source_ids:
             include(source_id)
         sources = selected
-    return artifact_reader_from_sources(data, navigation, sources, allow_public_sources=allow_public_sources)
+    return sources
 
 
 def artifact_reader_from_sources(data, navigation, sources, *, allow_public_sources=False):

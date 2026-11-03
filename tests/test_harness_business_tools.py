@@ -20,6 +20,47 @@ from sec_agent.agent_runtime.harness_acp_session import admitted_acp_session
 
 
 @pytest.mark.anyio
+async def test_unobserved_source_feedback_survives_pending_read_recovery(tmp_path):
+    from langchain_core.messages import AIMessage
+    from sec_agent.agent_runtime.organization_work_session import observed_source_tool, select_observed_sources
+    from types import SimpleNamespace
+    requested = 'PASSAGE::ORGSECTION::example:chunk-example::1'
+    observed = 'PASSAGE::ORGSECTION::example:chunk-example::digest'
+    source = {'passage_id': observed, 'text': 'unchanged original'}
+    accesses = []
+    def reader(state, **kwargs):
+        return SimpleNamespace(source_snapshot=lambda: select_observed_sources(state, **kwargs))
+    grants = [observed_source_tool(reader, lambda: accesses.append('checked'))]
+    grants += [g for g in conversation_tools(thread_id='t') if g.tool.name in {'browse_context', 'read_saved_result'}]
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'tools.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='t', check=lambda: None)
+        prior = ToolMessage(content='original', name='read_source_document', tool_call_id='prior',
+            artifact={'source_items': {observed: source}})
+        await bridge.initialize({'messages': [prior]})
+        response = await bridge.call_tool(None, SimpleNamespace(name='read_research_source',
+            arguments={'source_id': requested, 'max_characters': 6000}))
+        assert response.is_error
+        feedback = json.loads(response.content[0].text)['result']
+        assert feedback['requested_source_id'] == requested
+        assert feedback['readback'] == {'tool': 'browse_context', 'arguments': {'region': 'sources'}}
+        bridge.model_access()  # ordinary selection feedback does not poison dispatch
+        assert (await bridge.state())['messages'][0].artifact == prior.artifact
+        catalog = await bridge.execute('browse_context', {'region': 'sources'})
+        assert 'prior' in catalog.content
+        # Reproduce a legacy interrupted read; recovery preserves its exact args
+        # and returns typed feedback rather than requiring a successful read.
+        await bridge._checkpoint_call(bridge.graph.aupdate_state, bridge.config, {'messages': [
+            AIMessage(content='', tool_calls=[{'name': 'read_research_source', 'args': {'source_id': requested},
+                'id': 'pending', 'type': 'tool_call'}])]}, as_node='__start__')
+        restored = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='t', check=lambda: None)
+        receipt = await restored.initialize({}, recovering=True)
+        assert receipt['kind'] == 'recovered_read_feedback'
+        assert receipt['status'] == 'error'
+        assert receipt['feedback']['result']['requested_source_id'] == requested
+        restored.model_access()
+
+
+@pytest.mark.anyio
 async def test_business_graph_inside_parent_task_keeps_its_own_checkpoint(tmp_path):
     from langgraph.graph import StateGraph, START, END
     from langgraph.checkpoint.memory import InMemorySaver

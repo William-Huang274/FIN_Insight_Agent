@@ -98,3 +98,11 @@ def test_prechunk_consumer_keeps_title_as_structure_and_retains_body_and_tables(
     assert [r['role'] for r in chunks['records']]==['retained_structure','prose_candidate','table_candidate']
     assert chunks['records'][0]['source_title_chapter_ids']==['section']
     assert chunks['prose_groups'][0]['atomic_record_indices']==[1]
+
+
+def test_equivalent_toc_labels_have_deterministic_original_proof():
+    raw=b'<html><body><a href="#s">Summary</a><a href="#s">SUMMARY</a><p id="s">Summary</p></body></html>'
+    d=document(raw,[('/html/body/p',True)])
+    updated,proofs,_=repair(d,raw)
+    assert proofs[0]['toc']==dict(anchor='s',label='SUMMARY')
+    verify(updated,raw)

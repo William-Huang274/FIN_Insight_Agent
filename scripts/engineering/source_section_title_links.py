@@ -74,8 +74,8 @@ def proposals(document,raw):
         out=[]
         for key,anchor in targets:
             if len(anchors[key])==1:
-                out.extend(dict(anchor=key,label=label) for label in set(links.get(key,[])))
-        return out
+                out.extend(dict(anchor=key,label=label) for label in sorted(set(links.get(key,[]))))
+        return sorted(out,key=lambda row:(row['anchor'],row['label']))
     proved=[];findings=[]
     for node in document['chapter_tree']:
         if node.get('title_binding',{}).get('status') not in {'heading_not_bound','ambiguous_heading'}:continue

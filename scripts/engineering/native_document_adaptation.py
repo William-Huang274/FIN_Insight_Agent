@@ -142,10 +142,10 @@ def section_display_title(key, fields, indices, blocks):
             continue
         if item and pattern.match(label).group(1).replace('.', '').lower() != str(item).replace('.', '').lower():
             continue
-        if not pattern and normalized(label) != normalized(str(fields.get('title', ''))):
+        if not pattern and normalized(label).casefold() != normalized(str(fields.get('title', ''))).casefold():
             continue
         candidates.append((i, label))
-    labels = {normalized(label) for _, label in candidates}
+    labels = {normalized(label).casefold() for _, label in candidates}
     if len(labels) == 1:
         i, label = candidates[0]
         return label, i, dict(status='bound_heading', block=i,

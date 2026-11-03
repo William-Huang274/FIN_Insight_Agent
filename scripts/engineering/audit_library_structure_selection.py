@@ -62,6 +62,9 @@ def text_observations(d):
         hidden=n.get('navigation_status')=='compatibility_only'
         counts['compatibility_only_chapters']+=hidden
         counts['visible_unknown_levels']+=not hidden and n.get('level') is None
+        if not hidden and n.get('level') is None:
+            scope='embedded_container' if n.get('embedded_in_table') and n.get('scope')=='physical_container_only' else 'document_hierarchy'
+            counts['unknown_level_scope:'+scope]+=1
         status=n.get('title_binding',{}).get('status')
         if status:counts['title_binding:'+status]+=1
         if status in {'heading_not_bound','ambiguous_heading'}:

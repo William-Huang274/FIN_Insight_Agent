@@ -78,6 +78,10 @@ def worker(row,out):
                 document=repair_context_roles(repair_sec_signatures(adapt(native,document)))
                 document=repair_headings(document,native)
                 document,_=repair_parts(document)
+                from embedded_section_titles import repair as repair_embedded_titles
+                document,_,_=repair_embedded_titles(document,raw)
+                from equivalent_section_titles import repair as repair_equivalent_titles
+                document,_=repair_equivalent_titles(document,raw)
                 lane='sec'
             errors=validate(document)
             if errors:raise ValueError('structure_contract:'+str(errors))

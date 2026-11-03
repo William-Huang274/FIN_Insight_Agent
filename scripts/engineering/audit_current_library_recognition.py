@@ -135,6 +135,14 @@ def run(args):
                 d=read_artifact(path,expected)
                 record['source_sha256']=d.get('source_sha256')
                 if lane in ('sec','web','markdown'):
+                    if d.get('embedded_section_title_repairs'):
+                        from embedded_section_titles import verify as verify_embedded_titles
+                        from qualify_embedded_section_titles import original
+                        verify_embedded_titles(d,original(source))
+                    if d.get('equivalent_section_title_repairs'):
+                        from equivalent_section_titles import verify as verify_equivalent_titles
+                        from qualify_embedded_section_titles import original
+                        verify_equivalent_titles(d,original(source))
                     errors=validate(d)
                     if errors:raise ValueError('structure_contract:'+str(errors))
                     updated,changes=repair(d)

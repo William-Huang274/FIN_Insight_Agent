@@ -64,6 +64,15 @@ async def completed_predecessor(service, thread, previous_run_id, *, recover=Fal
         raise HTTPException(409, '存在后续运行，请刷新后核对最新操作')
     from .api.v1.report_sessions import public_run_usage
     events, usage = public_run_usage(service.audit_root, thread['thread_id'], previous_run_id)
+    if recover and usage is None:
+        from sec_agent.adapters.explicit_run_recovery import verified_preparation_recovery
+        try:
+            permitted = verified_preparation_recovery(service.audit_root, thread['thread_id'],
+                previous_run_id, secret=os.getenv('FINSIGHT_ORGANIZATION_RUNTIME_SECRET', ''))
+        except (ValueError, OSError, TypeError, KeyError):
+            permitted = None
+        if permitted:
+            return permitted
     if not usage or not usage['recorded_requests'] or usage['unknown_or_pending_requests'] or usage['partial_audit']:
         # Explicit operator authorization permits one successor of this latest
         # failed run. It does not change unknown usage or its budget reservation.
@@ -80,9 +89,9 @@ async def completed_predecessor(service, thread, previous_run_id, *, recover=Fal
         raise HTTPException(409, '前序用量未知或审计不完整，请先核对原运行')
 
 
-def checked_receipt(run, thread, grant):
+def checked_receipt(run, thread, grant, *, preparation_recovery=False):
     try:
-        return action_receipt(run, thread, grant)
+        return action_receipt(run, thread, grant, preparation_recovery=preparation_recovery)
     except (ValueError, KeyError, TypeError):
         raise HTTPException(409, '原生运行与报告操作不匹配') from None
 
@@ -103,12 +112,12 @@ def install_organization_report_action_routes(router, service):
             raise HTTPException(503, '按需研究入口尚未启用')
         tid = grant['execution_id']
         thread = await service.sdk.threads.get(tid)
-        await completed_predecessor(service, thread, grant['report_action_request']['previous_run_id'],
+        preparation = await completed_predecessor(service, thread, grant['report_action_request']['previous_run_id'],
                                     recover=grant['report_action_request'].get('action') == 'recover')
         saved = await service.sdk.threads.get_state(tid)
         try:
-            validate_baseline(saved, grant)
-            arguments = action_request(thread, grant)
+            validate_baseline(saved, grant, preparation_recovery=bool(preparation))
+            arguments = action_request(thread, grant, preparation_recovery=bool(preparation))
         except (ValueError, KeyError, TypeError):
             raise HTTPException(409, '报告基线或审阅检查点已变化，请刷新后重新核对') from None
         shared = SimpleNamespace(workspace=AssetWorkspace(service.attachment_store.root.parent / 'project-library' / 'organization-assets'))
@@ -125,7 +134,7 @@ def install_organization_report_action_routes(router, service):
         run = await service.sdk.runs.create(tid, 'research_session', **arguments,
             multitask_strategy='reject', stream_mode='custom', stream_subgraphs=True, stream_resumable=True)
         try:
-            result = checked_receipt(run, thread, grant)
+            result = checked_receipt(run, thread, grant, preparation_recovery=bool(preparation))
             await reauthorize(service, grant)
         except HTTPException:
             return JSONResponse({'submission_status': 'unknown', 'detail': '报告操作已派发，须核对原命令；不会自动重发。'}, status_code=409)
@@ -149,6 +158,10 @@ def install_organization_report_action_routes(router, service):
                     'detail': '原操作在原生派发前中断，未创建运行；原命令保留为未执行，可重新发起操作。'}, status_code=409)
         if len(candidates) != 1:
             raise HTTPException(409, '无法唯一核对报告操作，保留原命令')
-        result = checked_receipt(candidates[0], thread, grant)
+        from sec_agent.adapters.explicit_run_recovery import verified_preparation_recovery
+        preparation = (verified_preparation_recovery(service.audit_root, grant['execution_id'],
+            grant['report_action_request']['previous_run_id'], secret=os.getenv('FINSIGHT_ORGANIZATION_RUNTIME_SECRET', ''))
+            if service.audit_root and grant['report_action_request'].get('action') == 'recover' else None)
+        result = checked_receipt(candidates[0], thread, grant, preparation_recovery=bool(preparation))
         await reauthorize(service, grant)
         return result

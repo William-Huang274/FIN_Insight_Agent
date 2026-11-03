@@ -83,15 +83,22 @@ async def admit(native, config, thread, authority):
         raise ValueError('organization_native_run_identity_mismatch')
     continuing = 'continuation_request' in grant
     reporting = 'report_action_request' in grant
-    (action_receipt if reporting else continuation_receipt if continuing else run_receipt)(run, thread, grant)
-    expected = (action_request if reporting else continuation_request if continuing else run_request)(thread, grant)['config']['configurable']
+    preparation = None
+    if reporting and grant['report_action_request'].get('action') == 'recover':
+        from sec_agent.adapters.explicit_run_recovery import verified_preparation_recovery
+        settings = json.loads(Path(os.environ['FINSIGHT_REPORT_SESSION_SETTINGS']).read_text(encoding='utf8'))
+        preparation = verified_preparation_recovery(settings['audit_root'], grant['execution_id'],
+            grant['report_action_request']['previous_run_id'], secret=os.environ['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
+    extra = {'preparation_recovery': bool(preparation)} if reporting else {}
+    (action_receipt if reporting else continuation_receipt if continuing else run_receipt)(run, thread, grant, **extra)
+    expected = (action_request if reporting else continuation_request if continuing else run_request)(thread, grant, **extra)['config']['configurable']
     actual = config['configurable']
     if (any(actual.get(key) != value for key, value in expected.items())
             or any(key.startswith('finsight_') and key not in expected for key in actual)):
         raise ValueError('organization_runtime_configuration_mismatch')
     saved = await native.threads.get_state(grant['execution_id'])
     if continuing or reporting:
-        (validate_action_baseline if reporting else validate_baseline)(saved, grant)
+        (validate_action_baseline if reporting else validate_baseline)(saved, grant, **extra)
         payload = grant['report_action_request' if reporting else 'continuation_request']
         previous = await native.runs.get(grant['execution_id'], payload['previous_run_id'])
         statuses = {'error', 'interrupted', 'timeout'} if payload.get('action') == 'recover' else {'success'}

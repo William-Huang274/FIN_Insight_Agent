@@ -45,7 +45,7 @@ def root(continuous, monkeypatch):
     s.intake.service.sdk.threads.get_state = state
     async def create(t, graph, **kwargs):
         assert 'command' not in kwargs and kwargs['multitask_strategy'] == 'reject'
-        assert kwargs['input'] == (None if payload['action'] == 'recover' else
+        assert kwargs['input'] == (None if payload['action'] == 'recover' and not getattr(s, 'preparation', False) else
             {'question': s.grant['question'], 'messages': [{'role': 'user', 'content': payload['message']}]})
         s.actual = deepcopy(kwargs)
         run = {'thread_id': t, 'run_id': str(uuid4()), 'status': 'pending', 'metadata': kwargs['metadata']}
@@ -105,6 +105,21 @@ def test_failed_root_recovery_is_explicit_idempotent_and_does_not_replace_histor
     assert s.baseline == original
     assert s.actual['input'] is None and 'checkpoint_id' not in s.actual
     assert s.intake.runs[s.grant['execution_id']][0]['status'] == 'error'
+
+
+def test_checked_preparation_failure_starts_unexecuted_command_from_saved_checkpoint(root, monkeypatch):
+    s = root; s.preparation = True; s.usage = None
+    s.action_body['action'] = 'recover'
+    s.action_grant['report_action_request_digest'] = 'sha256:'+sha256(json.dumps(s.action_body, separators=(',', ':')).encode()).hexdigest()
+    s.intake.runs[s.grant['execution_id']][0]['status'] = 'error'
+    monkeypatch.setattr('sec_agent.adapters.explicit_run_recovery.verified_preparation_recovery', lambda *a, **kw: {'kind': 'verified_preparation_failure_recovery.v1'})
+    original = deepcopy(s.baseline)
+    with TestClient(s.intake.app()) as c:
+        accepted = submit(c, s)
+        assert accepted.status_code == 200, accepted.text
+    assert s.baseline == original
+    assert s.actual['checkpoint_id'] == s.baseline['checkpoint']['checkpoint_id']
+    assert s.actual['input']['messages'][0]['content'] == s.action_body['message']
 
 
 @pytest.mark.parametrize('fault', ['pending', 'checkpoint', 'history', 'outcome', 'usage', 'disabled', 'old_route'])

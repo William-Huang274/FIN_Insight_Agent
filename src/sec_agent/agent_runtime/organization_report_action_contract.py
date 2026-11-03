@@ -103,7 +103,7 @@ def validate_report(values, grant):
         validate_revision_target(values, authorized_action(grant).target)
 
 
-def validate_baseline(state, grant):
+def validate_baseline(state, grant, *, preparation_recovery=False):
     p = grant['report_action_request']
     if on_demand(grant):
         values = state.get('values') or {}
@@ -112,7 +112,7 @@ def validate_baseline(state, grant):
                 or values.get('question') != grant['question']
                 or (p['action'] == 'continue' and (state.get('next')
                     or values.get('task_outcome', {}).get('run_id') != p['previous_run_id']))
-                or (p['action'] == 'recover' and not state.get('next'))):
+                or (p['action'] == 'recover' and not state.get('next') and not preparation_recovery)):
             raise ValueError('organization_root_checkpoint_mismatch')
         return
     validate_report(state.get('values') or {}, grant)
@@ -129,7 +129,7 @@ def check_resumed_action(values, actual, grant):
         raise ValueError('organization_report_resumed_action_mismatch')
 
 
-def action_request(thread, grant):
+def action_request(thread, grant, *, preparation_recovery=False):
     validate_action(grant)
     if validate_thread(thread, grant)['configuration_digest'] != grant['configuration_digest']:
         raise ValueError('organization_report_configuration_mismatch')
@@ -138,7 +138,7 @@ def action_request(thread, grant):
         finsight_organization_report_action=action_context(grant),
         finsight_organization_start=None, finsight_organization_continuation=None)
     args = {'config': config, 'checkpoint_id': grant['report_action_request']['checkpoint_id']}
-    if on_demand(grant) and grant['report_action_request']['action'] == 'recover':
+    if on_demand(grant) and grant['report_action_request']['action'] == 'recover' and not preparation_recovery:
         # Resume the latest failed task and its pending subgraph writes. An
         # explicit checkpoint_id would fork/replay instead of native resume.
         # Its identity is checked twice, before dispatch and native admission.
@@ -152,8 +152,8 @@ def action_request(thread, grant):
                                 'organization_dispatch_digest': digest(args)}}
 
 
-def action_receipt(run, thread, grant):
-    expected = action_request(thread, grant)
+def action_receipt(run, thread, grant, *, preparation_recovery=False):
+    expected = action_request(thread, grant, preparation_recovery=preparation_recovery)
     if (run['thread_id'] != grant['execution_id'] or run['metadata'].get('surface') != SURFACE
             or run['metadata'].get('organization_report_action') != action_context(grant)
             or run['metadata'].get('organization_dispatch_digest') != expected['metadata']['organization_dispatch_digest']

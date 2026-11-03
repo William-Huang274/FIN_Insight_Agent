@@ -14,6 +14,7 @@ from uuid import UUID
 
 
 KIND = 'explicit_unknown_usage_recovery.v1'
+PREPARATION_KIND = 'verified_preparation_failure_recovery.v1'
 
 
 def _bytes(value):
@@ -97,4 +98,68 @@ def verified_recovery_authorization(root, thread, run, events, usage, *, secret,
     issued = datetime.fromisoformat(value['issued_at']); expires = datetime.fromisoformat(value['expires_at'])
     if not issued <= now <= expires or expires - issued > timedelta(hours=24):
         raise ValueError('recovery_authorization_expired_or_invalid')
+    return signed
+
+
+def issue_preparation_recovery(root, thread, run, *, store, owner, budget,
+                               terminal_run, preparation_evidence, secret,
+                               authorization_ref, now=None):
+    """Privileged operations only: attest a checked failure before dispatch.
+
+    Missing model audit alone is NEVER evidence of no dispatch. The operator
+    must locate the preparation failure and check the authoritative dispatch
+    ledger. This receipt changes admission only, not usage or run outcomes.
+    """
+    audit, base = _paths(root, thread, run)
+    path = base.with_suffix('.preparation.json')
+    tid, rid = str(UUID(str(thread))), str(UUID(str(run)))
+    if (terminal_run.get('run_id') != rid or terminal_run.get('status') != 'error'
+            or not authorization_ref or not preparation_evidence):
+        raise ValueError('preparation_recovery_requires_terminal_failure_evidence')
+    if audit.exists():
+        raise ValueError('preparation_recovery_cannot_replace_model_audit')
+    scope = tid + ':' + rid
+    with store.connection() as db:
+        count = db.execute('''SELECT COUNT(*) AS count FROM fin_model_dispatch
+            WHERE owner_id=%s AND budget_id=%s AND
+            (basis->>'harness_execution_scope'=%s OR call_key LIKE %s)''',
+            (owner, budget, scope, scope + ':%')).fetchone()['count']
+    if count != 0:
+        raise ValueError('preparation_recovery_dispatch_already_recorded')
+    value = {'kind': PREPARATION_KIND, 'thread_id': tid, 'previous_run_id': rid,
+             'owner_id': owner, 'budget_id': budget, 'dispatch_rows': count,
+             'terminal_run': terminal_run, 'preparation_evidence': preparation_evidence,
+             'authorization_ref': authorization_ref}
+    if path.exists():
+        prior = verified_preparation_recovery(root, tid, rid, secret=secret, now=now)
+        if not prior or any(prior.get(k) != v for k, v in value.items()):
+            raise ValueError('preparation_recovery_redefinition_forbidden')
+        return prior
+    now = now or datetime.now(timezone.utc)
+    value.update(issued_at=now.isoformat(), expires_at=(now + timedelta(hours=24)).isoformat())
+    value['signature'] = _signature(value, secret)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open('xb') as stream:
+        stream.write(_bytes(value)); stream.flush(); os.fsync(stream.fileno())
+    return value
+
+
+def verified_preparation_recovery(root, thread, run, *, secret, now=None):
+    audit, base = _paths(root, thread, run)
+    path = base.with_suffix('.preparation.json')
+    if not path.exists():
+        return None
+    signed = json.loads(path.read_text(encoding='utf8'))
+    value = dict(signed); signature = value.pop('signature', '')
+    if not isinstance(signature, str) or not hmac.compare_digest(signature, _signature(value, secret)):
+        raise ValueError('preparation_recovery_signature_invalid')
+    if (audit.exists() or value.get('kind') != PREPARATION_KIND
+            or value.get('thread_id') != str(UUID(str(thread)))
+            or value.get('previous_run_id') != str(UUID(str(run)))
+            or value.get('dispatch_rows') != 0):
+        raise ValueError('preparation_recovery_scope_changed')
+    now = now or datetime.now(timezone.utc)
+    issued = datetime.fromisoformat(value['issued_at']); expires = datetime.fromisoformat(value['expires_at'])
+    if not issued <= now <= expires or expires - issued > timedelta(hours=24):
+        raise ValueError('preparation_recovery_expired')
     return signed

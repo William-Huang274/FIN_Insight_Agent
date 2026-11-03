@@ -3,6 +3,7 @@
 Normalize only structured source results. Never parse prose, truncate evidence,
 limit candidates, or infer that two different periods/revisions are equivalent.
 """
+import ast
 import json
 from collections.abc import Mapping
 
@@ -176,6 +177,48 @@ def _shared_calculation_metadata(row):
     return row
 
 
+def _calculation_basis(row):
+    """Expose ratio syntax, not an inferred financial interpretation.
+
+    Outside the immutable CALC payload/hash: old receipts get the same view on
+    read, with no migration or model-supplied form. a/b-c/d has two divisions.
+    """
+    if (row.get('result_state') != 'non_authoritative_metric'
+            or row.get('arithmetic_verified') is not True or 'formula_basis' in row):
+        return row
+    expression, operands = row.get('expression'), row.get('operands')
+    if not isinstance(expression, str) or len(expression) > 1000 or not isinstance(operands, dict):
+        return row
+    try:
+        parsed = ast.parse(expression, mode='eval').body
+    except (SyntaxError, ValueError, RecursionError):
+        return row
+    allowed = (ast.BinOp, ast.UnaryOp, ast.Name, ast.Load, ast.Constant,
+               ast.Add, ast.Sub, ast.Mult, ast.Div, ast.UAdd, ast.USub)
+    if any(not isinstance(node, allowed) for node in ast.walk(parsed)):
+        return row
+    used = {node.id for node in ast.walk(parsed) if isinstance(node, ast.Name)}
+    if used != set(operands):
+        return row
+
+    def component(node):
+        return {'expression': ast.unparse(node),
+                'operand_keys': sorted({n.id for n in ast.walk(node) if isinstance(n, ast.Name)})}
+
+    ratios = [{'division_expression': ast.unparse(node),
+               'numerator': component(node.left), 'denominator': component(node.right)}
+              for node in ast.walk(parsed) if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div)]
+    if ratios:
+        row['formula_basis'] = {
+            'version': 1, 'ratios': ratios, 'purpose_ref': '#/rationale',
+            'operand_details_ref': '#/operands', 'semantics_inferred': False,
+            'notice': 'Components are syntax from this exact formula, not financial labels. '
+                      'Operand keys retain source, period/unit metadata and explicit assumptions in operands. '
+                      'For a range, contribution split or complement, compare the actual denominator and adjustments '
+                      'of each calculation; arithmetic verification does not establish a common economic quantity.'}
+    return row
+
+
 def source_result_view(value):
     """Idempotent request-only projection shared by fresh and restored reads."""
     if isinstance(value, Mapping):
@@ -196,7 +239,7 @@ def source_result_view(value):
                 row.pop("metadata")
         if row.get('result_state') == 'retrieval_candidate':
             row = _company_source_menu(row)
-        return _shared_calculation_metadata(_shared_navigation_metadata(row))
+        return _shared_calculation_metadata(_calculation_basis(_shared_navigation_metadata(row)))
     if isinstance(value, (list, tuple)):
         return [source_result_view(v) for v in value]
     return value

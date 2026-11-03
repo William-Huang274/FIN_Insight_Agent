@@ -42,7 +42,7 @@ class SourceBoundCalculation(BaseModel):
     result_unit: str = Field(min_length=1, max_length=256,
         description="Your declared result unit, preferably a short unit label; put explanation in rationale. Preserved verbatim, not normalized or a proof of dimensional or financial comparability.")
     rationale: str = Field(min_length=1, max_length=2000,
-        description="Explain the financial formula and period/unit choices for independent review, not hidden reasoning.")
+        description="State the question this calculation answers and its period/unit choices. For a ratio explain the economic numerator, denominator and adjustments actually applied. Use this existing field, not an additional plan or form. Arithmetic verification does not validate that interpretation.")
 
 
 def _number(literal: str) -> Decimal:

@@ -90,6 +90,11 @@ def worker(row,out):
             if lane in {'sec','web'}:
                 from source_location_alignment import repair as repair_source_locations
                 document,_=repair_source_locations(document,raw)
+                from source_display_purpose import repair as repair_display_purpose
+                document,_=repair_display_purpose(document,raw)
+                if lane=='sec':
+                    from source_item_title_evidence import repair as repair_original_items
+                    document,_,_=repair_original_items(document,raw)
             errors=validate(document)
             if errors:raise ValueError('structure_contract:'+str(errors))
             receipt.update(lane=lane,prechunks=pack('prechunks',classify(document)),blocks=len(document['blocks']),chapters=len(document['chapter_tree']))

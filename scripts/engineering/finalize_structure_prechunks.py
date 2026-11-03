@@ -22,6 +22,13 @@ def classify(document):
     for proof in document.get('source_section_title_links',[]):
         for block in proof['blocks']:
             title_links.setdefault(block,[]).append(proof['chapter_id'])
+    table_item_titles={}
+    for proof in document.get('source_item_title_repairs',[]):
+        if proof['table_row']:
+            table_item_titles.setdefault(proof['block'],[]).append(proof)
+        else:
+            title_links.setdefault(proof['block'],[]).append(proof['chapter_id'])
+    sources={s['id']:s for s in document.get('source_containers',[])}
     def flush():
         nonlocal pending,pending_bytes,pending_path
         if pending:
@@ -33,11 +40,16 @@ def classify(document):
         b=document['blocks'][c['block']]
         text=b['text'] if c['kind']=='table' else b['text'][c['start']:c['end']]
         source_title=c['kind']!='table' and c['block'] in title_links
-        role='retained_structure' if source_title or structural_only(text) or b.get('structural_heading') or b.get('structural_only') else b.get('candidate_role') or ('table_candidate' if c['kind']=='table' else 'prose_candidate')
+        role='retained_metadata' if b.get('candidate_role')=='retained_metadata' else 'retained_structure' if source_title or structural_only(text) or b.get('structural_heading') or b.get('structural_only') else b.get('candidate_role') or ('table_candidate' if c['kind']=='table' else 'prose_candidate')
         records.append({**c,'role':role,'text_sha256':sha256(text.encode()).hexdigest(),
                         'heading_path_status':'parser_hypothesis_not_independently_verified',
                         'financial_semantics_inferred':False})
         if source_title:records[-1]['source_title_chapter_ids']=title_links[c['block']]
+        if c['block'] in table_item_titles:records[-1]['original_item_title_rows']=table_item_titles[c['block']]
+        display=sources.get(b.get('source_container_id'),{}).get('source_display_purpose')
+        if display:
+            records[-1]['source_display_policy']=dict(source_container_id=b['source_container_id'],
+                purpose=display['purpose'],candidate_policy=display['candidate_policy'])
         if b.get('source_alignment_proof'):
             records[-1]['original_location']=dict(status='unique_complete_container',source_container_id=b['source_container_id'],
                 basis=b['source_alignment_basis'],offset_namespace='parsed_block_offsets_not_original_dom_char_offsets')
@@ -45,7 +57,7 @@ def classify(document):
             records[-1]['original_location']=dict(status='verified_multiple_occurrences',source_ids=b['source_alignment_alternatives']['source_ids'],
                 unique_position=False,numeric_authority=False,offset_namespace='parsed_block_offsets_not_original_dom_char_offsets')
         if c['kind']=='table':flush();continue
-        if role in {'code_candidate','html_structure_pending','html_structure_candidate','attached_context_candidate'}:flush();continue
+        if role in {'code_candidate','html_structure_pending','html_structure_candidate','attached_context_candidate','retained_metadata'}:flush();continue
         if role=='retained_structure':continue
         path=tuple(c['heading_path']);size=len(text.encode())
         if pending and (path!=pending_path or pending_bytes+1+size>10000):flush()

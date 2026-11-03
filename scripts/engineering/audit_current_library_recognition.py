@@ -135,6 +135,16 @@ def run(args):
                 d=read_artifact(path,expected)
                 record['source_sha256']=d.get('source_sha256')
                 if lane in ('sec','web','markdown'):
+                    if d.get('source_display_purpose_repairs') or d.get('source_item_title_repairs'):
+                        from source_display_purpose import verify as verify_display_purpose
+                        from source_item_title_evidence import verify as verify_original_items
+                        from qualify_embedded_section_titles import original
+                        raw_original=original(source)
+                        verify_display_purpose(d,raw_original);verify_original_items(d,raw_original)
+                        record['original_source_evidence']=dict(
+                            display_purposes=len(d.get('source_display_purpose_repairs',[])),
+                            item_titles=len(d.get('source_item_title_repairs',[])))
+                        del raw_original
                     if d.get('source_location_alignment_repairs') or d.get('source_visibility_repairs') or d.get('source_equivalent_occurrence_proofs'):
                         from source_location_alignment import verify as verify_source_locations
                         from qualify_embedded_section_titles import original

@@ -23,11 +23,13 @@ def repair(document,raw):
     for s in document.get('source_containers',[]):
         item=s;original=evidence.get(s['id'].split(':',1)[-1]);proof=original.get('visibility') if original else None
         if proof:
-            item=dict(s,source_visibility=dict(status='non_display_metadata',**proof),excluded_navigation=True)
+            purpose=s.get('source_display_purpose')
+            excluded=purpose['within_navigation'] if purpose and purpose['candidate_policy']=='body_content' else True
+            item=dict(s,source_visibility=dict(status='hidden_at_capture' if purpose else 'non_display_metadata',**proof),excluded_navigation=excluded)
             if item!=s:source_updates[s['id']]=item
             visibility_records[s['id']]=dict(source_id=s['id'],visibility=item['source_visibility'])
         source_by_id[s['id']]=item
-        if (original and original['text']==item.get('text') and item.get('text')
+        if (original and not original['visibility'] and original['text']==item.get('text') and item.get('text')
             and not item.get('excluded_navigation') and item.get('role') not in {'table','container'}):
             index[token_digest(item['text'])].append(item)
     changes=[];alternatives=[]
@@ -72,6 +74,9 @@ def repair(document,raw):
 def verify(document,raw):
     if sha256(raw).hexdigest()!=document['source_sha256']:raise ValueError('source_identity_changed')
     sources={s['id']:s for s in document.get('source_containers',[])}
+    if document.get('source_display_purpose_repairs') or any(s.get('source_display_purpose') for s in sources.values()):
+        from source_display_purpose import verify as verify_display
+        verify_display(document,raw)
     evidence=container_evidence(raw,[s['id'].split(':',1)[-1] for s in sources.values() if s.get('text')])
     unique=defaultdict(list)
     for s in sources.values():
@@ -81,7 +86,10 @@ def verify(document,raw):
             unique[token_digest(original['text'])].append(s['id'])
     for p in document.get('source_visibility_repairs',[]):
         s=sources[p['source_id']];fresh=evidence.get(s['id'].split(':',1)[-1],{}).get('visibility')
-        if s.get('source_visibility')!=dict(status='non_display_metadata',**(fresh or {})) or not s.get('excluded_navigation'):
+        purpose=s.get('source_display_purpose')
+        expected=dict(status='hidden_at_capture' if purpose else 'non_display_metadata',**(fresh or {}))
+        excluded=purpose['within_navigation'] if purpose and purpose['candidate_policy']=='body_content' else True
+        if s.get('source_visibility')!=expected or s.get('excluded_navigation')!=excluded:
             raise ValueError('source_visibility_not_reproducible')
     for p in document.get('source_location_alignment_repairs',[]):
         b=document['blocks'][p['block']];s=sources[p['source_container_id']]

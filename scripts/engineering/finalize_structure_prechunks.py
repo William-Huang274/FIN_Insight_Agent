@@ -38,6 +38,12 @@ def classify(document):
                         'heading_path_status':'parser_hypothesis_not_independently_verified',
                         'financial_semantics_inferred':False})
         if source_title:records[-1]['source_title_chapter_ids']=title_links[c['block']]
+        if b.get('source_alignment_proof'):
+            records[-1]['original_location']=dict(status='unique_complete_container',source_container_id=b['source_container_id'],
+                basis=b['source_alignment_basis'],offset_namespace='parsed_block_offsets_not_original_dom_char_offsets')
+        elif b.get('source_alignment_alternatives'):
+            records[-1]['original_location']=dict(status='verified_multiple_occurrences',source_ids=b['source_alignment_alternatives']['source_ids'],
+                unique_position=False,numeric_authority=False,offset_namespace='parsed_block_offsets_not_original_dom_char_offsets')
         if c['kind']=='table':flush();continue
         if role in {'code_candidate','html_structure_pending','html_structure_candidate','attached_context_candidate'}:flush();continue
         if role=='retained_structure':continue

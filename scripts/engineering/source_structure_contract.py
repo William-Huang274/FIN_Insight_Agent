@@ -70,6 +70,8 @@ def following_after_blank_layout(element):
 
 
 def source_containers(raw):
+    from source_visibility import visibility_map
+    non_display=visibility_map(raw)
     try:
         raw.decode('utf-8-sig')
         tree = html.fromstring(raw,parser=html.HTMLParser(encoding='utf-8'))
@@ -105,6 +107,9 @@ def source_containers(raw):
                'role': role, 'level': level, 'role_basis': basis,
                'text': text, 'excluded_navigation': excluded,
                'text_sha256': sha256(text.encode()).hexdigest()}
+        if xpath in non_display:
+            row['source_visibility']=dict(status='non_display_metadata',**non_display[xpath])
+            row['excluded_navigation']=True
         row['referenced_anchor']=bool((el.get('id') and el.get('id') in targets) or
             any(a.get('id') in targets or a.get('name') in targets for a in el.xpath('.//a[@id or @name]')))
         sizes=[]
@@ -133,7 +138,7 @@ def source_containers(raw):
             row['numeric_content_present'] = has_numeric
             row['financial_semantics_inferred'] = False
     children = defaultdict(list)
-    body_sizes=[r['font_size_pt'] for r in rows if r['role']=='paragraph' and len(r['text'])>180 and r['font_size_pt']]
+    body_sizes=[r['font_size_pt'] for r in rows if r['role']=='paragraph' and not r['excluded_navigation'] and len(r['text'])>180 and r['font_size_pt']]
     body_size=median(body_sizes) if body_sizes else None
     for row in rows:
         if row['role']=='styled_heading_candidate':

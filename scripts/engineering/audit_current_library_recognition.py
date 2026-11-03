@@ -135,6 +135,16 @@ def run(args):
                 d=read_artifact(path,expected)
                 record['source_sha256']=d.get('source_sha256')
                 if lane in ('sec','web','markdown'):
+                    if d.get('source_location_alignment_repairs') or d.get('source_visibility_repairs') or d.get('source_equivalent_occurrence_proofs'):
+                        from source_location_alignment import verify as verify_source_locations
+                        from qualify_embedded_section_titles import original
+                        verify_source_locations(d,original(source))
+                        if artifact.get('prechunks'):
+                            chunks=read_artifact(artifact['prechunks']['path'],artifact['prechunks']['sha256'])
+                            fresh_chunks=classify(d)
+                            if chunks!=fresh_chunks:raise ValueError('source_location_prechunk_artifact_changed')
+                            record['prechunks']=artifact['prechunks']
+                            del chunks,fresh_chunks
                     if d.get('native_toc_identity_aliases'):
                         from native_document_capture import read_capture
                         from native_toc_identities import verify as verify_toc_aliases

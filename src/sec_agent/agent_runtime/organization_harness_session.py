@@ -15,7 +15,7 @@ import secrets
 from acp.schema import HttpMcpServer, HttpHeader
 from langchain_core.messages import AIMessage, ToolMessage, convert_to_messages, messages_from_dict
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from .checkpoint_objects import business_checkpointer
 
 from .conversation_agent import GrantedTool, research_system_prompt
 from .conversation_tools import conversation_tools, SAVED_RESULT_TOOLS
@@ -141,7 +141,10 @@ async def organization_harness_session(*, native, resources, authority, check, o
     grants.append(observed_source_tool(artifacts, check))
     grants.extend(artifact_tools(artifacts=artifacts, memory=memory, delivery_intent=intent, require_review=require_review))
     scope = lambda: native_memory_scope(owner, memory_workspace, access_check=check, allow_remote_search=False)
-    async with AsyncSqliteSaver.from_conn_string(str(business_directory / 'business-checkpoint.sqlite')) as saver:
+    # Same task's isolated replays share immutable payloads, not mutable
+    # conversation/history or working-note state. Native ACP owns that history.
+    async with business_checkpointer(business_directory / 'business-checkpoint.sqlite',
+            object_path=directory / 'business-objects.sqlite') as saver:
         bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope)
         recovery_receipt = await bridge.initialize({**({} if clean_import else admitted), 'question': grant['question']},
             recovering=grant.get('report_action_request', {}).get('action') == 'recover')

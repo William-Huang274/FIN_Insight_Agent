@@ -218,3 +218,15 @@ Java命令 `received` 和其 result 中的 `pending` 是派发回执，reconcile
 失败请求没有用量回执时，原始记录和预算预留继续保留，默认禁止接续。用户明确批准该次补发后，运维可运行 `scripts/engineering/authorize_failed_run_recovery.py`，提供 audit-root、thread-id、run-id、唯一 authorization-id 及 authorization-ref。命令使用宿主 `FINSIGHT_ORGANIZATION_RUNTIME_SECRET` 签署24小时有效的恢复授权，保存于审计根下独立的 operational-recovery-authorizations 目录；不调用模型、不改费用、不将部分结果标成成功。
 
 授权精确绑定旧运行、全部未知失败请求ID和公开调用账本摘要。只有已有明确失败outcome、审计完整的请求可以授权；仅有started、审计损坏或缺失仍阻断。BFF预览与实际派发使用同一校验，只有recover动作可以消费；当前权限、最新运行、活动任务、Java持久命令和检查点校验照常执行。创建后继运行后，旧授权不再能为新的失败提供准入。没有向模型或浏览器暴露签署入口；不能把它当成自动重试策略。正常新请求仍从同一预算扣除原未知预留后申请额度。
+
+## 业务检查点与历史归档
+
+原生 ACP 继续拥有会话、压缩及接续；FIN 不因暂停、预算中止或恢复再导出一套全量状态。业务工具仍使用 LangGraph ToolNode 与 AsyncSqliteSaver 的执行、pending writes 和恢复协议。`checkpoint_objects.ObjectSerializer` 通过正式 serializer 扩展点将业务大对象保存在同一任务的 `business-objects.sqlite`，检查点及 pending writes 保存内容引用。隔离回放分支共享不可变对象，但会话、检查点、工作笔记和后续变更仍隔离。对象引用不授予跨任务或跨组织的读取权限。
+
+对象事务先提交，随后才提交引用它的检查点；中断最多留下未引用对象，不能把部分写入标成完成。读取只验证实际使用的对象，不扫描整个资料库。旧原生序列化行仍可读，启动不做全库重写。每次写入仍需遍历当前业务状态来识别变化，这次优化保证不重复落盘大内容，不承诺消除全部序列化 CPU 或重建内存开销。
+
+离线转换使用 `PYTHONPATH=src python scripts/engineering/compact_business_checkpoints.py --source OLD --output NEW --objects OBJECTS`，逐行保留检查点 ID、元数据及 pending writes，并验证还原后的原生序列化相等。输出必须为新文件；切换前停止写入者、验证恢复，再保留旧库作为迁移回退。`business-checkpoint.sqlite` 与任务对象库必须共同备份，不可只复制前者。不能将已使用引用格式的库交给不认识该格式的旧服务。需要回滚时一并还原旧库和旧代码，且不得丢弃切换后新增结果。
+
+没有自动 TTL 删除或对象 GC。删分支不能直接删共享对象库；只有所有保留检查点、pending writes 和成果引用都解除后才可回收对象。原始失败响应、未知计费、已接受提案和来源/计算/版本身份照常保留。
+
+历史目录去重使用 `scripts/engineering/archive_state_duplicates.py` 的 `build`、`verify --check-originals`、`restore --path RELATIVE`。标准 ZIP 每份相同字节只存一次，manifest 绑定所有旧相对路径、SHA-256 和长度。构建及验证不删除原件；恢复可写回原路径或测试目录，拒绝越界路径及覆盖不同内容。大规模退役只能依据本次已验证的逐文件清单，不可按 `offline-*`/`live-*` 名称整删。归档、manifest、恢复工具是原路径退役后的必要依赖；旧脚本启动前先恢复它所需的路径，不伪装成可直接读取 ZIP 的原生历史。

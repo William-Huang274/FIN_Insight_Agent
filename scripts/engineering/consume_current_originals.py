@@ -82,6 +82,8 @@ def worker(row,out):
                 document,_,_=repair_embedded_titles(document,raw)
                 from equivalent_section_titles import repair as repair_equivalent_titles
                 document,_=repair_equivalent_titles(document,raw)
+                from source_section_title_links import repair as repair_source_titles
+                document,_,_=repair_source_titles(document,raw)
                 lane='sec'
             errors=validate(document)
             if errors:raise ValueError('structure_contract:'+str(errors))

@@ -143,6 +143,22 @@ def run(args):
                         from equivalent_section_titles import verify as verify_equivalent_titles
                         from qualify_embedded_section_titles import original
                         verify_equivalent_titles(d,original(source))
+                    if d.get('source_section_title_links'):
+                        from source_section_title_links import verify as verify_source_titles
+                        from qualify_embedded_section_titles import original
+                        verify_source_titles(d,original(source))
+                        title_blocks={i for p in d['source_section_title_links'] for i in p['blocks']}
+                        classified=classify(d)
+                        title_records=[r for r in classified['records'] if r['block'] in title_blocks]
+                        if any(r['role']!='retained_structure' for r in title_records):
+                            raise ValueError('source_title_still_in_prose')
+                        folder=out/'source-title-prechunks';folder.mkdir(exist_ok=True)
+                        target=folder/(digest(path.encode())+'.json.gz')
+                        packed=gzip.compress(json.dumps(classified,ensure_ascii=False).encode(),compresslevel=3,mtime=0)
+                        target.write_bytes(packed)
+                        record['prechunks']=dict(path=str(target),sha256=digest(packed))
+                        record['source_title_classification']=dict(blocks=len(title_blocks),records=len(title_records))
+                        del classified,title_records,packed
                     errors=validate(d)
                     if errors:raise ValueError('structure_contract:'+str(errors))
                     updated,changes=repair(d)

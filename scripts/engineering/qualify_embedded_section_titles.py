@@ -26,7 +26,9 @@ def original(source):
 
 
 def run(ledger,output,kind='embedded'):
-    if kind=='equivalent':
+    if kind=='source':
+        from source_section_title_links import repair as apply,verify as verify_titles
+    elif kind=='equivalent':
         from equivalent_section_titles import repair as equivalent_repair, verify as verify_titles
         def apply(document,raw):
             updated,proofs=equivalent_repair(document,raw)
@@ -35,7 +37,8 @@ def run(ledger,output,kind='embedded'):
         apply=repair;verify_titles=verify
     rows=read_lines(ledger);out=Path(output);out.mkdir(parents=True,exist_ok=False)
     files=[Path(__file__).with_name(n) for n in ('qualify_embedded_section_titles.py','embedded_section_titles.py',
-           'equivalent_section_titles.py','native_document_adaptation.py','source_structure_contract.py','validate_source_structure_audit.py')]
+           'equivalent_section_titles.py','source_section_title_links.py','document_structure_repairs.py','source_heading_units.py',
+           'native_document_adaptation.py','source_structure_contract.py','validate_source_structure_audit.py')]
     identity=dict(input_sha256=digest(Path(ledger).read_bytes()),code={str(p):digest(p.read_bytes()) for p in files})
     selected={};counts=Counter();receipts=[]
     with (out/'receipts.jsonl').open('w',encoding='utf8') as stream:
@@ -89,5 +92,5 @@ def run(ledger,output,kind='embedded'):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--ledger',required=True);p.add_argument('--output',required=True)
-    p.add_argument('--kind',choices=['embedded','equivalent'],default='embedded')
+    p.add_argument('--kind',choices=['embedded','equivalent','source'],default='embedded')
     a=p.parse_args();run(a.ledger,a.output,a.kind)

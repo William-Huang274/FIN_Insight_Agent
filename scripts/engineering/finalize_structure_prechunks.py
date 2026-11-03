@@ -18,6 +18,10 @@ from retrieval.structural_surface import structural_only
 
 def classify(document):
     records=[];groups=[];pending=[];pending_bytes=0;pending_path=None
+    title_links={}
+    for proof in document.get('source_section_title_links',[]):
+        for block in proof['blocks']:
+            title_links.setdefault(block,[]).append(proof['chapter_id'])
     def flush():
         nonlocal pending,pending_bytes,pending_path
         if pending:
@@ -28,10 +32,12 @@ def classify(document):
     for c in document['pre_chunks']:
         b=document['blocks'][c['block']]
         text=b['text'] if c['kind']=='table' else b['text'][c['start']:c['end']]
-        role='retained_structure' if structural_only(text) or b.get('structural_heading') or b.get('structural_only') else b.get('candidate_role') or ('table_candidate' if c['kind']=='table' else 'prose_candidate')
+        source_title=c['kind']!='table' and c['block'] in title_links
+        role='retained_structure' if source_title or structural_only(text) or b.get('structural_heading') or b.get('structural_only') else b.get('candidate_role') or ('table_candidate' if c['kind']=='table' else 'prose_candidate')
         records.append({**c,'role':role,'text_sha256':sha256(text.encode()).hexdigest(),
                         'heading_path_status':'parser_hypothesis_not_independently_verified',
                         'financial_semantics_inferred':False})
+        if source_title:records[-1]['source_title_chapter_ids']=title_links[c['block']]
         if c['kind']=='table':flush();continue
         if role in {'code_candidate','html_structure_pending','html_structure_candidate','attached_context_candidate'}:flush();continue
         if role=='retained_structure':continue

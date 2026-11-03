@@ -252,3 +252,13 @@ python scripts/engineering/audit_library_structure_selection.py --selection <pri
 python scripts/engineering/qualify_source_part_hierarchy.py --root <completed-heading-parent-dir> --output <new-part-qualification-dir>
 python scripts/engineering/audit_shared_section_ranges.py --root <completed-part-qualification-dir> --captures <frozen-sec-captures> --output <new-shared-range-review-dir>
 ```
+
+## 15. 原生范围与原件标题的独立关联
+
+原生分区可能从标题后的首段正文开始，也可能只提供`proxy_summary`等内部身份。标题与正文范围分别取证：`source_section_title_links.py`核对完整原容器、唯一原生归属、Item编号或目录锚点；签署标题另以紧随其后的完整法定声明交叉证明。原容器在正文前时，原件文本流中间不得存在其他可见内容。目录同名项、重复锚点、多个位置或多重分区归属保留未决。
+
+目录标题跨多个容器时，只有锚点文字和全部连续容器的完整token序列一致才合成逻辑标题；保留每段原文、容器位置和分区身份。注释和处理指令不提供可见正文，但它们后的可见文字仍进入相邻性检查。源原件摘要及原文位置可复算，持久化的`bound_source_title_link`状态不能替代重新证明。
+
+此关联更新显示标题及独立标题定位，不移动原生范围、章节父子关系或正文归属。原始物理块与`pre_chunks`完整保留；`finalize_structure_prechunks`将已证实的完整标题块标为结构用途，保留章节引用，不混入普通正文组。混合物理表的标题不在此路线整体过滤，继续沿表内行级合同处理。
+
+当前原件处理入口在既有容器、签署、Part及大小写修复之后消费本关联；全库审计会从原件重建所有证明，并检查最终预分块的结构用途。离线适配合同通过不代表产品发布或独立原件质量通过。

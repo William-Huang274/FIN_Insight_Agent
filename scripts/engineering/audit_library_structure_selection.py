@@ -82,6 +82,8 @@ def text_observations(d):
     for group in d.get('shared_native_range_groups',[]):
         issues.append(dict(kind='shared_original_range',**group));counts['shared_original_ranges']+=1
         counts['sections_in_shared_original_ranges']+=len(group['sections'])
+    counts['proved_toc_identity_aliases']=len(d.get('native_toc_identity_aliases',[]))
+    counts['raw_shared_original_ranges']=len(d.get('native_toc_raw_shared_ranges',d.get('shared_native_range_groups',[])))
     for f in d.get('source_heading_findings',[]):
         issues.append(dict(kind='heading_proof_unresolved',detail=f));counts['heading_finding:'+f['kind']]+=1
     for f in d.get('source_heading_scope_deferrals',[]):

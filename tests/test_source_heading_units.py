@@ -69,6 +69,23 @@ def test_same_range_remains_explicit_not_silently_assigned():
     assert result['blocks'][0]['chapter_ids']==[]
 
 
+def test_proved_toc_only_alias_does_not_block_unique_body_scope():
+    d,c=fixture(False)
+    c['native']['metadata']['fields']['original_html']=c['native']['metadata']['fields']['original_html'].replace('<p id="end">','<p>Body.</p><p id="end">')
+    d['source_containers'][-1]['id']='x:/html/body/p[4]'
+    d['blocks'][-1]['source_container_id']='x:/html/body/p[4]'
+    body_source=dict(id='x:/html/body/p[3]',text='Body.',text_sha256=sha256(b'Body.').hexdigest(),role='paragraph')
+    d['source_containers'].insert(2,body_source)
+    d['blocks'].insert(2,dict(kind='text',text='Body.',chapter_ids=[],chapter_blocks=[],source_container_id=body_source['id'],source_location_status='unique_complete_container'))
+    c['native']['toc_boundaries']['item6r']=deepcopy(c['native']['toc_boundaries']['item6'])
+    result=repair(d,c)
+    assert result['native_toc_identity_aliases'][0]['alias']=='item6r'
+    assert len(result['native_toc_raw_shared_ranges'])==1
+    assert result['shared_native_range_groups']==[]
+    assert result['blocks'][2]['chapter_ids']==[result['source_heading_units'][0]['chapter_id']]
+    assert [b['text'] for b in result['blocks']]==[b['text'] for b in d['blocks']]
+
+
 def test_wrong_source_identity_is_rejected():
     d,c=fixture();c['source_sha256']='other'
     with pytest.raises(ValueError,match='identity'):repair(d,c)

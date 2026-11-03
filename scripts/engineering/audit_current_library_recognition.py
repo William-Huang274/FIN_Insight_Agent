@@ -135,6 +135,13 @@ def run(args):
                 d=read_artifact(path,expected)
                 record['source_sha256']=d.get('source_sha256')
                 if lane in ('sec','web','markdown'):
+                    if d.get('native_toc_identity_aliases'):
+                        from native_document_capture import read_capture
+                        from native_toc_identities import verify as verify_toc_aliases
+                        reference=d['native_toc_alias_capture']
+                        captured=read_capture(reference['path'],expected_sha256=reference['sha256'],expected_source_sha256=d['source_sha256'])
+                        verify_toc_aliases(d,captured)
+                        del captured
                     if d.get('embedded_section_title_repairs'):
                         from embedded_section_titles import verify as verify_embedded_titles
                         from qualify_embedded_section_titles import original

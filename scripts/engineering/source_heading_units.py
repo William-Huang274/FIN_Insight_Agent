@@ -163,6 +163,15 @@ def repair(previous, capture):
     if capture['source_sha256']!=d['source_sha256']:
         raise ValueError('heading_source_identity_mismatch')
     ranges,spans = geometry(native,d.get('source_containers',[]))
+    from native_toc_identities import prove,effective_ranges
+    aliases=prove(native,d.get('source_containers',[]),ranges,spans)
+    raw_groups=defaultdict(list)
+    for key,bounds in ranges.items():raw_groups[bounds].append(key)
+    d['native_toc_raw_shared_ranges']=[dict(original_range=list(bounds),sections=sorted(keys),
+        status='shared_range_requires_reference_review',canonical_section=None)
+        for bounds,keys in raw_groups.items() if len(keys)>1]
+    d['native_toc_identity_aliases']=aliases
+    ranges=effective_ranges(ranges,aliases)
     proposals,findings = propose(d,native,ranges,spans)
     groups = defaultdict(list)
     for key,bounds in ranges.items():

@@ -213,6 +213,18 @@ def edgar_document(capture, previous, *, native_paths_verified=True):
                     heading_tables[sid] = element
         starts = {key: endpoint(b['fields'], b['element_paths'], 'start')
                   for key, b in native['toc_boundaries'].items()}
+        from native_toc_identities import prove
+        raw_ranges={}
+        for key,boundary in native['toc_boundaries'].items():
+            end=endpoint(boundary['fields'],boundary['element_paths'],'end')
+            if starts[key] is not None and end is not None and starts[key]<end:
+                raw_ranges[key]=(starts[key],end)
+        all_source_spans={sid:(positions[path_index[sid.split(':',1)[-1]]],ends[path_index[sid.split(':',1)[-1]]])
+                          for sid in source_rows if sid.split(':',1)[-1] in path_index}
+        aliases=prove(native,list(source_rows.values()),raw_ranges,all_source_spans)
+        document['native_toc_identity_aliases']=aliases
+        alias_ids={p['alias'] for p in aliases}
+        starts={key:value for key,value in starts.items() if key not in alias_ids}
         adjustments = []
         for key, boundary in native['toc_boundaries'].items():
             if key not in native['sections']: continue

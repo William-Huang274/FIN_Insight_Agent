@@ -77,6 +77,8 @@ def worker(row,out):
             else:
                 document=repair_context_roles(repair_sec_signatures(adapt(native,document)))
                 document=repair_headings(document,native)
+                if document.get('native_toc_identity_aliases'):
+                    document['native_toc_alias_capture']=receipt['native']
                 document,_=repair_parts(document)
                 from embedded_section_titles import repair as repair_embedded_titles
                 document,_,_=repair_embedded_titles(document,raw)

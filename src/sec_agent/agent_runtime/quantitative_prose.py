@@ -1,9 +1,10 @@
 """Advisory readback for changed quantitative prose. Never alter a manuscript or a receipt."""
+import json
 import re
 from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 
-from .source_references import HANDLE, reference_handle
+from .source_references import HANDLE, REFERENCE_TOKEN, reference_handle
 from .source_result_view import _calculation_basis
 
 # Split prose, retaining a decimal point inside a number.
@@ -23,10 +24,114 @@ def sentences(text):
     text = re.sub(r'([。！？])((?:\[(?:REF-[\da-f]+|CALC::[^\]]+)\])+)', r'\2\1', text)
     return [s.strip() for s in SPLIT.split(text) if s.strip()]
 
-def changed_sentences(before, after):
+def sentence_edits(before, after):
     old, new = sentences(before), sentences(after)
-    return [s for op, _, _, start, end in SequenceMatcher(None,old,new,autojunk=False).get_opcodes()
-            if op != 'equal' for s in new[start:end] if re.search(r'\d', HANDLE.sub('',s))]
+    for op, i, j, start, end in SequenceMatcher(None, old, new, autojunk=False).get_opcodes():
+        if op == 'equal':
+            continue
+        # Only a one-to-one replacement has an unambiguous sentence predecessor.
+        previous = old[i] if op == 'replace' and j - i == end - start == 1 else None
+        for sentence in new[start:end]:
+            yield previous, sentence
+
+
+def saved_note_wording(messages):
+    """Only committed note text from this authorised business history; never treat it as evidence."""
+    from langchain_core.messages import ToolMessage
+
+    calls = {}
+    versions = {}
+    for message in messages:
+        for call in getattr(message, 'tool_calls', ()):
+            if call.get('name') == 'WriteWorkingNote':
+                original = message.additional_kwargs.get('original_tool_arguments')
+                calls[call['id']] = original if isinstance(original, dict) and len(message.tool_calls) == 1 else call.get('args', {})
+        if not isinstance(message, ToolMessage) or message.name != 'WriteWorkingNote' or message.status != 'success':
+            continue
+        args = calls.pop(message.tool_call_id, {})
+        body = args.get('body')
+        if not isinstance(body, str):
+            continue
+        receipt = message.content
+        if isinstance(receipt, str):
+            try:
+                receipt = json.loads(receipt)
+            except ValueError:
+                continue
+        if not isinstance(receipt, dict) or receipt.get('saved') is not True:
+            continue
+        note_id, version = receipt.get('note_id'), receipt.get('version')
+        if not note_id or type(version) is not int:
+            continue
+        prior_version, prior_body = versions.get(note_id, (None, ''))
+        if args.get('mode') == 'append' and prior_version == version - 1:
+            body = prior_body + '\n' + body
+        versions[note_id] = (version, body)
+    return '\n'.join(body for _, body in versions.values())
+
+
+def cited_claim_context(edits, previous_text, sources):
+    """Present attributable evidence, never infer the author’s intended denominator or allocation."""
+    from collections import defaultdict
+    def identifiers(sentence):
+        for token in re.findall(REFERENCE_TOKEN, sentence):
+            if HANDLE.fullmatch(token):
+                yield token
+            elif token in sources:
+                yield reference_handle(token)
+
+    cited = {ref for _, sentence in edits for ref in identifiers(sentence)}
+    if not cited:
+        return []
+    observed = {}
+    for key, row in sources.items():
+        if isinstance(key, str) and isinstance(row, dict):
+            ref = reference_handle(key)
+            if ref in cited:
+                observed[ref] = (key, row)
+    history = defaultdict(list)
+    for sentence in sentences(previous_text):
+        for ref in set(identifiers(sentence)) & cited:
+            history[ref].append(sentence)
+    checks = []
+    displayed = set()
+    for previous, sentence in edits:
+        evidence = []
+        for ref in dict.fromkeys(identifiers(sentence)):
+            if ref not in observed:
+                continue
+            key, row = observed[ref]
+            if ref in displayed:
+                evidence.append({'receipt':ref})
+                continue
+            if key.startswith('CALC::') and row.get('arithmetic_verified') is True:
+                entry = {k:row.get(k) for k in ('expression','value_decimal','result_unit','rationale')}
+                if str(entry['result_unit']).lower() in {'ratio', 'fraction', '比例'}:
+                    try:
+                        fraction = Decimal(str(entry['value_decimal']))
+                        if fraction.is_finite():
+                            entry['percent_of_specified_denominator'] = str(fraction * 100)
+                    except InvalidOperation:
+                        pass
+                entry['inputs'] = {k:{field:v.get(field) for field in ('value_decimal','source_id')}
+                                   for k,v in (row.get('operands') or {}).items() if isinstance(v, dict)}
+            elif (row.get('result_state') == 'source_bound_passage' and row.get('writer_citable') is True
+                  and isinstance(row.get('passage'), str)):
+                entry = {'excerpt': row['passage'][:450], 'excerpt_truncated': len(row['passage']) > 450}
+            else:
+                continue
+            entry.update(receipt=ref, readback={'tool':'read_research_source','arguments':{'source_id':key}})
+            evidence.append(entry)
+            displayed.add(ref)
+        if evidence:
+            # Prior statements are fallible context, not an additional source.
+            prior = [previous] if previous else []
+            for entry in evidence:
+                prior.extend(history[entry['receipt']][-2:])
+            checks.append({'sentence':sentence, 'earlier_statements':list(dict.fromkeys(prior)),
+                           'evidence':evidence})
+    return checks
+
 
 def amounts(text):
     return {Decimal(m[1].replace(',','')) * SCALE[m[2].lower()] for m in AMOUNT.finditer(text)}
@@ -64,12 +169,15 @@ def ratio_cards(sources):
                  'purpose':row.get('rationale','')}))
     return cards
 
-def audit_changes(before, after, sources, *, context=''):
+def audit_changes(before, after, sources, *, context='', earlier_notes=''):
     cards = ratio_cards(sources)
     restrictions = [(m[1],line) for line in sentences(context+'\n'+after) for m in LIMIT.finditer(line)]
     findings=[]
     linked = {}
-    for s in changed_sentences(before,after):
+    edits = list(sentence_edits(before, after))
+    for _, s in edits:
+        if not re.search(r"\d", HANDLE.sub("", s)):
+            continue
         values=amounts(s); rates=list(PERCENT.finditer(s)); matches=[]
         # One amount presented alongside several percentages is ambiguous when their
         # uniquely matching stored ratios used different amounts. Don't label it false.
@@ -101,7 +209,8 @@ def audit_changes(before, after, sources, *, context=''):
                         'basis':[card for _,a,card in cards if a in values][:3],
                         'action':'Does the cited amount apply to this subject and period? Identify an allocation, retain the broader scope, or state the scenario.'})
                     break
-    return {'status':'advisory','findings':findings, 'linked_ratio_bases':list(linked.values())}
+    return {'status':'advisory','findings':findings, 'linked_ratio_bases':list(linked.values()),
+            'cited_claim_context':cited_claim_context(edits, '\n'.join((before, context, earlier_notes)), sources)}
 
 
 def quantitative_prose_tool(prior_answer):
@@ -114,6 +223,7 @@ def quantitative_prose_tool(prior_answer):
     def check_quantitative_changes(text: str, runtime: ToolRuntime):
         """Compare proposed changed quantitative sentences and scope statements with saved CALC receipts.
         Supply only affected prose, including related limits or scenarios; returns advisory evidence for the author."""
-        return audit_changes(prior_answer, text, calculator_observations(runtime.state.get('messages', [])))
+        messages = runtime.state.get('messages', [])
+        return audit_changes(prior_answer, text, calculator_observations(messages), earlier_notes=saved_note_wording(messages))
 
     return GrantedTool(check_quantitative_changes, 'read', '已观察计算与局部修订措辞核对')

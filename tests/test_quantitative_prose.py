@@ -32,3 +32,66 @@ def test_adjustment_compares_only_explicit_periods_and_respects_scenario():
     result = audit_changes('', '2024年剔除6 million 后的收入。', sources)
     assert [f['kind'] for f in result['findings']] == ['check_period_of_adjustment']
     assert not audit_changes('', '如果2024年仍有同额收益，则剔除6 million。', sources)['findings']
+
+def test_changed_qualitative_claim_gets_actual_evidence_and_old_limit():
+    from sec_agent.agent_runtime.source_references import reference_handle
+
+    key = 'PASSAGE::approved'
+    ref = reference_handle(key)
+    before = f'过去未提供分项。[{ref}]'
+    after = f'附注明确给出分项，故可确认归属。[{ref}]'
+    source = {key:dict(result_state='source_bound_passage', writer_citable=True, passage='Allocation to unit X: 18.')}
+    result = audit_changes(before, after, source)
+    row, = result['cited_claim_context']
+    assert row['evidence'][0]['excerpt'] == 'Allocation to unit X: 18.'
+    assert len(row['earlier_statements']) == 1
+    assert not result['findings']
+    assert not audit_changes(after, after, source)['cited_claim_context']
+    assert not audit_changes(before, after, {})['cited_claim_context']
+
+
+def test_ratio_feedback_uses_only_the_cited_verified_denominator():
+    from sec_agent.agent_runtime.source_references import reference_handle
+
+    key = 'CALC::verified'
+    ref = reference_handle(key)
+    for offset in (47, 70):
+        calc = ratio(offset, 100, 'offset divided by combined increases')
+        row, = audit_changes('', f'抵消了其中一部分。[{ref}]', {key:calc})['cited_claim_context']
+        evidence, = row['evidence']
+        assert float(evidence['percent_of_specified_denominator']) == offset
+        assert evidence['expression'] == calc['expression']
+        assert evidence['readback']['arguments']['source_id'] == key
+
+def test_only_accepted_current_note_versions_supply_prior_wording():
+    import json
+    from langchain_core.messages import AIMessage, ToolMessage
+    from sec_agent.agent_runtime.quantitative_prose import saved_note_wording
+
+    def pair(version, mode, text, saved):
+        key = 'note-call-' + text
+        return [
+            AIMessage(content='', tool_calls=[dict(name='WriteWorkingNote', args=dict(
+                mode=mode, title='x', body=text), id=key, type='tool_call')]),
+            ToolMessage(name='WriteWorkingNote', tool_call_id=key, content=json.dumps(
+                dict(saved=saved, note_id='one', version=version)))]
+
+    rows = pair(1,'replace','first',True) + pair(2,'append','conditional',True)
+    assert saved_note_wording(rows) == 'first\nconditional'
+    rows += pair(3,'replace','rejected',False)
+    assert saved_note_wording(rows) == 'first\nconditional'
+    rows += pair(3,'replace','new evidence',True)
+    assert saved_note_wording(rows) == 'new evidence'
+
+def test_legacy_source_id_and_handle_share_one_evidence_entry_in_change_view():
+    from sec_agent.agent_runtime.source_references import reference_handle
+
+    key = 'PASSAGE::abc123'
+    ref = reference_handle(key)
+    source = {key:dict(result_state='source_bound_passage', writer_citable=True, passage='current record')}
+    new = f'归属已明确。[{ref}]\n因此可以确认具体分项。[{ref}]'
+    rows = audit_changes('', new, source, earlier_notes=f'该项曾待核对。[{key}]')['cited_claim_context']
+    assert len(rows) == 2
+    assert rows[0]['evidence'][0]['excerpt'] == 'current record'
+    assert rows[1]['evidence'] == [{'receipt':ref}]
+    assert rows[1]['earlier_statements'] and len(rows[1]['earlier_statements']) == 1

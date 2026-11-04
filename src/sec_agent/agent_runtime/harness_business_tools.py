@@ -271,7 +271,7 @@ class HarnessBusinessTools:
                     from .quantitative_prose import audit_changes
                     args = params.arguments or {}
                     body = args.get('body', '')
-                    if isinstance(body, str) and any(c.isdigit() for c in body):
+                    if isinstance(body, str) and body.strip():
                         base_version = saved['version'] - 1
                         previous = ''
                         if base_version:
@@ -280,7 +280,7 @@ class HarnessBusinessTools:
                         messages = (await self.state()).get('messages', [])
                         report = audit_changes(previous if args.get('mode') != 'append' else '',
                             body, calculator_observations(messages), context=previous if args.get('mode') == 'append' else '')
-                        if report['findings'] or report['linked_ratio_bases']:
+                        if report['findings'] or report['linked_ratio_bases'] or report['cited_claim_context']:
                             view['quantitative_change_check'] = report
             text = json.dumps(view, ensure_ascii=False, separators=(',', ':'))
             return types.CallToolResult(content=[types.TextContent(type='text', text=text)],

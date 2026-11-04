@@ -144,7 +144,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
                           memory_workspace=memory_workspace) as data:
             return artifact_reader_from_sources(data, navigation, sources, allow_public_sources=public_web)
     grants.append(observed_source_tool(artifacts, check))
-    from .quantitative_prose import quantitative_prose_tool, audit_changes
+    from .quantitative_prose import quantitative_prose_tool, audit_changes, saved_note_wording
     # Use the same native branch and the last delivery, including a pinned fork.
     binding = {'execution_id': tid, 'manifest_digest': grant['manifest_digest'],
                'release': options['binary_sha256'], 'model': options['model']}
@@ -205,7 +205,9 @@ async def organization_harness_session(*, native, resources, authority, check, o
             from .source_references import render_answer_references
             text, citations, unresolved = render_answer_references(result['text'], business)
             from .conversation_tools import calculator_observations
-            advisory = audit_changes(prior_answer, text, calculator_observations(business.get('messages', [])))
+            messages = business.get('messages', [])
+            advisory = audit_changes(prior_answer, text, calculator_observations(messages),
+                                     earlier_notes=saved_note_wording(messages))
             output = AIMessage(content=text, additional_kwargs={'harness_session_id': result['session_id'],
                 'citation_bindings': citations, 'unresolved_citations': unresolved, 'quantitative_change_check': advisory})
             # Financial observations stay in the existing export/readback

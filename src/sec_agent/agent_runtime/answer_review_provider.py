@@ -2,6 +2,7 @@
 import asyncio
 from dataclasses import asdict
 import json
+import logging
 from pathlib import Path
 from uuid import UUID
 
@@ -47,15 +48,18 @@ def public_usage_event(call_id, model, record=None):
     return row
 
 
-def fit_review_receipts(body, limit):
+def fit_review_receipts(body, limit, *, keep_current=False):
     """Reduce oldest exact tool copies only under remaining pressure; preserve paged access."""
     def wire():
         return json.dumps(body, ensure_ascii=False, sort_keys=True)
     payload = wire()
+    last_call = max((i for i, v in enumerate(body['input']) if v.get('type') == 'function_call'), default=-1)
     for index, item in enumerate(body['input']):
         if len(payload) <= limit:
             break
         if item.get('type') != 'function_call_output' or len(item['output']) < 3500:
+            continue
+        if keep_current and index > last_call:
             continue
         receipt = json.loads(item['output'])
         rid = receipt.get('receipt_id')
@@ -82,7 +86,7 @@ async def independent_review(*, selected, message, question, bridge, budget, env
         'input_scale':'Selected passage in its versioned answer, bound citation index and authorized follow-up reads',
         'required_outputs':['A reasoned assessment with source handles and implications for the original answer'],
         'materiality_quality_risk':'Distinguish company and segment facts, including unsupported absence assertions',
-        'max_output_tokens':12000, 'max_input_characters':120000}))
+        'max_output_tokens':12000}))
     refs = message.additional_kwargs.get('citation_bindings', {})
     inputs = [dict(role='user', content=json.dumps(dict(question=question, as_of=as_of,
         answer=message.content, selected=selected.model_dump(), citation_keys=list(refs)), ensure_ascii=False))]
@@ -100,7 +104,10 @@ async def independent_review(*, selected, message, question, bridge, budget, env
             wire = json.dumps(body, ensure_ascii=False, sort_keys=True)
             key = 'answer-review:' + command_id + ':' + str(len(inputs))
             saved = await asyncio.to_thread(budget.store.lookup, budget.owner, budget.budget, key)
-            if len(wire) > profile.max_input_characters:
+            pressure = min(120000, profile.max_input_characters)
+            legacy = bool(saved and not saved['basis'].get('review_projection'))
+            raw_chars = len(wire)
+            if len(wire) > pressure:
                 # Keep the model's chosen sources, compact earlier tool responses
                 # to their exact readback handles. Never truncate the latest batch.
                 body['input'] = compact_tool_history(inputs, navigation_calls)
@@ -108,13 +115,16 @@ async def independent_review(*, selected, message, question, bridge, budget, env
                 body['tools'] = [*tools,dict(type='function',name=readback.name,description=readback.description,
                     parameters=readback.tool_call_schema.model_json_schema(),strict=False)]
                 wire = json.dumps(body, ensure_ascii=False, sort_keys=True)
-                if len(wire) > profile.max_input_characters:
-                    wire = fit_review_receipts(body, profile.max_input_characters)
-                if len(wire) > profile.max_input_characters:
+                if len(wire) > pressure:
+                    wire = fit_review_receipts(body, pressure, keep_current=not legacy)
+                if len(wire) > (pressure if legacy else profile.max_input_characters):
                     raise ValueError('answer_review_input_budget_exceeded')
+                if not saved:
+                    logging.getLogger(__name__).info('review_input_pressure raw_chars=%d projected_chars=%d',raw_chars,len(wire))
             # Conservative byte bound for tokenized text plus protocol overhead.
             reserve = ((len(wire.encode()) + 2048) * prices.input_miss + profile.max_output_tokens * prices.output + 999999)//1000000
             policy = dict(harness_execution_scope=scope, token_budget=profile.model_dump(mode='json'), price=asdict(prices))
+            policy['review_projection'] = 'preserve_current_batch'
             if saved and saved['status'] == 'unknown' and previous_scope and audit_root and saved['basis'].get('harness_execution_scope') == previous_scope:
                 from sec_agent.adapters.explicit_run_recovery import verified_permit
                 retry_key = key + ':retry:' + str(saved['call_id'])

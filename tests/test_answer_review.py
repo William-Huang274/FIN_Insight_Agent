@@ -84,3 +84,15 @@ def test_pressure_preserves_input_pairs_and_receipt_readback():
     assert output['call_id'] == 'sdk-call'
     assert json.loads(output['output'])['original_readback']['arguments']['tool_call_id'] == 'original'
     assert body['input'][0]['content'] == 'original question'
+
+
+def test_review_pressure_keeps_the_new_batch_even_above_soft_target():
+    from sec_agent.agent_runtime.answer_review_provider import fit_review_receipts
+    body = {'input':[]}
+    for idx in ('earlier', 'current'):
+        raw = json.dumps({'receipt_id':idx, 'result':'x'*9000})
+        body['input'].extend([{'type':'function_call','call_id':idx},
+                              {'type':'function_call_output','call_id':idx,'output':raw}])
+    assert len(fit_review_receipts(body, 5000, keep_current=True)) > 5000
+    assert json.loads(body['input'][1]['output'])['original_readback']['arguments']['tool_call_id'] == 'earlier'
+    assert body['input'][-1]['output'] == raw

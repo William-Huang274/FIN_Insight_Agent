@@ -170,109 +170,116 @@ class OperandSourceError(ValueError):
         self.code, self.name, self.operand = code, name, operand
 
 
+def _bind_operand(name, operand, source_lookup):
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{0,31}", name):
+        raise ValueError("operand_name_must_be_ascii_identifier")
+    if operand.source_id is None:
+        if not operand.assumption_note or operand.literal is None or operand.quote is not None:
+            raise ValueError("unsourced_operand_requires_literal_and_explicit_assumption")
+        value = _number(operand.literal)
+        binding = {"assumption_note": operand.assumption_note, "authority": "assumption"}
+    else:
+        try:
+            item = source_lookup(operand.source_id)
+        except KeyError as exc:
+            if exc.args != (operand.source_id,):
+                raise
+            raise OperandSourceError("source_id_not_observed", name, operand) from exc
+        if operand.assumption_note is not None:
+            raise ValueError("source_operand_cannot_be_relabelled_assumption")
+        if item.get("result_state") == "numeric_fact" and item.get("numeric_fact_authority") is True:
+            value = _number(str(item["value_decimal"]))
+            if operand.literal is not None and _number(operand.literal) != value:
+                raise ValueError("operand_value_differs_from_observed_s2_fact")
+            binding = {"source_id": operand.source_id, "authority": "s2_input", **{
+                key: item[key] for key in ("ticker", "metric_id", "period_start", "period_end", "unit", "fiscal_period",
+                                          "formula_trace", "source_observation_ids", "citation_urls", "research_as_of") if key in item}}
+        elif (item.get("result_state") == "non_authoritative_metric" and item.get("arithmetic_verified") is True
+                and item.get("numeric_fact_authority") is False and item.get("financial_semantics_verified") is False):
+            if operand.source_id.startswith("CALC::") and operand.source_id != item.get("calculation_id"):
+                raise ValueError("calculation_source_id_mismatch")
+            value = Decimal(str(item["value_decimal"]))
+            if not value.is_finite() or abs(value) > Decimal("1e100"):
+                raise ValueError("saved_calculation_value_out_of_range")
+            if operand.literal is not None and _number(operand.literal) != value:
+                raise ValueError("operand_value_differs_from_observed_calculation")
+            if operand.quote is not None:
+                raise ValueError("calculated_operand_uses_saved_result_not_a_source_quote")
+            binding = {"source_id": operand.source_id, "authority": "non_authoritative_calculation",
+                "source_calculation": {key: item[key] for key in ("calculation_id", "expression", "result_unit", "authority_note")}}
+        elif item.get("result_state") in {"reviewed_evidence", "source_bound_passage"} and item.get("writer_citable") is True:
+            text = str(item.get("passage") or item.get("bounded_excerpt") or "")
+            quote, quote_recovery = resolve_quote(text, operand.quote or "")
+            if not quote or quote not in text or operand.literal is None:
+                raise OperandSourceError("operand_quote_not_in_observed_source", name, operand)
+            literal_pattern = r"(?<![\w.,])" + re.escape(operand.literal)
+            # A comma or period followed by prose is punctuation, whereas
+            # one followed by a digit continues the numeric token.
+            numeric_end = r"(?!\w|[.,]\d)"
+            literal_match = re.search(literal_pattern + numeric_end, quote)
+            quantity_match = None
+            quantity_rule = "numeric_quantity_x_suffix_v1"
+            if literal_match is None:
+                # Product specifications commonly write counts as "8x GPU".
+                # Keep exact quote/literal binding; do not accept identifiers,
+                # longer numbers or arbitrary unit suffixes by dropping \w.
+                quantity_match = re.search(literal_pattern + r"[xX](?=\s|$)", quote)
+                if quantity_match is None:
+                    # Exact SI/IEC specification suffixes, case-sensitive.
+                    # This recognizes a token boundary, not a unit conversion
+                    # or proof that the chosen table cell has the right meaning.
+                    quantity_match = re.search(literal_pattern +
+                        r"(?:[kMGTPE]?B(?:/s)?|[KMGTPE]iB(?:/s)?|[kMGT]?W|"
+                        r"[kMGTPE]?FLOPS|[kMGTPE]?FLOPs|[kMGTPE]?OPS)(?![\w/])",
+                        quote)
+                    quantity_rule = "numeric_specification_unit_suffix_v1"
+                if quantity_match is None:
+                    # Only thousands-group punctuation may differ. Require
+                    # a unique complete token in the already exact quote;
+                    # never round, change sign/scale or match identifiers.
+                    matches = [m for m in re.finditer(
+                        r"(?<![\w.,])-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?" + numeric_end,
+                        quote)
+                        if m.group().replace(',', '') == operand.literal.replace(',', '')]
+                    if len(matches) == 1:
+                        quantity_match = matches[0]
+                        quantity_rule = "numeric_thousands_grouping_v1"
+                if quantity_match is None:
+                    raise ValueError("numeric_literal_not_in_exact_source_quote: operand=" + name)
+            value = _number(operand.literal)
+            binding = {"source_id": operand.source_id, "quote": quote,
+                "literal": operand.literal, "authority": "non_authoritative_source_reported",
+                "extraction_meaning_verified": False}
+            if quote_recovery is not None:
+                binding["quote_layout_recovery"] = quote_recovery
+            if quantity_match is not None:
+                binding["runtime_compatibility_parse"] = {
+                    "rule": quantity_rule,
+                    "matched_text": quantity_match.group(),
+                    "quote_span": [quantity_match.start(), quantity_match.end()],
+                    "original_literal_preserved": True,
+                    "semantic_inference": False,
+                }
+        else:
+            raise ValueError("operand_requires_observed_citable_source_or_s2_fact")
+        binding["source_provenance"] = {key: item[key] for key in (
+            "source_url", "citation_urls", "source_locator", "title", "ticker", "company", "issuer_id",
+            "publication_date", "publication_date_status", "period_start", "period_end", "fiscal_period",
+            "source_reporting_period_end", "unit", "numeric_fact_authority", "authority_note",
+            "source_type", "source_tier", "source_role", "source_observation_ids", "content_sha256",
+            "organization_source", "organization_execution") if key in item}
+    return value, {**binding, "value_decimal": str(value)}
+
+
 def validate_operand_sources(request, source_lookup):
     values, bindings = {}, {}
     for name, operand in request.operands.items():
-        if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{0,31}", name):
-            raise ValueError("operand_name_must_be_ascii_identifier")
-        if operand.source_id is None:
-            if not operand.assumption_note or operand.literal is None or operand.quote is not None:
-                raise ValueError("unsourced_operand_requires_literal_and_explicit_assumption")
-            value = _number(operand.literal)
-            binding = {"assumption_note": operand.assumption_note, "authority": "assumption"}
-        else:
-            try:
-                item = source_lookup(operand.source_id)
-            except KeyError as exc:
-                if exc.args != (operand.source_id,):
-                    raise
-                raise OperandSourceError("source_id_not_observed", name, operand) from exc
-            if operand.assumption_note is not None:
-                raise ValueError("source_operand_cannot_be_relabelled_assumption")
-            if item.get("result_state") == "numeric_fact" and item.get("numeric_fact_authority") is True:
-                value = _number(str(item["value_decimal"]))
-                if operand.literal is not None and _number(operand.literal) != value:
-                    raise ValueError("operand_value_differs_from_observed_s2_fact")
-                binding = {"source_id": operand.source_id, "authority": "s2_input", **{
-                    key: item[key] for key in ("ticker", "metric_id", "period_start", "period_end", "unit", "fiscal_period",
-                                              "formula_trace", "source_observation_ids", "citation_urls", "research_as_of") if key in item}}
-            elif (item.get("result_state") == "non_authoritative_metric" and item.get("arithmetic_verified") is True
-                    and item.get("numeric_fact_authority") is False and item.get("financial_semantics_verified") is False):
-                if operand.source_id.startswith("CALC::") and operand.source_id != item.get("calculation_id"):
-                    raise ValueError("calculation_source_id_mismatch")
-                value = Decimal(str(item["value_decimal"]))
-                if not value.is_finite() or abs(value) > Decimal("1e100"):
-                    raise ValueError("saved_calculation_value_out_of_range")
-                if operand.literal is not None and _number(operand.literal) != value:
-                    raise ValueError("operand_value_differs_from_observed_calculation")
-                if operand.quote is not None:
-                    raise ValueError("calculated_operand_uses_saved_result_not_a_source_quote")
-                binding = {"source_id": operand.source_id, "authority": "non_authoritative_calculation",
-                    "source_calculation": {key: item[key] for key in ("calculation_id", "expression", "result_unit", "authority_note")}}
-            elif item.get("result_state") in {"reviewed_evidence", "source_bound_passage"} and item.get("writer_citable") is True:
-                text = str(item.get("passage") or item.get("bounded_excerpt") or "")
-                quote, quote_recovery = resolve_quote(text, operand.quote or "")
-                if not quote or quote not in text or operand.literal is None:
-                    raise OperandSourceError("operand_quote_not_in_observed_source", name, operand)
-                literal_pattern = r"(?<![\w.,])" + re.escape(operand.literal)
-                # A comma or period followed by prose is punctuation, whereas
-                # one followed by a digit continues the numeric token.
-                numeric_end = r"(?!\w|[.,]\d)"
-                literal_match = re.search(literal_pattern + numeric_end, quote)
-                quantity_match = None
-                quantity_rule = "numeric_quantity_x_suffix_v1"
-                if literal_match is None:
-                    # Product specifications commonly write counts as "8x GPU".
-                    # Keep exact quote/literal binding; do not accept identifiers,
-                    # longer numbers or arbitrary unit suffixes by dropping \w.
-                    quantity_match = re.search(literal_pattern + r"[xX](?=\s|$)", quote)
-                    if quantity_match is None:
-                        # Exact SI/IEC specification suffixes, case-sensitive.
-                        # This recognizes a token boundary, not a unit conversion
-                        # or proof that the chosen table cell has the right meaning.
-                        quantity_match = re.search(literal_pattern +
-                            r"(?:[kMGTPE]?B(?:/s)?|[KMGTPE]iB(?:/s)?|[kMGT]?W|"
-                            r"[kMGTPE]?FLOPS|[kMGTPE]?FLOPs|[kMGTPE]?OPS)(?![\w/])",
-                            quote)
-                        quantity_rule = "numeric_specification_unit_suffix_v1"
-                    if quantity_match is None:
-                        # Only thousands-group punctuation may differ. Require
-                        # a unique complete token in the already exact quote;
-                        # never round, change sign/scale or match identifiers.
-                        matches = [m for m in re.finditer(
-                            r"(?<![\w.,])-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?" + numeric_end,
-                            quote)
-                            if m.group().replace(',', '') == operand.literal.replace(',', '')]
-                        if len(matches) == 1:
-                            quantity_match = matches[0]
-                            quantity_rule = "numeric_thousands_grouping_v1"
-                    if quantity_match is None:
-                        raise ValueError("numeric_literal_not_in_exact_source_quote: operand=" + name)
-                value = _number(operand.literal)
-                binding = {"source_id": operand.source_id, "quote": quote,
-                    "literal": operand.literal, "authority": "non_authoritative_source_reported",
-                    "extraction_meaning_verified": False}
-                if quote_recovery is not None:
-                    binding["quote_layout_recovery"] = quote_recovery
-                if quantity_match is not None:
-                    binding["runtime_compatibility_parse"] = {
-                        "rule": quantity_rule,
-                        "matched_text": quantity_match.group(),
-                        "quote_span": [quantity_match.start(), quantity_match.end()],
-                        "original_literal_preserved": True,
-                        "semantic_inference": False,
-                    }
-            else:
-                raise ValueError("operand_requires_observed_citable_source_or_s2_fact")
-            binding["source_provenance"] = {key: item[key] for key in (
-                "source_url", "citation_urls", "source_locator", "title", "ticker", "company", "issuer_id",
-                "publication_date", "publication_date_status", "period_start", "period_end", "fiscal_period",
-                "source_reporting_period_end", "unit", "numeric_fact_authority", "authority_note",
-                "source_type", "source_tier", "source_role", "source_observation_ids", "content_sha256",
-                "organization_source", "organization_execution") if key in item}
-        values[name] = value
-        bindings[name] = {**binding, "value_decimal": str(value)}
-
+        try:
+            values[name], bindings[name] = _bind_operand(name, operand, source_lookup)
+        except OperandSourceError:
+            raise
+        except ValueError as exc:
+            raise OperandSourceError(str(exc), name, operand) from exc
     return values, bindings
 
 

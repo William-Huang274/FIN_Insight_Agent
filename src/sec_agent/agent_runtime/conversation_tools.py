@@ -48,6 +48,13 @@ def operand_source_feedback(error, messages):
         feedback['next_step'] = 'Check the original wording, period and column, then select the supporting quote.'
         return feedback
 
+    if error.code != 'source_id_not_observed':
+        if operand.source_id:
+            feedback['readback'] = {'tool':'read_research_source', 'arguments':{'source_id':operand.source_id}}
+        if error.code == 'calculated_operand_uses_saved_result_not_a_source_quote':
+            feedback['next_step'] = 'Use the saved CALC identifier as source_id without a prose quote, or select an observed original and bind its text.'
+        return feedback
+
     choices = {}
     for msg in messages:
         if (not isinstance(msg, ToolMessage) or msg.name != 'read_source_document'

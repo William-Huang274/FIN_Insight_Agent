@@ -95,3 +95,13 @@ def test_legacy_source_id_and_handle_share_one_evidence_entry_in_change_view():
     assert rows[0]['evidence'][0]['excerpt'] == 'current record'
     assert rows[1]['evidence'] == [{'receipt':ref}]
     assert rows[1]['earlier_statements'] and len(rows[1]['earlier_statements']) == 1
+def test_growth_spread_definition_without_any_numeric_literal():
+    from sec_agent.agent_runtime.quantitative_prose import audit_changes
+    text = '跟踪单位收入增速减去单位成本增速（RASM − CASM-ex）。'
+    finding, = audit_changes('', text, {})['findings']
+    assert finding['operands'] == ['RASM', 'CASM-ex']
+    assert not audit_changes(text, text, {})['findings']
+    for valid in ('单位收入减单位成本（RASM − CASM）。',
+                  '销售增长率减成本增长率（SalesYoY − CostsYoY）。',
+                  '单位收入增速减去单位成本增速（同比(RASM) − 同比(CASM-ex)）。'):
+        assert not audit_changes('', valid, {})['findings']

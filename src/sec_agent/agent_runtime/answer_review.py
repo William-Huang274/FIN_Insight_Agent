@@ -69,5 +69,21 @@ def apply_response(body, raw):
 
 
 def author_input(selected, message, review):
+    from .quantitative_prose import metric_definition_checks
+    # A historical answer may predate the current checks. Assess the selected
+    # version on read; keep deterministic observations separate from the opinion.
+    from .source_references import HANDLE
+    passage = selected.quote or message.content
+    checks = metric_definition_checks(passage)
+    evidence = {}
+    bindings = message.additional_kwargs.get('citation_bindings', {})
+    for handle in dict.fromkeys(HANDLE.findall(passage)):
+        source = bindings.get(handle, {}).get('source', {})
+        fields = {k: source[k] for k in ('title', 'publication_date', 'expression',
+                  'value_decimal', 'result_unit') if source.get(k) is not None}
+        if fields:
+            evidence[handle] = fields
     return json.dumps({'task': '处理所选历史版本的局部异议。独立判断，可接受、部分接受或反驳。核对必要依据，保留仍成立的判断。返回 JSON 对象，reason 解释处置理由和仍成立的主要判断，edits 为 {before, after} 列表。before 必须是此版本唯一的逐字原文，包括 Markdown；可修改受影响的关联段。无需修改时返回空列表。新依据使用工具的准确引用句柄。',
+        **({'runtime_observations': checks} if checks else {}),
+        **({'cited_receipt_fields': evidence} if evidence else {}),
         'selected': selected.model_dump(), 'original_answer': message.content, 'independent_review': review}, ensure_ascii=False)

@@ -13,6 +13,23 @@ NUM = r'(?<![\d.])(-?\d[\d,]*(?:\.\d+)?)'
 AMOUNT = re.compile(r'(?:\$\s*)?' + NUM + r'\s*(billion|million|bn(?![A-Za-z])|万亿|亿|百万|万)(?:\s*(?:美元|美金))?', re.I)
 YEAR = re.compile(r"(?<![0-9])(?:19|20)[0-9]{2}(?![0-9])")
 PERCENT = re.compile(NUM + r'\s*[%％]')
+# An explicit definition followed by a two-symbol subtraction. Symbols may
+# already denote rates; report the unexpressed transform, never infer their units.
+RATE_WORD = r'(?:增长率|增速|同比增幅)'
+SYMBOL = r'[A-Za-z][A-Za-z0-9_]*(?:-[A-Za-z][A-Za-z0-9_]*)*'
+RATE_DIFFERENCE = re.compile(RATE_WORD + r'\s*(?:减去|减|[−－-])\s*[^。！？；，,()（）\n]{1,45}?' +
+    RATE_WORD + r'\s*[（(]\s*(' + SYMBOL + r')\s*([−－]|\s-\s)\s*(' + SYMBOL + r')\s*[）)]')
+
+
+def metric_definition_checks(text):
+    findings = []
+    for match in RATE_DIFFERENCE.finditer(text):
+        if all(re.search(r'growth|yoy|qoq|cagr', term, re.I) for term in (match[1], match[3])):
+            continue
+        findings.append({'kind':'rate_difference_notation', 'excerpt':match[0],
+            'operands':[match[1], match[3]],
+            'action':'文字比较两项增长率，括号直接相减。若符号表示原指标，请写出两个增速及比较期间，结果以百分点表示；若符号已定义为增长率，请核对该定义。'})
+    return findings
 SCALE = dict(billion=10**9, million=10**6, bn=10**9, 万亿=10**12, 亿=10**8, 百万=10**6, 万=10**4)
 HYPOTHESIS = re.compile(r'假设|即使|若将|若把|如果|assuming|if allocated|even if|hypothetical',re.I)
 ADJUST = re.compile(r'剔除|扣除|扣掉|减去|excluding|subtract|net of',re.I)
@@ -176,6 +193,7 @@ def audit_changes(before, after, sources, *, context='', earlier_notes=''):
     linked = {}
     edits = list(sentence_edits(before, after))
     for _, s in edits:
+        findings.extend(metric_definition_checks(s))
         if not re.search(r"\d", HANDLE.sub("", s)):
             continue
         values=amounts(s); rates=list(PERCENT.finditer(s)); matches=[]

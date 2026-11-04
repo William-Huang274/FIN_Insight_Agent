@@ -25,6 +25,21 @@ def test_question_only_is_version_bound_and_requires_a_question():
         target(PREFIX+json.dumps({**data,'question':''}),[msg],'author')
 
 
+def test_author_receives_observed_fields_for_selected_citations_only():
+    from sec_agent.agent_runtime.answer_review import author_input, Challenge
+    ref, other = 'REF-' + 'a'*16, 'REF-' + 'b'*16
+    quote = f'收入增速减去成本增速（Sales − Costs）[{ref}]'
+    body = f'{quote}。另一段[{other}]。'
+    msg = SimpleNamespace(content=body, additional_kwargs={'citation_bindings':{
+        ref:{'source':{'expression':'a-b','result_unit':'USD','value_decimal':'0'}},
+        other:{'source':{'publication_date':'2026-01-02'}}}})
+    challenge = Challenge(version=version(body), quote=quote, offset=0, question='')
+    data = json.loads(author_input(challenge, msg, '独立意见'))
+    assert data['cited_receipt_fields'] == {ref:{'expression':'a-b','result_unit':'USD','value_decimal':'0'}}
+    assert data['runtime_observations'][0]['operands'] == ['Sales','Costs']
+    assert data['independent_review'] == '独立意见'
+
+
 def test_author_replacements_are_atomic_and_relative_to_original():
     body = 'One two three.'
     def patch(*pairs):

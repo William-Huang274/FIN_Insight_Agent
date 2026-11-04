@@ -38,14 +38,20 @@ class SubmissionReceipts:
             cache[key] = {**value, 'dispatch_phase': phase}
 
     @staticmethod
-    def abandoned_preflight(directory, owner, identifier):
+    def abandoned_preflight(directory, owner, identifier, *, fence_unclaimed=False):
         """A live handler owns the OS lock; legacy/dispatch-started stays unknown."""
         key = sha256(json.dumps([owner, str(UUID(identifier))]).encode()).hexdigest()
         lock = FileLock(str(Path(directory) / (key + '.lock')), timeout=0)
         try:
             with lock:
                 with Cache(directory) as cache:
+                    if fence_unclaimed:
+                        # Reserve an unseen operation before declaring it absent.
+                        # A delayed POST competes through the same atomic add.
+                        cache.add(key, {'status':'closed_before_claim', 'fingerprint':None})
                     value = cache.get(key) or {}
+                    if value.get('status') == 'closed_before_claim':
+                        return True
                     if value.get('status') != 'dispatching':
                         return False
                     if value.get('dispatch_phase') == 'validating':
@@ -108,7 +114,10 @@ class SubmissionReceipts:
         fingerprint = sha256(scope['method'].encode()+scope['path'].encode()+scope['query_string']+body).hexdigest()
         prior = await run_in_threadpool(self.claim, key, fingerprint)
         if prior:
-            if prior['fingerprint'] != fingerprint:
+            if prior['status'] == 'closed_before_claim':
+                response = JSONResponse({'detail':'原操作已在核对时关闭，未派发。',
+                    'submission_status':'not_dispatched'}, status_code=409)
+            elif prior['fingerprint'] != fingerprint:
                 response = JSONResponse({'detail': '同一提交凭证不能用于不同内容'}, status_code=422)
             elif prior['status'] == 'received':
                 response = Response(prior['body'], status_code=prior['http_status'], media_type='application/json',

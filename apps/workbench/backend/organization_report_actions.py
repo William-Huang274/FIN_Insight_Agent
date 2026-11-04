@@ -152,7 +152,7 @@ def install_organization_report_action_routes(router, service):
         if not candidates:
             from .submission_receipts import SubmissionReceipts
             if await run_in_threadpool(SubmissionReceipts.abandoned_preflight,
-                    service.intake_receipts_root, service_owner(), grant['report_action_operation_id']):
+                    service.intake_receipts_root, service_owner(), grant['report_action_operation_id'], fence_unclaimed=True):
                 await reauthorize(service, grant)
                 return JSONResponse({'submission_status': 'not_dispatched',
                     'detail': '原操作在原生派发前中断，未创建运行；原命令保留为未执行，可重新发起操作。'}, status_code=409)

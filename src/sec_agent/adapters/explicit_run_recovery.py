@@ -82,6 +82,13 @@ def issue_recovery_authorization(root, thread, run, events, usage, *, secret,
 
 
 def verified_recovery_authorization(root, thread, run, events, usage, *, secret, now=None):
+    signed = verified_permit(root, thread, run, secret=secret, now=now)
+    if signed and signed['unknown_call_ids'] != _unknown_failures(events, usage):
+        raise ValueError('recovery_authorization_scope_changed')
+    return signed
+
+
+def verified_permit(root, thread, run, *, secret, now=None):
     audit, path = _paths(root, thread, run)
     if not path.is_file():
         return None
@@ -91,8 +98,7 @@ def verified_recovery_authorization(root, thread, run, events, usage, *, secret,
         raise ValueError('recovery_authorization_signature_invalid')
     if (value.get('kind') != KIND or value.get('thread_id') != str(UUID(str(thread)))
             or value.get('previous_run_id') != str(UUID(str(run)))
-            or value.get('audit_sha256') != sha256(audit.read_bytes()).hexdigest()
-            or value.get('unknown_call_ids') != _unknown_failures(events, usage)):
+            or value.get('audit_sha256') != sha256(audit.read_bytes()).hexdigest()):
         raise ValueError('recovery_authorization_scope_changed')
     now = now or datetime.now(timezone.utc)
     issued = datetime.fromisoformat(value['issued_at']); expires = datetime.fromisoformat(value['expires_at'])

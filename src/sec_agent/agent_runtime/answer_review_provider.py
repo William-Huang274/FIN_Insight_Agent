@@ -46,7 +46,7 @@ def public_usage_event(call_id, model, record=None):
 
 
 async def independent_review(*, selected, message, question, bridge, budget, environment,
-                             model, scope, command_id, authority, basis, as_of, public_sink, previous_scope=None):
+                             model, scope, command_id, authority, basis, as_of, public_sink, previous_scope=None, audit_root=None):
     prices = budget.prices.get(model)
     if model != 'gpt-6.1-sol' or not prices or prices.currency != 'USD' or not environment.get('OPENAI_API_KEY'):
         raise ValueError('answer_review_provider_not_configured')
@@ -89,6 +89,13 @@ async def independent_review(*, selected, message, question, bridge, budget, env
             # Conservative byte bound for tokenized text plus protocol overhead.
             reserve = ((len(wire.encode()) + 2048) * prices.input_miss + profile.max_output_tokens * prices.output + 999999)//1000000
             policy = dict(harness_execution_scope=scope, token_budget=profile.model_dump(mode='json'), price=asdict(prices))
+            if saved and saved['status'] == 'unknown' and previous_scope and audit_root and saved['basis'].get('harness_execution_scope') == previous_scope:
+                from sec_agent.adapters.explicit_run_recovery import verified_permit
+                permit = verified_permit(audit_root, *previous_scope.split(':'), secret=environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
+                if (permit and str(saved['call_id']) in permit['unknown_call_ids']
+                        and version(wire+json.dumps(saved['basis'], sort_keys=True)) == saved['fingerprint']):
+                    key += ':retry:' + str(saved['call_id'])
+                    saved = await asyncio.to_thread(budget.store.lookup, budget.owner, budget.budget, key)
             if saved:
                 old_scope = saved['basis'].get('harness_execution_scope')
                 if old_scope not in (scope, previous_scope) or saved['status'] != 'received':
@@ -123,6 +130,9 @@ async def independent_review(*, selected, message, question, bridge, budget, env
                     public_sink(public_usage_event(prior['call_id'], model, record))
                 except BaseException:
                     await asyncio.shield(asyncio.to_thread(budget.store.unknown, budget.owner, budget.budget, key))
+                    failed = await asyncio.shield(asyncio.to_thread(budget.store.lookup, budget.owner, budget.budget, key))
+                    if failed and failed['status'] == 'unknown':
+                        public_sink(public_usage_event(prior['call_id'], model, {'stop_required':True}))
                     raise
             await asyncio.to_thread(authority)
             if record['stop_required']:

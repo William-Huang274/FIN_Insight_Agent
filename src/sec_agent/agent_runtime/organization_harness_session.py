@@ -309,7 +309,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
                     opinion = await independent_review(selected=selected, message=original, question=grant['question'],
                         bridge=bridge, budget=budget, environment=environment, model=model, scope=tid+':'+rid,
                         command_id=review_id, authority=dispatch_authority, basis=options['token_budget_basis'],
-                        as_of=organization.research_as_of, public_sink=phase_arguments['public_sink'], previous_scope=original_scope)
+                        as_of=organization.research_as_of, public_sink=phase_arguments['public_sink'], previous_scope=original_scope,
+                        audit_root=phase_arguments['settings']['audit_root'])
                     _persist(opinion_path, {'reviewer': model, 'opinion': opinion})
                 review = json.loads(opinion_path.read_text(encoding='utf8'))
 

@@ -133,3 +133,14 @@ def test_preflight_liveness_and_legacy_are_not_guessed(tmp_path):
     assert receipts.abandoned_preflight(tmp_path, owner, op)
     receipts.phase(key, 'fingerprint', 'dispatch_started')
     assert not receipts.abandoned_preflight(tmp_path, owner, op)
+
+
+def test_reconciled_unseen_operation_cannot_later_dispatch(tmp_path):
+    from hashlib import sha256
+    import json
+    owner, op = 'oidc:alice', str(uuid4())
+    key = sha256(json.dumps([owner, op]).encode()).hexdigest()
+    receipts = SubmissionReceipts(None, tmp_path)
+    assert not receipts.abandoned_preflight(tmp_path, owner, op)
+    assert receipts.abandoned_preflight(tmp_path, owner, op, fence_unclaimed=True)
+    assert receipts.claim(key, 'delayed')['status'] == 'closed_before_claim'

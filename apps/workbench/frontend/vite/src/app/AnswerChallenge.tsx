@@ -1,6 +1,7 @@
 import {useRef,useState} from 'react';
 
 import {BoundCitationMarkdown} from './BoundCitationMarkdown';
+import './answer-review.css';
 import type {Citation} from '../api/reportSessions';
 
 export type SelectionTarget={version:string;offset:number;quote:string};
@@ -26,10 +27,10 @@ export function SelectAnswerPassage({text,version,onChoose}:{text:string;version
     {error&&<p role="alert">{error}</p>}</div>}</section>;
 }
 
-export function AnswerReviewResult({result,onCitation}:{result:ReviewResult;onCitation:(key:string,c:Citation)=>void}){
-  return <section aria-label="选段核查与作者修改"><h4>核查与修改</h4><blockquote>{result.quote||'针对这版回答的问题'}</blockquote>{result.question&&<p>{result.question}</p>}
+export function AnswerReviewResult({result,onCitation,before,after}:{result:ReviewResult;before?:Record<string,Citation>;after?:Record<string,Citation>;onCitation:(key:string,c:Citation)=>void}){
+  return <section className="answer-review" aria-label="选段核查与作者修改"><h4>核查与修改</h4><blockquote>{result.quote||'针对这版回答的问题'}</blockquote>{result.question&&<p>{result.question}</p>}
     <details><summary>独立核查意见 · {result.reviewer}</summary><BoundCitationMarkdown text={result.opinion} citations={result.citations} onCitation={onCitation}/></details>
-    <p>{result.reason}</p>{result.edits.length?<details open><summary>与所选原稿相比修改了 {result.edits.length} 处</summary>
-      {result.edits.map((edit,i)=><div key={i}><del>{edit.before}</del><p><ins>{edit.after}</ins></p></div>)}
+    <h5>原作者的处理理由</h5><p>{result.reason}</p>{result.edits.length?<details open><summary>与所选原稿相比修改了 {result.edits.length} 处</summary>
+      {result.edits.map((edit,i)=><section className="answer-edit" key={i}><h5>第 {i+1} 处修改</h5><div className="answer-edit-before"><small>原文</small><BoundCitationMarkdown text={edit.before} citations={before} onCitation={onCitation}/></div><div className="answer-edit-after"><small>修订后</small><BoundCitationMarkdown text={edit.after} citations={after} onCitation={onCitation}/></div></section>)}
       <small>其余原文沿用所选版本。</small></details>:<p>作者保留了原稿。</p>}</section>;
 }

@@ -177,3 +177,36 @@ def test_search_candidate_readback_keeps_all_matches_and_ignores_unrelated_nodes
     assert feedback['source_id'] == 'ambiguous' and feedback['operand'] == 'capex'
     operand.source_id = 'unknown'
     assert operand_source_feedback(error, [message])['readback']['tool'] == 'browse_context'
+
+
+def test_quote_comparison_preserves_original_symbols_and_ambiguous_rows():
+    from sec_agent.research_foundation.source_quotes import quote_comparison, resolve_quote
+
+    quote = '| 7.6 | 6.2 | 22.6 |'
+    row = '| Metric | 7.6 | 6.2 | 22.6% |'
+    header = '| Metric | This year | Last year | Change |'
+    body = '\n'.join([header, '|---|---|---|---|', row, row.replace('Metric','Other')])
+    result = quote_comparison(body, quote, '7.6')
+    assert result['candidate_count'] == 2 and not result['applied']
+    assert [c['passage_line'] for c in result['candidates']] == [3,4]
+    for candidate in result['candidates']:
+        assert candidate['table_headings'] == [header]
+        assert candidate['aligned_text'] == '| 7.6 | 6.2 | 22.6% |'
+        assert candidate['differences'] == [{'at':quote.index('22.6')+4,'submitted':'','source':'%'}]
+    assert resolve_quote(body,quote)[0] not in body
+    assert quote_comparison(body, '| 888 | 333 |', '888') is None
+
+
+def test_prose_quote_comparison_locates_substring_and_preserves_typography():
+    from sec_agent.research_foundation.source_quotes import quote_comparison
+
+    quote = "fuel was 21 percent of carriers' expenses"
+    original = quote.replace("'", "’")
+    line = f"In the first quarter, {original}. Some costs varied."
+    result = quote_comparison(line, quote, '21')
+    candidate, = result['candidates']
+    assert candidate['aligned_text'] == original
+    assert candidate['original_line'] == line
+    assert candidate['column_offset'] == line.index(original)
+    assert candidate['differences'] == [{'at':quote.index("'"),'submitted':"'",'source':"’"}]
+    assert not result['applied']

@@ -45,7 +45,13 @@ def operand_source_feedback(error, messages):
                     submitted_quote=operand.quote, submitted_literal=operand.literal)
     if error.code == 'operand_quote_not_in_observed_source':
         feedback['readback'] = {'tool':'read_research_source', 'arguments':{'source_id':operand.source_id}}
-        feedback['next_step'] = 'Check the original wording, period and column, then select the supporting quote.'
+        from sec_agent.research_foundation.source_quotes import quote_comparison
+        comparison = quote_comparison(error.observed_text or '', operand.quote, operand.literal)
+        if comparison:
+            feedback['quote_comparison'] = comparison
+            feedback['next_step'] = 'Compare the original row and headings; choose the exact passage fragment supporting each operand and resubmit. No calculation was accepted.'
+        else:
+            feedback['next_step'] = 'Check the original wording, period and column, then select the supporting quote.'
         return feedback
 
     if error.code != 'source_id_not_observed':

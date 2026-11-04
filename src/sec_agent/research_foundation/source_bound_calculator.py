@@ -165,9 +165,10 @@ def operand_binding_feedback(parsed, operands):
 
 
 class OperandSourceError(ValueError):
-    def __init__(self, code, name, operand):
+    def __init__(self, code, name, operand, *, observed_text=None):
         super().__init__(code)
         self.code, self.name, self.operand = code, name, operand
+        self.observed_text = observed_text
 
 
 def _bind_operand(name, operand, source_lookup):
@@ -211,7 +212,7 @@ def _bind_operand(name, operand, source_lookup):
             text = str(item.get("passage") or item.get("bounded_excerpt") or "")
             quote, quote_recovery = resolve_quote(text, operand.quote or "")
             if not quote or quote not in text or operand.literal is None:
-                raise OperandSourceError("operand_quote_not_in_observed_source", name, operand)
+                raise OperandSourceError("operand_quote_not_in_observed_source", name, operand, observed_text=text)
             literal_pattern = r"(?<![\w.,])" + re.escape(operand.literal)
             # A comma or period followed by prose is punctuation, whereas
             # one followed by a digit continues the numeric token.

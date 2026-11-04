@@ -1,8 +1,72 @@
 """Source-bound quote comparison, tolerating PDF layout whitespace only."""
 
+from difflib import SequenceMatcher
 import re
 
 from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+
+
+def _prose_spans(line, quote, literal):
+    """Locate a short excerpt around the submitted literal without searching other sources."""
+    if quote.count(literal) != 1:
+        return [(0, len(line))]
+    anchor = quote.index(literal)
+    spans = set()
+    for occurrence in re.finditer(re.escape(literal), line):
+        estimate = occurrence.start() - anchor
+        lo = max(0, estimate-4)
+        hi = min(len(line), estimate+len(quote)+4)
+        if hi-lo < len(quote)-4:
+            continue
+        blocks = SequenceMatcher(None, quote, line[lo:hi], autojunk=False).get_matching_blocks()[:-1]
+        if not blocks:
+            continue
+        first, last = blocks[0], blocks[-1]
+        start = max(0, lo+first.b-first.a)
+        end = min(len(line), lo+last.b+len(quote)-last.a)
+        if start <= occurrence.start() and occurrence.end() <= end:
+            spans.add((start,end))
+    return sorted(spans)
+
+
+def quote_comparison(body, quote, literal):
+    """Advisory text from this passage only. Never substitute a candidate into an operand."""
+    quote = (quote or '').strip()
+    if not literal or not 8 <= len(quote) <= 512 or len(quote.splitlines()) != 1:
+        return None
+    candidates = []
+    pipe_count = quote.count('|') if quote.startswith('|') and quote.endswith('|') else 0
+    lines = body.splitlines()
+    headers = []
+    for number, line in enumerate(lines):
+        if not line.lstrip().startswith('|'):
+            headers = []
+        elif re.fullmatch(r'[|:\s-]+', line) and '---' in line:
+            headers = [s for s in lines[max(0, number-2):number] if s.lstrip().startswith('|') and len(s) <= 512]
+            if number+1 < len(lines) and re.match(r'^\s*\|\s*\|', lines[number+1]) and len(lines[number+1]) <= 512:
+                headers.append(lines[number+1])
+        if literal not in line or len(line) > 1024:
+            continue
+        pipes = [i for i, ch in enumerate(line) if ch == '|']
+        spans = (zip(pipes, (i+1 for i in pipes[pipe_count-1:])) if pipe_count >= 2
+                 else _prose_spans(line, quote, literal))
+        for start, end in spans:
+            exact = line[start:end]
+            if literal not in exact or abs(len(exact)-len(quote)) > 4:
+                continue
+            matcher = SequenceMatcher(None, quote, exact, autojunk=False)
+            if matcher.ratio() < 0.9:
+                continue
+            changes = [{'submitted':quote[i:j], 'source':exact[k:l], 'at':i}
+                       for tag,i,j,k,l in matcher.get_opcodes() if tag != 'equal']
+            if not changes or sum(max(len(c['submitted']),len(c['source'])) for c in changes) > 4:
+                continue
+            candidates.append({'passage_line':number+1, 'column_offset':start, 'original_line':line,
+                               'aligned_text':exact, 'differences':changes, 'table_headings':headers})
+    if candidates:
+        return {'candidate_count':len(candidates),'candidates':candidates[:3],
+                'status':'author_selection_required', 'applied':False}
+    return None
 
 
 def contains_source_quote(source: str, quote: str) -> bool:

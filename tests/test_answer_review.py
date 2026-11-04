@@ -96,3 +96,23 @@ def test_review_pressure_keeps_the_new_batch_even_above_soft_target():
     assert len(fit_review_receipts(body, 5000, keep_current=True)) > 5000
     assert json.loads(body['input'][1]['output'])['original_readback']['arguments']['tool_call_id'] == 'earlier'
     assert body['input'][-1]['output'] == raw
+def test_related_wording_keeps_unchanged_closing_claim_and_exact_offsets():
+    from sec_agent.agent_runtime.revision_context import related_wording
+    base = "Pipeline closures reduced repairs for both districts.\n\nBoth districts recorded fewer repairs."
+    proposed = base.replace('reduced repairs for both districts', 'changed the available repair hours')
+    opinion = 'Available repair hours measure exposure. Fewer repairs in both districts requires comparable observations.'
+    matches = related_wording(base, proposed, opinion)
+    assert any(row['verbatim_in_base'] and 'Both districts recorded fewer repairs.' in row['excerpt'] for row in matches)
+    assert all(proposed.startswith(row['excerpt'], row['offset']) for row in matches)
+    assert related_wording(base, proposed, '') == []
+
+def test_review_preview_uses_selected_version_and_rejects_ambiguous_edits():
+    from sec_agent.agent_runtime.quantitative_prose import quantitative_prose_tool
+    source = 'Both districts recorded fewer repairs.'
+    tool = quantitative_prose_tool('old answer', lambda: (source, source)).tool
+    runtime = SimpleNamespace(state={'messages': []})
+    candidate = 'Both districts recorded fewer repairs in June.'
+    result = tool.func(runtime, edits=[{'before':source, 'after':candidate}])
+    assert any(row['excerpt'] == candidate for row in result['related_wording'])
+    feedback = tool.func(runtime, edits=[{'before':'old answer', 'after':'unrelated'}])
+    assert feedback['status'] == 'proposal_needs_correction' and feedback['anchor_counts'] == [0]

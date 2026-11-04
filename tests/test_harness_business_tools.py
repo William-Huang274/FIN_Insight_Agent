@@ -370,3 +370,21 @@ async def test_supervised_read_pages_and_blocks_dispatch_after_a_failed_batch_me
         assert first['text'] + tail['text'] == body and tail['next_offset'] is None
         with pytest.raises(RuntimeError, match=failed['receipt_id']):
             bridge.model_access()
+
+
+@pytest.mark.anyio
+async def test_manuscript_preview_preserves_display_handles_and_can_be_read_back(tmp_path):
+    from sec_agent.agent_runtime.quantitative_prose import quantitative_prose_tool
+    from sec_agent.agent_runtime.source_references import reference_handle
+    source = 'PASSAGE::fixture::document'
+    base = f'Both districts recorded fewer repairs [{reference_handle(source)}].'
+    proposed = base.replace('Both districts', 'Two districts')
+    preview = quantitative_prose_tool(base, lambda: (base, 'Both districts recorded fewer repairs last year.'))
+    readback = next(g for g in conversation_tools(thread_id='t') if g.tool.name == 'read_saved_result')
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'preview.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=[preview, readback], checkpointer=saver, thread_id='t', check=lambda: None)
+        await bridge.initialize({'messages': []})
+        receipt = await bridge.execute(preview.tool.name, {'edits':[{'before':base, 'after':proposed}]})
+        assert receipt.status == 'success' and json.loads(receipt.content)['related_wording'][0]['excerpt'] == proposed
+        reread = await bridge.execute('read_saved_result', {'tool_call_id':receipt.tool_call_id})
+        assert reread.status == 'success' and 'related_wording' in reread.content

@@ -110,6 +110,11 @@ def restored_batch_feedback(messages, ids):
             continue
         failure = model_receipt(message)
         call = calls.get(message.tool_call_id, {})
+        if call.get('name') == message.name == 'read_saved_result':
+            target_id = call.get('args', {}).get('tool_call_id')
+            if any(isinstance(row, ToolMessage) and row.tool_call_id == target_id
+                   and row.name in SAVED_RESULT_TOOLS and row.status == 'success' for row in messages[:index]):
+                failure['available_original'] = {'tool':'read_saved_result', 'arguments':{'tool_call_id':target_id}}
         if call.get('name') == message.name == 'calculate_research_metric':
             args = call.get('args', {}).get('request', {})
             prior = messages[:index]
@@ -298,7 +303,10 @@ class HarnessBusinessTools:
             state = (await self._checkpoint_call(self.graph.aget_state, self.config)).values
             original_arguments = arguments
             try:
-                arguments = expand_references(arguments, state)
+                # The preview consumes the delivered manuscript verbatim, including
+                # display handles in its edit anchors. It performs no source lookup.
+                if name != 'check_quantitative_changes' or 'edits' not in arguments:
+                    arguments = expand_references(arguments, state)
             except ValueError as exc:
                 receipt = ToolMessage(name=name, tool_call_id=call_id, status='error', content=str(exc))
                 await self._checkpoint_call(self.graph.aupdate_state, self.config, {'messages': [

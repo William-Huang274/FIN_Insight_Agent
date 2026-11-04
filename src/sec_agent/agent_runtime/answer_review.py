@@ -87,6 +87,8 @@ def author_input(selected, message, review):
         if fields:
             evidence[handle] = fields
     return json.dumps({'task': '处理所选历史版本的局部异议。独立判断，可接受、部分接受或反驳。核对必要依据，保留仍成立的判断。返回 JSON 对象，reason 解释处置理由和仍成立的主要判断，edits 为 {before, after} 列表。before 必须是此版本唯一的逐字原文，包括 Markdown；可修改受影响的关联段。无需修改时返回空列表。新依据使用工具的准确引用句柄。',
+        'revision_preview': {'tool': 'check_quantitative_changes', 'arguments': 'edits: [{before, after}]',
+                             'purpose': '预览改后文字与同稿其他相关表述，可据原文自行决定是否修改。'},
         **({'runtime_observations': checks} if checks else {}),
         **({'cited_receipt_fields': evidence} if evidence else {}),
         'selected': selected.model_dump(), 'original_answer': message.content, 'independent_review': review}, ensure_ascii=False)

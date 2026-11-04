@@ -160,7 +160,10 @@ async def organization_harness_session(*, native, resources, authority, check, o
         if delivered_version:
             prior_answer = next((m.content for m in reversed(admitted['messages']) if isinstance(m, AIMessage)
                 and isinstance(m.content, str) and canonical_sha256(m.content) == delivered_version), '')
-    grants.append(quantitative_prose_tool(prior_answer))
+    prior_review = next((m.additional_kwargs.get('answer_review') for m in reversed(admitted['messages'])
+                         if isinstance(m, AIMessage) and m.content == prior_answer), None)
+    review_context = (prior_answer, prior_review['opinion']) if prior_review and prior_review.get('opinion') else None
+    grants.append(quantitative_prose_tool(prior_answer, lambda: review_context))
     grants.extend(artifact_tools(artifacts=artifacts, memory=memory, delivery_intent=intent, require_review=require_review))
     scope = lambda: native_memory_scope(owner, memory_workspace, access_check=check, allow_remote_search=False)
     # Same task's isolated replays share immutable payloads, not mutable
@@ -264,6 +267,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
         opinion_path = run_directory / 'answer-review.json'
         predecessor_opinion = directory / review_command / 'answer-review.json'
         async def work(state):
+            nonlocal review_context
             binding = {'execution_id': tid, 'manifest_digest': grant['manifest_digest'],
                        'release': options['binary_sha256'], 'model': options['model']}
             action = grant.get('report_action_request', {})
@@ -316,6 +320,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
                         predecessor_scope=tid+':'+action['previous_run_id'] if action.get('action')=='recover' else None)
                     _persist(opinion_path, {'reviewer': model, 'opinion': opinion})
                 review = json.loads(opinion_path.read_text(encoding='utf8'))
+                review_context = (original.content, review['opinion'])
 
             async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token) as endpoint:
                 prompt = research_system_prompt(bridge.tools, 'Research as of: ' + organization.research_as_of +

@@ -292,22 +292,50 @@ def audit_changes(before, after, sources, *, context='', earlier_notes=''):
             'cited_claim_context':cited_claim_context(edits, '\n'.join((before, context, earlier_notes)), sources)}
 
 
-def quantitative_prose_tool(prior_answer):
+def quantitative_prose_tool(prior_answer, review_context=None):
     from langchain_core.tools import tool
     from langgraph.prebuilt import ToolRuntime
     from .conversation_agent import GrantedTool
     from .conversation_tools import calculator_observations
 
     @tool
-    def check_quantitative_changes(runtime: ToolRuntime, text: str | None = None):
+    def check_quantitative_changes(runtime: ToolRuntime, text: str | None = None,
+                                   edits: list[dict[str, str]] | None = None):
         """Compare proposed changed quantitative sentences and scope statements with saved CALC receipts.
         Supply affected prose for change checks. Omit text to inspect metric names and group claims
-        in the last delivered answer with their bound receipts before revising it."""
+        in the last delivered answer with their bound receipts before revising it.
+        For a reviewed answer, supply the full proposed text to preview related wording, including unchanged
+        conclusions, alongside the reviewer's observations. Alternatively pass edits (unique before/after
+        spans against the selected answer) to preview without copying unchanged text. No changes are saved."""
         messages = runtime.state.get('messages', [])
+        context = review_context() if review_context else None
+        base, opinion = context or (prior_answer, '')
+        if edits is not None:
+            from .answer_review import apply_response
+            if text is not None:
+                raise ValueError('supply_either_edits_or_text')
+            # A pending read from an earlier bridge may contain expanded source IDs.
+            # Use only the original arguments archived against this exact call.
+            last = messages[-1] if messages else None
+            call_id = getattr(runtime, 'tool_call_id', None)
+            if call_id and any(c['id'] == call_id and c['name'] == 'check_quantitative_changes'
+                               for c in getattr(last, 'tool_calls', [])):
+                edits = last.additional_kwargs.get('original_tool_arguments', {}).get('edits', edits)
+            try:
+                text, _ = apply_response(base, json.dumps({'reason':'preview','edits':edits}))
+            except ValueError as exc:
+                return {'status':'proposal_needs_correction', 'detail':str(exc)[:500],
+                        'anchor_counts':[base.count(e['before']) if e.get('before') else 0 for e in edits],
+                        'changed':False}
         if text is None:
             sources = calculator_observations(messages)
-            return {'status':'advisory','findings':bound_claim_checks(prior_answer, set(sentences(prior_answer)),
+            result = {'status':'advisory','findings':bound_claim_checks(base, set(sentences(base)),
                     {reference_handle(k):v for k,v in sources.items() if isinstance(k,str) and isinstance(v,dict)})}
-        return audit_changes(prior_answer, text, calculator_observations(messages), earlier_notes=saved_note_wording(messages))
+        else:
+            result = audit_changes(base, text, calculator_observations(messages), earlier_notes=saved_note_wording(messages))
+        if opinion:
+            from .revision_context import related_wording
+            result['related_wording'] = related_wording(base, text if text is not None else base, opinion)
+        return result
 
     return GrantedTool(check_quantitative_changes, 'read', '已观察计算与局部修订措辞核对')

@@ -153,6 +153,11 @@ async def organization_harness_session(*, native, resources, authority, check, o
                     else grant.get('report_action_request', {}).get('previous_run_id'))
     prior_turn = completed_recovery(session_directory, previous_run_id=previous_run, binding=binding) if previous_run else None
     prior_answer = prior_turn['text'] if prior_turn else ''
+    if prior_turn and last_delivery.exists():
+        delivered_version = json.loads(last_delivery.read_text(encoding='utf8')).get('answer_version')
+        if delivered_version:
+            prior_answer = next((m.content for m in reversed(admitted['messages']) if isinstance(m, AIMessage)
+                and isinstance(m.content, str) and canonical_sha256(m.content) == delivered_version), '')
     grants.append(quantitative_prose_tool(prior_answer))
     grants.extend(artifact_tools(artifacts=artifacts, memory=memory, delivery_intent=intent, require_review=require_review))
     scope = lambda: native_memory_scope(owner, memory_workspace, access_check=check, allow_remote_search=False)
@@ -199,16 +204,43 @@ async def organization_harness_session(*, native, resources, authority, check, o
         async def guard(state):
             return validate_work_input(state, check=check, grant=grant, admitted_values=admitted, expected_input=expected_input)
 
+        from .answer_review import PREFIX, target, author_input, apply_response
+        challenge = None
+        command = grant.get('report_action_request', {})
+        command_text = command.get('message', '')
+        if command.get('action') == 'recover':
+            historical = [m.content for m in admitted.get('messages', []) if m.type == 'human']
+            if historical and historical[-1].startswith(PREFIX):
+                command_text = historical[-1]
+        if command_text.startswith(PREFIX):
+            if intent != 'answer' or not options.get('answer_review_model'):
+                raise ValueError('selected_answer_review_not_enabled')
+            author_binding = json.loads((session_directory / 'session-binding.json').read_text(encoding='utf8'))
+            if author_binding['binding'] != binding:
+                raise ValueError('selected_answer_author_binding_changed')
+            challenge = target(command_text, admitted['messages'], author_binding['session_id'])
+
         async def project(state, result):
             business = await bridge.state()
             from .task_outcome import TaskOutcome
             from .source_references import render_answer_references
-            text, citations, unresolved = render_answer_references(result['text'], business)
+            delivered = result['text']
+            annotations = {}
+            if challenge:
+                selected, original = challenge
+                review = json.loads(opinion_path.read_text(encoding='utf8'))
+                delivered, response = apply_response(original.content, delivered)
+                annotations['answer_review'] = {**review, **response, 'version': selected.version,
+                                                'quote': selected.quote, 'question': selected.question}
+            text, citations, unresolved = render_answer_references(delivered, business)
+            if challenge:
+                citations = {**{k:v for k,v in original.additional_kwargs.get('citation_bindings', {}).items()
+                                if k in text}, **citations}
             from .conversation_tools import calculator_observations
             messages = business.get('messages', [])
-            advisory = audit_changes(prior_answer, text, calculator_observations(messages),
+            advisory = audit_changes(original.content if challenge else prior_answer, text, calculator_observations(messages),
                                      earlier_notes=saved_note_wording(messages))
-            output = AIMessage(content=text, additional_kwargs={'harness_session_id': result['session_id'],
+            output = AIMessage(content=text, additional_kwargs={**annotations, 'harness_session_id': result['session_id'],
                 'citation_bindings': citations, 'unresolved_citations': unresolved, 'quantitative_change_check': advisory})
             # Financial observations stay in the existing export/readback
             # projection. They are not transplanted into native ACP history.
@@ -216,15 +248,19 @@ async def organization_harness_session(*, native, resources, authority, check, o
             receipts = [m for m in business.get('messages', []) if m.id not in before]
             delivery = business.get('delivery')
             if result.get('status') == 'completed' and result.get('text'):
-                _persist(last_delivery, {'run_id': result.get('reused_from_run', rid)})
+                _persist(last_delivery, {'run_id': result.get('reused_from_run', rid),
+                                         **({'answer_version': canonical_sha256(text)} if challenge else {})})
             submitted = bool(delivery) or (intent == 'answer' and bool(result['text']))
             return {**{k: business[k] for k in ('report', 'report_version', 'delivery') if k in business},
                 'messages': [*receipts, output], 'task_outcome': TaskOutcome(task_id=tid, run_id=rid,
                 execution_status='submitted' if submitted else 'incomplete', phase='harness_result',
                 artifact_status='submitted' if submitted else 'none', artifact_kind=intent if submitted else None,
-                artifact_digest=delivery['artifact_digest'] if delivery else canonical_sha256(result['text']),
+                artifact_digest=delivery['artifact_digest'] if delivery else canonical_sha256(delivered),
                 author_note_status='missing').model_dump(mode='json')}
 
+        review_command = command.get('previous_run_id') if challenge and command.get('action') == 'recover' else rid
+        opinion_path = run_directory / 'answer-review.json'
+        predecessor_opinion = directory / review_command / 'answer-review.json'
         async def work(state):
             binding = {'execution_id': tid, 'manifest_digest': grant['manifest_digest'],
                        'release': options['binary_sha256'], 'model': options['model']}
@@ -232,10 +268,51 @@ async def organization_harness_session(*, native, resources, authority, check, o
             await bridge.begin_command(grant.get('report_command_id', rid),
                 recovering=action.get('action') == 'recover')
             if action.get('action') == 'recover':
+                if challenge and predecessor_opinion.exists() and not opinion_path.exists():
+                    _persist(opinion_path,json.loads(predecessor_opinion.read_text(encoding='utf8')))
                 recovered = completed_recovery(session_directory, previous_run_id=action['previous_run_id'], binding=binding)
                 if recovered is not None:
                     _persist(run_directory / 'turn.private.json', {**recovered, 'reused_from_run': action['previous_run_id']})
                     return await project(state, {**recovered, 'reused_from_run': action['previous_run_id']})
+            if challenge:
+                selected, original = challenge
+                if not opinion_path.exists():
+                    review_id = grant['report_command_id']
+                    original_scope = None
+                    if action.get('action') == 'recover':
+                        predecessor = await native.runs.get(tid, action['previous_run_id'])
+                        pointer = directory / action['previous_run_id'] / 'answer-review-origin.json'
+                        if pointer.exists():
+                            origin = json.loads(pointer.read_text(encoding='utf8'))
+                            predecessor = await native.runs.get(tid, origin['run_id'])
+                        elif not predecessor.get('kwargs', {}).get('input'):
+                            # Rolling upgrade: legacy resume ran with input=None.
+                            # Resolve only a unique matching, admitted command.
+                            recent = await native.runs.list(tid, limit=20)
+                            matches = []
+                            for row in recent:
+                                if row['created_at'] > predecessor['created_at']:
+                                    continue
+                                candidate = await native.runs.get(tid, row['run_id'])
+                                ms = (candidate.get('kwargs', {}).get('input') or {}).get('messages') or []
+                                if ms and ms[-1].get('content') == command_text:
+                                    matches.append(candidate)
+                            if len(matches) != 1:
+                                raise ValueError('answer_review_origin_not_unique')
+                            predecessor = matches[0]
+                        review_id = predecessor['metadata']['organization_report_action']['report_command_id']
+                        original_scope = tid + ':' + predecessor['run_id']
+                    _persist(run_directory / 'answer-review-origin.json',
+                             {'run_id': original_scope.split(':')[-1] if original_scope else rid})
+                    from .answer_review_provider import independent_review
+                    model = options['answer_review_model']
+                    opinion = await independent_review(selected=selected, message=original, question=grant['question'],
+                        bridge=bridge, budget=budget, environment=environment, model=model, scope=tid+':'+rid,
+                        command_id=review_id, authority=dispatch_authority, basis=options['token_budget_basis'],
+                        as_of=organization.research_as_of, public_sink=phase_arguments['public_sink'], previous_scope=original_scope)
+                    _persist(opinion_path, {'reviewer': model, 'opinion': opinion})
+                review = json.loads(opinion_path.read_text(encoding='utf8'))
+
             async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token) as endpoint:
                 prompt = research_system_prompt(bridge.tools, 'Research as of: ' + organization.research_as_of +
                     '\nRequested delivery: ' + intent + '. Save useful working understanding as needed; only deliver the requested artifact form.'+
@@ -256,7 +333,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 async with admitted_acp_session(binary=str(binary), arguments=['--profile', 'sdk-minimal', '--patch', str(patch_path)],
                         environment=child_env, directory=session_directory, binding=binding, run_id=rid,
                         authority=active_authority, stop=bridge.stop, mcp_servers=servers) as session:
-                    request = state['messages'][-1].content
+                    request = author_input(selected, original, review['opinion']) if challenge else state['messages'][-1].content
                     if recovery_receipt:
                         request = json.dumps({'current_command': request,
                             'runtime_recovery': recovery_receipt}, ensure_ascii=False)

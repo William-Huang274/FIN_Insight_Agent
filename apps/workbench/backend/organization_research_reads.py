@@ -16,7 +16,18 @@ from sec_agent.agent_runtime.organization_native_contract import validate_thread
 from sec_agent.agent_runtime.organization_native_contract import on_demand
 
 
-def work_session_view(state):
+def enabled_answer_reviewer(execution_id):
+    """Read the native deployment's own enrollment; never enable all threads."""
+    from pathlib import Path
+    path = os.environ.get('FINSIGHT_ANSWER_REVIEW_SETTINGS')
+    if not path:
+        return None
+    settings = json.loads(Path(path).read_text(encoding='utf8'))
+    binding = settings.get('harness_execution_bindings', {}).get(str(execution_id), {})
+    return 'gpt-6.1-sol' if binding.get('answer_review_model') == 'gpt-6.1-sol' else None
+
+
+def work_session_view(state, *, reviewer=None):
     """Public deliverables only; tool receipts and reasoning stay in the run log."""
     from sec_agent.agent_runtime.task_outcome import public_task_outcome
     from sec_agent.agent_runtime.source_references import answer_citations
@@ -31,6 +42,24 @@ def work_session_view(state):
             item = {'role': 'user' if role in {'human', 'user'} else 'assistant', 'content': body}
             if item['role'] == 'assistant':
                 item['citations'] = answer_citations(message.get('additional_kwargs', {}).get('citation_bindings', {}))
+                extras = message.get('additional_kwargs', {})
+                if extras.get('harness_session_id') and reviewer:
+                    from sec_agent.agent_runtime.answer_review import version
+                    item['answer_version'] = version(body)
+                    item['reviewer'] = reviewer
+                if extras.get('answer_review'):
+                    review = extras['answer_review']
+                    from sec_agent.agent_runtime.source_references import render_answer_references
+                    opinion, bindings, _ = render_answer_references(review['opinion'], values)
+                    item['answer_review'] = {**review, 'opinion': opinion, 'citations': answer_citations(bindings)}
+            else:
+                from sec_agent.agent_runtime.answer_review import Challenge, PREFIX
+                if body.startswith(PREFIX):
+                    try:
+                        selected = Challenge.model_validate_json(body[len(PREFIX):])
+                        item['content'] = ('核查选段：' + selected.quote + '\n\n' if selected.quote else '核查这版回答：') + (selected.question or '请独立核查该判断。')
+                    except ValueError:
+                        pass
             conversation.append(item)
     return {'runtime_contract': 'on_demand.v1', 'conversation': conversation,
             'task_outcome': public_task_outcome(values.get('task_outcome')),
@@ -110,7 +139,7 @@ def install_organization_read_routes(router, service):
     async def snapshot(project_id: UUID, execution_id: UUID):
         scope = await opened(project_id, execution_id)
         state = await scope.state() if scope.grant['run_id'] else {'values': {}}
-        projected = work_session_view(state) if on_demand(scope.grant) else public_state(state)
+        projected = work_session_view(state, reviewer=enabled_answer_reviewer(execution_id)) if on_demand(scope.grant) else public_state(state)
         # Product mutations still need distinct organization commands.
         projected.update({key: False for key in projected if key.startswith('can_')})
         projected.update(thread_id=str(execution_id), project_id=str(project_id),
@@ -167,7 +196,8 @@ def install_organization_read_routes(router, service):
                    for c in (values.get(name) or {}).get('citations', {}).values()
                    for s in c.get('sources', []) if s.get('source_id') == source_id]
         records.extend(s for message in work_session_view({'values': values})['conversation']
-                       for citation in message.get('citations', {}).values()
+                       for citation in [*message.get('citations', {}).values(),
+                                        *message.get('answer_review', {}).get('citations', {}).values()]
                        for s in citation['sources'] if s['source_id'] == source_id)
         if not records:
             raise HTTPException(404, '引用未与所选研究成果绑定')

@@ -2,6 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import {ArrowRight,RefreshCw,Play,ShieldCheck} from 'lucide-react';
 import {assetRequest} from '../api/assetWorkspace';
 import {OrganizationReportActions} from './OrganizationReportActions';
+import type {SelectionTarget} from './AnswerChallenge';
 import {OrganizationTaskActions} from './OrganizationTaskActions';
 
 type Stage='preparation'|'start'|'continuation';
@@ -9,7 +10,7 @@ type Control={can_operate:boolean;execution_closed?:boolean;enabled?:boolean;run
 type Preview={previous_run_id:string;checkpoint_id:string;state_digest:string};
 const names:Record<Stage,string>={preparation:'准备研究',start:'首次启动',continuation:'正式研究'};
 
-export function OrganizationResearchActions({base,phase,hasReport=false,busyRun=false,citations=[],onChanged}:{base:string;phase?:string;hasReport?:boolean;busyRun?:boolean;citations?:string[];onChanged:()=>void}){
+export function OrganizationResearchActions({base,phase,hasReport=false,busyRun=false,citations=[],onChanged,selected,clearSelection,onPermission}:{selected?:SelectionTarget|null;clearSelection?:()=>void;onPermission?:(v:boolean)=>void;base:string;phase?:string;hasReport?:boolean;busyRun?:boolean;citations?:string[];onChanged:()=>void}){
   const [control,setControl]=useState<Control|null>(null),[preview,setPreview]=useState<Preview|null>(null);
   const [busy,setBusy]=useState(false),[error,setError]=useState(''),[revision,refresh]=useState(0);
   const guard=useRef(false),generation=useRef(0);
@@ -17,6 +18,7 @@ export function OrganizationResearchActions({base,phase,hasReport=false,busyRun=
     assetRequest<Control>(`${base}/control`).then(v=>alive&&setControl(v)).catch(e=>alive&&setError(e.message));
     return()=>{alive=false;++generation.current;};
   },[base,phase,revision]);
+  useEffect(()=>{onPermission?.(!!control?.can_operate&&control.start==='received'&&!busyRun);},[control,onPermission,busyRun]);
   async function act(suffix:string,body:unknown={},get=false){
     if(guard.current)return;guard.current=true;setBusy(true);setError('');const current=generation.current;
     try{const value=await assetRequest<Preview>(`${base}/${suffix}`,get?'GET':'POST',get?undefined:body);
@@ -35,7 +37,7 @@ export function OrganizationResearchActions({base,phase,hasReport=false,busyRun=
       {!control.enabled&&<p>此环境尚未启用组织研究执行。</p>}
       {control.runtime_contract==='on_demand.v1'?<>
         {control.enabled&&!uncertain.length&&control.preparation==='received'&&control.start==='absent'&&<><p>沿用已选资料与成果要求开始工作。</p><button className="pw-primary" disabled={busy} onClick={()=>void act('start')}><Play size={15}/>开始任务</button><small>本次动作会调用已配置的模型。</small></>}
-        {control.start==='received'&&<OrganizationTaskActions base={base} busyRun={busyRun} onChanged={onChanged}/>}
+        {control.start==='received'&&<OrganizationTaskActions selected={selected} clearSelection={clearSelection} base={base} busyRun={busyRun} onChanged={onChanged}/>}
       </>:<>
       {control.enabled&&!uncertain.length&&control.preparation==='received'&&control.start==='absent'&&<><p>资料版本与执行配置已固定。先进行预研究，查看方向后再确认正式研究。</p><button className="pw-primary" disabled={busy} onClick={()=>void act('start')}><Play size={15}/>开始预研究</button><small>本次动作会调用已配置的研究模型；截止日按 UTC 当日结束计算。</small></>}
       {control.enabled&&!uncertain.length&&control.start==='received'&&control.continuation==='absent'&&phase==='research_orientation_submitted'&&!preview&&<><p>预研究已保存。核对原运行和用量后，可以沿用当前问题与资料进入正式研究。</p><button className="pw-primary" disabled={busy} onClick={()=>void act('continuation-preview',undefined,true)}>准备正式研究<ArrowRight size={15}/></button></>}

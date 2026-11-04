@@ -34,8 +34,10 @@ def test_saved_result_json_pointer_returns_exact_item_without_new_dispatch():
     result=reader.func(tool_call_id="saved",runtime=runtime,json_pointer="/items/0")
     assert json.loads(result["content"])==item and result["new_tool_dispatch"] is False
     assert reader.func(tool_call_id="saved",runtime=runtime,json_pointer="/items/0/text",offset=6,max_characters=4)["content"]=="qual"
-    with pytest.raises(ToolException):
-        reader.func(tool_call_id="saved",runtime=runtime,json_pointer="/items/3")
+    selection = reader.func(tool_call_id="saved",runtime=runtime,json_pointer="/items/3")
+    assert selection['result_state'] == 'field_selection_required'
+    assert selection['field_index']['fields'][0]['json_pointer'] == '/items'
+    assert json.loads(reader.func(**selection['readback']['arguments'],runtime=runtime)['content']) == {'items':[item]}
     with pytest.raises(ToolException):
         reader.func(tool_call_id="saved",runtime=SimpleNamespace(state={"messages":[]}),json_pointer="/items/0")
 

@@ -2,6 +2,8 @@
 import asyncio
 from dataclasses import asdict
 import json
+from pathlib import Path
+from uuid import UUID
 
 import httpx
 
@@ -115,14 +117,23 @@ async def independent_review(*, selected, message, question, bridge, budget, env
             policy = dict(harness_execution_scope=scope, token_budget=profile.model_dump(mode='json'), price=asdict(prices))
             if saved and saved['status'] == 'unknown' and previous_scope and audit_root and saved['basis'].get('harness_execution_scope') == previous_scope:
                 from sec_agent.adapters.explicit_run_recovery import verified_permit
-                permit = verified_permit(audit_root, *previous_scope.split(':'), secret=environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
-                if (permit and str(saved['call_id']) in permit['unknown_call_ids']
-                        and version(wire+json.dumps(saved['basis'], sort_keys=True)) == saved['fingerprint']):
-                    key += ':retry:' + str(saved['call_id'])
-                    saved = await asyncio.to_thread(budget.store.lookup, budget.owner, budget.budget, key)
+                retry_key = key + ':retry:' + str(saved['call_id'])
+                retry = await asyncio.to_thread(budget.store.lookup, budget.owner, budget.budget, retry_key)
+                if retry:
+                    key, saved = retry_key, retry  # Replay only after the scope and input checks below.
+                else:
+                    permit = verified_permit(audit_root, *previous_scope.split(':'), secret=environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
+                    if (permit and str(saved['call_id']) in permit['unknown_call_ids']
+                            and version(wire+json.dumps(saved['basis'], sort_keys=True)) == saved['fingerprint']):
+                        key, saved = retry_key, None
             if saved:
                 old_scope = saved['basis'].get('harness_execution_scope')
-                if old_scope not in (scope, previous_scope, predecessor_scope) or saved['status'] != 'received':
+                related = old_scope in (scope, previous_scope, predecessor_scope)
+                if not related and previous_scope and old_scope and old_scope.split(':')[0] == previous_scope.split(':')[0]:
+                    tid, rid = old_scope.split(':')
+                    origin = Path(environment['FINSIGHT_HARNESS_STATE_ROOT']) / str(UUID(tid)) / str(UUID(rid)) / 'answer-review-origin.json'
+                    related = origin.is_file() and json.loads(origin.read_text(encoding='utf8')).get('run_id') == previous_scope.split(':')[1]
+                if not related or saved['status'] != 'received':
                     raise ValueError('answer_review_previous_dispatch_unresolved')
                 # Replay the same selected version, tools and provider input.
                 expected = version(wire+json.dumps(saved['basis'], sort_keys=True))

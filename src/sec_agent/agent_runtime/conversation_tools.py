@@ -147,15 +147,19 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
             if json_pointer is not None:
                 raise ToolException("保存结果不是JSON；请省略json_pointer读取原回执")
             parsed = None
+        from .context_records import saved_result_field_index
         if json_pointer is not None:
             import jsonpointer
             try:
                 selected = jsonpointer.resolve_pointer(parsed, json_pointer)
-            except (ValueError, TypeError, jsonpointer.JsonPointerException) as exc:
-                raise ToolException("保存结果中没有该JSON路径；使用已返回的original_json_pointer，或省略json_pointer读取原回执") from exc
+            except jsonpointer.JsonPointerException:
+                return {"result_state":"field_selection_required", "requested_pointer":json_pointer,
+                        "original_tool_call_id":tool_call_id, "new_tool_dispatch":False,
+                        "field_index":saved_result_field_index(parsed),
+                        "readback":{"tool":"read_saved_result", "arguments":{
+                            "tool_call_id":tool_call_id, "offset":0, "max_characters":max_characters}}}
             content = selected if isinstance(selected, str) else json.dumps(selected, ensure_ascii=False)
             parsed = selected
-        from .context_records import saved_result_field_index
         fields = saved_result_field_index(parsed, json_pointer or "")
         return {"original_tool": saved.name, "original_tool_call_id": tool_call_id,
                 "content": content[offset:offset+max_characters], "offset": offset,

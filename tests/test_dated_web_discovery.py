@@ -58,3 +58,12 @@ def test_admitted_primary_suppresses_fallback_but_late_primary_does_not():
 def test_release_label_and_later_explicit_update():
     assert publisher_day('EMBARGOED UNTIL RELEASE AT 8:30 a.m. EDT, Thursday, June 25, 2026') == date(2026,6,25)
     assert publisher_day('Published: June 1, 2026\nLast Update:\nJuly 2, 2026') == date(2026,7,2)
+
+
+def test_only_release_masthead_date_or_article_metadata_qualifies():
+    from sec_agent.research_foundation.dated_web_discovery import publisher_html_day
+    release = '<main><span>Press Release</span><h1>Example</h1><div></div><div>May 12, 2026</div><p>Report content</p></main>'
+    assert publisher_html_day(release) == date(2026,5,12)
+    assert publisher_html_day(release.replace('Press Release','Data series')) is None
+    meta = '<head><meta property="article:modified_time" content="2026-07-15T12:00:00Z"></head>'
+    assert publisher_html_day(meta + release) == date(2026,7,15)

@@ -187,12 +187,15 @@ class ProviderAttempt(BaseModel):
     accepted_hits: int = Field(ge=0)
     failure_code: str | None = None
     runtime_compatibility: tuple[str, ...] = ()
+    date_filter_counts: dict[str, int] = Field(default_factory=dict)
 
     @model_serializer(mode='wrap')
     def preserve_archived_shape(self, handler):
         body=handler(self)
         if 'runtime_compatibility' not in self.model_fields_set:
             body.pop('runtime_compatibility',None)
+        if 'date_filter_counts' not in self.model_fields_set:
+            body.pop('date_filter_counts',None)
         return body
 
 
@@ -306,6 +309,12 @@ class ExaHostedMCPProvider:
         except ExternalSourceError:
             raise
         except Exception as exc:
+            pending = [exc]
+            while pending:
+                error = pending.pop()
+                if "exa's free mcp rate limit" in str(error).lower():
+                    raise ExternalSourceError("exa_mcp_rate_limited") from exc
+                pending.extend(getattr(error, 'exceptions', ()))
             raise ExternalSourceError("exa_mcp_search_failed") from exc
 
         if self.on_response is not None:
@@ -380,6 +389,8 @@ class DDGSDiagnosticProvider:
         except ExternalSourceError:
             raise
         except Exception as exc:
+            if type(exc).__name__ == 'DDGSException' and str(exc).strip() == 'No results found.':
+                raise ExternalSourceError("ddgs_reported_no_results") from exc
             raise ExternalSourceError("ddgs_search_failed") from exc
         hits: list[ProviderHit] = []
         for row in rows[: request.max_results]:

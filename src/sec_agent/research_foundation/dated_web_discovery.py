@@ -1,5 +1,6 @@
 """Resolve the publication day before handing any ranked hit to a dated task."""
 import asyncio
+from collections import Counter
 from datetime import date, datetime
 import re
 from urllib.parse import urlsplit
@@ -51,6 +52,33 @@ def publisher_day(text, index=False):
     return max(dates,default=None)
 
 
+def publisher_html_day(html, index=False):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html, 'html.parser')
+    day = publisher_day(soup.get_text('\n',strip=True), index)
+    if index:
+        return day
+    dates = [day] if day else []
+    for tag in soup.select('head meta[property="article:published_time"], head meta[property="article:modified_time"]'):
+        try:
+            dates.append(date.fromisoformat(tag.get('content','')[:10]))
+        except ValueError:
+            continue
+    headings = soup.find_all('h1')
+    if len(headings) == 1:
+        heading = headings[0]
+        label = heading.find_previous(string=lambda s:s and s.strip())
+        after = heading.find_next_sibling()
+        while after and not after.get_text(' ',strip=True):
+            after = after.find_next_sibling()
+        if label and label.strip().lower() in {'press release','news release'} and after and label.parent in heading.parent.descendants:
+            try:
+                dates.append(datetime.strptime(after.get_text(' ',strip=True), '%B %d, %Y').date())
+            except ValueError:
+                pass
+    return max(dates,default=None)
+
+
 class DatedWebDiscovery:
     """Only admitted locators enter navigation, receipts and model input."""
     def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None):
@@ -67,11 +95,12 @@ class DatedWebDiscovery:
             url = candidate.canonical_url
             index = filing_index(url)
             locator = index or url
+            origin_failure = None
             try:
                 if candidate.published_at:
                     try:
                         if date.fromisoformat(candidate.published_at[:10]) > cutoff:
-                            return None
+                            return 'after_cutoff'
                     except ValueError:
                         pass  # Use the publisher lookup for an unusable provider date.
                 if locator not in self.verified:
@@ -80,23 +109,23 @@ class DatedWebDiscovery:
                         try:
                             page = await self.origin_fetcher.fetch(locator, timeout_seconds=15)
                             if page.final_url == locator:
-                                from bs4 import BeautifulSoup
-                                body = BeautifulSoup(page.html, 'html.parser').get_text('\n',strip=True)
-                                day = publisher_day(body,bool(index))
-                        except (ExternalSourceError, TimeoutError):
-                            pass
+                                day = publisher_html_day(page.html,bool(index))
+                        except (ExternalSourceError, TimeoutError) as exc:
+                            origin_failure = 'origin_403' if getattr(exc,'code','') == 'capture_http_status_403' else 'origin_unavailable'
                     if day is None:
                         page = await self.fetcher.fetch(locator, timeout_seconds=15)
                         if page.final_url != locator:
-                            return None
+                            return 'redirect'
                         day = publisher_day(page.extracted_text or '',bool(index))
                     if day:
                         self.verified[locator] = day
                 day = self.verified.get(locator)
             except (ExternalSourceError, ValueError, TimeoutError):
-                return None
-            if not day or day > cutoff:
-                return None
+                return origin_failure or 'date_lookup_unavailable'
+            if not day:
+                return origin_failure or 'date_unverified'
+            if day > cutoff:
+                return 'after_cutoff'
             # The provider's search snippet may draw on other, newer content.
             return candidate.model_copy(update={'published_at':day.isoformat(),'snippet':''})
 
@@ -105,8 +134,13 @@ class DatedWebDiscovery:
             if provider is None:
                 break
             receipt = await provider.search(request)
-            admitted = [row for row in await asyncio.gather(*(verify(c) for c in receipt.candidates)) if row]
-            attempts.extend(receipt.attempted_providers)
+            checked = await asyncio.gather(*(verify(c) for c in receipt.candidates))
+            admitted = [row for row in checked if not isinstance(row, str)]
+            for attempt in receipt.attempted_providers:
+                counts = Counter(result if isinstance(result,str) else 'admitted'
+                                 for candidate,result in zip(receipt.candidates,checked)
+                                 if candidate.provider_id == attempt.provider_id)
+                attempts.append(attempt.model_copy(update={'date_filter_counts':dict(counts)}) if counts else attempt)
             if admitted:
                 break
         body = receipt.model_dump(mode='json',exclude={'receipt_digest'})

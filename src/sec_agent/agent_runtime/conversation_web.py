@@ -105,7 +105,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                     'query': query, 'document_id': document_id,
                     'query_kind': 'captured_document_search' if document_id else 'provider_ranked_search',
                     'issuer_non_disclosure_established': False,
-                    'meaning': ('Dated discovery omits undated or post-cutoff results before display. Try another dated primary release if needed. '
+                    'meaning': ('Dated discovery omits undated or post-cutoff results before display. '
+                                'accepted_hits counts search candidates before date checks; date_filter_counts shows what passed and why others were omitted. '
+                                'If none passed, look for an archived release available by the cutoff: search one series or survey at a time, naming its publisher and an earlier reference period. '
                                 if scope.data_snapshot_id == 'dated-public-sources-v2' else '') +
                                'Provider results/captured text only, not exhaustive public disclosure coverage.'}
             if hasattr(reader, 'export_navigation'):

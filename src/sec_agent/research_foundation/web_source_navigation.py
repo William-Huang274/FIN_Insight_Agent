@@ -115,7 +115,7 @@ class WebSourceReader:
                 total_matches=len(items), source_snapshot_sha256=receipt.receipt_digest,
                 execution_receipt=_execution_receipt(request, receipt.receipt_digest,
                     receipt.status, receipt.attempted_providers),
-                notice="Live Exa search. Snippets are not citations. Read a WEB document_id in this branch; an empty result or tool failure is not a public-information gap. "
+                notice="Public web discovery. Snippets are not citations. Read a WEB document_id in this branch; an empty result or tool failure is not a public-information gap. "
                        + str([attempt.model_dump() for attempt in receipt.attempted_providers]))
         stored = self._candidates.get((*key, request.document_id))
         if stored is None:
@@ -134,7 +134,7 @@ class WebSourceReader:
         if result is None:
             result = await self.capture.capture(ExternalCaptureRequest(
                 discovery_receipt=discovery, candidate_id=candidate.candidate_id,
-                branch_id=branch_id, run_scope=run_scope, render_policy="hosted",
+                branch_id=branch_id, run_scope=run_scope, render_policy="auto",
                 max_characters=200000, timeout_seconds=30))
             if result.status != "captured":
                 return SourceDocumentResult(operation=request.operation, items=(), next_offset=None, total_matches=0,

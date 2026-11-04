@@ -11,6 +11,7 @@ from sec_agent.research_foundation.contracts import canonical_sha256
 from sec_agent.research_foundation.external_sources import (
     ConversationSourceScope, ExaHostedMCPProvider, ExaHostedMCPPageFetcher,
     ExternalSourceDiscovery, ExternalSourceCapture, ExternalSourceError, PublicURLGuard,
+    DDGSDiagnosticProvider, StaticHTTPPageFetcher,
 )
 from sec_agent.research_foundation.source_capture_cache import ScopedSourceCaptureCache
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
@@ -34,13 +35,16 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
     scope = ConversationSourceScope(**body, run_scope_digest=canonical_sha256(body))
     if reader is None:
         guard = PublicURLGuard()
-        capture = ExternalSourceCapture(guard=guard,
+        origin = StaticHTTPPageFetcher(guard=guard)
+        capture = ExternalSourceCapture(guard=guard, static_fetcher=origin,
             hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard,max_characters=200000))
         cached = ScopedSourceCaptureCache(root=cache_root,thread_id=thread_id,capture=capture,guard=guard)
-        discovery = ExternalSourceDiscovery(primary=ExaHostedMCPProvider())
+        fallback = DDGSDiagnosticProvider()
+        discovery = ExternalSourceDiscovery(primary=ExaHostedMCPProvider(), diagnostic_fallback=None if research_as_of else fallback)
         if research_as_of:
             from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery
-            discovery = DatedWebDiscovery(discovery, ExaHostedMCPPageFetcher(guard=guard,max_characters=8000))
+            discovery = DatedWebDiscovery(discovery, ExaHostedMCPPageFetcher(guard=guard,max_characters=8000),
+                fallback_discovery=ExternalSourceDiscovery(primary=fallback), origin_fetcher=origin)
         reader = WebSourceReader(discovery=discovery,capture=cached)
 
     restored = set()

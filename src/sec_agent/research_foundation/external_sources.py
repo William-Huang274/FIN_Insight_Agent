@@ -369,7 +369,10 @@ class DDGSDiagnosticProvider:
             from ddgs import DDGS
         except ImportError as exc:  # pragma: no cover - dependency profile guard
             raise ExternalSourceError("ddgs_dependency_missing") from exc
-        return list(DDGS().text(request.query, max_results=request.max_results))
+        # Use general web engines for source discovery, rather than encyclopedia
+        # entries that the library's automatic mode also ranks.
+        return list(DDGS(timeout=12).text(request.query, backend="yahoo,brave,duckduckgo",
+                                          max_results=request.max_results))
 
     async def search(self, request: ExternalSearchRequest) -> Sequence[ProviderHit]:
         try:

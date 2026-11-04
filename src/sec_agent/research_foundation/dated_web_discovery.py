@@ -28,6 +28,16 @@ def publisher_day(text, index=False):
         match = re.search(r'\bFiling Date\s+(\d{4}-\d{2}-\d{2})\s+Accepted\b',body)
         return date.fromisoformat(match[1]) if match else None
     dates = set()
+    release_label = (r'(?im)^\s*(?:last update(?:d)?\s*:|release date\s*:|'
+                     r'embargoed until release[^\n]{0,80}?\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),)'
+                     r'\s*([A-Za-z]{3,9} \d{1,2}, \d{4})\b')
+    for value in re.findall(release_label, body):
+        for fmt in ('%B %d, %Y','%b %d, %Y'):
+            try:
+                dates.add(datetime.strptime(value,fmt).date())
+                break
+            except ValueError:
+                continue
     dateline = (r'^(?:(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),[ \t]+'
                 r'|(?i:Published|Updated)(?: on)?[: ]+|[A-Z][A-Z .,]{1,40}, )'
                 r'([A-Z][a-z]{2,8} \d{1,2}, \d{4})(?=[ \t]*$|[ \t]+[–—|]|[ \t]+/PRNewswire)')
@@ -43,13 +53,14 @@ def publisher_day(text, index=False):
 
 class DatedWebDiscovery:
     """Only admitted locators enter navigation, receipts and model input."""
-    def __init__(self, discovery, fetcher):
+    def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None):
         self.discovery = discovery
         self.fetcher = fetcher
+        self.fallback_discovery = fallback_discovery
+        self.origin_fetcher = origin_fetcher
         self.verified = {}
 
     async def search(self, request):
-        receipt = await self.discovery.search(request)
         cutoff = request.run_scope.research_as_of.date()
 
         async def verify(candidate):
@@ -64,10 +75,21 @@ class DatedWebDiscovery:
                     except ValueError:
                         pass  # Use the publisher lookup for an unusable provider date.
                 if locator not in self.verified:
-                    page = await self.fetcher.fetch(locator, timeout_seconds=15)
-                    if page.final_url != locator:
-                        return None
-                    day = publisher_day(page.extracted_text or '',bool(index))
+                    day = None
+                    if self.origin_fetcher:
+                        try:
+                            page = await self.origin_fetcher.fetch(locator, timeout_seconds=15)
+                            if page.final_url == locator:
+                                from bs4 import BeautifulSoup
+                                body = BeautifulSoup(page.html, 'html.parser').get_text('\n',strip=True)
+                                day = publisher_day(body,bool(index))
+                        except (ExternalSourceError, TimeoutError):
+                            pass
+                    if day is None:
+                        page = await self.fetcher.fetch(locator, timeout_seconds=15)
+                        if page.final_url != locator:
+                            return None
+                        day = publisher_day(page.extracted_text or '',bool(index))
                     if day:
                         self.verified[locator] = day
                 day = self.verified.get(locator)
@@ -78,8 +100,17 @@ class DatedWebDiscovery:
             # The provider's search snippet may draw on other, newer content.
             return candidate.model_copy(update={'published_at':day.isoformat(),'snippet':''})
 
-        admitted = [row for row in await asyncio.gather(*(verify(c) for c in receipt.candidates)) if row]
+        attempts = []
+        for provider in (self.discovery, self.fallback_discovery):
+            if provider is None:
+                break
+            receipt = await provider.search(request)
+            admitted = [row for row in await asyncio.gather(*(verify(c) for c in receipt.candidates)) if row]
+            attempts.extend(receipt.attempted_providers)
+            if admitted:
+                break
         body = receipt.model_dump(mode='json',exclude={'receipt_digest'})
+        body['attempted_providers'] = [row.model_dump(mode='json') for row in attempts]
         body['candidates'] = [row.model_dump(mode='json') for row in admitted]
         if not admitted and body['status'] == 'ok':
             body['status'] = 'zero_results'

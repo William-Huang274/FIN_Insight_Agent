@@ -35,3 +35,26 @@ def test_publication_day_does_not_take_provider_header_or_financial_period():
     assert publisher_day(header+'Period of report\nMarch 31, 2026\nResults') is None
     assert publisher_day(header+'Thursday, June 11, 2026\n') == date(2026,6,11)
     assert publisher_day(header+'Published: June 11, 2026\nUpdated: July 4, 2026\n') == date(2026,7,4)
+
+
+def test_admitted_primary_suppresses_fallback_but_late_primary_does_not():
+    primary, _, _ = _reader(url='https://example.com/first', published=None)
+    secondary, _, _ = _reader(url='https://example.com/second', published=None)
+    class Unexpected:
+        async def fetch(self, *args, **kwargs):
+            raise AssertionError('cached date expected')
+    gate = DatedWebDiscovery(primary.discovery, Unexpected(), fallback_discovery=secondary.discovery)
+    primary.discovery = gate
+    first, second = 'https://example.com/first', 'https://example.com/second'
+    gate.verified.update({first:date(2026,6,1),second:date(2026,6,2)})
+    result = _call(primary,'search',query='fixture')
+    assert [x['source_url'] for x in result.items] == [first]
+    gate.verified[first] = date(2027,1,1)
+    result = _call(primary,'search',query='second query')
+    assert [x['source_url'] for x in result.items] == [second]
+    assert result.items[0]['preview'] == ''
+
+
+def test_release_label_and_later_explicit_update():
+    assert publisher_day('EMBARGOED UNTIL RELEASE AT 8:30 a.m. EDT, Thursday, June 25, 2026') == date(2026,6,25)
+    assert publisher_day('Published: June 1, 2026\nLast Update:\nJuly 2, 2026') == date(2026,7,2)

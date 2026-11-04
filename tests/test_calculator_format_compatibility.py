@@ -143,3 +143,17 @@ def test_unique_table_layout_restores_exact_original_without_changing_proposal()
 def test_table_recovery_rejects_ambiguous_or_semantically_changed_quote(body, quote):
     with pytest.raises(ValueError, match='operand_quote_not_in_observed_source'):
         layout_calculation(body, quote)
+
+def test_recovery_explains_only_the_latest_matching_failed_calculation():
+    from langchain_core.messages import AIMessage, ToolMessage
+    from sec_agent.agent_runtime.harness_business_tools import restored_calculator_feedback
+    call = {'name':'calculate_research_metric', 'id':'failed', 'args':{'request':{
+        'expression':'profit / sales', 'operands':{'profit':{}, 'Sales':{}}}}}
+    action = AIMessage(content='', tool_calls=[call])
+    receipt = ToolMessage(name=call['name'], tool_call_id='failed', status='error',
+                          content='formula_names_must_match_operands_no_unused_source_binding')
+    feedback = restored_calculator_feedback([action, receipt])
+    assert "missing_bindings=['sales'], unused_bindings=['Sales']" in feedback['feedback']
+    assert feedback['receipt_id'] == 'failed'
+    assert restored_calculator_feedback([receipt]) is None
+    assert restored_calculator_feedback([action, receipt, ToolMessage(content='ok', tool_call_id='other')]) is None

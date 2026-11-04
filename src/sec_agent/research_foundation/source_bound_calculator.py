@@ -151,6 +151,19 @@ class ObservedSourceRegistry:
         return deepcopy(self._sources)
 
 
+def operand_binding_feedback(parsed, operands):
+    """Compare identifiers only; the author owns the formula and all bindings."""
+    used = {node.id for node in ast.walk(parsed) if isinstance(node, ast.Name)}
+    missing = sorted(used.difference(operands))
+    unused = sorted(set(operands).difference(used))
+    if missing or unused:
+        return ("formula_names_must_match_operands_no_unused_source_binding: "
+                f"missing_bindings={missing!r}, unused_bindings={unused!r}. "
+                "Check the intended expression. Supply a source binding for each missing sourced term "
+                "or revise the expression; supply only operands the expression uses.")
+    return None
+
+
 def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Callable[[str], dict]) -> dict:
     values, bindings = {}, {}
     for name, operand in request.operands.items():
@@ -265,9 +278,9 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
         with localcontext() as context:
             context.prec = 34
             parsed = ast.parse(request.expression, mode="eval").body
-            used = {node.id for node in ast.walk(parsed) if isinstance(node, ast.Name)}
-            if used != set(values):
-                raise ValueError("formula_names_must_match_operands_no_unused_source_binding")
+            feedback = operand_binding_feedback(parsed, values)
+            if feedback:
+                raise ValueError(feedback)
             value = evaluator.eval(request.expression, previously_parsed=parsed)
             if not isinstance(value, Decimal) or not value.is_finite() or abs(value) > Decimal("1e100"):
                 raise ValueError("calculation_result_not_finite_or_out_of_range")

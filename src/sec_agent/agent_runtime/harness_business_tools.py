@@ -7,6 +7,7 @@ calculators and artifact readers retain exact successful observations.
 """
 from __future__ import annotations
 
+import ast
 import asyncio
 from contextlib import nullcontext
 import json
@@ -44,6 +45,35 @@ def model_receipt(result):
             'arguments': {'tool_call_id': result.tool_call_id},
             'format': 'Exact canonical JSON; json_pointer and offsets address the original, not this presentation.'}
     return value
+
+
+def restored_calculator_feedback(messages):
+    """Explain a terminal rejected calculation from its saved call, without executing it."""
+    if not messages:
+        return None
+    receipt = messages[-1]
+    if (not isinstance(receipt, ToolMessage) or receipt.status != 'error'
+            or receipt.name != 'calculate_research_metric'
+            or 'formula_names_must_match_operands_no_unused_source_binding' not in str(receipt.content)):
+        return None
+    from sec_agent.research_foundation.source_bound_calculator import operand_binding_feedback
+    for message in reversed(messages[:-1]):
+        for call in getattr(message, 'tool_calls', ()):
+            if call.get('id') != receipt.tool_call_id or call.get('name') != receipt.name:
+                continue
+            request = call['args'].get('request')
+            if not isinstance(request, dict) or not isinstance(request.get('operands'), dict):
+                return None
+            try:
+                parsed = ast.parse(request['expression'], mode='eval')
+            except (SyntaxError, TypeError, KeyError, ValueError):
+                return None
+            feedback = operand_binding_feedback(parsed, request['operands'])
+            if feedback:
+                return {'kind':'saved_calculation_rejection', 'receipt_id':receipt.tool_call_id,
+                        'tool':receipt.name, 'status':'error', 'feedback':feedback}
+            return None
+    return None
 
 
 class HarnessBusinessState(OnDemandResearchState):
@@ -123,6 +153,8 @@ class HarnessBusinessTools:
                         'receipt_id': receipt.tool_call_id,
                         'readback': 'read_saved_result',
                         'previous_error_retained_in_checkpoint_history': True}
+            if recovering and current.values:
+                return restored_calculator_feedback(current.values.get('messages', []))
             if not current.values:
                 await self._checkpoint_call(self.graph.aupdate_state, self.config, admitted_state, as_node='tools')
 

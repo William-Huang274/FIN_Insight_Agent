@@ -76,6 +76,62 @@ def restored_calculator_feedback(messages):
     return None
 
 
+def failed_run_receipts(event_file):
+    """Only terminal MCP failures recorded by this run identify its failed calls."""
+    ids = set()
+    if event_file.is_file():
+        with event_file.open(encoding='utf8') as stream:
+            for line in stream:
+                event = json.loads(line).get('update', {})
+                if event.get('sessionUpdate') != 'tool_call_update' or event.get('status') != 'failed':
+                    continue
+                for content in event.get('content') or []:
+                    text = content.get('content', {}).get('text', '')
+                    try:
+                        value = json.loads(text.removeprefix('Error: '))
+                    except ValueError:
+                        continue
+                    if isinstance(value, dict) and value.get('status') == 'error' and isinstance(value.get('receipt_id'), str):
+                        ids.add(value['receipt_id'])
+    return ids
+
+
+def restored_batch_feedback(messages, ids):
+    from .conversation_tools import calculator_observations, operand_source_feedback
+    from sec_agent.research_foundation.source_bound_calculator import (
+        OperandSourceError, SourceBoundCalculation, validate_operand_sources)
+    calls, failures = {}, []
+    for index, message in enumerate(messages):
+        for call in getattr(message, 'tool_calls', ()):
+            if call.get('id') in ids:
+                calls[call['id']] = call
+        if (not isinstance(message, ToolMessage) or message.status != 'error'
+                or message.tool_call_id not in ids):
+            continue
+        failure = model_receipt(message)
+        call = calls.get(message.tool_call_id, {})
+        if call.get('name') == message.name == 'calculate_research_metric':
+            args = call.get('args', {}).get('request', {})
+            prior = messages[:index]
+            try:
+                request = SourceBoundCalculation.model_validate(args)
+                validate_operand_sources(request, calculator_observations(prior).__getitem__)
+            except OperandSourceError as exc:
+                # Augment only a reproduced rejection, using the state at that call.
+                if exc.code in str(message.content) or (exc.code == 'source_id_not_observed'
+                        and exc.operand.source_id in str(message.content)):
+                    failure['feedback'] = operand_source_feedback(exc, prior)
+            except (ValueError, KeyError):
+                pass
+            if 'feedback' not in failure:
+                formula = restored_calculator_feedback(messages[:index+1])
+                if formula:
+                    failure['feedback'] = formula['feedback']
+        failures.append(failure)
+    if failures:
+        return {'kind':'saved_tool_rejections', 'failures':failures}
+
+
 class HarnessBusinessState(OnDemandResearchState):
     harness_command_id: str
     harness_import_digest: str
@@ -130,11 +186,13 @@ class HarnessBusinessTools:
         with set_config_context(self.config) as context:
             return await asyncio.create_task(method(*args, **kwargs), context=context)
 
-    async def initialize(self, admitted_state, *, recovering=False):
+    async def initialize(self, admitted_state, *, recovering=False, failed_receipt_ids=None):
         """Import genuine old receipts once, never an old generated summary."""
         async with self.lock:
             await asyncio.to_thread(self.access)
             current = await self._checkpoint_call(self.graph.aget_state, self.config)
+            feedback = (restored_batch_feedback(current.values.get('messages', []), failed_receipt_ids)
+                        if recovering and failed_receipt_ids else None)
             if current.next:
                 calls = getattr(current.values.get('messages', [])[-1], 'tool_calls', [])
                 # Each bridge operation has one call. Only a signed recovery
@@ -152,9 +210,10 @@ class HarnessBusinessTools:
                         'tool': calls[0]['name'],
                         'receipt_id': receipt.tool_call_id,
                         'readback': 'read_saved_result',
-                        'previous_error_retained_in_checkpoint_history': True}
+                        'previous_error_retained_in_checkpoint_history': True,
+                        **({'prior_run_feedback':feedback} if feedback else {})}
             if recovering and current.values:
-                return restored_calculator_feedback(current.values.get('messages', []))
+                return feedback or restored_calculator_feedback(current.values.get('messages', []))
             if not current.values:
                 await self._checkpoint_call(self.graph.aupdate_state, self.config, admitted_state, as_node='tools')
 

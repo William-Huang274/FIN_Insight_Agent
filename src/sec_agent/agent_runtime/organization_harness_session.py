@@ -152,8 +152,15 @@ async def organization_harness_session(*, native, resources, authority, check, o
             object_path=directory / 'business-objects.sqlite') as saver:
         bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope,
             stop_on_tool_error=options.get('stop_on_tool_error') is True)
+        action = grant.get('report_action_request', {})
+        failed_ids = None
+        if options.get('stop_on_tool_error') is True and action.get('action') == 'recover':
+            from uuid import UUID
+            from .harness_business_tools import failed_run_receipts
+            events = session_directory / str(UUID(action['previous_run_id'])) / 'events.private.jsonl'
+            failed_ids = await asyncio.to_thread(failed_run_receipts, events)
         recovery_receipt = await bridge.initialize({**({} if clean_import else admitted), 'question': grant['question']},
-            recovering=grant.get('report_action_request', {}).get('action') == 'recover')
+            recovering=action.get('action') == 'recover', failed_receipt_ids=failed_ids)
         if recovery_receipt:
             _persist(run_directory / 'tool-recovery.json', recovery_receipt)
         if options.get('legacy_receipt_import'):

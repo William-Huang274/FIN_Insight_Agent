@@ -157,3 +157,23 @@ def test_recovery_explains_only_the_latest_matching_failed_calculation():
     assert feedback['receipt_id'] == 'failed'
     assert restored_calculator_feedback([receipt]) is None
     assert restored_calculator_feedback([action, receipt, ToolMessage(content='ok', tool_call_id='other')]) is None
+
+def test_search_candidate_readback_keeps_all_matches_and_ignores_unrelated_nodes():
+    from types import SimpleNamespace
+    from langchain_core.messages import ToolMessage
+    from sec_agent.agent_runtime.conversation_tools import operand_source_feedback
+    from sec_agent.research_foundation.source_bound_calculator import OperandSourceError
+
+    operand = SimpleNamespace(source_id='ambiguous', quote='same visible amount', literal='100')
+    error = OperandSourceError('source_id_not_observed', 'capex', operand)
+    items = []
+    for node, candidate in [('a','ambiguous'), ('b','ambiguous'), ('c','other')]:
+        loc = {'source_space':'organization','operation':'read','document_id':'doc','node_id':node}
+        items.append({'node_id':node,'candidate_id':candidate,'readback':loc})
+    message = ToolMessage(content='candidates',name='read_source_document',tool_call_id='search',
+                          artifact={'items':items})
+    feedback = operand_source_feedback(error, [message, message])
+    assert [x['arguments']['request']['node_id'] for x in feedback['read_options']] == ['a','b']
+    assert feedback['source_id'] == 'ambiguous' and feedback['operand'] == 'capex'
+    operand.source_id = 'unknown'
+    assert operand_source_feedback(error, [message])['readback']['tool'] == 'browse_context'

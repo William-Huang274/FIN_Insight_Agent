@@ -164,7 +164,13 @@ def operand_binding_feedback(parsed, operands):
     return None
 
 
-def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Callable[[str], dict]) -> dict:
+class OperandSourceError(ValueError):
+    def __init__(self, code, name, operand):
+        super().__init__(code)
+        self.code, self.name, self.operand = code, name, operand
+
+
+def validate_operand_sources(request, source_lookup):
     values, bindings = {}, {}
     for name, operand in request.operands.items():
         if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{0,31}", name):
@@ -175,7 +181,12 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
             value = _number(operand.literal)
             binding = {"assumption_note": operand.assumption_note, "authority": "assumption"}
         else:
-            item = source_lookup(operand.source_id)
+            try:
+                item = source_lookup(operand.source_id)
+            except KeyError as exc:
+                if exc.args != (operand.source_id,):
+                    raise
+                raise OperandSourceError("source_id_not_observed", name, operand) from exc
             if operand.assumption_note is not None:
                 raise ValueError("source_operand_cannot_be_relabelled_assumption")
             if item.get("result_state") == "numeric_fact" and item.get("numeric_fact_authority") is True:
@@ -202,7 +213,7 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                 text = str(item.get("passage") or item.get("bounded_excerpt") or "")
                 quote, quote_recovery = resolve_quote(text, operand.quote or "")
                 if not quote or quote not in text or operand.literal is None:
-                    raise ValueError("operand_quote_not_in_observed_source")
+                    raise OperandSourceError("operand_quote_not_in_observed_source", name, operand)
                 literal_pattern = r"(?<![\w.,])" + re.escape(operand.literal)
                 # A comma or period followed by prose is punctuation, whereas
                 # one followed by a digit continues the numeric token.
@@ -262,6 +273,11 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
         values[name] = value
         bindings[name] = {**binding, "value_decimal": str(value)}
 
+    return values, bindings
+
+
+def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Callable[[str], dict]) -> dict:
+    values, bindings = validate_operand_sources(request, source_lookup)
     evaluator = SimpleEval(names=values, functions={}, operators={
         ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
         ast.Div: operator.truediv, ast.USub: operator.neg, ast.UAdd: operator.pos})

@@ -13,7 +13,7 @@ from langchain_core.tools import tool, ToolException
 from langgraph.prebuilt import ToolRuntime
 
 from financial_facts import FactLookup, execute_fact_lookup
-from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, calculate_from_sources, source_items_from_tool
+from sec_agent.research_foundation.source_bound_calculator import OperandSourceError, SourceBoundCalculation, calculate_from_sources, source_items_from_tool
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 from sec_agent.research_foundation.research_methods import REPORT_PROCESSING_TOOL_GUIDANCE
 from sec_agent.research_foundation.report_charts import ReportChart, bind_report_charts
@@ -23,6 +23,59 @@ from .conversation_agent import GrantedTool
 SAVED_RESULT_TOOLS = frozenset({"read_public_source", "read_company_library", "query_financial_data", "read_task_material", "calculate_research_metric",
     "create_report_chart", "list_financial_data", "ReadWorkingNote", "read_handoff_material", "read_handoff_evidence",
     "read_source_document", "read_research_source", "read_delegated_evidence", "read_delegated_note"})
+
+
+def calculator_observations(messages):
+    observed = {}
+    for message in messages:
+        if isinstance(message, ToolMessage) and message.status == "success" and message.name == "read_saved_knowledge":
+            observed.update((message.artifact or {}).get("source_items", {}))
+        if isinstance(message, ToolMessage) and message.status != 'error' and isinstance(message.artifact, dict):
+            if message.name in {"read_handoff_evidence", "read_delegated_evidence"} and message.status != "error":
+                observed.update(message.artifact.get("source_items", {}))
+                continue
+            tool_name = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_handoff_material": "read_source_document", "read_public_source": "read_source_document", "read_company_library": "read_source_document"}.get(message.name, message.name)
+            observed.update(source_items_from_tool(tool_name, message.artifact))
+    return observed
+
+
+def operand_source_feedback(error, messages):
+    operand = error.operand
+    feedback = dict(code=error.code, operand=error.name, source_id=operand.source_id,
+                    submitted_quote=operand.quote, submitted_literal=operand.literal)
+    if error.code == 'operand_quote_not_in_observed_source':
+        feedback['readback'] = {'tool':'read_research_source', 'arguments':{'source_id':operand.source_id}}
+        feedback['next_step'] = 'Check the original wording, period and column, then select the supporting quote.'
+        return feedback
+
+    choices = {}
+    for msg in messages:
+        if (not isinstance(msg, ToolMessage) or msg.name != 'read_source_document'
+                or msg.status != 'success' or not isinstance(msg.artifact, dict)):
+            continue
+        for item in msg.artifact.get('items', []):
+            if not isinstance(item, dict) or not isinstance(item.get('readback'), dict):
+                continue
+            loc = item['readback']
+            node = loc.get('node_id')
+            if (not isinstance(node, str) or not node or loc.get('operation') != 'read'
+                    or loc.get('source_space') != 'organization' or not loc.get('document_id')
+                    or node != item.get('node_id')):
+                continue
+            # Recognize a candidate locator, never convert it into a citation.
+            variants = {node, 'PASSAGE::' + node, item.get('candidate_id')}
+            if node.endswith(':leaf'):
+                variants.add('PASSAGE::' + node[:-5] + '::leaf')
+            if operand.source_id in variants:
+                choices[(loc['document_id'], node)] = {'tool':'read_source_document','arguments':{'request':loc}}
+    if choices:
+        feedback['code'] = 'submitted_id_matches_search_candidate'
+        feedback['read_options'] = list(choices.values())
+        feedback['next_step'] = 'Select the relevant candidate, read it, then use the passage_id returned with the original text.'
+    else:
+        feedback['readback'] = {'tool':'browse_context','arguments':{'region':'sources'}}
+        feedback['next_step'] = 'Inspect recorded sources and their readback entries for the exact identifier.'
+    return feedback
 
 
 class TaskMaterialRequest(SourceDocumentRequest):
@@ -178,18 +231,12 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
     @tool(response_format="content_and_artifact")
     def calculate_research_metric(request: SourceBoundCalculation, runtime: ToolRuntime):
         """Compute using actually read source IDs with the existing decimal calculator. Never do financial arithmetic mentally. Results preserve operands, periods and units; they are calculated measures, not issuer-reported facts."""
-        observed = {}
-        for message in runtime.state.get("messages", []):
-            if isinstance(message, ToolMessage) and message.status == "success" and message.name == "read_saved_knowledge":
-                observed.update((message.artifact or {}).get("source_items", {}))
-            if isinstance(message, ToolMessage) and message.status != 'error' and isinstance(message.artifact, dict):
-                if message.name in {"read_handoff_evidence", "read_delegated_evidence"} and message.status != "error":
-                    observed.update(message.artifact.get("source_items", {}))
-                    continue
-                tool_name = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_handoff_material": "read_source_document", "read_public_source": "read_source_document", "read_company_library": "read_source_document"}.get(message.name, message.name)
-                observed.update(source_items_from_tool(tool_name, message.artifact))
+        messages = runtime.state.get("messages", [])
+        observed = calculator_observations(messages)
         try:
             result = calculate_from_sources(request, observed.__getitem__)
+        except OperandSourceError as exc:
+            raise ToolException(json.dumps(operand_source_feedback(exc, messages), ensure_ascii=False)) from exc
         except (ValueError, KeyError) as exc:
             raise ToolException("计算未通过来源绑定或表达式检查，请回读实际来源并修正参数：" + str(exc)) from exc
         return json.dumps(result, ensure_ascii=False), result

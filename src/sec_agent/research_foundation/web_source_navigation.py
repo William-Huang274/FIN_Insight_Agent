@@ -110,7 +110,7 @@ class WebSourceReader:
                     "candidate_id": doc_id, "title": candidate.title, "source_url": candidate.canonical_url,
                     "publication_date": candidate.published_at, "preview": candidate.snippet,
                     "writer_citable": False, "numeric_fact_authority": False,
-                    "publication_date_status": "search_provider_metadata_not_independently_verified"})
+                    "publication_date_status": "publication_day_checked" if run_scope.data_snapshot_id == "dated-public-sources-v2" else "search_provider_metadata_not_independently_verified"})
             return SourceDocumentResult(operation="search", items=tuple(items), next_offset=None,
                 total_matches=len(items), source_snapshot_sha256=receipt.receipt_digest,
                 execution_receipt=_execution_receipt(request, receipt.receipt_digest,
@@ -142,7 +142,12 @@ class WebSourceReader:
                     execution_receipt=_execution_receipt(request, result.receipt_digest, 'tool_failure', result.attempts),
                     notice="Source fetch failed, not public non-disclosure: " + str([a.model_dump() for a in result.attempts]))
             self._captures[capture_key] = result
-        links = self._observed_links(discovery, candidate, result, key, request.document_id)
+        dated = run_scope.data_snapshot_id == 'dated-public-sources-v2'
+        if dated and not published:
+            raise ValueError("web_source_publication_day_unconfirmed")
+        # Linked documents have independent dates. Use dated discovery for these
+        # rather than registering an unchecked child as an authorized document.
+        links = [] if dated else self._observed_links(discovery, candidate, result, key, request.document_id)
         if request.operation == "search":
             # Reuse the existing chunker/BM25 navigator inside one captured
             # source; no second index, full-document prompt or new ranking rules.
@@ -191,7 +196,7 @@ class WebSourceReader:
             "passage_id": f"PASSAGE::{request.document_id}::{request.offset}::{digest[:16]}",
             "passage": passage, "content_sha256": digest, "source_url": url, "source_locator": locator,
             "title": candidate.title, "publication_date": candidate.published_at,
-            "publication_date_status": "provider_metadata_only" if published else "unknown_must_resolve_for_time_sensitive_claims",
+            "publication_date_status": "publication_day_checked" if dated else ("provider_metadata_only" if published else "unknown_must_resolve_for_time_sensitive_claims"),
             "source_role": "external_public_source_unverified", "source_read_method": result.capture_method,
             "access_scope": "commercial_report_landing_page_only" if commercial_preview else "requested_url_body_only",
             "writer_citable": True, "numeric_fact_authority": False,

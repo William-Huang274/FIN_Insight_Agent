@@ -25,7 +25,8 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
     if cutoff.tzinfo is None:
         cutoff = cutoff.replace(tzinfo=timezone.utc)
     body = dict(schema_version="fin_ia_conversation_source_scope_v1_0", case_id=thread_id,
-        research_as_of=cutoff.replace(hour=0,minute=0,second=0,microsecond=0).isoformat(), data_snapshot_id="conversation-public-sources-v1",
+        research_as_of=cutoff.replace(hour=0,minute=0,second=0,microsecond=0).isoformat(),
+        data_snapshot_id="dated-public-sources-v2" if research_as_of else "conversation-public-sources-v1",
         method_sha256=method_digest, selected_branch_ids=["conversation"], execution_attempt_id=run_id,
         source_policy="public_web_locator_only")
     # Pydantic canonical datetime serialization uses Z; hash the same representation.
@@ -36,7 +37,11 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         capture = ExternalSourceCapture(guard=guard,
             hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard,max_characters=200000))
         cached = ScopedSourceCaptureCache(root=cache_root,thread_id=thread_id,capture=capture,guard=guard)
-        reader = WebSourceReader(discovery=ExternalSourceDiscovery(primary=ExaHostedMCPProvider()),capture=cached)
+        discovery = ExternalSourceDiscovery(primary=ExaHostedMCPProvider())
+        if research_as_of:
+            from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery
+            discovery = DatedWebDiscovery(discovery, ExaHostedMCPPageFetcher(guard=guard,max_characters=8000))
+        reader = WebSourceReader(discovery=discovery,capture=cached)
 
     restored = set()
 
@@ -69,6 +74,8 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                             continue
                         if receipt.case_id != thread_id:
                             raise ValueError('public_source_restore_task_mismatch')
+                        if receipt.data_snapshot_id != scope.data_snapshot_id or receipt.research_as_of[:10] != cutoff.date().isoformat():
+                            continue
                         rebound = receipt.model_dump(mode='json', exclude={'receipt_digest'})
                         rebound.update(execution_attempt_id=scope.execution_attempt_id,
                             run_scope_digest=scope.run_scope_digest, research_as_of=scope.research_as_of.astimezone(timezone.utc).isoformat(timespec='seconds'),
@@ -94,7 +101,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                     'query': query, 'document_id': document_id,
                     'query_kind': 'captured_document_search' if document_id else 'provider_ranked_search',
                     'issuer_non_disclosure_established': False,
-                    'meaning': 'Provider results/captured text only, not exhaustive public disclosure coverage.'}
+                    'meaning': ('Dated discovery omits undated or post-cutoff results before display. Try another dated primary release if needed. '
+                                if scope.data_snapshot_id == 'dated-public-sources-v2' else '') +
+                               'Provider results/captured text only, not exhaustive public disclosure coverage.'}
             if hasattr(reader, 'export_navigation'):
                 artifact['web_navigation_receipts'] = reader.export_navigation()
             return json.dumps(visible,ensure_ascii=False), artifact

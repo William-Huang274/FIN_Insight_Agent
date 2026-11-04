@@ -54,10 +54,12 @@ class HarnessBusinessState(OnDemandResearchState):
 
 
 class HarnessBusinessTools:
-    def __init__(self, *, grants, checkpointer, thread_id, check, scope=nullcontext):
+    def __init__(self, *, grants, checkpointer, thread_id, check, scope=nullcontext, stop_on_tool_error=False):
         self.check, self.scope = check, scope
         self.lock = asyncio.Lock()
         self.stopped = False
+        self.stop_on_tool_error = stop_on_tool_error
+        self.failed_receipt = None
         self.config = {'configurable': {'thread_id': thread_id}}
         self.tools = {g.tool.name: g.tool for g in grants}
         self.effects = {g.tool.name: g.effect for g in grants}
@@ -83,6 +85,8 @@ class HarnessBusinessTools:
         # An MCP client can time out before the server's tool task ends. The
         # upstream loop may then request another model turn. Do not turn an
         # unresolved tool effect into a paid opportunity to guess what happened.
+        if self.failed_receipt:
+            raise RuntimeError(f'harness_tool_failed_before_model_dispatch:{self.failed_receipt}')
         if self.lock.locked():
             self.stop()
             raise RuntimeError('harness_tool_effect_unresolved_before_model_dispatch')
@@ -163,12 +167,17 @@ class HarnessBusinessTools:
         # Connection-local MCP ids are not model/provider call ids. Generate a
         # host receipt id and return it for exact readback. Native ACP persists
         # the result; a recovery loads it instead of replaying successful calls.
-        result = await self.execute(params.name, params.arguments or {})
-        view = model_receipt(result)
-        text = json.dumps(view, ensure_ascii=False, separators=(',', ':'))
-        return types.CallToolResult(content=[types.TextContent(type='text', text=text)],
-            is_error=result.status == 'error',
-            structured_content=view)
+        try:
+            result = await self.execute(params.name, params.arguments or {})
+            if self.stop_on_tool_error and result.status == 'error':
+                self.failed_receipt = self.failed_receipt or result.tool_call_id
+            view = model_receipt(result)
+            text = json.dumps(view, ensure_ascii=False, separators=(',', ':'))
+            return types.CallToolResult(content=[types.TextContent(type='text', text=text)],
+                is_error=result.status == 'error', structured_content=view)
+        except BaseException:
+            self.stop()
+            raise
 
     async def execute(self, name, arguments):
         async with self.lock:

@@ -106,15 +106,18 @@ def observed_source_tool(reader, check):
     """Reuse exact authorized source paging without an agent-loop dependency."""
     @tool
     def read_research_source(source_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 4000):
-        """Read one observed source ID with current authority and exact paging."""
+        """Read an observed source. offset is a nonnegative character position. Request at least 100 characters. Each page returns up to 12000 characters; pass its next_offset to continue the same source."""
         from .case_artifacts import read_source_window
-        if offset < 0 or not 100 <= max_characters <= 12000:
-            raise ToolException('invalid_source_read_window')
+        if offset < 0 or max_characters < 100:
+            raise ToolException('invalid_source_read_window: use offset >= 0 and max_characters >= 100. '
+                                'Each page returns at most 12000 characters. Continue at next_offset.')
         check()
         sources = reader(runtime.state, source_ids=[source_id]).source_snapshot()
         if source_id not in sources:
             raise ToolException('source_not_observed_read_current_source_catalog')
-        result = read_source_window(source_id, sources[source_id], offset, max_characters)
+        result = read_source_window(source_id, sources[source_id], offset, min(max_characters, 12000))
+        if max_characters > 12000:
+            result['page_limit_characters'] = 12000
         check()
         return result
     read_research_source.handle_tool_error = True

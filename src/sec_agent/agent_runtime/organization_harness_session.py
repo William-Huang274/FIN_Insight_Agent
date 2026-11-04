@@ -150,7 +150,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
     # conversation/history or working-note state. Native ACP owns that history.
     async with business_checkpointer(business_directory / 'business-checkpoint.sqlite',
             object_path=directory / 'business-objects.sqlite') as saver:
-        bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope)
+        bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope,
+            stop_on_tool_error=options.get('stop_on_tool_error') is True)
         recovery_receipt = await bridge.initialize({**({} if clean_import else admitted), 'question': grant['question']},
             recovering=grant.get('report_action_request', {}).get('action') == 'recover')
         if recovery_receipt:

@@ -244,3 +244,5 @@ Java命令 `received` 和其 result 中的 `pending` 是派发回执，reconcile
 没有自动 TTL 删除或对象 GC。删分支不能直接删共享对象库；只有所有保留检查点、pending writes 和成果引用都解除后才可回收对象。原始失败响应、未知计费、已接受提案和来源/计算/版本身份照常保留。
 
 历史目录去重使用 `scripts/engineering/archive_state_duplicates.py` 的 `build`、`verify --check-originals`、`restore --path RELATIVE`。标准 ZIP 每份相同字节只存一次，manifest 绑定所有旧相对路径、SHA-256 和长度。构建及验证不删除原件；恢复可写回原路径或测试目录，拒绝越界路径及覆盖不同内容。大规模退役只能依据本次已验证的逐文件清单，不可按 `offline-*`/`live-*` 名称整删。归档、manifest、恢复工具是原路径退役后的必要依赖；旧脚本启动前先恢复它所需的路径，不伪装成可直接读取 ZIP 的原生历史。
+
+原文回读每页最多返回 12,000 字符。请求更大的窗口会收到第一段及可用的 next_offset。运维监督运行可在服务端 execution binding 中启用 stop_on_tool_error。错误回执仍写入业务检查点，同批后续成功动作可保存；下一次预算预留和实际网络派发均使用当前运行的工具状态检查。新运行可从显式恢复入口接续。

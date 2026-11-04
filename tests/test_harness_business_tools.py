@@ -342,3 +342,31 @@ async def test_saved_report_versions_edits_citations_and_delivery_survive_restar
         await bridge.begin_command('new-question')
         assert (await bridge.state())['delivery'] is None
         assert (await bridge.state())['report_version'] == 2
+
+@pytest.mark.anyio
+async def test_supervised_read_pages_and_blocks_dispatch_after_a_failed_batch_member(tmp_path):
+    from types import SimpleNamespace
+    from sec_agent.agent_runtime.organization_work_session import observed_source_tool
+    source = 'PASSAGE::fixture'
+    body = 'A' * 12000 + 'remaining original'
+    reader = SimpleNamespace(source_snapshot=lambda: {source: {'result_state':'source_bound_passage', 'text':body}})
+    grant = observed_source_tool(lambda *_args, **_kwargs: reader, lambda: None)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'paging.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=[grant], checkpointer=saver, thread_id='t', check=lambda: None,
+                                      stop_on_tool_error=True)
+        await bridge.initialize({'messages': []})
+
+        async def read(**arguments):
+            response = await bridge.call_tool(None, SimpleNamespace(name='read_research_source',
+                                              arguments={'source_id':source, **arguments}))
+            return json.loads(response.content[0].text)
+
+        first = (await read(max_characters=14000))['result']
+        assert first['next_offset'] == 12000 and first['page_limit_characters'] == 12000
+        bridge.model_access()
+        failed = await read(offset=-1)
+        assert failed['status'] == 'error' and 'next_offset' in failed['result']
+        tail = (await read(offset=first['next_offset']))['result']
+        assert first['text'] + tail['text'] == body and tail['next_offset'] is None
+        with pytest.raises(RuntimeError, match=failed['receipt_id']):
+            bridge.model_access()

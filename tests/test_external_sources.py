@@ -729,3 +729,17 @@ def test_playwright_transport_enforces_rendered_html_byte_ceiling() -> None:
     with pytest.raises(ExternalSourceError) as error:
         fetcher._require_bounded_html("界" * 34)  # noqa: SLF001 - resource seam
     assert error.value.code == "capture_response_too_large"
+
+
+def test_provider_reported_empty_does_not_turn_into_two_transport_failures():
+    class DDGSException(Exception):
+        pass
+    def empty(*args, **kwargs):
+        raise DDGSException('No results found.')
+    discovery = ExternalSourceDiscovery(primary=_FailingProvider(), diagnostic_fallback=DDGSDiagnosticProvider(search_callable=empty))
+    result = asyncio.run(discovery.search(ExternalSearchRequest(query='historic data',
+        branch_id='Q4_ARCHITECTURE_RAMP',run_scope=_run_scope('Q4_ARCHITECTURE_RAMP'),
+        purpose='Check recorded search route statuses.',max_results=3)))
+    assert result.status == 'zero_results'
+    assert [row.status for row in result.attempted_providers] == ['tool_failure','zero_results']
+    assert result.attempted_providers[-1].failure_code == 'ddgs_reported_no_results'

@@ -1,5 +1,6 @@
 """Ordinary conversation tool over existing Exa discovery/capture and SQLite records."""
 from datetime import datetime, timezone
+from collections import Counter
 import json
 from pathlib import Path
 from typing import Literal
@@ -17,6 +18,34 @@ from sec_agent.research_foundation.source_capture_cache import ScopedSourceCaptu
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 from sec_agent.research_foundation.web_source_navigation import WebSourceReader
 from .conversation_agent import GrantedTool
+
+
+def web_read_feedback(result):
+    """Explain only recorded obstacles, without exposing excluded candidate data."""
+    if result.get('items'):
+        return []
+    counts = Counter()
+    codes = set()
+    for attempt in (result.get('execution_receipt') or {}).get('attempts', []):
+        counts.update(attempt.get('date_filter_counts', {}))
+        codes.add(attempt.get('failure_code'))
+    feedback = []
+    if counts['after_cutoff']:
+        feedback.append({'kind':'after_cutoff','count':counts['after_cutoff'],
+            'meaning':'部分候选晚于研究截止日。按发布日历倒推当时最近已公布的一期，再找当期归档。',
+            'method_readback':{'tool':'get_research_method','arguments':{
+                'method_id':'macro_valuation','section':'数据版本与当前研究入口'}}})
+    if counts['origin_403'] or 'capture_http_status_403' in codes:
+        feedback.append({'kind':'origin_403','meaning':'原站拒绝了本次访问（HTTP 403）。可查同一发布者的其他公开原件或正式转载，核对版本和出处。'})
+    if counts['date_unverified'] or counts['date_lookup_unavailable'] or counts['origin_unavailable'] or counts['redirect']:
+        feedback.append({'kind':'date_not_established','meaning':'有候选未能核定公开日期。可改查有明确发布日期的公告或历史归档。'})
+    if 'exa_mcp_rate_limited' in codes:
+        feedback.append({'kind':'search_rate_limited','meaning':'Exa 本次限流；备用通道的结果另计。'})
+    if 'ddgs_reported_no_results' in codes:
+        feedback.append({'kind':'fallback_empty','meaning':'DDGS 报告未返回结果，原因未明。可换资料产品或参考期间；本次未检得不能证明没有披露。'})
+    elif 'ddgs_search_failed' in codes:
+        feedback.append({'kind':'fallback_failed','meaning':'DDGS 搜索调用失败，本次没有完成备用检索。'})
+    return feedback
 
 
 def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reader=None, research_as_of=None):
@@ -100,6 +129,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                 branch_id="conversation",run_scope=scope)
             artifact = result.model_dump(mode="json")
             visible = dict(artifact)
+            feedback = web_read_feedback(visible)
+            if feedback:
+                visible['read_feedback'] = feedback
             if operation == 'search':
                 visible['search_coverage'] = {'space': 'public_web', 'research_as_of': body['research_as_of'],
                     'query': query, 'document_id': document_id,
@@ -107,7 +139,6 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                     'issuer_non_disclosure_established': False,
                     'meaning': ('Dated discovery omits undated or post-cutoff results before display. '
                                 'accepted_hits counts search candidates before date checks; date_filter_counts shows what passed and why others were omitted. '
-                                'If none passed, look for an archived release available by the cutoff: search one series or survey at a time, naming its publisher and an earlier reference period. '
                                 if scope.data_snapshot_id == 'dated-public-sources-v2' else '') +
                                'Provider results/captured text only, not exhaustive public disclosure coverage.'}
             if hasattr(reader, 'export_navigation'):

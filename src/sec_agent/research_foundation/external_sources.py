@@ -453,7 +453,7 @@ class ExternalSourceDiscovery:
                 attempts.append(
                     ProviderAttempt(
                         provider_id=provider.provider_id,
-                        status="tool_failure",
+                        status="zero_results" if exc.code == "ddgs_reported_no_results" else "tool_failure",
                         returned_hits=0,
                         accepted_hits=0,
                         failure_code=exc.code,

@@ -60,3 +60,21 @@ def test_general_web_reuses_readers_without_claiming_financial_review(tmp_path):
         assert scope.case_id and scope.data_snapshot_id=="conversation-public-sources-v1"
     asyncio.run(run())
     assert len(fetcher.calls)==1
+
+
+def test_search_feedback_is_specific_and_the_method_is_callable():
+    from sec_agent.agent_runtime.conversation_web import web_read_feedback
+    from sec_agent.research_foundation.research_methods import get_research_method
+    def feedback(*attempts, items=()):
+        return web_read_feedback({'items':items,'execution_receipt':{'attempts':list(attempts)}})
+    mixed = {'date_filter_counts':{'after_cutoff':3,'origin_403':2}}
+    date_hint, denied = feedback(mixed)
+    assert date_hint['count'] == 3
+    assert get_research_method(**date_hint['method_readback']['arguments'])['selection'] == '数据版本与当前研究入口'
+    assert denied['kind'] == 'origin_403' and 'method_readback' not in denied
+    assert feedback({'failure_code':'capture_http_status_403'}) == [denied]
+    assert feedback(mixed, items=[{'document_id':'ok'}]) == []
+    assert feedback({}) == []
+    reasons = feedback({'failure_code':'exa_mcp_rate_limited'}, {'failure_code':'ddgs_reported_no_results'})
+    assert [r['kind'] for r in reasons] == ['search_rate_limited','fallback_empty']
+    assert all('method_readback' not in r for r in reasons)

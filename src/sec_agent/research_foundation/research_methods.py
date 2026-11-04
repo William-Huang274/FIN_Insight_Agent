@@ -106,6 +106,19 @@ def get_research_method(method_id: str = "", section: str = "") -> dict:
     return select_method_section(result, section)
 
 
+def section_guidance(sections, *, include_text=False):
+    """Use identical, executable chapter locators with optional preloaded text."""
+    blocks = []
+    for method_id, section in sections:
+        if not section:
+            raise ValueError("research_method_section_required")
+        chapter = get_research_method(method_id, section)
+        blocks.append(f'{chapter["summary"]}  get_research_method(method_id="{method_id}", section="{section}")')
+        if include_text:
+            blocks.append(chapter['content'])
+    return '\n\n本任务可用的方法章节：\n' + '\n'.join(blocks) if blocks else ''
+
+
 def preloaded_research_methods(method_ids: list[str]) -> str:
     """Host-selected existing teaching; no task classifier or new authority."""
     if not isinstance(method_ids, list) or any(not isinstance(key, str) for key in method_ids):

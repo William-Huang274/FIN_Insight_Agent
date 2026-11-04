@@ -30,7 +30,7 @@ from .organization_work_session import (organization_source_tool, observed_sourc
     select_observed_sources, artifact_reader_from_sources)
 from .research_graph_contracts import canonical_sha256
 from .working_memory_tools import native_memory_scope, working_memory_tools
-from sec_agent.research_foundation.research_methods import preloaded_research_methods
+from sec_agent.research_foundation.research_methods import preloaded_research_methods, section_guidance
 
 
 def native_messages(rows):
@@ -66,6 +66,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
     tid, rid = phase_arguments['thread_id'], phase_arguments['run_id']
     options = phase_arguments['settings']['harness_execution_bindings'][tid]
     method_content = preloaded_research_methods(options.get('preloaded_research_methods', []))
+    method_content += section_guidance(options.get('research_method_sections', []),
+                                       include_text=options.get('include_method_section_text') is True)
     if options['manifest_digest'] != grant['manifest_digest']:
         raise ValueError('harness_deployment_manifest_mismatch')
     execution = phase_arguments['execution']

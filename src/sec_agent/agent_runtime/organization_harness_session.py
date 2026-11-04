@@ -144,6 +144,16 @@ async def organization_harness_session(*, native, resources, authority, check, o
                           memory_workspace=memory_workspace) as data:
             return artifact_reader_from_sources(data, navigation, sources, allow_public_sources=public_web)
     grants.append(observed_source_tool(artifacts, check))
+    from .quantitative_prose import quantitative_prose_tool, audit_changes
+    # Use the same native branch and the last delivery, including a pinned fork.
+    binding = {'execution_id': tid, 'manifest_digest': grant['manifest_digest'],
+               'release': options['binary_sha256'], 'model': options['model']}
+    last_delivery = session_directory / 'last-delivered-run.json'
+    previous_run = (json.loads(last_delivery.read_text(encoding='utf8'))['run_id'] if last_delivery.exists()
+                    else grant.get('report_action_request', {}).get('previous_run_id'))
+    prior_turn = completed_recovery(session_directory, previous_run_id=previous_run, binding=binding) if previous_run else None
+    prior_answer = prior_turn['text'] if prior_turn else ''
+    grants.append(quantitative_prose_tool(prior_answer))
     grants.extend(artifact_tools(artifacts=artifacts, memory=memory, delivery_intent=intent, require_review=require_review))
     scope = lambda: native_memory_scope(owner, memory_workspace, access_check=check, allow_remote_search=False)
     # Same task's isolated replays share immutable payloads, not mutable
@@ -151,7 +161,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
     async with business_checkpointer(business_directory / 'business-checkpoint.sqlite',
             object_path=directory / 'business-objects.sqlite') as saver:
         bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope,
-            stop_on_tool_error=options.get('stop_on_tool_error') is True)
+            stop_on_tool_error=options.get('stop_on_tool_error') is True, note_versions=memory.export_markdown)
         action = grant.get('report_action_request', {})
         failed_ids = None
         if options.get('stop_on_tool_error') is True and action.get('action') == 'recover':
@@ -194,13 +204,17 @@ async def organization_harness_session(*, native, resources, authority, check, o
             from .task_outcome import TaskOutcome
             from .source_references import render_answer_references
             text, citations, unresolved = render_answer_references(result['text'], business)
+            from .conversation_tools import calculator_observations
+            advisory = audit_changes(prior_answer, text, calculator_observations(business.get('messages', [])))
             output = AIMessage(content=text, additional_kwargs={'harness_session_id': result['session_id'],
-                'citation_bindings': citations, 'unresolved_citations': unresolved})
+                'citation_bindings': citations, 'unresolved_citations': unresolved, 'quantitative_change_check': advisory})
             # Financial observations stay in the existing export/readback
             # projection. They are not transplanted into native ACP history.
             before = {m.id for m in state.get('messages', []) if m.id}
             receipts = [m for m in business.get('messages', []) if m.id not in before]
             delivery = business.get('delivery')
+            if result.get('status') == 'completed' and result.get('text'):
+                _persist(last_delivery, {'run_id': result.get('reused_from_run', rid)})
             submitted = bool(delivery) or (intent == 'answer' and bool(result['text']))
             return {**{k: business[k] for k in ('report', 'report_version', 'delivery') if k in business},
                 'messages': [*receipts, output], 'task_outcome': TaskOutcome(task_id=tid, run_id=rid,
@@ -219,7 +233,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 recovered = completed_recovery(session_directory, previous_run_id=action['previous_run_id'], binding=binding)
                 if recovered is not None:
                     _persist(run_directory / 'turn.private.json', {**recovered, 'reused_from_run': action['previous_run_id']})
-                    return await project(state, recovered)
+                    return await project(state, {**recovered, 'reused_from_run': action['previous_run_id']})
             async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token) as endpoint:
                 prompt = research_system_prompt(bridge.tools, 'Research as of: ' + organization.research_as_of +
                     '\nRequested delivery: ' + intent + '. Save useful working understanding as needed; only deliver the requested artifact form.'+

@@ -140,11 +140,12 @@ class HarnessBusinessState(OnDemandResearchState):
 
 
 class HarnessBusinessTools:
-    def __init__(self, *, grants, checkpointer, thread_id, check, scope=nullcontext, stop_on_tool_error=False):
+    def __init__(self, *, grants, checkpointer, thread_id, check, scope=nullcontext, stop_on_tool_error=False, note_versions=None):
         self.check, self.scope = check, scope
         self.lock = asyncio.Lock()
         self.stopped = False
         self.stop_on_tool_error = stop_on_tool_error
+        self.note_versions = note_versions
         self.failed_receipt = None
         self.config = {'configurable': {'thread_id': thread_id}}
         self.tools = {g.tool.name: g.tool for g in grants}
@@ -263,6 +264,24 @@ class HarnessBusinessTools:
             if self.stop_on_tool_error and result.status == 'error':
                 self.failed_receipt = self.failed_receipt or result.tool_call_id
             view = model_receipt(result)
+            if params.name == 'WriteWorkingNote' and self.note_versions:
+                saved = view['result']
+                if isinstance(saved, dict) and saved.get('saved') and not saved.get('unchanged'):
+                    from .conversation_tools import calculator_observations
+                    from .quantitative_prose import audit_changes
+                    args = params.arguments or {}
+                    body = args.get('body', '')
+                    if isinstance(body, str) and any(c.isdigit() for c in body):
+                        base_version = saved['version'] - 1
+                        previous = ''
+                        if base_version:
+                            prior = await asyncio.to_thread(self.note_versions, saved['note_id'], base_version)
+                            previous = prior.get('markdown', '')
+                        messages = (await self.state()).get('messages', [])
+                        report = audit_changes(previous if args.get('mode') != 'append' else '',
+                            body, calculator_observations(messages), context=previous if args.get('mode') == 'append' else '')
+                        if report['findings'] or report['linked_ratio_bases']:
+                            view['quantitative_change_check'] = report
             text = json.dumps(view, ensure_ascii=False, separators=(',', ':'))
             return types.CallToolResult(content=[types.TextContent(type='text', text=text)],
                 is_error=result.status == 'error', structured_content=view)

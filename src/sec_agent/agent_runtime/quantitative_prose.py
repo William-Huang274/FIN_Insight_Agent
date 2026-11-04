@@ -153,6 +153,65 @@ def cited_claim_context(edits, previous_text, sources):
 def amounts(text):
     return {Decimal(m[1].replace(',','')) * SCALE[m[2].lower()] for m in AMOUNT.finditer(text)}
 
+
+# Recognize explicit naming, rather than any co-occurrence of money and a rate.
+RATE_LABEL = re.compile(r'(?:利润率|毛利率|收益率|回报率|margin)\s*(?:为|是|达|约为|of|=|:)\s*[约$]?\s*([-+]?\d+(?:\.\d+)?)\s*(美分|美元|元|cents?\b|dollars?\b)', re.I)
+BACK_REFERENCE = re.compile(r'(?:后者|该差额|这一差额)[^。；，]{0,12}(?:称为|称作|叫作)[“「"]?[^。；，]{0,22}(?:利润率|毛利率|收益率|回报率)')
+GROUP_CLAIM = re.compile(r'(?:[两二三四五六七八九十\d]+家|各家|多家|所有公司|这些公司)[^。；，]{0,18}(?:方向一致|均(?:有|已|实现|增长|下降|改善|上升|下滑)|都(?:增长|改善|下降))')
+MONEY_UNIT = re.compile(r'^(?:cents?|dollars?|usd|cny|rmb|美分|美元|元)(?:$|\s*(?:per\b|/|每))', re.I)
+
+
+def bound_claim_checks(text, active, sources):
+    """Resolve only citations in this version. Nearby wording is context, not proof."""
+    def bound_refs(line):
+        tokens = (k if HANDLE.fullmatch(k) else reference_handle(k) for k in re.findall(REFERENCE_TOKEN, line))
+        return list(dict.fromkeys(k for k in tokens if k in sources))
+
+    checks, summaries, observations = [], [], {}
+    for paragraph in text.splitlines():
+        previous = ''
+        for line in sentences(paragraph):
+            refs = bound_refs(line)
+            for key in refs:
+                src = sources[key]
+                if not src.get('writer_citable') or not src.get('passage'):
+                    continue
+                observations.setdefault(key, {'statements_in_answer':[], 'receipt':key,
+                    **{k:src[k] for k in ('title','publication_date','period','metric','entity','disclosure_type')
+                       if src.get(k)}, 'readback':{'tool':'read_research_source','arguments':{'source_id':key}}})
+                if line not in observations[key]['statements_in_answer']:
+                    observations[key]['statements_in_answer'].append(line)
+            if line in active:
+                if GROUP_CLAIM.search(line):
+                    summaries.append(line)
+                label = RATE_LABEL.search(line)
+                indirect = BACK_REFERENCE.search(line)
+                if label or indirect:
+                    anchors = refs if label else bound_refs(previous)
+                    amounts_bound = []
+                    for key in anchors:
+                        src = sources.get(key, {})
+                        if src.get('arithmetic_verified') is not True or not MONEY_UNIT.match(str(src.get('result_unit',''))):
+                            continue
+                        if label:
+                            try:
+                                if Decimal(str(src.get('value_decimal'))) != Decimal(label[1]):
+                                    continue
+                            except InvalidOperation:
+                                continue
+                        amounts_bound.append({'receipt':key, **{k:src.get(k) for k in ('expression','value_decimal','result_unit')}})
+                    if amounts_bound:
+                        checks.append({'kind':'verify_metric_name' if label else 'resolve_metric_referent',
+                            'sentence':line, 'calculation_sentence':line if label else previous,
+                            'calculations':amounts_bound,
+                            'action':'核对名称指向哪项计算；金额或单位金额与利润率的分母不同。另有百分比或公司定义时可回读并保留。'})
+            previous = line
+    if summaries:
+        checks.append({'kind':'compare_group_claims','statements':summaries,
+            'cited_observations':list(observations.values()),
+            'action':'按汇总句所指的指标比较各公司、期间、比较基数和实绩或指引。披露日不等于指标期间。可比时保留明确判断；不同口径也可作为分别标明的线索。'})
+    return checks
+
 def ratio_cards(sources):
     cards = []
     for key, row in sources.items():
@@ -192,6 +251,8 @@ def audit_changes(before, after, sources, *, context='', earlier_notes=''):
     findings=[]
     linked = {}
     edits = list(sentence_edits(before, after))
+    findings.extend(bound_claim_checks(after, {s for _, s in edits},
+        {reference_handle(k):v for k,v in sources.items() if isinstance(k,str) and isinstance(v,dict)}))
     for _, s in edits:
         findings.extend(metric_definition_checks(s))
         if not re.search(r"\d", HANDLE.sub("", s)):
@@ -238,10 +299,15 @@ def quantitative_prose_tool(prior_answer):
     from .conversation_tools import calculator_observations
 
     @tool
-    def check_quantitative_changes(text: str, runtime: ToolRuntime):
+    def check_quantitative_changes(runtime: ToolRuntime, text: str | None = None):
         """Compare proposed changed quantitative sentences and scope statements with saved CALC receipts.
-        Supply only affected prose, including related limits or scenarios; returns advisory evidence for the author."""
+        Supply affected prose for change checks. Omit text to inspect metric names and group claims
+        in the last delivered answer with their bound receipts before revising it."""
         messages = runtime.state.get('messages', [])
+        if text is None:
+            sources = calculator_observations(messages)
+            return {'status':'advisory','findings':bound_claim_checks(prior_answer, set(sentences(prior_answer)),
+                    {reference_handle(k):v for k,v in sources.items() if isinstance(k,str) and isinstance(v,dict)})}
         return audit_changes(prior_answer, text, calculator_observations(messages), earlier_notes=saved_note_wording(messages))
 
     return GrantedTool(check_quantitative_changes, 'read', '已观察计算与局部修订措辞核对')

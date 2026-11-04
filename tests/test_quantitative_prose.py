@@ -105,3 +105,42 @@ def test_growth_spread_definition_without_any_numeric_literal():
                   '销售增长率减成本增长率（SalesYoY − CostsYoY）。',
                   '单位收入增速减去单位成本增速（同比(RASM) − 同比(CASM-ex)）。'):
         assert not audit_changes('', valid, {})['findings']
+
+
+def test_metric_name_requires_a_bound_matching_amount():
+    from sec_agent.agent_runtime.quantitative_prose import bound_claim_checks
+    handle = 'REF-' + 'a'*16
+    def checks(label, unit='cents per unit', value='8.36'):
+        line = label + '[' + handle + ']'
+        return bound_claim_checks(line, {line}, {handle:{'arithmetic_verified':True,
+            'expression':'r-c','result_unit':unit,'value_decimal':value}})
+    assert checks('利润率为8.36美分/件')[0]['kind'] == 'verify_metric_name'
+    assert not checks('单位差额为8.36美分/件')
+    assert not checks('差额为8.36美分/件，利润率承压')
+    assert not checks('利润率为37.2%，分母为单位收入', 'percent','37.2')
+    assert not checks('利润率为8.36美分/件',value='9.00')
+
+
+def test_group_comparison_returns_disclosures_without_inventing_a_verdict():
+    from sec_agent.agent_runtime.quantitative_prose import bound_claim_checks
+    handles = ['REF-' + ch*16 for ch in 'abc']
+    summary = '三家方向一致。'
+    for homogeneous in (False, True):
+        sources, lines = {}, []
+        for i,key in enumerate(handles):
+            comparable = homogeneous or i < 2
+            src = {'entity':str(i),'writer_citable':True,'passage':'original',
+                   'metric':'营业利润' if comparable else '单位收入',
+                   'disclosure_type':'实绩' if comparable else '指引',
+                   'publication_date':'2026-07-15'}
+            if comparable:
+                src['period'] = 'Q2'
+            sources[key] = src
+            lines.append(str(i)+src['metric']+'增长['+key+']。')
+        group, = bound_claim_checks('\n'.join([*lines,summary]), {summary}, sources)
+        entries = group['cited_observations']
+        assert [r['receipt'] for r in entries] == handles
+        assert entries[-1]['metric'] == sources[handles[-1]]['metric']
+        assert entries[-1].get('period') == ('Q2' if homogeneous else None)
+        assert {r['disclosure_type'] for r in entries} == ({'实绩'} if homogeneous else {'实绩','指引'})
+        assert 'verdict' not in group

@@ -69,7 +69,7 @@ def apply_response(body, raw):
 
 
 def author_input(selected, message, review):
-    from .quantitative_prose import metric_definition_checks
+    from .quantitative_prose import metric_definition_checks, bound_claim_checks, sentences
     # A historical answer may predate the current checks. Assess the selected
     # version on read; keep deterministic observations separate from the opinion.
     from .source_references import HANDLE
@@ -77,6 +77,9 @@ def author_input(selected, message, review):
     checks = metric_definition_checks(passage)
     evidence = {}
     bindings = message.additional_kwargs.get('citation_bindings', {})
+    checks.extend(bound_claim_checks(message.content,
+        {s for s in sentences(message.content) if not selected.quote or selected.quote in s or s in selected.quote},
+        {k:v['source'] for k,v in bindings.items() if isinstance(v.get('source'),dict)}))
     for handle in dict.fromkeys(HANDLE.findall(passage)):
         source = bindings.get(handle, {}).get('source', {})
         fields = {k: source[k] for k in ('title', 'publication_date', 'expression',

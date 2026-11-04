@@ -12,7 +12,7 @@ from sec_agent.research_foundation.contracts import canonical_sha256
 from sec_agent.research_foundation.external_sources import (
     ConversationSourceScope, ExaHostedMCPProvider, ExaHostedMCPPageFetcher,
     ExternalSourceDiscovery, ExternalSourceCapture, ExternalSourceError, PublicURLGuard,
-    DDGSDiagnosticProvider, StaticHTTPPageFetcher,
+    DDGSDiagnosticProvider, StaticHTTPPageFetcher, ExaTaskQuota,
 )
 from sec_agent.research_foundation.source_capture_cache import ScopedSourceCaptureCache
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
@@ -62,17 +62,19 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
     # Pydantic canonical datetime serialization uses Z; hash the same representation.
     body["research_as_of"] = body["research_as_of"].replace("+00:00", "Z")
     scope = ConversationSourceScope(**body, run_scope_digest=canonical_sha256(body))
+    quota = None
     if reader is None:
+        quota = ExaTaskQuota(Path(cache_root).resolve() / thread_id)
         guard = PublicURLGuard()
         origin = StaticHTTPPageFetcher(guard=guard)
         capture = ExternalSourceCapture(guard=guard, static_fetcher=origin,
-            hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard,max_characters=200000))
+            hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard,max_characters=200000,quota=quota))
         cached = ScopedSourceCaptureCache(root=cache_root,thread_id=thread_id,capture=capture,guard=guard)
         fallback = DDGSDiagnosticProvider()
-        discovery = ExternalSourceDiscovery(primary=ExaHostedMCPProvider(), diagnostic_fallback=None if research_as_of else fallback)
+        discovery = ExternalSourceDiscovery(primary=ExaHostedMCPProvider(quota=quota), diagnostic_fallback=None if research_as_of else fallback)
         if research_as_of:
             from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery
-            discovery = DatedWebDiscovery(discovery, ExaHostedMCPPageFetcher(guard=guard,max_characters=8000),
+            discovery = DatedWebDiscovery(discovery, ExaHostedMCPPageFetcher(guard=guard,max_characters=8000,quota=quota),
                 fallback_discovery=ExternalSourceDiscovery(primary=fallback), origin_fetcher=origin)
         reader = WebSourceReader(discovery=discovery,capture=cached)
 
@@ -123,6 +125,7 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                 raise ValueError("read accepts document_id and character offset, not query. Use operation=search with document_id and query to locate a section, then read at character_start without query.")
             if max_characters > 24000:
                 raise ValueError("Use at most 24000 characters and paginate with offset")
+            previously_limited = quota and quota.limited
             result = await reader(request=SourceDocumentRequest(source_space="web",operation=operation,
                 query=query,document_id=document_id,offset=offset,max_characters=max_characters,limit=5,
                 **({'end_published_date': scope.research_as_of.date()} if operation == 'search' and not document_id else {})),
@@ -130,6 +133,12 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             artifact = result.model_dump(mode="json")
             visible = dict(artifact)
             feedback = web_read_feedback(visible)
+            if quota and quota.limited:
+                visible['web_search_route'] = {'active_provider':'ddgs','scope':'task','reason':'confirmed_exa_rate_limit'}
+                if not previously_limited:
+                    feedback = [hint for hint in feedback if hint['kind'] != 'search_rate_limited']
+                    feedback.insert(0, {'kind':'search_route_changed','meaning':
+                        'Exa 已返回限流，本任务已切换至 DDGS。后续搜索及恢复本任务时将跳过 Exa；继续使用 read_public_source 即可。'})
             if feedback:
                 visible['read_feedback'] = feedback
             if operation == 'search':

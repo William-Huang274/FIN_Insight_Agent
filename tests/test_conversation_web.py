@@ -78,3 +78,67 @@ def test_search_feedback_is_specific_and_the_method_is_callable():
     reasons = feedback({'failure_code':'exa_mcp_rate_limited'}, {'failure_code':'ddgs_reported_no_results'})
     assert [r['kind'] for r in reasons] == ['search_rate_limited','fallback_empty']
     assert all('method_readback' not in r for r in reasons)
+
+
+def test_exa_limit_switches_even_with_hits_and_survives_task_resume(tmp_path, monkeypatch):
+    from contextlib import asynccontextmanager
+    from sec_agent.research_foundation.external_sources import (
+        ExaHostedMCPProvider, DDGSDiagnosticProvider, ProviderHit, ExaHostedMCPPageFetcher,
+        PublicURLGuard, ExaTaskQuota, ExternalSourceError)
+    import pytest
+    calls = []
+    class Limited:
+        async def call_tool(self, name, arguments):
+            calls.append('exa')
+            raise RuntimeError("You've hit Exa's free MCP rate limit")
+    @asynccontextmanager
+    async def open_client(self, **kwargs):
+        yield Limited()
+    async def ddgs(self, req):
+        calls.append('ddgs')
+        return [ProviderHit(title='Release',url='https://example.com/release')]
+    monkeypatch.setattr(ExaHostedMCPProvider, '_client', open_client)
+    monkeypatch.setattr(DDGSDiagnosticProvider, 'search', ddgs)
+    async def run():
+        tid = str(uuid4())
+        def new(task):
+            return public_web_tool(thread_id=task,run_id=str(uuid4()),method_digest='a'*64,cache_root=tmp_path).tool
+        tool = new(tid)
+        for i, reader in enumerate((tool, tool, new(tid), new(str(uuid4())))):
+            raw,_ = await reader.coroutine(operation='search',query='test')
+            v=json.loads(raw)
+            assert v['items'] and v['web_search_route']['active_provider']=='ddgs'
+            assert any(h['kind']=='search_route_changed' for h in v.get('read_feedback',[])) == (i in (0,3))
+            assert len(v['execution_receipt']['attempts']) == (2 if i in (0,3) else 1)
+        assert calls == ['exa','ddgs','ddgs','ddgs','exa','ddgs']
+        guard = SimpleNamespace(validate=lambda u:u)
+        fetcher = ExaHostedMCPPageFetcher(guard=guard,quota=ExaTaskQuota(tmp_path/tid))
+        with pytest.raises(ExternalSourceError,match='exa_skipped_after_task_limit'):
+            await fetcher.fetch('https://example.com/release',timeout_seconds=1)
+    asyncio.run(run())
+
+
+def test_only_explicit_quota_disables_hosted_tools(tmp_path):
+    from contextlib import asynccontextmanager
+    from sec_agent.research_foundation.external_sources import ExaTaskQuota, _exa_call, ExternalSourceError
+    import pytest
+    quota = ExaTaskQuota(tmp_path)
+    outcomes = [TimeoutError(), {'isError':True,'content':[{'type':'text','text':'Rate limit exceeded'}]}]
+    class Client:
+        async def call_tool(self, name, arguments):
+            value=outcomes.pop(0)
+            if isinstance(value,Exception):
+                raise value
+            return value
+    @asynccontextmanager
+    async def connect():
+        yield Client()
+    async def run():
+        with pytest.raises(TimeoutError):
+            await _exa_call(connect,'web_search_exa',{},quota)
+        assert not quota.limited
+        with pytest.raises(ExternalSourceError,match='exa_mcp_rate_limited'):
+            await _exa_call(connect,'web_fetch_exa',{},quota)
+        with pytest.raises(ExternalSourceError,match='exa_skipped_after_task_limit'):
+            await _exa_call(connect,'web_search_exa',{},quota)
+    asyncio.run(run())

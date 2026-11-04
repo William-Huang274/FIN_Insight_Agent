@@ -6,6 +6,7 @@ from datetime import date, datetime, timezone
 from hashlib import sha256
 import ipaddress
 import json
+from pathlib import Path
 import re
 import socket
 import time
@@ -263,6 +264,58 @@ class _MCPClient(Protocol):
     async def call_tool(self, name: str, arguments: Mapping[str, Any]) -> Any: ...
 
 
+class ExaTaskQuota:
+    """A confirmed provider limit sticks to this task, including later runs."""
+
+    def __init__(self, directory):
+        self.marker = Path(directory) / 'exa_mcp_rate_limited'
+
+    @property
+    def limited(self):
+        return self.marker.is_file()
+
+    def record_limit(self):
+        self.marker.parent.mkdir(parents=True, exist_ok=True)
+        self.marker.touch(exist_ok=True)
+
+
+def _quota_message(text):
+    text = text.lower()
+    return any(marker in text for marker in ("exa's free mcp rate limit", "rate limit exceeded",
+                                             "rate limit reached", "quota exceeded"))
+
+
+def _explicit_exa_limit(exc):
+    pending = [exc]
+    while pending:
+        error = pending.pop()
+        if (getattr(getattr(error, 'response', None), 'status_code', None) == 429
+                or _quota_message(str(error))):
+            return True
+        pending.extend(getattr(error, 'exceptions', ()))
+    return False
+
+
+async def _exa_call(open_client, name, arguments, quota):
+    if quota and quota.limited:
+        raise ExternalSourceError('exa_skipped_after_task_limit')
+    try:
+        async with open_client() as client:
+            result = await client.call_tool(name, arguments)
+    except Exception as exc:
+        if not _explicit_exa_limit(exc):
+            raise
+        if quota:
+            quota.record_limit()
+        raise ExternalSourceError('exa_mcp_rate_limited') from exc
+    if (_read_attr(result, "is_error", "isError", default=False)
+            and _quota_message(' '.join(_tool_result_text(result)))):
+        if quota:
+            quota.record_limit()
+        raise ExternalSourceError('exa_mcp_rate_limited')
+    return result
+
+
 class ExaHostedMCPProvider:
     """Thin Exa hosted-MCP discovery adapter; Exa output remains locator-only."""
 
@@ -275,11 +328,13 @@ class ExaHostedMCPProvider:
         client_factory: Callable[[], AsyncContextManager[_MCPClient]] | None = None,
         timeout_seconds: float = 30.0,
         on_response=None,
+        quota: ExaTaskQuota | None = None,
     ) -> None:
         self.endpoint = endpoint
         self.timeout_seconds = timeout_seconds
         self._client_factory = client_factory
         self.on_response = on_response
+        self.quota = quota
 
     def _client(self, *, advanced=False) -> AsyncContextManager[_MCPClient]:
         if self._client_factory is not None:
@@ -302,19 +357,11 @@ class ExaHostedMCPProvider:
             if getattr(request,field):
                 arguments[wire]=getattr(request,field).isoformat()
         try:
-            async with self._client(advanced=advanced) as client:
-                result = await client.call_tool(
-                    'web_search_advanced_exa' if advanced else 'web_search_exa', arguments,
-                )
+            result = await _exa_call(lambda: self._client(advanced=advanced),
+                'web_search_advanced_exa' if advanced else 'web_search_exa', arguments, self.quota)
         except ExternalSourceError:
             raise
         except Exception as exc:
-            pending = [exc]
-            while pending:
-                error = pending.pop()
-                if "exa's free mcp rate limit" in str(error).lower():
-                    raise ExternalSourceError("exa_mcp_rate_limited") from exc
-                pending.extend(getattr(error, 'exceptions', ()))
             raise ExternalSourceError("exa_mcp_search_failed") from exc
 
         if self.on_response is not None:
@@ -450,6 +497,8 @@ class ExternalSourceDiscovery:
             try:
                 hits = tuple(await provider.search(request))
             except ExternalSourceError as exc:
+                if exc.code == 'exa_skipped_after_task_limit':
+                    continue  # No provider request took place.
                 attempts.append(
                     ProviderAttempt(
                         provider_id=provider.provider_id,
@@ -850,10 +899,12 @@ class ExaHostedMCPPageFetcher:
         client_factory: Callable[[], AsyncContextManager[_MCPClient]] | None = None,
         max_characters: int = 50_000,
         maximum_response_bytes: int = 2_000_000,
+        quota: ExaTaskQuota | None = None,
     ) -> None:
         if max_characters < 1 or maximum_response_bytes < 1:
             raise ValueError("exa_hosted_fetch_limit_invalid")
         self.guard = guard
+        self.quota = quota
         self.endpoint = endpoint
         self._client_factory = client_factory
         self.max_characters = max_characters
@@ -875,14 +926,8 @@ class ExaHostedMCPPageFetcher:
     async def fetch(self, url: str, *, timeout_seconds: float) -> FetchedPage:
         requested_url = await asyncio.to_thread(self.guard.validate, url)
         try:
-            async with self._client(timeout_seconds=timeout_seconds) as client:
-                result = await client.call_tool(
-                    "web_fetch_exa",
-                    {
-                        "urls": [requested_url],
-                        "maxCharacters": self.max_characters,
-                    },
-                )
+            result = await _exa_call(lambda: self._client(timeout_seconds=timeout_seconds),
+                "web_fetch_exa", {"urls":[requested_url], "maxCharacters":self.max_characters}, self.quota)
         except ExternalSourceError:
             raise
         except Exception as exc:

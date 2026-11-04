@@ -45,8 +45,30 @@ def public_usage_event(call_id, model, record=None):
     return row
 
 
+def fit_review_receipts(body, limit):
+    """Reduce oldest exact tool copies only under remaining pressure; preserve paged access."""
+    def wire():
+        return json.dumps(body, ensure_ascii=False, sort_keys=True)
+    payload = wire()
+    for index, item in enumerate(body['input']):
+        if len(payload) <= limit:
+            break
+        if item.get('type') != 'function_call_output' or len(item['output']) < 3500:
+            continue
+        receipt = json.loads(item['output'])
+        rid = receipt.get('receipt_id')
+        if not rid:
+            continue
+        preview = {'receipt_id':rid, 'partial_preview':item['output'][:1500],
+                   'original_readback':{'tool':'read_saved_result','arguments':{'tool_call_id':rid,'offset':0}}}
+        body['input'][index] = {**item, 'output':json.dumps(preview,ensure_ascii=False)}
+        payload = wire()
+    return payload
+
+
 async def independent_review(*, selected, message, question, bridge, budget, environment,
-                             model, scope, command_id, authority, basis, as_of, public_sink, previous_scope=None, audit_root=None):
+                             model, scope, command_id, authority, basis, as_of, public_sink, previous_scope=None, audit_root=None,
+                             predecessor_scope=None):
     prices = budget.prices.get(model)
     if model != 'gpt-6.1-sol' or not prices or prices.currency != 'USD' or not environment.get('OPENAI_API_KEY'):
         raise ValueError('answer_review_provider_not_configured')
@@ -85,6 +107,8 @@ async def independent_review(*, selected, message, question, bridge, budget, env
                     parameters=readback.tool_call_schema.model_json_schema(),strict=False)]
                 wire = json.dumps(body, ensure_ascii=False, sort_keys=True)
                 if len(wire) > profile.max_input_characters:
+                    wire = fit_review_receipts(body, profile.max_input_characters)
+                if len(wire) > profile.max_input_characters:
                     raise ValueError('answer_review_input_budget_exceeded')
             # Conservative byte bound for tokenized text plus protocol overhead.
             reserve = ((len(wire.encode()) + 2048) * prices.input_miss + profile.max_output_tokens * prices.output + 999999)//1000000
@@ -98,7 +122,7 @@ async def independent_review(*, selected, message, question, bridge, budget, env
                     saved = await asyncio.to_thread(budget.store.lookup, budget.owner, budget.budget, key)
             if saved:
                 old_scope = saved['basis'].get('harness_execution_scope')
-                if old_scope not in (scope, previous_scope) or saved['status'] != 'received':
+                if old_scope not in (scope, previous_scope, predecessor_scope) or saved['status'] != 'received':
                     raise ValueError('answer_review_previous_dispatch_unresolved')
                 # Replay the same selected version, tools and provider input.
                 expected = version(wire+json.dumps(saved['basis'], sort_keys=True))

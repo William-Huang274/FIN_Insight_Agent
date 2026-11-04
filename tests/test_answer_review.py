@@ -71,3 +71,16 @@ def test_incomplete_usage_is_not_zero_and_no_review_reasoning_is_public():
     public = public_usage_event('call','reviewer',saved)
     assert public['usage_reported'] is False
     assert 'total_tokens' not in public and 'output' not in public
+
+
+def test_pressure_preserves_input_pairs_and_receipt_readback():
+    from sec_agent.agent_runtime.answer_review_provider import fit_review_receipts
+    receipt = json.dumps({'receipt_id':'original','result':'x'*8000})
+    body = {'input':[{'role':'user','content':'original question'},
+                     {'type':'function_call','call_id':'sdk-call'},
+                     {'type':'function_call_output','call_id':'sdk-call','output':receipt}]}
+    assert len(fit_review_receipts(body, 3000)) < 3000
+    output = body['input'][-1]
+    assert output['call_id'] == 'sdk-call'
+    assert json.loads(output['output'])['original_readback']['arguments']['tool_call_id'] == 'original'
+    assert body['input'][0]['content'] == 'original question'

@@ -688,6 +688,7 @@ class CaptureAttempt(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     method: Literal[
+        "pypdf_static",
         "trafilatura_static",
         "exa_hosted_web_fetch",
         "playwright_browser",
@@ -724,6 +725,7 @@ class CaptureReceipt(BaseModel):
     final_url: str | None
     source_domain: str | None
     capture_method: Literal[
+        "pypdf_static",
         "trafilatura_static",
         "exa_hosted_web_fetch",
         "playwright_browser",
@@ -789,7 +791,7 @@ class PublicURLGuard:
 
 
 class StaticHTTPPageFetcher:
-    """Bounded HTTP transport; extraction is performed separately by trafilatura."""
+    """Bounded public HTTP transport for HTML and text-bearing PDF releases."""
 
     transport_authority = "qualification_only"
     production_status = "HOLD"
@@ -798,7 +800,7 @@ class StaticHTTPPageFetcher:
         self,
         *,
         guard: PublicURLGuard,
-        user_agent: str = "FIN-Insight-Agent/0.1 research-source-capture",
+        user_agent: str | None = None,
         maximum_redirects: int = 5,
         maximum_response_bytes: int = 5_000_000,
         session_factory: Callable[[], Any] | None = None,
@@ -820,7 +822,7 @@ class StaticHTTPPageFetcher:
                     url,
                     allow_redirects=False,
                     timeout=timeout_seconds,
-                    headers={"User-Agent": self.user_agent},
+                    headers={"User-Agent": self.user_agent or f"{requests.utils.default_user_agent()} FinSight/0.1"},
                     stream=True,
                 ) as response:
                     if response.is_redirect or response.is_permanent_redirect:
@@ -852,6 +854,23 @@ class StaticHTTPPageFetcher:
                         if len(body) > self.maximum_response_bytes:
                             raise ExternalSourceError("capture_response_too_large")
                     final_url = self.guard.validate(str(response.url))
+                    if body.startswith(b"%PDF-"):
+                        from io import BytesIO
+                        from pypdf import PdfReader
+
+                        reader = PdfReader(BytesIO(body))
+                        if reader.is_encrypted or len(reader.pages) > 250:
+                            raise ExternalSourceError("capture_pdf_not_readable_within_limits")
+                        parts = []
+                        characters = 0
+                        for page in reader.pages:
+                            part = page.extract_text() or ""
+                            characters += len(part)
+                            if characters > self.maximum_response_bytes:
+                                raise ExternalSourceError("capture_pdf_text_too_large")
+                            parts.append(part)
+                        return FetchedPage(final_url=final_url, extracted_text="\n\n".join(parts),
+                                           status_code=status_code, content_type="application/pdf")
                     encoding = str(response.encoding or "utf-8")
                     return FetchedPage(
                         final_url=final_url,
@@ -1161,6 +1180,7 @@ class ExternalSourceCapture:
         last_page: FetchedPage | None = None
         last_text = ""
         selected_method: Literal[
+            "pypdf_static",
             "trafilatura_static",
             "exa_hosted_web_fetch",
             "playwright_browser",
@@ -1179,6 +1199,8 @@ class ExternalSourceCapture:
                     )
                 final_url = await asyncio.to_thread(self.guard.validate, page.final_url)
                 page = page.model_copy(update={"final_url": final_url})
+                if method == "trafilatura_static" and page.content_type == "application/pdf" and page.extracted_text is not None:
+                    method = "pypdf_static"
                 text = (
                     page.extracted_text.strip()
                     if page.extracted_text is not None

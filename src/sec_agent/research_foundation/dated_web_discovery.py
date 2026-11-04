@@ -6,7 +6,50 @@ import re
 from urllib.parse import urlsplit
 
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
-from .external_sources import DiscoveryReceipt, ExternalSourceError
+from .external_sources import DiscoveryReceipt, ExternalSourceError, _host_in_domains
+
+
+# Release series published in the Department of Labor's economic-data archive.
+_DOL_SERIES = {
+    'cpi': 'Consumer Price Index', 'realer': 'Real Earnings',
+    'empsit': 'Employment Situation', 'ppi': 'Producer Price Index',
+    'eci': 'Employment Cost Index', 'prod2': 'Productivity and Costs',
+    'ximpim': 'Import and Export Price Indexes',
+}
+_BLS_EMBARGO = re.compile(
+    r'Transmission of material in this release is embargoed until\s+'
+    r'(?:USDL-\s*\d{2}-\d+\s+)?\d{1,2}:\d{2}\s*[ap]\.m\.\s*\(ET\)\s+'
+    r'(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+'
+    r'([A-Za-z]+ \d{1,2}, \d{4})', re.I)
+
+
+async def dol_archive_copy(candidate, fetcher, domains):
+    url = urlsplit(candidate.canonical_url)
+    if url.hostname != 'www.bls.gov' or (domains and not _host_in_domains('www.dol.gov', domains)):
+        return None
+    match = re.fullmatch(r'/news\.release/archives/([a-z0-9]+)_(\d{8})\.(?:htm|pdf)', url.path)
+    if not match or match[1] not in _DOL_SERIES:
+        return None
+    series, stamp = match.groups()
+    mirror = f'https://www.dol.gov/newsroom/economicdata/{series}_{stamp}.pdf'
+    try:
+        page = await fetcher.fetch(mirror, timeout_seconds=15)
+        text = page.extracted_text or ''
+        masthead = ' '.join(text[:1400].split())
+        release = _BLS_EMBARGO.search(masthead)
+        if (page.final_url != mirror or page.content_type != 'application/pdf' or not release
+                or _DOL_SERIES[series].casefold() not in masthead.casefold()
+                or 'bls.gov' not in masthead.lower()):
+            return None
+        day = publisher_day(text)
+        if datetime.strptime(release[1], '%B %d, %Y').strftime('%m%d%Y') != stamp or day is None:
+            return None
+    except (ExternalSourceError, TimeoutError, ValueError):
+        return None
+    # The mirror has its own locator. Bind all subsequent navigation to the file actually read.
+    fields = {'canonical_url': mirror, 'source_domain': 'www.dol.gov', 'title': _DOL_SERIES[series],
+              'candidate_id': canonical_digest({'discovered_candidate': candidate.candidate_id, 'official_copy': mirror})}
+    return candidate.model_copy(update=fields), day
 
 
 def filing_index(url):
@@ -32,7 +75,7 @@ def publisher_day(text, index=False):
     release_label = (r'(?im)^\s*(?:last update(?:d)?\s*:|release date\s*:|'
                      r'embargoed until release[^\n]{0,80}?\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),)'
                      r'\s*([A-Za-z]{3,9} \d{1,2}, \d{4})\b')
-    for value in re.findall(release_label, body):
+    for value in re.findall(release_label, body) + _BLS_EMBARGO.findall(body[:1400]):
         for fmt in ('%B %d, %Y','%b %d, %Y'):
             try:
                 dates.add(datetime.strptime(value,fmt).date())
@@ -109,9 +152,15 @@ class DatedWebDiscovery:
                         try:
                             page = await self.origin_fetcher.fetch(locator, timeout_seconds=15)
                             if page.final_url == locator:
-                                day = publisher_html_day(page.html,bool(index))
+                                day = (publisher_day(page.extracted_text, bool(index)) if getattr(page, 'extracted_text', None)
+                                       else publisher_html_day(page.html, bool(index)))
                         except (ExternalSourceError, TimeoutError) as exc:
                             origin_failure = 'origin_403' if getattr(exc,'code','') == 'capture_http_status_403' else 'origin_unavailable'
+                            if origin_failure == 'origin_403':
+                                copy = await dol_archive_copy(candidate, self.origin_fetcher, request.include_domains)
+                                if copy:
+                                    candidate, day = copy
+                                    locator = candidate.canonical_url
                     if day is None:
                         page = await self.fetcher.fetch(locator, timeout_seconds=15)
                         if page.final_url != locator:
@@ -136,6 +185,7 @@ class DatedWebDiscovery:
             receipt = await provider.search(request)
             checked = await asyncio.gather(*(verify(c) for c in receipt.candidates))
             admitted = [row for row in checked if not isinstance(row, str)]
+            admitted = list({row.canonical_url: row for row in admitted}.values())
             for attempt in receipt.attempted_providers:
                 counts = Counter(result if isinstance(result,str) else 'admitted'
                                  for candidate,result in zip(receipt.candidates,checked)

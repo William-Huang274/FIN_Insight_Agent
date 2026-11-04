@@ -7,6 +7,35 @@ from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery,
 from test_web_source_navigation import _reader, _call
 
 
+def test_bls_403_mirror_requires_matching_masthead_date_series_and_permitted_domain():
+    from sec_agent.research_foundation.dated_web_discovery import dol_archive_copy
+    from sec_agent.research_foundation.external_sources import FetchedPage
+
+    original = 'https://www.bls.gov/news.release/archives/realer_06102026.htm'
+    mirror = 'https://www.dol.gov/newsroom/economicdata/realer_06102026.pdf'
+    reader, _, _ = _reader(url=original, published=None)
+    _call(reader, 'search', query='real earnings')
+    candidate = next(iter(reader._candidates.values()))[1]
+    header = ('Transmission of material in this release is embargoed until USDL- 26-0825\n'
+              '8:30 a.m. (ET) Wednesday, June 10, 2026\nwww.bls.gov/ces\nREAL EARNINGS – MAY 2026')
+
+    class Origin:
+        text = header
+
+        async def fetch(self, locator, **_):
+            assert locator == mirror
+            return FetchedPage(final_url=locator, content_type='application/pdf', extracted_text=self.text)
+
+    origin = Origin()
+    result, day = asyncio.run(dol_archive_copy(candidate, origin, ()))
+    assert day == date(2026, 6, 10) and result.canonical_url == mirror
+    assert result.candidate_id != candidate.candidate_id
+    assert asyncio.run(dol_archive_copy(candidate, origin, ('bls.gov',))) is None
+    for invalid in (header.replace('June 10', 'June 12'), header.replace('REAL EARNINGS', 'OTHER RELEASE')):
+        origin.text = invalid
+        assert asyncio.run(dol_archive_copy(candidate, origin, ())) is None
+
+
 def test_filing_day_not_period_end_filters_receipts_before_model_search_and_can_restore():
     url = 'https://www.sec.gov/Archives/edgar/data/100517/000010051726000139/ual-20260630.htm'
     assert filing_index(url).endswith('/0000100517-26-000139-index.htm')

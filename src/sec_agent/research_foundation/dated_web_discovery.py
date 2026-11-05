@@ -104,7 +104,7 @@ def filing_index(url):
     return None
 
 
-def publisher_day(text, index=False):
+def publisher_day(text, index=False, *, pdf=False):
     # Skip the fetch provider's own URL/Published header. Reporting period,
     # copyright and arbitrary dates embedded in narrative are not release dates.
     body = text.partition('\n\n')[2] if text.startswith('#') and '\nURL:' in text.partition('\n\n')[0] else text
@@ -115,7 +115,14 @@ def publisher_day(text, index=False):
     release_label = (r'(?im)^\s*(?:last update(?:d)?\s*:|release date\s*:|'
                      r'embargoed until release[^\n]{0,80}?\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),)'
                      r'\s*([A-Za-z]{3,9} \d{1,2}, \d{4})\b')
-    for value in re.findall(release_label, body) + _BLS_EMBARGO.findall(body[:1400]):
+    masthead_dates = []
+    if pdf:
+        # A monthly report label followed by a separate full dateline in the
+        # masthead. Dates in data tables and the survey month alone do not qualify.
+        masthead_dates = re.findall(
+            r'(?im)^[ \t]*[A-Z][a-z]{2,8} 20\d{2} survey results[ \t]+'
+            r'([A-Z][a-z]{2,8} \d{1,2}, 20\d{2})[ \t]*$', body[:600])
+    for value in re.findall(release_label, body) + _BLS_EMBARGO.findall(body[:1400]) + masthead_dates:
         for fmt in ('%B %d, %Y','%b %d, %Y'):
             try:
                 dates.add(datetime.strptime(value,fmt).date())
@@ -255,7 +262,7 @@ class DatedWebDiscovery:
                                     title = BeautifulSoup(page.html, 'html.parser').find('h1')
                                     if title and title.get_text(strip=True):
                                         candidate = candidate.model_copy(update={'title':title.get_text(' ',strip=True)[:512]})
-                                day = (publisher_day(page.extracted_text, bool(index)) if getattr(page, 'extracted_text', None)
+                                day = (publisher_day(page.extracted_text, bool(index), pdf=getattr(page, 'content_type', None) == 'application/pdf') if getattr(page, 'extracted_text', None)
                                        else publisher_html_day(page.html, bool(index)))
                                 if (not day and self.search_backup and candidate.provider_rank == 1
                                         and candidate.provider_id == 'deepseek_search' and page.html and not index):
@@ -300,6 +307,11 @@ class DatedWebDiscovery:
 
         attempts = []
         providers = (ExternalSourceDiscovery(primary=PublicLocator()),) if direct else (self.discovery, self.search_backup, self.fallback_discovery)
+        if not direct and self.origin_fetcher:
+            from .publisher_catalogs import CatalogSearch, PublisherCatalog
+            catalog = PublisherCatalog.match(request)
+            if catalog:
+                providers = (ExternalSourceDiscovery(primary=CatalogSearch(catalog, self.origin_fetcher)), *providers)
         for provider in providers:
             if provider is None:
                 continue

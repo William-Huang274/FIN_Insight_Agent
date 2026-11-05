@@ -122,7 +122,11 @@ async def organization_harness_session(*, native, resources, authority, check, o
     grants.append(GrantedTool(organization_source_tool(navigation, check, public_web=public_web), 'read', '当前组织任务的固定来源'))
     if public_web:
         from .conversation_web import public_web_tool
-        grants.append(public_web_tool(thread_id=tid, run_id=rid,
+        from .deepseek_web import DeepSeekWeb
+        from sec_agent.research_foundation.external_sources import PublicURLGuard
+        key = environment.get('DEEPSEEK_API_KEY')
+        paid_search = DeepSeekWeb(api_key=key, budget=budget, thread_id=tid, guard=PublicURLGuard()) if key else None
+        grants.append(public_web_tool(thread_id=tid, run_id=rid, paid_search=paid_search,
             method_digest=sha256(research_system_prompt(['read_public_source', 'get_research_method']).encode('utf-8')).hexdigest(),
             cache_root=directory / 'public-source-cache', research_as_of=organization.research_as_of))
     grants.extend(GrantedTool(t, 'working_note_write' if t.name == 'WriteWorkingNote' else 'read',

@@ -1,6 +1,6 @@
 """Resolve the publication day before handing any ranked hit to a dated task."""
 import asyncio
-from collections import Counter
+from collections import Counter, OrderedDict
 from datetime import date, datetime
 import re
 from urllib.parse import urljoin, urlsplit
@@ -162,21 +162,76 @@ def publisher_html_day(html, index=False):
     return max(dates,default=None)
 
 
+def corroborated_dateline(markdown, html):
+    """Require a hosted dateline to occur between the same heading and lede on the original."""
+    from bs4 import BeautifulSoup
+    heading = re.search(r'(?m)^# (.+)\n+([^\n]+)\n+([^\n]{32,})', markdown)
+    if not heading:
+        return None
+    try:
+        day = datetime.strptime(heading[2].strip(), '%B %d, %Y').date()
+    except ValueError:
+        return None
+    soup = BeautifulSoup(html, 'html.parser')
+    label = ' '.join(heading[1].split())
+    headings = soup.find_all('h1')
+    if len(headings) != 1 or ' '.join(headings[0].stripped_strings) != label:
+        return None
+    start = ' '.join(heading[3].split())[:48]
+    original = ' '.join(' '.join(soup.stripped_strings).split())
+    return day if f'{label} {heading[2].strip()} {start}' in original else None
+
+
+class SearchReadOrigin:
+    """Keep a bounded window of exact successful origin GETs within this tool session.
+    Discovery and capture see the same response; capture still validates and issues its own receipt."""
+    def __init__(self, fetcher, *, max_bytes=8_000_000, max_entries=16):
+        self.fetcher = fetcher
+        self.max_bytes, self.max_entries = max_bytes, max_entries
+        self.pages, self.used = OrderedDict(), 0
+
+    async def fetch(self, url, *, timeout_seconds):
+        if url in self.pages:
+            self.pages.move_to_end(url)
+            return self.pages[url][0]
+        page = await self.fetcher.fetch(url, timeout_seconds=timeout_seconds)
+        size = sum(len((v or '').encode()) for v in (page.html, page.extracted_text))
+        if page.final_url == url and size and size <= self.max_bytes:
+            previous = self.pages.pop(url, None)
+            self.used += size - (previous[1] if previous else 0)
+            self.pages[url] = (page, size)
+            while self.used > self.max_bytes or len(self.pages) > self.max_entries:
+                _, (_, evicted) = self.pages.popitem(last=False)
+                self.used -= evicted
+        return page
+
+
 class DatedWebDiscovery:
     """Only admitted locators enter navigation, receipts and model input."""
-    def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None):
+    def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None, search_backup=None):
         self.discovery = discovery
         self.fetcher = fetcher
         self.fallback_discovery = fallback_discovery
         self.origin_fetcher = origin_fetcher
+        self.search_backup = search_backup
         self.verified = {}
 
     async def search(self, request):
         cutoff = request.run_scope.research_as_of.date()
         direct = is_url_query(request.query)
+        # For one unambiguous positive site filter, enforce it locally even
+        # when a fallback engine ignores the search operator. Leave Boolean
+        # and quoted expressions to the provider, not our own query parser.
+        sites = re.findall(r'(?i)(?:^|\s)site:([a-z0-9.-]+)(?=\s|$)', request.query)
+        if (len(sites) == 1 and not request.include_domains and not direct
+                and not re.search(r'(?i)\bOR\b|["()|]', request.query)):
+            request = request.model_copy(update={'include_domains':(sites[0].strip('.').lower(),)})
 
         async def verify(candidate):
             url = candidate.canonical_url
+            if candidate.provider_id == 'deepseek_search':
+                # An index title can change after the cutoff even for an old URL.
+                candidate = candidate.model_copy(update={'title':url})
             index = filing_index(url)
             locator = index or url
             origin_failure = None
@@ -195,8 +250,20 @@ class DatedWebDiscovery:
                             page = await self.origin_fetcher.fetch(locator, timeout_seconds=15)
                             if page.final_url == locator:
                                 origin_read = True
+                                if candidate.provider_id == 'deepseek_search' and not index and page.html:
+                                    from bs4 import BeautifulSoup
+                                    title = BeautifulSoup(page.html, 'html.parser').find('h1')
+                                    if title and title.get_text(strip=True):
+                                        candidate = candidate.model_copy(update={'title':title.get_text(' ',strip=True)[:512]})
                                 day = (publisher_day(page.extracted_text, bool(index)) if getattr(page, 'extracted_text', None)
                                        else publisher_html_day(page.html, bool(index)))
+                                if (not day and self.search_backup and candidate.provider_rank == 1
+                                        and candidate.provider_id == 'deepseek_search' and page.html and not index):
+                                    try:
+                                        markdown = await self.search_backup.primary.fetch_markdown(locator)
+                                        day = corroborated_dateline(markdown, page.html)
+                                    except ExternalSourceError:
+                                        pass
                             else:
                                 origin_failure = 'redirect'
                         except (ExternalSourceError, TimeoutError) as exc:
@@ -232,10 +299,10 @@ class DatedWebDiscovery:
             return candidate.model_copy(update={'published_at':day.isoformat(),'snippet':''})
 
         attempts = []
-        providers = (ExternalSourceDiscovery(primary=PublicLocator()),) if direct else (self.discovery, self.fallback_discovery)
+        providers = (ExternalSourceDiscovery(primary=PublicLocator()),) if direct else (self.discovery, self.search_backup, self.fallback_discovery)
         for provider in providers:
             if provider is None:
-                break
+                continue
             receipt = await provider.search(request)
             checked = await asyncio.gather(*(verify(c) for c in receipt.candidates))
             admitted = [row for row in checked if not isinstance(row, str)]

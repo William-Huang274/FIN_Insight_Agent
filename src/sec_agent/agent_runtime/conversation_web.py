@@ -9,7 +9,7 @@ from langchain_core.tools import tool, ToolException
 from langgraph.prebuilt import ToolRuntime
 
 from sec_agent.research_foundation.contracts import canonical_sha256
-from sec_agent.research_foundation.dated_web_discovery import is_url_query
+from sec_agent.research_foundation.dated_web_discovery import SearchReadOrigin, is_url_query
 from sec_agent.research_foundation.external_sources import (
     ConversationSourceScope, ExaHostedMCPProvider, ExaHostedMCPPageFetcher,
     ExternalSourceDiscovery, ExternalSourceCapture, ExternalSourceError, PublicURLGuard,
@@ -56,6 +56,10 @@ def web_read_feedback(result):
         feedback.append({'kind':'date_not_established','meaning':'有候选未能核定公开日期。可改查有明确发布日期的公告或历史归档。'})
     if 'exa_mcp_rate_limited' in codes:
         feedback.append({'kind':'search_rate_limited','meaning':'Exa 本次限流；备用通道的结果另计。'})
+    if 'deepseek_query_exceeds_128_characters' in codes:
+        feedback.append({'kind':'query_length','meaning':'DeepSeek Search 单次最多 128 个字符；本次未向它发送截短的查询，其余通道另计。'})
+    if any(str(code).startswith('deepseek_') and code != 'deepseek_query_exceeds_128_characters' for code in codes):
+        feedback.append({'kind':'search_backup_unavailable','meaning':'DeepSeek 搜索未成功，具体错误在通道回执里；DDGS 另行尝试。这不能证明有关资料不存在。'})
     if 'ddgs_reported_no_results' in codes:
         feedback.append({'kind':'fallback_empty','meaning':'DDGS 报告未返回结果，原因未明。可换资料产品或参考期间；本次未检得不能证明没有披露。'})
     elif 'ddgs_search_failed' in codes:
@@ -63,7 +67,7 @@ def web_read_feedback(result):
     return feedback
 
 
-def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reader=None, research_as_of=None):
+def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reader=None, research_as_of=None, paid_search=None):
     from uuid import UUID
     thread_id, run_id = str(UUID(thread_id)), str(UUID(run_id))
     cutoff = datetime.fromisoformat(research_as_of.replace('Z', '+00:00')) if research_as_of else datetime.now(timezone.utc)
@@ -82,6 +86,8 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         quota = ExaTaskQuota(Path(cache_root).resolve() / thread_id)
         guard = PublicURLGuard()
         origin = StaticHTTPPageFetcher(guard=guard)
+        if research_as_of:
+            origin = SearchReadOrigin(origin)
         capture = ExternalSourceCapture(guard=guard, static_fetcher=origin,
             hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard,max_characters=200000,quota=quota))
         cached = ScopedSourceCaptureCache(root=cache_root,thread_id=thread_id,capture=capture,guard=guard)
@@ -90,7 +96,8 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         if research_as_of:
             from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery
             discovery = DatedWebDiscovery(discovery, ExaHostedMCPPageFetcher(guard=guard,max_characters=8000,quota=quota),
-                fallback_discovery=ExternalSourceDiscovery(primary=fallback), origin_fetcher=origin)
+                fallback_discovery=ExternalSourceDiscovery(primary=fallback), origin_fetcher=origin,
+                search_backup=ExternalSourceDiscovery(primary=paid_search) if paid_search else None)
         reader = WebSourceReader(discovery=discovery,capture=cached)
 
     restored = set()
@@ -153,11 +160,12 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             direct = bool(research_as_of and operation == 'search' and not document_id and is_url_query(query))
             feedback = web_read_feedback(visible)
             if quota and quota.limited and not direct:
-                visible['web_search_route'] = {'active_provider':'ddgs','scope':'task','reason':'confirmed_exa_rate_limit'}
+                route = 'deepseek_search_then_ddgs' if paid_search and research_as_of else 'ddgs'
+                visible['web_search_route'] = {'active_provider':route,'scope':'task','reason':'confirmed_exa_rate_limit'}
                 if not previously_limited:
                     feedback = [hint for hint in feedback if hint['kind'] != 'search_rate_limited']
                     feedback.insert(0, {'kind':'search_route_changed','meaning':
-                        'Exa 已返回限流，本任务已切换至 DDGS。后续搜索及恢复本任务时将跳过 Exa；继续使用 read_public_source 即可。'})
+                        f'Exa 已返回限流，本任务已切换至 {route}。后续搜索及恢复本任务时将跳过 Exa；继续使用 read_public_source 即可。'})
             if feedback:
                 visible['read_feedback'] = feedback
             if operation == 'search':

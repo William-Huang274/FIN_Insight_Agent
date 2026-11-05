@@ -57,7 +57,7 @@ _DOL_SERIES = {
     'ximpim': 'Import and Export Price Indexes',
 }
 _BLS_EMBARGO = re.compile(
-    r'Transmission of material in this release is embargoed until\s+'
+    r'Transmission of material in this (?:news )?release is embargoed until\s+'
     r'(?:USDL-\s*\d{2}-\d+\s+)?\d{1,2}:\d{2}\s*[ap]\.m\.\s*\(ET\)\s+'
     r'(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+'
     r'([A-Za-z]+ \d{1,2}, \d{4})', re.I)

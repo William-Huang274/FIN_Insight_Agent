@@ -36,6 +36,14 @@ def test_bls_403_mirror_requires_matching_masthead_date_series_and_permitted_dom
         assert asyncio.run(dol_archive_copy(candidate, origin, ())) is None
 
 
+def test_employment_release_uses_its_embargo_dateline_over_the_reference_month():
+    masthead = ("Transmission of material in this news release is embargoed until USDL-26-1435\n"
+                "8:30 a.m. (ET) Friday, September 4, 2026\n"
+                "THE EMPLOYMENT SITUATION — AUGUST 2026")
+    assert publisher_day(masthead) == date(2026, 9, 4)
+    assert publisher_day(masthead.split("Friday, ")[-1].replace("September 4, 2026", "August 2026")) is None
+
+
 def test_filing_day_not_period_end_filters_receipts_before_model_search_and_can_restore():
     url = 'https://www.sec.gov/Archives/edgar/data/100517/000010051726000139/ual-20260630.htm'
     assert filing_index(url).endswith('/0000100517-26-000139-index.htm')

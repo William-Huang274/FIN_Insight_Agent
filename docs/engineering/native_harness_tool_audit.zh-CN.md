@@ -137,3 +137,4 @@ SQL、按需委派和独立复核不因本次工具展示修复自动开放。
 有截止日、已授权公开联网并绑定美元任务预算的组织研究，使用同一个 `read_public_source` 入口。Exa 优先；没有通过截止日核查的候选时，依次尝试 DeepSeek Search 和 DDGS。缺少 DeepSeek 凭据时保留原路径。单一明确的 `site:` 查询限制也在本地检查。DeepSeek 返回的排名、摘要和索引日期不构成原文依据。DeepSeek Fetch 可辅助辨认首条结果的出版日期；仅在同一网址的原站 HTML 独立匹配标题、日期和正文开头时采用，不能凭托管 Markdown 认定跳转或引用来源。搜索核验与随后读取可复用同一会话有限缓存中的原站响应。
 
 DeepSeek Search、Fetch 按非空成功响应分别计费，目前均为每次 $0.00075。使用同一任务预算先预留后结算；相同线程、同一请求复用账本，响应不明保留预留，不自动重发。该兜底不会保证原站可访问，也不保证纯自然语言查询把发布机构排在首位。依据：[DeepSeek Search 与 Fetch 接口](https://api-docs.deepseek.com/guides/search/)。
+就业公报的发布日期以原件首页的 embargo 声明为准，兼容 BLS 使用的 “this release” 与 “this news release”。统计月份与发布日期分别保留。

@@ -191,6 +191,7 @@ class ProviderAttempt(BaseModel):
     runtime_compatibility: tuple[str, ...] = ()
     date_filter_counts: dict[str, int] = Field(default_factory=dict)
     engine_http: dict[str, int | str] = Field(default_factory=dict)
+    issuer_navigation: dict | None = None
 
     @model_serializer(mode='wrap')
     def preserve_archived_shape(self, handler):
@@ -199,6 +200,8 @@ class ProviderAttempt(BaseModel):
             body.pop('runtime_compatibility',None)
         if 'date_filter_counts' not in self.model_fields_set:
             body.pop('date_filter_counts',None)
+        if 'issuer_navigation' not in self.model_fields_set:
+            body.pop('issuer_navigation', None)
         if 'engine_http' not in self.model_fields_set:
             body.pop('engine_http', None)
         return body
@@ -715,6 +718,7 @@ class FetchedPage(BaseModel):
     final_url: str
     html: str = ""
     extracted_text: str | None = None
+    extraction_method: Literal["sec_edgar_html"] | None = None
     status_code: int | None = None
     content_type: str | None = None
 
@@ -727,6 +731,7 @@ class CaptureAttempt(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     method: Literal[
+        "sec_edgar_html",
         "pypdf_static",
         "trafilatura_static",
         "exa_hosted_web_fetch",
@@ -764,6 +769,7 @@ class CaptureReceipt(BaseModel):
     final_url: str | None
     source_domain: str | None
     capture_method: Literal[
+        "sec_edgar_html",
         "pypdf_static",
         "trafilatura_static",
         "exa_hosted_web_fetch",
@@ -1219,6 +1225,7 @@ class ExternalSourceCapture:
         last_page: FetchedPage | None = None
         last_text = ""
         selected_method: Literal[
+            "sec_edgar_html",
             "pypdf_static",
             "trafilatura_static",
             "exa_hosted_web_fetch",
@@ -1238,6 +1245,8 @@ class ExternalSourceCapture:
                     )
                 final_url = await asyncio.to_thread(self.guard.validate, page.final_url)
                 page = page.model_copy(update={"final_url": final_url})
+                if method == "trafilatura_static" and page.extraction_method == "sec_edgar_html":
+                    method = "sec_edgar_html"
                 if method == "trafilatura_static" and page.content_type == "application/pdf" and page.extracted_text is not None:
                     method = "pypdf_static"
                 text = (

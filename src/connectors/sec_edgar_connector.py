@@ -4,6 +4,8 @@ import json
 import os
 import re
 import time
+from threading import Lock
+from urllib.parse import urlsplit
 import html as html_lib
 from datetime import datetime, timezone
 from pathlib import Path
@@ -60,6 +62,35 @@ class SecEdgarConnector:
                 "Accept": "application/json,text/html,*/*",
             }
         )
+
+    # Live requests from all research threads in this process share one rate gate.
+    _live_lock = Lock()
+    _last_live_request = 0.0
+
+    def read_public_resource(self, url: str, *, timeout: float, max_bytes: int = 16_000_000) -> bytes:
+        """Bounded SEC-only transport for online tools. Don't forward the SEC identity on redirects."""
+        parsed = urlsplit(url)
+        if (parsed.scheme != 'https' or parsed.netloc not in {'data.sec.gov', 'www.sec.gov'}
+                or not parsed.path.startswith(('/files/', '/submissions/', '/Archives/edgar/data/'))):
+            raise SecEdgarConnectorError('Untrusted SEC endpoint', reason_code='sec_url_outside_contract')
+        with self._live_lock:
+            delay = self.min_interval - (time.monotonic() - SecEdgarConnector._last_live_request)
+            if delay > 0:
+                time.sleep(delay)
+            SecEdgarConnector._last_live_request = time.monotonic()
+        try:
+            with self.session.get(url, timeout=timeout, allow_redirects=False, stream=True) as response:
+                if response.status_code != 200:
+                    code = f'sec_http_{response.status_code}'
+                    raise SecEdgarConnectorError(code, reason_code=code)
+                chunks = bytearray()
+                for chunk in response.iter_content(65536):
+                    chunks.extend(chunk)
+                    if len(chunks) > max_bytes:
+                        raise SecEdgarConnectorError('SEC resource too large', reason_code='sec_resource_too_large')
+                return bytes(chunks)
+        except requests.RequestException as exc:
+            raise SecEdgarConnectorError('SEC request unavailable', reason_code='sec_transport_error') from exc
 
     def get_cik(self, ticker: str) -> str:
         ticker_upper = ticker.upper()

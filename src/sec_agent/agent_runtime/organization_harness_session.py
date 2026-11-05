@@ -126,7 +126,14 @@ async def organization_harness_session(*, native, resources, authority, check, o
         from sec_agent.research_foundation.external_sources import PublicURLGuard
         key = environment.get('DEEPSEEK_API_KEY')
         paid_search = DeepSeekWeb(api_key=key, budget=budget, thread_id=tid, guard=PublicURLGuard()) if key else None
-        grants.append(public_web_tool(thread_id=tid, run_id=rid, paid_search=paid_search,
+        agent_identity = environment.get('SEC_USER_AGENT')
+        if not agent_identity and environment.get('FINSIGHT_SEC_CONTACT_EMAIL'):
+            from financial_facts.sec_snapshot import sec_user_agent_from_environment
+            agent_identity = sec_user_agent_from_environment(environment)
+        identity_file = phase_arguments['settings'].get('sec_web_identity_file')
+        if not agent_identity and identity_file:
+            agent_identity = Path(identity_file).read_text(encoding='utf8').strip()
+        grants.append(public_web_tool(thread_id=tid, run_id=rid, paid_search=paid_search, sec_user_agent=agent_identity,
             method_digest=sha256(research_system_prompt(['read_public_source', 'get_research_method']).encode('utf-8')).hexdigest(),
             cache_root=directory / 'public-source-cache', research_as_of=organization.research_as_of))
     grants.extend(GrantedTool(t, 'working_note_write' if t.name == 'WriteWorkingNote' else 'read',

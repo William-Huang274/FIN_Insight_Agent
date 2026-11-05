@@ -154,6 +154,23 @@ def publisher_html_day(html, index=False):
             dates.append(date.fromisoformat(tag.get('content','')[:10]))
         except ValueError:
             continue
+    # A press-release label and its dateline in the same masthead, not a
+    # timestamp from navigation, related articles or a search snippet.
+    for label in soup.find_all(string=re.compile(r'^\s*press release\s*$', re.I)):
+        masthead = label.parent.parent
+        if not masthead or len(masthead.get_text(' ',strip=True)) > 220:
+            continue
+        headings_nearby = soup.find_all('h1')
+        if len(headings_nearby) != 1 or masthead.find_next('h1') is not headings_nearby[0]:
+            continue
+        stamp = masthead.find(['time','span','div'],class_=re.compile(r'date',re.I))
+        if stamp:
+            for fmt in ('%B %d, %Y','%b %d, %Y','%m/%d/%Y'):
+                try:
+                    dates.append(datetime.strptime(stamp.get_text(' ',strip=True),fmt).date())
+                    break
+                except ValueError:
+                    continue
     headings = soup.find_all('h1')
     if len(headings) == 1:
         heading = headings[0]
@@ -215,11 +232,12 @@ class SearchReadOrigin:
 
 class DatedWebDiscovery:
     """Only admitted locators enter navigation, receipts and model input."""
-    def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None, search_backup=None):
+    def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None, search_backup=None, companies=None):
         self.discovery = discovery
         self.fetcher = fetcher
         self.fallback_discovery = fallback_discovery
         self.origin_fetcher = origin_fetcher
+        self.companies = companies
         self.search_backup = search_backup
         self.verified = {}
 
@@ -234,11 +252,28 @@ class DatedWebDiscovery:
                 and not re.search(r'(?i)\bOR\b|["()|]', request.query)):
             request = request.model_copy(update={'include_domains':(sites[0].strip('.').lower(),)})
 
+        filing_source = None
+        issuer = None if direct or not self.companies else await self.companies.lookup(request)
         async def verify(candidate):
             url = candidate.canonical_url
             if candidate.provider_id == 'deepseek_search':
                 # An index title can change after the cutoff even for an old URL.
                 candidate = candidate.model_copy(update={'title':url})
+            if candidate.provider_id == 'sec_edgar_filings':
+                # SEC submissions binds this accession to its public filing day;
+                # the index binds exhibits to the exact accession directory.
+                day = filing_source.dates[url]
+                if day > cutoff:
+                    return 'after_cutoff'
+                try:
+                    page = await self.origin_fetcher.fetch(url, timeout_seconds=12)
+                except (ExternalSourceError, TimeoutError) as exc:
+                    return getattr(exc, 'code', 'sec_origin_unavailable')
+                if page.final_url != url or not page.html or not page.html.strip():
+                    return 'sec_original_unavailable'
+                if 'EX-99' in candidate.title or (not issuer.roots and '10-K' in candidate.title):
+                    self.companies.learn_websites(issuer,page.html,url)
+                return candidate.model_copy(update={'published_at':day.isoformat(),'snippet':''})
             index = filing_index(url)
             locator = index or url
             origin_failure = None
@@ -274,7 +309,7 @@ class DatedWebDiscovery:
                             else:
                                 origin_failure = 'redirect'
                         except (ExternalSourceError, TimeoutError) as exc:
-                            status = re.fullmatch(r'capture_http_status_(\d{3})', getattr(exc,'code',''))
+                            status = re.fullmatch(r'(?:capture_http_status_|sec_http_)(\d{3})', getattr(exc,'code',''))
                             origin_failure = f'origin_{status[1]}' if status else 'origin_unavailable'
                             if origin_failure == 'origin_403':
                                 copy = await dol_archive_copy(candidate, self.origin_fetcher, request.include_domains)
@@ -286,7 +321,7 @@ class DatedWebDiscovery:
                         if publication:
                             candidate, day = publication
                             locator = candidate.canonical_url
-                    if day is None and direct:
+                    if day is None and (direct or self.fetcher is None):
                         return origin_failure or 'date_unverified'
                     if day is None:
                         page = await self.fetcher.fetch(locator, timeout_seconds=15)
@@ -312,7 +347,28 @@ class DatedWebDiscovery:
             catalog = PublisherCatalog.match(request)
             if catalog:
                 providers = (ExternalSourceDiscovery(primary=CatalogSearch(catalog, self.origin_fetcher)), *providers)
+        sites = ()
+        saved_filings = []
+        if issuer:
+            from .company_disclosures import FilingSearch, WebsiteSearch, _WEB
+            domains = issuer.domains
+            if request.include_domains:
+                domains = tuple(h for h in request.include_domains if _host_in_domains(h, issuer.domains))
+            sites = tuple(ExternalSourceDiscovery(primary=WebsiteSearch(p.primary,domains))
+                          for p in providers if p is not None and domains)
+            filings = ()
+            if not request.include_domains or _host_in_domains('www.sec.gov',request.include_domains):
+                filing_source = FilingSearch(issuer,self.companies)
+                filings = (ExternalSourceDiscovery(primary=filing_source),)
+            if _WEB.search(request.query):
+                # A website request must reach a web search even when EDGAR has a filing.
+                providers = ((*sites, *filings, *providers) if sites else (*providers, *filings))
+            else:
+                providers = (*filings, *sites, *providers)
         for provider in providers:
+            if saved_filings and provider not in sites:
+                admitted = saved_filings
+                break
             if provider is None:
                 continue
             receipt = await provider.search(request)
@@ -323,12 +379,34 @@ class DatedWebDiscovery:
                 counts = Counter(result if isinstance(result,str) else 'admitted'
                                  for candidate,result in zip(receipt.candidates,checked)
                                  if candidate.provider_id == attempt.provider_id)
-                attempts.append(attempt.model_copy(update={'date_filter_counts':dict(counts)}) if counts else attempt)
+                update = {'date_filter_counts':dict(counts)} if counts else {}
+                if issuer:
+                    update['issuer_navigation'] = {
+                        'ticker':issuer.ticker, 'websites':list(issuer.roots),
+                        'website_role':'navigation_only', 'website_provenance':dict(issuer.evidence), 'official_website_query':(request.query if _WEB.search(request.query) else request.query+' official website'),
+                        'filing_attempts':(filing_source.failures if attempt.provider_id == 'sec_edgar_filings' else []),
+                    }
+                    if attempt.provider_id == 'sec_edgar_filings':
+                        update['issuer_navigation']['filing_attempts'] = [
+                            *filing_source.failures, *({'url':c.canonical_url,'stage':'filing_body','reason':out}
+                            for c,out in zip(receipt.candidates,checked) if isinstance(out,str) and out != 'after_cutoff')]
+                attempts.append(attempt.model_copy(update=update) if update else attempt)
+            if admitted and sites and provider.primary is filing_source and not _WEB.search(request.query):
+                # Keep filings even if the IR site rejects the read. Try one active
+                # domain search so a readable company release can sit alongside EDGAR.
+                saved_filings = admitted
+                continue
+            if saved_filings and receipt.attempted_providers:
+                combined = [saved_filings[0], *admitted[:1], *saved_filings[1:], *admitted[1:]]
+                admitted = list({c.canonical_url:c for c in combined}.values())[:request.max_results]
+                break
             if admitted:
                 break
         body = receipt.model_dump(mode='json',exclude={'receipt_digest'})
         body['attempted_providers'] = [row.model_dump(mode='json') for row in attempts]
         body['candidates'] = [row.model_dump(mode='json') for row in admitted]
-        if not admitted and body['status'] == 'ok':
+        if admitted:
+            body['status'] = 'ok'
+        elif body['status'] == 'ok':
             body['status'] = 'zero_results'
         return DiscoveryReceipt(**body,receipt_digest=canonical_digest(body))

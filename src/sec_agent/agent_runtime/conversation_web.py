@@ -67,7 +67,7 @@ def web_read_feedback(result):
     return feedback
 
 
-def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reader=None, research_as_of=None, paid_search=None):
+def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reader=None, research_as_of=None, paid_search=None, sec_user_agent=None):
     from uuid import UUID
     thread_id, run_id = str(UUID(thread_id)), str(UUID(run_id))
     cutoff = datetime.fromisoformat(research_as_of.replace('Z', '+00:00')) if research_as_of else datetime.now(timezone.utc)
@@ -87,7 +87,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         guard = PublicURLGuard()
         origin = StaticHTTPPageFetcher(guard=guard)
         if research_as_of:
-            origin = SearchReadOrigin(origin)
+            from sec_agent.research_foundation.company_disclosures import CompanySources
+            companies = CompanySources(sec_user_agent, origin)
+            origin = SearchReadOrigin(companies)
         capture = ExternalSourceCapture(guard=guard, static_fetcher=origin,
             hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard,max_characters=200000,quota=quota))
         cached = ScopedSourceCaptureCache(root=cache_root,thread_id=thread_id,capture=capture,guard=guard)
@@ -97,7 +99,7 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery
             discovery = DatedWebDiscovery(discovery, ExaHostedMCPPageFetcher(guard=guard,max_characters=8000,quota=quota),
                 fallback_discovery=ExternalSourceDiscovery(primary=fallback), origin_fetcher=origin,
-                search_backup=ExternalSourceDiscovery(primary=paid_search) if paid_search else None)
+                search_backup=ExternalSourceDiscovery(primary=paid_search) if paid_search else None, companies=companies)
         reader = WebSourceReader(discovery=discovery,capture=cached)
 
     restored = set()
@@ -107,6 +109,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             document_id: str | None = None, offset: int = 0, max_characters: int = 6000,
             runtime: ToolRuntime = None):
         """Search public web sources, then read an exact returned WEB document ID.
+        A company name/ticker and earnings period can locate SEC filings. For issuer
+        websites search the company name plus "official website" and topic. Website
+        roots in receipts are navigation only. Read documents before citing them.
         For a dated task, search with a complete public HTTPS URL as query to verify
         that original or its publisher's catalog page directly. Use the returned
         document ID and source URL; each accepted page has its own identity.
@@ -158,6 +163,25 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             artifact = result.model_dump(mode="json")
             visible = dict(artifact)
             direct = bool(research_as_of and operation == 'search' and not document_id and is_url_query(query))
+            attempts = (visible.get('execution_receipt') or {}).get('attempts', [])
+            company_attempts = [a for a in attempts if a.get('issuer_navigation')]
+            if company_attempts:
+                # Take the latest site information (verified filings can supply new roots).
+                nav = dict(company_attempts[-1]['issuer_navigation'])
+                visible['issuer_navigation'] = nav
+                from urllib.parse import urlsplit
+                from sec_agent.research_foundation.external_sources import _host_in_domains
+                domains = [urlsplit(root).hostname.removeprefix('www.') for root in nav['websites']]
+                for item in visible.get('items',[]):
+                    host = urlsplit(item.get('source_url','')).hostname or ''
+                    item['discovery_channel'] = ('SEC EDGAR' if host == 'www.sec.gov' else
+                        'issuer website' if _host_in_domains(host,domains) else 'other publisher')
+                visible['official_source_attempts'] = [
+                    {'channel':a['provider_id'], 'failure':a.get('failure_code'),
+                     'outcomes':a.get('date_filter_counts',{}),
+                     'failed_originals':a['issuer_navigation'].get('filing_attempts',[])}
+                    for a in company_attempts
+                    if a['provider_id']=='sec_edgar_filings' or a['provider_id'].startswith('issuer_site_')]
             feedback = web_read_feedback(visible)
             if quota and quota.limited and not direct:
                 route = 'deepseek_search_then_ddgs' if paid_search and research_as_of else 'ddgs'

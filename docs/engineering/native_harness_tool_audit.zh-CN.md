@@ -147,3 +147,4 @@ DeepSeek Search、Fetch 按非空成功响应分别计费，目前均为每次 $
 
 组织服务可使用已有的 SEC_USER_AGENT，或用 FINSIGHT_SEC_CONTACT_EMAIL 生成 SEC 访问身份。支持主机设置 sec_web_identity_file 指向只读挂载的真实身份文件。身份不进入模型输入，不传给公司网站。没有配置时记录 SEC 通道不可用，仍可使用公开搜索和已核实的公司网站导航。
 转载页的结构化发布日期须与实际文章网址对应；页面级元数据明示指向其他网址时，不采用它的时间戳。公司官网导航与可引用的分期原文分开显示。
+Windows 隔离验收服务可启用本机浏览器查看权限。仅在组织验收 fixture 中设置 FIN_QUALIFICATION_DEVICE_DB 为当前 Windows 用户私有目录中的 SQLite 路径，并设置 FIN_QUALIFICATION_DEVICE_PORT 为绑定 127.0.0.1 的工作台端口。通过 scripts/engineering/open_local_qualification_workbench.py 打开默认浏览器，或用 --approve-browser 核对另一个浏览器登录页显示的配对码。一次性配对在三分钟后失效；查看授权最长 365 天，跨进程重启保留，退出时撤销。浏览器读取仍受项目成员关系约束；写操作仍需正式身份。

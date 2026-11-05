@@ -100,3 +100,8 @@ if os.environ.get('FIN_COMPLETE_SOURCE_HTTP_QUALITY') == '1':
 logging.getLogger('apps.workbench.backend.research_intake').setLevel(logging.INFO)
 logging.getLogger('apps.workbench.backend.research_intake').addHandler(logging.StreamHandler())
 app = create_report_session_app()
+
+if organization_probe and os.environ.get('FIN_QUALIFICATION_DEVICE_DB'):
+    from tests.integration.fixtures.local_workbench_access import LocalWorkbenchAccess
+    app = LocalWorkbenchAccess(app, os.environ['FIN_QUALIFICATION_DEVICE_DB'],
+                               os.environ['FIN_QUALIFICATION_DEVICE_PORT'])

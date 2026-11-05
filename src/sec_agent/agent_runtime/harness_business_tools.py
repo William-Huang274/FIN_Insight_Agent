@@ -10,6 +10,7 @@ from __future__ import annotations
 import ast
 import asyncio
 from contextlib import nullcontext
+from copy import deepcopy
 import json
 from uuid import uuid4
 
@@ -99,8 +100,8 @@ def failed_run_receipts(event_file):
 def restored_batch_feedback(messages, ids):
     from .conversation_tools import calculator_observations, operand_source_feedback
     from sec_agent.research_foundation.source_bound_calculator import (
-        OperandSourceError, SourceBoundCalculation, validate_operand_sources)
-    calls, failures = {}, []
+        OperandSourceError, SourceBoundCalculation, calculate_from_sources)
+    calls, failures, revalidated = {}, [], []
     for index, message in enumerate(messages):
         for call in getattr(message, 'tool_calls', ()):
             if call.get('id') in ids:
@@ -120,7 +121,7 @@ def restored_batch_feedback(messages, ids):
             prior = messages[:index]
             try:
                 request = SourceBoundCalculation.model_validate(args)
-                validate_operand_sources(request, calculator_observations(prior).__getitem__)
+                checked = calculate_from_sources(request, calculator_observations(prior).__getitem__)
             except OperandSourceError as exc:
                 # Augment only a reproduced rejection, using the state at that call.
                 if exc.code in str(message.content) or (exc.code == 'source_id_not_observed'
@@ -128,11 +129,22 @@ def restored_batch_feedback(messages, ids):
                     failure['feedback'] = operand_source_feedback(exc, prior)
             except (ValueError, KeyError):
                 pass
+            else:
+                # This is a new deterministic check, not a rewritten historical
+                # receipt or a saved calculation. The exact original proposal
+                # can now be executed by the normal tool without guessing edits.
+                revalidated.append({'historical_failure': failure,
+                    'current_status': 'original_proposal_revalidated_not_saved',
+                    'check': checked,
+                    'retry': {'tool': message.name, 'arguments': deepcopy(call['args'])}})
+                continue
             if 'feedback' not in failure:
                 formula = restored_calculator_feedback(messages[:index+1])
                 if formula:
                     failure['feedback'] = formula['feedback']
         failures.append(failure)
+    if revalidated:
+        return {'kind': 'rechecked_tool_rejections', 'revalidated': revalidated, 'failures': failures}
     if failures:
         return {'kind':'saved_tool_rejections', 'failures':failures}
 

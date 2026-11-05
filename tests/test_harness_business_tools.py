@@ -19,6 +19,39 @@ from sec_agent.agent_runtime.harness_business_tools import HarnessBusinessTools
 from sec_agent.agent_runtime.harness_acp_session import admitted_acp_session
 
 
+def test_recovered_calculator_rechecks_original_without_rewriting_history():
+    from copy import deepcopy
+    from langchain_core.messages import AIMessage
+    from sec_agent.agent_runtime.harness_business_tools import restored_batch_feedback
+    source = {'passage_id': 'PASSAGE::test', 'passage': '占比为6.1%，去年为5.4%',
+              'result_state': 'source_bound_passage', 'writer_citable': True,
+              'numeric_fact_authority': False}
+    args = {'request': {'expression': 'a-b', 'operands': {
+        'a': {'source_id': source['passage_id'], 'quote': source['passage'], 'literal': '6.1'},
+        'b': {'source_id': source['passage_id'], 'quote': source['passage'], 'literal': '5.4'}},
+        'result_unit': '百分点', 'rationale': 'Compare the reported shares.'}}
+    messages = [ToolMessage(content='read', tool_call_id='read', name='read_source_document',
+                           artifact={'operation': 'read', 'items': [source]}),
+                AIMessage(content='', tool_calls=[{'id': 'calc', 'name': 'calculate_research_metric', 'args': args}]),
+                ToolMessage(content='numeric_literal_not_in_exact_source_quote: operand=a',
+                            tool_call_id='calc', name='calculate_research_metric', status='error')]
+    before = deepcopy(messages)
+    result = restored_batch_feedback(messages, {'calc'})
+    assert messages == before
+    assert result['kind'] == 'rechecked_tool_rejections' and not result['failures']
+    checked = result['revalidated'][0]
+    assert checked['current_status'] == 'original_proposal_revalidated_not_saved'
+    assert checked['check']['value_decimal'] == '0.7'
+    assert not checked['check']['financial_semantics_verified']
+    assert checked['retry']['arguments'] == args
+    assert checked['historical_failure']['status'] == 'error'
+    # A later malformed proposal is still rejected; do not copy a prior quote.
+    messages[1].tool_calls[0]['args']['request']['operands']['a'].pop('quote')
+    failed = restored_batch_feedback(messages, {'calc'})
+    assert failed['kind'] == 'saved_tool_rejections' and failed['failures']
+    assert 'revalidated' not in failed
+
+
 @pytest.mark.anyio
 async def test_unobserved_source_feedback_survives_pending_read_recovery(tmp_path):
     from langchain_core.messages import AIMessage

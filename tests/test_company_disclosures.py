@@ -226,3 +226,13 @@ def test_one_search_preserves_sec_and_ir_documents_and_never_promotes_a_blocked_
     attempts = found.execution_receipt.attempts
     assert attempts[-1]["date_filter_counts"] == {"origin_403": 1}
     assert attempts[-1]["issuer_navigation"]["websites"] == ["https://ir.example.com/"]
+
+
+def test_syndicated_article_cannot_use_the_parent_sites_older_timestamp():
+    from sec_agent.research_foundation.dated_web_discovery import publisher_html_day
+
+    url = "https://example.org/business/article"
+    html = """<head><meta property="og:url" content="https://example.org/contact"><meta property="article:modified_time" content="2025-08-14"></head>
+    <article><script type="application/ld+json">{"mainEntityOfPage":{"@id":"https://example.org/business/article"},"datePublished":"2026-07-22T06:30:00-04:00"}</script><h1>Second quarter results</h1></article>"""
+    assert publisher_html_day(html, url=url) == date(2026, 7, 22)
+    assert publisher_html_day(html, url="https://example.org/another") is None

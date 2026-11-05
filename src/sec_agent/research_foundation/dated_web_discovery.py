@@ -1,5 +1,6 @@
 """Resolve the publication day before handing any ranked hit to a dated task."""
 import asyncio
+import json
 from collections import Counter, OrderedDict
 from datetime import date, datetime
 import re
@@ -142,18 +143,42 @@ def publisher_day(text, index=False, *, pdf=False):
     return max(dates,default=None)
 
 
-def publisher_html_day(html, index=False):
+def publisher_html_day(html, index=False, *, url=None):
     from bs4 import BeautifulSoup
     soup = BeautifulSoup(html, 'html.parser')
     day = publisher_day(soup.get_text('\n',strip=True), index)
     if index:
         return day
     dates = [day] if day else []
-    for tag in soup.select('head meta[property="article:published_time"], head meta[property="article:modified_time"]'):
-        try:
-            dates.append(date.fromisoformat(tag.get('content','')[:10]))
-        except ValueError:
-            continue
+    def same_page(value):
+        return isinstance(value,str) and urljoin(url,value).split('#')[0] == url.split('#')[0]
+    if url:
+        for script in soup.select('script[type="application/ld+json"]'):
+            try:
+                raw = json.loads(script.string or '')
+            except (ValueError,RecursionError):
+                continue
+            nodes = raw if isinstance(raw,list) else [raw]
+            for node in nodes:
+                if not isinstance(node,dict):
+                    continue
+                identity = node.get('mainEntityOfPage',node.get('url'))
+                if isinstance(identity,dict):
+                    identity=identity.get('@id')
+                if not same_page(identity):
+                    continue
+                for key in ('datePublished','dateModified'):
+                    try:
+                        dates.append(date.fromisoformat(str(node.get(key))[:10]))
+                    except ValueError:
+                        continue
+    og_url = soup.select_one('head meta[property="og:url"]')
+    if not url or not og_url or same_page(og_url.get('content')):
+        for tag in soup.select('head meta[property="article:published_time"], head meta[property="article:modified_time"]'):
+            try:
+                dates.append(date.fromisoformat(tag.get('content','')[:10]))
+            except ValueError:
+                continue
     # A press-release label and its dateline in the same masthead, not a
     # timestamp from navigation, related articles or a search snippet.
     for label in soup.find_all(string=re.compile(r'^\s*press release\s*$', re.I)):
@@ -298,7 +323,7 @@ class DatedWebDiscovery:
                                     if title and title.get_text(strip=True):
                                         candidate = candidate.model_copy(update={'title':title.get_text(' ',strip=True)[:512]})
                                 day = (publisher_day(page.extracted_text, bool(index), pdf=getattr(page, 'content_type', None) == 'application/pdf') if getattr(page, 'extracted_text', None)
-                                       else publisher_html_day(page.html, bool(index)))
+                                       else publisher_html_day(page.html, bool(index), url=locator))
                                 if (not day and self.search_backup and candidate.provider_rank == 1
                                         and candidate.provider_id == 'deepseek_search' and page.html and not index):
                                     try:

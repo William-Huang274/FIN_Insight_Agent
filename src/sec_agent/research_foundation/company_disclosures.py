@@ -51,8 +51,14 @@ def issuer_match(rows, query):
     for row in rows:
         name = _SUFFIX.sub("", words(row["title"])).strip()
         ticker = row["ticker"]
-        if name and len(name) >= 3 and " " + name + " " in normalized:
-            matches.append((len(name), row))
+        # Verified issuer-directory aliases share the SEC ticker row's actual CIK.
+        alias = words(_SITES[ticker][0]) if ticker in _SITES else ""
+        matched = max(
+            (len(n) for n in (name, alias) if len(n) >= 3 and f" {n} " in normalized),
+            default=0,
+        )
+        if matched:
+            matches.append((matched, row))
         elif (
             query.strip().upper() == ticker
             or re.search(r"\$" + re.escape(ticker) + r"(?![A-Za-z0-9])", query)

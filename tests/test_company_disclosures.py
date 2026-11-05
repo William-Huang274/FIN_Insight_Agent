@@ -135,6 +135,17 @@ def test_distinct_issuers_cannot_be_silently_resolved_to_one():
     assert issuer_match(rows, "PulteGroup and Lennar earnings") is None
 
 
+def test_known_alias_preserves_sec_row_identity_and_issuer_ambiguity():
+    rows = [
+        dict(title="HORTON D R INC /DE/", ticker="DHI", cik_str=882184),
+        dict(title="Toll Brothers, Inc.", ticker="TOL", cik_str=794170),
+    ]
+    assert (
+        issuer_match(rows, "D.R. Horton fiscal 2026 second quarter results") == rows[0]
+    )
+    assert issuer_match(rows, "D.R. Horton and Toll Brothers orders") is None
+
+
 def test_sec_tables_and_inline_numbers_survive_without_hidden_xbrl():
     from sec_agent.research_foundation.company_disclosures import edgar_text
 

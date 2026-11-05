@@ -160,7 +160,7 @@ class HarnessSession:
 @asynccontextmanager
 async def admitted_acp_session(*, binary, arguments, environment, directory,
                                binding, run_id, authority, stop, mcp_servers,
-                               public=None, spawn=spawn_agent_process):
+                               public=None, spawn=spawn_agent_process, workspace=None):
     """Bind an execution workspace to one ACP session across admitted runs.
 
     `binding` comes from validated Java authority and host release selection,
@@ -169,6 +169,7 @@ async def admitted_acp_session(*, binary, arguments, environment, directory,
     """
     await asyncio.to_thread(authority)
     directory = Path(directory).resolve()
+    workspace = Path(workspace or directory).resolve()
     directory.mkdir(parents=True, exist_ok=True)
     saved_path = directory / 'session-binding.json'
     prior = json.loads(saved_path.read_text(encoding='utf8')) if saved_path.exists() else None
@@ -178,21 +179,21 @@ async def admitted_acp_session(*, binary, arguments, environment, directory,
     run_directory.mkdir(exist_ok=True)
     client = HarnessSessionClient(run_directory / 'events.private.jsonl', public)
     with (run_directory / 'process.private.log').open('ab') as stderr:
-        async with spawn(client, binary, *arguments, env=environment, cwd=directory,
+        async with spawn(client, binary, *arguments, env=environment, cwd=workspace,
                          transport_kwargs={'stderr': stderr, 'limit': 16 * 1024 * 1024}) as (connection, process):
             initialized = await connection.initialize(protocol_version=PROTOCOL_VERSION,
                 client_capabilities=ClientCapabilities(), client_info=Implementation(name='finsight', version='1'))
             if prior:
                 capabilities = initialized.agent_capabilities
                 if capabilities.session_capabilities and capabilities.session_capabilities.resume is not None:
-                    await connection.resume_session(session_id=prior['session_id'], cwd=str(directory), mcp_servers=mcp_servers)
+                    await connection.resume_session(session_id=prior['session_id'], cwd=str(workspace), mcp_servers=mcp_servers)
                 elif capabilities.load_session:
-                    await connection.load_session(session_id=prior['session_id'], cwd=str(directory), mcp_servers=mcp_servers)
+                    await connection.load_session(session_id=prior['session_id'], cwd=str(workspace), mcp_servers=mcp_servers)
                 else:
                     raise ValueError('harness_native_session_restore_unsupported')
                 session_id = prior['session_id']
             else:
-                response = await connection.new_session(cwd=str(directory), mcp_servers=mcp_servers)
+                response = await connection.new_session(cwd=str(workspace), mcp_servers=mcp_servers)
                 session_id = response.session_id
                 _persist(saved_path, {'binding': binding, 'session_id': session_id})
             await asyncio.to_thread(authority)

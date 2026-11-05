@@ -18,7 +18,8 @@ def legacy_receipts(binding, *, grant):
     if binding['execution_id'] != grant['execution_id'] or binding['manifest_digest'] != grant['manifest_digest']:
         raise ValueError('harness_legacy_import_authority_mismatch')
     checkpoint = binding['source_checkpoint']
-    if not checkpoint.get('checkpoint_id') or not checkpoint.get('checkpoint_ns'):
+    # LangGraph uses an empty string for the root graph namespace.
+    if not checkpoint.get('checkpoint_id') or not isinstance(checkpoint.get('checkpoint_ns'), str):
         raise ValueError('harness_legacy_import_checkpoint_required')
     raw = Path(binding['path']).read_bytes()
     if sha256(raw).hexdigest() != binding['sha256']:

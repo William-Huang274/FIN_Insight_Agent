@@ -96,6 +96,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
     # ledgers/notes intact, and do not seed this branch from a later outer answer.
     # This is a receipt handoff, not a fabricated native conversation fork.
     clean_import = options.get('isolated_receipt_replay', False)
+    replay_origin_run = options.get('legacy_receipt_import', {}).get('source_checkpoint', {}).get('run_id') if clean_import else None
     if clean_import and not import_digest:
         raise ValueError('harness_isolated_replay_requires_pinned_checkpoint')
     session_directory, memory_workspace, business_directory = receipt_replay_identity(
@@ -188,6 +189,22 @@ async def organization_harness_session(*, native, resources, authority, check, o
             await asyncio.to_thread(check)
             imported = await asyncio.to_thread(legacy_receipts, options['legacy_receipt_import'], grant=grant)
             await bridge.import_receipts(imported)
+            # A pinned branch may begin at an earlier failed batch while Java
+            # admits the new command against the latest outer checkpoint.
+            # Validate the branch's own failed calls using its imported history.
+            if replay_origin_run and action.get('action') == 'recover' and options.get('stop_on_tool_error') is True:
+                from uuid import UUID
+                from .harness_business_tools import failed_run_receipts, restored_batch_feedback
+                branch_state = await bridge.state()
+                if branch_state.get('harness_command_id') in (None, grant.get('report_command_id')):
+                    origin_events = directory / str(UUID(replay_origin_run)) / 'events.private.jsonl'
+                    origin_ids = await asyncio.to_thread(failed_run_receipts, origin_events)
+                    if not origin_events.is_file() or not origin_ids.issubset({m.tool_call_id for m in imported['messages']
+                            if isinstance(m, ToolMessage) and m.status == 'error'}):
+                        raise ValueError('harness_replay_failed_batch_checkpoint_mismatch')
+                    recovery_receipt = restored_batch_feedback(imported['messages'], origin_ids) or recovery_receipt
+                    if recovery_receipt:
+                        _persist(run_directory / 'tool-recovery.json', recovery_receipt)
         def active_authority():
             bridge.access()
             return authority()
@@ -341,7 +358,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 new_session = not (session_directory / 'session-binding.json').exists()
                 async with admitted_acp_session(binary=str(binary), arguments=['--profile', 'sdk-minimal', '--patch', str(patch_path)],
                         environment=child_env, directory=session_directory, binding=binding, run_id=rid,
-                        authority=active_authority, stop=bridge.stop, mcp_servers=servers) as session:
+                        authority=active_authority, stop=bridge.stop, mcp_servers=servers,
+                        workspace=directory if replay_origin_run else session_directory) as session:
                     request = author_input(selected, original, review['opinion']) if challenge else state['messages'][-1].content
                     if recovery_receipt:
                         request = json.dumps({'current_command': request,

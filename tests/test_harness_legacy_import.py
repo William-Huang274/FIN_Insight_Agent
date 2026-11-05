@@ -30,6 +30,15 @@ def exported(tmp_path):
     return state,binding,grant
 
 
+def test_root_checkpoint_namespace_is_explicit(tmp_path):
+    _, binding, grant = exported(tmp_path)
+    binding['source_checkpoint']['checkpoint_ns'] = ''
+    assert legacy_receipts(binding, grant=grant)['messages']
+    del binding['source_checkpoint']['checkpoint_ns']
+    with pytest.raises(ValueError, match='checkpoint_required'):
+        legacy_receipts(binding, grant=grant)
+
+
 @pytest.mark.anyio
 async def test_explicit_import_preserves_sources_once_without_old_summary(tmp_path):
     original,binding,grant=exported(tmp_path)

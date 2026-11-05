@@ -9,6 +9,7 @@ from langchain_core.tools import tool, ToolException
 from langgraph.prebuilt import ToolRuntime
 
 from sec_agent.research_foundation.contracts import canonical_sha256
+from sec_agent.research_foundation.dated_web_discovery import is_url_query
 from sec_agent.research_foundation.external_sources import (
     ConversationSourceScope, ExaHostedMCPProvider, ExaHostedMCPPageFetcher,
     ExternalSourceDiscovery, ExternalSourceCapture, ExternalSourceError, PublicURLGuard,
@@ -26,10 +27,20 @@ def web_read_feedback(result):
         return []
     counts = Counter()
     codes = set()
+    engines = {}
+    returned = 0
     for attempt in (result.get('execution_receipt') or {}).get('attempts', []):
         counts.update(attempt.get('date_filter_counts', {}))
         codes.add(attempt.get('failure_code'))
+        engines.update(attempt.get('engine_http', {}))
+        returned += attempt.get('returned_hits', 0)
     feedback = []
+    if returned and counts:
+        feedback.append({'kind':'candidates_not_admitted', 'returned_hits':returned, 'reasons':dict(counts),
+            'meaning':'检索找到了候选，当前没有可读的已核定版本。若已有公开 HTTPS 原件或出版页网址，可将完整网址作为 query 直接核查。'})
+    if any(status != 200 for status in engines.values()):
+        feedback.append({'kind':'search_engine_health', 'engine_http':engines,
+            'meaning':'部分搜索引擎未提供正常结果。429 表示限流，202 表示请求被接受但未返回标准结果页。已知的公开网址可直接核查；已有材料仍可使用。'})
     if counts['after_cutoff']:
         feedback.append({'kind':'after_cutoff','count':counts['after_cutoff'],
             'meaning':'部分候选晚于研究截止日。按发布日历倒推当时最近已公布的一期，再找当期归档。',
@@ -37,6 +48,10 @@ def web_read_feedback(result):
                 'method_id':'macro_valuation','section':'数据版本与当前研究入口'}}})
     if counts['origin_403'] or 'capture_http_status_403' in codes:
         feedback.append({'kind':'origin_403','meaning':'原站拒绝了本次访问（HTTP 403）。可查同一发布者的其他公开原件或正式转载，核对版本和出处。'})
+    origin_http = {key[7:]:n for key,n in counts.items() if key.startswith('origin_') and key[7:].isdigit() and key != 'origin_403'}
+    if origin_http:
+        feedback.append({'kind':'origin_http','http_status_counts':origin_http,
+            'meaning':'原站读取返回以下 HTTP 状态。404 表示这个地址未找到，429 表示限流，5xx 表示服务故障。'})
     if counts['date_unverified'] or counts['date_lookup_unavailable'] or counts['origin_unavailable'] or counts['redirect']:
         feedback.append({'kind':'date_not_established','meaning':'有候选未能核定公开日期。可改查有明确发布日期的公告或历史归档。'})
     if 'exa_mcp_rate_limited' in codes:
@@ -85,6 +100,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             document_id: str | None = None, offset: int = 0, max_characters: int = 6000,
             runtime: ToolRuntime = None):
         """Search public web sources, then read an exact returned WEB document ID.
+        For a dated task, search with a complete public HTTPS URL as query to verify
+        that original or its publisher's catalog page directly. Use the returned
+        document ID and source URL; each accepted page has its own identity.
         To locate a section, search again with that document_id and keywords;
         this returns exact bounded passages from the captured original, which
         may be cited with their source locators. Only read adjacent character
@@ -132,8 +150,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                 branch_id="conversation",run_scope=scope)
             artifact = result.model_dump(mode="json")
             visible = dict(artifact)
+            direct = bool(research_as_of and operation == 'search' and not document_id and is_url_query(query))
             feedback = web_read_feedback(visible)
-            if quota and quota.limited:
+            if quota and quota.limited and not direct:
                 visible['web_search_route'] = {'active_provider':'ddgs','scope':'task','reason':'confirmed_exa_rate_limit'}
                 if not previously_limited:
                     feedback = [hint for hint in feedback if hint['kind'] != 'search_rate_limited']
@@ -144,7 +163,8 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             if operation == 'search':
                 visible['search_coverage'] = {'space': 'public_web', 'research_as_of': body['research_as_of'],
                     'query': query, 'document_id': document_id,
-                    'query_kind': 'captured_document_search' if document_id else 'provider_ranked_search',
+                    'query_kind': ('captured_document_search' if document_id else
+                                   'direct_public_url' if direct else 'provider_ranked_search'),
                     'issuer_non_disclosure_established': False,
                     'meaning': ('Dated discovery omits undated or post-cutoff results before display. '
                                 'accepted_hits counts search candidates before date checks; date_filter_counts shows what passed and why others were omitted. '

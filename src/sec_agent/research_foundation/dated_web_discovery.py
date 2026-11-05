@@ -3,10 +3,50 @@ import asyncio
 from collections import Counter
 from datetime import date, datetime
 import re
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
-from .external_sources import DiscoveryReceipt, ExternalSourceError, _host_in_domains
+from .external_sources import (DiscoveryReceipt, ExternalSourceDiscovery, ExternalSourceError,
+                               ProviderHit, PublicURLGuard, _host_in_domains)
+
+
+def is_url_query(query):
+    return query.lower().startswith(('http://', 'https://')) and not any(c.isspace() for c in query)
+
+
+class PublicLocator:
+    provider_id = 'direct_public_url'
+
+    async def search(self, request):
+        url = await asyncio.to_thread(PublicURLGuard().validate, request.query)
+        return (ProviderHit(url=url, title=url),)
+
+
+async def census_publication_page(candidate, fetcher, domains):
+    """Return the separately dated catalog page, only if it links to this exact file."""
+    from bs4 import BeautifulSoup
+    parsed = urlsplit(candidate.canonical_url)
+    match = re.fullmatch(r'/library/publications/(\d{4}/[^/]+/[\w-]+)\.pdf', parsed.path)
+    if (parsed.hostname != 'www2.census.gov' or not match or parsed.query
+            or (domains and not _host_in_domains('www.census.gov', domains))):
+        return None
+    url = f'https://www.census.gov/library/publications/{match[1]}.html'
+    try:
+        page = await fetcher.fetch(url, timeout_seconds=15)
+        if page.final_url != url or not page.html:
+            return None
+        soup = BeautifulSoup(page.html, 'html.parser')
+        if not any(urljoin(url, a['href']) == candidate.canonical_url for a in soup.select('a[href]')):
+            return None
+        day = publisher_html_day(page.html)
+        title = soup.find('h1')
+        if day and title:
+            return candidate.model_copy(update={'canonical_url':url, 'source_domain':'www.census.gov',
+                'title':title.get_text(' ', strip=True)[:512],
+                'candidate_id':canonical_digest({'file_candidate':candidate.candidate_id,'publication_page':url})}), day
+    except (ExternalSourceError, TimeoutError, ValueError):
+        pass
+    return None
 
 
 # Release series published in the Department of Labor's economic-data archive.
@@ -133,12 +173,14 @@ class DatedWebDiscovery:
 
     async def search(self, request):
         cutoff = request.run_scope.research_as_of.date()
+        direct = is_url_query(request.query)
 
         async def verify(candidate):
             url = candidate.canonical_url
             index = filing_index(url)
             locator = index or url
             origin_failure = None
+            origin_read = False
             try:
                 if candidate.published_at:
                     try:
@@ -152,15 +194,26 @@ class DatedWebDiscovery:
                         try:
                             page = await self.origin_fetcher.fetch(locator, timeout_seconds=15)
                             if page.final_url == locator:
+                                origin_read = True
                                 day = (publisher_day(page.extracted_text, bool(index)) if getattr(page, 'extracted_text', None)
                                        else publisher_html_day(page.html, bool(index)))
+                            else:
+                                origin_failure = 'redirect'
                         except (ExternalSourceError, TimeoutError) as exc:
-                            origin_failure = 'origin_403' if getattr(exc,'code','') == 'capture_http_status_403' else 'origin_unavailable'
+                            status = re.fullmatch(r'capture_http_status_(\d{3})', getattr(exc,'code',''))
+                            origin_failure = f'origin_{status[1]}' if status else 'origin_unavailable'
                             if origin_failure == 'origin_403':
                                 copy = await dol_archive_copy(candidate, self.origin_fetcher, request.include_domains)
                                 if copy:
                                     candidate, day = copy
                                     locator = candidate.canonical_url
+                    if day is None and self.origin_fetcher:
+                        publication = await census_publication_page(candidate, self.origin_fetcher, request.include_domains)
+                        if publication:
+                            candidate, day = publication
+                            locator = candidate.canonical_url
+                    if day is None and direct:
+                        return origin_failure or 'date_unverified'
                     if day is None:
                         page = await self.fetcher.fetch(locator, timeout_seconds=15)
                         if page.final_url != locator:
@@ -170,7 +223,7 @@ class DatedWebDiscovery:
                         self.verified[locator] = day
                 day = self.verified.get(locator)
             except (ExternalSourceError, ValueError, TimeoutError):
-                return origin_failure or 'date_lookup_unavailable'
+                return origin_failure or ('date_unverified' if origin_read else 'date_lookup_unavailable')
             if not day:
                 return origin_failure or 'date_unverified'
             if day > cutoff:
@@ -179,7 +232,8 @@ class DatedWebDiscovery:
             return candidate.model_copy(update={'published_at':day.isoformat(),'snippet':''})
 
         attempts = []
-        for provider in (self.discovery, self.fallback_discovery):
+        providers = (ExternalSourceDiscovery(primary=PublicLocator()),) if direct else (self.discovery, self.fallback_discovery)
+        for provider in providers:
             if provider is None:
                 break
             receipt = await provider.search(request)

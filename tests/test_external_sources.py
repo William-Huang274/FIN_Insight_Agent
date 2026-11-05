@@ -743,3 +743,21 @@ def test_provider_reported_empty_does_not_turn_into_two_transport_failures():
     assert result.status == 'zero_results'
     assert [row.status for row in result.attempted_providers] == ['tool_failure','zero_results']
     assert result.attempted_providers[-1].failure_code == 'ddgs_reported_no_results'
+
+def test_ddgs_preserves_observed_rate_limit_in_an_empty_receipt(monkeypatch):
+    from sec_agent.agent_runtime.conversation_web import web_read_feedback
+    provider = DDGSDiagnosticProvider()
+    class DDGSException(Exception):
+        pass
+    def mixed_failure(request, observed):
+        observed.update(brave=429, duckduckgo=202, yahoo=200)
+        raise DDGSException('No results found.')
+    monkeypatch.setattr(provider,'_search_sync',mixed_failure)
+    receipt=asyncio.run(ExternalSourceDiscovery(primary=provider).search(ExternalSearchRequest(query='jobs',
+        branch_id='Q4_ARCHITECTURE_RAMP',run_scope=_run_scope('Q4_ARCHITECTURE_RAMP'),
+        purpose='Inspect engine health before changing search strategy.')))
+    assert receipt.status=='tool_failure'
+    attempt=receipt.attempted_providers[0]
+    assert attempt.failure_code=='ddgs_engines_unavailable_or_partial'
+    notes=web_read_feedback({'items':[], 'execution_receipt':{'attempts':[attempt.model_dump()]}})
+    assert notes[0]['engine_http']=={'brave':429,'duckduckgo':202,'yahoo':200}

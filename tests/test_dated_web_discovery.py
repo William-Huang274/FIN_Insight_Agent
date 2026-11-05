@@ -96,3 +96,46 @@ def test_only_release_masthead_date_or_article_metadata_qualifies():
     assert publisher_html_day(release.replace('Press Release','Data series')) is None
     meta = '<head><meta property="article:modified_time" content="2026-07-15T12:00:00Z"></head>'
     assert publisher_html_day(meta + release) == date(2026,7,15)
+
+def test_known_url_skips_ranked_search_and_keeps_cutoff_and_guard(monkeypatch):
+    from sec_agent.research_foundation.external_sources import PublicURLGuard, FetchedPage
+    monkeypatch.setattr('sec_agent.research_foundation.external_sources._resolve_host', lambda _: ['8.8.8.8'])
+    day = 'June 1, 2026'
+    class Origin:
+        async def fetch(self, url, **_):
+            assert url == 'https://example.com/original'
+            return FetchedPage(final_url=url, extracted_text='Published: '+day)
+    class NeverSearch:
+        async def search(self, _):
+            raise AssertionError('Known URL incorrectly went to ranked search')
+    reader, _, _ = _reader(url='https://example.com/original')
+    reader.discovery = DatedWebDiscovery(NeverSearch(), None, origin_fetcher=Origin())
+    assert _call(reader,'search',query='http://127.0.0.1/admin').items == ()
+    url = 'https://example.com/original'
+    item = _call(reader,'search',query=url).items[0]
+    assert item['publication_date']=='2026-06-01' and not item['writer_citable']
+    assert _call(reader,'read',document_id=item['document_id']).items[0]['writer_citable']
+    reader.discovery.verified.clear()
+    day = 'June 1, 2099'
+    assert not _call(reader,'search',query=url).items
+
+
+def test_publication_page_has_own_identity_and_must_link_exact_pdf():
+    from sec_agent.research_foundation.dated_web_discovery import census_publication_page
+    from sec_agent.research_foundation.external_sources import FetchedPage
+    pdf = 'https://www2.census.gov/library/publications/2026/demo/p60-289.pdf'
+    url = 'https://www.census.gov/library/publications/2026/demo/p60-289.html'
+    reader, _, _ = _reader(url=pdf, published=None)
+    _call(reader, 'search', query='household incomes')
+    candidate = next(iter(reader._candidates.values()))[1]
+    class Publisher:
+        link = pdf
+        async def fetch(self, locator, **_):
+            assert locator == url
+            return FetchedPage(final_url=url,html='<head><meta property="article:published_time" content="2026-09-15"></head>'
+                               +'<h1>Income Report</h1><a href="'+self.link+'">Download</a>')
+    publisher = Publisher()
+    row, day = asyncio.run(census_publication_page(candidate,publisher,()))
+    assert day.isoformat() == '2026-09-15' and row.canonical_url == url and row.candidate_id != candidate.candidate_id
+    publisher.link=pdf.replace('289','290')
+    assert asyncio.run(census_publication_page(candidate,publisher,())) is None

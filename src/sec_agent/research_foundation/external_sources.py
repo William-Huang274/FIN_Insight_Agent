@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable, Mapping, Sequence
+from contextvars import ContextVar
 from datetime import date, datetime, timezone
 from hashlib import sha256
 import ipaddress
@@ -189,6 +190,7 @@ class ProviderAttempt(BaseModel):
     failure_code: str | None = None
     runtime_compatibility: tuple[str, ...] = ()
     date_filter_counts: dict[str, int] = Field(default_factory=dict)
+    engine_http: dict[str, int | str] = Field(default_factory=dict)
 
     @model_serializer(mode='wrap')
     def preserve_archived_shape(self, handler):
@@ -197,6 +199,8 @@ class ProviderAttempt(BaseModel):
             body.pop('runtime_compatibility',None)
         if 'date_filter_counts' not in self.model_fields_set:
             body.pop('date_filter_counts',None)
+        if 'engine_http' not in self.model_fields_set:
+            body.pop('engine_http', None)
         return body
 
 
@@ -403,6 +407,9 @@ class ExaHostedMCPProvider:
         raise ExternalSourceError('exa_search_response_unrecognized_not_zero_results')
 
 
+_engine_http: ContextVar[dict | None] = ContextVar("engine_http", default=None)
+
+
 class DDGSDiagnosticProvider:
     """Local diagnostic fallback; it is not an admission or citation authority."""
 
@@ -415,28 +422,54 @@ class DDGSDiagnosticProvider:
     ) -> None:
         self._search_callable = search_callable
 
-    def _search_sync(self, request: ExternalSearchRequest) -> Sequence[Mapping[str, Any]]:
+    def _search_sync(self, request: ExternalSearchRequest, observed: dict) -> Sequence[Mapping[str, Any]]:
         if self._search_callable is not None:
             return self._search_callable(
                 request.query,
                 max_results=request.max_results,
             )
         try:
-            from ddgs import DDGS
+            from ddgs.ddgs import DDGS
         except ImportError as exc:  # pragma: no cover - dependency profile guard
             raise ExternalSourceError("ddgs_dependency_missing") from exc
         # Use general web engines for source discovery, rather than encyclopedia
         # entries that the library's automatic mode also ranks.
-        return list(DDGS(timeout=12).text(request.query, backend="yahoo,brave,duckduckgo",
-                                          max_results=request.max_results))
+        # DDGS 9.16 aggregates non-200 replies into "No results found".
+        # Observe only this invocation's engine clients; retain its native ranking.
+        class ObservedDDGS(DDGS):
+            def _get_engines(self, category, backend):
+                engines = super()._get_engines(category, backend)
+                for engine in engines:
+                    client = engine.http_client
+                    request_http = client.request
+
+                    def record(*args, call=request_http, name=engine.name, **kwargs):
+                        try:
+                            reply = call(*args, **kwargs)
+                        except Exception:
+                            observed[name] = "transport_error"
+                            raise
+                        observed[name] = reply.status_code
+                        return reply
+
+                    client.request = record
+                return engines
+
+        return list(ObservedDDGS(timeout=12).text(request.query, backend="yahoo,brave,duckduckgo",
+                                                   max_results=request.max_results))
 
     async def search(self, request: ExternalSearchRequest) -> Sequence[ProviderHit]:
+        observed = _engine_http.get()
+        if observed is None:
+            observed = {}
         try:
-            rows = await asyncio.to_thread(self._search_sync, request)
+            rows = await asyncio.to_thread(self._search_sync, request, observed)
         except ExternalSourceError:
             raise
         except Exception as exc:
             if type(exc).__name__ == 'DDGSException' and str(exc).strip() == 'No results found.':
+                if any(status != 200 for status in observed.values()):
+                    raise ExternalSourceError("ddgs_engines_unavailable_or_partial") from exc
                 raise ExternalSourceError("ddgs_reported_no_results") from exc
             raise ExternalSourceError("ddgs_search_failed") from exc
         hits: list[ProviderHit] = []
@@ -494,6 +527,8 @@ class ExternalSourceDiscovery:
                 break
             if provider_role == "diagnostic" and candidates:
                 break
+            engine_http = {}
+            token = _engine_http.set(engine_http)
             try:
                 hits = tuple(await provider.search(request))
             except ExternalSourceError as exc:
@@ -506,6 +541,7 @@ class ExternalSourceDiscovery:
                         returned_hits=0,
                         accepted_hits=0,
                         failure_code=exc.code,
+                        **({"engine_http": engine_http} if engine_http else {}),
                     )
                 )
                 continue
@@ -520,6 +556,8 @@ class ExternalSourceDiscovery:
                     )
                 )
                 continue
+            finally:
+                _engine_http.reset(token)
 
             accepted_before = len(candidates)
             for provider_rank, hit in enumerate(hits, start=1):
@@ -581,6 +619,7 @@ class ExternalSourceDiscovery:
                     status="ok" if accepted else "zero_results",
                     returned_hits=len(hits),
                     accepted_hits=accepted,
+                    **({"engine_http": engine_http} if engine_http else {}),
                     **({'runtime_compatibility':tuple(sorted({h.runtime_compatibility for h in hits if h.runtime_compatibility}))}
                        if any(h.runtime_compatibility for h in hits) else {}),
                 )

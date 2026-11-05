@@ -21,6 +21,14 @@ from .source_quotes import resolve_quote
 from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
 
 
+# Han prose does not delimit printed Arabic numbers with spaces. Keep other
+# Unicode word characters as identifier boundaries (e.g. FP8 and é8), while
+# allowing the exact number in Chinese sentences. This does not infer units.
+_NUMERIC_IDENTIFIER_CHAR = r"[^\W\u3400-\u4dbf\u4e00-\u9fff\U00020000-\U000323af]"
+_NUMERIC_START = rf"(?<!{_NUMERIC_IDENTIFIER_CHAR})(?<![.,])"
+_NUMERIC_END = rf"(?!{_NUMERIC_IDENTIFIER_CHAR}|[.,]\d)"
+
+
 class CalculationOperand(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     source_id: str | None = Field(default=None, min_length=1, max_length=500,
@@ -213,10 +221,10 @@ def _bind_operand(name, operand, source_lookup):
             quote, quote_recovery = resolve_quote(text, operand.quote or "")
             if not quote or quote not in text or operand.literal is None:
                 raise OperandSourceError("operand_quote_not_in_observed_source", name, operand, observed_text=text)
-            literal_pattern = r"(?<![\w.,])" + re.escape(operand.literal)
+            literal_pattern = _NUMERIC_START + re.escape(operand.literal)
             # A comma or period followed by prose is punctuation, whereas
             # one followed by a digit continues the numeric token.
-            numeric_end = r"(?!\w|[.,]\d)"
+            numeric_end = _NUMERIC_END
             literal_match = re.search(literal_pattern + numeric_end, quote)
             quantity_match = None
             quantity_rule = "numeric_quantity_x_suffix_v1"
@@ -239,7 +247,7 @@ def _bind_operand(name, operand, source_lookup):
                     # a unique complete token in the already exact quote;
                     # never round, change sign/scale or match identifiers.
                     matches = [m for m in re.finditer(
-                        r"(?<![\w.,])-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?" + numeric_end,
+                        _NUMERIC_START + r"-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?" + numeric_end,
                         quote)
                         if m.group().replace(',', '') == operand.literal.replace(',', '')]
                     if len(matches) == 1:

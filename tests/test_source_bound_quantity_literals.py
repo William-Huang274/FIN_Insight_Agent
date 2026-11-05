@@ -16,6 +16,27 @@ def calculate_count(text, literal="8"):
     return calculate_from_sources(request, lambda _: source)
 
 
+@pytest.mark.parametrize("text,literal,value", [
+    ("应收占比为6.1%，去年8月末为5.4%", "6.1", "12.2"),
+    ("低用量户逾期户率分别为4%、7%", "4", "8"),
+    ("共有8户", "8", "16"),
+    ("收入为1,000万元", "1000", "2000"),
+])
+def test_han_prose_adjacent_numbers_keep_exact_source_and_literal(text, literal, value):
+    result = calculate_count(text, literal)
+    assert result['value_decimal'] == value
+    assert result['operands']['count']['quote'] == text
+    assert result['operands']['count']['literal'] == literal
+    assert not result['financial_semantics_verified']
+
+
+@pytest.mark.parametrize("text", ["共有18户", "共有0.8户", "共有8.5户", "共有1,008户",
+    "型号FP8设备", "型号8GB200", "编号é8", "编号8é", "编号Ａ8", "编号8_项"])
+def test_han_boundary_does_not_admit_partial_numbers_or_non_han_identifiers(text):
+    with pytest.raises(ValueError, match='numeric_literal_not_in_exact_source_quote'):
+        calculate_count(text)
+
+
 @pytest.mark.parametrize("text", ["8x accelerators", "8X accelerators", "Count: 8x"])
 def test_quantity_suffix_keeps_original_binding_and_compatibility_audit(text):
     result = calculate_count(text)

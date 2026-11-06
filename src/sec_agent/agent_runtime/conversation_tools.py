@@ -20,7 +20,7 @@ from sec_agent.research_foundation.report_charts import ReportChart, bind_report
 from .conversation_agent import GrantedTool
 
 
-SAVED_RESULT_TOOLS = frozenset({"read_market_prices", "read_public_source", "read_company_library", "query_financial_data", "read_task_material", "calculate_research_metric",
+SAVED_RESULT_TOOLS = frozenset({"read_legislation", "read_market_prices", "read_public_source", "read_company_library", "query_financial_data", "read_task_material", "calculate_research_metric",
     "create_report_chart", "list_financial_data", "ReadWorkingNote", "read_handoff_material", "read_handoff_evidence",
     "read_source_document", "read_research_source", "read_delegated_evidence", "read_delegated_note", "check_quantitative_changes"})
 

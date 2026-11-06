@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[Congress.gov 官方 API 与文本读取](engineering/congress_api.zh-CN.md)说明法案记录、版本及程序动作工具、GovInfo 正文衔接、凭据配置和历史时点限制，不依赖浏览器交接。
+
 [新闻事件研究工具](engineering/event_source_tools.zh-CN.md)记录盘中行情、公开 X 帖文、政策原件、源码选型和实测边界；免费公开通道不承诺实时全市场行情或完整社交搜索。
 
 [原生 harness 工具边界审查](engineering/native_harness_tool_audit.zh-CN.md)记录实际披露工具、来源/计算展示与回读、草稿修订及词法元数据访问，区分工程回放和真实研究验收。

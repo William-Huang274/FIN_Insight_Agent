@@ -40,7 +40,7 @@
 
 | 网站 | 用途 | 本机结果 |
 | --- | --- | --- |
-| Congress.gov | 法案版本、提案人和程序动作 | 所测请求 403，不记为没有法案 |
+| Congress.gov | 法案版本、提案人和程序动作 | HTML 页面曾被挑战；[官方 API 工具](congress_api.zh-CN.md)已用实际 key 验证记录、版本和动作，正文衔接 GovInfo |
 | GovInfo | 官方法案版本、HTML / PDF 和元数据 | “详情地址 → MODS → HTML 正文”成功；绑定 package 身份、rendition 和 dateIssued |
 | 白宫与部门官网 | 行政声明和实施文件 | 一份公告成功，不外推所有页面畅通 |
 | 议员办公室 | 声明、账号归属 | 所测一份页面 403，错误保留 |

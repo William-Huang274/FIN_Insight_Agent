@@ -30,4 +30,6 @@ X 搜索可在 read_public_source 中使用 site:x.com 加人物或主题；已�
 ## 工具范围与资料入口
 法案及程序：Congress.gov、GovInfo 的版本和动作记录；行政安排：白宫及相关机构正式发布；政治身份和原话：议员办公室、政府和公司官网及其对应公开账号。模型根据问题选择主体和查询，不将本目录当成穷尽清单。
 
+已有 Congress.gov 法案链接或明确的届次/类型/编号时，调用 read_legislation：record 看法案记录，texts 列文本版本，actions 看程序动作，按 next_offset 翻页。主题关键词仍用 read_public_source 搜索发现法案；官方元数据 API 不等同于全文关键词搜索。选择具体版本后，沿返回的 read_call 用 read_public_source 搜索并读取正文。立法日期、版本公开日期、记录更新时间、实际采集时间分别保留；当前 API 回包不是过去某日的归档快照，较晚更新的记录不能自动充当旧时点已知事实。
+
 本地基础设施核对日：2026-11-06。行情当前使用 Yahoo 公开 chart 通道，不保证实时全市场报价或历史点时版本；X 使用公开嵌入接口，外搜只提供不完整候选。正式实时行情与完整 X 搜索需相应供应商权限。参考接口：[Alpaca 数据覆盖](https://docs.alpaca.markets/us/docs/about-market-data-api)、[X 搜索范围](https://docs.x.com/x-api/posts/search/introduction)、[X 帖子读取字段](https://docs.x.com/x-api/posts/lookup/introduction)。这些接口文档不构成研究题的事实依据。

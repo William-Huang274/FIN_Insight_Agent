@@ -120,6 +120,10 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         A company name/ticker and earnings period can locate SEC filings. For issuer
         websites search the company name plus "official website" and topic. Website
         roots in receipts are navigation only. Read documents before citing them.
+        For a Congress.gov bill URL or explicit Congress/type/number, use
+        read_legislation for official metadata, actions and text-version links;
+        then read its selected official rendition here. Topic searches still use
+        this search tool; Congress metadata is not a full-text keyword search.
         Public X posts can be found with site:x.com and author/topic, or a complete
         post URL. Read returned documents to see original embed text, author and
         timestamp; search coverage is incomplete. A badge does not establish

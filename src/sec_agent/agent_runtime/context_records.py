@@ -9,6 +9,7 @@ from langchain_core.tools import ToolException
 
 
 RESULT_REGIONS = {
+    "read_legislation": ("sources", "官方法案记录与版本入口"),
     "read_market_prices": ("sources", "带时点的行情来源"),
     "query_financial_data": ("numbers", "财务查询"),
     "calculate_research_metric": ("numbers", "来源绑定计算"),

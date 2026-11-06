@@ -190,8 +190,21 @@ async def organization_harness_session(*, native, resources, authority, check, o
     # conversation/history or working-note state. Native ACP owns that history.
     async with business_checkpointer(business_directory / 'business-checkpoint.sqlite',
             object_path=directory / 'business-objects.sqlite') as saver:
+        consultations = None
+        if options.get('allow_agent_consultation'):
+            from .harness_consultations import HarnessConsultations
+            reviewer = options.get('answer_review_model')
+            if reviewer != 'gpt-6.1-sol' or reviewer not in budget.prices or not environment.get('OPENAI_API_KEY'):
+                raise ValueError('consultation_provider_not_admitted')
+            consultations = HarnessConsultations(directory=business_directory/'consultations', saver=saver,
+                grants=list(grants), tid=tid, rid=rid, check=check, scope=scope, budget=budget,
+                environment=environment, model=reviewer, basis=options['token_budget_basis'],
+                as_of=organization.research_as_of, public_sink=phase_arguments['public_sink'])
+            grants.extend(consultations.tools())
         bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope,
             stop_on_tool_error=options.get('stop_on_tool_error') is True, note_versions=memory.export_markdown)
+        if consultations:
+            consultations.parent = bridge
         action = grant.get('report_action_request', {})
         failed_ids = None
         if options.get('stop_on_tool_error') is True and action.get('action') == 'recover':
@@ -277,6 +290,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 _persist(target_path, {k: current[k] for k in ('report', 'report_version')})
 
         async def project(state, result):
+            if consultations:
+                await consultations.ensure_finished()
             business = await bridge.state()
             from .task_outcome import TaskOutcome
             from .source_references import render_answer_references
@@ -423,4 +438,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
         graph.add_edge(START, 'admitted_input')
         graph.add_edge('admitted_input', 'work')
         graph.add_edge('work', END)
-        yield graph.compile(name='research_session')
+        try:
+            yield graph.compile(name='research_session')
+        finally:
+            if consultations:
+                await consultations.close()

@@ -21,7 +21,8 @@ def anyio_backend():
 
 @pytest.mark.anyio
 @pytest.mark.parametrize('report_review', [False, True])
-async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_path, monkeypatch, report_review):
+@pytest.mark.parametrize('consultation', [False, True])
+async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_path, monkeypatch, report_review, consultation):
     _, args, auth, _, _ = setup
     tid, rid = auth['execution_id'], auth['authorized_run_id']
     binary = tmp_path / 'pinned-fixture'
@@ -44,6 +45,10 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
         root=Path(__file__).resolve().parents[1])
     environment = dict(FINSIGHT_HARNESS_STATE_ROOT=str(tmp_path / 'sessions'),
         FINSIGHT_WORKING_MEMORY_PATH=str(tmp_path / 'notes.sqlite'), FIXTURE_SECRET='fixture-only')
+    if consultation:
+        options.update(allow_agent_consultation=True,answer_review_model='gpt-6.1-sol')
+        budget.prices['gpt-6.1-sol']=args['prices']
+        environment['OPENAI_API_KEY']='fixture-only'
     prepared = []
     organization = SimpleNamespace(retrieval=SimpleNamespace(navigation=lambda: SimpleNamespace()),
         research_as_of='2026-09-23', prepare_retrieval=lambda: prepared.append(True))
@@ -56,6 +61,7 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
         assert prepared  # Cold preparation cannot consume a model tool deadline.
         tools = {t.name for t in (await kw['business'].list_tools(None, None)).tools}
         assert {'browse_context', 'read_research_source', 'calculate_research_metric', 'save_research_report'} <= tools
+        assert ('consult_research_agent' in tools) == consultation
         starts.append('local')
         yield 'http://127.0.0.1:9'
     @asynccontextmanager
@@ -63,6 +69,7 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
         from sec_agent.research_foundation.research_methods import get_research_method
         profile_text = Path(kw['arguments'][-1]).read_text(encoding='utf8')
         profile_text = json.dumps(json.loads(profile_text), ensure_ascii=False)
+        assert ('consult_research_agent is an available' in profile_text) == consultation
         for key in options['preloaded_research_methods']:
             assert get_research_method(key)['resource_digest'] in profile_text
         assert 'FIXTURE_SECRET' not in kw['environment']

@@ -1,0 +1,161 @@
+"""On-demand read-only consultation over the existing metered reviewer.
+
+MCP calls submit/read; they never hold a tool request open for a whole investigation.
+The existing provider ledger and business checkpointer own paid replay and observations.
+"""
+import asyncio
+import json
+from pathlib import Path
+from typing import Literal
+
+from langchain_core.messages import AIMessage, ToolMessage
+from langchain_core.tools import tool, ToolException
+from langgraph.prebuilt import ToolRuntime
+from langgraph.types import Command
+
+from .answer_review import Challenge, version
+from .answer_review_provider import independent_review, review_tool_names
+from .conversation_agent import GrantedTool
+from .harness_acp_session import _persist
+from .harness_business_tools import HarnessBusinessTools
+from .research_graph_contracts import canonical_sha256
+
+
+class HarnessConsultations:
+    def __init__(self, *, directory, saver, grants, tid, rid, check, scope, budget,
+                 environment, model, basis, as_of, public_sink):
+        self.directory = Path(directory)
+        self.directory.mkdir(parents=True, exist_ok=True)
+        self.saver, self.grants, self.tid, self.rid = saver, grants, tid, rid
+        self.check, self.scope, self.budget = check, scope, budget
+        self.environment, self.model, self.basis = environment, model, basis
+        self.as_of, self.public_sink = as_of, public_sink
+        self.tasks = {}
+        self.parent = None
+
+    def tools(self):
+        @tool
+        async def consult_research_agent(question: str, context: str, purpose: Literal['investigate', 'review'],
+                                         runtime: ToolRuntime, use_current_report: bool = False,
+                                         method_ids: list[str] | None = None):
+            """Delegate one material research question to an independent Sol high agent with read-only sources,
+            web/SEC/government/market/calculation tools and the same task budget. Use investigate for a relationship
+            that needs separate evidence, review for an argument you want challenged; neither is mandatory.
+            Explain the question's bearing on the main answer in context, include exact observed source handles.
+            use_current_report=true attaches the exact saved report; false works before drafting.
+            method_ids selects optional method-library IDs, not new permissions. Returns task_id promptly.
+            Continue useful independent work, then read_research_agent_result; results are proposals, not verdicts.
+            """
+            return await self.submit(question, context, purpose, use_current_report, method_ids or [], runtime.state)
+
+        @tool
+        async def read_research_agent_result(task_id: str, runtime: ToolRuntime, wait_seconds: int = 20):
+            """Read the delegated agent's status, opinion and exact source/compute readback handles.
+            Wait 0-20 seconds per call; pending is normal work, not failure. Completed observations become
+            usable in this author's source and calculation tools. Resolve a submitted consultation before delivery.
+            """
+            return await self.read(task_id, wait_seconds, runtime)
+
+        return [GrantedTool(t, 'delegated_task_control', '同一预算内的按需只读调查及独立复核')
+                for t in (consult_research_agent, read_research_agent_result)]
+
+    async def submit(self, question, context, purpose, use_report, methods, state):
+        from sec_agent.research_foundation.research_methods import preloaded_research_methods
+        self.check()
+        if not question.strip() or len(question) > 2500 or len(context) > 24000:
+            raise ToolException('Provide a nonempty question up to 2500 characters and context up to 24000.')
+        try:
+            method_text = preloaded_research_methods(methods)
+        except (ValueError, KeyError) as exc:
+            raise ToolException('Read get_research_method for available method IDs.') from exc
+        report = state.get('report') if use_report else None
+        if use_report and not report:
+            raise ToolException('No saved report yet; use_current_report=false with current reasoning, or save a report first.')
+        body = report['narrative_markdown'] if report else context
+        request = dict(question=question, context=context, purpose=purpose, report=report,
+                       methods=methods, method_text=method_text, as_of=self.as_of, model=self.model)
+        key = canonical_sha256(request)
+        path = self.directory / (key + '.json')
+        if path.exists():
+            record = json.loads(path.read_text(encoding='utf8'))
+            # Never restart a lost or failed paid operation from a new tool call.
+            if record['status'] == 'running' and key not in self.tasks:
+                raise RuntimeError('consultation_interrupted_reconcile_provider_ledger_before_resume')
+            if record['status'] == 'failed':
+                raise RuntimeError('consultation_failed_requires_recovery:' + key)
+            return dict(task_id=key, status=record['status'], reused=True,
+                        read_tool='read_research_agent_result')
+        record = dict(request=request, status='running', scope=self.tid+':'+self.rid)
+        _persist(path, record)
+        # Freeze only source/tool records; do not copy the author's argument history.
+        source_messages = [m for m in state.get('messages', [])
+                           if isinstance(m, ToolMessage) and m.status == 'success'
+                           and m.name in review_tool_names([g.tool.name for g in self.grants])]
+        initial = {'question':question, 'messages':source_messages}
+        self.tasks[key] = asyncio.create_task(self.run(key, record, initial, body))
+        return dict(task_id=key, status='running', read_tool='read_research_agent_result')
+
+    def child(self, key):
+        allowed = set(review_tool_names([g.tool.name for g in self.grants])) | {'read_saved_result'}
+        return HarnessBusinessTools(grants=[g for g in self.grants if g.tool.name in allowed],
+            checkpointer=self.saver, thread_id=self.tid+':consult:'+key,
+            check=self.parent.access if self.parent else self.check,
+            scope=self.scope, stop_on_tool_error=True)
+
+    async def run(self, key, record, initial, body):
+        request = record['request']
+        try:
+            child = self.child(key)
+            await child.initialize(initial)
+            selected = Challenge(version=version(body), quote='', offset=0, question=request['question'])
+            opinion = await independent_review(selected=selected,
+                message=AIMessage(content=body), question=request['question']+'\n'+request['context'],
+                bridge=child, budget=self.budget, environment=self.environment, model=self.model,
+                scope=record['scope'], command_id='consult-'+key, authority=child.model_access,
+                basis=self.basis, as_of=self.as_of, public_sink=self.public_sink,
+                assignment_kind=request['purpose'], method_content=request['method_text'])
+            self.check()
+            _persist(self.directory/(key+'.json'), {**record,'status':'completed','opinion':opinion})
+        except BaseException as exc:
+            _persist(self.directory/(key+'.json'), {**record,'status':'failed','error_type':type(exc).__name__})
+            if self.parent:
+                self.parent.failed_receipt = 'consult-'+key
+            raise
+
+    async def read(self, key, wait, runtime):
+        self.check()
+        if len(key) != 64 or any(c not in '0123456789abcdef' for c in key) or not 0 <= wait <= 20:
+            raise ToolException('Use the returned task_id; wait_seconds must be 0-20.')
+        path = self.directory/(key+'.json')
+        if not path.exists():
+            raise ToolException('Unknown task_id in this research workspace.')
+        task = self.tasks.get(key)
+        if task and not task.done():
+            await asyncio.wait({task}, timeout=wait)
+        if task and task.done():
+            task.result()
+        record = json.loads(path.read_text(encoding='utf8'))
+        if record['status'] != 'completed':
+            return dict(task_id=key, status=record['status'])
+        child_state = await self.child(key).state()
+        existing = {m.id for m in runtime.state.get('messages', []) if m.id}
+        messages = [m for m in child_state.get('messages', []) if m.id not in existing]
+        result = dict(task_id=key,status='completed',opinion=record['opinion'],
+                      target_digest=canonical_sha256(record['request']),
+                      source_readback=[{'tool_call_id':m.tool_call_id,'tool':m.name}
+                          for m in messages if isinstance(m, ToolMessage) and m.status=='success'])
+        return Command(update={'messages':[*messages, ToolMessage(name='read_research_agent_result',
+            tool_call_id=runtime.tool_call_id, content=json.dumps(result,ensure_ascii=False))]})
+
+    async def ensure_finished(self):
+        if any(not task.done() for task in self.tasks.values()):
+            raise RuntimeError('consultation_pending_at_delivery')
+        for task in self.tasks.values():
+            task.result()
+
+    async def close(self):
+        for task in self.tasks.values():
+            if not task.done():
+                task.cancel()
+        if self.tasks:
+            await asyncio.gather(*self.tasks.values(), return_exceptions=True)

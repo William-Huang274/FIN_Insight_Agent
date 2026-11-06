@@ -90,7 +90,7 @@ def fit_review_receipts(body, limit, *, keep_current=False):
 
 async def independent_review(*, selected, message, question, bridge, budget, environment,
                              model, scope, command_id, authority, basis, as_of, public_sink, previous_scope=None, audit_root=None,
-                             predecessor_scope=None):
+                             predecessor_scope=None, assignment_kind='review', method_content=''):
     prices = budget.prices.get(model)
     if model != 'gpt-6.1-sol' or not prices or prices.currency != 'USD' or not environment.get('OPENAI_API_KEY'):
         raise ValueError('answer_review_provider_not_configured')
@@ -106,7 +106,12 @@ async def independent_review(*, selected, message, question, bridge, budget, env
     refs = message.additional_kwargs.get('citation_bindings', {})
     inputs = [dict(role='user', content=json.dumps(dict(question=question, as_of=as_of,
         answer=message.content, selected=selected.model_dump(), citation_keys=list(refs)), ensure_ascii=False))]
-    instructions = reviewer_instructions()
+    if assignment_kind not in ('review', 'investigate'):
+        raise ValueError('consultation_assignment_invalid')
+    instructions = (reviewer_instructions() if assignment_kind == 'review' else
+        '你是受主作者委派的独立调查者。回答所交问题，解释它对总题的影响。'
+        '使用已授权的只读工具，返回关键发现、比较基准、准确来源入口及未决关系。'
+        '所附认识是待检验的材料，不是答案；不要代写一章报告。可按需读取研究方法。') + method_content
     async with httpx.AsyncClient(proxy=environment.get('FINSIGHT_REVIEW_HTTPS_PROXY'), trust_env=False,
                                  timeout=httpx.Timeout(profile.timeout_seconds, connect=25)) as http:
         seen = set()

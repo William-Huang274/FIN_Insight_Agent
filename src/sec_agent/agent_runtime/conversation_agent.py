@@ -50,6 +50,13 @@ def research_system_prompt(names, task_context=""):
     if "read_market_prices" in names:
         prompt += ('\nread_market_prices provides dated intraday OHLCV with explicit time zones and pagination. '
                    'Use it when testing a reported market reaction; it does not identify the cause of a price change.\n')
+    if "consult_research_agent" in names:
+        prompt += ('\nconsult_research_agent is an available independent Sol high agent, not a planning label. '
+                   'Use purpose=investigate for a specific unresolved relationship or purpose=review to challenge '
+                   'an important argument before or after drafting. Supply question, context and optional method_ids; '
+                   'use_current_report attaches the actual saved version. It can read authorized originals and calculate. '
+                   'It returns a task_id: continue independent work, then read_research_agent_result before delivery. '
+                   'You remain responsible for interpreting its evidence and integrating or rejecting its proposals.\n')
     if "WriteWorkingNote" in names:
         from .working_memory_tools import WORKING_MEMORY_GUIDANCE
         prompt += WORKING_MEMORY_GUIDANCE

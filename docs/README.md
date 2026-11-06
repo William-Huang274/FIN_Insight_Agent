@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[原生 harness 按需调查与复核](engineering/harness_consultations.zh-CN.md)说明主模型可调用的独立 Agent 入口、结果交接、共用预算和故障边界；研究组织原则见[作者与复核分工](product/research_author_review_proposal.zh-CN.md)。
+
 [Congress.gov 官方 API 与文本读取](engineering/congress_api.zh-CN.md)说明法案记录、版本及程序动作工具、GovInfo 正文衔接、凭据配置和历史时点限制，不依赖浏览器交接。
 
 [新闻事件研究工具](engineering/event_source_tools.zh-CN.md)记录盘中行情、公开 X 帖文、政策原件、源码选型和实测边界；免费公开通道不承诺实时全市场行情或完整社交搜索。

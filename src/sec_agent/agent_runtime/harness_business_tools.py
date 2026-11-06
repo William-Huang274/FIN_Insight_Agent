@@ -167,7 +167,7 @@ class HarnessBusinessTools:
         self.config = {'configurable': {'thread_id': thread_id}}
         self.tools = {g.tool.name: g.tool for g in grants}
         self.effects = {g.tool.name: g.effect for g in grants}
-        if len(self.tools) != len(grants) or any(g.effect not in {'read', 'working_note_write', 'task_artifact_write'} for g in grants):
+        if len(self.tools) != len(grants) or any(g.effect not in {'read', 'working_note_write', 'task_artifact_write', 'delegated_task_control'} for g in grants):
             raise ValueError('harness_business_grant_not_admitted')
         graph = StateGraph(HarnessBusinessState)
         graph.add_node('tools', ToolNode(list(self.tools.values())))

@@ -110,23 +110,36 @@ class HarnessConsultations:
         """
         from sec_agent.adapters.explicit_run_recovery import verified_permit
         previous_scope = self.tid+':'+previous_run_id
+        # A recovery can itself be interrupted before it reaches this method.
+        # Follow only tasks present in this author's real saved tool receipts.
+        pending_ids = set()
+        if self.parent and hasattr(self.parent,'state'):
+            for message in (await self.parent.state()).get('messages',[]):
+                if isinstance(message,ToolMessage) and message.name=='consult_research_agent' and message.status=='success':
+                    result=json.loads(message.content)
+                    if isinstance(result,dict) and result.get('task_id'):
+                        pending_ids.add(result['task_id'])
         candidates = [(p, json.loads(p.read_text(encoding='utf8'))) for p in self.directory.glob('*.json')]
-        candidates = [(p,r) for p,r in candidates if r['scope']==previous_scope
+        candidates = [(p,r) for p,r in candidates if (r['scope']==previous_scope or p.stem in pending_ids)
                       and r['status']!='completed']
         if not candidates:
             return
-        permit = verified_permit(audit_root,self.tid,previous_run_id,
-                                 secret=self.environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
-        if not permit:
-            raise RuntimeError('consultation_recovery_requires_explicit_paid_retry_authorization')
         for path, record in candidates:
+            previous_scope=record['scope']
+            origin_thread,origin_run=previous_scope.split(':')
+            if origin_thread!=self.tid:
+                raise RuntimeError('consultation_recovery_execution_mismatch')
+            permit = verified_permit(audit_root,self.tid,origin_run,
+                                     secret=self.environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
+            if not permit:
+                raise RuntimeError('consultation_recovery_requires_explicit_paid_retry_authorization')
             if record.get('error_type') != 'CancelledError':
                 raise RuntimeError('consultation_failure_requires_separate_reconciliation')
             key=path.stem
             if not await self.child(key).state():
                 raise RuntimeError('consultation_recovery_checkpoint_missing')
             # Preserve the stopped task independently from the mutable status pointer.
-            _persist(self.directory/'history'/key/(previous_run_id+'.json'),record)
+            _persist(self.directory/'history'/key/(origin_run+'.json'),record)
             resumed={k:v for k,v in record.items() if k!='error_type'}
             resumed.update(status='running',scope=self.tid+':'+self.rid,previous_scope=previous_scope)
             _persist(path,resumed)

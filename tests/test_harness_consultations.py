@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 from langchain_core.tools import tool
+from langchain_core.messages import ToolMessage
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from sec_agent.agent_runtime.conversation_agent import GrantedTool, research_system_prompt
@@ -116,7 +117,13 @@ async def test_cancelled_consultation_requires_permit_and_reuses_exact_target(tm
             observed.append(kwargs)
             return 'Actual independent opinion'
         monkeypatch.setattr('sec_agent.agent_runtime.harness_consultations.independent_review',completed)
-        await second.recover_cancelled('old',tmp_path/'audit')
+        async def parent_state():
+            return {'messages':[ToolMessage(name='consult_research_agent',tool_call_id='actual',
+                content=json.dumps({'task_id':key,'status':'running'}))]}
+        second.parent.state=parent_state
+        # An intermediate recovery stopped before provider preparation; use the
+        # real outstanding task receipt and its original signed authorization.
+        await second.recover_cancelled('interrupted-preparation',tmp_path/'audit')
         await second.tasks[key]
         assert observed[1]['message'].content==observed[0]['message'].content=='Original report'
         assert observed[1]['question']==observed[0]['question']

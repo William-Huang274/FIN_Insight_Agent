@@ -170,7 +170,10 @@ class HarnessConsultations:
         request = record['request']
         try:
             child = self.child(key)
-            await child.initialize(initial)
+            # A signed recovery may have stopped inside a read, between two
+            # provider calls. The shared bridge resumes only that pending read;
+            # completed reads stay in the checkpoint and writes remain blocked.
+            await child.initialize(initial, recovering=previous_scope is not None)
             selected = Challenge(version=version(body), quote='', offset=0, question=request['question'])
             opinion = await independent_review(selected=selected,
                 message=AIMessage(content=body), question=request['question']+'\n'+request['context'],
@@ -183,7 +186,8 @@ class HarnessConsultations:
             _persist(self.directory/(key+'.json'), {**record,'status':'completed','opinion':opinion})
         except BaseException as exc:
             _persist(self.directory/(key+'.json'), {**record,'status':'failed','error_type':type(exc).__name__,
-                **({'failure_code':str(exc)} if isinstance(exc,ValueError) and str(exc).startswith('answer_review_') else {})})
+                **({'failure_code':str(exc)} if isinstance(exc,(ValueError,RuntimeError))
+                   and str(exc).startswith(('answer_review_','harness_business_tool_')) else {})})
             if self.parent:
                 self.parent.failed_receipt = 'consult-'+key
             raise

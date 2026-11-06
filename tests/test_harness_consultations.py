@@ -39,7 +39,12 @@ async def test_consultation_retry_chain_reuses_latest_record_without_dispatch():
 @pytest.mark.anyio
 async def test_pre_dispatch_consultation_recovery_requires_zero_dispatch_proof(tmp_path,monkeypatch):
     from sec_agent.agent_runtime.harness_acp_session import _persist
-    observed=[]
+    observed=[]; initializations=[]
+    original_initialize=HarnessBusinessTools.initialize
+    async def initialize(self,admitted_state,**kwargs):
+        initializations.append(kwargs.get('recovering',False))
+        return await original_initialize(self,admitted_state,**kwargs)
+    monkeypatch.setattr(HarnessBusinessTools,'initialize',initialize)
     async def provider(**kwargs):
         observed.append(kwargs);return 'Saved opinion'
     monkeypatch.setattr('sec_agent.agent_runtime.harness_consultations.independent_review',provider)
@@ -61,6 +66,7 @@ async def test_pre_dispatch_consultation_recovery_requires_zero_dispatch_proof(t
         monkeypatch.setattr('sec_agent.adapters.explicit_run_recovery.verified_preparation_recovery',lambda *a,**k:{'dispatch_rows':0})
         await service.recover_cancelled('preparation',tmp_path/'audit');await service.tasks[key]
         assert observed[0]['previous_scope']=='t:paid'
+        assert initializations[-1] is True
         assert observed[0]['message'].content=='Context'
         assert json.loads((directory/'history'/key/'preparation.json').read_text())==stopped
         await service.close()

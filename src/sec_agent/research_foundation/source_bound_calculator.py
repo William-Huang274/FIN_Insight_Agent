@@ -69,6 +69,8 @@ def source_items_from_tool(tool_name: str, body: dict) -> dict[str, dict]:
     Callers own their native messages/composition lifetime. This is a projection,
     not another source store or evidence-admission system.
     """
+    if tool_name == 'read_market_prices':
+        tool_name = 'read_source_document'
     if tool_name == "query_company_financial_facts" and body.get("authority_state") == "s2_numeric_fact_query_result":
         return {f["numeric_fact_id"]: {**f, "result_state": "numeric_fact"}
                 for row in body.get("results", []) if row.get("status") == "resolved"

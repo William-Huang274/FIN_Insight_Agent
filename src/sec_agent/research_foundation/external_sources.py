@@ -718,7 +718,7 @@ class FetchedPage(BaseModel):
     final_url: str
     html: str = ""
     extracted_text: str | None = None
-    extraction_method: Literal["sec_edgar_html"] | None = None
+    extraction_method: Literal["sec_edgar_html", "x_public_embed"] | None = None
     status_code: int | None = None
     content_type: str | None = None
 
@@ -731,6 +731,7 @@ class CaptureAttempt(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     method: Literal[
+        "x_public_embed",
         "sec_edgar_html",
         "pypdf_static",
         "trafilatura_static",
@@ -769,6 +770,7 @@ class CaptureReceipt(BaseModel):
     final_url: str | None
     source_domain: str | None
     capture_method: Literal[
+        "x_public_embed",
         "sec_edgar_html",
         "pypdf_static",
         "trafilatura_static",
@@ -1225,18 +1227,27 @@ class ExternalSourceCapture:
         last_page: FetchedPage | None = None
         last_text = ""
         selected_method: Literal[
+            "x_public_embed",
             "sec_edgar_html",
             "pypdf_static",
             "trafilatura_static",
             "exa_hosted_web_fetch",
             "playwright_browser",
         ] | None = None
+        from .public_posts import post_locator
+        exact_public_post = post_locator(requested_url) is not None
+        if exact_public_post:
+            # Hosted page text cannot replace an unavailable/version-rejected
+            # post while retaining the original post's identity and timestamp.
+            methods = [(method, fetcher) for method, fetcher in methods if method == 'trafilatura_static']
         for method, fetcher in methods:
             try:
                 page = await fetcher.fetch(
                     requested_url,
                     timeout_seconds=request.timeout_seconds,
                 )
+                if exact_public_post and page.extraction_method != 'x_public_embed':
+                    raise ExternalSourceError('x_original_not_verified')
                 if page.status_code is not None and not (
                     200 <= page.status_code < 300
                 ):
@@ -1245,8 +1256,8 @@ class ExternalSourceCapture:
                     )
                 final_url = await asyncio.to_thread(self.guard.validate, page.final_url)
                 page = page.model_copy(update={"final_url": final_url})
-                if method == "trafilatura_static" and page.extraction_method == "sec_edgar_html":
-                    method = "sec_edgar_html"
+                if method == "trafilatura_static" and page.extraction_method in {"sec_edgar_html", "x_public_embed"}:
+                    method = page.extraction_method
                 if method == "trafilatura_static" and page.content_type == "application/pdf" and page.extracted_text is not None:
                     method = "pypdf_static"
                 text = (

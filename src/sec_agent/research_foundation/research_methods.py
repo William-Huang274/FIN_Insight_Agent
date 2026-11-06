@@ -9,6 +9,7 @@ import re
 
 
 METHODS = {
+    "event_policy": ("新闻、政治事件与市场反应", "消息增量、政治推进与政策传导；原帖身份、精确时间和行情比较，区分市场反应与因果。"),
     "report_processing": ("新报告定位、提取与更新", "先查已有结构化记录，按原页表头与附注调整提取方案，校验口径并交接更新；区分读取与入库权限。"),
     "research_orientation": ("总题初步研究与首批专题", "按实际资料形成初步判断和证据触发的派工依据，在专题执行前停止。"),
     "research_loop": ("从问题到解释", "描述、归因与预测；判别信息、证据依赖与观察后的认识更新。"),
@@ -44,7 +45,7 @@ REPORT_PROCESSING_TOOL_GUIDANCE = (
 )
 
 FIRST_METHODS = ("research_loop", "counter", "scenario_sensitivity", "writer",
-                 "finance", "cloud_infrastructure", "macro_valuation")
+                 "finance", "cloud_infrastructure", "macro_valuation", "event_policy")
 
 
 def _resource(method_id):

@@ -300,6 +300,32 @@ class DatedWebDiscovery:
                     self.companies.learn_websites(issuer,page.html,url)
                 return candidate.model_copy(update={'published_at':day.isoformat(),'snippet':''})
             index = filing_index(url)
+            from .government_publications import bill_package, resolve_bill
+            if bill_package(url) and self.origin_fetcher:
+                try:
+                    resolved, day = await resolve_bill(candidate, self.origin_fetcher)
+                    return resolved if day <= cutoff else 'after_cutoff'
+                except ExternalSourceError as exc:
+                    return exc.code
+            from .public_posts import post_locator
+            if post_locator(url) and self.origin_fetcher:
+                # The embed response binds the exact post ID, author and version.
+                # Do not replace unavailable/late original text with hosted snippets.
+                try:
+                    page = await self.origin_fetcher.fetch(url, timeout_seconds=15)
+                    if page.extraction_method != 'x_public_embed':
+                        return 'x_original_not_verified'
+                    # The body may discuss future dates; only adapter metadata
+                    # identifies the publication/edit version of this exact post.
+                    day = publisher_html_day(page.html.partition('</head>')[0] + '</head></html>', url=url)
+                    if not day:
+                        return 'date_unverified'
+                    if day > cutoff:
+                        return 'after_cutoff'
+                    return candidate.model_copy(update={'published_at': day.isoformat(), 'snippet':'',
+                                                       'title': url})
+                except ExternalSourceError as exc:
+                    return exc.code
             locator = index or url
             origin_failure = None
             origin_read = False

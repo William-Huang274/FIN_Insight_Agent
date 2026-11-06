@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[新闻事件研究工具](engineering/event_source_tools.zh-CN.md)记录盘中行情、公开 X 帖文、政策原件、源码选型和实测边界；免费公开通道不承诺实时全市场行情或完整社交搜索。
+
 [原生 harness 工具边界审查](engineering/native_harness_tool_audit.zh-CN.md)记录实际披露工具、来源/计算展示与回读、草稿修订及词法元数据访问，区分工程回放和真实研究验收。
 
 执行内核收缩与上游选型见[采用成熟 harness 的边界与资格](architecture/harness_adoption.zh-CN.md)：DS Harness / ACP 已接入隔离服务的指定迁移任务，Java/BFF 恢复与真实工具回读已运行；完整研究、真实压缩及全部新任务入口切换仍待验收。Codex 无模型工具链与 DS 传输层验证的范围分别记录。

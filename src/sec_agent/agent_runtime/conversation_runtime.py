@@ -52,6 +52,9 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
         grants.append(public_web_tool(thread_id=thread_id,run_id=run_id,
             method_digest=sha256((root / "configs/research/runtime/conversation.json").read_bytes()).hexdigest(),
             cache_root=Path(os.environ["FINSIGHT_TASK_ATTACHMENTS_ROOT"]) / "public-source-cache"))
+        from .market_prices import market_price_tool
+        grants.append(market_price_tool(thread_id=thread_id,
+            cache_root=Path(os.environ['FINSIGHT_TASK_ATTACHMENTS_ROOT']) / 'market-observations'))
     if settings.get("conversation_sandbox_url"):
         from .sandbox_mcp import remote_sandbox_tool
         grants.append(remote_sandbox_tool(endpoint=settings["conversation_sandbox_url"],

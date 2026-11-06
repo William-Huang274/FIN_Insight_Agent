@@ -54,6 +54,11 @@ def web_read_feedback(result):
             'meaning':'原站读取返回以下 HTTP 状态。404 表示这个地址未找到，429 表示限流，5xx 表示服务故障。'})
     if counts['date_unverified'] or counts['date_lookup_unavailable'] or counts['origin_unavailable'] or counts['redirect']:
         feedback.append({'kind':'date_not_established','meaning':'有候选未能核定公开日期。可改查有明确发布日期的公告或历史归档。'})
+    x_failures = {k:v for k,v in counts.items() if k.startswith('x_') or k.startswith('public_data_')}
+    if x_failures:
+        feedback.append({'kind':'public_post_access', 'outcomes':x_failures,
+            'meaning':'公开帖读取未完成或版本不符合截止时点。不能据此认定作者未发言。可查该机构官网同步公告或准确注明来源的同期转述；蓝 V 不等于身份及内容已核实。',
+            'method_readback':{'tool':'get_research_method','arguments':{'method_id':'event_policy','section':'发言原件与账号身份'}}})
     if 'exa_mcp_rate_limited' in codes:
         feedback.append({'kind':'search_rate_limited','meaning':'Exa 本次限流；备用通道的结果另计。'})
     if 'deepseek_query_exceeds_128_characters' in codes:
@@ -90,6 +95,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             from sec_agent.research_foundation.company_disclosures import CompanySources
             companies = CompanySources(sec_user_agent, origin)
             origin = SearchReadOrigin(companies)
+        from sec_agent.research_foundation.public_posts import PublicPostFetcher
+        from .market_prices import task_cutoff
+        origin = SearchReadOrigin(PublicPostFetcher(origin, cutoff=task_cutoff(research_as_of)))
         capture = ExternalSourceCapture(guard=guard, static_fetcher=origin,
             hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard,max_characters=200000,quota=quota))
         cached = ScopedSourceCaptureCache(root=cache_root,thread_id=thread_id,capture=capture,guard=guard)
@@ -112,6 +120,10 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         A company name/ticker and earnings period can locate SEC filings. For issuer
         websites search the company name plus "official website" and topic. Website
         roots in receipts are navigation only. Read documents before citing them.
+        Public X posts can be found with site:x.com and author/topic, or a complete
+        post URL. Read returned documents to see original embed text, author and
+        timestamp; search coverage is incomplete. A badge does not establish
+        identity or factual truth. event_policy provides optional news methods.
         For a dated task, search with a complete public HTTPS URL as query to verify
         that original or its publisher's catalog page directly. Use the returned
         document ID and source URL; each accepted page has its own identity.

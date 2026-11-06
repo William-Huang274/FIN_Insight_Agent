@@ -136,6 +136,9 @@ async def organization_harness_session(*, native, resources, authority, check, o
         grants.append(public_web_tool(thread_id=tid, run_id=rid, paid_search=paid_search, sec_user_agent=agent_identity,
             method_digest=sha256(research_system_prompt(['read_public_source', 'get_research_method']).encode('utf-8')).hexdigest(),
             cache_root=directory / 'public-source-cache', research_as_of=organization.research_as_of))
+        from .market_prices import market_price_tool
+        grants.append(market_price_tool(thread_id=tid, cache_root=directory / 'market-observations',
+                                       research_as_of=organization.research_as_of))
     grants.extend(GrantedTool(t, 'working_note_write' if t.name == 'WriteWorkingNote' else 'read',
                   '当前组织任务的版本化工作笔记') for t in working_memory_tools('research_partner', owner=owner, workspace=memory_workspace))
     # The business receipt store is the single historical readback surface.

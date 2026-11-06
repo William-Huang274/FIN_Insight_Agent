@@ -119,7 +119,7 @@ def issue_preparation_recovery(root, thread, run, *, store, owner, budget,
     audit, base = _paths(root, thread, run)
     path = base.with_suffix('.preparation.json')
     tid, rid = str(UUID(str(thread))), str(UUID(str(run)))
-    if (terminal_run.get('run_id') != rid or terminal_run.get('status') != 'error'
+    if (terminal_run.get('run_id') != rid or terminal_run.get('status') not in {'error','interrupted'}
             or not authorization_ref or not preparation_evidence):
         raise ValueError('preparation_recovery_requires_terminal_failure_evidence')
     if audit.exists():

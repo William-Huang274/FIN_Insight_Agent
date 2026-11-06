@@ -46,13 +46,15 @@ def setup(tmp_path, monkeypatch):
     return SimpleNamespace(root=tmp_path, tid=tid, rid=rid, run=run, runs=runs, store=store, issue=issue, check=check)
 
 
-def test_no_audit_requires_explicit_evidence_and_preserves_failure(setup):
+@pytest.mark.parametrize('status',['error','interrupted'])
+def test_no_audit_requires_explicit_evidence_and_preserves_failure(setup,status):
     s = setup
+    s.run['status']=status
     with pytest.raises(HTTPException): s.check()
     proof = s.issue()
     assert s.issue() == proof
     s.check()
-    assert s.run['status'] == 'error'
+    assert s.run['status'] == status
     assert not (s.root / s.tid / s.rid / 'model-call-events.jsonl').exists()
     assert 'total_tokens' not in proof and 'actual_micros' not in proof
     s.runs.append({'run_id': str(uuid4()), 'status': 'success', 'created_at': '2026-01-02T00:00:00Z'})

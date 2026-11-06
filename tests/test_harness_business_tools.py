@@ -427,6 +427,47 @@ async def test_saved_report_versions_edits_citations_and_delivery_survive_restar
         assert (await bridge.state())['delivery'] is None
         assert (await bridge.state())['report_version'] == 2
 
+
+@pytest.mark.anyio
+async def test_current_report_field_changes_keep_versions_and_invalid_chart_proposals(tmp_path):
+    from sec_agent.agent_runtime.harness_artifact_tools import artifact_tools
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    from test_on_demand_research import artifact_fixture, report
+    artifacts = artifact_fixture()
+    candidate = {k: v for k, v in report(artifacts).items() if k != 'citations'}
+    memory = WorkingMemory(tmp_path / 'notes.sqlite', owner='test', workspace='task', actor='lead')
+    grants = artifact_tools(artifacts=lambda _: artifacts, memory=memory, delivery_intent='report', require_review=False)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'tools.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='task', check=lambda: None)
+        await bridge.initialize({'messages': []})
+        schema = json.loads((await bridge.execute('read_current_report', {'field': 'schema'})).content)
+        assert 'source' in schema['schema']['$defs']['ChartPoint']['required']
+        assert 'value' not in schema['schema']['$defs']['ChartPoint']['properties']
+        assert (await bridge.execute('save_research_report', {'report': candidate, 'base_version': 0})).status == 'success'
+        original = (await bridge.state())['report']
+        changed = await bridge.execute('repair_report_fields', {'fields': {'title': 'Current report field update'}, 'base_version': 1})
+        assert changed.status == 'success', changed.content
+        current = (await bridge.state())['report']
+        assert current['narrative_markdown'] == original['narrative_markdown']
+        assert current['citations'] == original['citations']
+        assert (await bridge.state())['report_version'] == 2
+        stale = await bridge.execute('repair_report_fields', {'fields': {'title': 'Stale title update'}, 'base_version': 1})
+        assert stale.status == 'error'
+        chart = {'title': 'Original chart proposal', 'unit': '%', 'points': [
+            {'label': 'A', 'value': 1}, {'label': 'B', 'value': 2}],
+            'sources': ['REF-a', 'REF-b'], 'interpretation': 'Original author interpretation.'}
+        invalid = await bridge.execute('repair_report_fields', {'fields': {'charts': [chart]}, 'base_version': 2})
+        assert invalid.status == 'error'
+        state = await bridge.state()
+        assert state['report'] == current and state['report_version'] == 2
+        assert state['report_draft']['charts'] == [chart]  # no source guessing or deletion
+        assert not state.get('delivery')
+        assert json.loads(invalid.content)['schema_readback']['arguments'] == {'field': 'schema'}
+        repaired = await bridge.execute('repair_report_fields', {'fields': {'charts': []}, 'base_version': 2})
+        assert repaired.status == 'success'
+        assert (await bridge.state())['report_version'] == 3
+        assert (await bridge.state())['report_draft'] is None
+
 @pytest.mark.anyio
 async def test_supervised_read_pages_and_blocks_dispatch_after_a_failed_batch_member(tmp_path):
     from types import SimpleNamespace

@@ -11,6 +11,7 @@ from .conversation_agent import GrantedTool
 from .report_synthesis_agent import bind_report_candidate, apply_report_edits, ReportTextEdit, ReportEditMatchError, report_model_view, patch_report_fields
 from .research_graph_contracts import canonical_sha256
 from .delegated_task_tools import saved_note_artifact
+from .report_synthesis_agent import CaseReport
 
 
 def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
@@ -38,6 +39,7 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
                     'status': 'draft_saved_needs_repair', 'error': str(exc), 'base_version': base_version,
                     'next_tool': 'repair_report_fields',
                     'readback': {'tool': 'read_current_report', 'arguments': {'view': 'draft'}},
+                    'schema_readback': {'tool': 'read_current_report', 'arguments': {'field': 'schema'}},
                     'remedy': 'Send changed fields only; original draft is saved, not accepted.'}))]})
         return accepted(runtime, bound)
 
@@ -45,16 +47,36 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
     def save_research_report(report: dict, base_version: int, runtime: ToolRuntime) -> Command:
         """Save report={title: string (5-250 chars), narrative_markdown: string (200-80000 chars), charts: optional array}.
         Use current base_version (0 for new); exact observed IDs in brackets retain citation bindings.
-        Saving is not delivery or independent review. For later local edits use edit_research_report.
+        Charts use title, kind (bar/line), unit, scale_divisor (1/1000/1000000/1000000000),
+        interpretation, points [{label, series?, source:{source_id, literal?, quote?}}].
+        Prose sources require a decimal literal and its exact contiguous quote; structured numeric
+        facts or saved calculations need only source_id. Values are resolved by the host, not a
+        caller-supplied value or parallel sources array. read_current_report(field="schema") gives
+        the full contract. Saving is not delivery or independent review. Use edit_research_report
+        for local text changes; repair_report_fields for structured fields of the current report.
         """
         return save_candidate(report, base_version, runtime)
 
     @tool
     def repair_report_fields(fields: dict, base_version: int, runtime: ToolRuntime) -> Command:
-        """Repair fields in the saved unaccepted draft (e.g. title or charts.0.unit). Do not resend unchanged prose."""
+        """Change field paths (e.g. title, charts, charts.0.unit) at current base_version.
+        Uses the pending unaccepted draft if present, otherwise the accepted current report.
+        Unchanged prose and source bindings remain; all schema and source checks run again.
+        Invalid candidates are retained as drafts, not accepted or delivered. Read the current
+        fields with read_current_report, or field="schema" for the full chart/source contract.
+        Do not resend unchanged prose.
+        """
+        if base_version != runtime.state.get('report_version', 0):
+            raise ToolException('report_version_changed_read_current_report')
         draft = runtime.state.get('report_draft')
-        if not draft or base_version != runtime.state.get('report_draft_base_version'):
-            raise ToolException('no_pending_report_draft_at_this_base_version')
+        if draft:
+            if base_version != runtime.state.get('report_draft_base_version'):
+                raise ToolException('report_draft_version_changed_read_current_report')
+        elif runtime.state.get('report'):
+            current = report_model_view(runtime.state['report'])
+            draft = {key: current[key] for key in ('title', 'narrative_markdown', 'charts') if key in current}
+        else:
+            raise ToolException('no_saved_report_or_draft_use_save_research_report')
         try:
             candidate = patch_report_fields(draft, fields)
         except (KeyError, IndexError, TypeError, ValueError) as exc:
@@ -64,13 +86,18 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
     @tool
     def read_current_report(runtime: ToolRuntime, offset: int = 0, max_characters: int = 6000,
                             view: Literal['accepted', 'draft'] = 'accepted',
-                            field: Literal['narrative_markdown', 'title', 'charts', 'all'] = 'narrative_markdown'):
+                            field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema'] = 'narrative_markdown'):
         """Read exact report fields for editing. Default is unescaped narrative prose.
 
         view=draft reads the saved but unaccepted proposal for repair_report_fields;
-        view=accepted reads the saved version for edit_research_report. A draft is
-        not accepted or delivered. field=all returns the serialized author fields.
+        view=accepted reads the saved version for text or structured field changes. A draft is
+        not accepted or delivered. field=all returns the serialized author fields;
+        field=schema returns the full submission contract, including chart point sources.
         """
+        if field == 'schema':
+            return {'schema': CaseReport.model_json_schema(),
+                    'report_version': runtime.state.get('report_version', 0),
+                    'chart_source_rule': 'Each point binds its own source. Prose requires literal and exact quote; structured numeric facts or saved calculations can omit them. The host resolves values; never submit display values as source bindings.'}
         report = runtime.state.get('report_draft' if view == 'draft' else 'report')
         if not report:
             return {'found': False, 'view': view, 'report_version': runtime.state.get('report_version', 0)}

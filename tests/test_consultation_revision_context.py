@@ -24,3 +24,11 @@ def test_depth_is_explicit_not_authority_or_loop_count():
     assert '合理可得公开资料' in depth_guidance('deep')
     assert '不增加权限或额度' in depth_guidance()
     with pytest.raises(ValueError): depth_guidance('unlimited')
+
+
+def test_topic_acronym_does_not_route_election_results_to_issuer_filings():
+    from sec_agent.research_foundation.company_disclosures import issuer_match
+    rows=[{'title':'C3.ai, Inc.','ticker':'AI','cik_str':1}]
+    assert issuer_match(rows, '2026 US midterm elections results AI policy November 5 2026') is None
+    for query in ('AI', '$AI results', 'AI quarterly earnings', 'C3.ai results'):
+        assert issuer_match(rows, query)==rows[0]

@@ -38,6 +38,10 @@ _WEB = re.compile(
     r"investor relations|official website|company website|官网|公司网站|投资者关系",
     re.I,
 )
+_TICKER_CONTEXT = re.compile(
+    r'earnings|quarter|\bQ[1-4]\b|\b(?:10-[KQ]|20-F|40-F|[68]-K)\b|filing|'
+    r'annual report|investor relations|official website|company website|revenue|margin|'
+    r'\b(?:stock|shares|ticker|NYSE|NASDAQ)\b|财报|业绩|申报|季报|年报|官网|公司网站|收入|毛利|股票', re.I)
 _SUFFIX = re.compile(
     r"\s+(?:incorporated|inc|corp(?:oration)?|company|plc|ltd|holdings?)\b.*$", re.I
 )
@@ -96,6 +100,9 @@ def issuer_match(rows, query):
             or re.search(r"\$" + re.escape(ticker) + r"(?![A-Za-z0-9])", query)
             or (
                 len(ticker) >= 2
+                # An uppercase topic/acronym alone is not an issuer identity.
+                # Generic "results" (e.g. election results) is not a filing cue.
+                and _TICKER_CONTEXT.search(query)
                 and ticker not in {"IR", "SEC", "EPS", "FY", "US", "CEO", "CFO", "GAAP"}
                 and re.search(
                     r"(?<![A-Za-z0-9])" + re.escape(ticker) + r"(?![A-Za-z0-9])", query

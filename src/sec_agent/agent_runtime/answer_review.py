@@ -87,7 +87,7 @@ def apply_response(body, raw):
     return body, response.model_dump()
 
 
-def author_input(selected, message, review):
+def author_input(selected, message, review, *, current_report_version=None, recovery_command=None):
     from .quantitative_prose import metric_definition_checks, bound_claim_checks, sentences
     # A historical answer may predate the current checks. Assess the selected
     # version on read; keep deterministic observations separate from the opinion.
@@ -109,10 +109,15 @@ def author_input(selected, message, review):
     if selected.artifact == 'report':
         task = ('处理当前已保存报告的独立复核意见。独立判断，可接受、部分接受或反驳，必要时补证。'
                 '用 edit_research_report 局部修改受影响的正文与关联概括，使用工具返回的当前版本；'
-                '已保存原文在 original_answer，准确引用身份保持不变，新依据使用工具的引用句柄。'
+                'original_answer 是被复核的历史版本；当前稿可能已局部修改，以 current_report 和读取工具为准。准确引用身份保持不变，新依据使用工具的引用句柄。'
                 '完成后用 deliver_current_report 交付实际保存的版本，最后简述哪些判断及其依据改变、哪些仍成立。'
                 '无需修改时也说明理由并交付当前版本；收到复核意见不等于报告已通过独立复核。')
     return json.dumps({'task': task,
+        **({'current_command': recovery_command} if recovery_command else {}),
+        **({'current_report': {'version': current_report_version,
+            'readback': {'tool': 'read_current_report', 'arguments': {}},
+            'meaning': 'Already saved revisions remain authoritative; the historical review target is not a replacement draft.'}}
+            if selected.artifact == 'report' and current_report_version is not None else {}),
         **({'report_version': message.additional_kwargs['report_version'],
             'report_title': message.additional_kwargs['report_title']} if selected.artifact == 'report' else {}),
         'revision_preview': {'tool': 'check_quantitative_changes', 'arguments': 'edits: [{before, after}]',

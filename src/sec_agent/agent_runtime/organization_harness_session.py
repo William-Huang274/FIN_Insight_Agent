@@ -428,7 +428,10 @@ async def organization_harness_session(*, native, resources, authority, check, o
                         environment=child_env, directory=session_directory, binding=binding, run_id=rid,
                         authority=active_authority, stop=bridge.stop, mcp_servers=servers,
                         workspace=directory if replay_origin_run else session_directory) as session:
-                    request = author_input(selected, original, review['opinion']) if challenge else state['messages'][-1].content
+                    request = (author_input(selected, original, review['opinion'],
+                        current_report_version=(await bridge.state()).get('report_version'),
+                        recovery_command=action.get('message') if action.get('action') == 'recover' else None)
+                        if challenge else state['messages'][-1].content)
                     if recovery_receipt:
                         request = json.dumps({'current_command': request,
                             'runtime_recovery': recovery_receipt}, ensure_ascii=False)

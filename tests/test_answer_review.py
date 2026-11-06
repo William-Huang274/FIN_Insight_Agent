@@ -40,6 +40,12 @@ def test_report_review_binds_complete_artifact_not_delivery_summary():
     assert request['report_version'] == 7
     assert 'edit_research_report' in request['task'] and 'deliver_current_report' in request['task']
     assert request['original_answer'] != msg.content
+    resumed = json.loads(author_input(selected, original, 'Independent opinion',
+        current_report_version=9, recovery_command='Continue after source transport repair.'))
+    assert resumed['report_version'] == 7 and resumed['current_report']['version'] == 9
+    assert resumed['current_command'] == 'Continue after source transport repair.'
+    assert resumed['current_report']['readback']['tool'] == 'read_current_report'
+    assert resumed['original_answer'] == original.content
     with pytest.raises(ValueError,match='report_version_unavailable'):
         target(command,[msg],'author',report={**report,'citations':{}},report_version=7)
     with pytest.raises(ValueError,match='author_session'):

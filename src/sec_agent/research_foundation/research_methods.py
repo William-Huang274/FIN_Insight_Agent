@@ -60,6 +60,9 @@ METHOD_TOOL_GUIDANCE = (
     + "\n通过当前接口的 get_research_method 或 request_method 按需读取。"
     "空method_id返回目录；选method_id读全文，section可选返回目录中准确的章节标题。"
     "方法是教学资源而非本案证据；已加载内容可直接使用，所需章节退出后可按同一入口回读。\n"
+    "event_policy 可直接按以下章节读取：消息的增量与政治推进；发言原件与账号身份；"
+    "市场反应的时间与比较；从政策到业务与可更新判断；工具范围与资料入口。"
+    "例如核查消息与价格变化的关系，可调用 get_research_method(method_id='event_policy', section='市场反应的时间与比较')。\n"
 )
 
 

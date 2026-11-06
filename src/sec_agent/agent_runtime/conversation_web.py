@@ -180,6 +180,10 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             visible = dict(artifact)
             direct = bool(research_as_of and operation == 'search' and not document_id and is_url_query(query))
             attempts = (visible.get('execution_receipt') or {}).get('attempts', [])
+            legislative = [nav for attempt in attempts for nav in attempt.get('legislation_navigation', [])]
+            if legislative:
+                visible['legislation_navigation'] = legislative
+                visible['next_step'] = 'Official bill identities found; call the listed read_legislation entries to select dated versions and obtain full text. Empty WEB items does not mean no bills were found.'
             company_attempts = [a for a in attempts if a.get('issuer_navigation')]
             if company_attempts:
                 # Take the latest site information (verified filings can supply new roots).
@@ -199,6 +203,12 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                     for a in company_attempts
                     if a['provider_id']=='sec_edgar_filings' or a['provider_id'].startswith('issuer_site_')]
             feedback = web_read_feedback(visible)
+            if legislative:
+                feedback = [f for f in feedback if f['kind'] != 'candidates_not_admitted']
+            rejected = sum(a.get('candidate_filter_counts',{}).get('outside_requested_domains',0) for a in attempts)
+            if rejected:
+                feedback.append({'kind':'provider_ignored_domain_constraint','count':rejected,
+                    'meaning':'搜索通道返回了指定域名之外的网页，已排除；这些不算有效命中，也不能据此判断指定网站没有资料。可换搜索通道或使用已知官方入口。'})
             if quota and quota.limited and not direct:
                 route = 'deepseek_search_then_ddgs' if paid_search and research_as_of else 'ddgs'
                 visible['web_search_route'] = {'active_provider':route,'scope':'task','reason':'confirmed_exa_rate_limit'}

@@ -39,3 +39,8 @@ API 提供的是当前响应，不保证过去某日的归档状态。记录更�
 这不证明主题搜索召回、模型自主选择版本或新闻研究结论已经通过。也不等于已部署到当前工作台容器；后续在固定服务版本中确认 key 注入和工具目录，再进行有预算的模型验收。
 
 上游合同：[Bill endpoints](https://github.com/LibraryOfCongress/api.congress.gov/blob/main/Documentation/BillEndpoint.md)、[GovInfo 开发者接口](https://www.govinfo.gov/developers)。
+# 搜索候选与官方 API 的交接
+
+主题搜索命中明确 Congress.gov 法案身份后，日期检查通过官方 API 核对提出日期，不再先抓取受挑战的 HTML。符合截止日的身份以 `legislation_navigation` 返回，包含 `read_legislation` 的准确参数；它不是 WEB 正文，不能引用，也不会显示未核定的搜索标题或摘要。模型自行选择文本版本、阅读原文及判断程序含义。凭据、限流、身份和日期错误仍明确记录；未来法案不放行。
+
+搜索引擎忽略单一明确 `site:` 域名约束时，适配层排除域外结果并记录数量。该处理不等于通用语义相关性已经解决，也不把无关结果解释为网站资料不存在。

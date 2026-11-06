@@ -43,6 +43,13 @@ def research_system_prompt(names, task_context=""):
                    'Use them when an external source can resolve the research question or a library gap; '
                    'a library miss does not require user intervention. Preserve the research cutoff and distinguish '
                    'publication date from capture date. Send only public search terms, not private materials.\n')
+    if "read_legislation" in names:
+        prompt += ('\nOfficial bill records, actions and text versions are available via read_legislation. '
+                   'Search receipts may return legislation_navigation instead of WEB documents; follow its exact next_calls, '
+                   'then choose and read a text version. A challenged Congress.gov webpage does not block this API route.\n')
+    if "read_market_prices" in names:
+        prompt += ('\nread_market_prices provides dated intraday OHLCV with explicit time zones and pagination. '
+                   'Use it when testing a reported market reaction; it does not identify the cause of a price change.\n')
     if "WriteWorkingNote" in names:
         from .working_memory_tools import WORKING_MEMORY_GUIDANCE
         prompt += WORKING_MEMORY_GUIDANCE

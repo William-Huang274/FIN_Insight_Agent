@@ -257,7 +257,7 @@ class SearchReadOrigin:
 
 class DatedWebDiscovery:
     """Only admitted locators enter navigation, receipts and model input."""
-    def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None, search_backup=None, companies=None):
+    def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None, search_backup=None, companies=None, legislation=None):
         self.discovery = discovery
         self.fetcher = fetcher
         self.fallback_discovery = fallback_discovery
@@ -265,6 +265,8 @@ class DatedWebDiscovery:
         self.companies = companies
         self.search_backup = search_backup
         self.verified = {}
+        from .legislation_discovery import LegislationDiscovery
+        self.legislation = legislation or LegislationDiscovery()
 
     async def search(self, request):
         cutoff = request.run_scope.research_as_of.date()
@@ -279,8 +281,15 @@ class DatedWebDiscovery:
 
         filing_source = None
         issuer = None if direct or not self.companies else await self.companies.lookup(request)
+        legislation_navigation = {}
         async def verify(candidate):
             url = candidate.canonical_url
+            navigation = await self.legislation.resolve(url, cutoff)
+            if navigation is not None:
+                if isinstance(navigation, dict):
+                    legislation_navigation[url] = navigation
+                    return 'official_api_navigation_available'
+                return navigation
             if candidate.provider_id == 'deepseek_search':
                 # An index title can change after the cutoff even for an old URL.
                 candidate = candidate.model_copy(update={'title':url})
@@ -431,6 +440,10 @@ class DatedWebDiscovery:
                                  for candidate,result in zip(receipt.candidates,checked)
                                  if candidate.provider_id == attempt.provider_id)
                 update = {'date_filter_counts':dict(counts)} if counts else {}
+                navigation = [legislation_navigation[c.canonical_url] for c in receipt.candidates
+                              if c.provider_id == attempt.provider_id and c.canonical_url in legislation_navigation]
+                if navigation:
+                    update['legislation_navigation'] = navigation
                 if issuer:
                     update['issuer_navigation'] = {
                         'ticker':issuer.ticker, 'websites':list(issuer.roots),
@@ -451,7 +464,7 @@ class DatedWebDiscovery:
                 combined = [saved_filings[0], *admitted[:1], *saved_filings[1:], *admitted[1:]]
                 admitted = list({c.canonical_url:c for c in combined}.values())[:request.max_results]
                 break
-            if admitted:
+            if admitted or legislation_navigation:
                 break
         body = receipt.model_dump(mode='json',exclude={'receipt_digest'})
         body['attempted_providers'] = [row.model_dump(mode='json') for row in attempts]

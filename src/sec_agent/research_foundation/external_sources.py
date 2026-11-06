@@ -192,6 +192,8 @@ class ProviderAttempt(BaseModel):
     date_filter_counts: dict[str, int] = Field(default_factory=dict)
     engine_http: dict[str, int | str] = Field(default_factory=dict)
     issuer_navigation: dict | None = None
+    legislation_navigation: list[dict] = Field(default_factory=list)
+    candidate_filter_counts: dict[str, int] = Field(default_factory=dict)
 
     @model_serializer(mode='wrap')
     def preserve_archived_shape(self, handler):
@@ -204,6 +206,9 @@ class ProviderAttempt(BaseModel):
             body.pop('issuer_navigation', None)
         if 'engine_http' not in self.model_fields_set:
             body.pop('engine_http', None)
+        for key in ('legislation_navigation', 'candidate_filter_counts'):
+            if key not in self.model_fields_set:
+                body.pop(key, None)
         return body
 
 
@@ -511,6 +516,10 @@ class ExternalSourceDiscovery:
         self._monotonic = monotonic
 
     async def search(self, request: ExternalSearchRequest) -> DiscoveryReceipt:
+        # Enforce an unambiguous site operator even if the engine ignores it.
+        sites = re.findall(r'(?i)(?:^|\s)site:([a-z0-9.-]+)(?=\s|$)', request.query)
+        if len(sites) == 1 and not request.include_domains and not re.search(r'(?i)\bOR\b|["()|]', request.query):
+            request = request.model_copy(update={'include_domains':(sites[0].strip('.').lower(),)})
         started = self._clock()
         started_tick = self._monotonic()
         query_digest = request.request_digest
@@ -563,6 +572,7 @@ class ExternalSourceDiscovery:
                 _engine_http.reset(token)
 
             accepted_before = len(candidates)
+            rejected_domains = 0
             for provider_rank, hit in enumerate(hits, start=1):
                 if len(candidates) >= request.max_results:
                     break
@@ -574,6 +584,7 @@ class ExternalSourceDiscovery:
                 if request.include_domains and not _host_in_domains(
                     host, request.include_domains
                 ):
+                    rejected_domains += 1
                     continue
                 if canonical_url in seen_urls:
                     continue
@@ -622,6 +633,8 @@ class ExternalSourceDiscovery:
                     status="ok" if accepted else "zero_results",
                     returned_hits=len(hits),
                     accepted_hits=accepted,
+                    **({'candidate_filter_counts':{'outside_requested_domains':rejected_domains}}
+                       if rejected_domains else {}),
                     **({"engine_http": engine_http} if engine_http else {}),
                     **({'runtime_compatibility':tuple(sorted({h.runtime_compatibility for h in hits if h.runtime_compatibility}))}
                        if any(h.runtime_compatibility for h in hits) else {}),

@@ -844,9 +844,23 @@ class PublicURLGuard:
             _require_public_address(host)
         elif resolve:
             try:
-                addresses = tuple(self._resolver(host))
+                try:
+                    addresses = tuple(self._resolver(host))
+                except socket.gaierror as first:
+                    # One transient resolver retry, before any HTTP request.
+                    # NXDOMAIN and address-policy failures are not retryable.
+                    if first.errno != socket.EAI_AGAIN:
+                        raise
+                    time.sleep(0.2)
+                    addresses = tuple(self._resolver(host))
             except Exception as exc:
-                raise ExternalSourceError("capture_dns_resolution_failed") from exc
+                raise ExternalSourceError("capture_dns_resolution_failed:" + json.dumps({
+                    'host':host, 'resolver_code':getattr(exc,'errno',None),
+                    'temporary':isinstance(exc,socket.gaierror) and exc.errno == socket.EAI_AGAIN,
+                    'http_request_dispatched':False,
+                    'meaning':'DNS lookup failed before page access; this is not missing disclosure. '
+                              'Retain the candidate URL; retry after network recovery or discover an alternative original.'
+                },ensure_ascii=False)) from exc
             if not addresses:
                 raise ExternalSourceError("capture_dns_resolution_empty")
             for address in addresses:

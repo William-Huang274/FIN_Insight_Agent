@@ -7,6 +7,21 @@ from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery,
 from test_web_source_navigation import _reader, _call
 
 
+def test_filtered_publisher_catalog_is_navigation_not_a_fetchable_dated_release():
+    from sec_agent.research_foundation.dated_web_discovery import filtered_publication_catalog
+    url='https://publisher.gov/news?f%5B0%5D=facet_dates%3A2026-04'
+    assert filtered_publication_catalog(url)
+    assert not filtered_publication_catalog('https://publisher.gov/release?f=normal')
+    reader,_,_=_reader(url=url,published=None)
+    class NeverFetch:
+        async def fetch(self,*args,**kwargs):raise AssertionError('collection sent as publication')
+    reader.discovery=DatedWebDiscovery(reader.discovery,NeverFetch(),origin_fetcher=NeverFetch())
+    result=_call(reader,'search',query='publisher topic')
+    assert not result.items
+    assert 'publisher_directory_not_dated_document' in result.model_dump_json()
+    assert url in result.model_dump_json() and 'Public source fixture' not in result.model_dump_json()
+
+
 def test_pdf_issue_metadata_is_not_a_policy_effective_date_or_body_mention():
     memo='Office of an agency\nJanuary 9, 2026 \nMEMORANDUM FOR STAFF\nFROM: Director\nSUBJECT: Policy\nEffective January 1, 2027.'
     assert publisher_day(memo,pdf=True)==date(2026,1,9)

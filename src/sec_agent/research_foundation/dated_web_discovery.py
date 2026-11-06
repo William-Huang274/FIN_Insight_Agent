@@ -4,7 +4,7 @@ import json
 from collections import Counter, OrderedDict
 from datetime import date, datetime
 import re
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit, parse_qsl
 
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from .external_sources import (DiscoveryReceipt, ExternalSourceDiscovery, ExternalSourceError,
@@ -13,6 +13,12 @@ from .external_sources import (DiscoveryReceipt, ExternalSourceDiscovery, Extern
 
 def is_url_query(query):
     return query.lower().startswith(('http://', 'https://')) and not any(c.isspace() for c in query)
+
+
+def filtered_publication_catalog(url):
+    """Drupal faceted collection queries identify a listing, not a dated release."""
+    return any(re.fullmatch(r'f\[\d+\]', key) and re.match(r'facet_[a-z_]+:', value)
+               for key,value in parse_qsl(urlsplit(url).query))
 
 
 class PublicLocator:
@@ -377,6 +383,8 @@ class DatedWebDiscovery:
                 return 'outside_requested_domains'
             if site_path and not (parsed.path == site_path or parsed.path.startswith(site_path+'/')):
                 return 'outside_requested_path'
+            if filtered_publication_catalog(url):
+                return 'publisher_directory_not_dated_document'
             if url in visited or len(visited) >= 6:
                 return 'publisher_navigation_cycle'
             visited = (*visited, url)
@@ -566,7 +574,7 @@ class DatedWebDiscovery:
                     for c,out in zip(receipt.candidates,checked)
                     if c.provider_id == attempt.provider_id and out in (
                         'date_unverified','date_lookup_unavailable','origin_403','origin_404','origin_unavailable',
-                        'redirect_outside_requested_domains','publisher_navigation_cycle')]
+                        'redirect_outside_requested_domains','publisher_navigation_cycle','publisher_directory_not_dated_document')]
                 if unresolved:
                     update['unresolved_originals'] = unresolved
                 if verification_failures.get(attempt.provider_id):

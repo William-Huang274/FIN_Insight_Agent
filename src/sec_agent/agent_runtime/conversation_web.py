@@ -191,8 +191,8 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                         restored.add(receipt.receipt_digest)
             if operation == "read" and query:
                 raise ValueError("read accepts document_id and character offset, not query. Use operation=search with document_id and query to locate a section, then read at character_start without query.")
-            if max_characters > 24000:
-                raise ValueError("Use at most 24000 characters and paginate with offset")
+            # SourceDocumentRequest owns the shared read-window bounds. Do not
+            # impose an undisclosed, narrower limit in the conversation wrapper.
             previously_limited = quota and quota.limited
             date_filters = ({'end_published_date': scope.research_as_of.date()}
                             if operation == 'search' and not document_id else {})

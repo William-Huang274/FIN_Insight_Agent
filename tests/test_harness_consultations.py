@@ -140,6 +140,51 @@ async def test_failure_blocks_parent_and_never_resubmits(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
+async def test_explicit_recovery_retries_saved_failed_read_not_arbitrary_failure(tmp_path, monkeypatch):
+    from langchain_core.tools import ToolException
+    fixed = False
+    executions = []
+    @tool
+    def read_source_document(query: str):
+        """Read an authorized original."""
+        executions.append(query)
+        if not fixed:
+            raise ToolException('old wrapper limit')
+        return {'text':'original', 'query':query}
+    read_source_document.handle_tool_error = True
+    grants = [GrantedTool(read_source_document, 'read', 'authorized')]
+    async def provider(**kwargs):
+        receipt = await kwargs['bridge'].execute('read_source_document', {'query':'unchanged proposal'})
+        if receipt.status == 'error':
+            raise ValueError('answer_review_source_tool_failed:'+receipt.tool_call_id)
+        return 'Opinion from actual read'
+    monkeypatch.setattr('sec_agent.agent_runtime.harness_consultations.independent_review', provider)
+    monkeypatch.setattr('sec_agent.adapters.explicit_run_recovery.verified_permit', lambda *a,**k:None)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'state.sqlite')) as saver:
+        def service(rid):
+            return HarnessConsultations(directory=tmp_path/'jobs', saver=saver, grants=grants,
+                tid='t',rid=rid,check=lambda:None,scope=lambda:__import__('contextlib').nullcontext(),
+                budget=object(),environment={'FINSIGHT_ORGANIZATION_RUNTIME_SECRET':'fixture'},
+                model='gpt-6.1-sol',basis={},as_of='2026-11-06',public_sink=lambda x:None)
+        first=service('old')
+        out=await first.submit('Check','Context','review',False,[],{'messages':[]})
+        key=out['task_id']
+        with pytest.raises(ValueError,match='source_tool_failed'):
+            await first.tasks[key]
+        await first.close()
+        fixed=True
+        resumed=service('new')
+        await resumed.recover_cancelled('old',tmp_path/'audit')
+        await resumed.tasks[key]
+        assert executions==['unchanged proposal','unchanged proposal']
+        old=json.loads((tmp_path/'jobs'/'history'/key/'old.json').read_text())
+        assert old['status']=='failed' and old['failure_code'].startswith('answer_review_source_tool_failed:')
+        assert json.loads((tmp_path/'jobs'/(key+'.json')).read_text())['status']=='completed'
+        assert any(m.type=='tool' and m.status=='error' for m in (await resumed.child(key).state())['messages'])
+        await resumed.close()
+
+
+@pytest.mark.anyio
 async def test_cancelled_consultation_requires_permit_and_reuses_exact_target(tmp_path, monkeypatch):
     observed=[]
     async def cancelled(**kwargs):

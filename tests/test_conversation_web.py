@@ -8,6 +8,25 @@ from sec_agent.research_foundation.external_sources import ConversationSourceSco
 from test_web_source_navigation import _reader
 
 
+def test_public_read_uses_shared_window_contract_without_hidden_wrapper_cap(tmp_path):
+    reader, fetcher, text = _reader()
+    grant = public_web_tool(thread_id=str(uuid4()), run_id=str(uuid4()),
+        method_digest='a'*64, cache_root=tmp_path, reader=reader).tool
+    async def run():
+        visible, _ = await grant.coroutine(operation='search', query='public filing')
+        doc = json.loads(visible)['items'][0]['document_id']
+        visible, _ = await grant.coroutine(operation='read', document_id=doc, max_characters=50000)
+        result = json.loads(visible)
+        assert result['items'][0]['passage'] == text.strip()[:50000]
+        assert result['items'][0]['source_locator']['character_start'] == 0
+        assert not result['evidence_admission_performed']
+        from langchain_core.tools import ToolException
+        import pytest
+        with pytest.raises(ToolException, match='80000'):
+            await grant.coroutine(operation='read', document_id=doc, max_characters=80001)
+    asyncio.run(run())
+
+
 def test_publication_filters_are_disclosed_and_forwarded_without_rewriting_period(tmp_path):
     from datetime import date
     reader,_,_=_reader()

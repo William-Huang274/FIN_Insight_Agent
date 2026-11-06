@@ -126,9 +126,21 @@ class HarnessConsultations:
             return
         for path, record in candidates:
             stopped_record = record
+            # An explicit run recovery may retry a known failed read. Check the
+            # actual saved receipt and granted effect, not just an error string.
+            # Paid unknown requests still require their separate provider permit.
+            code = record.get('failure_code', '')
+            failed_read = False
+            if code.startswith('answer_review_source_tool_failed:'):
+                receipt_id = code.split(':', 1)[1]
+                child = self.child(path.stem)
+                history = (await child.state()).get('messages', [])
+                failed_read = any(isinstance(m, ToolMessage) and m.tool_call_id == receipt_id
+                    and m.status == 'error' and child.effects.get(m.name) == 'read'
+                    for m in history)
             # A checked zero-dispatch recovery failure cannot replace the prior
             # paid checkpoint. Follow its immutable history, with both proofs.
-            if record.get('error_type') != 'CancelledError':
+            if record.get('error_type') != 'CancelledError' and not failed_read:
                 thread, run = record['scope'].split(':')
                 prepared = verified_preparation_recovery(audit_root,thread,run,
                     secret=self.environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
@@ -147,9 +159,9 @@ class HarnessConsultations:
                 raise RuntimeError('consultation_recovery_execution_mismatch')
             permit = verified_permit(audit_root,self.tid,origin_run,
                                      secret=self.environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
-            if not permit:
+            if not permit and not failed_read:
                 raise RuntimeError('consultation_recovery_requires_explicit_paid_retry_authorization')
-            if record.get('error_type') != 'CancelledError':
+            if record.get('error_type') != 'CancelledError' and not failed_read:
                 raise RuntimeError('consultation_failure_requires_separate_reconciliation')
             key=path.stem
             if not await self.child(key).state():

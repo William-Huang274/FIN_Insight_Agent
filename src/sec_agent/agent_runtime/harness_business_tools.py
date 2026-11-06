@@ -165,6 +165,7 @@ def restored_batch_feedback(messages, ids):
 
 class HarnessBusinessState(OnDemandResearchState):
     harness_command_id: str
+    active_report_review: dict | None
     harness_import_digest: str
     report_draft: dict | None
     report_draft_base_version: int | None
@@ -287,7 +288,21 @@ class HarnessBusinessTools:
                 changes = {'harness_command_id': command_id}
                 if not recovering:
                     changes['delivery'] = None
+                    changes['active_report_review'] = None
                 await self._checkpoint_call(self.graph.aupdate_state, self.config, changes, as_node='tools')
+
+    async def set_report_review(self, *, report_digest, reviewer, opinion):
+        """Bind the actual host-accepted review, without fabricating a tool call."""
+        async with self.lock:
+            await asyncio.to_thread(self.access)
+            current=(await self._checkpoint_call(self.graph.aget_state,self.config)).values
+            value={'reviewed_report_digest':report_digest,'reviewer':reviewer,'opinion':opinion}
+            prior=current.get('active_report_review') or {}
+            if all(prior.get(k)==v for k,v in value.items()):
+                return  # recovery keeps its original ordering relative to later consultations
+            value['message_boundary']=len(current.get('messages',[]))
+            await self._checkpoint_call(self.graph.aupdate_state,self.config,
+                {'active_report_review':value},as_node='tools')
 
     async def list_tools(self, ctx, params):
         await asyncio.to_thread(self.access)

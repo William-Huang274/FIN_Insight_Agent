@@ -35,6 +35,18 @@ def test_actual_review_links_unchanged_conclusion_but_does_not_decide_it():
     assert consultation_revision_context([review],sentence,sentence) is None
 
 
+def test_version_review_supersedes_old_consultation_but_allows_newer_actual_review():
+    sentence='仓库租金上涨不能单独排除需求变化，需要重新判断主要原因。'
+    old=ToolMessage(name='read_research_agent_result',tool_call_id='old',content=json.dumps({
+        'status':'completed','purpose':'review','task_id':'old','opinion':'旧意见：租金上涨表明供应限制。'}))
+    active={'message_boundary':1,'reviewer':'reviewer','reviewed_report_digest':'selected', 'opinion':sentence}
+    result=consultation_revision_context([old],sentence,sentence,active)
+    assert result['reviewed_report_digest']=='selected' and result['review_readback']['arguments']=={'field':'review'}
+    assert all('旧意见' not in r['opinion_excerpt'] for r in result['related_wording'])
+    newer=old.model_copy(update={'tool_call_id':'new'})
+    assert consultation_revision_context([old,newer],sentence,sentence,active)['review_receipt']=='new'
+
+
 def test_depth_is_explicit_not_authority_or_loop_count():
     assert '快速追踪' in depth_guidance('brief')
     assert '合理可得公开资料' in depth_guidance('deep')

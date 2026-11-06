@@ -6,9 +6,10 @@ from math import sqrt
 from .source_references import REFERENCE_TOKEN
 
 
-def consultation_revision_context(messages, original, candidate):
+def consultation_revision_context(messages, original, candidate, active_review=None):
     """Actual imported review of a report or hypotheses; never an investigation verdict."""
-    for message in reversed(messages):
+    recent=messages[active_review['message_boundary']:] if active_review else messages
+    for message in reversed(recent):
         if getattr(message, 'name', '') != 'read_research_agent_result' or getattr(message, 'status', '') != 'success':
             continue
         try:
@@ -24,6 +25,13 @@ def consultation_revision_context(messages, original, candidate):
                 'related_wording': related_wording(original, candidate, result['opinion']),
                 'review_readback': {'tool': 'read_research_agent_result', 'arguments': {'task_id': result['task_id']}},
                 'meaning': 'Exact current wording beside the actual review; matches may be unrelated. A review of hypotheses is not review of this manuscript. Author decides whether the reasoning is consistent. Saved is not reviewed.'}
+    if active_review:
+        return {'reviewed_report_digest':active_review['reviewed_report_digest'],
+                'reviewer':active_review['reviewer'],'review_scope':'report_version',
+                'status':'navigation_only_not_a_verdict',
+                'related_wording':related_wording(original,candidate,active_review['opinion']),
+                'review_readback':{'tool':'read_current_report','arguments':{'field':'review'}},
+                'meaning':'Current report wording beside the actual version-bound review. Matches are navigation, not a consistency verdict; saving is not review approval.'}
     return None
 
 

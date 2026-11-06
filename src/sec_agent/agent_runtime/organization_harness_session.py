@@ -404,6 +404,9 @@ async def organization_harness_session(*, native, resources, authority, check, o
                     _persist(opinion_path, {'reviewer': model, 'opinion': opinion})
                 review = json.loads(opinion_path.read_text(encoding='utf8'))
                 review_context = (original.content, review['opinion'])
+                if selected.artifact == 'report':
+                    await bridge.set_report_review(report_digest=selected.version,
+                        reviewer=review['reviewer'],opinion=review['opinion'])
 
             async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token,
                     readiness=consultations.dispatch_ready if consultations else None) as endpoint:

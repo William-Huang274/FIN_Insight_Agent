@@ -21,7 +21,8 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
                   'review_status': 'not_assessed_in_this_record'}
         from .revision_context import consultation_revision_context
         context = consultation_revision_context(runtime.state.get('messages', []),
-            runtime.state.get('report', {}).get('narrative_markdown', ''), report['narrative_markdown'])
+            runtime.state.get('report', {}).get('narrative_markdown', ''), report['narrative_markdown'],
+            runtime.state.get('active_report_review'))
         if context:
             result['revision_context'] = context
         return Command(update={'report': report, 'report_version': version, 'report_draft': None,
@@ -86,18 +87,29 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
     @tool
     def read_current_report(runtime: ToolRuntime, offset: int = 0, max_characters: int = 6000,
                             view: Literal['accepted', 'draft'] = 'accepted',
-                            field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema'] = 'narrative_markdown'):
+                            field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema', 'review'] = 'narrative_markdown'):
         """Read exact report fields for editing. Default is unescaped narrative prose.
 
         view=draft reads the saved but unaccepted proposal for repair_report_fields;
         view=accepted reads the saved version for text or structured field changes. A draft is
         not accepted or delivered. field=all returns the serialized author fields;
         field=schema returns the full submission contract, including chart point sources.
+        field=review reads the actual current version-bound independent opinion and target digest.
         """
         if field == 'schema':
             return {'schema': CaseReport.model_json_schema(),
                     'report_version': runtime.state.get('report_version', 0),
                     'chart_source_rule': 'Each point binds its own source. Prose requires literal and exact quote; structured numeric facts or saved calculations can omit them. The host resolves values; never submit display values as source bindings.'}
+        if field == 'review':
+            review=runtime.state.get('active_report_review')
+            if not review:return {'found':False,'field':'review'}
+            if offset<0 or not 1<=max_characters<=12000:raise ToolException('invalid_read_window')
+            text=review['opinion']
+            return {'found':True,'field':'review','reviewer':review['reviewer'],
+                'reviewed_report_digest':review['reviewed_report_digest'],'text':text[offset:offset+max_characters],
+                'total_characters':len(text),'offset':offset,
+                'next_offset':offset+max_characters if offset+max_characters<len(text) else None,
+                'status':'independent_opinion_not_approval_of_current_revision'}
         report = runtime.state.get('report_draft' if view == 'draft' else 'report')
         if not report:
             return {'found': False, 'view': view, 'report_version': runtime.state.get('report_version', 0)}

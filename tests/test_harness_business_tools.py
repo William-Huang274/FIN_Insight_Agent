@@ -459,6 +459,27 @@ async def test_saved_invalid_draft_exposes_repair_without_native_failure_or_earl
         assert candidate['narrative_markdown'] in view.content
 
 
+@pytest.mark.anyio
+async def test_host_review_binding_readback_survives_recovery_without_advancing_order(tmp_path):
+    from sec_agent.agent_runtime.harness_artifact_tools import artifact_tools
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    memory=WorkingMemory(tmp_path/'notes.sqlite',owner='test',workspace='task',actor='lead')
+    grants=artifact_tools(artifacts=lambda _: {},memory=memory,delivery_intent='report',require_review=False)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'tools.sqlite')) as saver:
+        bridge=HarnessBusinessTools(grants=grants,checkpointer=saver,thread_id='t',check=lambda:None)
+        await bridge.initialize({'messages':[]})
+        await bridge.begin_command('first')
+        await bridge.set_report_review(report_digest='original',reviewer='reviewer',opinion='Exact opinion')
+        first=(await bridge.state())['active_report_review']
+        result=await bridge.execute('read_current_report',{'field':'review'})
+        assert json.loads(result.content)['text']=='Exact opinion'
+        await bridge.begin_command('recovery',recovering=True)
+        await bridge.set_report_review(report_digest='original',reviewer='reviewer',opinion='Exact opinion')
+        assert (await bridge.state())['active_report_review']==first
+        await bridge.begin_command('new task')
+        assert not (await bridge.state())['active_report_review']
+
+
 def test_report_edit_location_hints_never_apply_ambiguous_or_near_matches():
     from sec_agent.agent_runtime.report_synthesis_agent import ReportEditMatchError, ReportTextEdit, apply_report_edits
     original={'title':'Test report','narrative_markdown':'A matching passage. A matching passage.'}

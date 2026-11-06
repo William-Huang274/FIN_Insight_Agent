@@ -147,7 +147,16 @@ class WebSourceReader:
             raise ValueError("web_source_publication_day_unconfirmed")
         # Linked documents have independent dates. Use dated discovery for these
         # rather than registering an unchecked child as an authorized document.
-        links = [] if dated else self._observed_links(discovery, candidate, result, key, request.document_id)
+        if dated:
+            from .source_link_navigation import observed_document_links
+            links = [{'source_url': link['url'], 'origin': link['origin'],
+                      'read_state': 'not_read', 'writer_citable': False,
+                      'publication_date_inherited': False,
+                      'read_entry': {'tool':'read_public_source', 'arguments':{
+                          'operation':'search', 'query':link['url']}}}
+                     for link in observed_document_links(result.text, result.final_url)]
+        else:
+            links = self._observed_links(discovery, candidate, result, key, request.document_id)
         if request.operation == "search":
             # Reuse the existing chunker/BM25 navigator inside one captured
             # source; no second index, full-document prompt or new ranking rules.
@@ -205,7 +214,8 @@ class WebSourceReader:
             "discovered_links": links,
             "captured_characters": len(result.text),
             "host_capture_truncated": result.truncated,
-            "authority_note": "Exact fetched public-source window, not Reviewed Evidence or S2 NumericFact. "
+            "authority_note": ("Hosted DS Fetch transcription bound by exact ERCOT notice ID and dateline; origin HTTP was unavailable. Not an archived original. "
+                if any(a.method == 'deepseek_hosted_notice' for a in result.attempts) else "") + "Exact fetched public-source window, not Reviewed Evidence or S2 NumericFact. "
                 "Cite what this URL actually says, assess publisher/reliability/date and distinguish reported fact, forecast, opinion and inference. "
                 "Search dates are not independently verified; capture date is not publication date. Linked reports/PDFs are not implicitly read. "
                 + ("This is a commercial report sales/preview page, NOT the paid report or its numeric tables; no access bypass."

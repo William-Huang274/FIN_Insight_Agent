@@ -113,7 +113,7 @@ def publisher_day(text, index=False, *, pdf=False):
         match = re.search(r'\bFiling Date\s+(\d{4}-\d{2}-\d{2})\s+Accepted\b',body)
         return date.fromisoformat(match[1]) if match else None
     dates = set()
-    release_label = (r'(?im)^\s*(?:last update(?:d)?\s*:|release date\s*:|'
+    release_label = (r'(?im)^\s*(?:last update(?:d)?\s*:|release date\s*:|notice date\s*:|'
                      r'embargoed until release[^\n]{0,80}?\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),)'
                      r'\s*([A-Za-z]{3,9} \d{1,2}, \d{4})\b')
     masthead_dates = []
@@ -150,6 +150,30 @@ def publisher_html_day(html, index=False, *, url=None):
     if index:
         return day
     dates = [day] if day else []
+    # Explicit document modification metadata (e.g. Plone), not the copyright
+    # year or a date mentioned by the article. Preserve the newer-version gate.
+    for stamp in soup.select('.contentModifiedDate'):
+        parent = stamp.parent
+        if parent and re.fullmatch(r'Last Modified\s+\d{4}-\d{2}-\d{2}', parent.get_text(' ',strip=True), re.I):
+            try:
+                dates.append(date.fromisoformat(stamp.get_text(strip=True)))
+            except ValueError:
+                pass
+    # A release masthead may follow a nested heading rather than be its sibling.
+    # Require a single h1, a short labelled metadata element and no prose between.
+    main = soup.find('main')
+    if main and len(main.find_all('h1')) == 1:
+        h1 = main.find('h1')
+        stamp = h1.find_next(['p', 'time'])
+        if stamp and stamp in main.descendants:
+            value = ' '.join(stamp.stripped_strings)
+            if len(value) < 180 and re.search(r'\bPress Release\b', value, re.I):
+                match = re.fullmatch(r'([A-Za-z]+ \d{1,2}, \d{4})\s*\|[^|]{1,60}\|\s*Press Release', value, re.I)
+                if match:
+                    try:
+                        dates.append(datetime.strptime(match[1], '%B %d, %Y').date())
+                    except ValueError:
+                        pass
     def same_page(value):
         return isinstance(value,str) and urljoin(url,value).split('#')[0] == url.split('#')[0]
     if url:
@@ -209,6 +233,24 @@ def publisher_html_day(html, index=False, *, url=None):
             except ValueError:
                 pass
     return max(dates,default=None)
+
+
+def publisher_canonical_url(html, url):
+    """Follow a publisher-declared query-free locator, never strip query fields by guess."""
+    from bs4 import BeautifulSoup
+    parsed = urlsplit(url)
+    if not parsed.query:
+        return None
+    links = BeautifulSoup(html, 'html.parser').select('head link[rel="canonical"][href]')
+    targets = {urljoin(url, link['href']) for link in links}
+    if len(targets) != 1:
+        return None
+    target = targets.pop()
+    other = urlsplit(target)
+    if (other.scheme == parsed.scheme == 'https' and other.netloc == parsed.netloc
+            and other.path == parsed.path and not other.query and not other.fragment):
+        return target
+    return None
 
 
 def corroborated_dateline(markdown, html):
@@ -282,6 +324,10 @@ class DatedWebDiscovery:
         filing_source = None
         issuer = None if direct or not self.companies else await self.companies.lookup(request)
         legislation_navigation = {}
+        verification_failures = {}
+        def failed(candidate, stage, exc):
+            counts = verification_failures.setdefault(candidate.provider_id, Counter())
+            counts[stage + ':' + getattr(exc, 'code', type(exc).__name__)] += 1
         async def verify(candidate):
             url = candidate.canonical_url
             navigation = await self.legislation.resolve(url, cutoff)
@@ -351,6 +397,14 @@ class DatedWebDiscovery:
                         try:
                             page = await self.origin_fetcher.fetch(locator, timeout_seconds=15)
                             if page.final_url == locator:
+                                canonical = publisher_canonical_url(page.html, locator) if page.html and not index else None
+                                if canonical:
+                                    # Fetch and date the declared page independently. Keep a
+                                    # distinct candidate identity for its actual citation URL.
+                                    return await verify(candidate.model_copy(update={
+                                        'canonical_url':canonical,
+                                        'candidate_id':canonical_digest({'original_candidate':candidate.candidate_id,
+                                            'publisher_canonical_url':canonical})}))
                                 origin_read = True
                                 if candidate.provider_id == 'deepseek_search' and not index and page.html:
                                     from bs4 import BeautifulSoup
@@ -364,11 +418,12 @@ class DatedWebDiscovery:
                                     try:
                                         markdown = await self.search_backup.primary.fetch_markdown(locator)
                                         day = corroborated_dateline(markdown, page.html)
-                                    except ExternalSourceError:
-                                        pass
+                                    except ExternalSourceError as exc:
+                                        failed(candidate, 'deepseek_fetch', exc)
                             else:
                                 origin_failure = 'redirect'
                         except (ExternalSourceError, TimeoutError) as exc:
+                            failed(candidate, 'original_read', exc)
                             status = re.fullmatch(r'(?:capture_http_status_|sec_http_)(\d{3})', getattr(exc,'code',''))
                             origin_failure = f'origin_{status[1]}' if status else 'origin_unavailable'
                             if origin_failure == 'origin_403':
@@ -391,7 +446,8 @@ class DatedWebDiscovery:
                     if day:
                         self.verified[locator] = day
                 day = self.verified.get(locator)
-            except (ExternalSourceError, ValueError, TimeoutError):
+            except (ExternalSourceError, ValueError, TimeoutError) as exc:
+                failed(candidate, 'date_verification', exc)
                 return origin_failure or ('date_unverified' if origin_read else 'date_lookup_unavailable')
             if not day:
                 return origin_failure or 'date_unverified'
@@ -431,6 +487,7 @@ class DatedWebDiscovery:
                 break
             if provider is None:
                 continue
+            verification_failures.clear()
             receipt = await provider.search(request)
             checked = await asyncio.gather(*(verify(c) for c in receipt.candidates))
             admitted = [row for row in checked if not isinstance(row, str)]
@@ -440,6 +497,8 @@ class DatedWebDiscovery:
                                  for candidate,result in zip(receipt.candidates,checked)
                                  if candidate.provider_id == attempt.provider_id)
                 update = {'date_filter_counts':dict(counts)} if counts else {}
+                if verification_failures.get(attempt.provider_id):
+                    update['verification_failures'] = dict(verification_failures[attempt.provider_id])
                 navigation = [legislation_navigation[c.canonical_url] for c in receipt.candidates
                               if c.provider_id == attempt.provider_id and c.canonical_url in legislation_navigation]
                 if navigation:

@@ -194,6 +194,7 @@ class ProviderAttempt(BaseModel):
     issuer_navigation: dict | None = None
     legislation_navigation: list[dict] = Field(default_factory=list)
     candidate_filter_counts: dict[str, int] = Field(default_factory=dict)
+    verification_failures: dict[str, int] = Field(default_factory=dict)
 
     @model_serializer(mode='wrap')
     def preserve_archived_shape(self, handler):
@@ -206,7 +207,7 @@ class ProviderAttempt(BaseModel):
             body.pop('issuer_navigation', None)
         if 'engine_http' not in self.model_fields_set:
             body.pop('engine_http', None)
-        for key in ('legislation_navigation', 'candidate_filter_counts'):
+        for key in ('legislation_navigation', 'candidate_filter_counts', 'verification_failures'):
             if key not in self.model_fields_set:
                 body.pop(key, None)
         return body
@@ -731,7 +732,8 @@ class FetchedPage(BaseModel):
     final_url: str
     html: str = ""
     extracted_text: str | None = None
-    extraction_method: Literal["sec_edgar_html", "x_public_embed"] | None = None
+    extraction_method: Literal["sec_edgar_html", "x_public_embed", "deepseek_hosted_notice"] | None = None
+    origin_failure_code: str | None = None
     status_code: int | None = None
     content_type: str | None = None
 
@@ -744,6 +746,7 @@ class CaptureAttempt(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     method: Literal[
+        "deepseek_hosted_notice",
         "x_public_embed",
         "sec_edgar_html",
         "pypdf_static",
@@ -783,6 +786,7 @@ class CaptureReceipt(BaseModel):
     final_url: str | None
     source_domain: str | None
     capture_method: Literal[
+        "deepseek_hosted_notice",
         "x_public_embed",
         "sec_edgar_html",
         "pypdf_static",
@@ -1129,7 +1133,8 @@ def trafilatura_extract_text(html: str) -> str:
         return str(
             trafilatura.extract(
                 html,
-                output_format="txt",
+                output_format="markdown",
+                include_links=True,
                 include_comments=False,
                 include_tables=True,
                 no_fallback=False,
@@ -1240,6 +1245,7 @@ class ExternalSourceCapture:
         last_page: FetchedPage | None = None
         last_text = ""
         selected_method: Literal[
+            "deepseek_hosted_notice",
             "x_public_embed",
             "sec_edgar_html",
             "pypdf_static",
@@ -1269,7 +1275,10 @@ class ExternalSourceCapture:
                     )
                 final_url = await asyncio.to_thread(self.guard.validate, page.final_url)
                 page = page.model_copy(update={"final_url": final_url})
-                if method == "trafilatura_static" and page.extraction_method in {"sec_edgar_html", "x_public_embed"}:
+                if page.origin_failure_code:
+                    attempts.append(CaptureAttempt(method=method, status='tool_failure',
+                        extracted_characters=0, failure_code=page.origin_failure_code))
+                if method == "trafilatura_static" and page.extraction_method in {"sec_edgar_html", "x_public_embed", "deepseek_hosted_notice"}:
                     method = page.extraction_method
                 if method == "trafilatura_static" and page.content_type == "application/pdf" and page.extracted_text is not None:
                     method = "pypdf_static"

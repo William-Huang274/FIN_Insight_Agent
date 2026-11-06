@@ -44,6 +44,7 @@ def test_reopen_cache_rebinds_attempt_without_changing_capture_provenance(tmp_pa
     assert second.captured_at == first.captured_at
     assert second.capture_method == "cached_public_source_replay"
     assert not second.archive_grade and second.admission_required_before_citation
+    assert second.attempts[:-1] == first.attempts
 
 
 def test_other_thread_and_explicit_refresh_cannot_reuse_previous_capture(tmp_path):

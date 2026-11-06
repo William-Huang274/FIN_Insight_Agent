@@ -17,14 +17,23 @@ class DeepSeekWeb:
         self.key, self.budget, self.thread, self.guard = api_key, budget, thread_id, guard
         self.transport = transport
         self.blocked = set()
+        # The shared budget gate forbids another dispatch while a request is
+        # unresolved. Queue this client's parallel date/fetch checks; don't
+        # misreport an in-flight sibling as a failed remote search.
+        self._dispatch_lock = asyncio.Lock()
 
     async def _post(self, action, payload):
+        async with self._dispatch_lock:
+            return await self._dispatch(action, payload)
+
+    async def _dispatch(self, action, payload):
         b = self.budget
         wire = json.dumps([self.thread, action, payload], sort_keys=True, ensure_ascii=False)
         digest = hashlib.sha256(wire.encode()).hexdigest()
         key = 'deepseek-web-v1:' + digest
         scope = 'deepseek-web:' + self.thread
-        policy = {'provider':'deepseek', 'tool':action, 'harness_execution_scope':scope}
+        policy = {'provider':'deepseek', 'tool':action, 'harness_execution_scope':scope,
+                  'request':payload}
         try:
             old = await asyncio.to_thread(b.store.lookup, b.owner, b.budget, key)
             if old is not None:

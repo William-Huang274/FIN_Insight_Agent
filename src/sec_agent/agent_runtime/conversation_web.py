@@ -23,8 +23,14 @@ from .conversation_agent import GrantedTool
 
 def web_read_feedback(result):
     """Explain only recorded obstacles, without exposing excluded candidate data."""
+    verification = Counter()
+    for attempt in (result.get('execution_receipt') or {}).get('attempts', []):
+        verification.update(attempt.get('verification_failures', {}))
+    details = ([{'kind':'source_verification_failures','stages':dict(verification),
+        'meaning':'搜索与读取分开计。original_read 是原站访问；deepseek_fetch 是 DS 网页抓取；date_verification 是日期核验/备用读取。这些失败不表示 DS Search 没有返回候选，也不表示信息不存在。'}]
+        if verification else [])
     if result.get('items'):
-        return []
+        return details
     counts = Counter()
     codes = set()
     engines = {}
@@ -69,7 +75,7 @@ def web_read_feedback(result):
         feedback.append({'kind':'fallback_empty','meaning':'DDGS 报告未返回结果，原因未明。可换资料产品或参考期间；本次未检得不能证明没有披露。'})
     elif 'ddgs_search_failed' in codes:
         feedback.append({'kind':'fallback_failed','meaning':'DDGS 搜索调用失败，本次没有完成备用检索。'})
-    return feedback
+    return details + feedback
 
 
 def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reader=None, research_as_of=None, paid_search=None, sec_user_agent=None):
@@ -91,6 +97,8 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         quota = ExaTaskQuota(Path(cache_root).resolve() / thread_id)
         guard = PublicURLGuard()
         origin = StaticHTTPPageFetcher(guard=guard)
+        from sec_agent.research_foundation.government_sources import GovernmentSourceFetcher
+        origin = GovernmentSourceFetcher(origin, paid_search)
         if research_as_of:
             from sec_agent.research_foundation.company_disclosures import CompanySources
             companies = CompanySources(sec_user_agent, origin)
@@ -124,6 +132,12 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         read_legislation for official metadata, actions and text-version links;
         then read its selected official rendition here. Topic searches still use
         this search tool; Congress metadata is not a full-text keyword search.
+        For government originals use site: with the issuing institution (e.g.
+        gov.texas.gov, tceq.texas.gov, ercot.com, whitehouse.gov). Search receipts
+        offer these scoped entries when the query names an institution. Read a
+        release's observed links to find its directive or attachment; each linked
+        document still needs its own date check. ERCOT notices may use a labelled
+        hosted Fetch transcription when direct HTTP is unavailable.
         Public X posts can be found with site:x.com and author/topic, or a complete
         post URL. Read returned documents to see original embed text, author and
         timestamp; search coverage is incomplete. A badge does not establish
@@ -203,6 +217,11 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                     for a in company_attempts
                     if a['provider_id']=='sec_edgar_filings' or a['provider_id'].startswith('issuer_site_')]
             feedback = web_read_feedback(visible)
+            if operation == 'search' and not document_id:
+                from sec_agent.research_foundation.government_sources import official_search_entries
+                entries = official_search_entries(query)
+                if entries:
+                    visible['official_source_navigation'] = entries
             if legislative:
                 feedback = [f for f in feedback if f['kind'] != 'candidates_not_admitted']
             rejected = sum(a.get('candidate_filter_counts',{}).get('outside_requested_domains',0) for a in attempts)

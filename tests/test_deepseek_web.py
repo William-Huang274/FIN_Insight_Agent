@@ -59,6 +59,23 @@ def test_ranked_search_and_fetch_reuse_budget_receipts():
     assert sum(row['cost'] for row in ds.budget.store.rows.values()) == 1500
 
 
+def test_parallel_fetches_wait_for_receipt_before_next_budget_dispatch():
+    async def handler(req):
+        await asyncio.sleep(0.01)
+        return httpx.Response(200,json={'content':'body'})
+    ds=client(handler)
+    original=ds.budget.store.reserve
+    def reserve(*args, **kwargs):
+        assert all(r['status']=='received' for r in ds.budget.store.rows.values())
+        assert args[5]['request'].get('url')
+        return original(*args,**kwargs)
+    ds.budget.store.reserve=reserve
+    async def run():
+        return await asyncio.gather(*(ds.fetch_markdown('https://example.org/'+str(i)) for i in range(3)))
+    assert asyncio.run(run())==['body']*3
+    assert len(ds.budget.store.rows)==3
+
+
 def test_unknown_call_and_quota_do_not_repeat_http_and_do_not_fake_empty_results():
     hits = []
     def handler(req):

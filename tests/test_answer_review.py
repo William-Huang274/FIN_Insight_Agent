@@ -193,6 +193,32 @@ def test_review_pressure_keeps_the_new_batch_even_above_soft_target():
     assert len(fit_review_receipts(body, 5000, keep_current=True)) > 5000
     assert json.loads(body['input'][1]['output'])['original_readback']['arguments']['tool_call_id'] == 'earlier'
     assert body['input'][-1]['output'] == raw
+
+
+def test_review_projection_preserves_prefix_pairs_replay_and_original_readback():
+    from copy import deepcopy
+    from sec_agent.agent_runtime.answer_review_provider import ReviewReceiptProjection
+    history=[{'role':'user','content':'unchanged question'}]
+    def batch(call, result):
+        return [{'type':'function_call','call_id':call},
+                {'type':'function_call_output','call_id':call,'output':json.dumps(result)}]
+    history += batch('first',{'receipt_id':'wrapper','result':{'original_tool_call_id':'real-source',
+        'json_pointer':'/items/0/passage','content':'x'*18000}})
+    history += batch('current',{'receipt_id':'new-source','result':'new evidence'})
+    original=deepcopy(history); projection=ReviewReceiptProjection(); body={'input':history}
+    wire=projection.project(body,history,set(),10000)
+    prefix=deepcopy(body['input'])
+    rb=json.loads(prefix[2]['output'])['original_readback']['arguments']
+    assert rb=={'tool_call_id':'real-source','offset':0,'json_pointer':'/items/0/passage'}
+    assert history==original and prefix[-1]==history[-1]
+    history += batch('next',{'receipt_id':'small','result':'next evidence'})
+    next_wire=projection.project(body,history,set(),10000)
+    assert body['input'][:len(prefix)]==prefix
+    replay=ReviewReceiptProjection(); replay_body={'input':[]}
+    assert replay.project(replay_body,original,set(),10000)==wire
+    assert replay.project(replay_body,history,set(),10000)==next_wire
+    assert [x['call_id'] for x in body['input'] if x.get('type')=='function_call']==[
+        x['call_id'] for x in body['input'] if x.get('type')=='function_call_output']
 def test_related_wording_keeps_unchanged_closing_claim_and_exact_offsets():
     from sec_agent.agent_runtime.revision_context import related_wording
     base = "Pipeline closures reduced repairs for both districts.\n\nBoth districts recorded fewer repairs."

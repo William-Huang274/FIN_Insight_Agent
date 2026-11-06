@@ -70,6 +70,26 @@ def test_saved_result_field_navigation_preserves_raw_offsets_and_values():
         reader.func(tool_call_id="calc", runtime=runtime, json_pointer="")
 
 
+def test_saved_read_wrapper_returns_original_entry_without_reinterpreting_requested_field():
+    import json
+    from types import SimpleNamespace
+    from langchain_core.tools import ToolException
+    reader = next(g.tool for g in conversation_tools(thread_id='wrapper') if g.tool.name=='read_saved_result')
+    data = ToolMessage(name='read_public_source',tool_call_id='source',content=json.dumps({'items':[{'passage':'exact original'}]}))
+    state = SimpleNamespace(state={'messages':[data]})
+    first = reader.func(tool_call_id='source',json_pointer='/items/0/passage',runtime=state)
+    wrapper = ToolMessage(name='read_saved_result',tool_call_id='wrapper',content=json.dumps(first))
+    state.state['messages'].append(wrapper)
+    result = reader.func(tool_call_id='wrapper',json_pointer='/items/0/passage',runtime=state,max_characters=14000)
+    assert result['result_state']=='original_result_selection_required'
+    assert result['previously_read_field']=='/items/0/passage'
+    assert 'json_pointer' not in result['readback']['arguments']
+    assert json.loads(reader.func(**result['readback']['arguments'],runtime=state)['content'])=={'items':[{'passage':'exact original'}]}
+    assert result['new_tool_dispatch'] is False
+    with pytest.raises(ToolException):
+        reader.func(tool_call_id='wrapper',runtime=SimpleNamespace(state={'messages':[wrapper]}))
+
+
 def test_saved_result_field_index_is_bounded_and_does_not_truncate_values():
     from sec_agent.agent_runtime.context_records import saved_result_field_index
     index = saved_result_field_index({str(i): "x" * 161 for i in range(100)})

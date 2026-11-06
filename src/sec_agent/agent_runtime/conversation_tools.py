@@ -139,6 +139,21 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         saved = next((m for m in runtime.state.get("messages", []) if isinstance(m, ToolMessage)
                       and m.tool_call_id == tool_call_id and m.name in SAVED_RESULT_TOOLS and m.status == "success"), None)
         if saved is None:
+            prior_read = next((m for m in runtime.state.get('messages', []) if isinstance(m,ToolMessage)
+                and m.tool_call_id == tool_call_id and m.name == 'read_saved_result' and m.status == 'success'),None)
+            if prior_read:
+                try:
+                    prior = json.loads(prior_read.content)
+                except (ValueError,TypeError):
+                    prior = {}
+                original = prior.get('original_tool_call_id')
+                if any(isinstance(m,ToolMessage) and m.tool_call_id==original and m.name in SAVED_RESULT_TOOLS
+                       and m.status=='success' for m in runtime.state.get('messages',[])):
+                    return {'result_state':'original_result_selection_required', 'requested_tool_call_id':tool_call_id,
+                        'meaning':'This is a saved read operation; address the original data receipt. Select its field explicitly.',
+                        'new_tool_dispatch':False, 'readback':{'tool':'read_saved_result','arguments':{
+                            'tool_call_id':original,'offset':0,'max_characters':max_characters}},
+                        'previously_read_field':prior.get('json_pointer')}
             raise ToolException("当前对话没有这条成功数据读取记录；不能跨窗口猜测或回放失败操作")
         content = saved.content if isinstance(saved.content, str) else json.dumps(saved.content, ensure_ascii=False)
         try:

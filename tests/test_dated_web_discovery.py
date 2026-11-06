@@ -63,6 +63,15 @@ def test_pdf_issue_metadata_is_not_a_policy_effective_date_or_body_mention():
     assert publisher_day(letter.replace('Dear Director:', 'The report says:'),pdf=True) is None
 
 
+def test_docket_filing_stamp_not_alleged_or_conflicting_date():
+    stamp='Case No. 1:26-cv-12345-ABC     Document 12-2     filed 04/24/26     USDC District\npg 1 of 19'
+    assert publisher_day('Complaint\n'+stamp,pdf=True)==date(2026,4,24)
+    assert publisher_day(stamp+ '\n'+stamp,pdf=True)==date(2026,4,24)
+    assert publisher_day(stamp,pdf=False) is None
+    assert publisher_day('The complaint was filed 04/24/26.',pdf=True) is None
+    assert publisher_day(stamp+'\n'+stamp.replace('04/24/26','05/24/26'),pdf=True) is None
+
+
 def test_site_path_keeps_host_and_account_scope_when_provider_ignores_query():
     for url, accepted in [('https://example.com/account/status/1', True),
                           ('https://example.com/other/status/1', False),

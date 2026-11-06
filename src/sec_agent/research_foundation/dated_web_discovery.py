@@ -124,6 +124,16 @@ def publisher_day(text, index=False, *, pdf=False):
                      r'\s*([A-Za-z]{3,9} \d{1,2}, \d{4})\b')
     masthead_dates = []
     if pdf:
+        # Federal docket stamps identify this filed document, unlike a date
+        # mentioned in allegations. Conflicting stamped dates need resolution.
+        filed = set(re.findall(r'Case(?: No\.)?\s+[\w:.-]+\s+Document\s+\d+(?:-\d+)?\s+'
+                               r'filed\s+(\d{2}/\d{2}/\d{2}(?:\d{2})?)\s+USDC\b', body, re.I))
+        if len(filed) == 1:
+            stamp = filed.pop()
+            try:
+                dates.add(datetime.strptime(stamp, '%m/%d/%Y' if len(stamp)==10 else '%m/%d/%y').date())
+            except ValueError:
+                pass
         # A monthly report label followed by a separate full dateline in the
         # masthead. Dates in data tables and the survey month alone do not qualify.
         masthead_dates = re.findall(

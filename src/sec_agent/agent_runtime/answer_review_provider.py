@@ -83,7 +83,7 @@ def public_usage_event(call_id, model, record=None):
     return row
 
 
-def fit_review_receipts(body, limit, *, keep_current=False):
+def fit_review_receipts(body, limit, *, keep_current=False, original_readback=False):
     """Reduce oldest exact tool copies only under remaining pressure; preserve paged access."""
     def wire():
         return json.dumps(body, ensure_ascii=False, sort_keys=True)
@@ -100,11 +100,50 @@ def fit_review_receipts(body, limit, *, keep_current=False):
         rid = receipt.get('receipt_id')
         if not rid:
             continue
-        preview = {'receipt_id':rid, 'partial_preview':item['output'][:1500],
-                   'original_readback':{'tool':'read_saved_result','arguments':{'tool_call_id':rid,'offset':0}}}
+        readback = {'tool':'read_saved_result','arguments':{'tool_call_id':rid,'offset':0}}
+        if original_readback:
+            readback = receipt.get('original_readback') or readback
+            result = receipt.get('result') or {}
+            if isinstance(result,dict) and result.get('original_tool_call_id'):
+                readback = {'tool':'read_saved_result','arguments':{'tool_call_id':result['original_tool_call_id'],
+                    'offset':0, **({'json_pointer':result['json_pointer']} if result.get('json_pointer') else {})}}
+        preview = {'receipt_id':rid, 'partial_preview':item['output'][:1500], 'original_readback':readback}
         body['input'][index] = {**item, 'output':json.dumps(preview,ensure_ascii=False)}
         payload = wire()
     return payload
+
+
+class ReviewReceiptProjection:
+    """Freeze each projected prefix; append new protocol records until pressure recurs."""
+    def __init__(self):
+        self.prefix, self.consumed = [], 0
+
+    def capture(self, body, consumed):
+        self.prefix, self.consumed = list(body['input']), consumed
+
+    def project(self, body, inputs, navigation_calls, pressure):
+        body['input'] = self.prefix + inputs[self.consumed:]
+        wire = json.dumps(body,ensure_ascii=False,sort_keys=True)
+        if len(wire) > pressure:
+            body['input'] = compact_tool_history(body['input'],navigation_calls)
+            originals = {v['call_id']: json.loads(v['output']) for v in inputs
+                         if v.get('type') == 'function_call_output'}
+            for i, item in enumerate(body['input']):
+                if item.get('type') != 'function_call_output':
+                    continue
+                receipt = json.loads(item['output'])
+                original = originals[item['call_id']]
+                result = original.get('result') or {}
+                if isinstance(result, dict) and result.get('original_tool_call_id'):
+                    receipt['original_readback'] = {'tool':'read_saved_result', 'arguments':{
+                        'tool_call_id':result['original_tool_call_id'], 'offset':0,
+                        **({'json_pointer':result['json_pointer']} if result.get('json_pointer') else {})}}
+                elif original.get('original_readback'):
+                    receipt['original_readback'] = original['original_readback']
+                body['input'][i] = {**item,'output':json.dumps(receipt,ensure_ascii=False)}
+            wire = fit_review_receipts(body,int(pressure*.70),keep_current=True,original_readback=True)
+        self.capture(body,len(inputs))
+        return wire
 
 
 async def saved_consultation_attempt(store, owner, budget_id, key, saved, scope, lane):
@@ -188,7 +227,10 @@ async def independent_review(*, selected, message, question, bridge, budget, env
         seen = {}
         repeated_rounds = 0
         navigation_calls = set()
+        current_navigation_calls = set()
         read_ids = set()
+        projection = ReviewReceiptProjection()
+        saved_history = None
         while True:
             await asyncio.to_thread(authority)
             body = dict(model=model, instructions=instructions, input=inputs, tools=tools, store=False,
@@ -203,7 +245,12 @@ async def independent_review(*, selected, message, question, bridge, budget, env
             pressure = min(800000, profile.max_input_characters)
             legacy = bool(saved and not saved['basis'].get('review_projection'))
             raw_chars = len(wire)
-            if len(wire) > pressure:
+            stable_projection = not saved or saved['basis'].get('review_projection') == 'stable_receipt_prefix_v1'
+            if stable_projection:
+                wire = projection.project(body,inputs,current_navigation_calls,pressure)
+                if len(wire) > profile.max_input_characters:
+                    raise ValueError('answer_review_input_budget_exceeded')
+            elif len(wire) > pressure:
                 # Keep the model's chosen sources, compact earlier tool responses
                 # to their exact readback handles. Never truncate the latest batch.
                 body['input'] = compact_tool_history(inputs, navigation_calls)
@@ -217,10 +264,12 @@ async def independent_review(*, selected, message, question, bridge, budget, env
                     raise ValueError('answer_review_input_budget_exceeded')
                 if not saved:
                     logging.getLogger(__name__).info('review_input_pressure raw_chars=%d projected_chars=%d',raw_chars,len(wire))
+            projection.capture(body,len(inputs))
             # Conservative byte bound for tokenized text plus protocol overhead.
             reserve = ((len(wire.encode()) + 2048) * prices.input_miss + profile.max_output_tokens * prices.output + 999999)//1000000
             policy = dict(harness_execution_scope=scope, token_budget=profile.model_dump(mode='json'), price=asdict(prices))
-            policy['review_projection'] = 'preserve_current_batch'
+            policy['review_projection'] = ('stable_receipt_prefix_v1' if stable_projection else
+                                           (saved['basis'].get('review_projection') or 'legacy'))
             if dispatch_lane is not None:
                 policy['harness_dispatch_lane'] = dispatch_lane
             saved_scope = saved['basis'].get('harness_execution_scope') if saved else None
@@ -291,13 +340,17 @@ async def independent_review(*, selected, message, question, bridge, budget, env
                 operation = (call['name'], json.dumps(args, sort_keys=True))
                 if (args.get('request') or {}).get('operation') in ('catalog','search','outline'):
                     navigation_calls.add(call['call_id'])
+                if (args.get('operation') or (args.get('request') or {}).get('operation')) in ('catalog','search','outline'):
+                    current_navigation_calls.add(call['call_id'])
                 permitted = call['name'] in names or (call['name']=='read_saved_result' and args.get('tool_call_id') in read_ids)
                 if not permitted:
                     raise ValueError('answer_review_unavailable_tool')
                 result = seen.get(operation)
                 made_progress = made_progress or result is None
                 if saved:
-                    history = (await bridge.state()).get('messages', [])
+                    if saved_history is None:
+                        saved_history = (await bridge.state()).get('messages', [])
+                    history = saved_history
                     identifiers = {x['id'] for msg in history for x in getattr(msg,'tool_calls',[])
                                    if x['name'] == call['name'] and
                                    (msg.additional_kwargs.get('original_tool_arguments') or x['args']) == args}

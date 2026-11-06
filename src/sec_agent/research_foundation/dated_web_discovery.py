@@ -167,6 +167,20 @@ def publisher_html_day(html, index=False, *, url=None):
         stamp = h1.find_next(['p', 'time'])
         if stamp and stamp in main.descendants:
             value = ' '.join(stamp.stripped_strings)
+            # Publisher-labelled publication time before the article body.
+            # Exclude listing cards, event dates and unrelated footer times;
+            # the visible date must agree with the machine-readable date.
+            publication = stamp.find_parent(class_=re.compile(r'^(?:published|publication-date|published-date)$', re.I))
+            if (stamp.name == 'time' and publication and publication in main.descendants
+                    and len(main.select('time[datetime]')) == 1
+                    and len(publication.get_text(' ', strip=True)) < 180):
+                try:
+                    declared = date.fromisoformat(stamp.get('datetime', '')[:10])
+                    printed = datetime.strptime(value, '%B %d, %Y').date()
+                    if declared == printed:
+                        dates.append(declared)
+                except ValueError:
+                    pass
             if len(value) < 180 and re.search(r'\bPress Release\b', value, re.I):
                 match = re.fullmatch(r'([A-Za-z]+ \d{1,2}, \d{4})\s*\|[^|]{1,60}\|\s*Press Release', value, re.I)
                 if match:

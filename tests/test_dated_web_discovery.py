@@ -105,6 +105,20 @@ def test_only_release_masthead_date_or_article_metadata_qualifies():
     meta = '<head><meta property="article:modified_time" content="2026-07-15T12:00:00Z"></head>'
     assert publisher_html_day(meta + release) == date(2026,7,15)
 
+
+def test_labelled_publication_time_requires_agreeing_visible_masthead():
+    from sec_agent.research_foundation.dated_web_discovery import publisher_html_day
+    html = ('<main><article><h1>Regulations finalized</h1><section><article><div class="info">'
+            '<div class="published">News: <time datetime="2025-09-23">September 23, 2025</time></div>'
+            '<div class="description"><p>Article text</p></div></div></article></section></article></main>')
+    assert publisher_html_day(html) == date(2025,9,23)
+    assert publisher_html_day(html.replace('published', 'event-date')) is None
+    assert publisher_html_day(html.replace('2025-09-23', '2025-09-24')) is None
+    assert publisher_html_day(html.replace('<h1>', '<p>Earlier prose</p><h1>')) == date(2025,9,23)
+    assert publisher_html_day(html.replace('<div class="published">', '<p>Article starts</p><div class="published">')) is None
+    assert publisher_html_day(html.replace('</main>', '<time datetime="2026-01-01">January 1, 2026</time></main>')) is None
+    assert publisher_html_day('<head><meta property="article:modified_time" content="2026-10-01"></head>'+html) == date(2026,10,1)
+
 def test_known_url_skips_ranked_search_and_keeps_cutoff_and_guard(monkeypatch):
     from sec_agent.research_foundation.external_sources import PublicURLGuard, FetchedPage
     monkeypatch.setattr('sec_agent.research_foundation.external_sources._resolve_host', lambda _: ['8.8.8.8'])

@@ -21,6 +21,22 @@ from sec_agent.research_foundation.web_source_navigation import WebSourceReader
 from .conversation_agent import GrantedTool
 
 
+def search_execution_faults(result):
+    """Metering/dispatch faults must not masquerade as a researched absence."""
+    fatal = {'deepseek_web_response_unconfirmed', 'deepseek_web_prior_call_unresolved',
+             'deepseek_web_dispatch_blocked'}
+    found = set()
+    for attempt in (result.get('execution_receipt') or {}).get('attempts', []):
+        code = attempt.get('failure_code')
+        if code in fatal:
+            found.add(code)
+        for failure in attempt.get('verification_failures', {}):
+            code = failure.split(':', 1)[-1]
+            if code in fatal:
+                found.add(code)
+    return sorted(found)
+
+
 def web_read_feedback(result):
     """Explain only recorded obstacles, without exposing excluded candidate data."""
     verification = Counter()
@@ -169,7 +185,10 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                 from sec_agent.research_foundation.external_sources import DiscoveryReceipt
                 from sec_agent.research.reviewed_evidence_pack import canonical_digest
                 for message in runtime.state.get('messages', []):
-                    if getattr(message, 'name', None) != 'read_public_source' or getattr(message, 'status', None) != 'success':
+                    saved_artifact = getattr(message, 'artifact', None) or {}
+                    if (getattr(message, 'name', None) != 'read_public_source'
+                            or (getattr(message, 'status', None) != 'success'
+                                and not saved_artifact.get('execution_stop'))):
                         continue
                     for raw in (getattr(message, 'artifact', None) or {}).get('web_navigation_receipts', []):
                         receipt = DiscoveryReceipt.model_validate(raw)
@@ -287,6 +306,18 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                                'Provider results/captured text only, not exhaustive public disclosure coverage.'}
             if hasattr(reader, 'export_navigation'):
                 artifact['web_navigation_receipts'] = reader.export_navigation()
+            faults = search_execution_faults(artifact)
+            if faults:
+                visible['execution_stop'] = artifact['execution_stop'] = {
+                    'codes': faults, 'reason': 'Search dispatch or usage is unresolved; host recovery is required. '
+                    'Successful candidates remain recorded. Do not infer source absence from this failure.'}
+                if runtime is not None and getattr(runtime, 'tool_call_id', None):
+                    from langchain_core.messages import ToolMessage
+                    from langgraph.types import Command
+                    return Command(update={'messages': [ToolMessage(name='read_public_source',
+                        tool_call_id=runtime.tool_call_id, status='error',
+                        content=json.dumps(visible, ensure_ascii=False), artifact=artifact)]})
+                raise ToolException(json.dumps(visible, ensure_ascii=False))
             return json.dumps(visible,ensure_ascii=False), artifact
         except (ValueError, ExternalSourceError) as exc:
             raise ToolException("公开来源读取未完成，不代表信息未披露：" + str(exc)) from exc

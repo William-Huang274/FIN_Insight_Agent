@@ -20,14 +20,14 @@ class Store:
     def reserve(self, owner, budget, key, digest, cost, basis, **kwargs):
         assert cost == 750 and kwargs['execution_scope'] == basis['harness_execution_scope']
         assert key not in self.rows
-        self.rows[key] = {'status':'dispatched'}
+        self.rows[key] = {'status':'dispatched', 'call_id':str(len(self.rows)), 'basis':basis}
         return self.rows[key]
 
     def received(self, owner, budget, key, response, actual):
         self.rows[key] = {'status':'received', 'response':response, 'cost':actual}
 
     def unknown(self, owner, budget, key):
-        self.rows[key] = {'status':'unknown'}
+        self.rows[key]['status'] = 'unknown'
 
 
 def client(handler):
@@ -84,7 +84,7 @@ def test_unknown_call_and_quota_do_not_repeat_http_and_do_not_fake_empty_results
     ds=client(handler)
     for msg in ('unconfirmed','unresolved'):
         with pytest.raises(ExternalSourceError,match=msg): asyncio.run(ds.search(query()))
-    assert len(hits) == 1 and list(ds.budget.store.rows.values()) == [{'status':'unknown'}]
+    assert len(hits) == 1 and [r['status'] for r in ds.budget.store.rows.values()] == ['unknown']
     def limited(req):
         hits.append(req.url.path)
         return httpx.Response(429)
@@ -92,6 +92,32 @@ def test_unknown_call_and_quota_do_not_repeat_http_and_do_not_fake_empty_results
     for q, msg in [('a','429'),('a','429'),('b','route_unavailable')]:
         with pytest.raises(ExternalSourceError,match=msg): asyncio.run(ds.search(query(q)))
     assert len(hits) == 2 and sum(r['cost'] for r in ds.budget.store.rows.values()) == 0
+
+
+def test_explicit_recovery_keeps_unknown_hold_and_reuses_successful_retry():
+    ds = client(lambda _: (_ for _ in ()).throw(httpx.ReadTimeout('unknown')))
+    with pytest.raises(ExternalSourceError, match='unconfirmed'):
+        asyncio.run(ds.search(query()))
+    original = dict(next(iter(ds.budget.store.rows.values())))
+    calls = []
+    def handler(req):
+        calls.append(req)
+        return httpx.Response(200, json={'results':[]})
+    def resumed(run, authorized):
+        return DeepSeekWeb(api_key='test', budget=ds.budget, thread_id='task', guard=ds.guard,
+            run_id=run, recovery_authorized=authorized, transport=httpx.MockTransport(handler))
+    with pytest.raises(ExternalSourceError, match='unresolved'):
+        asyncio.run(resumed('next', False).search(query()))
+    recovery = resumed('next', True)
+    assert asyncio.run(recovery.search(query())) == []
+    assert asyncio.run(resumed('later', False).search(query())) == []
+    assert len(calls) == 1 and next(iter(ds.budget.store.rows.values())) == original
+    # A fresh failure during recovery cannot automatically consume another try.
+    recovery.transport = ds.transport
+    with pytest.raises(ExternalSourceError, match='unconfirmed'):
+        asyncio.run(recovery.search(query('another')))
+    with pytest.raises(ExternalSourceError, match='unresolved'):
+        asyncio.run(recovery.search(query('another')))
 
 
 def test_hosted_markdown_only_corroborates_dateline_on_same_original():

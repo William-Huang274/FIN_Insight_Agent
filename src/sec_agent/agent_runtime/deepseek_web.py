@@ -13,9 +13,12 @@ class DeepSeekWeb:
     provider_id = 'deepseek_search'
     unit_micros = 750  # USD per nonempty Search / Fetch response.
 
-    def __init__(self, *, api_key, budget, thread_id, guard, transport=None):
+    def __init__(self, *, api_key, budget, thread_id, guard, transport=None,
+                 run_id=None, recovery_authorized=False):
         self.key, self.budget, self.thread, self.guard = api_key, budget, thread_id, guard
         self.transport = transport
+        self.scope = 'deepseek-web:' + thread_id + (':' + run_id if run_id else '')
+        self.recovery_authorized = bool(run_id and recovery_authorized)
         self.blocked = set()
         # The shared budget gate forbids another dispatch while a request is
         # unresolved. Queue this client's parallel date/fetch checks; don't
@@ -31,11 +34,25 @@ class DeepSeekWeb:
         wire = json.dumps([self.thread, action, payload], sort_keys=True, ensure_ascii=False)
         digest = hashlib.sha256(wire.encode()).hexdigest()
         key = 'deepseek-web-v1:' + digest
-        scope = 'deepseek-web:' + self.thread
+        scope = self.scope
         policy = {'provider':'deepseek', 'tool':action, 'harness_execution_scope':scope,
                   'request':payload}
         try:
             old = await asyncio.to_thread(b.store.lookup, b.owner, b.budget, key)
+            # Successful queries remain task-wide cache entries. An admitted
+            # recovery can branch an unresolved request, never erase its hold.
+            # Follow prior retry receipts before deciding to spend again.
+            while old is not None and old['status'] != 'received':
+                retry_key = key + ':retry:' + str(old['call_id'])
+                retry = await asyncio.to_thread(b.store.lookup, b.owner, b.budget, retry_key)
+                if retry is not None:
+                    key, old = retry_key, retry
+                    continue
+                if (not self.recovery_authorized
+                        or old.get('basis', {}).get('harness_execution_scope') == scope):
+                    raise ExternalSourceError('deepseek_web_prior_call_unresolved')
+                policy.update(retry_of=str(old['call_id']), recovery_execution_scope=scope)
+                key, old = retry_key, None
             if old is not None:
                 if old['status'] != 'received':
                     raise ExternalSourceError('deepseek_web_prior_call_unresolved')

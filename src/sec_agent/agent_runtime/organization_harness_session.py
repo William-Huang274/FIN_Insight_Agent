@@ -127,7 +127,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
         from .deepseek_web import DeepSeekWeb
         from sec_agent.research_foundation.external_sources import PublicURLGuard
         key = environment.get('DEEPSEEK_API_KEY')
-        paid_search = DeepSeekWeb(api_key=key, budget=budget, thread_id=tid, guard=PublicURLGuard()) if key else None
+        paid_search = DeepSeekWeb(api_key=key, budget=budget, thread_id=tid, guard=PublicURLGuard(),
+            run_id=rid, recovery_authorized=grant.get('report_action_request', {}).get('action') == 'recover') if key else None
         agent_identity = environment.get('SEC_USER_AGENT')
         if not agent_identity and environment.get('FINSIGHT_SEC_CONTACT_EMAIL'):
             from financial_facts.sec_snapshot import sec_user_agent_from_environment

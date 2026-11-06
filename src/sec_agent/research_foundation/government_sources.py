@@ -30,27 +30,41 @@ def ercot_notice_id(url):
 
 
 class GovernmentSourceFetcher:
-    """ERCOT notice fallback through an existing metered fetch provider.
+    """Government publication fallback through the existing metered Fetch provider.
 
-    The returned body must carry the exact notice ID and explicit notice dateline.
+    ERCOT notices must carry the exact notice ID and explicit notice dateline.
     A hosted transcription is labelled as such, never as a direct origin GET.
-    Other documents/blocked APIs are not guessed or substituted.
+    Government URL transcriptions retain their weaker transport provenance;
+    publication-date admission is still separate. No alternate URL is guessed.
     """
     def __init__(self, origin, hosted=None):
         self.origin, self.hosted = origin, hosted
 
     async def fetch(self, url, *, timeout_seconds):
         try:
-            return await self.origin.fetch(url, timeout_seconds=timeout_seconds)
+            page = await self.origin.fetch(url, timeout_seconds=timeout_seconds)
+            if not (page.html or page.extracted_text or '').strip():
+                raise ExternalSourceError('capture_empty_response')
+            return page
         except ExternalSourceError as exc:
-            if not self.hosted or not ercot_notice_id(url) or exc.code not in {
+            host = urlsplit(url).hostname or ''
+            government = host.endswith('.gov')
+            if not self.hosted or not (ercot_notice_id(url) or government) or exc.code not in {
                 'capture_http_status_403', 'capture_http_status_429',
-                'capture_static_timeout', 'capture_static_connection_failed',
+                'capture_static_timeout', 'capture_static_connection_failed', 'capture_empty_response',
             }:
                 raise
             failure = exc.code
         text = await self.hosted.fetch_markdown(url)
         ident = ercot_notice_id(url)
+        if not ident:
+            # The provider is an exact-URL transcription transport, not a direct
+            # origin response. Never claim original bytes or archive provenance.
+            if not text.strip():
+                raise ExternalSourceError('government_hosted_empty_response')
+            return FetchedPage(final_url=url, extracted_text=text,
+                extraction_method='deepseek_hosted_publication', content_type='text/markdown',
+                origin_failure_code=failure)
         # Notice type is publisher metadata, not a passing mention in the body.
         if not re.search(r'(?m)^NOTICE TYPE:\s*' + re.escape(ident) + r'\b', text):
             raise ExternalSourceError('ercot_hosted_notice_identity_mismatch')

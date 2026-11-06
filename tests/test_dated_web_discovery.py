@@ -7,6 +7,20 @@ from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery,
 from test_web_source_navigation import _reader, _call
 
 
+def test_site_path_keeps_host_and_account_scope_when_provider_ignores_query():
+    for url, accepted in [('https://example.com/account/status/1', True),
+                          ('https://example.com/other/status/1', False),
+                          ('https://unrelated.com/account/status/1', False)]:
+        reader,_,_ = _reader(url=url,published=None)
+        gate = DatedWebDiscovery(reader.discovery,None)
+        gate.verified[url] = date(2026,6,1)
+        reader.discovery=gate
+        result=_call(reader,'search',query='site:example.com/account statements')
+        assert bool(result.items) == accepted
+        if not accepted:
+            assert url not in result.model_dump_json()
+
+
 def test_guarded_publisher_redirect_dates_target_and_stops_cycles():
     from sec_agent.research_foundation.external_sources import FetchedPage
     start,final='https://example.com/old','https://example.com/new'

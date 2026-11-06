@@ -143,6 +143,24 @@ def publisher_day(text, index=False, *, pdf=False):
     return max(dates,default=None)
 
 
+def publisher_markdown_day(text):
+    """Explicit transcription masthead, not a search date or narrative date."""
+    day = publisher_day(text)
+    lines = [s.strip() for s in text[:600].splitlines() if s.strip()]
+    if len(lines) < 2:
+        return day
+    # Publishers put the dateline immediately before or after the article title.
+    stamp = lines[0] if lines[1].startswith('# ') else lines[1] if lines[0].startswith('# ') else ''
+    stamp = re.sub(r'(\d)(?:st|nd|rd|th)\b', r'\1', stamp)
+    for fmt in ('%B %d, %Y', '%b %d, %Y'):
+        try:
+            parsed = datetime.strptime(stamp, fmt).date()
+            return max(day,parsed) if day else parsed
+        except ValueError:
+            continue
+    return day
+
+
 def publisher_html_day(html, index=False, *, url=None):
     from bs4 import BeautifulSoup
     soup = BeautifulSoup(html, 'html.parser')
@@ -330,10 +348,13 @@ class DatedWebDiscovery:
         # For one unambiguous positive site filter, enforce it locally even
         # when a fallback engine ignores the search operator. Leave Boolean
         # and quoted expressions to the provider, not our own query parser.
-        sites = re.findall(r'(?i)(?:^|\s)site:([a-z0-9.-]+)(?=\s|$)', request.query)
+        sites = re.findall(r'(?i)(?:^|\s)site:([a-z0-9.-]+(?:/[^\s"()|]*)?)(?=\s|$)', request.query)
+        site_path = None
         if (len(sites) == 1 and not request.include_domains and not direct
                 and not re.search(r'(?i)\bOR\b|[()|]', request.query)):
-            request = request.model_copy(update={'include_domains':(sites[0].strip('.').lower(),)})
+            scope = urlsplit('https://' + sites[0])
+            request = request.model_copy(update={'include_domains':(scope.hostname.strip('.').lower(),)})
+            site_path = scope.path.rstrip('/') or None
 
         filing_source = None
         issuer = None if direct or not self.companies else await self.companies.lookup(request)
@@ -344,6 +365,11 @@ class DatedWebDiscovery:
             counts[stage + ':' + getattr(exc, 'code', type(exc).__name__)] += 1
         async def verify(candidate, visited=()):
             url = candidate.canonical_url
+            parsed = urlsplit(url)
+            if request.include_domains and not _host_in_domains(parsed.hostname or '', request.include_domains):
+                return 'outside_requested_domains'
+            if site_path and not (parsed.path == site_path or parsed.path.startswith(site_path+'/')):
+                return 'outside_requested_path'
             if url in visited or len(visited) >= 6:
                 return 'publisher_navigation_cycle'
             visited = (*visited, url)
@@ -428,7 +454,8 @@ class DatedWebDiscovery:
                                     title = BeautifulSoup(page.html, 'html.parser').find('h1')
                                     if title and title.get_text(strip=True):
                                         candidate = candidate.model_copy(update={'title':title.get_text(' ',strip=True)[:512]})
-                                day = (publisher_day(page.extracted_text, bool(index), pdf=getattr(page, 'content_type', None) == 'application/pdf') if getattr(page, 'extracted_text', None)
+                                day = (publisher_markdown_day(page.extracted_text) if getattr(page,'extraction_method',None)=='deepseek_hosted_publication' else
+                                       publisher_day(page.extracted_text, bool(index), pdf=getattr(page, 'content_type', None) == 'application/pdf') if getattr(page, 'extracted_text', None)
                                        else publisher_html_day(page.html, bool(index), url=locator))
                                 if (not day and self.search_backup and candidate.provider_rank == 1
                                         and candidate.provider_id == 'deepseek_search' and page.html and not index):

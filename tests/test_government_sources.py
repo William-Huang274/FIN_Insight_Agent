@@ -37,6 +37,38 @@ class Hosted:
         return self.text
 
 
+def test_government_transcription_is_labelled_and_dated_without_claiming_origin_bytes():
+    from sec_agent.research_foundation.dated_web_discovery import publisher_markdown_day
+    url='https://publisher.gov/press/example'
+    text='July 21st, 2026\n\n# Publisher announcement\n\nThe deadline is January 1, 2027. '+('Public announcement content. '*30)
+    hosted=Hosted(text);fetcher=GovernmentSourceFetcher(Denied(),hosted)
+    page=asyncio.run(fetcher.fetch(url,timeout_seconds=1))
+    assert page.extraction_method=='deepseek_hosted_publication'
+    assert page.origin_failure_code=='capture_http_status_403' and page.final_url==url
+    assert publisher_markdown_day(text)==date(2026,7,21)
+    assert publisher_markdown_day(text.replace('July 21st, 2026','In force July 21st, 2026')) is None
+    assert publisher_markdown_day(text+'\nUpdated: August 3, 2026')==date(2026,8,3)
+    reader,_,_=_reader(url=url,published=None)
+    reader.discovery=DatedWebDiscovery(reader.discovery,None,origin_fetcher=fetcher)
+    reader.capture.static_fetcher=fetcher
+    doc=_call(reader,'search',query='release').items[0]['document_id']
+    row=_call(reader,'read',document_id=doc).items[0]
+    assert row['source_read_method']=='deepseek_hosted_publication'
+    assert 'not independently verified original bytes' in row['authority_note']
+    hosted.text=text.replace('July 21st','September 21st');reader.discovery.verified.clear()
+    assert not _call(reader,'search',query='late release').items
+
+
+def test_empty_origin_is_not_a_successful_undated_original():
+    class Empty:
+        async def fetch(self,url,**kwargs):return FetchedPage(final_url=url,html='')
+    hosted=Hosted('July 21st, 2026\n\n# Release\n\nContent')
+    page=asyncio.run(GovernmentSourceFetcher(Empty(),hosted).fetch('https://publisher.gov/news',timeout_seconds=1))
+    assert page.origin_failure_code=='capture_empty_response'
+    with pytest.raises(ExternalSourceError,match='capture_empty_response'):
+        asyncio.run(GovernmentSourceFetcher(Empty(),hosted).fetch('https://other.example/news',timeout_seconds=1))
+
+
 def test_notice_fallback_exact_identity_date_and_original_failure():
     hosted = Hosted()
     fetcher = GovernmentSourceFetcher(Denied(),hosted)

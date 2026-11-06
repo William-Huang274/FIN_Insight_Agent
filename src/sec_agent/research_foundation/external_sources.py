@@ -733,7 +733,7 @@ class FetchedPage(BaseModel):
     final_url: str
     html: str = ""
     extracted_text: str | None = None
-    extraction_method: Literal["sec_edgar_html", "x_public_embed", "deepseek_hosted_notice"] | None = None
+    extraction_method: Literal["sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "deepseek_hosted_publication"] | None = None
     origin_failure_code: str | None = None
     status_code: int | None = None
     content_type: str | None = None
@@ -747,6 +747,7 @@ class CaptureAttempt(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     method: Literal[
+        "deepseek_hosted_publication",
         "deepseek_hosted_notice",
         "x_public_embed",
         "sec_edgar_html",
@@ -787,6 +788,7 @@ class CaptureReceipt(BaseModel):
     final_url: str | None
     source_domain: str | None
     capture_method: Literal[
+        "deepseek_hosted_publication",
         "deepseek_hosted_notice",
         "x_public_embed",
         "sec_edgar_html",
@@ -1260,6 +1262,7 @@ class ExternalSourceCapture:
         last_page: FetchedPage | None = None
         last_text = ""
         selected_method: Literal[
+            "deepseek_hosted_publication",
             "deepseek_hosted_notice",
             "x_public_embed",
             "sec_edgar_html",
@@ -1293,7 +1296,7 @@ class ExternalSourceCapture:
                 if page.origin_failure_code:
                     attempts.append(CaptureAttempt(method=method, status='tool_failure',
                         extracted_characters=0, failure_code=page.origin_failure_code))
-                if method == "trafilatura_static" and page.extraction_method in {"sec_edgar_html", "x_public_embed", "deepseek_hosted_notice"}:
+                if method == "trafilatura_static" and page.extraction_method in {"sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "deepseek_hosted_publication"}:
                     method = page.extraction_method
                 if method == "trafilatura_static" and page.content_type == "application/pdf" and page.extracted_text is not None:
                     method = "pypdf_static"

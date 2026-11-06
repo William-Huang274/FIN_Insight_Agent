@@ -214,7 +214,8 @@ class WebSourceReader:
             "discovered_links": links,
             "captured_characters": len(result.text),
             "host_capture_truncated": result.truncated,
-            "authority_note": ("Hosted DS Fetch transcription bound by exact ERCOT notice ID and dateline; origin HTTP was unavailable. Not an archived original. "
+            "authority_note": ("Hosted DS Fetch transcription requested for this exact publisher URL; direct origin access failed. This is provider-transcribed text, not independently verified original bytes or an archived version. "
+                if any(a.method == 'deepseek_hosted_publication' for a in result.attempts) else "") + ("Hosted DS Fetch transcription bound by exact ERCOT notice ID and dateline; origin HTTP was unavailable. Not an archived original. "
                 if any(a.method == 'deepseek_hosted_notice' for a in result.attempts) else "") + "Exact fetched public-source window, not Reviewed Evidence or S2 NumericFact. "
                 "Cite what this URL actually says, assess publisher/reliability/date and distinguish reported fact, forecast, opinion and inference. "
                 "Search dates are not independently verified; capture date is not publication date. Linked reports/PDFs are not implicitly read. "

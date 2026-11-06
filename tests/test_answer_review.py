@@ -5,6 +5,45 @@ import pytest
 from sec_agent.agent_runtime.answer_review import PREFIX, target, version, apply_response
 
 
+def test_review_lineage_does_not_confuse_first_run_and_later_failed_attempt(tmp_path):
+    from uuid import uuid4
+    from sec_agent.agent_runtime.answer_review_provider import review_scope_related
+    tid,first,failed,current=map(str,[uuid4(),uuid4(),uuid4(),uuid4()])
+    args=dict(scope=tid+':'+current,previous_scope=tid+':'+first,
+              predecessor_scope=None,lineage_root=tmp_path)
+    assert not review_scope_related(tid+':'+failed,**args)
+    path=tmp_path/tid/failed/'answer-review-origin.json';path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({'run_id':first}),encoding='utf8')
+    assert review_scope_related(tid+':'+failed,**args)
+    assert not review_scope_related(str(uuid4())+':'+failed,**args)
+    path.write_text(json.dumps({'run_id':str(uuid4())}),encoding='utf8')
+    assert not review_scope_related(tid+':'+failed,**args)
+
+
+@pytest.mark.anyio
+async def test_review_retry_uses_actual_predecessor_permit_and_preserves_unknown(monkeypatch):
+    from sec_agent.agent_runtime.answer_review_provider import authorized_review_retry
+    wire='unchanged provider input';basis={'harness_execution_scope':'thread:later-resume'}
+    unknown={'call_id':'failed','status':'unknown','basis':basis,
+             'fingerprint':version(wire+json.dumps(basis,sort_keys=True))}
+    rows={};store=SimpleNamespace(lookup=lambda owner,budget,key:rows.get(key))
+    permits=[]
+    def permit(root,thread,run,**kw):
+        permits.append((thread,run));return {'unknown_call_ids':['failed']}
+    monkeypatch.setattr('sec_agent.adapters.explicit_run_recovery.verified_permit',permit)
+    args=dict(wire=wire,previous_scope='thread:first-run',predecessor_scope='thread:later-resume',
+              same_consultation=False,audit_root='audit',secret='fixture')
+    key,result=await authorized_review_retry(store,'owner','budget','original',unknown,**args)
+    assert (key,result)==('original:retry:failed',None)
+    assert permits==[('thread','later-resume')] and unknown['status']=='unknown'
+    for change in ({'wire':'changed input'}, {'predecessor_scope':'other:run'}):
+        assert await authorized_review_retry(store,'owner','budget','original',unknown,**{**args,**change})==('original',unknown)
+    monkeypatch.setattr('sec_agent.adapters.explicit_run_recovery.verified_permit',lambda *a,**kw:None)
+    assert await authorized_review_retry(store,'owner','budget','original',unknown,**args)==('original',unknown)
+    rows['original:retry:failed']={'status':'received','call_id':'saved-result'}
+    assert await authorized_review_retry(store,'owner','budget','original',unknown,**args)==('original:retry:failed',rows['original:retry:failed'])
+
+
 def test_challenge_is_bound_to_answer_and_author():
     body = '📘原稿。原稿。'
     msg = SimpleNamespace(type='ai', content=body, additional_kwargs={'harness_session_id':'author'})

@@ -24,9 +24,28 @@ def reviewer_instructions():
 
 def review_tool_names(available):
     # Same authorized tool host, no note/report mutation or separate search stack.
-    return tuple(name for name in ('read_source_document', 'read_research_source', 'get_research_method',
+    return tuple(name for name in ('read_source_document', 'read_research_source', 'get_research_method', 'browse_context', 'read_saved_result',
                  'read_public_source', 'read_legislation', 'read_market_prices', 'calculate_research_metric')
                  if name in available)
+
+
+def review_tool_feedback(result):
+    """Return actionable selection feedback; never turn an execution fault into research evidence."""
+    if result.status == 'error':
+        artifact = getattr(result, 'artifact', None) or {}
+        text = str(result.content)
+        try:
+            data = json.loads(text)
+        except ValueError:
+            data = {}
+        repairable = (
+            isinstance(data, dict) and any(k in data for k in ('readback', 'read_options', 'quote_comparison'))
+            or text.startswith(('invalid_source_read_window:', 'source_not_observed_read_current_source_catalog',
+                                'Error invoking tool '))
+        )
+        if artifact.get('execution_stop') or not repairable:
+            raise ValueError('answer_review_source_tool_failed:'+result.tool_call_id)
+    return json.dumps(model_receipt(result), ensure_ascii=False, default=str)
 
 
 def compact_tool_history(inputs, navigation_calls):
@@ -132,7 +151,8 @@ async def independent_review(*, selected, message, question, bridge, budget, env
         '所附认识是待检验的材料，不是答案；不要代写一章报告。可按需读取研究方法。') + method_content
     async with httpx.AsyncClient(proxy=environment.get('FINSIGHT_REVIEW_HTTPS_PROXY'), trust_env=False,
                                  timeout=httpx.Timeout(profile.timeout_seconds, connect=25)) as http:
-        seen = set()
+        seen = {}
+        repeated_rounds = 0
         navigation_calls = set()
         read_ids = set()
         while True:
@@ -154,7 +174,7 @@ async def independent_review(*, selected, message, question, bridge, budget, env
                 # to their exact readback handles. Never truncate the latest batch.
                 body['input'] = compact_tool_history(inputs, navigation_calls)
                 readback = bridge.tools['read_saved_result']
-                body['tools'] = [*tools,dict(type='function',name=readback.name,description=readback.description,
+                body['tools'] = tools if readback.name in names else [*tools,dict(type='function',name=readback.name,description=readback.description,
                     parameters=readback.tool_call_schema.model_json_schema(),strict=False)]
                 wire = json.dumps(body, ensure_ascii=False, sort_keys=True)
                 if len(wire) > pressure:
@@ -238,16 +258,17 @@ async def independent_review(*, selected, message, question, bridge, budget, env
                     raise ValueError('answer_review_opinion_missing')
                 return opinion
             inputs.extend(output)
+            made_progress = False
             for call in calls:
                 args = json.loads(call['arguments'])
                 operation = (call['name'], json.dumps(args, sort_keys=True))
                 if (args.get('request') or {}).get('operation') in ('catalog','search','outline'):
                     navigation_calls.add(call['call_id'])
                 permitted = call['name'] in names or (call['name']=='read_saved_result' and args.get('tool_call_id') in read_ids)
-                if not permitted or operation in seen:
-                    raise ValueError('answer_review_unavailable_or_repeated_read')
-                seen.add(operation)
-                result = None
+                if not permitted:
+                    raise ValueError('answer_review_unavailable_tool')
+                result = seen.get(operation)
+                made_progress = made_progress or result is None
                 if saved:
                     history = (await bridge.state()).get('messages', [])
                     identifiers = {x['id'] for msg in history for x in getattr(msg,'tool_calls',[])
@@ -260,8 +281,11 @@ async def independent_review(*, selected, message, question, bridge, budget, env
                             raise ValueError('answer_review_saved_read_ambiguous')
                 if result is None:
                     result = await bridge.execute(call['name'], args)
-                if result.status == 'error':
-                    raise ValueError('answer_review_source_tool_failed:'+result.tool_call_id)
+                feedback = review_tool_feedback(result)
+                seen[operation] = result
                 read_ids.add(result.tool_call_id)
                 inputs.append(dict(type='function_call_output', call_id=call['call_id'],
-                                   output=json.dumps(model_receipt(result), ensure_ascii=False, default=str)))
+                                   output=feedback))
+            repeated_rounds = 0 if made_progress else repeated_rounds + 1
+            if repeated_rounds >= 3:
+                raise ValueError('answer_review_repeated_rounds_without_new_work')

@@ -256,6 +256,9 @@ class HarnessBusinessTools:
                 return
             if current.next:
                 raise RuntimeError('harness_business_tool_interrupted_reconcile_before_import')
+            if imported.get('report') and current.values.get('report'):
+                if any(current.values.get(k) != imported[k] for k in ('report','report_version')):
+                    raise ValueError('harness_import_report_conflict')
             known = {m.id: m for m in current.values.get('messages', []) if m.id}
             for message in imported['messages']:
                 if message.id in known and message != known[message.id]:

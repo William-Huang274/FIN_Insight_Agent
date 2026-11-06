@@ -342,8 +342,11 @@ class DatedWebDiscovery:
         def failed(candidate, stage, exc):
             counts = verification_failures.setdefault(candidate.provider_id, Counter())
             counts[stage + ':' + getattr(exc, 'code', type(exc).__name__)] += 1
-        async def verify(candidate):
+        async def verify(candidate, visited=()):
             url = candidate.canonical_url
+            if url in visited or len(visited) >= 6:
+                return 'publisher_navigation_cycle'
+            visited = (*visited, url)
             navigation = await self.legislation.resolve(url, cutoff)
             if navigation is not None:
                 if isinstance(navigation, dict):
@@ -418,7 +421,7 @@ class DatedWebDiscovery:
                                     return await verify(candidate.model_copy(update={
                                         'canonical_url':canonical,
                                         'candidate_id':canonical_digest({'original_candidate':candidate.candidate_id,
-                                            'publisher_canonical_url':canonical})}))
+                                            'publisher_canonical_url':canonical})}), visited)
                                 origin_read = True
                                 if candidate.provider_id == 'deepseek_search' and not index and page.html:
                                     from bs4 import BeautifulSoup
@@ -435,7 +438,17 @@ class DatedWebDiscovery:
                                     except ExternalSourceError as exc:
                                         failed(candidate, 'deepseek_fetch', exc)
                             else:
-                                origin_failure = 'redirect'
+                                # The guarded HTTP reader followed a real redirect. Date
+                                # the resulting original under its own identity; retain
+                                # explicit site scope instead of treating all redirects
+                                # as unresolvable publication dates.
+                                host = urlsplit(page.final_url).hostname or ''
+                                if request.include_domains and not _host_in_domains(host, request.include_domains):
+                                    return 'redirect_outside_requested_domains'
+                                return await verify(candidate.model_copy(update={
+                                    'canonical_url':page.final_url, 'source_domain':host,
+                                    'candidate_id':canonical_digest({'original_candidate':candidate.candidate_id,
+                                        'publisher_redirect_url':page.final_url})}), visited)
                         except (ExternalSourceError, TimeoutError) as exc:
                             failed(candidate, 'original_read', exc)
                             status = re.fullmatch(r'(?:capture_http_status_|sec_http_)(\d{3})', getattr(exc,'code',''))
@@ -511,6 +524,17 @@ class DatedWebDiscovery:
                                  for candidate,result in zip(receipt.candidates,checked)
                                  if candidate.provider_id == attempt.provider_id)
                 update = {'date_filter_counts':dict(counts)} if counts else {}
+                unresolved = [{'url':c.canonical_url, 'reason':out,
+                    'writer_citable':False, 'content_withheld':True,
+                    'publisher_search':{'tool':'read_public_source','arguments':{
+                        'operation':'search','query':request.query
+                            if not direct else 'site:'+(urlsplit(c.canonical_url).hostname or '')+' '+urlsplit(c.canonical_url).path.split('/')[-1]}}}
+                    for c,out in zip(receipt.candidates,checked)
+                    if c.provider_id == attempt.provider_id and out in (
+                        'date_unverified','date_lookup_unavailable','origin_403','origin_404','origin_unavailable',
+                        'redirect_outside_requested_domains','publisher_navigation_cycle')]
+                if unresolved:
+                    update['unresolved_originals'] = unresolved
                 if verification_failures.get(attempt.provider_id):
                     update['verification_failures'] = dict(verification_failures[attempt.provider_id])
                 navigation = [legislation_navigation[c.canonical_url] for c in receipt.candidates

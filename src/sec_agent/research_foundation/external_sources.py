@@ -195,6 +195,7 @@ class ProviderAttempt(BaseModel):
     legislation_navigation: list[dict] = Field(default_factory=list)
     candidate_filter_counts: dict[str, int] = Field(default_factory=dict)
     verification_failures: dict[str, int] = Field(default_factory=dict)
+    unresolved_originals: list[dict] = Field(default_factory=list)
 
     @model_serializer(mode='wrap')
     def preserve_archived_shape(self, handler):
@@ -207,7 +208,7 @@ class ProviderAttempt(BaseModel):
             body.pop('issuer_navigation', None)
         if 'engine_http' not in self.model_fields_set:
             body.pop('engine_http', None)
-        for key in ('legislation_navigation', 'candidate_filter_counts', 'verification_failures'):
+        for key in ('legislation_navigation', 'candidate_filter_counts', 'verification_failures', 'unresolved_originals'):
             if key not in self.model_fields_set:
                 body.pop(key, None)
         return body

@@ -39,6 +39,23 @@ def test_root_checkpoint_namespace_is_explicit(tmp_path):
         legacy_receipts(binding, grant=grant)
 
 
+def test_report_checkpoint_import_is_explicit_and_version_bound(tmp_path):
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    state,binding,grant=exported(tmp_path)
+    state.update(report={'title':'Unedited report','narrative_markdown':'Original'},report_version=3)
+    kind,blob=JsonPlusSerializer().dumps_typed(state)
+    from pathlib import Path
+    path=Path(binding['path']);path.write_text(json.dumps({'type':kind,'blob':base64.b64encode(blob).decode()}))
+    binding['sha256']=sha256(path.read_bytes()).hexdigest()
+    assert 'report' not in legacy_receipts(binding,grant=grant)
+    binding['report_checkpoint']={'version':3,'digest':canonical_sha256(state['report'])}
+    imported=legacy_receipts(binding,grant=grant)
+    assert imported['report']==state['report'] and imported['report_version']==3
+    binding['report_checkpoint']['version']=4
+    with pytest.raises(ValueError,match='report_checkpoint_mismatch'):
+        legacy_receipts(binding,grant=grant)
+
+
 @pytest.mark.anyio
 async def test_explicit_import_preserves_sources_once_without_old_summary(tmp_path):
     original,binding,grant=exported(tmp_path)

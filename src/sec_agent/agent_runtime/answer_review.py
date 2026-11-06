@@ -107,8 +107,9 @@ def author_input(selected, message, review, *, current_report_version=None, reco
             evidence[handle] = fields
     task = '处理所选历史版本的局部异议。独立判断，可接受、部分接受或反驳。核对必要依据，保留仍成立的判断。返回 JSON 对象，reason 解释处置理由和仍成立的主要判断，edits 为 {before, after} 列表。before 必须是此版本唯一的逐字原文，包括 Markdown；可修改受影响的关联段。无需修改时返回空列表。新依据使用工具的准确引用句柄。'
     if selected.artifact == 'report':
-        task = ('处理当前已保存报告的独立复核意见。独立判断，可接受、部分接受或反驳，必要时补证。'
-                '用 edit_research_report 局部修改受影响的正文与关联概括，使用工具返回的当前版本；'
+        task = ('根据独立复核及必要补证，重新判断原问题的答案，再更新当前报告。复核不是标准答案，接受、部分接受或反驳均须依据。'
+                '编辑范围由判断变化决定：事实纠正可只改相关段落；核心解释改变时重新组织标题、摘要、论证顺序和结论，不预设保留旧结构。'
+                '复用仍成立的材料、计算和内容，通过 edit_research_report 按当前版本分批保存；增量保存是写入方式，不是研究或改稿范围限制。'
                 'original_answer 是被复核的历史版本；当前稿可能已局部修改，以 current_report 和读取工具为准。准确引用身份保持不变，新依据使用工具的引用句柄。'
                 '完成后用 deliver_current_report 交付实际保存的版本，最后简述哪些判断及其依据改变、哪些仍成立。'
                 '无需修改时也说明理由并交付当前版本；收到复核意见不等于报告已通过独立复核。')

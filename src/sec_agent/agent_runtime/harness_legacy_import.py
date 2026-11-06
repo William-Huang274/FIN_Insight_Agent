@@ -31,4 +31,13 @@ def legacy_receipts(binding, *, grant):
     messages = state.get('messages', [])
     if any(not getattr(m, 'id', None) for m in messages):
         raise ValueError('harness_legacy_import_stable_message_id_required')
-    return {'messages': messages, 'harness_import_digest': binding['sha256']}
+    imported = {'messages': messages, 'harness_import_digest': binding['sha256']}
+    if binding.get('report_checkpoint'):
+        from .research_graph_contracts import canonical_sha256
+        expected = binding['report_checkpoint']
+        report, revision = state.get('report'), state.get('report_version')
+        if (not report or type(revision) is not int or revision < 1
+                or expected != {'version': revision, 'digest':canonical_sha256(report)}):
+            raise ValueError('harness_import_report_checkpoint_mismatch')
+        imported.update(report=report, report_version=revision)
+    return imported

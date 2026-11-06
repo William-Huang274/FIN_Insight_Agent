@@ -40,6 +40,9 @@ def test_report_review_binds_complete_artifact_not_delivery_summary():
     assert request['report_version'] == 7
     assert 'edit_research_report' in request['task'] and 'deliver_current_report' in request['task']
     assert request['original_answer'] != msg.content
+    assert '不预设保留旧结构' in request['task']
+    assert '增量保存是写入方式' in request['task']
+    assert '局部修改受影响' not in request['task']
     resumed = json.loads(author_input(selected, original, 'Independent opinion',
         current_report_version=9, recovery_command='Continue after source transport repair.'))
     assert resumed['report_version'] == 7 and resumed['current_report']['version'] == 9
@@ -64,6 +67,20 @@ def test_reviewer_consumes_maintained_method_and_only_authorized_tools():
     allowed = review_tool_names(dict.fromkeys(['get_research_method','read_public_source','read_legislation',
         'read_market_prices','calculate_research_metric','edit_research_report','WriteWorkingNote']))
     assert set(allowed) == {'get_research_method','read_public_source','read_legislation','read_market_prices','calculate_research_metric'}
+
+
+def test_reviewer_repairable_read_feedback_and_execution_stop_are_distinct():
+    from langchain_core.messages import ToolMessage
+    from sec_agent.agent_runtime.answer_review_provider import review_tool_feedback, review_tool_names
+    result = ToolMessage(content=json.dumps({'code':'source_not_observed',
+        'readback':{'tool':'browse_context','arguments':{'region':'sources'}}}),
+        status='error',name='read_research_source',tool_call_id='failed-read')
+    assert json.loads(review_tool_feedback(result))['status']=='error'
+    assert 'browse_context' in review_tool_names({'browse_context':None,'read_saved_result':None})
+    for bad in (result.model_copy(update={'artifact':{'execution_stop':True}}),
+                result.model_copy(update={'content':'source_integrity_mismatch'})):
+        with pytest.raises(ValueError,match='source_tool_failed'):
+            review_tool_feedback(bad)
 
 
 def test_author_receives_observed_fields_for_selected_citations_only():

@@ -274,6 +274,11 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                     for a in company_attempts
                     if a['provider_id']=='sec_edgar_filings' or a['provider_id'].startswith('issuer_site_')]
             feedback = web_read_feedback(visible)
+            unresolved = [row for attempt in attempts for row in attempt.get('unresolved_originals', [])]
+            if unresolved:
+                visible['unresolved_originals'] = list({row['url']:row for row in unresolved}.values())
+                feedback.append({'kind':'unresolved_original_navigation',
+                    'meaning':'这些网址尚未取得符合截止日的正文，不能引用。可用出版者检索入口寻找有日期的公告、归档或同版原件；路径文字和网址日期不是已核实事实。晚于截止日的候选不在此列表。'})
             if operation == 'search' and not document_id:
                 from sec_agent.research_foundation.government_sources import official_search_entries
                 entries = official_search_entries(query)

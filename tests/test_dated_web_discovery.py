@@ -7,6 +7,42 @@ from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery,
 from test_web_source_navigation import _reader, _call
 
 
+def test_guarded_publisher_redirect_dates_target_and_stops_cycles():
+    from sec_agent.research_foundation.external_sources import FetchedPage
+    start,final='https://example.com/old','https://example.com/new'
+    class Origin:
+        cycle=False
+        async def fetch(self,url,**_):
+            target=final if url==start else start if self.cycle else final
+            return FetchedPage(final_url=target,html='<html><head><meta property="article:published_time" content="2026-06-01"></head><body><h1>Release</h1></body></html>')
+    reader,_,_=_reader(url=start,published=None)
+    origin=Origin(); reader.discovery=DatedWebDiscovery(reader.discovery,None,origin_fetcher=origin)
+    result=_call(reader,'search',query='publisher release')
+    assert result.items[0]['source_url']==final
+    origin.cycle=True;reader.discovery.verified.clear()
+    result=_call(reader,'search',query='another query')
+    assert not result.items
+    assert 'publisher_navigation_cycle' in result.model_dump_json()
+
+
+def test_undated_candidate_has_locator_feedback_but_no_text_or_late_candidate():
+    from sec_agent.research_foundation.external_sources import FetchedPage
+    url='https://example.com/notice'
+    class Origin:
+        stamp=''
+        async def fetch(self,url,**_):
+            return FetchedPage(final_url=url,html='<html><head>'+self.stamp+'</head><body><h1>Unverified future title</h1></body></html>')
+    reader,_,_=_reader(url=url,published=None)
+    origin=Origin();reader.discovery=DatedWebDiscovery(reader.discovery,None,origin_fetcher=origin)
+    result=_call(reader,'search',query='notice')
+    assert not result.items and url in result.model_dump_json()
+    assert 'Unverified future title' not in result.model_dump_json()
+    assert 'unresolved_originals' in result.model_dump_json()
+    origin.stamp='<meta property="article:published_time" content="2027-06-01">'
+    result=_call(reader,'search',query='another notice')
+    assert not result.items and 'unresolved_originals' not in result.model_dump_json()
+
+
 def test_bls_403_mirror_requires_matching_masthead_date_series_and_permitted_domain():
     from sec_agent.research_foundation.dated_web_discovery import dol_archive_copy
     from sec_agent.research_foundation.external_sources import FetchedPage

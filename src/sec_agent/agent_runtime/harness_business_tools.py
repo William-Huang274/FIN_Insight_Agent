@@ -167,6 +167,8 @@ class HarnessBusinessTools:
         self.config = {'configurable': {'thread_id': thread_id}}
         self.tools = {g.tool.name: g.tool for g in grants}
         self.effects = {g.tool.name: g.effect for g in grants}
+        self.checkpoint_only = {g.tool.name for g in grants
+            if g.effect == 'task_artifact_write' and g.recovery_semantics == 'checkpoint_only'}
         if len(self.tools) != len(grants) or any(g.effect not in {'read', 'working_note_write', 'task_artifact_write', 'delegated_task_control'} for g in grants):
             raise ValueError('harness_business_grant_not_admitted')
         graph = StateGraph(HarnessBusinessState)
@@ -213,17 +215,20 @@ class HarnessBusinessTools:
                         if recovering and failed_receipt_ids else None)
             if current.next:
                 calls = getattr(current.values.get('messages', [])[-1], 'tool_calls', [])
-                # Each bridge operation has one call. Only a signed recovery
-                # may resume a read; unknown write effects remain blocked.
+                # Reads and host-declared pure checkpoint updates can resume the
+                # exact pending graph operation. LangGraph owns atomic receipt /
+                # artifact persistence; external write effects remain blocked.
                 if (not recovering or tuple(current.next) != ('tools',) or len(calls) != 1
-                        or self.effects.get(calls[0]['name']) != 'read'):
+                        or (self.effects.get(calls[0]['name']) != 'read'
+                            and calls[0]['name'] not in self.checkpoint_only)):
                     raise RuntimeError('harness_business_tool_interrupted_reconcile_before_resume')
                 with self.scope():
                     output = await self._checkpoint_call(self.graph.ainvoke, None, self.config)
                 await asyncio.to_thread(self.access)
                 receipt = next(m for m in reversed(output['messages'])
                     if isinstance(m, ToolMessage) and m.tool_call_id == calls[0]['id'])
-                return {'kind': 'recovered_read_receipt' if receipt.status == 'success' else 'recovered_read_feedback',
+                kind = 'artifact' if calls[0]['name'] in self.checkpoint_only else 'read'
+                return {'kind': f'recovered_{kind}_receipt' if receipt.status == 'success' else f'recovered_{kind}_feedback',
                         'status': receipt.status, 'feedback': model_receipt(receipt) if receipt.status == 'error' else None,
                         'tool': calls[0]['name'],
                         'receipt_id': receipt.tool_call_id,

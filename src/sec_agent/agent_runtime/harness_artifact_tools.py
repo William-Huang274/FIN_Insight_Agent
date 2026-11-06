@@ -171,4 +171,7 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
     for t in tools:
         t.handle_tool_error = True
     return [GrantedTool(t, 'read' if t is read_current_report else 'task_artifact_write',
-                       '当前任务版本化成果；不代表独立复核') for t in tools]
+                       '当前任务版本化成果；不代表独立复核',
+                       recovery_semantics='checkpoint_only' if t in (
+                           save_research_report, repair_report_fields, edit_research_report, deliver_current_report) else 'manual')
+            for t in tools]

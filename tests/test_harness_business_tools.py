@@ -266,6 +266,40 @@ async def test_recovery_does_not_replay_unknown_write_effect(tmp_path):
 
 
 @pytest.mark.anyio
+async def test_registered_checkpoint_only_edit_recovers_exact_proposal_once(tmp_path):
+    from langgraph.prebuilt import ToolRuntime
+    from langgraph.types import Command
+    broken = True
+    attempts = []
+    @tool
+    def edit_report(base_version: int, replacement: str, runtime: ToolRuntime):
+        """Synthetic pure checkpoint artifact change, without external writes."""
+        attempts.append((base_version, replacement))
+        assert runtime.state['report_version'] == base_version
+        if broken:
+            raise KeyError('projection defect')
+        return Command(update={'report_version': base_version + 1, 'report': {'text': replacement},
+            'messages': [ToolMessage(tool_call_id=runtime.tool_call_id, content='Saved exact proposal')]})
+    grants = [GrantedTool(edit_report, 'task_artifact_write', 'fixture', recovery_semantics='checkpoint_only')]
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'tools.sqlite')) as saver:
+        first = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='t', check=lambda:None)
+        await first.initialize({'messages':[], 'report_version':2, 'report':{'text':'old'}})
+        with pytest.raises(KeyError):
+            await first.execute('edit_report', {'base_version':2, 'replacement':'model exact proposal'})
+        broken = False
+        second = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='t', check=lambda:None)
+        with pytest.raises(RuntimeError, match='reconcile_before_resume'):
+            await second.initialize({})
+        receipt = await second.initialize({}, recovering=True)
+        assert receipt['kind'] == 'recovered_artifact_receipt'
+        state = await second.state()
+        assert state['report_version'] == 3 and state['report']['text'] == 'model exact proposal'
+        assert state['messages'][-1].tool_call_id == receipt['receipt_id']
+        assert await second.initialize({}, recovering=True) is None
+        assert attempts == [(2,'model exact proposal'), (2,'model exact proposal')]
+
+
+@pytest.mark.anyio
 async def test_session_binding_resume_completed_reuse_and_private_events(tmp_path):
     from acp.schema import InitializeResponse, NewSessionResponse, PromptResponse, AgentMessageChunk, TextContentBlock
     actions = []

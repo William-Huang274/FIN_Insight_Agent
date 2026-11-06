@@ -20,6 +20,9 @@ class GrantedTool:
     tool: object
     effect: ToolEffect
     scope_description: str
+    # Host registration only: the tool returns an atomic checkpoint Command and
+    # has no external write effects. This is not an authorization from the model.
+    recovery_semantics: Literal['manual', 'checkpoint_only'] = 'manual'
 
 
 def research_system_prompt(names, task_context=""):

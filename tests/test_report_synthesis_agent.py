@@ -311,7 +311,9 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
             assert current_entry['version'] == canonical_sha256(state['revisions']['P01']['workpaper'])
             assert current_entry['read']['arguments']['section'] == 'handoff'
             method = next(m for m in writer.contexts[1] if isinstance(m, ToolMessage) and m.name == "get_research_method")
-            assert method.artifact["method_id"] == "writer" and "局部编辑" in method.artifact["content"]
+            from sec_agent.research_foundation.research_methods import get_research_method
+            assert method.artifact["method_id"] == "writer"
+            assert method.artifact["content"] == get_research_method('writer')['content']
             # Methods remain callable; first composition no longer auto-injects
             # the packaged review-heavy method before the author asks for it.
             assert 'submit_case_report' in writer.contexts[0][0].content

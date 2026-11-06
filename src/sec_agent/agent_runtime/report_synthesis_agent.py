@@ -5,6 +5,7 @@ from .lead_issue_decision import LeadIssueDecision, decision_errors, resolve_dis
 from sec_agent.research_foundation.source_quotes import contains_source_quote
 
 from copy import deepcopy
+from difflib import SequenceMatcher
 import json
 import operator
 import re
@@ -110,6 +111,39 @@ def report_model_view(report):
             for c in report["charts"]]} if report.get("charts") else {})}
 
 
+class ReportEditMatchError(ValueError):
+    """An unchanged artifact with locations for the author to disambiguate."""
+
+    def __init__(self, index, edit, selected, count):
+        super().__init__(f"report_edit_{index}_matched_{count}_times: read_current_report and copy exact unique Markdown, including the original Unicode quotation marks and surrounding context; no edits were saved")
+        offsets = []
+        if selected.count(edit.old_str):
+            start = 0
+            while len(offsets) < 3:
+                found = selected.find(edit.old_str, start)
+                if found < 0:
+                    break
+                offsets.append(found)
+                start = found + len(edit.old_str)
+        else:
+            # Hints only: never replace a near match or select its meaning.
+            blocks = SequenceMatcher(None, edit.old_str, selected).get_matching_blocks()
+            for block in sorted(blocks, key=lambda b: b.size, reverse=True):
+                if block.size < min(12, len(edit.old_str)):
+                    continue
+                offset = max(0, block.b - block.a)
+                if all(abs(offset - other) > max(80, len(edit.old_str)) for other in offsets):
+                    offsets.append(offset)
+                if len(offsets) == 3:
+                    break
+        self.feedback = {'status': 'edit_not_applied', 'saved': False, 'edit_index': index,
+            'batch_preview_match_count': count, 'chart_index': edit.chart_index,
+            'candidate_view': 'saved_report_before_batch',
+            'candidates': [{'offset': start, 'text': selected[start:start+min(1800, len(edit.old_str)+160)]}
+                           for start in offsets],
+            'remedy': 'No edits in this batch were saved. Inspect current text and choose the exact span; candidates are location hints, not accepted replacements.'}
+
+
 def apply_report_edits(report, edits):
     """Standard exact str_replace semantics on a copy, with no filesystem access."""
     if not 1 <= len(edits) <= 24:
@@ -123,7 +157,8 @@ def apply_report_edits(report, edits):
         selected = text if edit.chart_index is None else charts[edit.chart_index]["interpretation"]
         count = selected.count(edit.old_str)
         if count != 1:
-            raise ValueError(f"report_edit_{index}_matched_{count}_times: read_current_report and copy exact unique Markdown, including the original Unicode quotation marks and surrounding context; no edits were saved")
+            original = report['narrative_markdown'] if edit.chart_index is None else original_charts[edit.chart_index]['interpretation']
+            raise ReportEditMatchError(index, edit, original, count)
         selected = selected.replace(edit.old_str, edit.new_str, 1)
         if edit.chart_index is None:
             text = selected

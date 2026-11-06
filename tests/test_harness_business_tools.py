@@ -335,6 +335,57 @@ async def test_cancel_revokes_before_acp_cancel_and_uncertain_turn_is_not_retrie
 
 
 @pytest.mark.anyio
+async def test_edit_conflict_is_atomic_actionable_and_does_not_stop_consultation(tmp_path):
+    from sec_agent.agent_runtime.harness_artifact_tools import artifact_tools
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    from test_on_demand_research import artifact_fixture, report
+    artifacts = artifact_fixture()
+    candidate = {k: v for k, v in report(artifacts).items() if k != 'citations'}
+    memory = WorkingMemory(tmp_path/'notes.sqlite', owner='test', workspace='task', actor='lead')
+    grants = artifact_tools(artifacts=lambda _:artifacts, memory=memory, delivery_intent='report', require_review=False)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'tools.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=grants,checkpointer=saver,thread_id='t',check=lambda:None,stop_on_tool_error=True)
+        await bridge.initialize({'question':'task','messages':[]})
+        await bridge.execute('save_research_report',{'report':candidate,'base_version':0})
+        before = await bridge.state()
+        old = candidate['narrative_markdown']
+        result = await bridge.execute('edit_research_report',{'base_version':1,'edits':[
+            {'old_str':old, 'new_str':old+' First proposed change'},
+            {'old_str':old[40:80]+' transcription typo', 'new_str':'Second proposed change'}]})
+        feedback = json.loads(result.content)
+        assert result.status=='success' and feedback['saved'] is False
+        assert feedback['status']=='edit_not_applied' and feedback['edit_index']==1
+        assert feedback['candidate_view']=='saved_report_before_batch'
+        after = await bridge.state()
+        assert after['report']==before['report'] and after['report_version']==1
+        assert not after.get('delivery')
+        bridge.model_access()  # no failure latch for an ordinary edit conflict
+        readback=await bridge.execute(feedback['readback']['tool'],feedback['readback']['arguments'])
+        assert json.loads(readback.content)['report_version']==1
+        corrected=await bridge.execute('edit_research_report',{'base_version':1,'edits':[
+            {'old_str':old,'new_str':old.replace('explicitly scoped','carefully scoped')}]})
+        assert json.loads(corrected.content)['saved'] is True
+        # Genuine unbound-source validation still blocks further model dispatch.
+        bad=await bridge.execute('edit_research_report',{'base_version':2,'edits':[
+            {'old_str':old.replace('explicitly scoped','carefully scoped'),
+             'new_str':old.replace('explicitly scoped','carefully scoped')+' [P99:INVALID]'}]})
+        assert bad.status=='error'
+
+
+def test_report_edit_location_hints_never_apply_ambiguous_or_near_matches():
+    from sec_agent.agent_runtime.report_synthesis_agent import ReportEditMatchError, ReportTextEdit, apply_report_edits
+    original={'title':'Test report','narrative_markdown':'A matching passage. A matching passage.'}
+    with pytest.raises(ReportEditMatchError) as found:
+        apply_report_edits(original,[ReportTextEdit(old_str='A matching passage.',new_str='Replacement')])
+    assert len(found.value.feedback['candidates'])==2
+    assert found.value.feedback['batch_preview_match_count']==2
+    assert original['narrative_markdown']=='A matching passage. A matching passage.'
+    with pytest.raises(ReportEditMatchError) as found:
+        apply_report_edits(original,[ReportTextEdit(old_str='No shared evidence here',new_str='Replacement')])
+    assert found.value.feedback['candidates']==[]
+
+
+@pytest.mark.anyio
 async def test_saved_report_versions_edits_citations_and_delivery_survive_restart(tmp_path):
     from sec_agent.agent_runtime.harness_artifact_tools import artifact_tools
     from sec_agent.agent_runtime.working_memory import WorkingMemory

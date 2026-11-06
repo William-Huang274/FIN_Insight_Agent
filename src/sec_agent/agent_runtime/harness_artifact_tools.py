@@ -8,7 +8,7 @@ from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
 from .conversation_agent import GrantedTool
-from .report_synthesis_agent import bind_report_candidate, apply_report_edits, ReportTextEdit, report_model_view, patch_report_fields
+from .report_synthesis_agent import bind_report_candidate, apply_report_edits, ReportTextEdit, ReportEditMatchError, report_model_view, patch_report_fields
 from .research_graph_contracts import canonical_sha256
 from .delegated_task_tools import saved_note_artifact
 
@@ -91,6 +91,16 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         try:
             candidate = apply_report_edits(report_model_view(runtime.state['report']), edits)
             bound = bind_report_candidate(candidate, artifacts(runtime.state), runtime.state)
+        except ReportEditMatchError as exc:
+            feedback = {**exc.feedback, 'report_version': base_version,
+                'readback': {'tool': 'read_current_report', 'arguments': {
+                    'field': 'charts' if exc.feedback['chart_index'] is not None else 'narrative_markdown',
+                    'offset': 0 if exc.feedback['chart_index'] is not None else next(
+                        (c['offset'] for c in exc.feedback['candidates']), 0), 'max_characters': 3000}}}
+            # Expected edit conflict, not a provider/storage failure. The saved
+            # proposal remains in the tool ledger; no artifact or version changes.
+            return Command(update={'messages': [ToolMessage(tool_call_id=runtime.tool_call_id,
+                content=json.dumps(feedback, ensure_ascii=False))]})
         except ValueError as exc:
             raise ToolException(str(exc)) from exc
         return accepted(runtime, bound)

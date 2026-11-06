@@ -8,6 +8,25 @@ from sec_agent.research_foundation.external_sources import ConversationSourceSco
 from test_web_source_navigation import _reader
 
 
+def test_publication_filters_are_disclosed_and_forwarded_without_rewriting_period(tmp_path):
+    from datetime import date
+    reader,_,_=_reader()
+    seen=[]
+    class RecordingReader:
+        async def __call__(self, *, request, **kwargs):
+            seen.append(request)
+            return await reader(request=request, **kwargs)
+    grant=public_web_tool(thread_id=str(uuid4()),run_id=str(uuid4()),method_digest='a'*64,
+        cache_root=tmp_path,reader=RecordingReader(),research_as_of='2026-11-06').tool
+    schema=grant.tool_call_schema.model_json_schema()['properties']
+    assert 'start_published_date' in schema and 'end_published_date' in schema
+    asyncio.run(grant.coroutine(operation='search',query='EX Q2 2027 results',
+                start_published_date='2026-11-01',end_published_date='2026-11-06'))
+    assert seen[0].query=='EX Q2 2027 results'
+    assert seen[0].start_published_date==date(2026,11,1)
+    assert seen[0].end_published_date==date(2026,11,6)
+
+
 def test_public_web_restores_discovery_between_runs_and_uses_task_cutoff(tmp_path):
     from langchain_core.messages import ToolMessage
     tid = str(uuid4())

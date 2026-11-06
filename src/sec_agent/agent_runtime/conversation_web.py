@@ -123,9 +123,17 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
     @tool(response_format="content_and_artifact")
     async def read_public_source(operation: Literal["search","read"], query: str = "",
             document_id: str | None = None, offset: int = 0, max_characters: int = 6000,
+            start_published_date: str | None = None, end_published_date: str | None = None,
             runtime: ToolRuntime = None):
         """Search public web sources, then read an exact returned WEB document ID.
-        A company name/ticker and earnings period can locate SEC filings. For issuer
+        A company name/ticker and earnings period can locate SEC filings, including
+        6-K/20-F/40-F and amendments. An explicit SEC form selects that form from
+        the issuer's inventory. Use YYYY-MM-DD start_published_date/end_published_date
+        for publication dates (not financial reporting periods), on global search only.
+        Filing indexes expose separate document/exhibit URLs; read a selected URL
+        through search then its returned document ID. A 6-K is not always earnings.
+        If the issuer site is blocked, use the returned regulatory_readback entry.
+        For issuer
         websites search the company name plus "official website" and topic. Website
         roots in receipts are navigation only. Read documents before citing them.
         For a Congress.gov bill URL or explicit Congress/type/number, use
@@ -186,12 +194,30 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             if max_characters > 24000:
                 raise ValueError("Use at most 24000 characters and paginate with offset")
             previously_limited = quota and quota.limited
+            date_filters = ({'end_published_date': scope.research_as_of.date()}
+                            if operation == 'search' and not document_id else {})
+            if start_published_date is not None:
+                date_filters['start_published_date'] = start_published_date
+            if end_published_date is not None:
+                date_filters['end_published_date'] = end_published_date
             result = await reader(request=SourceDocumentRequest(source_space="web",operation=operation,
                 query=query,document_id=document_id,offset=offset,max_characters=max_characters,limit=5,
-                **({'end_published_date': scope.research_as_of.date()} if operation == 'search' and not document_id else {})),
+                **date_filters),
                 branch_id="conversation",run_scope=scope)
             artifact = result.model_dump(mode="json")
             visible = dict(artifact)
+            # Keep complete directory receipts in the artifact; disclose a single
+            # navigable directory view, not the same entries in every attempt.
+            receipt = dict(visible.get('execution_receipt') or {})
+            visible_attempts = []
+            for attempt in receipt.get('attempts',[]):
+                entry = dict(attempt)
+                if entry.get('issuer_navigation'):
+                    entry['issuer_navigation'] = {k:v for k,v in entry['issuer_navigation'].items()
+                                                 if k not in {'filing_documents','filing_indexes'}}
+                visible_attempts.append(entry)
+            receipt['attempts'] = visible_attempts
+            visible['execution_receipt'] = receipt
             direct = bool(research_as_of and operation == 'search' and not document_id and is_url_query(query))
             attempts = (visible.get('execution_receipt') or {}).get('attempts', [])
             legislative = [nav for attempt in attempts for nav in attempt.get('legislation_navigation', [])]
@@ -202,6 +228,18 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             if company_attempts:
                 # Take the latest site information (verified filings can supply new roots).
                 nav = dict(company_attempts[-1]['issuer_navigation'])
+                original_attempts = (artifact.get('execution_receipt') or {}).get('attempts',[])
+                documents = {d['url']:d for a in original_attempts
+                             for d in a.get('issuer_navigation',{}).get('filing_documents',[])}
+                if documents:
+                    nav['filing_documents'] = list(documents.values())[:24]
+                    nav['filing_documents_available'] = len(documents)
+                    nav['filing_documents_windowed'] = len(documents) > 24
+                indexes = {d['url']:d for a in original_attempts
+                           for d in a.get('issuer_navigation',{}).get('filing_indexes',[])}
+                if indexes:
+                    nav['filing_indexes'] = list(indexes.values())
+                    nav['directory_readback'] = 'For any additional document, search the complete filing index URL, read it, then search the selected document URL. Directory entries are not read evidence.'
                 visible['issuer_navigation'] = nav
                 from urllib.parse import urlsplit
                 from sec_agent.research_foundation.external_sources import _host_in_domains

@@ -318,7 +318,7 @@ class DatedWebDiscovery:
         # and quoted expressions to the provider, not our own query parser.
         sites = re.findall(r'(?i)(?:^|\s)site:([a-z0-9.-]+)(?=\s|$)', request.query)
         if (len(sites) == 1 and not request.include_domains and not direct
-                and not re.search(r'(?i)\bOR\b|["()|]', request.query)):
+                and not re.search(r'(?i)\bOR\b|[()|]', request.query)):
             request = request.model_copy(update={'include_domains':(sites[0].strip('.').lower(),)})
 
         filing_source = None
@@ -349,9 +349,9 @@ class DatedWebDiscovery:
                     page = await self.origin_fetcher.fetch(url, timeout_seconds=12)
                 except (ExternalSourceError, TimeoutError) as exc:
                     return getattr(exc, 'code', 'sec_origin_unavailable')
-                if page.final_url != url or not page.html or not page.html.strip():
+                if page.final_url != url or not (page.extracted_text or page.html).strip():
                     return 'sec_original_unavailable'
-                if 'EX-99' in candidate.title or (not issuer.roots and '10-K' in candidate.title):
+                if page.html and ('EX-99' in candidate.title or (not issuer.roots and any(f in candidate.title for f in ('10-K', '20-F', '40-F')))):
                     self.companies.learn_websites(issuer,page.html,url)
                 return candidate.model_copy(update={'published_at':day.isoformat(),'snippet':''})
             index = filing_index(url)
@@ -509,7 +509,16 @@ class DatedWebDiscovery:
                         'website_role':'navigation_only', 'website_provenance':dict(issuer.evidence), 'official_website_query':(request.query if _WEB.search(request.query) else request.query+' official website'),
                         'filing_attempts':(filing_source.failures if attempt.provider_id == 'sec_edgar_filings' else []),
                     }
+                    # A strict issuer-site query stays strict. Expose a usable
+                    # alternative query rather than silently ignoring its domain.
+                    if request.include_domains and not _host_in_domains('www.sec.gov', request.include_domains):
+                        update['issuer_navigation']['regulatory_readback'] = {
+                            'tool':'read_public_source',
+                            'arguments':{'operation':'search', 'query':issuer.ticker + ' ' + re.sub(r'(?i)(?:^|\s)site:[a-z0-9.-]+', '', request.query).strip()},
+                            'meaning':'Separate company-disclosure search including SEC forms and exhibits; original website failure remains recorded.'}
                     if attempt.provider_id == 'sec_edgar_filings':
+                        update['issuer_navigation']['filing_documents'] = filing_source.documents
+                        update['issuer_navigation']['filing_indexes'] = filing_source.indexes
                         update['issuer_navigation']['filing_attempts'] = [
                             *filing_source.failures, *({'url':c.canonical_url,'stage':'filing_body','reason':out}
                             for c,out in zip(receipt.candidates,checked) if isinstance(out,str) and out != 'after_cutoff')]

@@ -4,6 +4,8 @@ import asyncio
 import calendar
 import json
 import re
+from html import escape
+from io import BytesIO
 from datetime import date, timedelta
 from urllib.parse import urljoin, urlsplit
 
@@ -29,7 +31,7 @@ _SITES = {
     "TOL": ("Toll Brothers", "https://investors.tollbrothers.com/", ""),
 }
 _DISCLOSURE = re.compile(
-    r"earnings|results|quarter|\bQ[1-4]\b|10[- ]?[QK]|8[- ]?K|investor relations|official website|gross margin|net orders|业绩|财报|季报|年报|官网|公司网站|投资者关系",
+    r"earnings|results|quarter|\bQ[1-4]\b|\b\d{1,2}[- ]?[A-Z]\b|\b[SF]-\d\b|\b(?:DEF|SC)\s+\d|\bform\b|filing|investor relations|official website|gross margin|net orders|业绩|财报|季报|年报|申报|招股|官网|公司网站|投资者关系",
     re.I,
 )
 _WEB = re.compile(
@@ -39,6 +41,36 @@ _WEB = re.compile(
 _SUFFIX = re.compile(
     r"\s+(?:incorporated|inc|corp(?:oration)?|company|plc|ltd|holdings?)\b.*$", re.I
 )
+_ANNUAL = {"10-K", "10-KT", "20-F", "40-F"}
+_PERIODIC = _ANNUAL | {"10-Q", "10-QT"}
+_CURRENT = {"8-K", "6-K"}
+_EARNINGS = re.compile(r"earnings|results|业绩|财报|净利润|收入", re.I)
+
+
+def form_base(form):
+    return form.removesuffix("/A")
+
+
+def explicit_forms(query, available):
+    """Match actual SEC form labels; retain amendments as separate documents."""
+    known = set(available) | _PERIODIC | _CURRENT | {
+        "S-1", "S-3", "S-4", "S-8", "F-1", "F-3", "F-4", "F-6",
+        "DEF 14A", "DEFA14A", "SC 13D", "SC 13G", "13F-HR", "424B4",
+    }
+    matched = set()
+    for form in known:
+        if form_base(form).isdigit() and not re.search(r'\bform\s+' + re.escape(form) + r'(?![A-Za-z0-9/])', query, re.I):
+            continue
+        pattern = re.escape(form).replace(r"\ ", r"\s+")
+        if re.search(r"(?<![A-Za-z0-9/-])" + pattern + r"(?![A-Za-z0-9/-])", query, re.I):
+            matched.add(form)
+    # An explicit amendment request must not fall back to the original.
+    for form in list(known):
+        if form_base(form).isdigit() and not re.search(r'\bform\s+' + re.escape(form_base(form)) + r'/A\b', query, re.I):
+            continue
+        if re.search(r"(?<![A-Za-z0-9/-])" + re.escape(form_base(form)) + r"/A(?![A-Za-z0-9/-])", query, re.I):
+            matched.add(form_base(form) + "/A")
+    return matched
 
 
 def words(text):
@@ -109,6 +141,7 @@ class CompanySources:
         self.submissions = {}
         self.disclosed_sites = {}
         self.annual_checked = set()
+        self.history_pages = {}
 
     async def get(self, url, timeout=10):
         if self.sec is None:
@@ -127,7 +160,32 @@ class CompanySources:
             and self.sec
         ):
             body = await self.get(url, timeout_seconds)
-            html = body.decode("utf-8", errors="replace")
+            if body.startswith(b"%PDF-"):
+                from pypdf import PdfReader
+                try:
+                    reader = PdfReader(BytesIO(body))
+                    if reader.is_encrypted or len(reader.pages) > 250:
+                        raise ExternalSourceError("capture_pdf_not_readable_within_limits")
+                    parts, characters = [], 0
+                    for page in reader.pages:
+                        part = page.extract_text() or ""
+                        characters += len(part)
+                        if characters > 16_000_000:
+                            raise ExternalSourceError("capture_pdf_text_too_large")
+                        parts.append(part)
+                    text = "\n\n".join(parts)
+                except ExternalSourceError:
+                    raise
+                except Exception as exc:
+                    raise ExternalSourceError("sec_pdf_parse_failed") from exc
+                if not text.strip():
+                    raise ExternalSourceError("sec_pdf_text_unavailable")
+                return FetchedPage(final_url=url, extracted_text=text,
+                                   content_type="application/pdf", status_code=200)
+            html = body.decode("utf-8-sig", errors="replace")
+            if urlsplit(url).path.lower().endswith(".txt"):
+                return FetchedPage(final_url=url, html="<pre>" + escape(html) + "</pre>",
+                                   extracted_text=html, status_code=200, content_type="text/plain")
             return FetchedPage(
                 final_url=url,
                 html=html,
@@ -210,6 +268,7 @@ class CompanySources:
             ticker, data, list(dict.fromkeys(roots)), site[2] if site else "", error
         )
         issuer.evidence = evidence
+        await self.load_history(issuer, request)
         if not roots and data and ticker not in self.annual_checked:
             # An issuer's dated 10-K often identifies its corporate and IR sites even
             # when the corresponding SEC submissions metadata fields are blank.
@@ -219,7 +278,7 @@ class CompanySources:
                 (
                     i
                     for i, form in enumerate(recent.get("form", []))
-                    if form == "10-K" and recent["filingDate"][i] <= cutoff
+                    if form_base(form) in _ANNUAL and recent["filingDate"][i] <= cutoff
                 ),
                 None,
             )
@@ -236,6 +295,41 @@ class CompanySources:
                 except ExternalSourceError:
                     pass  # General web discovery still works without verified corporate domains.
         return issuer
+
+    async def load_history(self, issuer, request):
+        """Read only submission pages overlapping the requested publication window.
+
+        SEC's recent array is not the full history. Pages remain cached once; an
+        unavailable page is reported independently of successful recent records.
+        """
+        cutoff = request.run_scope.research_as_of.date()
+        year = re.search(r"(?<!\d)(20\d{2})(?!\d)", request.query)
+        start = request.start_published_date or date(int(year[1]) - 1 if year else cutoff.year - 1, 1, 1)
+        end = min(request.end_published_date or cutoff, cutoff)
+        for page in issuer.data.get("filings", {}).get("files", []):
+            name = page.get("name", "")
+            try:
+                first, last = date.fromisoformat(page["filingFrom"]), date.fromisoformat(page["filingTo"])
+            except (KeyError, ValueError):
+                issuer.history_failures.append({"stage":"submissions_history", "reason":"sec_history_date_invalid"})
+                continue
+            if first > end or last < start:
+                continue
+            if not re.fullmatch(r"CIK" + str(issuer.data["cik"]).zfill(10) + r"-submissions-\d+\.json", name):
+                issuer.history_failures.append({"stage":"submissions_history", "reason":"sec_history_identity_invalid"})
+                continue
+            url = SecEdgarConnector.SUBMISSIONS_FILE_URL_TEMPLATE.format(file_name=name)
+            try:
+                if name not in self.history_pages:
+                    values = json.loads(await self.get(url))
+                    keys = ("form", "filingDate", "accessionNumber", "primaryDocument")
+                    if not all(isinstance(values.get(k), list) for k in keys) or len({len(values[k]) for k in keys}) != 1:
+                        raise ExternalSourceError("sec_history_invalid")
+                    self.history_pages[name] = values
+                issuer.history.append(self.history_pages[name])
+            except (ExternalSourceError, ValueError) as exc:
+                issuer.history_failures.append({"stage":"submissions_history", "url":url,
+                                               "reason":getattr(exc,"code","sec_history_invalid")})
 
     def learn_websites(self, issuer, html, filing_url):
         # Only an explicit self-identification in a dated SEC original counts.
@@ -264,6 +358,8 @@ class Issuer:
     def __init__(self, ticker, data, roots, alias, error):
         self.ticker, self.data, self.roots, self.error = ticker, data, roots, error
         self.evidence = {}
+        self.history = []
+        self.history_failures = []
         self.domains = tuple(
             dict.fromkeys(
                 [urlsplit(u).hostname.removeprefix("www.") for u in roots]
@@ -305,35 +401,38 @@ class Issuer:
                 ordinal = year * 12 + month - 1 - (4 - number) * 3
                 y, m = divmod(ordinal, 12)
                 period = date(y, m + 1, calendar.monthrange(y, m + 1)[1])
-        required_forms = {
-            form.upper()
-            for form in re.findall(
-                r"(?<![A-Za-z0-9])(10-K|10-Q|8-K)(?![A-Za-z0-9])", q, re.I
-            )
-        }
+        records = {}
+        for chunk in [recent, *self.history]:
+            for i, form in enumerate(chunk.get("form", [])):
+                row = {k: v[i] for k, v in chunk.items() if isinstance(v, list) and i < len(v)}
+                records.setdefault(row.get("accessionNumber"), row)
+        required_forms = explicit_forms(q, [r["form"] for r in records.values()])
         rows = []
-        for i, form in enumerate(recent.get("form", [])):
-            if form not in (required_forms or {"8-K", "10-K", "10-Q"}):
+        for row in records.values():
+            form = row["form"]
+            base = form_base(form)
+            allowed = (form in required_forms or base in required_forms) if required_forms else base in _PERIODIC | _CURRENT
+            if not allowed:
                 continue
-            filed = date.fromisoformat(recent["filingDate"][i])
-            if filed > cutoff or not recent["reportDate"][i]:
+            filed = date.fromisoformat(row["filingDate"])
+            if filed > cutoff:
                 continue
-            report = date.fromisoformat(recent["reportDate"][i])
+            report = date.fromisoformat(row["reportDate"]) if row.get("reportDate") else None
             if request.start_published_date and filed < request.start_published_date:
                 continue
             if request.end_published_date and filed > request.end_published_date:
                 continue
             if period:
-                if form == "8-K" and not period <= filed <= period + timedelta(
+                if base in _CURRENT and not period <= filed <= period + timedelta(
                     days=100
                 ):
                     continue
-                if form != "8-K" and abs((report - period).days) > 8:
+                if base in _PERIODIC and (report is None or abs((report - period).days) > 8):
                     continue
-            elif year_match and report.year != year:
+            elif year_match and (report or filed).year != year and filed.year != year:
                 continue
-            if form == "8-K" and "2.02" not in [
-                item.strip() for item in recent["items"][i].split(",")
+            if base == "8-K" and not required_forms and _EARNINGS.search(q) and "2.02" not in [
+                item.strip() for item in row.get("items", "").split(",")
             ]:
                 continue
             rows.append(
@@ -341,11 +440,11 @@ class Issuer:
                     form,
                     filed,
                     report,
-                    recent["accessionNumber"][i],
-                    recent["primaryDocument"][i],
+                    row["accessionNumber"],
+                    row["primaryDocument"],
                 )
             )
-        return sorted(rows, key=lambda r: (r[1], r[0] == "8-K"), reverse=True)
+        return sorted(rows, key=lambda r: (r[1], form_base(r[0]) in _CURRENT), reverse=True)
 
 
 class FilingSearch:
@@ -354,19 +453,27 @@ class FilingSearch:
     def __init__(self, issuer, sources):
         self.issuer, self.sources = issuer, sources
         self.dates = {}
-        self.failures = []
+        self.failures = list(issuer.history_failures)
+        self.documents = []
+        self.indexes = []
 
     async def search(self, request):
         if self.issuer.error:
             raise ExternalSourceError(self.issuer.error)
         hits = []
         cik = str(int(self.issuer.data["cik"]))
-        for form, filed, report, accession, doc in self.issuer.filings(request)[:4]:
+        rows = self.issuer.filings(request)
+        if len(rows) > 8:
+            self.failures.append({"stage":"filing_selection", "reason":"sec_candidates_windowed",
+                                  "available":len(rows), "returned_filings":8,
+                                  "next_step":"Narrow publication dates or request a specific SEC form; results are not exhaustive."})
+        for form, filed, report, accession, doc in rows[:8]:
             if not re.fullmatch(r"\d{10}-\d{2}-\d{6}", accession) or not re.fullmatch(
-                r"[\w.-]+", doc
-            ):
+                r"[\w.-]+(?:/[\w.-]+)*", doc
+            ) or any(p in {".", ".."} for p in doc.split("/")):
                 continue
             url = SecEdgarConnector._build_filing_url(cik, accession, doc)
+            filing_root = f"{SecEdgarConnector.ARCHIVES_BASE_URL}/{cik}/{accession.replace('-', '')}/"
 
             def add(target, title):
                 self.dates[target] = filed
@@ -378,34 +485,46 @@ class FilingSearch:
                     )
                 )
 
-            if form == "8-K":
-                index = urljoin(url, accession + "-index.htm")
+            # Annual/registration reports carry the primary argument in their
+            # main document. Certifications must not outrank the annual report.
+            if form_base(form) not in _CURRENT:
+                add(url, form + " · report date " + (report.isoformat() if report else "not provided"))
+            if form_base(form) in _CURRENT | _ANNUAL or explicit_forms(request.query, [form]):
+                index = urljoin(filing_root, accession + "-index.htm")
                 try:
                     html = await self.sources.get(index)
                     soup = BeautifulSoup(html, "html.parser")
+                    self.indexes.append({'url':index,'form':form,'accession':accession,
+                                         'filed':filed.isoformat(),'role':'complete_filing_directory'})
                     for tr in soup.select("table.tableFile tr"):
                         cells = tr.find_all("td")
-                        if len(cells) < 4 or not re.fullmatch(
-                            r"EX-99(?:\.1|\.01)?", cells[3].get_text(strip=True), re.I
-                        ):
+                        if len(cells) < 4:
                             continue
+                        kind = cells[3].get_text(strip=True)
+                        description = cells[1].get_text(" ",strip=True)
                         anchor = cells[2].find("a", href=True)
                         if anchor:
                             href = urljoin(index, anchor["href"])
                             if href.startswith(
-                                url.rsplit("/", 1)[0] + "/"
-                            ) and href.lower().endswith((".htm", ".html")):
-                                add(
-                                    href,
-                                    "8-K "
-                                    + cells[3].get_text(strip=True)
-                                    + " (Item 2.02)",
-                                )
+                                filing_root
+                            ) and not any(p in {".", ".."} for p in urlsplit(href).path.split("/")):
+                                # Images and machine XBRL sidecars remain reachable
+                                # via the complete index; don't flood each answer
+                                # with their often hundreds of navigation entries.
+                                if kind == form or (kind.startswith('EX-') and not kind.startswith('EX-101')):
+                                    self.documents.append({'url':href, 'form':form, 'document_type':kind,
+                                        'description':description, 'accession':accession,
+                                        'filed':filed.isoformat(), 'index_url':index,
+                                        'role':'navigation_only',
+                                        'readable_format':href.lower().endswith(('.htm','.html','.txt','.pdf','.xml'))})
+                                if re.fullmatch(r"EX-(?:99|13)(?:\.\d+)?", kind, re.I) and href.lower().endswith(('.htm','.html','.txt','.pdf')):
+                                    add(href, form + " " + kind + " · " + description[:200])
                 except ExternalSourceError as exc:
                     self.failures.append(
                         {"stage": "filing_index", "url": index, "reason": exc.code}
                     )
-            add(url, form + " · report date " + report.isoformat())
+            if form_base(form) in _CURRENT:
+                add(url, form + " · report date " + (report.isoformat() if report else "not provided"))
         return hits
 
 

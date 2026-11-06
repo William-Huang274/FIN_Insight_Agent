@@ -55,6 +55,12 @@ def test_pdf_issue_metadata_is_not_a_policy_effective_date_or_body_mention():
     assert publisher_day(note,pdf=True)==date(2026,5,6)
     assert publisher_day(note.replace('Date:', 'Reporting date:'),pdf=True) is None
     assert publisher_day('Long body. '*150+note,pdf=True) is None
+    letter='Agency letterhead\nSeptember 21, 2026\nMs. Example\nDirector\nP.O. Box 123\nCity, State 12345\nDear Director:\nWith this letter I direct an action.'
+    assert publisher_day(letter,pdf=True)==date(2026,9,21)
+    assert publisher_day(letter,pdf=False) is None
+    assert publisher_day(letter.replace('September 21, 2026','Effective September 21, 2026'),pdf=True) is None
+    assert publisher_day(letter.replace('12345','unknown'),pdf=True) is None
+    assert publisher_day(letter.replace('Dear Director:', 'The report says:'),pdf=True) is None
 
 
 def test_site_path_keeps_host_and_account_scope_when_provider_ignores_query():

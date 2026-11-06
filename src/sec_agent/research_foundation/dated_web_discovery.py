@@ -136,6 +136,17 @@ def publisher_day(text, index=False, *, pdf=False):
         if re.search(r'(?m)^FROM:',body[:1000]) and re.search(r'(?m)^SUBJECT:',body[:1000]):
             masthead_dates += re.findall(
                 r'(?m)^[ \t]*([A-Z][a-z]{2,8} \d{1,2}, 20\d{2})[ \t]*\n[ \t]*MEMORANDUM (?:FOR|TO)\b', body[:1000])
+        # Dated correspondence: the sole full dateline precedes the recipient
+        # address and salutation, before any letter prose. Do not scan the body
+        # for an effective date or a quoted historical event.
+        salutation = re.search(r'(?m)^[ \t]*Dear [^\n]{1,100}:[ \t]*$', body[:1000])
+        if salutation:
+            header = body[:salutation.start()]
+            stamps = list(re.finditer(r'(?m)^[ \t]*([A-Z][a-z]{2,8} \d{1,2}, 20\d{2})[ \t]*$', header))
+            if len(stamps) == 1 and stamps[0].start() < 500:
+                address = [s.strip() for s in header[stamps[0].end():].splitlines() if s.strip()]
+                if 2 <= len(address) <= 10 and any(re.search(r'\b\d{5}(?:-\d{4})?\b',s) for s in address):
+                    masthead_dates.append(stamps[0][1])
     for value in re.findall(release_label, body) + _BLS_EMBARGO.findall(body[:1400]) + masthead_dates:
         for fmt in ('%B %d, %Y','%b %d, %Y'):
             try:

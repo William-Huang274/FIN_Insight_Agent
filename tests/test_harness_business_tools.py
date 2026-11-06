@@ -72,7 +72,7 @@ async def test_unobserved_source_feedback_survives_pending_read_recovery(tmp_pat
         await bridge.initialize({'messages': [prior]})
         response = await bridge.call_tool(None, SimpleNamespace(name='read_research_source',
             arguments={'source_id': requested, 'max_characters': 6000}))
-        assert response.is_error
+        assert not response.is_error and response.structured_content['status']=='error'
         feedback = json.loads(response.content[0].text)['result']
         assert feedback['requested_source_id'] == requested
         assert feedback['readback'] == {'tool': 'browse_context', 'arguments': {'region': 'sources'}}
@@ -196,7 +196,8 @@ async def test_schema_rejection_allows_author_correction_without_waiving_executi
             thread_id='t',check=lambda:None,stop_on_tool_error=True)
         await bridge.initialize({'messages':[]})
         rejected=await bridge.call_tool(None,SimpleNamespace(name='source',arguments={'query':'url'}))
-        assert rejected.is_error and not calls
+        assert not rejected.is_error and not calls
+        assert rejected.structured_content['status'] == 'error'
         bridge.model_access()
         fixed=await bridge.call_tool(None,SimpleNamespace(name='source',arguments={'operation':'read','query':'url'}))
         assert not fixed.is_error and calls==[('read','url')]
@@ -432,6 +433,30 @@ async def test_edit_conflict_is_atomic_actionable_and_does_not_stop_consultation
             {'old_str':old.replace('explicitly scoped','carefully scoped'),
              'new_str':old.replace('explicitly scoped','carefully scoped')+' [P99:INVALID]'}]})
         assert bad.status=='error'
+
+
+@pytest.mark.anyio
+async def test_saved_invalid_draft_exposes_repair_without_native_failure_or_early_acceptance(tmp_path):
+    from types import SimpleNamespace
+    from sec_agent.agent_runtime.harness_artifact_tools import artifact_tools
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    from test_on_demand_research import artifact_fixture, report
+    artifacts=artifact_fixture()
+    candidate={k:v for k,v in report(artifacts).items() if k not in {'citations','title'}}
+    memory=WorkingMemory(tmp_path/'notes.sqlite',owner='test',workspace='task',actor='lead')
+    grants=artifact_tools(artifacts=lambda _:artifacts,memory=memory,delivery_intent='report',require_review=False)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'tools.sqlite')) as saver:
+        bridge=HarnessBusinessTools(grants=grants,checkpointer=saver,thread_id='t',check=lambda:None,stop_on_tool_error=True)
+        await bridge.initialize({'question':'task','messages':[]})
+        response=await bridge.call_tool(None,SimpleNamespace(name='save_research_report',arguments={'report':candidate,'base_version':0}))
+        assert not response.is_error
+        assert response.structured_content['status']=='error'
+        assert response.structured_content['result']['status']=='draft_saved_needs_repair'
+        bridge.model_access()
+        state=await bridge.state()
+        assert not state.get('report') and not state.get('delivery')
+        view=await bridge.execute('read_current_report',{'view':'draft'})
+        assert candidate['narrative_markdown'] in view.content
 
 
 def test_report_edit_location_hints_never_apply_ambiguous_or_near_matches():

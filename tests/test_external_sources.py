@@ -656,6 +656,18 @@ def test_static_transport_enforces_response_byte_ceiling_before_read() -> None:
     assert error.value.code == "capture_response_too_large"
 
 
+def test_static_transport_negotiates_supported_documents_with_transparent_identity():
+    seen=[]
+    class Session(_FakeSession):
+        def get(self,*args,**kwargs):
+            seen.append(kwargs['headers'])
+            return super().get(*args,**kwargs)
+    fetcher=StaticHTTPPageFetcher(guard=_public_guard(),session_factory=Session,user_agent='FinSight test contact')
+    asyncio.run(fetcher.fetch('https://example.com/',timeout_seconds=5))
+    assert 'application/pdf' in seen[0]['Accept'] and 'text/html' in seen[0]['Accept']
+    assert seen[0]['User-Agent']=='FinSight test contact'
+
+
 def test_static_transport_preserves_http_status_as_typed_failure() -> None:
     fetcher = StaticHTTPPageFetcher(
         guard=_public_guard(),

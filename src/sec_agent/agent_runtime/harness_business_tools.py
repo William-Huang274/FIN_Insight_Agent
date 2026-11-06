@@ -322,8 +322,12 @@ class HarnessBusinessTools:
                         if report['findings'] or report['linked_ratio_bases'] or report['cited_claim_context']:
                             view['quantitative_change_check'] = report
             text = json.dumps(view, ensure_ascii=False, separators=(',', ':'))
+            # A completed rejection with a usable repair path is a tool result,
+            # not an MCP execution failure. Native ACP also gates failed events;
+            # retaining isError here would bypass the shared classification.
+            # The inner receipt remains error and the artifact is not accepted.
             return types.CallToolResult(content=[types.TextContent(type='text', text=text)],
-                is_error=result.status == 'error', structured_content=view)
+                is_error=result.status == 'error' and not actionable_tool_feedback(result), structured_content=view)
         except BaseException:
             self.stop()
             raise

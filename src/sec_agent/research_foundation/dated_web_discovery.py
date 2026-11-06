@@ -399,6 +399,12 @@ class DatedWebDiscovery:
         from .legislation_discovery import LegislationDiscovery
         self.legislation = legislation or LegislationDiscovery()
 
+    def restore_catalog_dates(self, receipt, cutoff):
+        from .government_sources import bill_version_dates
+        for attempt in receipt.attempted_providers:
+            for catalog in (attempt.model_dump().get('legislation_navigation') or []):
+                self.verified.update(bill_version_dates(catalog,cutoff))
+
     async def search(self, request):
         cutoff = request.run_scope.research_as_of.date()
         direct = is_url_query(request.query)
@@ -516,11 +522,12 @@ class DatedWebDiscovery:
                                 day = (publisher_markdown_day(page.extracted_text) if getattr(page,'extraction_method',None)=='deepseek_hosted_publication' else
                                        publisher_day(page.extracted_text, bool(index), pdf=getattr(page, 'content_type', None) == 'application/pdf') if getattr(page, 'extracted_text', None)
                                        else publisher_html_day(page.html, bool(index), url=locator))
-                                if not day and page.extracted_text:
-                                    from .government_sources import dated_bill_catalog
-                                    catalog = dated_bill_catalog(locator,page.extracted_text,cutoff)
+                                if not day:
+                                    from .government_sources import dated_bill_catalog, bill_version_dates
+                                    catalog = dated_bill_catalog(locator,page.extracted_text or page.html or '',cutoff)
                                     if catalog:
                                         legislation_navigation[url] = catalog
+                                        self.verified.update(bill_version_dates(catalog,cutoff))
                                         return 'official_document_catalog_available'
                                 if (not day and self.search_backup and candidate.provider_rank == 1
                                         and candidate.provider_id == 'deepseek_search' and page.html and not index):

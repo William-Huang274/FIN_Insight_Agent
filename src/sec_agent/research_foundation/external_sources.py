@@ -883,7 +883,7 @@ class StaticHTTPPageFetcher:
         guard: PublicURLGuard,
         user_agent: str | None = None,
         maximum_redirects: int = 5,
-        maximum_response_bytes: int = 5_000_000,
+        maximum_response_bytes: int = 20_000_000,
         session_factory: Callable[[], Any] | None = None,
     ) -> None:
         self.guard = guard
@@ -903,7 +903,8 @@ class StaticHTTPPageFetcher:
                     url,
                     allow_redirects=False,
                     timeout=timeout_seconds,
-                    headers={"User-Agent": self.user_agent or f"{requests.utils.default_user_agent()} FinSight/0.1"},
+                    headers={"User-Agent": self.user_agent or f"{requests.utils.default_user_agent()} FinSight/0.1",
+                             "Accept":"text/html,application/xhtml+xml,application/pdf,text/plain,application/xml;q=0.9,*/*;q=0.8"},
                     stream=True,
                 ) as response:
                     if response.is_redirect or response.is_permanent_redirect:

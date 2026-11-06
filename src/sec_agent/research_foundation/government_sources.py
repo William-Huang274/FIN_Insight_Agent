@@ -1,7 +1,7 @@
 """Thin routes to public institutions; no policy conclusions or case-specific URLs."""
 import re
 from datetime import datetime
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urljoin
 
 from .external_sources import ExternalSourceError, FetchedPage
 
@@ -37,6 +37,25 @@ def dated_bill_catalog(url, text, cutoff):
     if not bill or not (parsed.hostname or '').endswith('.gov'):
         return None
     ident = bill[1].upper()
+    if '<html' in text.lower():
+        from bs4 import BeautifulSoup
+        soup=BeautifulSoup(text,'html.parser');rows=[]
+        for row in soup.select('tr'):
+            stamp=row.select_one('[data-label="Date"]');version=row.select_one('[data-label="Version"]')
+            link=row.select_one('[data-label="Documents"] a[href][aria-label]')
+            if not (stamp and version and link):continue
+            label=version.get_text(' ',strip=True)
+            if link['aria-label'] != f'PDF Bill File for {ident} {label}':continue
+            try:day=datetime.strptime(stamp.get_text(' ',strip=True),'%m/%d/%Y').date()
+            except ValueError:continue
+            target=urljoin(url,link['href']);dest=urlsplit(target)
+            if day>cutoff or dest.hostname!=parsed.hostname or not re.fullmatch(r'/bill_files/\d+/download',dest.path):continue
+            rows.append({'version_date':day.isoformat(),'version_label':label,'version_source_url':target,
+                'read_entry':{'tool':'read_public_source','arguments':{'operation':'search','query':target}}})
+        if not rows:return None
+        return {'kind':'official_bill_version_catalog','catalog_url':url,'bill_id':ident,'versions':rows,
+            'writer_citable':False,'current_summary_withheld':True,
+            'meaning':'Dated publisher-linked versions; select and read the actual file. The current summary is not admitted as dated evidence.'}
     if not re.match(re.escape(ident)+r'\s*\n',text,re.I):
         return None
     table = re.search(r'(?m)^### Bill Text\s*\n\s*Date\s*\|\s*Version\s*\|\s*Documents\s*\n[-| ]+\n((?:[^\n]+\n?)+)',text)
@@ -58,6 +77,20 @@ def dated_bill_catalog(url, text, cutoff):
     return {'kind':'official_bill_version_catalog','catalog_url':url,'bill_id':ident,
         'versions':rows,'writer_citable':False,'current_summary_withheld':True,
         'meaning':'Observed dated document-version rows only. Locate and read the selected text; current summary has no verified publication date.'}
+
+
+def bill_version_dates(catalog, cutoff):
+    """Restore only host-recorded publisher bindings for immutable file locators."""
+    if catalog.get('kind')!='official_bill_version_catalog':return {}
+    origin=urlsplit(catalog.get('catalog_url',''));dates={}
+    if not (origin.hostname or '').endswith('.gov'):return dates
+    for row in catalog.get('versions',[]):
+        target=row.get('version_source_url','');dest=urlsplit(target)
+        if dest.hostname!=origin.hostname or not re.fullmatch(r'/bill_files/\d+/download',dest.path):continue
+        try:day=datetime.strptime(row['version_date'],'%Y-%m-%d').date()
+        except (ValueError,KeyError):continue
+        if day<=cutoff:dates[target]=day
+    return dates
 
 
 class GovernmentSourceFetcher:

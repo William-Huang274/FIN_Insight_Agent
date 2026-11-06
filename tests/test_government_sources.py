@@ -29,6 +29,39 @@ class Denied:
         raise ExternalSourceError('capture_http_status_403')
 
 
+def test_publisher_bill_catalog_exact_links_survive_navigation_restore():
+    from test_web_source_navigation import BRANCH
+    from test_external_sources import _run_scope
+    from sec_agent.research_foundation.government_sources import dated_bill_catalog, bill_version_dates
+    url='https://leg.example.gov/bills/sb26-999'
+    target='https://leg.example.gov/bill_files/123/download'
+    def row(day,label,href,bill='SB26-999'):
+        return f'<tr><td data-label="Date">{day}</td><td data-label="Version">{label}</td><td data-label="Documents"><a href="{href}" aria-label="PDF Bill File for {bill} {label}">PDF</a></td></tr>'
+    html='<html><h1>Undated summary not admitted</h1><table>'+row('05/14/2026','Signed Act',target)+row('09/01/2026','Later','/bill_files/456/download')+row('04/01/2026','Other','/bill_files/789/download','SB26-998')+row('04/01/2026','Foreign','https://other.gov/bill_files/987/download')+'</table></html>'
+    catalog=dated_bill_catalog(url,html,date(2026,8,1))
+    assert [r['version_source_url'] for r in catalog['versions']]==[target]
+    assert bill_version_dates(catalog,date(2026,5,1))=={}
+    class Origin:
+        async def fetch(self,address,**_):
+            if address==url:return FetchedPage(final_url=url,html=html)
+            assert address==target
+            return FetchedPage(final_url=target,content_type='application/pdf',extracted_text='Signed act original. '*100)
+    reader,_,_=_reader(url=url,published=None)
+    reader.discovery=DatedWebDiscovery(reader.discovery,None,origin_fetcher=Origin())
+    result=_call(reader,'search',query='bill versions')
+    assert not result.items and 'official_document_catalog_available' in result.model_dump_json(), result.model_dump_json()
+    receipts=reader.export_navigation()
+    assert receipts  # zero-candidate catalogs must not disappear at recovery
+    resumed,_,_=_reader(url=target,published=None)
+    resumed.discovery=DatedWebDiscovery(resumed.discovery,None,origin_fetcher=Origin())
+    resumed.capture.static_fetcher=Origin()
+    resumed.restore_navigation(receipts,branch_id=BRANCH,run_scope=_run_scope(BRANCH))
+    assert resumed.discovery.verified[target]==date(2026,5,14)
+    candidate=_call(resumed,'search',query='signed act').items[0]
+    read=_call(resumed,'read',document_id=candidate['document_id'])
+    assert read.items[0]['writer_citable'] and 'Signed act original.' in read.items[0]['passage']
+
+
 class Hosted:
     def __init__(self, text=BODY):
         self.text, self.calls = text, []

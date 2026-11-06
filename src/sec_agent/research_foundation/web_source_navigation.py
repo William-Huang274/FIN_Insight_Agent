@@ -37,6 +37,7 @@ class WebSourceReader:
         self._captures = {}
         self._link_receipts = {}
         self._link_rows = {}
+        self._navigation_receipts = {}
 
     def restore_navigation(self, receipts, *, branch_id, run_scope):
         """Host-only checkpoint restoration; never accept receipts from a model."""
@@ -44,6 +45,10 @@ class WebSourceReader:
             receipt = DiscoveryReceipt.model_validate(raw)
             if receipt.run_scope_digest != run_scope.run_scope_digest or receipt.branch_id != branch_id:
                 raise ValueError('restored_navigation_scope_mismatch')
+            if any(a.model_dump().get('legislation_navigation') for a in receipt.attempted_providers):
+                self._navigation_receipts[receipt.receipt_digest]=receipt
+            if hasattr(self.discovery,'restore_catalog_dates'):
+                self.discovery.restore_catalog_dates(receipt,run_scope.research_as_of.date())
             for candidate in receipt.candidates:
                 ExternalCaptureRequest(discovery_receipt=receipt, candidate_id=candidate.candidate_id,
                     branch_id=branch_id, run_scope=run_scope)
@@ -51,7 +56,7 @@ class WebSourceReader:
 
     def export_navigation(self):
         return [r.model_dump(mode='json') for r in
-            {receipt.receipt_digest: receipt for receipt, _ in self._candidates.values()}.values()]
+            {**self._navigation_receipts, **{receipt.receipt_digest: receipt for receipt, _ in self._candidates.values()}}.values()]
 
     def has_document(self, document_id, *, branch_id, run_scope):
         return (run_scope.run_scope_digest, branch_id, document_id) in self._candidates
@@ -102,6 +107,8 @@ class WebSourceReader:
                 purpose="Agent-selected public source research; no Evidence or NumericFact promotion",
                 **{k:getattr(request,k) for k in ('include_domains','start_published_date','end_published_date') if k in request.model_fields_set},
                 max_results=min(request.limit, 8)))
+            if any(a.model_dump().get('legislation_navigation') for a in receipt.attempted_providers):
+                self._navigation_receipts[receipt.receipt_digest]=receipt
             items = []
             for candidate in receipt.candidates:
                 doc_id = "WEB::" + candidate.candidate_id

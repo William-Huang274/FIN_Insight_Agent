@@ -242,7 +242,7 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             legislative = [nav for attempt in attempts for nav in attempt.get('legislation_navigation', [])]
             if legislative:
                 visible['legislation_navigation'] = legislative
-                visible['next_step'] = 'Official bill identities found; call the listed read_legislation entries to select dated versions and obtain full text. Empty WEB items does not mean no bills were found.'
+                visible['next_step'] = 'Official bill identities or version catalogs found; use the tool and arguments in each listed read entry to select a dated version and read its text. Empty WEB items does not mean no bills were found.'
             company_attempts = [a for a in attempts if a.get('issuer_navigation')]
             if company_attempts:
                 # Take the latest site information (verified filings can supply new roots).

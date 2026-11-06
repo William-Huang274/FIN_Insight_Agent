@@ -216,6 +216,60 @@ async def test_host_wait_uses_durable_explicit_read_not_submission(tmp_path, mon
 
 
 @pytest.mark.anyio
+async def test_child_uses_run_context_after_submitting_memory_scope_exits(tmp_path, monkeypatch):
+    from sec_agent.agent_runtime.working_memory_tools import native_memory_scope
+    from sec_agent.agent_runtime.working_memory import WorkingMemoryAccessDenied
+    entered = asyncio.Event(); proceed = asyncio.Event(); valid = True
+    def check():
+        if not valid:
+            raise WorkingMemoryAccessDenied('revoked')
+    scope = lambda: native_memory_scope('owner', 'workspace', access_check=check, allow_remote_search=False)
+    @tool
+    def read_source_document(query: str):
+        """Read under the admitted workspace."""
+        return {'text':query}
+    grants = [GrantedTool(read_source_document, 'read', 'authorized')]
+    async def provider(**kwargs):
+        entered.set(); await proceed.wait()
+        result = await kwargs['bridge'].execute('read_source_document', {'query':'exact original'})
+        return result.content
+    monkeypatch.setattr('sec_agent.agent_runtime.harness_consultations.independent_review',provider)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'s.sqlite')) as saver:
+        service = HarnessConsultations(directory=tmp_path/'jobs', saver=saver, grants=grants,
+            tid='t', rid='r', check=check, scope=scope, budget=object(), environment={},
+            model='gpt-6.1-sol', basis={}, as_of='2026-11-06', public_sink=lambda x:None)
+        with scope():
+            first=await service.submit('Check','Context','review',False,[],{'messages':[]})
+            await entered.wait()
+        proceed.set()
+        await service.tasks[first['task_id']]
+        assert json.loads((tmp_path/'jobs'/(first['task_id']+'.json')).read_text())['status']=='completed'
+        valid=False
+        with pytest.raises(WorkingMemoryAccessDenied):
+            await service.submit('Other','Context','review',False,[],{'messages':[]})
+        await service.close()
+
+
+def test_scope_failure_replay_requires_all_received_and_priced(tmp_path):
+    from contextlib import contextmanager
+    rows = [{'status':'received','actual_micros':10,'response':{'stop_required':False}}]
+    @contextmanager
+    def connection():
+        yield SimpleNamespace(execute=lambda *a:SimpleNamespace(fetchall=lambda:rows))
+    service=HarnessConsultations(directory=tmp_path/'jobs',saver=None,grants=[],tid='t',rid='new',
+        check=lambda:None,scope=lambda:None,budget=SimpleNamespace(owner='o',budget='b',store=SimpleNamespace(connection=connection)),
+        environment={},model='gpt-6.1-sol',basis={},as_of='2026-11-06',public_sink=lambda x:None)
+    record={'error_type':'WorkingMemoryAccessDenied','scope':'t:old'}
+    assert service.settled_scope_failure('key',record)
+    for bad in [{'status':'unknown'}, {'actual_micros':None}, {'response':{'stop_required':True}}]:
+        old=rows[0].copy();rows[0].update(bad)
+        assert not service.settled_scope_failure('key',record)
+        rows[0]=old
+    rows.clear()
+    assert not service.settled_scope_failure('key',record)
+
+
+@pytest.mark.anyio
 async def test_cancelled_consultation_requires_permit_and_reuses_exact_target(tmp_path, monkeypatch):
     observed=[]
     async def cancelled(**kwargs):

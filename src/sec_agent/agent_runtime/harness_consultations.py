@@ -4,6 +4,7 @@ MCP calls submit/read; they never hold a tool request open for a whole investiga
 The existing provider ledger and business checkpointer own paid replay and observations.
 """
 import asyncio
+from contextvars import copy_context
 import json
 from pathlib import Path
 from typing import Literal
@@ -34,6 +35,9 @@ class HarnessConsultations:
         self.depth_content = depth_guidance(research_depth)
         self.tasks = {}
         self.parent = None
+        # A child outlives the individual MCP tool invocation. Keep the admitted
+        # run context, not that invocation's soon-expired memory permission guard.
+        self.execution_context = copy_context()
 
     def tools(self):
         @tool
@@ -96,7 +100,8 @@ class HarnessConsultations:
                            if isinstance(m, ToolMessage) and m.status == 'success'
                            and m.name in review_tool_names([g.tool.name for g in self.grants])]
         initial = {'question':question, 'messages':source_messages}
-        self.tasks[key] = asyncio.create_task(self.run(key, record, initial, body))
+        self.tasks[key] = asyncio.create_task(self.run(key, record, initial, body),
+                                             context=self.execution_context.copy())
         return dict(task_id=key, status='running', read_tool='read_research_agent_result')
 
     def child(self, key):
@@ -105,6 +110,23 @@ class HarnessConsultations:
             checkpointer=self.saver, thread_id=self.tid+':consult:'+key,
             check=self.parent.access if self.parent else self.check,
             scope=self.scope, stop_on_tool_error=True)
+
+    def settled_scope_failure(self, key, record):
+        """Explicit recovery may replay received output after a host-scope fault.
+
+        This never authorizes a failed paid request; any unknown/pending usage
+        still requires its separate signed recovery. Live grants are rechecked.
+        """
+        if record.get('error_type') != 'WorkingMemoryAccessDenied':
+            return False
+        self.check()
+        with self.budget.store.connection() as db:
+            rows = db.execute('''SELECT status, actual_micros, response FROM fin_model_dispatch
+                WHERE owner_id=%s AND budget_id=%s AND basis->>'harness_execution_scope'=%s
+                AND basis->>'harness_dispatch_lane'=%s''',
+                (self.budget.owner, self.budget.budget, record['scope'], 'consult:'+key)).fetchall()
+        return bool(rows) and all(r['status']=='received' and type(r['actual_micros']) is int
+            and isinstance(r['response'], dict) and not r['response'].get('stop_required', True) for r in rows)
 
     async def recover_cancelled(self, previous_run_id, audit_root):
         """Resume only an explicitly authorized cancelled consultation, with its exact request.
@@ -130,6 +152,7 @@ class HarnessConsultations:
             return
         for path, record in candidates:
             stopped_record = record
+            scope_replay = await asyncio.to_thread(self.settled_scope_failure, path.stem, record)
             # An explicit run recovery may retry a known failed read. Check the
             # actual saved receipt and granted effect, not just an error string.
             # Paid unknown requests still require their separate provider permit.
@@ -144,7 +167,7 @@ class HarnessConsultations:
                     for m in history)
             # A checked zero-dispatch recovery failure cannot replace the prior
             # paid checkpoint. Follow its immutable history, with both proofs.
-            if record.get('error_type') != 'CancelledError' and not failed_read:
+            if record.get('error_type') != 'CancelledError' and not failed_read and not scope_replay:
                 thread, run = record['scope'].split(':')
                 prepared = verified_preparation_recovery(audit_root,thread,run,
                     secret=self.environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
@@ -163,9 +186,9 @@ class HarnessConsultations:
                 raise RuntimeError('consultation_recovery_execution_mismatch')
             permit = verified_permit(audit_root,self.tid,origin_run,
                                      secret=self.environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
-            if not permit and not failed_read:
+            if not permit and not failed_read and not scope_replay:
                 raise RuntimeError('consultation_recovery_requires_explicit_paid_retry_authorization')
-            if record.get('error_type') != 'CancelledError' and not failed_read:
+            if record.get('error_type') != 'CancelledError' and not failed_read and not scope_replay:
                 raise RuntimeError('consultation_failure_requires_separate_reconciliation')
             key=path.stem
             if not await self.child(key).state():
@@ -180,7 +203,7 @@ class HarnessConsultations:
             request=record['request']
             body=request['report']['narrative_markdown'] if request['report'] else request['context']
             self.tasks[key]=asyncio.create_task(self.run(key,resumed,{},body,
-                previous_scope=previous_scope,audit_root=audit_root))
+                previous_scope=previous_scope,audit_root=audit_root), context=self.execution_context.copy())
 
     async def run(self, key, record, initial, body, *, previous_scope=None, audit_root=None):
         request = record['request']

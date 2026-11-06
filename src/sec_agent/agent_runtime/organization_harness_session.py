@@ -249,7 +249,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
             execution_id=tid, run_id=rid, manifest_digest=grant['manifest_digest'], authority=dispatch_authority,
             prices=budget.prices[options['model']], provider=options['provider'], basis=options['token_budget_basis'],
             reservation_micros=role['reservation_micros'], reservation_basis=role['reservation_basis'],
-            receipts=run_directory / 'wire', wire_usage=lambda _: None, public_sink=phase_arguments['public_sink'])
+            receipts=run_directory / 'wire', wire_usage=lambda _: None, public_sink=phase_arguments['public_sink'],
+            dispatch_lane='author' if consultations else None)
         key = environment[options['provider_key_env']]
         transport = HarnessProviderTransport(dispatch, protocol=options['protocol'], endpoint=options['provider_endpoint'],
             provider_headers={'Authorization': 'Bearer ' + key}, token=token)
@@ -351,6 +352,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 if recovered is not None:
                     _persist(run_directory / 'turn.private.json', {**recovered, 'reused_from_run': action['previous_run_id']})
                     return await project(state, {**recovered, 'reused_from_run': action['previous_run_id']})
+                if consultations:
+                    await consultations.recover_cancelled(action['previous_run_id'],phase_arguments['settings']['audit_root'])
             if challenge:
                 selected, original = challenge
                 if not opinion_path.exists():

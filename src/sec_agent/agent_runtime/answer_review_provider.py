@@ -90,7 +90,7 @@ def fit_review_receipts(body, limit, *, keep_current=False):
 
 async def independent_review(*, selected, message, question, bridge, budget, environment,
                              model, scope, command_id, authority, basis, as_of, public_sink, previous_scope=None, audit_root=None,
-                             predecessor_scope=None, assignment_kind='review', method_content=''):
+                             predecessor_scope=None, assignment_kind='review', method_content='', dispatch_lane=None):
     prices = budget.prices.get(model)
     if model != 'gpt-6.1-sol' or not prices or prices.currency != 'USD' or not environment.get('OPENAI_API_KEY'):
         raise ValueError('answer_review_provider_not_configured')
@@ -145,6 +145,8 @@ async def independent_review(*, selected, message, question, bridge, budget, env
             reserve = ((len(wire.encode()) + 2048) * prices.input_miss + profile.max_output_tokens * prices.output + 999999)//1000000
             policy = dict(harness_execution_scope=scope, token_budget=profile.model_dump(mode='json'), price=asdict(prices))
             policy['review_projection'] = 'preserve_current_batch'
+            if dispatch_lane is not None:
+                policy['harness_dispatch_lane'] = dispatch_lane
             if saved and saved['status'] == 'unknown' and previous_scope and audit_root and saved['basis'].get('harness_execution_scope') == previous_scope:
                 from sec_agent.adapters.explicit_run_recovery import verified_permit
                 retry_key = key + ':retry:' + str(saved['call_id'])

@@ -13,6 +13,56 @@ def db_code(native, body):
     return native.compose('exec', '-T', 'api', 'python', '-c', prelude + body)
 
 
+def test_consultation_lanes_share_budget_and_fail_closed(native):
+    output = db_code(native, '''
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+s.create_budget('alice','consultation-lanes','USD',1000,0)
+def reserve(key,lane,reserved=100):
+    basis={'harness_execution_scope':'same-run'}
+    if lane is not None: basis['harness_dispatch_lane']=lane
+    return s.reserve('alice','consultation-lanes',key,key,reserved,basis,
+                     currency='USD',execution_scope='same-run')
+def blocked(key,lane):
+    try: reserve(key,lane)
+    except DispatchBlocked: return
+    raise AssertionError('unexpected dispatch '+key)
+reserve('review','consult:chosen')
+reserve('author','author')
+blocked('second-author','author')
+blocked('second-review','consult:chosen')
+blocked('legacy-caller',None)
+s.received('alice','consultation-lanes','author',{'stop_required':False},10)
+reserve('author-next','author')
+s.unknown('alice','consultation-lanes','review')
+blocked('another-child','consult:other')
+s.received('alice','consultation-lanes','author-next',{'stop_required':False},10)
+blocked('author-after-unknown','author')
+assert s.snapshot('alice','consultation-lanes')['held']==100
+# Explicit failure with known usage also blocks all lanes.
+s.create_budget('alice','known-failure','USD',1000,0)
+s.reserve('alice','known-failure','x','x',100,{'harness_execution_scope':'r','harness_dispatch_lane':'child'},currency='USD',execution_scope='r')
+s.received('alice','known-failure','x',{'stop_required':True},10)
+try: s.reserve('alice','known-failure','y','y',100,{'harness_execution_scope':'r','harness_dispatch_lane':'author'},currency='USD',execution_scope='r')
+except DispatchBlocked: pass
+else: raise AssertionError('known failure bypassed')
+# Concurrent lanes still compete atomically for the same money.
+s.create_budget('alice','lane-cap','USD',1000,0)
+barrier=Barrier(2)
+def competing(lane):
+    barrier.wait()
+    try:
+        s.reserve('alice','lane-cap',lane,lane,600,{'harness_execution_scope':'r','harness_dispatch_lane':lane},currency='USD',execution_scope='r')
+        return True
+    except DispatchBlocked: return False
+with ThreadPoolExecutor(2) as pool: results=list(pool.map(competing,['author','child']))
+assert sum(results)==1
+assert s.snapshot('alice','lane-cap')['held']==600
+print(json.dumps({'parallel_author_review':'pass','same_lane_serial':'pass','unknown_global_stop':'pass','known_failure_global_stop':'pass','atomic_shared_budget':'pass'}))
+''')
+    native.save('consultation_lanes', json.loads(output))
+
+
 def test_harness_execution_scope_durable_stop_and_independent_child(native):
     output = db_code(native, '''
 s.create_budget('alice','harness-scopes','USD',10000,0)

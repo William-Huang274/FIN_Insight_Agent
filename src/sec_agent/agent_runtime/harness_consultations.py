@@ -102,7 +102,40 @@ class HarnessConsultations:
             check=self.parent.access if self.parent else self.check,
             scope=self.scope, stop_on_tool_error=True)
 
-    async def run(self, key, record, initial, body):
+    async def recover_cancelled(self, previous_run_id, audit_root):
+        """Resume only an explicitly authorized cancelled consultation, with its exact request.
+
+        The provider's existing recovery verifies each unknown call and wire fingerprint.
+        This does not grant retries or transform a failed task into a fresh assignment.
+        """
+        from sec_agent.adapters.explicit_run_recovery import verified_permit
+        previous_scope = self.tid+':'+previous_run_id
+        candidates = [(p, json.loads(p.read_text(encoding='utf8'))) for p in self.directory.glob('*.json')]
+        candidates = [(p,r) for p,r in candidates if r['scope']==previous_scope
+                      and r['status']!='completed']
+        if not candidates:
+            return
+        permit = verified_permit(audit_root,self.tid,previous_run_id,
+                                 secret=self.environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
+        if not permit:
+            raise RuntimeError('consultation_recovery_requires_explicit_paid_retry_authorization')
+        for path, record in candidates:
+            if record.get('error_type') != 'CancelledError':
+                raise RuntimeError('consultation_failure_requires_separate_reconciliation')
+            key=path.stem
+            if not await self.child(key).state():
+                raise RuntimeError('consultation_recovery_checkpoint_missing')
+            # Preserve the stopped task independently from the mutable status pointer.
+            _persist(self.directory/'history'/key/(previous_run_id+'.json'),record)
+            resumed={k:v for k,v in record.items() if k!='error_type'}
+            resumed.update(status='running',scope=self.tid+':'+self.rid,previous_scope=previous_scope)
+            _persist(path,resumed)
+            request=record['request']
+            body=request['report']['narrative_markdown'] if request['report'] else request['context']
+            self.tasks[key]=asyncio.create_task(self.run(key,resumed,{},body,
+                previous_scope=previous_scope,audit_root=audit_root))
+
+    async def run(self, key, record, initial, body, *, previous_scope=None, audit_root=None):
         request = record['request']
         try:
             child = self.child(key)
@@ -113,7 +146,8 @@ class HarnessConsultations:
                 bridge=child, budget=self.budget, environment=self.environment, model=self.model,
                 scope=record['scope'], command_id='consult-'+key, authority=child.model_access,
                 basis=self.basis, as_of=self.as_of, public_sink=self.public_sink,
-                assignment_kind=request['purpose'], method_content=request['method_text'])
+                assignment_kind=request['purpose'], method_content=request['method_text'],
+                dispatch_lane='consult:'+key,previous_scope=previous_scope,audit_root=audit_root)
             self.check()
             _persist(self.directory/(key+'.json'), {**record,'status':'completed','opinion':opinion})
         except BaseException as exc:

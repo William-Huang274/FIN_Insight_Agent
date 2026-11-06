@@ -62,6 +62,7 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
         tools = {t.name for t in (await kw['business'].list_tools(None, None)).tools}
         assert {'browse_context', 'read_research_source', 'calculate_research_metric', 'save_research_report'} <= tools
         assert ('consult_research_agent' in tools) == consultation
+        assert kw['dispatch'].dispatch_lane == ('author' if consultation else None)
         starts.append('local')
         yield 'http://127.0.0.1:9'
     @asynccontextmanager

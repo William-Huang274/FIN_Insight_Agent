@@ -30,7 +30,7 @@ def _bytes(value):
 class HarnessDispatchHost:
     def __init__(self, *, store, owner, budget, execution_id, run_id, manifest_digest,
                  authority, prices, basis, provider, reservation_micros,
-                 reservation_basis, receipts, wire_usage, public_sink=None):
+                 reservation_basis, receipts, wire_usage, public_sink=None, dispatch_lane=None):
         self.store, self.owner, self.budget = store, owner, budget
         self.store.require_runtime_role()
         self.execution_id, self.run_id = str(UUID(execution_id)), str(UUID(run_id))
@@ -50,6 +50,7 @@ class HarnessDispatchHost:
         self.lock = Lock()
         self._wire_pending = None
         self.public_sink = public_sink
+        self.dispatch_lane = dispatch_lane
 
     def _public(self, request_id, event):
         if self.public_sink:
@@ -101,6 +102,8 @@ class HarnessDispatchHost:
                       'price': asdict(self.prices), 'provider': self.provider,
                       'reservation_micros': self.reservation,
                       'reservation_basis': self.reservation_basis}
+            if self.dispatch_lane is not None:
+                policy['harness_dispatch_lane'] = self.dispatch_lane
             saved = self._persist(request_id, 'request', request)
             fingerprint = sha256(_bytes({'request': saved['sha256'], 'policy': policy})).hexdigest()
             prior = self.store.reserve(self.owner, self.budget, key, fingerprint,

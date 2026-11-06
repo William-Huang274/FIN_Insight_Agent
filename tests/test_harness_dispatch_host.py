@@ -86,6 +86,15 @@ def finish(reason='stop'):
     return [{'type':'text-delta','text':'unchanged output'}, {'type':'finish','reason':{'kind':reason}}]
 
 
+def test_dispatch_lane_is_host_policy_not_model_argument(setup):
+    host, args, grant, meters, request = setup
+    host = HarnessDispatchHost(**args, dispatch_lane='author')
+    request['harness_dispatch_lane'] = 'pretend-child'
+    host.reserve(str(uuid4()), request)
+    row = next(iter(args['store'].rows.values()))
+    assert row['basis']['harness_dispatch_lane'] == 'author'
+
+
 def test_real_router_auth_reserve_wire_settle_and_idempotent_ack(setup):
     host, args, grant, meters, request = setup
     public = []

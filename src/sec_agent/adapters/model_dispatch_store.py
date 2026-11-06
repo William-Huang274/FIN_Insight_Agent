@@ -127,6 +127,9 @@ class ModelDispatchStore:
         amount(reserved, positive=True)
         if not key or not fingerprint or not isinstance(basis, dict) or not basis:
             raise ValueError('dispatch_binding_missing')
+        lane = basis.get('harness_dispatch_lane')
+        if lane is not None and (not isinstance(lane, str) or not lane.strip() or len(lane) > 160):
+            raise ValueError('invalid_harness_dispatch_lane')
         with self.connection() as db:
             envelope = self._budget(db, owner, budget)
             if currency != envelope['currency']:
@@ -145,9 +148,15 @@ class ModelDispatchStore:
                     raise DispatchBlocked('dispatch_execution_scope_mismatch')
                 blocked = db.execute('''SELECT 1 FROM fin_model_dispatch
                     WHERE owner_id=%s AND budget_id=%s AND basis->>'harness_execution_scope'=%s
-                    AND (status != 'received' OR actual_micros IS NULL
-                         OR response->>'stop_required'='true') LIMIT 1''',
-                    (owner, budget, execution_scope)).fetchone()
+                    AND (
+                        (status='dispatched' AND (%s::text IS NULL
+                            OR basis->>'harness_dispatch_lane' IS NULL
+                            OR basis->>'harness_dispatch_lane'=%s))
+                        OR status='unknown'
+                        OR (status='received' AND actual_micros IS NULL)
+                        OR response->>'stop_required'='true'
+                    ) LIMIT 1''',
+                    (owner, budget, execution_scope, lane, lane)).fetchone()
                 if blocked:
                     raise DispatchBlocked('harness_execution_has_unresolved_or_failed_call')
             floor = 0 if delivery else envelope['delivery_floor_micros']

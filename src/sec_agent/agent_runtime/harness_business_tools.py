@@ -18,6 +18,7 @@ from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.runnables.config import set_config_context
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode
+from langsmith import tracing_context
 from mcp.server import Server
 from mcp import types
 
@@ -179,7 +180,7 @@ class HarnessBusinessTools:
         self.stop_on_tool_error = stop_on_tool_error
         self.note_versions = note_versions
         self.failed_receipt = None
-        self.config = {'configurable': {'thread_id': thread_id}}
+        self.config = {'configurable': {'thread_id': thread_id}, 'callbacks': []}
         self.tools = {g.tool.name: g.tool for g in grants}
         self.effects = {g.tool.name: g.effect for g in grants}
         self.checkpoint_only = {g.tool.name for g in grants
@@ -218,8 +219,15 @@ class HarnessBusinessTools:
         # replay/checkpoint callbacks belong to that outer run, not this
         # independent, persistent tool ledger. Retain other ContextVars (notably
         # the finance authorization scope), replacing only Runnable context.
-        with set_config_context(self.config) as context:
-            return await asyncio.create_task(method(*args, **kwargs), context=context)
+        # This inner graph is a durable receipt ledger, not another research
+        # execution. Tracing each turn's entire accumulated state retains large
+        # duplicate inputs/outputs under the long-lived outer run. The native
+        # session events, paid-call ledger and ToolMessages remain the audit.
+        # Clear both Runnable callbacks and ambient LangSmith parentage only
+        # inside this call; authorization and the outer run's tracing survive.
+        with tracing_context(enabled=False, parent=False):
+            with set_config_context(self.config) as context:
+                return await asyncio.create_task(method(*args, **kwargs), context=context)
 
     async def initialize(self, admitted_state, *, recovering=False, failed_receipt_ids=None):
         """Import genuine old receipts once, never an old generated summary."""

@@ -9,6 +9,29 @@ def anyio_backend():
     return 'asyncio'
 
 
+@pytest.mark.anyio
+async def test_receipt_checkpoint_does_not_retain_outer_trace_but_keeps_authority():
+    from contextvars import ContextVar
+    from langsmith import tracing_context
+    from langsmith.run_helpers import get_tracing_context
+    from langchain_core.runnables.config import var_child_runnable_config
+    authority = ContextVar('receipt_test_authority', default=None)
+    token = authority.set('authorized-project')
+    bridge = HarnessBusinessTools(grants=[], checkpointer=None, thread_id='t', check=lambda: None)
+    async def observe():
+        assert get_tracing_context()['enabled'] is False
+        assert get_tracing_context()['parent'] is None
+        assert var_child_runnable_config.get()['callbacks'] == []
+        assert authority.get() == 'authorized-project'
+        return 'receipt'
+    try:
+        with tracing_context(enabled=True):
+            assert await bridge._checkpoint_call(observe) == 'receipt'
+            assert get_tracing_context()['enabled'] is True
+    finally:
+        authority.reset(token)
+
+
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import tool
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver

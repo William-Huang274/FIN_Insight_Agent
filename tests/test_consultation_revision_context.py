@@ -2,6 +2,22 @@ import json
 
 from langchain_core.messages import ToolMessage
 from sec_agent.agent_runtime.revision_context import consultation_revision_context
+
+
+def test_predraft_hypothesis_review_is_navigation_not_manuscript_approval():
+    sentence = '这组股票的跌幅不能单独区分未来需求约束与当前建设成本上升。'
+    payload = {'status': 'completed', 'purpose': 'review', 'task_id': 'hypotheses',
+               'reviewed_report_digest': None, 'opinion': sentence}
+    message = ToolMessage(name='read_research_agent_result', tool_call_id='actual-review',
+                          content=json.dumps(payload, ensure_ascii=False))
+    result = consultation_revision_context([message], '', sentence)
+    assert result['review_scope'] == 'delegated_research_question'
+    assert result['reviewed_report_digest'] is None
+    assert result['status'] == 'navigation_only_not_a_verdict'
+    assert result['related_wording'][0]['opinion_excerpt'] == sentence
+    payload['purpose'] = 'investigate'
+    message.content = json.dumps(payload)
+    assert consultation_revision_context([message], '', sentence) is None
 from sec_agent.research_foundation.research_depth import depth_guidance
 import pytest
 

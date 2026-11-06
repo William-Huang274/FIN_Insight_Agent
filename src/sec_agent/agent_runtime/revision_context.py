@@ -7,18 +7,23 @@ from .source_references import REFERENCE_TOKEN
 
 
 def consultation_revision_context(messages, original, candidate):
-    """Actual imported report review only; not operator diagnoses or investigations."""
+    """Actual imported review of a report or hypotheses; never an investigation verdict."""
     for message in reversed(messages):
         if getattr(message, 'name', '') != 'read_research_agent_result' or getattr(message, 'status', '') != 'success':
             continue
-        result = json.loads(message.content)
-        if result.get('status') != 'completed' or result.get('purpose') != 'review' or not result.get('reviewed_report_digest'):
+        try:
+            result = json.loads(message.content)
+        except (ValueError, TypeError):
             continue
-        return {'review_receipt': message.tool_call_id, 'reviewed_report_digest': result['reviewed_report_digest'],
+        if (not isinstance(result, dict) or result.get('status') != 'completed'
+                or result.get('purpose') != 'review' or not isinstance(result.get('opinion'), str)):
+            continue
+        return {'review_receipt': message.tool_call_id, 'reviewed_report_digest': result.get('reviewed_report_digest'),
+                'review_scope': 'report_version' if result.get('reviewed_report_digest') else 'delegated_research_question',
                 'status': 'navigation_only_not_a_verdict',
                 'related_wording': related_wording(original, candidate, result['opinion']),
                 'review_readback': {'tool': 'read_research_agent_result', 'arguments': {'task_id': result['task_id']}},
-                'meaning': 'Exact current wording beside the actual review; matches may be unrelated. Author decides whether the reasoning is consistent. Saved is not reviewed.'}
+                'meaning': 'Exact current wording beside the actual review; matches may be unrelated. A review of hypotheses is not review of this manuscript. Author decides whether the reasoning is consistent. Saved is not reviewed.'}
     return None
 
 

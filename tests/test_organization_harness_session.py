@@ -105,6 +105,11 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
         'session_id': 'native-fixture', 'update': {'sessionUpdate': 'agent_message_chunk',
             'content': {'type': 'text', 'text': 'Original answer'}}}) + '\n', encoding='utf8')
     new_run = str(uuid4())
+    options['stop_on_tool_error'] = True
+    with (directory / rid / 'events.private.jsonl').open('a', encoding='utf8') as stream:
+        stream.write(json.dumps({'session_id': 'native-fixture', 'update': {
+            'sessionUpdate': 'tool_call_update', 'toolCallId': 'native-unknown', 'status': 'failed',
+            'content': [{'content': {'text': 'Error: unknown tool "mcp__financial__READ_RESEARCH_SOURCE"'}}]}}) + '\n')
     recovery = dict(grant, report_command_id=str(uuid4()), report_action_request={
         'action': 'recover', 'previous_run_id': rid, 'message': 'Continue', 'checkpoint_id': str(uuid4())})
     saved['values'] = initial
@@ -115,6 +120,8 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
     assert result['task_outcome']['run_id'] == new_run
     assert starts == ['local']  # no private service, ACP process or provider replay
     assert json.loads((directory / new_run / 'turn.private.json').read_text())['reused_from_run'] == rid
+    feedback = json.loads((directory / new_run / 'tool-recovery.json').read_text())
+    assert feedback['native_tool_failures'][0]['available_exact_names'] == ['mcp__financial__read_research_source']
 
     if report_review:
         from sec_agent.agent_runtime.answer_review import PREFIX

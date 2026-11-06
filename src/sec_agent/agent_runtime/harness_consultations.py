@@ -23,13 +23,15 @@ from .research_graph_contracts import canonical_sha256
 
 class HarnessConsultations:
     def __init__(self, *, directory, saver, grants, tid, rid, check, scope, budget,
-                 environment, model, basis, as_of, public_sink):
+                 environment, model, basis, as_of, public_sink, research_depth='standard'):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
         self.saver, self.grants, self.tid, self.rid = saver, grants, tid, rid
         self.check, self.scope, self.budget = check, scope, budget
         self.environment, self.model, self.basis = environment, model, basis
         self.as_of, self.public_sink = as_of, public_sink
+        from sec_agent.research_foundation.research_depth import depth_guidance
+        self.depth_content = depth_guidance(research_depth)
         self.tasks = {}
         self.parent = None
 
@@ -49,9 +51,11 @@ class HarnessConsultations:
             return await self.submit(question, context, purpose, use_current_report, method_ids or [], runtime.state)
 
         @tool
-        async def read_research_agent_result(task_id: str, runtime: ToolRuntime, wait_seconds: int = 20):
+        async def read_research_agent_result(task_id: str, runtime: ToolRuntime, wait_seconds: int = 0):
             """Read the delegated agent's status, opinion and exact source/compute readback handles.
-            Wait 0-20 seconds per call; pending is normal work, not failure. Completed observations become
+            Calling this while pending yields execution to the host until the child finishes; no paid polling.
+            After host wake-up read once to import the result. Legacy wait_seconds accepts 0-20 seconds.
+            Continue independent work before calling this. Completed observations become
             usable in this author's source and calculation tools. Resolve a submitted consultation before delivery.
             """
             return await self.read(task_id, wait_seconds, runtime)
@@ -65,7 +69,7 @@ class HarnessConsultations:
         if not question.strip() or len(question) > 2500 or len(context) > 24000:
             raise ToolException('Provide a nonempty question up to 2500 characters and context up to 24000.')
         try:
-            method_text = preloaded_research_methods(methods)
+            method_text = self.depth_content + preloaded_research_methods(methods)
         except (ValueError, KeyError) as exc:
             raise ToolException('Read get_research_method for available method IDs.') from exc
         report = state.get('report') if use_report else None
@@ -170,7 +174,7 @@ class HarnessConsultations:
             _persist(self.directory/'history'/key/(origin_run+'.json'),record)
             if stopped_record is not record:
                 _persist(self.directory/'history'/key/(stopped_record['scope'].split(':')[1]+'.json'),stopped_record)
-            resumed={k:v for k,v in record.items() if k!='error_type'}
+            resumed={k:v for k,v in record.items() if k not in {'error_type', 'failure_code'}}
             resumed.update(status='running',scope=self.tid+':'+self.rid,previous_scope=previous_scope)
             _persist(path,resumed)
             request=record['request']
@@ -218,16 +222,53 @@ class HarnessConsultations:
             task.result()
         record = json.loads(path.read_text(encoding='utf8'))
         if record['status'] != 'completed':
-            return dict(task_id=key, status=record['status'])
+            return dict(task_id=key, status=record['status'], host_wait_before_next_model=True,
+                        next_action='After host completion, read this task once to import its result.')
         child_state = await self.child(key).state()
         existing = {m.id for m in runtime.state.get('messages', []) if m.id}
         messages = [m for m in child_state.get('messages', []) if m.id not in existing]
         result = dict(task_id=key,status='completed',opinion=record['opinion'],
+                      purpose=record['request']['purpose'],
+                      reviewed_report_digest=canonical_sha256(record['request']['report']) if record['request']['report'] else None,
                       target_digest=canonical_sha256(record['request']),
                       source_readback=[{'tool_call_id':m.tool_call_id,'tool':m.name}
                           for m in messages if isinstance(m, ToolMessage) and m.status=='success'])
         return Command(update={'messages':[*messages, ToolMessage(name='read_research_agent_result',
             tool_call_id=runtime.tool_call_id, content=json.dumps(result,ensure_ascii=False))]})
+
+    async def dispatch_ready(self, timeout=20):
+        """Wait outside model dispatch and its financial reservation.
+
+        Only explicit result reads suspend the author, not task submission. Derive
+        the wait from durable receipts so cancel/recovery cannot forget it. The
+        private host endpoint long-polls small state, never the large LLM request.
+        """
+        self.check()
+        waiting = {}
+        if self.parent:
+            for message in (await self.parent.state()).get('messages', []):
+                if isinstance(message, ToolMessage) and message.name == 'read_research_agent_result' and message.status == 'success':
+                    result = json.loads(message.content)
+                    if isinstance(result, dict) and result.get('task_id'):
+                        waiting[result['task_id']] = result.get('status') != 'completed'
+        tasks = []
+        for key, pending in waiting.items():
+            if not pending:
+                continue
+            task = self.tasks.get(key)
+            if task is None:
+                record = json.loads((self.directory/(key+'.json')).read_text(encoding='utf8'))
+                if record['status'] != 'completed':
+                    raise RuntimeError('consultation_interrupted_reconcile_provider_ledger_before_resume')
+            else:
+                tasks.append(task)
+        if tasks:
+            await asyncio.wait(tasks, timeout=timeout)
+        self.check()
+        for task in tasks:
+            if task.done():
+                task.result()  # failure closes admission; never a fake completion
+        return {'status': 'waiting' if any(not t.done() for t in tasks) else 'ready'}
 
     async def ensure_finished(self):
         if any(not task.done() for task in self.tasks.values()):

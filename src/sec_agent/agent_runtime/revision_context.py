@@ -1,8 +1,25 @@
 """Locate wording shared by an opinion and a manuscript. Matches are navigation only."""
 import re
+import json
 from math import sqrt
 
 from .source_references import REFERENCE_TOKEN
+
+
+def consultation_revision_context(messages, original, candidate):
+    """Actual imported report review only; not operator diagnoses or investigations."""
+    for message in reversed(messages):
+        if getattr(message, 'name', '') != 'read_research_agent_result' or getattr(message, 'status', '') != 'success':
+            continue
+        result = json.loads(message.content)
+        if result.get('status') != 'completed' or result.get('purpose') != 'review' or not result.get('reviewed_report_digest'):
+            continue
+        return {'review_receipt': message.tool_call_id, 'reviewed_report_digest': result['reviewed_report_digest'],
+                'status': 'navigation_only_not_a_verdict',
+                'related_wording': related_wording(original, candidate, result['opinion']),
+                'review_readback': {'tool': 'read_research_agent_result', 'arguments': {'task_id': result['task_id']}},
+                'meaning': 'Exact current wording beside the actual review; matches may be unrelated. Author decides whether the reasoning is consistent. Saved is not reviewed.'}
+    return None
 
 
 def _terms(text):
@@ -16,6 +33,7 @@ def related_wording(original, candidate, opinion):
     lines = [(s.strip(), _terms(s)) for s in opinion.splitlines()
              if len(s.strip()) >= 16 and not s.lstrip().startswith(('#', 'PASSAGE', '`PASSAGE'))]
     matches = []
+    headings = [(m.start(), m[0]) for m in re.finditer(r'(?m)^#{1,6} .+$', candidate)]
     for match in re.finditer(r'[^。！？!?\n]+[。！？!?]?', candidate):
         sentence = match[0].strip()
         if not lines or len(sentence) < 12 or sentence.startswith('#'):
@@ -26,9 +44,18 @@ def related_wording(original, candidate, opinion):
         if best[0] >= 0.15:
             start = match.start() + match[0].index(sentence)
             matches.append((best[0], {'offset':start, 'excerpt':sentence[:500],
+                'section': next((title for offset, title in reversed(headings) if offset <= start), ''),
                 'verbatim_in_base':sentence in original, 'opinion_excerpt':best[1][:500]}))
-    # Show the strongest links plus the last related restatement, in manuscript order.
-    selected = sorted(matches, key=lambda pair:-pair[0])[:5] + matches[-1:]
+    # Cover distinct argument sections before filling by similarity. Otherwise
+    # repeated legal terms can crowd out a later investment restatement.
+    ranked = sorted(matches, key=lambda pair:-pair[0])
+    sections = {}
+    for pair in ranked:
+        sections.setdefault(pair[1]['section'], pair)
+    selected = list(sections.values())[:9]
+    offsets = {p[1]['offset'] for p in selected}
+    selected += [p for p in ranked if p[1]['offset'] not in offsets][:max(0, 11-len(selected))]
+    selected += matches[-1:]
     if matches:
         last = matches[-1][1]
         offset = last['offset']

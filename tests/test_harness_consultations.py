@@ -180,8 +180,39 @@ async def test_explicit_recovery_retries_saved_failed_read_not_arbitrary_failure
         old=json.loads((tmp_path/'jobs'/'history'/key/'old.json').read_text())
         assert old['status']=='failed' and old['failure_code'].startswith('answer_review_source_tool_failed:')
         assert json.loads((tmp_path/'jobs'/(key+'.json')).read_text())['status']=='completed'
+        assert 'failure_code' not in json.loads((tmp_path/'jobs'/(key+'.json')).read_text())
         assert any(m.type=='tool' and m.status=='error' for m in (await resumed.child(key).state())['messages'])
         await resumed.close()
+
+
+@pytest.mark.anyio
+async def test_host_wait_uses_durable_explicit_read_not_submission(tmp_path, monkeypatch):
+    finish=asyncio.Event()
+    async def provider(**kwargs):
+        await finish.wait()
+        return 'Completed independent work'
+    monkeypatch.setattr('sec_agent.agent_runtime.harness_consultations.independent_review', provider)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'state.sqlite')) as saver:
+        service=HarnessConsultations(directory=tmp_path/'jobs',saver=saver,grants=[],tid='t',rid='r',
+            check=lambda:None,scope=lambda:__import__('contextlib').nullcontext(),budget=object(),environment={},
+            model='gpt-6.1-sol',basis={},as_of='2026-11-06',public_sink=lambda x:None)
+        bridge=HarnessBusinessTools(grants=service.tools(),checkpointer=saver,thread_id='t',check=lambda:None)
+        service.parent=bridge
+        await bridge.initialize({'question':'original','messages':[]})
+        result=await bridge.execute('consult_research_agent',dict(question='Independent issue',context='Why it matters',purpose='investigate'))
+        key=json.loads(result.content)['task_id']
+        assert await service.dispatch_ready(timeout=0)=={'status':'ready'}  # other useful author work allowed
+        await bridge.execute('read_research_agent_result',dict(task_id=key,wait_seconds=0))
+        assert await service.dispatch_ready(timeout=0)=={'status':'waiting'}
+        waiter=asyncio.create_task(service.dispatch_ready(timeout=10))
+        await asyncio.sleep(.01); waiter.cancel()
+        with pytest.raises(asyncio.CancelledError): await waiter
+        assert not service.tasks[key].cancelled()  # cancelling host wait is not losing child state
+        finish.set();await service.tasks[key]
+        assert await service.dispatch_ready(timeout=0)=={'status':'ready'}
+        got=await bridge.execute('read_research_agent_result',dict(task_id=key))
+        assert json.loads(got.content)['status']=='completed'
+        await service.close()
 
 
 @pytest.mark.anyio

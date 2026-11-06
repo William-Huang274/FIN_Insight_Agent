@@ -4,7 +4,7 @@ from pathlib import Path
 
 def profile_overlay(*, model, protocol, endpoint, prompt, context_window,
                     output_tokens, summary_tokens, reasoning, dispatch_plugin,
-                    compaction_threshold=.8):
+                    compaction_threshold=.8, wait_for_consultations=False):
     if protocol not in {'deepseek_messages', 'qwen_chat'}:
         raise ValueError('harness_protocol_not_qualified')
     if (not 0 < compaction_threshold < 1 or not 0 < output_tokens < context_window
@@ -38,6 +38,7 @@ def profile_overlay(*, model, protocol, endpoint, prompt, context_window,
                             'reasoningEfforts': {'off': None, reasoning: reasoning}}]}}}}]}]
     patch += [{'insert': [
         {'id': 'fin-dispatch', 'name': str(Path(dispatch_plugin).resolve()),
-         'config': {'endpoint': endpoint, 'tokenEnv': 'FIN_HARNESS_LOCAL_TOKEN'}},
+         'config': {'endpoint': endpoint, 'tokenEnv': 'FIN_HARNESS_LOCAL_TOKEN',
+                    'waitForConsultations': wait_for_consultations}},
         {'id': 'fin-acp', 'name': '@deepseek-ai/dsh-acp', 'config': {'provider': provider, 'model': model}}]}]
     return patch

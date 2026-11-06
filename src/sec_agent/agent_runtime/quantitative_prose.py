@@ -336,6 +336,11 @@ def quantitative_prose_tool(prior_answer, review_context=None):
         if opinion:
             from .revision_context import related_wording
             result['related_wording'] = related_wording(base, text if text is not None else base, opinion)
+        else:
+            from .revision_context import consultation_revision_context
+            manuscript = runtime.state.get('report', {}).get('narrative_markdown', base)
+            result['consultation_revision_context'] = consultation_revision_context(messages, manuscript,
+                text if text is not None else manuscript)
         return result
 
     return GrantedTool(check_quantitative_changes, 'read', '已观察计算与局部修订措辞核对')

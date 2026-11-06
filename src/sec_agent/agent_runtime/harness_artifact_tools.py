@@ -18,9 +18,14 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         version = runtime.state.get('report_version', 0) + 1
         result = {'saved': True, 'report_version': version, 'digest': canonical_sha256(report),
                   'review_status': 'not_assessed_in_this_record'}
+        from .revision_context import consultation_revision_context
+        context = consultation_revision_context(runtime.state.get('messages', []),
+            runtime.state.get('report', {}).get('narrative_markdown', ''), report['narrative_markdown'])
+        if context:
+            result['revision_context'] = context
         return Command(update={'report': report, 'report_version': version, 'report_draft': None,
             'report_draft_base_version': None, 'delivery': None,
-            'messages': [ToolMessage(tool_call_id=runtime.tool_call_id, content=json.dumps(result))]})
+            'messages': [ToolMessage(tool_call_id=runtime.tool_call_id, content=json.dumps(result, ensure_ascii=False))]})
 
     def save_candidate(report, base_version, runtime):
         if base_version != runtime.state.get('report_version', 0):

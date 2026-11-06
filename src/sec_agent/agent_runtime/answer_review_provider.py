@@ -144,7 +144,9 @@ async def independent_review(*, selected, message, question, bridge, budget, env
             saved = await asyncio.to_thread(budget.store.lookup, budget.owner, budget.budget, key)
             key, saved = await saved_consultation_attempt(budget.store, budget.owner, budget.budget,
                                                          key, saved, scope, dispatch_lane)
-            pressure = min(120000, profile.max_input_characters)
+            # Retain inspected originals until genuine input pressure; a tiny
+            # character trigger caused readback churn well below model capacity.
+            pressure = min(800000, profile.max_input_characters)
             legacy = bool(saved and not saved['basis'].get('review_projection'))
             raw_chars = len(wire)
             if len(wire) > pressure:

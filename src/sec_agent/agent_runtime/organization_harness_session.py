@@ -65,6 +65,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
     from sec_agent.research_foundation.organization_source_navigation import OrganizationSourceNavigation
     tid, rid = phase_arguments['thread_id'], phase_arguments['run_id']
     options = phase_arguments['settings']['harness_execution_bindings'][tid]
+    from sec_agent.research_foundation.research_depth import depth_guidance
+    depth_content = depth_guidance(options.get('research_depth', 'standard'))
     method_content = preloaded_research_methods(options.get('preloaded_research_methods', []))
     method_content += section_guidance(options.get('research_method_sections', []),
                                        include_text=options.get('include_method_section_text') is True)
@@ -199,7 +201,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
             consultations = HarnessConsultations(directory=business_directory/'consultations', saver=saver,
                 grants=list(grants), tid=tid, rid=rid, check=check, scope=scope, budget=budget,
                 environment=environment, model=reviewer, basis=options['token_budget_basis'],
-                as_of=organization.research_as_of, public_sink=phase_arguments['public_sink'])
+                as_of=organization.research_as_of, public_sink=phase_arguments['public_sink'],
+                research_depth=options.get('research_depth', 'standard'))
             grants.extend(consultations.tools())
         bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope,
             stop_on_tool_error=options.get('stop_on_tool_error') is True, note_versions=memory.export_markdown)
@@ -396,14 +399,16 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 review = json.loads(opinion_path.read_text(encoding='utf8'))
                 review_context = (original.content, review['opinion'])
 
-            async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token) as endpoint:
+            async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token,
+                    readiness=consultations.dispatch_ready if consultations else None) as endpoint:
                 prompt = research_system_prompt(bridge.tools, 'Research as of: ' + organization.research_as_of +
                     '\nRequested delivery: ' + intent + '. Save useful working understanding as needed; only deliver the requested artifact form.'+
-                    '\nUse returned citation_handle values in source_id fields and [REF-...] citations. They bind exact observed originals/calculations; do not shorten them further. Original long IDs remain compatible.') + method_content
+                    '\nUse returned citation_handle values in source_id fields and [REF-...] citations. They bind exact observed originals/calculations; do not shorten them further. Original long IDs remain compatible.') + depth_content + method_content
                 patch = profile_overlay(model=options['model'], protocol=options['protocol'], endpoint=endpoint,
                     prompt=prompt, context_window=options['context_window'], output_tokens=options['output_tokens'],
                     summary_tokens=options['summary_tokens'], reasoning=options['reasoning'],
-                    dispatch_plugin=phase_arguments['root'] / 'integrations/deepseek-harness/dispatch.mjs')
+                    dispatch_plugin=phase_arguments['root'] / 'integrations/deepseek-harness/dispatch.mjs',
+                    wait_for_consultations=consultations is not None)
                 patch_path = run_directory / 'profile.patch.json'
                 _persist(patch_path, patch)
                 child_env = {k: v for k, v in environment.items() if k.upper() in {

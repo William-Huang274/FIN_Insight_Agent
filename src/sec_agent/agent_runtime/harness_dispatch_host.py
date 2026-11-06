@@ -219,11 +219,20 @@ class _Unknown(BaseModel):
     chunks: list[dict]
 
 
-def dispatch_router(host, *, token):
+def dispatch_router(host, *, token, readiness=None):
     """Mount only on the per-execution loopback service, never on browser BFF."""
     if len(token.encode()) < 32:
         raise ValueError('harness_dispatch_token_requires_32_bytes')
     router = APIRouter()
+
+    @router.post('/calls/ready')
+    async def ready(authorization: str | None = Header(default=None)):
+        if not hmac.compare_digest(authorization or '', 'Bearer ' + token):
+            raise HTTPException(401, 'harness_dispatch_unauthorized')
+        try:
+            return await readiness() if readiness else {'status': 'ready'}
+        except (RuntimeError, ValueError):
+            raise HTTPException(409, 'harness_consultation_not_ready_inspect_saved_receipt') from None
 
     def invoke(authorization, method, *args, **kwargs):
         if not hmac.compare_digest(authorization or '', 'Bearer ' + token):

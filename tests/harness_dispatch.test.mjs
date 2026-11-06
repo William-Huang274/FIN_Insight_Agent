@@ -4,6 +4,24 @@ import { createServer } from 'node:http'
 import { once } from 'node:events'
 import { apply } from '../integrations/deepseek-harness/dispatch.mjs'
 
+test('host wait does not send large context, reserve budget or call provider until completion', async () => {
+  const receipts=[]; let ready=0, stream, forwarded=0
+  const server=createServer(async(req,res)=>{
+    let body='';for await(const part of req)body+=part
+    receipts.push({path:req.url,body:JSON.parse(body)})
+    res.end(JSON.stringify({status:req.url==='/calls/ready'?(++ready<4?'waiting':'ready'):req.url==='/calls/reserve'?'reserved':'saved'}))
+  })
+  server.listen(0,'127.0.0.1');await once(server,'listening')
+  process.env.FIN_TEST_DISPATCH_TOKEN='fixture'
+  try {
+    apply({on(_,handler){stream=handler}},{endpoint:`http://127.0.0.1:${server.address().port}`,tokenEnv:'FIN_TEST_DISPATCH_TOKEN',waitForConsultations:true})
+    for await(const _ of stream({messages:['large-context'.repeat(10000)]},async function*(){forwarded++;yield{type:'finish',reason:{kind:'stop'}}})){}
+    assert.equal(forwarded,1)
+    assert.equal(receipts.filter(r=>r.path==='/calls/reserve').length,1)
+    assert.deepEqual(receipts.slice(0,4).map(r=>r.body),[{},{},{},{}])
+  } finally{server.closeAllConnections();server.close();delete process.env.FIN_TEST_DISPATCH_TOKEN}
+})
+
 test('all calls including compaction settle; failed summary cannot fall through to another paid call', async () => {
   const receipts = []
   const server = createServer(async (req, res) => {

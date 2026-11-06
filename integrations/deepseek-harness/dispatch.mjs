@@ -15,10 +15,10 @@ export function apply(ctx, config) {
   const token = process.env[config.tokenEnv]
   if (!token) throw new Error('FIN dispatch credential unavailable')
   let stopped = false
-  const post = async (path, body) => {
+  const post = async (path, body, signal) => {
     const response = await fetch(new URL(path, base), {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(body), signal: AbortSignal.timeout(30_000),
+      body: JSON.stringify(body), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30_000)]) : AbortSignal.timeout(30_000),
     })
     if (!response.ok) throw new Error(`FIN dispatch host refused ${path}: ${response.status}`)
     return response.json()
@@ -31,6 +31,13 @@ export function apply(ctx, config) {
     const chunks = []
     let reserved = false, settled = false
     try {
+      if (config.waitForConsultations) {
+        // Host long-polls completion. No model request, large payload or budget
+        // reservation is sent while waiting. Cancellation remains responsive.
+        let readiness
+        do { readiness = await post('/calls/ready', {}, signal) } while (readiness.status === 'waiting')
+        if (readiness.status !== 'ready') throw new Error('FIN consultation admission failed')
+      }
       const admission = await post('/calls/reserve', { requestId, request })
       if (admission.status !== 'reserved') throw new Error('FIN request not admitted')
       reserved = true

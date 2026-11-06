@@ -12,7 +12,7 @@ from .harness_dispatch_host import dispatch_router
 
 
 @asynccontextmanager
-async def harness_local_services(*, business, dispatch, transport, token):
+async def harness_local_services(*, business, dispatch, transport, token, readiness=None):
     if len(token.encode()) < 32:
         raise ValueError('harness_local_credential_requires_32_bytes')
     mcp = business.server.streamable_http_app(streamable_http_path='/', json_response=True,
@@ -26,7 +26,7 @@ async def harness_local_services(*, business, dispatch, transport, token):
             return Response(status_code=401)
         return await call_next(request)
     app.mount('/business', mcp)
-    app.include_router(dispatch_router(dispatch, token=token))
+    app.include_router(dispatch_router(dispatch, token=token, readiness=readiness))
     app.include_router(transport.router())
     sock = socket.socket()
     sock.bind(('127.0.0.1', 0))

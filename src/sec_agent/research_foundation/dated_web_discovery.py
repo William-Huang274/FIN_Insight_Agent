@@ -504,6 +504,11 @@ class DatedWebDiscovery:
                     if self.origin_fetcher:
                         try:
                             page = await self.origin_fetcher.fetch(locator, timeout_seconds=15)
+                            if getattr(page,'origin_failure_code',None):
+                                # A successful hosted transcription does not erase
+                                # why direct origin access failed, especially when
+                                # the transcription omits the publication date.
+                                failed(candidate,'direct_original_read',ExternalSourceError(page.origin_failure_code))
                             if page.final_url == locator:
                                 canonical = publisher_canonical_url(page.html, locator) if page.html and not index else None
                                 if canonical:

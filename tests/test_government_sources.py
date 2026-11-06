@@ -110,6 +110,11 @@ def test_government_406_can_use_exact_url_transcription_without_inventing_date()
     assert page.origin_failure_code=='capture_http_status_406'
     assert hosted.calls==['https://publisher.gov/catalog']
     assert publisher_day(page.extracted_text) is None
+    reader,_,_=_reader(url='https://publisher.gov/catalog',published=None)
+    reader.discovery=DatedWebDiscovery(reader.discovery,None,
+        origin_fetcher=GovernmentSourceFetcher(NotAcceptable(),hosted))
+    feedback=_call(reader,'search',query='catalog').model_dump_json()
+    assert 'date_unverified' in feedback and 'direct_original_read:capture_http_status_406' in feedback
 
 
 def test_bill_catalog_discloses_only_dated_versions_within_cutoff():

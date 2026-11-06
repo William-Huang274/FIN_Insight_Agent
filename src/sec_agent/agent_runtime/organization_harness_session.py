@@ -254,12 +254,27 @@ async def organization_harness_session(*, native, resources, authority, check, o
             if historical and historical[-1].startswith(PREFIX):
                 command_text = historical[-1]
         if command_text.startswith(PREFIX):
-            if intent != 'answer' or not options.get('answer_review_model'):
+            if intent not in ('answer', 'report') or not options.get('answer_review_model'):
                 raise ValueError('selected_answer_review_not_enabled')
             author_binding = json.loads((session_directory / 'session-binding.json').read_text(encoding='utf8'))
             if author_binding['binding'] != binding:
                 raise ValueError('selected_answer_author_binding_changed')
-            challenge = target(command_text, admitted['messages'], author_binding['session_id'])
+            current = await bridge.state()
+            target_path = run_directory / 'review-target.json'
+            if command.get('action') == 'recover':
+                previous = directory / command['previous_run_id']
+                pointer = previous / 'answer-review-origin.json'
+                if pointer.exists():
+                    previous = directory / json.loads(pointer.read_text(encoding='utf8'))['run_id']
+                target_path = previous / 'review-target.json'
+                if target_path.exists():
+                    current = json.loads(target_path.read_text(encoding='utf8'))
+            challenge = target(command_text, admitted['messages'], author_binding['session_id'],
+                               report=current.get('report'), report_version=current.get('report_version'))
+            if challenge[0].artifact != intent:
+                raise ValueError('selected_review_artifact_intent_mismatch')
+            if challenge[0].artifact == 'report' and not target_path.exists():
+                _persist(target_path, {k: current[k] for k in ('report', 'report_version')})
 
         async def project(state, result):
             business = await bridge.state()
@@ -270,7 +285,12 @@ async def organization_harness_session(*, native, resources, authority, check, o
             if challenge:
                 selected, original = challenge
                 review = json.loads(opinion_path.read_text(encoding='utf8'))
-                delivered, response = apply_response(original.content, delivered)
+                if selected.artifact == 'report':
+                    response = {'artifact': 'report', 'reviewed_report_version': original.additional_kwargs['report_version'],
+                                'revised_report_version': business.get('report_version'),
+                                'author_response': delivered}
+                else:
+                    delivered, response = apply_response(original.content, delivered)
                 annotations['answer_review'] = {**review, **response, 'version': selected.version,
                                                 'quote': selected.quote, 'question': selected.question}
             text, citations, unresolved = render_answer_references(delivered, business)
@@ -290,7 +310,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
             delivery = business.get('delivery')
             if result.get('status') == 'completed' and result.get('text'):
                 _persist(last_delivery, {'run_id': result.get('reused_from_run', rid),
-                                         **({'answer_version': canonical_sha256(text)} if challenge else {})})
+                                         **({'answer_version': canonical_sha256(text)} if challenge and challenge[0].artifact == 'answer' else {})})
             submitted = bool(delivery) or (intent == 'answer' and bool(result['text']))
             return {**{k: business[k] for k in ('report', 'report_version', 'delivery') if k in business},
                 'messages': [*receipts, output], 'task_outcome': TaskOutcome(task_id=tid, run_id=rid,

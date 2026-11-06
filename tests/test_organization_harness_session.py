@@ -20,7 +20,8 @@ def anyio_backend():
 
 
 @pytest.mark.anyio
-async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_path, monkeypatch):
+@pytest.mark.parametrize('report_review', [False, True])
+async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_path, monkeypatch, report_review):
     _, args, auth, _, _ = setup
     tid, rid = auth['execution_id'], auth['authorized_run_id']
     binary = tmp_path / 'pinned-fixture'
@@ -38,7 +39,7 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
     budget = SimpleNamespace(**{k: args[k] for k in ('store', 'owner', 'budget')},
         prices={'fixture-model': args['prices']}, roles={'lead': {
             'reservation_micros': args['reservation_micros'], 'reservation_basis': args['reservation_basis']}})
-    phases = dict(thread_id=tid, run_id=rid, settings={'harness_execution_bindings': {tid: options}},
+    phases = dict(thread_id=tid, run_id=rid, settings={'harness_execution_bindings': {tid: options}, 'audit_root':str(tmp_path/'audit')},
         execution=execution, profile={}, budget_scope=budget, public_sink=lambda _: None,
         root=Path(__file__).resolve().parents[1])
     environment = dict(FINSIGHT_HARNESS_STATE_ROOT=str(tmp_path / 'sessions'),
@@ -76,12 +77,17 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
     common = dict(native=native, resources=None, authority=lambda: auth, check=lambda: None,
         organization=organization, phase_arguments=phases, config={}, grant=grant,
         expected_input={'question': grant['question']}, environment=environment)
-    initial = {'question': grant['question'], 'messages': [HumanMessage(content=grant['question'])]}
+    report = {'title': 'Complete report', 'narrative_markdown': 'Full original report. '*20, 'citations': {}}
+    initial = {'question': grant['question'], 'messages': [HumanMessage(content=grant['question'])],
+               **({'report': report, 'report_version': 4} if report_review else {})}
+    if report_review:
+        saved['values'] = initial
     async with module.organization_harness_session(**common) as graph:
         result = await graph.ainvoke(initial)
     assert result['task_outcome']['execution_status'] == 'submitted'
     assert result['messages'][-1].content == 'Original answer'
     assert starts == ['local']
+    delivered_message = result['messages'][-1]
     # Success was durable before the root graph result could be committed.
     directory = tmp_path / 'sessions' / tid
     _persist(directory / 'session-binding.json', {'binding': binding, 'session_id': 'native-fixture'})
@@ -101,6 +107,51 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
     assert result['task_outcome']['run_id'] == new_run
     assert starts == ['local']  # no private service, ACP process or provider replay
     assert json.loads((directory / new_run / 'turn.private.json').read_text())['reused_from_run'] == rid
+
+    if report_review:
+        from sec_agent.agent_runtime.answer_review import PREFIX
+        from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+        from sec_agent.agent_runtime import answer_review_provider
+        options['answer_review_model'] = 'gpt-6.1-sol'
+        review_run = str(uuid4())
+        command = PREFIX + json.dumps(dict(artifact='report', version=canonical_sha256(report),
+            quote='', offset=0, question='Check the material explanations.'))
+        review_grant = dict(grant, report_command_id=str(uuid4()), report_action_request={
+            'action':'continue', 'delivery_intent':'report', 'require_report_review':False,
+            'message':command, 'previous_run_id':new_run, 'checkpoint_id':str(uuid4())})
+        saved['values'] = {**initial, 'messages': [*initial['messages'],delivered_message]}
+        bridge_holder = {}
+        @asynccontextmanager
+        async def report_local(**kw):
+            bridge_holder['bridge'] = kw['business']
+            yield 'http://127.0.0.1:9'
+        async def reviewer(**kw):
+            assert kw['message'].content == report['narrative_markdown']
+            assert kw['selected'].artifact == 'report'
+            return 'Independent report opinion.'
+        @asynccontextmanager
+        async def report_acp(**kw):
+            async def prompt(text):
+                data = json.loads(text)
+                assert data['original_answer'] == report['narrative_markdown']
+                assert data['independent_review'] == 'Independent report opinion.'
+                assert data['report_version'] == 4
+                receipt = await bridge_holder['bridge'].execute('deliver_current_report', {'version':4})
+                assert receipt.status == 'success'
+                return {'status':'completed','session_id':'native-fixture','text':'Retained the supported conclusions.'}
+            yield SimpleNamespace(prompt=prompt)
+        monkeypatch.setattr(module,'harness_local_services',report_local)
+        monkeypatch.setattr(module,'admitted_acp_session',report_acp)
+        monkeypatch.setattr(answer_review_provider,'independent_review',reviewer)
+        async with module.organization_harness_session(**{**common,'grant':review_grant,'expected_input':None,
+                'phase_arguments':{**phases,'run_id':review_run}}) as graph:
+            result = await graph.ainvoke({**saved['values'],'messages':[*saved['values']['messages'],HumanMessage(content=command)]})
+        assert result['report'] == report and result['report_version'] == 4
+        assert result['task_outcome']['artifact_kind'] == 'report'
+        annotation = result['messages'][-1].additional_kwargs['answer_review']
+        assert annotation['reviewed_report_version'] == annotation['revised_report_version'] == 4
+        assert json.loads((directory/review_run/'review-target.json').read_text())['report'] == report
+        return
 
     # Operator-selected pre-generation checkpoint must not inherit the later
     # outer answer, old business ledger, or the old note workspace.

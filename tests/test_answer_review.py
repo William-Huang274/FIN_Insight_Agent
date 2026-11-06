@@ -25,6 +25,41 @@ def test_question_only_is_version_bound_and_requires_a_question():
         target(PREFIX+json.dumps({**data,'question':''}),[msg],'author')
 
 
+def test_report_review_binds_complete_artifact_not_delivery_summary():
+    from sec_agent.agent_runtime.answer_review import author_input
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    report = {'title':'Complete report', 'narrative_markdown':'Full evidence and interpretation.',
+              'citations':{'source-1':{'sources':[{'source_id':'source-1'}]}}}
+    msg = SimpleNamespace(type='ai', content='Report delivered.', additional_kwargs={'harness_session_id':'author'})
+    command = PREFIX+json.dumps(dict(artifact='report',version=canonical_sha256(report),quote='',offset=0,
+                                    question='Check the main explanation.'))
+    selected, original = target(command,[msg],'author',report=report,report_version=7)
+    assert original.content == report['narrative_markdown']
+    assert original.additional_kwargs['citation_bindings'] == report['citations']
+    request = json.loads(author_input(selected,original,'Independent opinion'))
+    assert request['report_version'] == 7
+    assert 'edit_research_report' in request['task'] and 'deliver_current_report' in request['task']
+    assert request['original_answer'] != msg.content
+    with pytest.raises(ValueError,match='report_version_unavailable'):
+        target(command,[msg],'author',report={**report,'citations':{}},report_version=7)
+    with pytest.raises(ValueError,match='author_session'):
+        target(command,[msg],'other',report=report,report_version=7)
+
+
+def test_reviewer_consumes_maintained_method_and_only_authorized_tools():
+    from sec_agent.agent_runtime.answer_review_provider import reviewer_instructions, review_tool_names
+    from sec_agent.research_foundation.research_methods import get_research_method
+    method = get_research_method('verifier')
+    instructions = reviewer_instructions()
+    assert method['resource_digest'] in instructions and method['content'] in instructions
+    assert instructions.count(method['content']) == 1
+    assert not any(name in instructions for name in ('Arm', 'Qualcomm', 'NBC', '2027'))
+    assert review_tool_names({'read_source_document':object(),'save_research_report':object()}) == ('read_source_document',)
+    allowed = review_tool_names(dict.fromkeys(['get_research_method','read_public_source','read_legislation',
+        'read_market_prices','calculate_research_metric','edit_research_report','WriteWorkingNote']))
+    assert set(allowed) == {'get_research_method','read_public_source','read_legislation','read_market_prices','calculate_research_metric'}
+
+
 def test_author_receives_observed_fields_for_selected_citations_only():
     from sec_agent.agent_runtime.answer_review import author_input, Challenge
     ref, other = 'REF-' + 'a'*16, 'REF-' + 'b'*16

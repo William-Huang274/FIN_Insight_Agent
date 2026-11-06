@@ -217,6 +217,11 @@ async def organization_harness_session(*, native, resources, authority, check, o
             failed_ids = await asyncio.to_thread(failed_run_receipts, events)
         recovery_receipt = await bridge.initialize({**({} if clean_import else admitted), 'question': grant['question']},
             recovering=action.get('action') == 'recover', failed_receipt_ids=failed_ids)
+        if failed_ids is not None:
+            from .harness_acp_session import native_tool_recovery
+            native_failures = await asyncio.to_thread(native_tool_recovery, events, [tool.name for tool in grants])
+            if native_failures:
+                recovery_receipt = {**(recovery_receipt or {}), 'native_tool_failures': native_failures}
         if recovery_receipt:
             _persist(run_directory / 'tool-recovery.json', recovery_receipt)
         if options.get('legacy_receipt_import'):

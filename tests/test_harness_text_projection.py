@@ -6,6 +6,7 @@ import pytest
 from sec_agent.agent_runtime.harness_acp_session import (
     HarnessSession, HarnessSessionClient, TurnTextProjection,
     completed_text_projection,
+    native_tool_recovery,
 )
 
 
@@ -93,3 +94,30 @@ async def test_live_projection_and_recovery_share_contract_without_model_calls(t
         assert result['status'] == 'interrupted'
         with pytest.raises(RuntimeError, match='requires_recovery'):
             await session.prompt('Original task')
+
+
+@pytest.mark.anyio
+async def test_native_failure_stops_live_admission_but_not_loaded_history(tmp_path):
+    stopped = []
+    client = HarnessSessionClient(tmp_path / 'events.jsonl', stop_on_failure=lambda: stopped.append(True))
+    failed = {'sessionUpdate': 'tool_call_update', 'toolCallId': 'bad', 'status': 'failed'}
+    update = SimpleNamespace(model_dump=lambda **_: failed)
+    await client.session_update('s', update)
+    assert not stopped
+    client.active_turn = True
+    await client.session_update('s', update)
+    assert stopped == [True]
+    assert len(client.events.read_text().splitlines()) == 2
+
+
+def test_native_unknown_tool_feedback_uses_only_actual_grants(tmp_path):
+    events = tmp_path / 'events.jsonl'
+    events.write_text(json.dumps({'update': {'sessionUpdate': 'tool_call_update',
+        'toolCallId': 'x', 'status': 'failed', 'content': [{'content': {
+            'text': 'Error: unknown tool "mcp__financial__writeworkingnote"'}}]}}))
+    before = events.read_bytes()
+    result = native_tool_recovery(events, ['WriteWorkingNote'])
+    assert result[0]['available_exact_names'] == ['mcp__financial__WriteWorkingNote']
+    assert result[0]['status'] == 'not_executed'
+    assert native_tool_recovery(events, ['write_report'])[0]['available_exact_names'] == []
+    assert events.read_bytes() == before

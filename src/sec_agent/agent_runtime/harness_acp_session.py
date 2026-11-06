@@ -10,6 +10,7 @@ import asyncio
 from contextlib import asynccontextmanager
 import json
 import os
+import re
 from hashlib import sha256
 from pathlib import Path
 from typing import Callable
@@ -17,6 +18,29 @@ from uuid import UUID
 
 from acp import PROTOCOL_VERSION, spawn_agent_process, text_block
 from acp.schema import ClientCapabilities, Implementation, RequestPermissionResponse
+
+
+def native_tool_recovery(events, tool_names):
+    """Explain an exact case mismatch against today's grants; never execute it."""
+    names = ['mcp__financial__' + name for name in tool_names]
+    failures = []
+    if not events.is_file():
+        return failures
+    for line in events.read_text(encoding='utf8').splitlines():
+        value = json.loads(line).get('update', {})
+        if value.get('sessionUpdate') != 'tool_call_update' or value.get('status') != 'failed':
+            continue
+        for item in value.get('content') or []:
+            match = re.fullmatch(r'Error: unknown tool "([^"]+)"', item.get('content', {}).get('text', ''))
+            if not match:
+                continue
+            submitted = match[1]
+            candidates = [name for name in names if name.casefold() == submitted.casefold()]
+            failures.append({'tool_call_id': value['toolCallId'], 'submitted_tool': submitted,
+                'status': 'not_executed', 'available_exact_names': candidates,
+                'feedback': 'Tool names are case-sensitive. Use the available tool definition; '
+                            'this failed call has not saved or changed any artifact.'})
+    return failures
 
 
 def _persist(path: Path, value):
@@ -96,9 +120,11 @@ def completed_recovery(directory, *, previous_run_id, binding):
 
 class HarnessSessionClient:
     """Private event storage and public text are separate; no implicit grants."""
-    def __init__(self, events: Path, public: Callable | None = None):
+    def __init__(self, events: Path, public: Callable | None = None, stop_on_failure=None):
         self.events, self.public = events, public
         self.projection = TurnTextProjection()
+        self.active_turn = False
+        self.stop_on_failure = stop_on_failure
 
     async def session_update(self, session_id, update, **kwargs):
         value = update.model_dump(mode='json', by_alias=True, exclude_none=True)
@@ -106,6 +132,12 @@ class HarnessSessionClient:
             stream.write(json.dumps({'session_id': session_id, 'update': value}, ensure_ascii=False) + '\n')
             stream.flush()
         self.projection.accept(value)
+        # Native tool lookup can fail before it reaches FIN's MCP bridge. Stop
+        # financial admission for a live failure too, but not replayed history
+        # emitted while loading a saved ACP session.
+        if (self.active_turn and self.stop_on_failure
+                and value.get('sessionUpdate') == 'tool_call_update' and value.get('status') == 'failed'):
+            self.stop_on_failure()
         if value.get('sessionUpdate') == 'agent_message_chunk':
             content = value.get('content', {})
             if content.get('type') == 'text':
@@ -137,6 +169,7 @@ class HarnessSession:
             raise RuntimeError('harness_turn_already_started_requires_recovery_command')
         _persist(self.turn_path, {'status': 'started', 'session_id': self.session_id, 'prompt': text, 'prompt_digest': digest})
         self.client.projection = TurnTextProjection()
+        self.client.active_turn = True
         try:
             response = await self.connection.prompt(session_id=self.session_id, prompt=[text_block(text)])
             result = {'status': 'completed', 'session_id': self.session_id,
@@ -155,6 +188,8 @@ class HarnessSession:
             # Keep started receipt: interruption does not mean zero cost or
             # that no tool effect occurred. SDK tears down the process.
             raise
+        finally:
+            self.client.active_turn = False
 
 
 @asynccontextmanager
@@ -177,7 +212,7 @@ async def admitted_acp_session(*, binary, arguments, environment, directory,
         raise ValueError('harness_session_binding_mismatch')
     run_directory = directory / str(UUID(run_id))
     run_directory.mkdir(exist_ok=True)
-    client = HarnessSessionClient(run_directory / 'events.private.jsonl', public)
+    client = HarnessSessionClient(run_directory / 'events.private.jsonl', public, stop_on_failure=stop)
     with (run_directory / 'process.private.log').open('ab') as stderr:
         async with spawn(client, binary, *arguments, env=environment, cwd=workspace,
                          transport_kwargs={'stderr': stderr, 'limit': 16 * 1024 * 1024}) as (connection, process):

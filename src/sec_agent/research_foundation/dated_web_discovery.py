@@ -189,6 +189,7 @@ def publisher_markdown_day(text):
     # Publishers put the dateline immediately before or after the article title.
     stamp = lines[0] if lines[1].startswith('# ') else lines[1] if lines[0].startswith('# ') else ''
     stamp = re.sub(r'(\d)(?:st|nd|rd|th)\b', r'\1', stamp)
+    stamp = re.sub(r',\s*(?=\d{4}$)', ', ', stamp)
     for fmt in ('%B %d, %Y', '%b %d, %Y'):
         try:
             parsed = datetime.strptime(stamp, fmt).date()
@@ -515,6 +516,12 @@ class DatedWebDiscovery:
                                 day = (publisher_markdown_day(page.extracted_text) if getattr(page,'extraction_method',None)=='deepseek_hosted_publication' else
                                        publisher_day(page.extracted_text, bool(index), pdf=getattr(page, 'content_type', None) == 'application/pdf') if getattr(page, 'extracted_text', None)
                                        else publisher_html_day(page.html, bool(index), url=locator))
+                                if not day and page.extracted_text:
+                                    from .government_sources import dated_bill_catalog
+                                    catalog = dated_bill_catalog(locator,page.extracted_text,cutoff)
+                                    if catalog:
+                                        legislation_navigation[url] = catalog
+                                        return 'official_document_catalog_available'
                                 if (not day and self.search_backup and candidate.provider_rank == 1
                                         and candidate.provider_id == 'deepseek_search' and page.html and not index):
                                     try:

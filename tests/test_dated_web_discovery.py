@@ -276,3 +276,10 @@ def test_publication_page_has_own_identity_and_must_link_exact_pdf():
     assert day.isoformat() == '2026-09-15' and row.canonical_url == url and row.candidate_id != candidate.candidate_id
     publisher.link=pdf.replace('289','290')
     assert asyncio.run(census_publication_page(candidate,publisher,())) is None
+
+
+def test_markdown_masthead_date_allows_publisher_omitted_comma_space():
+    from sec_agent.research_foundation.dated_web_discovery import publisher_markdown_day
+    assert publisher_markdown_day('August 06,2026\n\n# A dated release\n\nBody')==date(2026,8,6)
+    assert publisher_markdown_day('# A release\n\nBody discussed August 06,2026.') is None
+    assert publisher_markdown_day('August 06,2026 draft\n\n# A release') is None

@@ -48,6 +48,20 @@ def model_receipt(result):
     return value
 
 
+def actionable_tool_feedback(result):
+    """A rejected selection can be corrected; execution/authority faults cannot."""
+    if result.status != 'error' or (getattr(result,'artifact',None) or {}).get('execution_stop'):
+        return False
+    text = str(result.content)
+    try:
+        value = json.loads(text)
+    except ValueError:
+        value = None
+    return (isinstance(value,dict) and any(k in value for k in ('readback','read_options','quote_comparison'))
+            or text.startswith(('invalid_source_read_window:', 'source_not_observed_read_current_source_catalog'))
+            or (text.startswith('Error invoking tool ') and text.endswith('Please fix the error and try again.')))
+
+
 def restored_calculator_feedback(messages):
     """Explain a terminal rejected calculation from its saved call, without executing it."""
     if not messages:
@@ -286,7 +300,7 @@ class HarnessBusinessTools:
         # the result; a recovery loads it instead of replaying successful calls.
         try:
             result = await self.execute(params.name, params.arguments or {})
-            if self.stop_on_tool_error and result.status == 'error':
+            if self.stop_on_tool_error and result.status == 'error' and not actionable_tool_feedback(result):
                 self.failed_receipt = self.failed_receipt or result.tool_call_id
             view = model_receipt(result)
             if params.name == 'WriteWorkingNote' and self.note_versions:

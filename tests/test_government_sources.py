@@ -69,6 +69,26 @@ def test_empty_origin_is_not_a_successful_undated_original():
         asyncio.run(GovernmentSourceFetcher(Empty(),hosted).fetch('https://other.example/news',timeout_seconds=1))
 
 
+def test_government_406_can_use_exact_url_transcription_without_inventing_date():
+    class NotAcceptable:
+        async def fetch(self,url,**kwargs):raise ExternalSourceError('capture_http_status_406')
+    hosted=Hosted('Undated catalog')
+    page=asyncio.run(GovernmentSourceFetcher(NotAcceptable(),hosted).fetch('https://publisher.gov/catalog',timeout_seconds=1))
+    assert page.origin_failure_code=='capture_http_status_406'
+    assert hosted.calls==['https://publisher.gov/catalog']
+    assert publisher_day(page.extracted_text) is None
+
+
+def test_bill_catalog_discloses_only_dated_versions_within_cutoff():
+    from sec_agent.research_foundation.government_sources import dated_bill_catalog
+    text='SB26-999\n\n# Bill\nCurrent summary must not be shown.\n\n### Bill Text\n\nDate | Version | Documents\n---|---|---\n07/01/2026 | Signed Act |\n05/01/2026 | Introduced |\n\nOther material'
+    result=dated_bill_catalog('https://leg.example.gov/bills/sb26-999',text,date(2026,6,30))
+    assert [r['version_label'] for r in result['versions']]==['Introduced']
+    assert not result['writer_citable'] and result['current_summary_withheld']
+    assert 'Current summary' not in str(result)
+    assert dated_bill_catalog('https://leg.example.gov/bills/sb26-998',text,date(2026,6,30)) is None
+
+
 def test_notice_fallback_exact_identity_date_and_original_failure():
     hosted = Hosted()
     fetcher = GovernmentSourceFetcher(Denied(),hosted)

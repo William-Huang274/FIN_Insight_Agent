@@ -1,5 +1,6 @@
 """Thin routes to public institutions; no policy conclusions or case-specific URLs."""
 import re
+from datetime import datetime
 from urllib.parse import urlsplit
 
 from .external_sources import ExternalSourceError, FetchedPage
@@ -29,6 +30,36 @@ def ercot_notice_id(url):
     return match[1] if match else None
 
 
+def dated_bill_catalog(url, text, cutoff):
+    """Expose dated version rows, not an undated current bill summary."""
+    parsed = urlsplit(url)
+    bill = re.fullmatch(r'/bills/([a-z]{1,3}\d{2,4}-\d+)',parsed.path,re.I)
+    if not bill or not (parsed.hostname or '').endswith('.gov'):
+        return None
+    ident = bill[1].upper()
+    if not re.match(re.escape(ident)+r'\s*\n',text,re.I):
+        return None
+    table = re.search(r'(?m)^### Bill Text\s*\n\s*Date\s*\|\s*Version\s*\|\s*Documents\s*\n[-| ]+\n((?:[^\n]+\n?)+)',text)
+    if not table:
+        return None
+    rows=[]
+    for line in table[1].splitlines():
+        cells=[v.strip() for v in line.split('|')]
+        if len(cells)<2:
+            continue
+        try:day=datetime.strptime(cells[0],'%m/%d/%Y').date()
+        except ValueError:continue
+        if day>cutoff:continue
+        rows.append({'version_date':day.isoformat(),'version_label':cells[1],
+            'read_entry':{'tool':'read_public_source','arguments':{'operation':'search',
+                'query':f'site:{parsed.hostname} "{ident}" "{cells[1]}"'}}})
+    if not rows:
+        return None
+    return {'kind':'official_bill_version_catalog','catalog_url':url,'bill_id':ident,
+        'versions':rows,'writer_citable':False,'current_summary_withheld':True,
+        'meaning':'Observed dated document-version rows only. Locate and read the selected text; current summary has no verified publication date.'}
+
+
 class GovernmentSourceFetcher:
     """Government publication fallback through the existing metered Fetch provider.
 
@@ -50,7 +81,7 @@ class GovernmentSourceFetcher:
             host = urlsplit(url).hostname or ''
             government = host.endswith('.gov')
             if not self.hosted or not (ercot_notice_id(url) or government) or exc.code not in {
-                'capture_http_status_403', 'capture_http_status_429',
+                'capture_http_status_403', 'capture_http_status_406', 'capture_http_status_429',
                 'capture_static_timeout', 'capture_static_connection_failed', 'capture_empty_response',
             }:
                 raise

@@ -179,6 +179,34 @@ async def test_tool_failure_stops_following_calls_but_selection_feedback_does_no
 
 
 @pytest.mark.anyio
+async def test_schema_rejection_allows_author_correction_without_waiving_execution_fault(tmp_path):
+    from types import SimpleNamespace
+    from langchain_core.tools import ToolException
+    calls=[]
+    @tool
+    def source(operation: str, query: str):
+        """Read a selected source."""
+        calls.append((operation,query))
+        if query=='fault':
+            raise ToolException('source_integrity_mismatch')
+        return 'original source'
+    source.handle_tool_error = True
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'schema.sqlite')) as saver:
+        bridge=HarnessBusinessTools(grants=[GrantedTool(source,'read','test')],checkpointer=saver,
+            thread_id='t',check=lambda:None,stop_on_tool_error=True)
+        await bridge.initialize({'messages':[]})
+        rejected=await bridge.call_tool(None,SimpleNamespace(name='source',arguments={'query':'url'}))
+        assert rejected.is_error and not calls
+        bridge.model_access()
+        fixed=await bridge.call_tool(None,SimpleNamespace(name='source',arguments={'operation':'read','query':'url'}))
+        assert not fixed.is_error and calls==[('read','url')]
+        bridge.model_access()
+        await bridge.call_tool(None,SimpleNamespace(name='source',arguments={'operation':'read','query':'fault'}))
+        with pytest.raises(RuntimeError,match='tool_failed_before_model_dispatch'):
+            bridge.model_access()
+
+
+@pytest.mark.anyio
 async def test_interrupted_read_resumes_exact_pending_call_preserving_successes(tmp_path):
     calls = []
     broken = True
@@ -533,7 +561,7 @@ async def test_charted_report_local_prose_and_chart_edits_rebind_once(tmp_path):
         assert (await bridge.state())['report']['charts'] == after['charts']
 
 @pytest.mark.anyio
-async def test_supervised_read_pages_and_blocks_dispatch_after_a_failed_batch_member(tmp_path):
+async def test_supervised_read_pages_keep_actionable_window_feedback_repairable(tmp_path):
     from types import SimpleNamespace
     from sec_agent.agent_runtime.organization_work_session import observed_source_tool
     source = 'PASSAGE::fixture'
@@ -557,8 +585,7 @@ async def test_supervised_read_pages_and_blocks_dispatch_after_a_failed_batch_me
         assert failed['status'] == 'error' and 'next_offset' in failed['result']
         tail = (await read(offset=first['next_offset']))['result']
         assert first['text'] + tail['text'] == body and tail['next_offset'] is None
-        with pytest.raises(RuntimeError, match=failed['receipt_id']):
-            bridge.model_access()
+        bridge.model_access()
 
 
 @pytest.mark.anyio

@@ -10,7 +10,7 @@ import httpx
 
 from .answer_review import version
 from .deepseek_structured_agents import TokenBudgetBasis
-from .harness_business_tools import model_receipt
+from .harness_business_tools import model_receipt, actionable_tool_feedback
 
 
 def reviewer_instructions():
@@ -32,18 +32,7 @@ def review_tool_names(available):
 def review_tool_feedback(result):
     """Return actionable selection feedback; never turn an execution fault into research evidence."""
     if result.status == 'error':
-        artifact = getattr(result, 'artifact', None) or {}
-        text = str(result.content)
-        try:
-            data = json.loads(text)
-        except ValueError:
-            data = {}
-        repairable = (
-            isinstance(data, dict) and any(k in data for k in ('readback', 'read_options', 'quote_comparison'))
-            or text.startswith(('invalid_source_read_window:', 'source_not_observed_read_current_source_catalog',
-                                'Error invoking tool '))
-        )
-        if artifact.get('execution_stop') or not repairable:
+        if not actionable_tool_feedback(result):
             raise ValueError('answer_review_source_tool_failed:'+result.tool_call_id)
     return json.dumps(model_receipt(result), ensure_ascii=False, default=str)
 

@@ -318,10 +318,12 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                     'Successful candidates remain recorded. Do not infer source absence from this failure.'}
                 if runtime is not None and getattr(runtime, 'tool_call_id', None):
                     from langchain_core.messages import ToolMessage
-                    from langgraph.types import Command
-                    return Command(update={'messages': [ToolMessage(name='read_public_source',
+                    # BaseTool validates content_and_artifact before formatting
+                    # ToolOutputMixin. Preserve the error ToolMessage in the
+                    # declared tuple, rather than returning a rejected Command.
+                    return (ToolMessage(name='read_public_source',
                         tool_call_id=runtime.tool_call_id, status='error',
-                        content=json.dumps(visible, ensure_ascii=False), artifact=artifact)]})
+                        content=json.dumps(visible, ensure_ascii=False), artifact=artifact), artifact)
                 raise ToolException(json.dumps(visible, ensure_ascii=False))
             return json.dumps(visible,ensure_ascii=False), artifact
         except (ValueError, ExternalSourceError) as exc:

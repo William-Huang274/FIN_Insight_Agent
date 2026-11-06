@@ -7,6 +7,17 @@ from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery,
 from test_web_source_navigation import _reader, _call
 
 
+def test_pdf_issue_metadata_is_not_a_policy_effective_date_or_body_mention():
+    memo='Office of an agency\nJanuary 9, 2026 \nMEMORANDUM FOR STAFF\nFROM: Director\nSUBJECT: Policy\nEffective January 1, 2027.'
+    assert publisher_day(memo,pdf=True)==date(2026,1,9)
+    assert publisher_day(memo.replace('January 9, 2026','Effective January 9, 2026'),pdf=True) is None
+    assert publisher_day(memo,pdf=False) is None
+    note='Public fiscal note\nVersion: First revised\nDate: May 6, 2026\nSummary Information\nProjected spending in 2027.'
+    assert publisher_day(note,pdf=True)==date(2026,5,6)
+    assert publisher_day(note.replace('Date:', 'Reporting date:'),pdf=True) is None
+    assert publisher_day('Long body. '*150+note,pdf=True) is None
+
+
 def test_site_path_keeps_host_and_account_scope_when_provider_ignores_query():
     for url, accepted in [('https://example.com/account/status/1', True),
                           ('https://example.com/other/status/1', False),

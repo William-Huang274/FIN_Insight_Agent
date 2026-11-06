@@ -10,7 +10,8 @@ from test_web_source_navigation import _reader
 
 def test_metering_fault_becomes_error_without_losing_partial_candidates(tmp_path):
     from sec_agent.agent_runtime.conversation_web import search_execution_faults
-    from langgraph.types import Command
+    from langchain_core.messages import ToolMessage
+    from langgraph.prebuilt import ToolRuntime
     underlying, _, _ = _reader()
     class Reader:
         async def __call__(self, **kwargs):
@@ -21,10 +22,12 @@ def test_metering_fault_becomes_error_without_losing_partial_candidates(tmp_path
             return result.model_copy(update={'execution_receipt':receipt})
     grant = public_web_tool(thread_id=str(uuid4()), run_id=str(uuid4()), method_digest='a'*64,
         cache_root=tmp_path, reader=Reader()).tool
-    output = asyncio.run(grant.coroutine(operation='search', query='fixture',
-        runtime=SimpleNamespace(tool_call_id='call', state={'messages':[]})))
-    assert isinstance(output, Command)
-    message = output.update['messages'][0]
+    output = asyncio.run(grant.ainvoke({'type':'tool_call','id':'call','name':'read_public_source',
+        'args':{'operation':'search','query':'fixture',
+                'runtime':ToolRuntime(tool_call_id='call',state={'messages':[]},context=None,
+                                      config={},stream_writer=lambda _:None,store=None)}}))
+    assert isinstance(output, ToolMessage)
+    message = output
     assert message.status == 'error' and message.artifact['items']
     assert json.loads(message.content)['execution_stop']['codes'] == ['deepseek_web_response_unconfirmed']
     assert search_execution_faults({'execution_receipt': {'attempts': [

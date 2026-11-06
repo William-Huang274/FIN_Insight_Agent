@@ -123,6 +123,13 @@ def publisher_day(text, index=False, *, pdf=False):
         masthead_dates = re.findall(
             r'(?im)^[ \t]*[A-Z][a-z]{2,8} 20\d{2} survey results[ \t]+'
             r'([A-Z][a-z]{2,8} \d{1,2}, 20\d{2})[ \t]*$', body[:600])
+        # Document issue metadata in the cover/header, distinct from dates
+        # mentioned in findings, effective dates or the observation period.
+        masthead_dates += re.findall(
+            r'(?im)^[ \t]*Date:[ \t]*([A-Z][a-z]{2,8} \d{1,2}, 20\d{2})[ \t]*$', body[:1200])
+        if re.search(r'(?m)^FROM:',body[:1000]) and re.search(r'(?m)^SUBJECT:',body[:1000]):
+            masthead_dates += re.findall(
+                r'(?m)^[ \t]*([A-Z][a-z]{2,8} \d{1,2}, 20\d{2})[ \t]*\n[ \t]*MEMORANDUM (?:FOR|TO)\b', body[:1000])
     for value in re.findall(release_label, body) + _BLS_EMBARGO.findall(body[:1400]) + masthead_dates:
         for fmt in ('%B %d, %Y','%b %d, %Y'):
             try:

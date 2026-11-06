@@ -7,6 +7,30 @@ from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery,
 from test_web_source_navigation import _reader, _call
 
 
+def test_article_microdata_dates_require_exact_page_and_nearest_scope():
+    from sec_agent.research_foundation.dated_web_discovery import publisher_html_day
+    url='https://publisher.example/news/story'
+    html=('<article itemscope itemtype="https://schema.org/Article">'
+          '<link itemprop="mainEntityOfPage" href="'+url+'"><h1 itemprop="headline">Story</h1>'
+          '<header><meta itemprop="datePublished" content="2026-11-05T16:04:08-06:00">'
+          '<meta itemprop="dateModified" content="2026-11-06T08:00:00-06:00"></header>'
+          '<aside itemscope itemtype="https://schema.org/NewsArticle">'
+          '<link itemprop="mainEntityOfPage" href="https://publisher.example/other">'
+          '<meta itemprop="dateModified" content="2027-01-01"></aside></article>')
+    assert publisher_html_day(html,url=url)==date(2026,11,6)
+    assert publisher_html_day(html,url=url+'/other') is None
+    assert publisher_html_day(html.replace('itemprop="mainEntityOfPage"','itemprop="unrelated"'),url=url) is None
+    assert publisher_html_day(html.replace('datePublished','observationDate').replace('dateModified','eventDate'),url=url) is None
+
+
+def test_transcribed_release_can_have_image_placeholder_but_not_prose_before_dateline():
+    from sec_agent.research_foundation.dated_web_discovery import publisher_markdown_day
+    text='# Publisher release\n\nImage\n\nSeptember 23, 2026\n\nWASHINGTON — Announcement.'
+    assert publisher_markdown_day(text)==date(2026,9,23)
+    assert publisher_markdown_day(text.replace('Image','A forecast about the following date')) is None
+    assert publisher_markdown_day(text.replace('September 23, 2026','September 23')) is None
+
+
 def test_filtered_publisher_catalog_is_navigation_not_a_fetchable_dated_release():
     from sec_agent.research_foundation.dated_web_discovery import filtered_publication_catalog
     url='https://publisher.gov/news?f%5B0%5D=facet_dates%3A2026-04'

@@ -160,6 +160,9 @@ def publisher_markdown_day(text):
     """Explicit transcription masthead, not a search date or narrative date."""
     day = publisher_day(text)
     lines = [s.strip() for s in text[:600].splitlines() if s.strip()]
+    # Image placeholders carry no prose and may sit between a release heading
+    # and its dateline in a hosted transcription. Never skip arbitrary text.
+    lines = [s for s in lines if s != 'Image' and not re.fullmatch(r'!\[[^\]]*\]\([^\n]+\)', s)]
     if len(lines) < 2:
         return day
     # Publishers put the dateline immediately before or after the article title.
@@ -222,6 +225,25 @@ def publisher_html_day(html, index=False, *, url=None):
     def same_page(value):
         return isinstance(value,str) and urljoin(url,value).split('#')[0] == url.split('#')[0]
     if url:
+        # Schema.org microdata is equivalent to JSON-LD, but properties belong
+        # to their nearest itemscope. A related article's date must not qualify
+        # the current page; require its own exact mainEntityOfPage identity.
+        for article in soup.select('[itemscope][itemtype]'):
+            kinds = article.get('itemtype', '').split()
+            if not any(re.fullmatch(r'https?://schema.org/(?:Article|NewsArticle|Report)', k) for k in kinds):
+                continue
+            props = [p for p in article.select('[itemprop]') if p.find_parent(attrs={'itemscope':True}) is article]
+            identities = [p.get('href') or p.get('content') for p in props
+                          if 'mainEntityOfPage' in p.get('itemprop','').split()]
+            if not identities or not all(same_page(value) for value in identities):
+                continue
+            for prop in props:
+                if not set(prop.get('itemprop','').split()) & {'datePublished','dateModified'}:
+                    continue
+                try:
+                    dates.append(date.fromisoformat((prop.get('content') or prop.get('datetime') or '')[:10]))
+                except ValueError:
+                    continue
         for script in soup.select('script[type="application/ld+json"]'):
             try:
                 raw = json.loads(script.string or '')

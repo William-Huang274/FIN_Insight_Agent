@@ -121,7 +121,7 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         if base_version != runtime.state.get('report_version', 0) or not runtime.state.get('report'):
             raise ToolException('report_version_changed_read_current_report')
         try:
-            candidate = apply_report_edits(report_model_view(runtime.state['report']), edits)
+            candidate = apply_report_edits(runtime.state['report'], edits)
             bound = bind_report_candidate(candidate, artifacts(runtime.state), runtime.state)
         except ReportEditMatchError as exc:
             feedback = {**exc.feedback, 'report_version': base_version,

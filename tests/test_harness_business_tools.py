@@ -468,6 +468,36 @@ async def test_current_report_field_changes_keep_versions_and_invalid_chart_prop
         assert (await bridge.state())['report_version'] == 3
         assert (await bridge.state())['report_draft'] is None
 
+
+@pytest.mark.anyio
+async def test_charted_report_local_prose_and_chart_edits_rebind_once(tmp_path):
+    from sec_agent.agent_runtime.harness_artifact_tools import artifact_tools
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    from test_on_demand_research import artifact_fixture
+    from test_report_synthesis_agent import saved_calculation_chart
+    artifacts = artifact_fixture()
+    report, chart, calculation = saved_calculation_chart(artifacts)
+    memory = WorkingMemory(tmp_path / 'notes.sqlite', owner='test', workspace='task', actor='lead')
+    grants = artifact_tools(artifacts=lambda _: artifacts, memory=memory, delivery_intent='report', require_review=False)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'tools.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='task', check=lambda: None)
+        await bridge.initialize({'messages': [], 'report': report, 'report_version': 1})
+        result = await bridge.execute('edit_research_report', {'base_version': 1, 'edits': [
+            {'old_str': report['narrative_markdown'], 'new_str': report['narrative_markdown'] + '\nA local clarification.'}]})
+        assert result.status == 'success', result.content
+        current = (await bridge.state())['report']
+        assert current['charts'] == report['charts']
+        result = await bridge.execute('edit_research_report', {'base_version': 2, 'edits': [
+            {'chart_index': 0, 'old_str': chart.interpretation,
+             'new_str': 'Updated explanation; original computed points remain bound.'}]})
+        assert result.status == 'success', result.content
+        after = (await bridge.state())['report']
+        assert after['charts'][0]['points'] == report['charts'][0]['points']
+        assert after['narrative_markdown'] == current['narrative_markdown']
+        result = await bridge.execute('repair_report_fields', {'base_version': 3, 'fields': {'title': 'New title after local edits'}})
+        assert result.status == 'success', result.content
+        assert (await bridge.state())['report']['charts'] == after['charts']
+
 @pytest.mark.anyio
 async def test_supervised_read_pages_and_blocks_dispatch_after_a_failed_batch_member(tmp_path):
     from types import SimpleNamespace

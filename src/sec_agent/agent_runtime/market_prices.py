@@ -98,7 +98,9 @@ def market_price_tool(*, thread_id, cache_root, research_as_of=None, transport=p
             interval: Literal['1m', '5m', '15m', '60m'] = '5m',
             include_extended_hours: bool = False, offset: int = 0, limit: int = 100):
         """Read intraday OHLCV for one explicit Yahoo symbol (e.g. SPY or ^GSPC).
-        start/end are timezone-aware ISO timestamps; end is exclusive. Only complete
+        start/end are timezone-aware ISO timestamps; end is exclusive and must be
+        no later than both the research deadline and the current elapsed time.
+        Do not request the close of a trading day that has not ended. Only complete
         bars before the task cutoff are returned. 1m supports up to 7 days; other
         intervals up to 60 days per request, subject to provider retention. Page via
         offset/limit (1..200); the exact request reuses its captured snapshot.
@@ -118,11 +120,20 @@ def market_price_tool(*, thread_id, cache_root, research_as_of=None, transport=p
                 raise ValueError('invalid_interval_or_page; limit=1..200, offset>=0')
             if not left < right or right-left > timedelta(days=7 if interval == '1m' else 60):
                 raise ValueError('invalid_market_window; use <=7 days for 1m, <=60 days otherwise')
-            if cutoff and right > cutoff:
-                raise ValueError('market_window_after_task_cutoff: ' + cutoff.isoformat())
             current = now()
-            if right > current:
-                raise ValueError('market_window_in_future; set end to an elapsed instant')
+            latest = min(current, cutoff) if cutoff else current
+            if right > latest:
+                code = ('market_window_after_task_cutoff' if cutoff and right > cutoff
+                        else 'market_window_in_future')
+                detail = dict(code=code, requested_start_utc=left.isoformat(),
+                    requested_end_utc=right.isoformat(), current_time_utc=current.isoformat(),
+                    configured_task_cutoff_utc=cutoff.isoformat() if cutoff else None,
+                    latest_allowed_end_utc=latest.isoformat(), request_dispatched=False,
+                    request_modified=False,
+                    next_action='Choose timezone-aware start < end <= latest_allowed_end_utc; '
+                        'also respect any earlier deadline in the research question. '
+                        'This upper bound does not choose the intended trading session.')
+                raise ValueError(json.dumps(detail, ensure_ascii=False))
             request = dict(symbol=ticker, start=left.isoformat(), end=right.isoformat(),
                            interval=interval, include_extended_hours=include_extended_hours)
             key = sha256(json.dumps(request, sort_keys=True).encode()).hexdigest()

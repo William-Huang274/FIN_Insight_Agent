@@ -175,6 +175,26 @@ def test_optional_event_method_is_in_input_catalog_and_exact_section_readable():
     assert 'Sanders' not in result['content'] and '2026 年 11 月 5 日' not in result['content']
 
 
+@pytest.mark.parametrize('cutoff,expected_code,latest', [
+    ('2026-06-03T12:00:00Z', 'market_window_in_future', '2026-06-02T10:00:00+00:00'),
+    ('2026-06-01T18:00:00Z', 'market_window_after_task_cutoff', '2026-06-01T18:00:00+00:00'),
+])
+def test_market_invalid_end_returns_actual_bounds_without_changing_request(tmp_path, cutoff, expected_code, latest):
+    def never(*a): raise AssertionError('invalid window must not dispatch')
+    tool = market_price_tool(thread_id=str(uuid4()), cache_root=tmp_path,
+        research_as_of=cutoff, transport=never,
+        clock=lambda: instant('2026-06-02T10:00:00Z')).tool
+    result = asyncio.run(tool.ainvoke(dict(symbol='^GSPC',
+        start='2026-06-01T09:30:00-04:00', end='2026-06-02T16:00:00-04:00')))
+    detail = json.loads(result.split('：', 1)[1])
+    assert detail['code'] == expected_code
+    assert detail['requested_end_utc'] == '2026-06-02T20:00:00+00:00'
+    assert detail['latest_allowed_end_utc'] == latest
+    assert detail['current_time_utc'] == '2026-06-02T10:00:00+00:00'
+    assert not detail['request_dispatched'] and not detail['request_modified']
+    assert not list(tmp_path.rglob('*.json'))
+
+
 def test_government_metadata_matches_exact_edition_and_date_not_action_in_prose():
     from sec_agent.research_foundation.government_publications import mods_bill_record
     package = 'BILLS-119s123is'

@@ -153,6 +153,32 @@ def test_market_page_recovery_parallel_capture_and_calculator_binding(tmp_path):
     assert len(requests) == 1
 
 
+@pytest.mark.parametrize('provider_interval', ['1h', '60m', '5m', None])
+def test_hourly_provider_alias_preserves_values_and_rejects_other_durations(tmp_path, provider_interval):
+    payload = prices()
+    row = payload['chart']['result'][0]
+    row['meta']['dataGranularity'] = provider_interval
+    stamp = row['timestamp'][0]
+    row['timestamp'] = [stamp, stamp+3600, stamp+7200]
+    tool = market_price_tool(thread_id=str(uuid4()), cache_root=tmp_path,
+        research_as_of='2026-06-02T00:00:00Z', transport=lambda *a: payload,
+        clock=lambda: instant('2026-06-03T00:00:00Z')).tool
+    raw = asyncio.run(tool.ainvoke(dict(symbol='SPY', start='2026-06-01T13:30:00Z',
+        end='2026-06-01T16:30:00Z', interval='60m')))
+    if provider_interval not in ('1h', '60m'):
+        assert 'market_interval_mismatch' in raw
+        assert not list(tmp_path.rglob('*.json'))
+        return
+    result = json.loads(raw)
+    assert result['total_matches'] == 3
+    assert result['market_metadata']['interval'] == '60m'
+    assert result['market_metadata']['provider_interval'] == provider_interval
+    bars = [json.loads(line) for line in result['items'][0]['passage'].splitlines()[1:]]
+    assert [bar['close'] for bar in bars] == [101,102,103]
+    assert [bar['volume'] for bar in bars] == [10,20,30]
+    assert bars[0]['end_utc'] == '2026-06-01T14:30:00+00:00'
+
+
 @pytest.mark.parametrize('change', [
     {'start':'2026-06-01T13:30:00'}, {'end':'2026-06-03T00:00:00Z'},
     {'symbol':'https://localhost/'}, {'limit':201}, {'offset':-1},

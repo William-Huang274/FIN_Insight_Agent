@@ -18,6 +18,9 @@ from sec_agent.research_foundation.public_posts import public_json
 
 
 INTERVALS = {'1m': 60, '5m': 300, '15m': 900, '60m': 3600}
+# Yahoo accepts interval=60m but labels its returned hourly series as 1h.
+# Preserve that label in the receipt; only this equal-duration alias is admitted.
+PROVIDER_INTERVAL_ALIASES = {'1h': '60m'}
 
 
 def instant(value):
@@ -44,8 +47,14 @@ def market_snapshot(payload, *, symbol, start, end, interval, captured_at, sourc
     if meta.get('symbol', '').upper() != symbol:
         raise ExternalSourceError('market_symbol_mismatch')
     tz_name = meta.get('exchangeTimezoneName')
-    if not tz_name or not meta.get('currency') or meta.get('dataGranularity') != interval:
-        raise ExternalSourceError('market_identity_or_interval_missing')
+    if not tz_name or not meta.get('currency'):
+        raise ExternalSourceError('market_identity_missing: ' + json.dumps({
+            'currency': meta.get('currency'), 'exchangeTimezoneName': tz_name}))
+    provider_interval = meta.get('dataGranularity')
+    if PROVIDER_INTERVAL_ALIASES.get(provider_interval, provider_interval) != interval:
+        raise ExternalSourceError('market_interval_mismatch: ' + json.dumps({
+            'requested_interval': interval, 'provider_interval': provider_interval,
+            'notice': 'No bars accepted; do not treat this as missing market data.'}))
     zone = ZoneInfo(tz_name)
     values = ((result.get('indicators') or {}).get('quote') or [{}])[0]
     periods = meta.get('tradingPeriods') or {}
@@ -78,6 +87,7 @@ def market_snapshot(payload, *, symbol, start, end, interval, captured_at, sourc
         raise ExternalSourceError('market_duplicate_bar_time')
     return dict(symbol=symbol, currency=meta['currency'], exchange=meta.get('exchangeName'),
         instrument_type=meta.get('instrumentType'), exchange_timezone=tz_name, interval=interval,
+        provider_interval=provider_interval,
         requested_start=start.isoformat(), requested_end=end.isoformat(), captured_at=captured_at.isoformat(),
         source_url=source_url, provider='yahoo_finance_chart_unofficial',
         price_basis='provider_OHLC; no local adjustment or repair; not certified as-traded archival data',

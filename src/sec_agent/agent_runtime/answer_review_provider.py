@@ -88,6 +88,24 @@ def fit_review_receipts(body, limit, *, keep_current=False):
     return payload
 
 
+async def saved_consultation_attempt(store, owner, budget_id, key, saved, scope, lane):
+    """Follow recorded retry identities; never synthesize permission or a new call."""
+    if (not lane or not lane.startswith('consult:')
+            or not key.startswith('answer-review:consult-'+lane.removeprefix('consult:')+':')):
+        return key, saved
+    while saved and saved['status'] == 'unknown':
+        prior_scope = saved['basis'].get('harness_execution_scope', '')
+        if (prior_scope.split(':')[0] != scope.split(':')[0]
+                or saved['basis'].get('harness_dispatch_lane') not in (None, lane)):
+            break
+        retry_key = key + ':retry:' + str(saved['call_id'])
+        retry = await asyncio.to_thread(store.lookup, owner, budget_id, retry_key)
+        if not retry:
+            break
+        key, saved = retry_key, retry
+    return key, saved
+
+
 async def independent_review(*, selected, message, question, bridge, budget, environment,
                              model, scope, command_id, authority, basis, as_of, public_sink, previous_scope=None, audit_root=None,
                              predecessor_scope=None, assignment_kind='review', method_content='', dispatch_lane=None):
@@ -124,6 +142,8 @@ async def independent_review(*, selected, message, question, bridge, budget, env
             wire = json.dumps(body, ensure_ascii=False, sort_keys=True)
             key = 'answer-review:' + command_id + ':' + str(len(inputs))
             saved = await asyncio.to_thread(budget.store.lookup, budget.owner, budget.budget, key)
+            key, saved = await saved_consultation_attempt(budget.store, budget.owner, budget.budget,
+                                                         key, saved, scope, dispatch_lane)
             pressure = min(120000, profile.max_input_characters)
             legacy = bool(saved and not saved['basis'].get('review_projection'))
             raw_chars = len(wire)
@@ -147,20 +167,24 @@ async def independent_review(*, selected, message, question, bridge, budget, env
             policy['review_projection'] = 'preserve_current_batch'
             if dispatch_lane is not None:
                 policy['harness_dispatch_lane'] = dispatch_lane
-            if saved and saved['status'] == 'unknown' and previous_scope and audit_root and saved['basis'].get('harness_execution_scope') == previous_scope:
+            saved_scope = saved['basis'].get('harness_execution_scope') if saved else None
+            same_consultation = bool(saved and dispatch_lane and dispatch_lane.startswith('consult:')
+                and saved['basis'].get('harness_dispatch_lane') == dispatch_lane
+                and saved_scope and saved_scope.split(':')[0] == scope.split(':')[0])
+            if saved and saved['status'] == 'unknown' and previous_scope and audit_root and (saved_scope == previous_scope or same_consultation):
                 from sec_agent.adapters.explicit_run_recovery import verified_permit
                 retry_key = key + ':retry:' + str(saved['call_id'])
                 retry = await asyncio.to_thread(budget.store.lookup, budget.owner, budget.budget, retry_key)
                 if retry:
                     key, saved = retry_key, retry  # Replay only after the scope and input checks below.
                 else:
-                    permit = verified_permit(audit_root, *previous_scope.split(':'), secret=environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
+                    permit = verified_permit(audit_root, *saved_scope.split(':'), secret=environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
                     if (permit and str(saved['call_id']) in permit['unknown_call_ids']
                             and version(wire+json.dumps(saved['basis'], sort_keys=True)) == saved['fingerprint']):
                         key, saved = retry_key, None
             if saved:
                 old_scope = saved['basis'].get('harness_execution_scope')
-                related = old_scope in (scope, previous_scope, predecessor_scope)
+                related = old_scope in (scope, previous_scope, predecessor_scope) or same_consultation
                 if not related and previous_scope and old_scope and old_scope.split(':')[0] == previous_scope.split(':')[0]:
                     tid, rid = old_scope.split(':')
                     origin = Path(environment['FINSIGHT_HARNESS_STATE_ROOT']) / str(UUID(tid)) / str(UUID(rid)) / 'answer-review-origin.json'

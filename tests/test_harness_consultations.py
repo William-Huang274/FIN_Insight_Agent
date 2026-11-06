@@ -18,6 +18,55 @@ def anyio_backend():
 
 
 @pytest.mark.anyio
+async def test_consultation_retry_chain_reuses_latest_record_without_dispatch():
+    from copy import deepcopy
+    from sec_agent.agent_runtime.answer_review_provider import saved_consultation_attempt
+    basis={'harness_execution_scope':'t:old','harness_dispatch_lane':'consult:k'}
+    first={'status':'unknown','call_id':'a','basis':basis}
+    second={'status':'unknown','call_id':'b','basis':{**basis,'harness_execution_scope':'t:next'}}
+    third={'status':'received','call_id':'c','basis':{**basis,'harness_execution_scope':'t:later'}}
+    first['basis']={k:v for k,v in basis.items() if k!='harness_dispatch_lane'}  # pre-lane dispatch
+    root='answer-review:consult-k:1'
+    rows={root+':retry:a':second,root+':retry:a:retry:b':third}
+    original=deepcopy(rows)
+    store=SimpleNamespace(lookup=lambda o,b,k:rows.get(k))
+    key,row=await saved_consultation_attempt(store,'owner','budget',root,first,'t:current','consult:k')
+    assert key==root+':retry:a:retry:b' and row is third and rows==original
+    for scope,lane in [('other:current','consult:k'),('t:current','consult:other'),('t:current',None)]:
+        assert await saved_consultation_attempt(store,'owner','budget',root,first,scope,lane)==(root,first)
+
+
+@pytest.mark.anyio
+async def test_pre_dispatch_consultation_recovery_requires_zero_dispatch_proof(tmp_path,monkeypatch):
+    from sec_agent.agent_runtime.harness_acp_session import _persist
+    observed=[]
+    async def provider(**kwargs):
+        observed.append(kwargs);return 'Saved opinion'
+    monkeypatch.setattr('sec_agent.agent_runtime.harness_consultations.independent_review',provider)
+    monkeypatch.setattr('sec_agent.adapters.explicit_run_recovery.verified_permit',lambda *a,**k:{'verified':True})
+    monkeypatch.setattr('sec_agent.adapters.explicit_run_recovery.verified_preparation_recovery',lambda *a,**k:None)
+    request=dict(question='Original question',context='Context',purpose='review',report=None,method_text='')
+    old=dict(request=request,status='failed',scope='t:paid',error_type='CancelledError')
+    stopped=dict(request=request,status='failed',scope='t:preparation',previous_scope='t:paid',error_type='ValueError')
+    key='a'*64;directory=tmp_path/'jobs'
+    _persist(directory/'history'/key/'paid.json',old);_persist(directory/(key+'.json'),stopped)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'s.sqlite')) as saver:
+        service=HarnessConsultations(directory=directory,saver=saver,grants=[],tid='t',rid='next',check=lambda:None,
+            scope=lambda:__import__('contextlib').nullcontext(),budget=object(),environment={'FINSIGHT_ORGANIZATION_RUNTIME_SECRET':'fixture'},
+            model='gpt-6.1-sol',basis={},as_of='2026-11-06',public_sink=lambda x:None)
+        await service.child(key).initialize({'question':'Original question','messages':[]})
+        with pytest.raises(RuntimeError,match='separate_reconciliation'):
+            await service.recover_cancelled('preparation',tmp_path/'audit')
+        assert not observed
+        monkeypatch.setattr('sec_agent.adapters.explicit_run_recovery.verified_preparation_recovery',lambda *a,**k:{'dispatch_rows':0})
+        await service.recover_cancelled('preparation',tmp_path/'audit');await service.tasks[key]
+        assert observed[0]['previous_scope']=='t:paid'
+        assert observed[0]['message'].content=='Context'
+        assert json.loads((directory/'history'/key/'preparation.json').read_text())==stopped
+        await service.close()
+
+
+@pytest.mark.anyio
 async def test_consultation_actual_tool_schema_read_merge_and_replay(tmp_path, monkeypatch):
     calls = []
     @tool

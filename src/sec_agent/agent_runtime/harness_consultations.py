@@ -108,7 +108,7 @@ class HarnessConsultations:
         The provider's existing recovery verifies each unknown call and wire fingerprint.
         This does not grant retries or transform a failed task into a fresh assignment.
         """
-        from sec_agent.adapters.explicit_run_recovery import verified_permit
+        from sec_agent.adapters.explicit_run_recovery import verified_permit, verified_preparation_recovery
         previous_scope = self.tid+':'+previous_run_id
         # A recovery can itself be interrupted before it reaches this method.
         # Follow only tasks present in this author's real saved tool receipts.
@@ -125,6 +125,22 @@ class HarnessConsultations:
         if not candidates:
             return
         for path, record in candidates:
+            stopped_record = record
+            # A checked zero-dispatch recovery failure cannot replace the prior
+            # paid checkpoint. Follow its immutable history, with both proofs.
+            if record.get('error_type') != 'CancelledError':
+                thread, run = record['scope'].split(':')
+                prepared = verified_preparation_recovery(audit_root,thread,run,
+                    secret=self.environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
+                prior_scope = record.get('previous_scope','')
+                if not prepared or not prior_scope.startswith(self.tid+':'):
+                    raise RuntimeError('consultation_failure_requires_separate_reconciliation')
+                prior_run=prior_scope.split(':')[1]
+                history=self.directory/'history'/path.stem/(prior_run+'.json')
+                prior=json.loads(history.read_text(encoding='utf8'))
+                if prior['scope'] != prior_scope or prior['request'] != record['request']:
+                    raise RuntimeError('consultation_preparation_history_mismatch')
+                record=prior
             previous_scope=record['scope']
             origin_thread,origin_run=previous_scope.split(':')
             if origin_thread!=self.tid:
@@ -140,6 +156,8 @@ class HarnessConsultations:
                 raise RuntimeError('consultation_recovery_checkpoint_missing')
             # Preserve the stopped task independently from the mutable status pointer.
             _persist(self.directory/'history'/key/(origin_run+'.json'),record)
+            if stopped_record is not record:
+                _persist(self.directory/'history'/key/(stopped_record['scope'].split(':')[1]+'.json'),stopped_record)
             resumed={k:v for k,v in record.items() if k!='error_type'}
             resumed.update(status='running',scope=self.tid+':'+self.rid,previous_scope=previous_scope)
             _persist(path,resumed)
@@ -164,7 +182,8 @@ class HarnessConsultations:
             self.check()
             _persist(self.directory/(key+'.json'), {**record,'status':'completed','opinion':opinion})
         except BaseException as exc:
-            _persist(self.directory/(key+'.json'), {**record,'status':'failed','error_type':type(exc).__name__})
+            _persist(self.directory/(key+'.json'), {**record,'status':'failed','error_type':type(exc).__name__,
+                **({'failure_code':str(exc)} if isinstance(exc,ValueError) and str(exc).startswith('answer_review_') else {})})
             if self.parent:
                 self.parent.failed_receipt = 'consult-'+key
             raise

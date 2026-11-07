@@ -5,7 +5,7 @@ import './answer-review.css';
 import type {Citation} from '../api/reportSessions';
 
 export type SelectionTarget={version:string;offset:number;quote:string};
-export type ReviewResult={citations?:Record<string,Citation>;reviewer:string;version:string;quote:string;question:string;opinion:string;reason:string;edits:{before:string;after:string}[]};
+export type ReviewResult={citations?:Record<string,Citation>;reviewer:string;version:string;quote:string;question:string;opinion:string;reason?:string;edits?:{before:string;after:string}[];artifact?:string;reviewed_report_version?:number;revised_report_version?:number;author_response?:string};
 
 export function SelectAnswerPassage({text,version,onChoose}:{text:string;version:string;onChoose:(s:SelectionTarget)=>void}){
   const [open,setOpen]=useState(false),[error,setError]=useState('');
@@ -28,9 +28,13 @@ export function SelectAnswerPassage({text,version,onChoose}:{text:string;version
 }
 
 export function AnswerReviewResult({result,onCitation,before,after}:{result:ReviewResult;before?:Record<string,Citation>;after?:Record<string,Citation>;onCitation:(key:string,c:Citation)=>void}){
-  return <section className="answer-review" aria-label="选段核查与作者修改"><h4>核查与修改</h4><blockquote>{result.quote||'针对这版回答的问题'}</blockquote>{result.question&&<p>{result.question}</p>}
+  const report=result.artifact==='report';
+  const edits=Array.isArray(result.edits)?result.edits:undefined;
+  const response=report?result.author_response:result.reason;
+  return <section className="answer-review" aria-label={report?'报告复核与作者修改':'选段核查与作者修改'}><h4>核查与修改</h4><blockquote>{result.quote||(report?'针对整份报告的复核':'针对这版回答的问题')}</blockquote>{result.question&&<p>{result.question}</p>}
+    {report&&result.reviewed_report_version!=null&&<p>复核稿：第 {result.reviewed_report_version} 版{result.revised_report_version!=null&&<>；修订稿：第 {result.revised_report_version} 版</>}。</p>}
     <details><summary>独立核查意见 · {result.reviewer}</summary><BoundCitationMarkdown text={result.opinion} citations={result.citations} onCitation={onCitation}/></details>
-    <h5>原作者的处理理由</h5><p>{result.reason}</p>{result.edits.length?<details open><summary>与所选原稿相比修改了 {result.edits.length} 处</summary>
-      {result.edits.map((edit,i)=><section className="answer-edit" key={i}><h5>第 {i+1} 处修改</h5><div className="answer-edit-before"><small>原文</small><BoundCitationMarkdown text={edit.before} citations={before} onCitation={onCitation}/></div><div className="answer-edit-after"><small>修订后</small><BoundCitationMarkdown text={edit.after} citations={after} onCitation={onCitation}/></div></section>)}
-      <small>其余原文沿用所选版本。</small></details>:<p>作者保留了原稿。</p>}</section>;
+    {response&&<><h5>原作者的处理说明</h5><BoundCitationMarkdown text={response} citations={after} onCitation={onCitation}/></>}{edits?.length?<details open><summary>与所选原稿相比修改了 {edits.length} 处</summary>
+      {edits.map((edit,i)=><section className="answer-edit" key={i}><h5>第 {i+1} 处修改</h5><div className="answer-edit-before"><small>原文</small><BoundCitationMarkdown text={edit.before} citations={before} onCitation={onCitation}/></div><div className="answer-edit-after"><small>修订后</small><BoundCitationMarkdown text={edit.after} citations={after} onCitation={onCitation}/></div></section>)}
+      <small>其余原文沿用所选版本。</small></details>:<p>{report||!edits?'本次记录未附逐句修改对照，请结合复核意见、作者说明与报告版本阅读。':'作者保留了原稿。'}</p>}</section>;
 }

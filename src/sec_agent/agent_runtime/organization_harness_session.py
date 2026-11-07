@@ -225,6 +225,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 recovery_receipt = {**(recovery_receipt or {}), 'native_tool_failures': native_failures}
         if recovery_receipt:
             _persist(run_directory / 'tool-recovery.json', recovery_receipt)
+        imported = {}
         if options.get('legacy_receipt_import'):
             from .harness_legacy_import import legacy_receipts
             await asyncio.to_thread(check)
@@ -352,6 +353,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
             binding = {'execution_id': tid, 'manifest_digest': grant['manifest_digest'],
                        'release': options['binary_sha256'], 'model': options['model']}
             action = grant.get('report_action_request', {})
+            first_import_command=(await bridge.state()).get('harness_command_id') in (None,grant.get('report_command_id',rid))
             await bridge.begin_command(grant.get('report_command_id', rid),
                 recovering=action.get('action') == 'recover')
             if action.get('action') == 'recover':
@@ -365,6 +367,14 @@ async def organization_harness_session(*, native, resources, authority, check, o
                     await consultations.recover_cancelled(action['previous_run_id'],phase_arguments['settings']['audit_root'])
             if challenge:
                 selected, original = challenge
+                pinned_review=imported.get('active_report_review') if clean_import and first_import_command else None
+                if (pinned_review and selected.artifact=='report' and selected.version==pinned_review['reviewed_report_digest']
+                        and not opinion_path.exists()):
+                    _persist(opinion_path,{'reviewer':pinned_review['reviewer'],'opinion':pinned_review['opinion']})
+                    _persist(run_directory/'imported-review-receipt.json',{
+                        'source_checkpoint':options['legacy_receipt_import']['source_checkpoint'],
+                        'review_checkpoint':options['legacy_receipt_import']['review_checkpoint'],
+                        'reused_without_model_call':True})
                 if not opinion_path.exists():
                     review_id = grant['report_command_id']
                     original_scope = None

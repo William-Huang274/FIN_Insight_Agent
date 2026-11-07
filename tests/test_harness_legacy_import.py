@@ -80,3 +80,24 @@ def test_import_rejects_wrong_identity_question_or_bytes(tmp_path):
         with pytest.raises(ValueError):legacy_receipts(binding,grant=bad)
     with pytest.raises(ValueError,match='digest'):
         legacy_receipts({**binding,'sha256':'changed'},grant=grant)
+
+
+def test_completed_review_import_requires_exact_report_opinion_and_explicit_binding(tmp_path):
+    from pathlib import Path
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    state,binding,grant=exported(tmp_path)
+    state.update(report={'title':'Saved report','narrative_markdown':'Original'},report_version=4)
+    digest=canonical_sha256(state['report'])
+    state['active_report_review']={'reviewer':'review-model','opinion':'Exact completed opinion',
+        'reviewed_report_digest':digest,'message_boundary':3}
+    kind,blob=JsonPlusSerializer().dumps_typed(state)
+    path=Path(binding['path']);path.write_text(json.dumps({'type':kind,'blob':base64.b64encode(blob).decode()}))
+    binding.update(sha256=sha256(path.read_bytes()).hexdigest(),report_checkpoint={'version':4,'digest':digest})
+    assert 'active_report_review' not in legacy_receipts(binding,grant=grant)
+    binding['review_checkpoint']={'reviewer':'review-model','reviewed_report_digest':digest,
+        'opinion_sha256':sha256(b'Exact completed opinion').hexdigest()}
+    result=legacy_receipts(binding,grant=grant)
+    assert result['active_report_review']==state['active_report_review']
+    for field in ('reviewer','reviewed_report_digest','opinion_sha256'):
+        bad=deepcopy(binding);bad['review_checkpoint'][field]='different'
+        with pytest.raises(ValueError,match='review_checkpoint_mismatch'):legacy_receipts(bad,grant=grant)

@@ -40,4 +40,14 @@ def legacy_receipts(binding, *, grant):
                 or expected != {'version': revision, 'digest':canonical_sha256(report)}):
             raise ValueError('harness_import_report_checkpoint_mismatch')
         imported.update(report=report, report_version=revision)
+    if binding.get('review_checkpoint'):
+        review=state.get('active_report_review') or {}
+        expected=binding['review_checkpoint']
+        actual={'reviewed_report_digest':review.get('reviewed_report_digest'),
+                'reviewer':review.get('reviewer'),
+                'opinion_sha256':sha256(review.get('opinion','').encode()).hexdigest()}
+        if (not imported.get('report') or expected!=actual or not review.get('opinion')
+                or actual['reviewed_report_digest']!=binding['report_checkpoint']['digest']):
+            raise ValueError('harness_import_review_checkpoint_mismatch')
+        imported['active_report_review']=review
     return imported

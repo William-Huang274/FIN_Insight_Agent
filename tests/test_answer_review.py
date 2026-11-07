@@ -109,6 +109,17 @@ def test_reviewer_consumes_maintained_method_and_only_authorized_tools():
     assert set(allowed) == {'get_research_method','read_public_source','read_legislation','read_market_prices','calculate_research_metric'}
 
 
+def test_investigator_can_reframe_comparison_without_new_permissions_or_case_answers():
+    from sec_agent.agent_runtime.answer_review_provider import investigator_instructions, review_tool_names
+    instructions = investigator_instructions()
+    assert '主作者提出的比较、算式和解释同样待检验' in instructions
+    assert '改变比较方式和取证方向' in instructions
+    assert '返回调查改变了哪些判断' in instructions
+    assert not any(name in instructions for name in ('Amazon', 'Alphabet', 'AWS', '8000', '5624'))
+    assert review_tool_names({'read_research_source':None,'save_research_report':None,
+                              'consult_research_agent':None}) == ('read_research_source',)
+
+
 def test_reviewer_repairable_read_feedback_and_execution_stop_are_distinct():
     from langchain_core.messages import ToolMessage
     from sec_agent.agent_runtime.answer_review_provider import review_tool_feedback, review_tool_names

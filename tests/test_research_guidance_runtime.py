@@ -113,3 +113,16 @@ def test_temporal_methods_disclosed_without_preloading_case_answers():
     assert 'IREN' not in prompt and '中期选举' not in prompt
     for depth in ('brief', 'standard', 'deep'):
         assert '时点核验和必要外部依据相同' in depth_guidance(depth)
+
+
+def test_decision_method_replaces_redundant_guidance_and_preserves_callable_chapter():
+    from sec_agent.agent_runtime.conversation_agent import research_system_prompt
+    method = get_research_method('research_loop', '证据怎样推进判断')
+    assert method['content_version'] == 9
+    prompt = research_system_prompt({'get_research_method','consult_research_agent'})
+    assert '证据怎样推进判断' in prompt and method['content'] not in prompt
+    assert prompt.count(BASIC_RESEARCH_GUIDANCE.strip()) == 1
+    assert '对于将决定答案的因果判断，把主张改写成一条可检查的关系' not in prompt
+    assert '改比较或改结论' in prompt
+    assert 80-50-10 == 20 and 100+150-200 == 50
+    assert all(name not in method['content'] for name in ('AWS','Anthropic','中期选举'))

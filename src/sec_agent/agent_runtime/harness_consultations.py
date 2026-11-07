@@ -47,7 +47,10 @@ class HarnessConsultations:
             """Delegate one material research question to an independent Sol high agent with read-only sources,
             web/SEC/government/market/calculation tools and the same task budget. Use investigate for a relationship
             that needs separate evidence, review for an argument you want challenged; neither is mandatory.
-            Explain the question's bearing on the main answer in context, include exact observed source handles.
+            Explain the target relationship and its bearing on the main answer in context; include existing
+            evidence handles and unresolved alternatives when known. No separate plan or template is required.
+            Proposed formulas/comparisons are hypotheses: the investigator may revise them if they answer
+            a different question. It returns changes to the judgment with evidence, not a chapter to paste.
             use_current_report=true attaches the exact saved report; false works before drafting.
             method_ids selects optional method-library IDs, not new permissions. Returns task_id promptly.
             Continue useful independent work, then read_research_agent_result; results are proposals, not verdicts.

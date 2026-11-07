@@ -240,3 +240,22 @@ def test_review_preview_uses_selected_version_and_rejects_ambiguous_edits():
     assert any(row['excerpt'] == candidate for row in result['related_wording'])
     feedback = tool.func(runtime, edits=[{'before':'old answer', 'after':'unrelated'}])
     assert feedback['status'] == 'proposal_needs_correction' and feedback['anchor_counts'] == [0]
+def test_saved_validation_feedback_keeps_original_receipt_identity():
+    from langchain_core.messages import AIMessage, ToolMessage
+    from sec_agent.agent_runtime.answer_review_provider import saved_tool_result, review_tool_feedback
+    import json
+    args={'request':{'expression':'a','operands':{'a':{'source_id':'missing'}}}}
+    history=[]
+    error=json.dumps({'code':'source_id_not_observed','readback':{'tool':'browse_context','arguments':{'region':'sources'}}})
+    for rid in ('original','later-replayed'):
+        history.extend([AIMessage(content='',tool_calls=[{'id':rid,'name':'calculate_research_metric','args':args}]),
+                        ToolMessage(name='calculate_research_metric',tool_call_id=rid,status='error',content=error)])
+    result=saved_tool_result(history,'calculate_research_metric',args)
+    assert result.tool_call_id=='original'
+    assert review_tool_feedback(result)==review_tool_feedback(history[1])
+    history[-1].content=json.dumps({'code':'different','readback':{}})
+    import pytest
+    with pytest.raises(ValueError,match='ambiguous'):
+        saved_tool_result(history,'calculate_research_metric',args)
+    history[1].content=history[-1].content='storage unavailable'
+    assert saved_tool_result(history,'calculate_research_metric',args) is None

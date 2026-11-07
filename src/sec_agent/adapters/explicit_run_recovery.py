@@ -107,6 +107,18 @@ def verified_permit(root, thread, run, *, secret, now=None):
     return signed
 
 
+def _preparation_audit_digest(audit):
+    if not audit.exists():
+        return None
+    data = audit.read_bytes()
+    rows = [json.loads(line) for line in data.decode('utf8').splitlines() if line.strip()]
+    if not rows or any(r.get('provider_call_attempted') is not False
+                       or r.get('event') != 'outcome'
+                       or r.get('status') != 'saved_response_replayed' for r in rows):
+        raise ValueError('preparation_recovery_cannot_replace_model_audit')
+    return sha256(data).hexdigest()
+
+
 def issue_preparation_recovery(root, thread, run, *, store, owner, budget,
                                terminal_run, preparation_evidence, secret,
                                authorization_ref, now=None):
@@ -122,8 +134,7 @@ def issue_preparation_recovery(root, thread, run, *, store, owner, budget,
     if (terminal_run.get('run_id') != rid or terminal_run.get('status') not in {'error','interrupted'}
             or not authorization_ref or not preparation_evidence):
         raise ValueError('preparation_recovery_requires_terminal_failure_evidence')
-    if audit.exists():
-        raise ValueError('preparation_recovery_cannot_replace_model_audit')
+    replay_digest = _preparation_audit_digest(audit)
     scope = tid + ':' + rid
     with store.connection() as db:
         count = db.execute('''SELECT COUNT(*) AS count FROM fin_model_dispatch
@@ -136,6 +147,8 @@ def issue_preparation_recovery(root, thread, run, *, store, owner, budget,
              'owner_id': owner, 'budget_id': budget, 'dispatch_rows': count,
              'terminal_run': terminal_run, 'preparation_evidence': preparation_evidence,
              'authorization_ref': authorization_ref}
+    if replay_digest:
+        value['replayed_response_audit_sha256'] = replay_digest
     if path.exists():
         prior = verified_preparation_recovery(root, tid, rid, secret=secret, now=now)
         if not prior or any(prior.get(k) != v for k, v in value.items()):
@@ -159,7 +172,8 @@ def verified_preparation_recovery(root, thread, run, *, secret, now=None):
     value = dict(signed); signature = value.pop('signature', '')
     if not isinstance(signature, str) or not hmac.compare_digest(signature, _signature(value, secret)):
         raise ValueError('preparation_recovery_signature_invalid')
-    if (audit.exists() or value.get('kind') != PREPARATION_KIND
+    if (_preparation_audit_digest(audit) != value.get('replayed_response_audit_sha256')
+            or value.get('kind') != PREPARATION_KIND
             or value.get('thread_id') != str(UUID(str(thread)))
             or value.get('previous_run_id') != str(UUID(str(run)))
             or value.get('dispatch_rows') != 0):

@@ -37,6 +37,27 @@ def review_tool_feedback(result):
     return json.dumps(model_receipt(result), ensure_ascii=False, default=str)
 
 
+def saved_tool_result(history, name, arguments):
+    """Replay observed feedback, including correctable rejection identities.
+
+    A validation rejection is part of the next provider request, not an
+    unexecuted operation. Retrying it during reconstruction changes receipt IDs.
+    Execution failures are deliberately excluded and retain their recovery gate.
+    """
+    identifiers = {x['id'] for msg in history for x in getattr(msg, 'tool_calls', [])
+                   if x['name'] == name and
+                   (msg.additional_kwargs.get('original_tool_arguments') or x['args']) == arguments}
+    candidates = [m for m in history if getattr(m, 'tool_call_id', None) in identifiers]
+    successes = [m for m in candidates if m.status == 'success']
+    candidates = successes or [m for m in candidates if actionable_tool_feedback(m)]
+    if not candidates:
+        return None
+    result = candidates[-1] if successes else candidates[0]
+    if any(m.content != result.content for m in candidates):
+        raise ValueError('answer_review_saved_read_ambiguous')
+    return result
+
+
 def compact_tool_history(inputs, navigation_calls):
     """Preserve exact primary passages; prior navigation and table structure remain retrievable."""
     last_batch = max((i for i,v in enumerate(inputs) if v.get('type')=='function_call'), default=0)
@@ -339,15 +360,9 @@ async def independent_review(*, selected, message, question, bridge, budget, env
                 if saved:
                     if saved_history is None:
                         saved_history = (await bridge.state()).get('messages', [])
-                    history = saved_history
-                    identifiers = {x['id'] for msg in history for x in getattr(msg,'tool_calls',[])
-                                   if x['name'] == call['name'] and
-                                   (msg.additional_kwargs.get('original_tool_arguments') or x['args']) == args}
-                    candidates = [m for m in history if getattr(m,'tool_call_id',None) in identifiers and m.status=='success']
-                    if candidates:
-                        result = candidates[-1]
-                        if any(m.content != result.content for m in candidates):
-                            raise ValueError('answer_review_saved_read_ambiguous')
+                    restored = saved_tool_result(saved_history, call['name'], args)
+                    if restored is not None:
+                        result = restored
                 if result is None:
                     result = await bridge.execute(call['name'], args)
                 feedback = review_tool_feedback(result)

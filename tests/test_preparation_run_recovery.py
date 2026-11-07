@@ -84,3 +84,20 @@ def test_proof_cannot_hide_new_or_changed_information(setup, fault):
     with pytest.raises(ValueError):
         verified_preparation_recovery(s.root, s.tid, s.rid, secret=SECRET,
             now=now + timedelta(days=2) if fault == 'expired' else now)
+
+
+def test_saved_response_only_audit_is_bound_without_new_dispatch(setup):
+    s=setup
+    path=s.root/s.tid/s.rid/'model-call-events.jsonl'
+    path.parent.mkdir(parents=True)
+    replay={'call_id':str(uuid4()),'event':'outcome','status':'saved_response_replayed','provider_call_attempted':False}
+    path.write_text(json.dumps(replay)+'\n')
+    s.store.count=1
+    with pytest.raises(ValueError,match='dispatch_already_recorded'): s.issue()
+    s.store.count=0
+    proof=s.issue()
+    assert proof['replayed_response_audit_sha256']
+    assert verified_preparation_recovery(s.root,s.tid,s.rid,secret=SECRET)==proof
+    path.write_text(json.dumps(replay)+'\n'+json.dumps(replay)+'\n')
+    with pytest.raises(ValueError,match='scope_changed'):
+        verified_preparation_recovery(s.root,s.tid,s.rid,secret=SECRET)

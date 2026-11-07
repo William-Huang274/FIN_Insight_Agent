@@ -58,6 +58,13 @@ def actionable_tool_feedback(result):
         value = json.loads(text)
     except ValueError:
         value = None
+    if (result.name == 'read_market_prices' and isinstance(value, dict)
+            and value.get('feedback_kind') == 'market_request_validation'
+            and value.get('code') == 'invalid_market_window'
+            and value.get('request_dispatched') is False
+            and value.get('request_modified') is False
+            and isinstance(value.get('constraints'), dict)):
+        return True
     return (isinstance(value,dict) and any(k in value for k in ('readback','read_options','quote_comparison'))
             or text.startswith(('invalid_source_read_window:', 'source_not_observed_read_current_source_catalog'))
             or (text.startswith('Error invoking tool ') and text.endswith('Please fix the error and try again.')))

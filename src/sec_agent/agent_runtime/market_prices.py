@@ -128,8 +128,22 @@ def market_price_tool(*, thread_id, cache_root, research_as_of=None, transport=p
             left, right = instant(start), instant(end)
             if interval not in INTERVALS or not 1 <= limit <= 200 or offset < 0:
                 raise ValueError('invalid_interval_or_page; limit=1..200, offset>=0')
-            if not left < right or right-left > timedelta(days=7 if interval == '1m' else 60):
-                raise ValueError('invalid_market_window; use <=7 days for 1m, <=60 days otherwise')
+            max_days = 7 if interval == '1m' else 60
+            if not left < right or right-left > timedelta(days=max_days):
+                # A rejected argument has not contacted the provider. Return a
+                # usable correction without selecting a different trading period.
+                raise ToolException(json.dumps(dict(
+                    message='行情读取未完成', code='invalid_market_window',
+                    feedback_kind='market_request_validation', request_dispatched=False,
+                    request_modified=False, requested=dict(symbol=ticker, start=start,
+                        end=end, interval=interval, offset=offset, limit=limit),
+                    constraints=dict(start_before_end=True, maximum_window_days=max_days,
+                        end_is_exclusive=True, timezone_required=True),
+                    next_action='Choose start < end within maximum_window_days, or split '
+                        'the intended period into separately requested windows. offset/limit '
+                        'pages bars within one window; it does not extend the time range. '
+                        'Keep the research cutoff and elapsed-time bounds. No period was '
+                        'selected or fetched by runtime.'), ensure_ascii=False))
             current = now()
             latest = min(current, cutoff) if cutoff else current
             if right > latest:

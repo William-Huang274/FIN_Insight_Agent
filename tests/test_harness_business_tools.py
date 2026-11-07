@@ -725,3 +725,38 @@ async def test_manuscript_preview_preserves_display_handles_and_can_be_read_back
         assert receipt.status == 'success' and json.loads(receipt.content)['related_wording'][0]['excerpt'] == proposed
         reread = await bridge.execute('read_saved_result', {'tool_call_id':receipt.tool_call_id})
         assert reread.status == 'success' and 'related_wording' in reread.content
+
+
+@pytest.mark.anyio
+async def test_market_window_feedback_does_not_abort_batch_or_hide_provider_failure(tmp_path):
+    from mcp import types
+    from sec_agent.agent_runtime.market_prices import market_price_tool, instant
+    from sec_agent.research_foundation.external_sources import ExternalSourceError
+    dispatched = []
+    def provider(*args):
+        dispatched.append(args)
+        raise ExternalSourceError('market_provider_unavailable')
+    grant = market_price_tool(thread_id='94bab8de-273e-5b22-a8e9-2c423825c9dd',
+        cache_root=tmp_path/'prices', research_as_of='2026-11-06T23:59:59Z',
+        transport=provider, clock=lambda: instant('2026-11-07T00:00:00Z'))
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'market.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=[grant], checkpointer=saver, thread_id='t',
+            check=lambda: None, stop_on_tool_error=True)
+        await bridge.initialize({'messages': []})
+        # Exact two proposals from the real failed batch, without model spending.
+        for symbol in ('NVDA', 'CRWV'):
+            args = dict(symbol=symbol,start='2026-09-01T00:00:00Z',
+                end='2026-11-06T21:00:00Z',interval='60m',limit=200)
+            response = await bridge.call_tool(None, types.CallToolRequestParams(
+                name='read_market_prices', arguments=args))
+            receipt = json.loads(response.content[0].text)
+            assert not response.is_error and receipt['status'] == 'error'
+            assert receipt['result']['requested'] == {**args, 'offset': 0}
+            assert receipt['result']['constraints']['maximum_window_days'] == 60
+            assert receipt['result']['request_dispatched'] is False
+            assert not bridge.failed_receipt
+        assert not dispatched
+        response = await bridge.call_tool(None, types.CallToolRequestParams(
+            name='read_market_prices', arguments={**args,'start':'2026-11-01T00:00:00Z'}))
+        assert response.is_error and bridge.failed_receipt
+        assert len(dispatched) == 1

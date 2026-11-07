@@ -112,6 +112,50 @@ def failed_run_receipts(event_file):
     return ids
 
 
+def completed_transport_reads(messages, event_file):
+    """Reconcile a timed-out native read with its uniquely committed receipt.
+
+    Use a successful receipt from this exact native run as a lower boundary.
+    Never match the same arguments against arbitrary earlier research history,
+    never replay a call, and never promote an uncommitted or ambiguous result.
+    """
+    if not event_file.is_file():
+        return []
+    positions = {m.tool_call_id: i for i, m in enumerate(messages) if isinstance(m, ToolMessage)}
+    anchor, pending, recovered = None, {}, []
+    for line in event_file.read_text(encoding='utf8').splitlines():
+        update = json.loads(line).get('update', {})
+        kind, identity = update.get('sessionUpdate'), update.get('toolCallId')
+        if kind == 'tool_call':
+            pending[identity] = (update.get('title', '').removeprefix('mcp__financial__'),
+                                 update.get('rawInput'), anchor)
+        elif kind == 'tool_call_update':
+            for item in update.get('content') or []:
+                try:
+                    receipt = json.loads(item.get('content', {}).get('text', ''))
+                except ValueError:
+                    continue
+                if isinstance(receipt, dict) and receipt.get('status') == 'success' and receipt.get('receipt_id') in positions:
+                    anchor = positions[receipt['receipt_id']]
+            if update.get('status') != 'failed' or identity not in pending:
+                continue
+            name, arguments, boundary = pending[identity]
+            if boundary is None or name not in SAVED_RESULT_TOOLS:
+                continue
+            matches = []
+            for i, message in enumerate(messages[boundary + 1:], boundary + 1):
+                for call in getattr(message, 'tool_calls', ()):
+                    original = message.additional_kwargs.get('original_tool_arguments', call.get('args'))
+                    if call.get('name') == name and original == arguments:
+                        matches.extend(m for m in messages[i + 1:] if isinstance(m, ToolMessage)
+                            and m.tool_call_id == call['id'] and m.name == name and m.status == 'success')
+            if len(matches) == 1:
+                recovered.append({'native_tool_call_id': identity, 'tool': name,
+                    'submitted_arguments': arguments, 'status': 'completed_before_transport_recovery',
+                    'receipt': model_receipt(matches[0]), 'original_transport_error_retained': True})
+    return recovered
+
+
 def restored_batch_feedback(messages, ids):
     from .conversation_tools import calculator_observations, operand_source_feedback
     from sec_agent.research_foundation.source_bound_calculator import (

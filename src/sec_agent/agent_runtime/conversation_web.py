@@ -191,6 +191,11 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                                 and not saved_artifact.get('execution_stop'))):
                         continue
                     for raw in (getattr(message, 'artifact', None) or {}).get('web_navigation_receipts', []):
+                        # These are immutable host-saved receipts. Each later
+                        # observation may carry the same directory again; only
+                        # validate/restore each identity once in this reader.
+                        if raw.get('receipt_digest') in restored:
+                            continue
                         receipt = DiscoveryReceipt.model_validate(raw)
                         if receipt.receipt_digest in restored:
                             continue

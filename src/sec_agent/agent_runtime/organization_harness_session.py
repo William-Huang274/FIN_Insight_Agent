@@ -235,6 +235,10 @@ async def organization_harness_session(*, native, resources, authority, check, o
             recovering=action.get('action') == 'recover', failed_receipt_ids=failed_ids)
         if failed_ids is not None:
             from .harness_acp_session import native_tool_recovery
+            from .harness_business_tools import completed_transport_reads
+            completed_reads = completed_transport_reads((await bridge.state()).get('messages', []), events)
+            if completed_reads:
+                recovery_receipt = {**(recovery_receipt or {}), 'completed_transport_reads': completed_reads}
             native_failures = await asyncio.to_thread(native_tool_recovery, events, [g.tool.name for g in grants])
             if native_failures:
                 recovery_receipt = {**(recovery_receipt or {}), 'native_tool_failures': native_failures}

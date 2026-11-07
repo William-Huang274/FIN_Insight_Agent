@@ -201,9 +201,11 @@ def install_organization_read_routes(router, service):
                        for s in citation['sources'] if s['source_id'] == source_id)
         if not records:
             raise HTTPException(404, '引用未与所选研究成果绑定')
-        if any(row != records[0] for row in records[1:]):
+        from .citation_snapshot_read import resolve_citation_snapshot
+        try:
+            result = resolve_citation_snapshot(records)
+        except ValueError:
             raise HTTPException(409, '同一来源标识存在不同快照，请明确报告版本')
-        result = deepcopy(records[0])
         text = result.get('text', '')
         result.update(text=text[offset:offset + 16000],
                       next_offset=offset + 16000 if offset + 16000 < len(text) else None,

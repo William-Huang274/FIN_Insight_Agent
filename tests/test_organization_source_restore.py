@@ -72,6 +72,59 @@ def test_shared_calculator_identity_restores_via_verified_dependencies(archive):
         fresh(nav).restore(observations(passage,plain,chain))
 
 
+def public_calculation_fixture():
+    from hashlib import sha256
+    from sec_agent.research_foundation.source_bound_calculator import calculate_from_sources
+    text = 'Group activities\n(4,467) (7,655)'
+    digest = sha256(text.encode()).hexdigest()
+    doc = 'WEB::public-fixture'
+    passage = {'result_state':'source_bound_passage', 'writer_citable':True,
+        'source_role':'external_public_source_unverified', 'numeric_fact_authority':False,
+        'source_url':'https://example.test/filing', 'document_id':doc, 'passage':text,
+        'passage_id':f'PASSAGE::{doc}::0::{digest[:16]}', 'content_sha256':digest,
+        'publication_date':'2026-10-28',
+        'source_locator':{'document_id':doc, 'source_url':'https://example.test/filing',
+            'content_sha256':digest, 'character_start':0, 'character_end':len(text),
+            'captured_at':'2026-11-07T12:00:00+00:00', 'capture_receipt_digest':'a'*64}}
+    calculation = calculate_from_sources(SourceBoundCalculation(expression='a * 2', operands={
+        'a':{'source_id':passage['passage_id'], 'quote':'Group activities\n(4,467)\n(7,655)',
+             'literal':'7,655'}}, result_unit='USD million', rationale='Fixture'), lambda key:passage)
+    chain = calculate_from_sources(SourceBoundCalculation(expression='a / 2', operands={
+        'a':{'source_id':calculation['calculation_id']}}, result_unit='USD million',
+        rationale='Chained fixture'), lambda key:calculation)
+    return passage, calculation, chain
+
+
+def test_public_recapture_and_quote_compatibility_preserve_calculation_identity(archive):
+    from sec_agent.agent_runtime.public_source_restore import validated_public_source
+    nav, *_ = archive
+    original, calc, chain = public_calculation_fixture()
+    later = deepcopy(original)
+    later['source_locator'].update(captured_at='2026-11-07T14:00:00+00:00',
+                                   capture_receipt_digest='b'*64)
+    result = fresh(nav).restore(observations(later, calc, chain),
+        external_source_lookup=lambda key:validated_public_source(later))
+    assert result[calc['calculation_id']] == calc
+    assert result[chain['calculation_id']] == chain
+    assert result[later['passage_id']] == later
+    assert result[calc['calculation_id']]['operands']['a']['quote_layout_recovery']
+
+
+@pytest.mark.parametrize('field', ['publication_date','source_url','value','unit','recovery'])
+def test_recapture_does_not_hide_semantic_or_receipt_changes(archive, field):
+    from sec_agent.agent_runtime.public_source_restore import validated_public_source
+    nav, *_ = archive
+    passage, calc, chain = public_calculation_fixture()
+    if field == 'publication_date': passage[field]='2027-01-01'
+    elif field == 'source_url': passage[field]='https://example.test/other'
+    elif field == 'value': calc['value_decimal']='0'
+    elif field == 'unit': calc['result_unit']='percent'
+    else: calc['operands']['a']['quote_layout_recovery']['basis']['start']=999
+    with pytest.raises(ValueError):
+        fresh(nav).restore(observations(passage, calc, chain),
+            external_source_lookup=lambda key:validated_public_source(passage))
+
+
 def test_unscoped_assumptions_do_not_establish_organization_authority(archive):
     from sec_agent.research_foundation.source_bound_calculator import calculate_from_sources
     nav,*_ = archive

@@ -615,6 +615,11 @@ class OrganizationSourceNavigation:
                                           'assumption_note':operand['assumption_note']}
                     elif authority == 'non_authoritative_source_reported':
                         operands[name] = {key:operand[key] for key in ('source_id','quote','literal')}
+                        recovery = operand.get('quote_layout_recovery')
+                        if recovery is not None:
+                            # Re-run the original compatibility parse; feeding
+                            # its normalized quote would erase the audit record.
+                            operands[name]['quote'] = recovery['original_input']
                     elif authority == 'non_authoritative_calculation':
                         operands[name] = {'source_id':operand['source_id']}
                     else:
@@ -622,6 +627,8 @@ class OrganizationSourceNavigation:
                 request = SourceBoundCalculation(expression=saved['expression'], operands=operands,
                     result_unit=saved['result_unit'], rationale=saved['rationale'])
                 fresh = calculate_from_sources(request, verify)
+                from .calculation_receipt_restore import preserve_verified_capture_identity
+                fresh = preserve_verified_capture_identity(fresh, saved)
                 if saved_scope is not None:
                     fresh['organization_execution'] = self.execution_scope
             if any(any(candidate.get(key) != value for key, value in fresh.items()) for candidate in candidates):

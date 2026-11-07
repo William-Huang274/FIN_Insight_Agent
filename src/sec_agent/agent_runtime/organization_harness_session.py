@@ -39,6 +39,16 @@ def native_messages(rows):
             else convert_to_messages([m])[0] if isinstance(m, dict) else m for m in rows]
 
 
+def review_command_text(command, messages, *, preparation_recovery=False):
+    from .answer_review import PREFIX
+    text = command.get('message', '')
+    if command.get('action') == 'recover' and not preparation_recovery:
+        historical = [m.content for m in messages if m.type == 'human']
+        if historical and historical[-1].startswith(PREFIX):
+            text = historical[-1]
+    return text
+
+
 def receipt_replay_identity(directory, tid, import_digest, clean_import, replay_id=None):
     """Host-only branch identity; repeat experiments never reuse later notes.
 
@@ -277,11 +287,13 @@ async def organization_harness_session(*, native, resources, authority, check, o
         from .answer_review import PREFIX, target, author_input, apply_response
         challenge = None
         command = grant.get('report_action_request', {})
-        command_text = command.get('message', '')
+        preparation_recovery = None
         if command.get('action') == 'recover':
-            historical = [m.content for m in admitted.get('messages', []) if m.type == 'human']
-            if historical and historical[-1].startswith(PREFIX):
-                command_text = historical[-1]
+            from sec_agent.adapters.explicit_run_recovery import verified_preparation_recovery
+            preparation_recovery = verified_preparation_recovery(phase_arguments['settings']['audit_root'],
+                tid, command['previous_run_id'], secret=environment.get('FINSIGHT_ORGANIZATION_RUNTIME_SECRET', ''))
+        command_text = review_command_text(command, admitted.get('messages', []),
+                                          preparation_recovery=bool(preparation_recovery))
         if command_text.startswith(PREFIX):
             if intent not in ('answer', 'report') or not options.get('answer_review_model'):
                 raise ValueError('selected_answer_review_not_enabled')

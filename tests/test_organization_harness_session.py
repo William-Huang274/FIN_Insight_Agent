@@ -14,6 +14,14 @@ from sec_agent.agent_runtime import organization_harness_session as module
 from sec_agent.agent_runtime.harness_acp_session import _persist
 
 
+def test_preparation_failure_retains_new_task_not_historical_review():
+    from sec_agent.agent_runtime.answer_review import PREFIX
+    old=[HumanMessage(content=PREFIX+'old completed review')]
+    command={'action':'recover','message':'Current native author takeover'}
+    assert module.review_command_text(command,old,preparation_recovery=True)==command['message']
+    assert module.review_command_text(command,old)==old[0].content
+
+
 @pytest.fixture
 def anyio_backend():
     return 'asyncio'

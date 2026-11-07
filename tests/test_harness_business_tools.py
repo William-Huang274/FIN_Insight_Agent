@@ -95,6 +95,19 @@ def test_recovered_calculator_rechecks_original_without_rewriting_history():
     assert 'revalidated' not in failed
 
 
+def test_recovery_records_business_rejection_delivered_as_completed_mcp(tmp_path):
+    from sec_agent.agent_runtime.harness_business_tools import failed_run_receipts
+    events = []
+    for transport, status, identity in [('completed','error','correctable'),
+            ('failed','error','failed'),('completed','success','good'),
+            ('in_progress','error','pending')]:
+        events.append({'update': {'sessionUpdate':'tool_call_update','status':transport,
+            'content':[{'content':{'text':json.dumps({'receipt_id':identity,'status':status})}}]}})
+    path = tmp_path/'events.jsonl'
+    path.write_text('\n'.join(json.dumps(row) for row in events), encoding='utf8')
+    assert failed_run_receipts(path) == {'correctable','failed'}
+
+
 @pytest.mark.anyio
 async def test_unobserved_source_feedback_survives_pending_read_recovery(tmp_path):
     from langchain_core.messages import AIMessage

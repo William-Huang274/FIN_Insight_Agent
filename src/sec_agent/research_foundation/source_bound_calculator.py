@@ -245,6 +245,13 @@ def _bind_operand(name, operand, source_lookup):
                         quote)
                     quantity_rule = "numeric_specification_unit_suffix_v1"
                 if quantity_match is None:
+                    # Financial publishers attach scale abbreviations directly
+                    # to amounts (e.g. $2.4bn). Recognize the numeric boundary;
+                    # do not convert scale or infer a currency/comparison basis.
+                    quantity_match = re.search(literal_pattern +
+                        r"(?:bn|mn|tn|trn)(?!\w)", quote, flags=re.IGNORECASE)
+                    quantity_rule = "numeric_financial_scale_suffix_v1"
+                if quantity_match is None:
                     # Only thousands-group punctuation may differ. Require
                     # a unique complete token in the already exact quote;
                     # never round, change sign/scale or match identifiers.

@@ -89,3 +89,32 @@ def test_plain_number_retains_existing_shape_and_exact_quote_validation():
     with pytest.raises(ValueError, match="operand_quote_not_in_observed_source"):
         calculate_from_sources(request, lambda _: {"result_state": "source_bound_passage",
             "writer_citable": True, "passage": "4x accelerators"})
+
+
+@pytest.mark.parametrize('text,literal,value', [
+    ('$364.6bn of leases', '364.6', '729.2'),
+    ('EUR 2.4mn; remaining payments', '2.4', '4.8'),
+    ('£1.8tn.', '1.8', '3.6'),
+    ('USD 3BN', '3', '6'),
+    ('1.2trn', '1.2', '2.4'),
+])
+def test_financial_scale_suffix_is_lexical_not_currency_or_scale_conversion(text, literal, value):
+    result = calculate_count(text, literal)
+    assert result['value_decimal'] == value
+    binding = result['operands']['count']
+    assert binding['literal'] == literal and binding['quote'] == text
+    receipt = binding['runtime_compatibility_parse']
+    assert receipt['rule'] == 'numeric_financial_scale_suffix_v1'
+    assert text[slice(*receipt['quote_span'])] == receipt['matched_text']
+    assert not result['financial_semantics_verified']
+    assert not receipt['semantic_inference']
+
+
+@pytest.mark.parametrize('text,literal', [
+    ('$364.6bn', '364600000000'), ('$1364.6bn', '364.6'),
+    ('A364.6bn', '364.6'), ('$364.6bn_code', '364.6'),
+    ('$364.6bn2', '364.6'), ('$364.6bnfoo', '364.6'),
+])
+def test_financial_scale_suffix_does_not_admit_scaled_values_or_identifier_fragments(text, literal):
+    with pytest.raises(ValueError, match='numeric_literal_not_in_exact_source_quote'):
+        calculate_count(text, literal)

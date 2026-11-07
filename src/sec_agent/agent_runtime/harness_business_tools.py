@@ -100,13 +100,14 @@ def restored_calculator_feedback(messages):
 
 
 def failed_run_receipts(event_file):
-    """Only terminal MCP failures recorded by this run identify its failed calls."""
+    """Recover this run's business rejections, even if MCP delivered them normally."""
     ids = set()
     if event_file.is_file():
         with event_file.open(encoding='utf8') as stream:
             for line in stream:
                 event = json.loads(line).get('update', {})
-                if event.get('sessionUpdate') != 'tool_call_update' or event.get('status') != 'failed':
+                if (event.get('sessionUpdate') != 'tool_call_update'
+                        or event.get('status') not in ('failed', 'completed')):
                     continue
                 for content in event.get('content') or []:
                     text = content.get('content', {}).get('text', '')

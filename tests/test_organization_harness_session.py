@@ -41,7 +41,7 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
         binary=str(binary), binary_sha256=release, provider='fixture-provider', protocol='qwen_chat',
         provider_endpoint='https://provider.invalid', provider_key_env='FIXTURE_SECRET',
         token_budget_basis=args['basis'], context_window=262144, output_tokens=32000, summary_tokens=16000,
-        preloaded_research_methods=['research_loop', 'counter', 'finance'])
+        preloaded_research_methods=['research_loop', 'counter', 'finance'], compaction_threshold=.35)
     grant = dict(auth, question='Original research question', organization_id=str(uuid4()))
     execution = SimpleNamespace(apply_profile=lambda _: {'nodes': {'lead': {'profile': {
         'model': 'fixture-model', 'reasoning_effort': 'high'}}}}, delivery_intent='answer', require_report_review=False)
@@ -77,6 +77,9 @@ async def test_host_composition_guard_tools_and_completed_recovery(setup, tmp_pa
     async def acp(**kw):
         from sec_agent.research_foundation.research_methods import get_research_method
         profile_text = Path(kw['arguments'][-1]).read_text(encoding='utf8')
+        patches = json.loads(profile_text)
+        assert next(p['config'] for p in patches if p.get('id') == 'compaction-basic')['thresholdRatio'] == .35
+        assert 'run_start_observations_not_topic_coverage' in profile_text
         profile_text = json.dumps(json.loads(profile_text), ensure_ascii=False)
         assert ('consult_research_agent is an available' in profile_text) == consultation
         for key in options['preloaded_research_methods']:

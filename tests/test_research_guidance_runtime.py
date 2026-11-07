@@ -97,3 +97,19 @@ def test_guidance_preserves_readable_canonical_chinese_and_single_resource():
     assert "\ufffd" not in BASIC_RESEARCH_GUIDANCE
     for key in FIRST_METHODS:
         assert "\ufffd" not in get_research_method(key)["content"]
+
+
+def test_temporal_methods_disclosed_without_preloading_case_answers():
+    from sec_agent.agent_runtime.conversation_agent import research_system_prompt
+    from sec_agent.research_foundation.research_depth import depth_guidance
+    prompt = research_system_prompt({'browse_context', 'get_research_method', 'read_public_source'})
+    for chapter in ('研究时点与近期事实背景', '研究重点与比较对象'):
+        assert chapter in prompt
+        body = get_research_method('research_loop', chapter)['content']
+        assert '## ' + chapter in body
+        assert body not in prompt
+    assert 'region="acquisition"' in prompt
+    assert prompt.count(BASIC_RESEARCH_GUIDANCE.strip()) == 1
+    assert 'IREN' not in prompt and '中期选举' not in prompt
+    for depth in ('brief', 'standard', 'deep'):
+        assert '时点核验和必要外部依据相同' in depth_guidance(depth)

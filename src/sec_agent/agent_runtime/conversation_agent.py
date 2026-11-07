@@ -63,6 +63,12 @@ def research_system_prompt(names, task_context=""):
     if "WriteWorkingNote" in names:
         from .working_memory_tools import WORKING_MEMORY_GUIDANCE
         prompt += WORKING_MEMORY_GUIDANCE
+    if "browse_context" in names:
+        prompt += ('\nbrowse_context(region="acquisition") returns persisted source acquisition events: '
+                   'candidates, read passages and access/verification obstacles, with exact receipt readbacks. '
+                   'Use region="sources" for saved queries/reads and ReadWorkingNote/SearchWorkingNotes for '
+                   'the current research understanding. These records survive native compaction; neither '
+                   'a read count nor the newest publication date proves that a topic is fully covered.\n')
     if task_context:
         prompt += '\n' + task_context
     return prompt

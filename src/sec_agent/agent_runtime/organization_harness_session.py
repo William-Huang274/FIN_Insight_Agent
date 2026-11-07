@@ -441,12 +441,18 @@ async def organization_harness_session(*, native, resources, authority, check, o
 
             async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token,
                     readiness=consultations.dispatch_ready if consultations else None) as endpoint:
+                from .source_acquisition_view import acquisition_snapshot
+                research_start = acquisition_snapshot((await bridge.state()).get('messages', []))
                 prompt = research_system_prompt(bridge.tools, 'Research as of: ' + organization.research_as_of +
+                    '\nThis cutoff bounds admissible public information; it is not proof of current knowledge or completed research. '
+                    'The current user command defines the decision objective; preserve useful prior evidence, investigate changes relevant to that objective.'+
+                    '\nSource acquisition at run start (not a completeness verdict): ' + json.dumps(research_start, ensure_ascii=False) +
                     '\nRequested delivery: ' + intent + '. Save useful working understanding as needed; only deliver the requested artifact form.'+
                     '\nUse returned citation_handle values in source_id fields and [REF-...] citations. They bind exact observed originals/calculations; do not shorten them further. Original long IDs remain compatible.') + depth_content + method_content
                 patch = profile_overlay(model=options['model'], protocol=options['protocol'], endpoint=endpoint,
                     prompt=prompt, context_window=options['context_window'], output_tokens=options['output_tokens'],
                     summary_tokens=options['summary_tokens'], reasoning=options['reasoning'],
+                    compaction_threshold=options.get('compaction_threshold', .8),
                     dispatch_plugin=phase_arguments['root'] / 'integrations/deepseek-harness/dispatch.mjs',
                     wait_for_consultations=consultations is not None,
                     restore_route=options.get('native_restore_route'))

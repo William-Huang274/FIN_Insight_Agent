@@ -1,10 +1,10 @@
 # 基本 Agent 指引：内容基线
 
-日期：2026-11-06。正式资源由维护代码注入输入。当前基本指引版本10；版本3曾将日常交付习惯纳入基础职责，替换原交付段落；部署与行为效果须分别验证。它是产品研究伙伴的指引，不是仓库开发用 AGENTS.md。方法教材由[首批课程](research_skill_curriculum.zh-CN.md#7-第一批内容范围)维护；运行机制沿用[统一设计](on_demand_research_runtime.zh-CN.md)。
+日期：2026-11-07。正式资源由维护代码注入输入。当前基本指引版本15；历史版本说明保留在下文，部署与行为效果分别验证。它是产品研究伙伴的指引，不是仓库开发用 AGENTS.md。方法教材由[首批课程](research_skill_curriculum.zh-CN.md#7-第一批内容范围)维护；运行机制沿用[统一设计](on_demand_research_runtime.zh-CN.md)。
 
 ## 1. 正式指引正文与消费位置
 
-唯一正文在包内[agent_guidance.md](../../src/sec_agent/research_foundation/methods/agent_guidance.md)，版本10。文档不复制正文。普通对话、原生研究作者/Lead、复核与成文构造器消费同一资源；研究方法worker沿现有payload获得它。指引不改变原任务权限与历史运行身份。
+唯一正文在包内[agent_guidance.md](../../src/sec_agent/research_foundation/methods/agent_guidance.md)，版本15。文档不复制正文。普通对话、原生研究作者/Lead、复核与成文构造器消费同一资源；研究方法worker沿现有payload获得它。指引不改变原任务权限与历史运行身份。
 
 目录按需披露七项方法；get_research_method支持准确章节标题section，返回内容版本与摘要校验值；空section仍兼容完整读取。方法全文不全部常驻输入。
 

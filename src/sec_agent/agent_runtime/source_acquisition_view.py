@@ -1,9 +1,22 @@
 """Derived, scoped acquisition history. No new store and no semantic gap verdict."""
 import json
+from collections import Counter
 from langchain_core.messages import AIMessage, ToolMessage
 
 
 SOURCE_TOOLS={'read_public_source','read_source_document','read_research_source','read_company_library','read_legislation'}
+
+
+def acquisition_snapshot(messages):
+    """Run-start metadata only; authoritative receipts stay in the business store."""
+    rows = acquisition_history(messages)
+    counts = Counter(e['stage'] for r in rows for e in r['events'])
+    return {'snapshot': 'run_start_observations_not_topic_coverage',
+            'source_urls': len(rows), 'events_by_stage': dict(counts),
+            'sources_with_obstacle_after_last_read': sum(r['unresolved_after_latest_read'] for r in rows),
+            'research_coverage': 'not_established_by_runtime',
+            'readback': {'tool': 'browse_context', 'arguments': {'region': 'acquisition'}},
+            'query_readback': {'tool': 'browse_context', 'arguments': {'region': 'sources'}}}
 
 
 def acquisition_history(messages):

@@ -16,4 +16,6 @@ DEPTHS = {
 def depth_guidance(depth='standard'):
     if depth not in DEPTHS:
         raise ValueError('unknown_research_depth')
-    return '\n\n当前研究深度：' + depth + '。' + DEPTHS[depth] + '\n实际工具授权与预算另由宿主管理，深度选择不增加权限或额度。\n'
+    return ('\n\n当前研究深度：' + depth + '。' + DEPTHS[depth]
+            + '\n各深度的时点核验和必要外部依据相同；深度改变探索宽度、比较与验证力度，不允许以过时知识替代当前事实。'
+            + '\n实际工具授权与预算另由宿主管理，深度选择不增加权限或额度。\n')

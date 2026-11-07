@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from langchain_core.messages import AIMessage,ToolMessage
 from sec_agent.agent_runtime.revision_context import revision_wording,current_revision_view
-from sec_agent.agent_runtime.source_acquisition_view import acquisition_history
+from sec_agent.agent_runtime.source_acquisition_view import acquisition_history, acquisition_snapshot
 from sec_agent.agent_runtime.context_records import browse_checkpoint
 from sec_agent.agent_runtime.context_observation import observe_context
 
@@ -66,6 +66,13 @@ def test_acquisition_history_preserves_failures_and_distinguishes_partial_reads(
     assert len(page['items'])==12 and page['next_offset']==12
     second=browse_checkpoint(messages,'acquisition',offset=12)
     assert any(x['event']['receipt_id']=='blocked' for x in second['items'])
+    snapshot = acquisition_snapshot(messages)
+    assert snapshot['source_urls'] == 2
+    assert snapshot['events_by_stage']['passage_read'] == 1
+    assert snapshot['sources_with_obstacle_after_last_read'] == 1
+    assert snapshot['research_coverage'] == 'not_established_by_runtime'
+    assert snapshot['readback']['arguments'] == {'region': 'acquisition'}
+    assert acquisition_snapshot([])['events_by_stage'] == {}
 
 
 def test_context_observation_separates_pagination_changed_results_and_identical_reads():

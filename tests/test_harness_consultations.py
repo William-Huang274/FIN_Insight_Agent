@@ -250,7 +250,7 @@ async def test_child_uses_run_context_after_submitting_memory_scope_exits(tmp_pa
         await service.close()
 
 
-@pytest.mark.parametrize('error_type', ['WorkingMemoryAccessDenied', 'CancelledError'])
+@pytest.mark.parametrize('error_type', ['WorkingMemoryAccessDenied', 'CancelledError', 'DispatchBlocked'])
 def test_scope_failure_replay_requires_all_received_and_priced(tmp_path, error_type):
     from contextlib import contextmanager
     rows = [{'status':'received','actual_micros':10,'response':{'stop_required':False}}]
@@ -262,7 +262,7 @@ def test_scope_failure_replay_requires_all_received_and_priced(tmp_path, error_t
         environment={},model='gpt-6.1-sol',basis={},as_of='2026-11-06',public_sink=lambda x:None)
     record={'error_type':error_type,'scope':'t:old'}
     assert service.settled_scope_failure('key',record)
-    for bad in [{'status':'unknown'}, {'actual_micros':None}, {'response':{'stop_required':True}}]:
+    for bad in [{'status':'unknown'}, {'status':'dispatched'}, {'actual_micros':None}, {'response':{'stop_required':True}}]:
         old=rows[0].copy();rows[0].update(bad)
         assert not service.settled_scope_failure('key',record)
         rows[0]=old
@@ -291,6 +291,52 @@ def test_transport_recovery_matches_signed_unknown_ledger(tmp_path):
     rows[1]['status']='unknown'
     rows[0]['response']['stop_required']=True
     assert not service.authorized_provider_failure('key',record,permit)
+
+
+@pytest.mark.anyio
+async def test_explicit_settled_dispatch_recovery_rechecks_gate_and_preserves_history(tmp_path, monkeypatch):
+    from contextlib import contextmanager, nullcontext
+    from sec_agent.adapters.model_dispatch_store import DispatchBlocked
+    funded = False
+    attempts = []
+    rows = [dict(status='received', actual_micros=10, response={'stop_required':False})]
+    @contextmanager
+    def connection():
+        yield SimpleNamespace(execute=lambda *a:SimpleNamespace(fetchall=lambda:rows))
+    async def provider(**kwargs):
+        attempts.append(kwargs)
+        if not funded:
+            raise DispatchBlocked('research_budget_exhausted_delivery_reserve_preserved')
+        return 'Completed from saved responses and observations'
+    monkeypatch.setattr('sec_agent.agent_runtime.harness_consultations.independent_review',provider)
+    monkeypatch.setattr('sec_agent.adapters.explicit_run_recovery.verified_permit',lambda *a,**k:None)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'state.sqlite')) as saver:
+        service=HarnessConsultations(directory=tmp_path/'jobs',saver=saver,grants=[],tid='t',rid='old',
+            check=lambda:None,scope=nullcontext,
+            budget=SimpleNamespace(owner='o',budget='b',store=SimpleNamespace(connection=connection)),
+            environment={'FINSIGHT_ORGANIZATION_RUNTIME_SECRET':'fixture'},model='gpt-6.1-sol',basis={},
+            as_of='2026-11-06',public_sink=lambda x:None)
+        out=await service.submit('Original question','Original context','review',False,[],{'messages':[]})
+        key=out['task_id']; path=tmp_path/'jobs'/(key+'.json')
+        with pytest.raises(DispatchBlocked):
+            await service.tasks[key]
+        original=json.loads(path.read_text())
+        assert original['failure_code']=='research_budget_exhausted_delivery_reserve_preserved'
+        assert len(attempts)==1
+        service.rid='still-unfunded'
+        await service.recover_cancelled('old',tmp_path/'audit')
+        with pytest.raises(DispatchBlocked):
+            await service.tasks[key]
+        assert json.loads((tmp_path/'jobs'/'history'/key/'old.json').read_text())==original
+        assert json.loads(path.read_text())['status']=='failed'
+        funded=True;service.rid='funded'
+        await service.recover_cancelled('still-unfunded',tmp_path/'audit')
+        await service.tasks[key]
+        current=json.loads(path.read_text())
+        assert current['status']=='completed' and current['request']==original['request']
+        assert attempts[-1]['previous_scope']=='t:still-unfunded'
+        assert len(attempts)==3
+        await service.close()
 
 
 @pytest.mark.anyio

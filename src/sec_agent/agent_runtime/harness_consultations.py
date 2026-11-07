@@ -20,6 +20,7 @@ from .conversation_agent import GrantedTool
 from .harness_acp_session import _persist
 from .harness_business_tools import HarnessBusinessTools
 from .research_graph_contracts import canonical_sha256
+from sec_agent.adapters.model_dispatch_store import DispatchBlocked
 
 
 class HarnessConsultations:
@@ -120,7 +121,11 @@ class HarnessConsultations:
         This never authorizes a failed paid request; any unknown/pending usage
         still requires its separate signed recovery. Live grants are rechecked.
         """
-        if record.get('error_type') not in {'WorkingMemoryAccessDenied', 'CancelledError'}:
+        # A pre-dispatch refusal can be replayed on explicit recovery when every
+        # existing response in this lane is settled. This grants no dispatch:
+        # the provider still checks saved fingerprints and reserve() rechecks
+        # current funds, authority and unresolved calls before the next request.
+        if record.get('error_type') not in {'WorkingMemoryAccessDenied', 'CancelledError', 'DispatchBlocked'}:
             return False
         if getattr(self.budget, 'store', None) is None:
             return False
@@ -260,8 +265,9 @@ class HarnessConsultations:
             _persist(self.directory/(key+'.json'), {**record,'status':'completed','opinion':opinion})
         except BaseException as exc:
             _persist(self.directory/(key+'.json'), {**record,'status':'failed','error_type':type(exc).__name__,
-                **({'failure_code':str(exc)} if isinstance(exc,(ValueError,RuntimeError))
-                   and str(exc).startswith(('answer_review_','harness_business_tool_')) else {})})
+                **({'failure_code':str(exc)} if isinstance(exc,DispatchBlocked) or
+                   (isinstance(exc,(ValueError,RuntimeError))
+                    and str(exc).startswith(('answer_review_','harness_business_tool_'))) else {})})
             if self.parent:
                 self.parent.failed_receipt = 'consult-'+key
             raise

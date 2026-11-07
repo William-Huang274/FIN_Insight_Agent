@@ -16,7 +16,7 @@ class BrowseContext(BaseModel):
     This Hermes pilot has no SQL/source tools; empty regions mean unavailable here.
     """
     model_config = ConfigDict(extra='forbid')
-    region: Literal['conversation', 'numbers', 'sources']
+    region: Literal['conversation', 'numbers', 'sources', 'acquisition']
     query: str = Field(default='', max_length=500)
     offset: int = Field(default=0, ge=0)
 

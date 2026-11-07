@@ -144,6 +144,8 @@ class HarnessDispatchHost:
             if len(_bytes(body).decode('utf8')) > self.basis['max_input_characters']:
                 raise DispatchBlocked('harness_wire_exceeds_declared_input_basis')
             saved = self._persist(request_id, 'wire_request', body)
+            from .context_observation import observe_context
+            observation = self._persist(request_id, 'context_observation', observe_context(body))
             claim = self.receipts / (request_id + '.wire-claimed.json')
             try:
                 with claim.open('xb') as stream:
@@ -154,7 +156,7 @@ class HarnessDispatchHost:
                 raise DispatchBlocked('harness_wire_already_dispatched_no_resend') from None
             self._wire_pending = None
             self._public(request_id, {'event': 'started', 'input_characters': len(_bytes(body).decode('utf8')),
-                'max_output_tokens': body.get('max_tokens')})
+                'max_output_tokens': body.get('max_tokens'), 'context_observation_sha256':observation['sha256']})
             return request_id
 
     def settle(self, request_id, chunks, terminal=None, *, unknown=False):

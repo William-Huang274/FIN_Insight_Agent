@@ -80,7 +80,8 @@ def test_report_review_binds_complete_artifact_not_delivery_summary():
     assert 'edit_research_report' in request['task'] and 'deliver_current_report' in request['task']
     assert request['original_answer'] != msg.content
     assert '不预设保留旧结构' in request['task']
-    assert '增量保存是写入方式' in request['task']
+    assert 'save_research_report' in request['task']
+    assert request['report_revision_readback']['arguments']['field']=='revision_context'
     assert '局部修改受影响' not in request['task']
     resumed = json.loads(author_input(selected, original, 'Independent opinion',
         current_report_version=9, recovery_command='Continue after source transport repair.'))

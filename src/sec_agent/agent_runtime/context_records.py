@@ -23,7 +23,7 @@ RESULT_REGIONS = {
 }
 NAVIGATION_GUIDANCE = """
 Context has separate regions: conversation (public turns), numbers (saved query/calculation
-receipts), sources (saved source reads), and working papers (SearchWorkingNotes/ReadWorkingNote
+receipts), sources (saved source reads), acquisition (URL-level access/verification/read history), and working papers (SearchWorkingNotes/ReadWorkingNote
 when offered). Use browse_context to discover keys, then read_context_turn or read_saved_result.
 Titles/previews are locators, not evidence. Keys are opaque: copy them, never reconstruct them
 from a title. Query filters checkpoint metadata literally; blank browses and offset paginates.
@@ -109,6 +109,19 @@ def checkpoint_index(messages, *, for_search=False):
 def browse_checkpoint(messages, region, query="", offset=0):
     if offset < 0 or len(query) > 500:
         raise ToolException("offset需非负，检索词最多500字符")
+    if region == 'acquisition':
+        from .source_acquisition_view import acquisition_history
+        rows=acquisition_history(messages)
+        if query.strip(): rows=[r for r in rows if query.casefold().strip() in json.dumps(r,ensure_ascii=False).casefold()]
+        rows.reverse()
+        # Histories are paged by event as well as source; never silently hide old failures.
+        flat=[{'source_url':r['source_url'], **{k:v for k,v in r.items() if k not in {'source_url','events'}},
+            'event_index':i,'total_events':len(r['events']),'event':e}
+            for r in rows for i,e in reversed(list(enumerate(r['events'])))]
+        return {'region':region,'items':flat[offset:offset+12],'total_matches':len(flat),
+            'next_offset':offset+12 if offset+12<len(flat) else None,
+            'retrieval':'checkpoint_metadata_literal_no_remote_calls',
+            'notice':'Exact URL observations, not proof a research question is resolved or sources are equivalent. A read window is not a complete document. Old failures remain; use new evidence to reconsider old missing-source statements.'}
     rows = [r for r in checkpoint_index(messages, for_search=True) if r["region"] == region]
     rows.reverse()  # Recent first, but pagination can reach all old records.
     if query.strip():

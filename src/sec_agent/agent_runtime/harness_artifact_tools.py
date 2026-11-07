@@ -22,7 +22,8 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         from .revision_context import consultation_revision_context
         context = consultation_revision_context(runtime.state.get('messages', []),
             runtime.state.get('report', {}).get('narrative_markdown', ''), report['narrative_markdown'],
-            runtime.state.get('active_report_review'))
+            runtime.state.get('active_report_review'),
+            original_title=runtime.state.get('report', {}).get('title',''), candidate_title=report['title'])
         if context:
             result['revision_context'] = context
         return Command(update={'report': report, 'report_version': version, 'report_draft': None,
@@ -87,7 +88,7 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
     @tool
     def read_current_report(runtime: ToolRuntime, offset: int = 0, max_characters: int = 6000,
                             view: Literal['accepted', 'draft'] = 'accepted',
-                            field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema', 'review'] = 'narrative_markdown'):
+                            field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema', 'review', 'revision_context'] = 'narrative_markdown'):
         """Read exact report fields for editing. Default is unescaped narrative prose.
 
         view=draft reads the saved but unaccepted proposal for repair_report_fields;
@@ -95,7 +96,19 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         not accepted or delivered. field=all returns the serialized author fields;
         field=schema returns the full submission contract, including chart point sources.
         field=review reads the actual current version-bound independent opinion and target digest.
+        field=revision_context reads saved change batches and possible related current wording,
+        including untouched headings/conclusions, with opinion readback. Paginated navigation,
+        not semantic approval; historical batches can be superseded by later edits.
         """
+        if field == 'revision_context':
+            if view != 'accepted': raise ToolException('revision_context_requires_accepted_view')
+            if offset<0 or not 1<=max_characters<=12000:raise ToolException('invalid_read_window')
+            from .revision_context import current_revision_view
+            value=current_revision_view(runtime.state)
+            text=json.dumps(value,ensure_ascii=False)
+            return {'field':field,'found':value['found'],'report_version':runtime.state.get('report_version',0),
+                'text':text[offset:offset+max_characters],'offset':offset,'total_characters':len(text),
+                'next_offset':offset+max_characters if offset+max_characters<len(text) else None}
         if field == 'schema':
             return {'schema': CaseReport.model_json_schema(),
                     'report_version': runtime.state.get('report_version', 0),
@@ -173,6 +186,9 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         value = {'execution_status': 'submitted', 'artifact_kind': 'report', 'artifact_id': 'report',
                  'artifact_version': version, 'artifact_digest': canonical_sha256(report),
                  'review_status': 'not_assessed_in_this_record'}
+        if runtime.state.get('active_report_review'):
+            value['revision_context_readback']={'tool':'read_current_report','arguments':{'field':'revision_context'}}
+            value['reviewed_report_digest']=runtime.state['active_report_review']['reviewed_report_digest']
         return Command(update={'delivery': value, 'messages': [ToolMessage(tool_call_id=runtime.tool_call_id,
             content=json.dumps(value))]})
     tools = [save_research_report, repair_report_fields, read_current_report, edit_research_report]

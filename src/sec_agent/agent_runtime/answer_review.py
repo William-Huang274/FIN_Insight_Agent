@@ -109,7 +109,7 @@ def author_input(selected, message, review, *, current_report_version=None, reco
     if selected.artifact == 'report':
         task = ('根据独立复核及必要补证，重新判断原问题的答案，再更新当前报告。复核不是标准答案，接受、部分接受或反驳均须依据。'
                 '编辑范围由判断变化决定：事实纠正可只改相关段落；核心解释改变时重新组织标题、摘要、论证顺序和结论，不预设保留旧结构。'
-                '复用仍成立的材料、计算和内容，通过 edit_research_report 按当前版本分批保存；增量保存是写入方式，不是研究或改稿范围限制。'
+                '先据现有证据确定当前答案与主次，再选择保留、重排或替换内容，不需要额外提交计划。复用仍成立的材料、计算和内容；可用 edit_research_report 分批改写章节，也可用 save_research_report 保存重构稿。增量保存不是研究或改稿范围限制。'
                 'original_answer 是被复核的历史版本；当前稿可能已局部修改，以 current_report 和读取工具为准。准确引用身份保持不变，新依据使用工具的引用句柄。'
                 '完成后用 deliver_current_report 交付实际保存的版本，最后简述哪些判断及其依据改变、哪些仍成立。'
                 '无需修改时也说明理由并交付当前版本；收到复核意见不等于报告已通过独立复核。')
@@ -121,6 +121,8 @@ def author_input(selected, message, review, *, current_report_version=None, reco
             if selected.artifact == 'report' and current_report_version is not None else {}),
         **({'report_version': message.additional_kwargs['report_version'],
             'report_title': message.additional_kwargs['report_title']} if selected.artifact == 'report' else {}),
+        **({'report_revision_readback':{'tool':'read_current_report','arguments':{'field':'revision_context'},
+            'purpose':'查看已保存改动与当前相关标题、摘要、结尾；候选匹配不代表矛盾或通过。'}} if selected.artifact=='report' else {}),
         'revision_preview': {'tool': 'check_quantitative_changes', 'arguments': 'edits: [{before, after}]',
                              'purpose': '预览改后文字与同稿其他相关表述，可据原文自行决定是否修改。'},
         **({'runtime_observations': checks} if checks else {}),

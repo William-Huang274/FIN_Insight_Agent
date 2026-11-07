@@ -503,6 +503,38 @@ async def test_host_review_binding_readback_survives_recovery_without_advancing_
         assert not (await bridge.state())['active_report_review']
 
 
+@pytest.mark.anyio
+async def test_revision_readback_keeps_actual_batches_on_recovery_and_does_not_approve(tmp_path):
+    from sec_agent.agent_runtime.harness_artifact_tools import artifact_tools
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    from test_on_demand_research import artifact_fixture,report
+    artifacts=artifact_fixture()
+    candidate={k:v for k,v in report(artifacts).items() if k!='citations'}
+    memory=WorkingMemory(tmp_path/'notes.sqlite',owner='test',workspace='task',actor='lead')
+    grants=artifact_tools(artifacts=lambda _:artifacts,memory=memory,delivery_intent='report',require_review=False)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'tools.sqlite')) as saver:
+        bridge=HarnessBusinessTools(grants=grants,checkpointer=saver,thread_id='t',check=lambda:None)
+        await bridge.initialize({'question':'test','messages':[]})
+        first=await bridge.execute('save_research_report',{'report':candidate,'base_version':0})
+        assert first.status=='success'
+        await bridge.set_report_review(report_digest=json.loads(first.content)['digest'],reviewer='checker',opinion='Check current main conclusion against the evidence.')
+        for v in (1,2):
+            saved=await bridge.execute('repair_report_fields',{'fields':{'title':f'Revised title {v}'},'base_version':v})
+            assert saved.status=='success',saved.content
+        assert not (await bridge.state()).get('delivery')
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'tools.sqlite')) as saver:
+        bridge=HarnessBusinessTools(grants=grants,checkpointer=saver,thread_id='t',check=lambda:None)
+        await bridge.initialize({})
+        await bridge.begin_command('recovery',recovering=True)
+        read=await bridge.execute('read_current_report',{'field':'revision_context','max_characters':12000})
+        value=json.loads(json.loads(read.content)['text'])
+        assert [b['report_version'] for b in value['saved_batches']]==[2,3]
+        assert value['title']['current']=='Revised title 2'
+        assert value['status']=='navigation_only_not_a_verdict'
+        assert (await bridge.state())['report_version']==3
+        assert not (await bridge.state()).get('delivery')
+
+
 def test_report_edit_location_hints_never_apply_ambiguous_or_near_matches():
     from sec_agent.agent_runtime.report_synthesis_agent import ReportEditMatchError, ReportTextEdit, apply_report_edits
     original={'title':'Test report','narrative_markdown':'A matching passage. A matching passage.'}

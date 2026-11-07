@@ -15,11 +15,16 @@ export function apply(ctx, config) {
   const token = process.env[config.tokenEnv]
   if (!token) throw new Error('FIN dispatch credential unavailable')
   let stopped = false
-  const post = async (path, body, signal) => {
-    const response = await fetch(new URL(path, base), {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(body), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30_000)]) : AbortSignal.timeout(30_000),
-    })
+  const post = async (path, body, signal, timeoutMs = 30_000) => {
+    let response
+    try {
+      response = await fetch(new URL(path, base), {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs),
+      })
+    } catch (error) {
+      throw new Error(`FIN dispatch host transport ${path}: ${error.name}`, { cause: error })
+    }
     if (!response.ok) throw new Error(`FIN dispatch host refused ${path}: ${response.status}`)
     return response.json()
   }
@@ -35,7 +40,10 @@ export function apply(ctx, config) {
         // Host long-polls completion. No model request, large payload or budget
         // reservation is sent while waiting. Cancellation remains responsive.
         let readiness
-        do { readiness = await post('/calls/ready', {}, signal) } while (readiness.status === 'waiting')
+        // Readiness includes durable checkpoint/authority reads as well as a
+        // 20s wait. It is not a provider request and needs its own bounded
+        // transport allowance; the former 30s envelope cancelled live children.
+        do { readiness = await post('/calls/ready', {}, signal, 120_000) } while (readiness.status === 'waiting')
         if (readiness.status !== 'ready') throw new Error('FIN consultation admission failed')
       }
       const admission = await post('/calls/reserve', { requestId, request })

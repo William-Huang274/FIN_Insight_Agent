@@ -250,7 +250,8 @@ async def test_child_uses_run_context_after_submitting_memory_scope_exits(tmp_pa
         await service.close()
 
 
-def test_scope_failure_replay_requires_all_received_and_priced(tmp_path):
+@pytest.mark.parametrize('error_type', ['WorkingMemoryAccessDenied', 'CancelledError'])
+def test_scope_failure_replay_requires_all_received_and_priced(tmp_path, error_type):
     from contextlib import contextmanager
     rows = [{'status':'received','actual_micros':10,'response':{'stop_required':False}}]
     @contextmanager
@@ -259,7 +260,7 @@ def test_scope_failure_replay_requires_all_received_and_priced(tmp_path):
     service=HarnessConsultations(directory=tmp_path/'jobs',saver=None,grants=[],tid='t',rid='new',
         check=lambda:None,scope=lambda:None,budget=SimpleNamespace(owner='o',budget='b',store=SimpleNamespace(connection=connection)),
         environment={},model='gpt-6.1-sol',basis={},as_of='2026-11-06',public_sink=lambda x:None)
-    record={'error_type':'WorkingMemoryAccessDenied','scope':'t:old'}
+    record={'error_type':error_type,'scope':'t:old'}
     assert service.settled_scope_failure('key',record)
     for bad in [{'status':'unknown'}, {'actual_micros':None}, {'response':{'stop_required':True}}]:
         old=rows[0].copy();rows[0].update(bad)

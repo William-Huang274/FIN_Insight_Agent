@@ -117,7 +117,9 @@ class HarnessConsultations:
         This never authorizes a failed paid request; any unknown/pending usage
         still requires its separate signed recovery. Live grants are rechecked.
         """
-        if record.get('error_type') != 'WorkingMemoryAccessDenied':
+        if record.get('error_type') not in {'WorkingMemoryAccessDenied', 'CancelledError'}:
+            return False
+        if getattr(self.budget, 'store', None) is None:
             return False
         self.check()
         with self.budget.store.connection() as db:
@@ -266,7 +268,7 @@ class HarnessConsultations:
         the wait from durable receipts so cancel/recovery cannot forget it. The
         private host endpoint long-polls small state, never the large LLM request.
         """
-        self.check()
+        await asyncio.to_thread(self.check)
         waiting = {}
         if self.parent:
             for message in (await self.parent.state()).get('messages', []):
@@ -287,7 +289,7 @@ class HarnessConsultations:
                 tasks.append(task)
         if tasks:
             await asyncio.wait(tasks, timeout=timeout)
-        self.check()
+        await asyncio.to_thread(self.check)
         for task in tasks:
             if task.done():
                 task.result()  # failure closes admission; never a fake completion

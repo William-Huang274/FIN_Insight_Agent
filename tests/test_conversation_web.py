@@ -8,6 +8,50 @@ from sec_agent.research_foundation.external_sources import ConversationSourceSco
 from test_web_source_navigation import _reader
 
 
+def test_unknown_web_locator_returns_real_readbacks_without_fetch_or_substitution(tmp_path):
+    from langchain_core.messages import ToolMessage
+    from langchain_core.tools import ToolException
+    from sec_agent.agent_runtime.answer_review_provider import review_tool_feedback
+    import pytest
+    reader, fetcher, _ = _reader()
+    grant = public_web_tool(thread_id=str(uuid4()), run_id=str(uuid4()),
+        method_digest='a'*64, cache_root=tmp_path, reader=reader).tool
+    async def run():
+        visible, artifact = await grant.coroutine(operation='search', query='public filing')
+        runtime = SimpleNamespace(state={'messages': [ToolMessage(name='read_public_source',
+            tool_call_id='observed-search', content=visible, artifact=artifact)]})
+        bad = 'WEB::' + 'f'*64
+        with pytest.raises(ToolException) as raised:
+            await grant.coroutine(operation='read', document_id=bad, runtime=runtime)
+        feedback = json.loads(str(raised.value))
+        assert feedback['submitted_document_id'] == bad
+        assert feedback['request_modified'] is feedback['request_dispatched'] is False
+        assert feedback['read_options'] == [{'tool':'read_saved_result',
+            'arguments':{'tool_call_id':'observed-search'}}]
+        assert not fetcher.calls
+        message = ToolMessage(name='read_public_source', tool_call_id='bad',
+            status='error', content=str(raised.value))
+        assert json.loads(review_tool_feedback(message))['status'] == 'error'
+        # The model, not the host, selects the actual ID on its following action.
+        doc = json.loads(visible)['items'][0]['document_id']
+        actual, _ = await grant.coroutine(operation='read', document_id=doc, runtime=runtime)
+        assert json.loads(actual)['items'][0]['document_id'] == doc
+        assert len(fetcher.calls) == 1
+    asyncio.run(run())
+
+
+def test_missing_web_locator_without_history_does_not_invent_a_readback(tmp_path):
+    from langchain_core.tools import ToolException
+    import pytest
+    reader, fetcher, _ = _reader()
+    grant = public_web_tool(thread_id=str(uuid4()), run_id=str(uuid4()),
+        method_digest='a'*64, cache_root=tmp_path, reader=reader).tool
+    with pytest.raises(ToolException) as raised:
+        asyncio.run(grant.coroutine(operation='read', document_id='WEB::'+'f'*64))
+    assert json.loads(str(raised.value))['read_options'] == []
+    assert not fetcher.calls
+
+
 def test_metering_fault_becomes_error_without_losing_partial_candidates(tmp_path):
     from sec_agent.agent_runtime.conversation_web import search_execution_faults
     from langchain_core.messages import ToolMessage

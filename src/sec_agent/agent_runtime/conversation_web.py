@@ -335,6 +335,31 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                 raise ToolException(json.dumps(visible, ensure_ascii=False))
             return json.dumps(visible,ensure_ascii=False), artifact
         except (ValueError, ExternalSourceError) as exc:
+            if str(exc) == 'web_document_not_discovered_in_this_scope_search_first':
+                # A model-selected locator is not an execution/authority failure.
+                # Point back to observed directories; never guess a replacement ID
+                # or admit a URL that has not passed dated discovery.
+                options = []
+                messages = runtime.state.get('messages', []) if runtime is not None else []
+                for message in reversed(messages):
+                    artifact = getattr(message, 'artifact', None) or {}
+                    if (getattr(message, 'name', None) == 'read_public_source'
+                            and getattr(message, 'status', None) == 'success'
+                            and artifact.get('operation') == 'search'
+                            and getattr(message, 'tool_call_id', None)):
+                        options.append({'tool': 'read_saved_result', 'arguments': {
+                            'tool_call_id': message.tool_call_id}})
+                        if len(options) == 3:
+                            break
+                raise ToolException(json.dumps({
+                    'feedback_kind': 'public_source_selection', 'code': str(exc),
+                    'submitted_document_id': document_id, 'request_dispatched': False,
+                    'request_modified': False, 'read_options': options,
+                    'next_step': 'This document ID is not in the current authorized discovery directory. '
+                        'Reopen an observed search receipt and select its exact document_id. '
+                        'Alternatively search using your public query or a known public HTTPS URL; '
+                        'a failed locator does not establish source absence.',
+                }, ensure_ascii=False)) from exc
             raise ToolException("公开来源读取未完成，不代表信息未披露：" + str(exc)) from exc
     read_public_source.handle_tool_error = True
     return GrantedTool(read_public_source,"read","公开网页搜索与原文读取；仅本对话缓存")

@@ -10,12 +10,17 @@ def _encoded(value):
 
 def observe_context(body):
     calls, groups, sizes, blocksizes = {}, {}, Counter(), Counter()
-    messages=body.get('messages',[])
+    messages=body.get('messages',body.get('input',[]))
+    if not isinstance(messages,list): messages=[]
     for position,message in enumerate(messages):
         if not isinstance(message,dict): continue
         sizes[str(message.get('role','unknown'))]+=len(_encoded(message))
         toolcalls=list(message.get('tool_calls',[]) or [])
         results=[]
+        if message.get('type') == 'function_call':
+            toolcalls.append({'id':message.get('call_id'),'function':{'name':message.get('name'),'arguments':message.get('arguments')}})
+        elif message.get('type') == 'function_call_output':
+            results.append((message.get('call_id'),message.get('output')))
         if isinstance(message.get('content'),list):
             for block in message['content']:
                 if not isinstance(block,dict):continue

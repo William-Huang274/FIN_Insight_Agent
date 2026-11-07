@@ -29,7 +29,25 @@ def test_chat_total_includes_cache_and_reasoning_is_not_extra_output():
         meter.observe({"id": "r2", "usage": usage})
     assert meter.reported() is None
     meter.done()
-    assert vars(meter.reported()) == {"input_uncached": 75, "input_cached": 25, "input_cache_write": 0, "output": 20, "reasoning": 5}
+    assert vars(meter.reported()) == {"input_uncached": 75, "input_cached": 25, "input_cache_write": 0, "output": 20, "reasoning": 5, 'input_multiplier':1, 'output_multiplier':1}
+
+
+@pytest.mark.parametrize('count,multiplier', [(272000,1),(272001,2)])
+def test_responses_terminal_cache_and_long_sol_pricing(count, multiplier):
+    meter = WireUsage('openai_responses', 'gpt-6.1-sol')
+    response = {'id':'resp_fixture', 'status':'completed','usage':{'input_tokens':count,
+        'input_tokens_details':{'cached_tokens':200000},'output_tokens':100,
+        'output_tokens_details':{'reasoning_tokens':60}}}
+    meter.observe({'type':'response.created','response':{'id':'resp_fixture'}})
+    assert meter.reported() is None
+    meter.observe({'type':'response.completed','response':response})
+    u=meter.reported()
+    assert u.input_cached == 200000 and u.input_uncached == count-200000
+    assert u.input_multiplier == multiplier
+    prices=SimpleNamespace(input_miss=2000000,input_hit=100000,output=10000000)
+    assert u.cost_micros(prices) == (((count-200000)*2+20000)*multiplier + (1500 if multiplier==2 else 1000))
+    meter.finish_reason='incomplete'
+    assert meter.reported() == u  # truncated output still costs money
 
 
 @pytest.mark.parametrize("usage", [{}, {"input_tokens": True}, {"input_tokens": -1}, {"input_tokens": "75"}])

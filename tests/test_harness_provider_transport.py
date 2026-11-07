@@ -23,6 +23,10 @@ def wire_fixture(setup, protocol='qwen_chat', failure=None):
             events = [{'choices': [{'finish_reason': 'stop'}], 'usage': {
                 'prompt_tokens': 100, 'completion_tokens': 20,
                 'prompt_tokens_details': {'cached_tokens': 50}}}, '[DONE]']
+        elif protocol == 'openai_responses':
+            events = [{'type':'response.created','response':{'id':'r'}},
+                {'type':'response.completed','response':{'id':'r','status':'completed','usage':{
+                    'input_tokens':100,'input_tokens_details':{'cached_tokens':50},'output_tokens':20}}}]
         else:
             events = [{'type': 'message_start', 'message': {'id': 'fixture-response', 'usage': {
                 'input_tokens': 50, 'cache_read_input_tokens': 50}}},
@@ -34,6 +38,7 @@ def wire_fixture(setup, protocol='qwen_chat', failure=None):
             for e in events:
                 if isinstance(e, dict):
                     e.pop('usage', None)
+                    e.get('response',{}).pop('usage',None)
         data = ''.join('data: ' + (e if isinstance(e, str) else json.dumps(e)) + '\r\n\r\n' for e in events)
         return httpx.Response(200, content=data, headers={'Content-Type': 'text/event-stream'})
     transport = HarnessProviderTransport(host, protocol=protocol, endpoint='https://provider.invalid/test',
@@ -43,14 +48,17 @@ def wire_fixture(setup, protocol='qwen_chat', failure=None):
     app = FastAPI()
     app.include_router(transport.router())
     client = TestClient(app)
-    path = '/v1/messages' if protocol == 'deepseek_messages' else '/v1/chat/completions'
+    path = {'deepseek_messages':'/v1/messages','qwen_chat':'/v1/chat/completions','openai_responses':'/v1/responses'}[protocol]
     headers = {'Authorization': 'Bearer ' + 'x'*32}
     body = {'model': request['model'], 'max_tokens': request['maxTokens'], 'stream': True,
             'messages': [{'role': 'user', 'content': 'fixed evidence'}]}
+    if protocol == 'openai_responses':
+        body['max_output_tokens']=body.pop('max_tokens')
+        body['input']=body.pop('messages')
     return host, request, client, path, headers, body, calls, transport
 
 
-@pytest.mark.parametrize('protocol', ['qwen_chat', 'deepseek_messages'])
+@pytest.mark.parametrize('protocol', ['qwen_chat', 'deepseek_messages','openai_responses'])
 def test_protocol_wire_usage_bound_to_reserved_request_and_not_retried(setup, protocol):
     host, request, client, path, headers, body, calls, transport = wire_fixture(setup, protocol)
     assert client.post(path, json=body).status_code == 401
@@ -69,8 +77,9 @@ def test_protocol_wire_usage_bound_to_reserved_request_and_not_retried(setup, pr
 
 
 @pytest.mark.parametrize('failure', ['http', 'missing_terminal', 'missing_usage'])
-def test_failure_records_unknown_and_stops_next_call(setup, failure):
-    host, request, client, path, headers, body, calls, transport = wire_fixture(setup, failure=failure)
+@pytest.mark.parametrize('protocol',['qwen_chat','openai_responses'])
+def test_failure_records_unknown_and_stops_next_call(setup, failure,protocol):
+    host, request, client, path, headers, body, calls, transport = wire_fixture(setup, protocol, failure=failure)
     rid = str(uuid4())
     host.reserve(rid, request)
     response = client.post(path, json=body, headers=headers)

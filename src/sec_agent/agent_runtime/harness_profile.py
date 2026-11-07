@@ -4,8 +4,8 @@ from pathlib import Path
 
 def profile_overlay(*, model, protocol, endpoint, prompt, context_window,
                     output_tokens, summary_tokens, reasoning, dispatch_plugin,
-                    compaction_threshold=.8, wait_for_consultations=False):
-    if protocol not in {'deepseek_messages', 'qwen_chat'}:
+                    compaction_threshold=.8, wait_for_consultations=False, restore_route=None):
+    if protocol not in {'deepseek_messages', 'qwen_chat', 'openai_responses'}:
         raise ValueError('harness_protocol_not_qualified')
     if (not 0 < compaction_threshold < 1 or not 0 < output_tokens < context_window
             or not 0 < summary_tokens < context_window):
@@ -14,7 +14,7 @@ def profile_overlay(*, model, protocol, endpoint, prompt, context_window,
                 'plugin-package-inventory-deepseek', 'tool-fs', 'tool-working-directory',
                 'persistent-bash', 'persistent-pwsh', 'llm-retry']
     patch = [{'id': name, 'disabled': True} for name in disabled]
-    provider = 'deepseek-official' if protocol == 'deepseek_messages' else 'fin-qwen'
+    provider = {'deepseek_messages': 'deepseek-official', 'qwen_chat': 'fin-qwen', 'openai_responses': 'fin-openai'}[protocol]
     patch += [{'id': 'system-prompt', 'config': {'includeHarnessIdentity': False,
         'includeRuntimeContext': False, 'personaPrefix': prompt}},
         {'id': 'compaction-basic', 'config': {'thresholdRatio': compaction_threshold,
@@ -30,12 +30,24 @@ def profile_overlay(*, model, protocol, endpoint, prompt, context_window,
     else:
         patch += [{'id': 'llm-deepseek', 'disabled': True}, {'insert': [{
             'id': 'fin-pi-ai', 'name': '@deepseek-ai/dsh-llm-pi-ai', 'config': {'providers': {provider: {
-                'api': 'openai-completions', 'apiKeyEnv': 'FIN_HARNESS_LOCAL_TOKEN', 'baseURL': endpoint + '/v1',
+                'api': 'openai-responses' if protocol == 'openai_responses' else 'openai-completions', 'apiKeyEnv': 'FIN_HARNESS_LOCAL_TOKEN', 'baseURL': endpoint + '/v1',
                 'reasoning': reasoning, 'retryPolicy': {'mode': 'normal', 'maxRetries': 0},
-                'compat': {'thinkingFormat': 'qwen', 'supportsDeveloperRole': False,
+                'compat': {} if protocol == 'openai_responses' else {'thinkingFormat': 'qwen', 'supportsDeveloperRole': False,
                            'supportsReasoningEffort': False, 'maxTokensField': 'max_tokens'},
                 'models': [{'id': model, 'contextWindow': context_window, 'maxTokens': output_tokens,
                             'reasoningEfforts': {'off': None, reasoning: reasoning}}]}}}}]}]
+    if restore_route:
+        # Restore needs the previous route's catalog before ACP can select the
+        # new model. The host admits only the new model; the old route has no
+        # paid transport endpoint or provider credential.
+        previous = profile_overlay(model=restore_route['model'], protocol=restore_route['protocol'],
+            endpoint=endpoint, prompt=prompt, context_window=context_window, output_tokens=output_tokens,
+            summary_tokens=summary_tokens, reasoning=reasoning, dispatch_plugin=dispatch_plugin)
+        if restore_route['protocol'] == 'deepseek_messages' and protocol != 'deepseek_messages':
+            patch = [p for p in patch if p.get('id') != 'llm-deepseek']
+            patch.extend(p for p in previous if p.get('id') == 'llm-deepseek')
+        else:
+            raise ValueError('harness_restore_route_not_qualified')
     patch += [{'insert': [
         {'id': 'fin-dispatch', 'name': str(Path(dispatch_plugin).resolve()),
          'config': {'endpoint': endpoint, 'tokenEnv': 'FIN_HARNESS_LOCAL_TOKEN',

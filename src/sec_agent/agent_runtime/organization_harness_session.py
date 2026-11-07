@@ -74,7 +74,10 @@ async def organization_harness_session(*, native, resources, authority, check, o
         raise ValueError('harness_deployment_manifest_mismatch')
     execution = phase_arguments['execution']
     selected = execution.apply_profile(phase_arguments['profile'])['nodes']['lead']['profile']
-    if options['model'] != selected['model'] or options['reasoning'] != selected['reasoning_effort']:
+    transition = options.get('native_model_transition')
+    host_takeover = (transition and transition.get('from_model') == selected['model']
+                     and transition.get('to_model') == options['model'])
+    if (options['model'] != selected['model'] and not host_takeover) or options['reasoning'] != selected['reasoning_effort']:
         raise ValueError('harness_admitted_model_configuration_mismatch')
     budget = phase_arguments['budget_scope']
     if budget is None or options['model'] not in budget.prices:
@@ -176,7 +179,9 @@ async def organization_harness_session(*, native, resources, authority, check, o
     last_delivery = session_directory / 'last-delivered-run.json'
     previous_run = (json.loads(last_delivery.read_text(encoding='utf8'))['run_id'] if last_delivery.exists()
                     else grant.get('report_action_request', {}).get('previous_run_id'))
-    prior_turn = completed_recovery(session_directory, previous_run_id=previous_run, binding=binding) if previous_run else None
+    transition = options.get('native_model_transition')
+    prior_turn = completed_recovery(session_directory, previous_run_id=previous_run, binding=binding,
+                                   transition=transition) if previous_run else None
     prior_answer = prior_turn['text'] if prior_turn else ''
     if prior_turn and last_delivery.exists():
         delivered_version = json.loads(last_delivery.read_text(encoding='utf8')).get('answer_version')
@@ -427,7 +432,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
                     prompt=prompt, context_window=options['context_window'], output_tokens=options['output_tokens'],
                     summary_tokens=options['summary_tokens'], reasoning=options['reasoning'],
                     dispatch_plugin=phase_arguments['root'] / 'integrations/deepseek-harness/dispatch.mjs',
-                    wait_for_consultations=consultations is not None)
+                    wait_for_consultations=consultations is not None,
+                    restore_route=options.get('native_restore_route'))
                 patch_path = run_directory / 'profile.patch.json'
                 _persist(patch_path, patch)
                 child_env = {k: v for k, v in environment.items() if k.upper() in {
@@ -440,7 +446,9 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 async with admitted_acp_session(binary=str(binary), arguments=['--profile', 'sdk-minimal', '--patch', str(patch_path)],
                         environment=child_env, directory=session_directory, binding=binding, run_id=rid,
                         authority=active_authority, stop=bridge.stop, mcp_servers=servers,
-                        workspace=directory if replay_origin_run else session_directory) as session:
+                        workspace=directory if replay_origin_run else session_directory,
+                        transition=transition, model_selection=(options['provider'], options['model'], options['reasoning'])
+                        if options.get('native_model_transition') else None) as session:
                     request = (author_input(selected, original, review['opinion'],
                         current_report_version=(await bridge.state()).get('report_version'),
                         recovery_command=action.get('message') if action.get('action') == 'recover' else None)

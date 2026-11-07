@@ -16,14 +16,18 @@ class ReportedUsage:
     input_cache_write: int
     output: int
     reasoning: int | None
+    input_multiplier: int = 1
+    output_multiplier: float = 1
 
     def cost_micros(self, prices):
         # A write-cache rate is not declared by FIN's current TokenPrices.
         if self.input_cache_write:
             return None
-        numerator = (self.input_uncached * prices.input_miss
-                     + self.input_cached * prices.input_hit + self.output * prices.output)
-        return (numerator + 999_999) // 1_000_000
+        from decimal import Decimal, ROUND_CEILING
+        numerator = ((self.input_uncached * prices.input_miss
+                     + self.input_cached * prices.input_hit) * self.input_multiplier
+                     + self.output * prices.output * Decimal(str(self.output_multiplier)))
+        return int((numerator / 1_000_000).to_integral_value(rounding=ROUND_CEILING))
 
 
 class WireUsage:
@@ -33,10 +37,11 @@ class WireUsage:
     cached tokens. Reasoning is already included in output, never charged twice.
     Terminal/error state is independent of usage completeness and research quality.
     """
-    def __init__(self, protocol):
-        if protocol not in {"deepseek_messages", "qwen_chat"}:
+    def __init__(self, protocol, model=None):
+        if protocol not in {"deepseek_messages", "qwen_chat", "openai_responses"}:
             raise ValueError("unsupported_usage_protocol")
         self.protocol = protocol
+        self.model = model
         self.raw = {}
         self.terminal = False
         self.finish_reason = None
@@ -56,6 +61,15 @@ class WireUsage:
                 self.finish_reason = event.get("delta", {}).get("stop_reason", self.finish_reason)
             if event.get("type") == "message_stop":
                 self.terminal = True
+        elif self.protocol == 'openai_responses':
+            response = event.get('response') or {}
+            self.response_id = response.get('id', self.response_id)
+            if isinstance(response.get('usage'), dict):
+                self.raw = deepcopy(response['usage'])
+            if event.get('type') in {'response.completed', 'response.incomplete', 'response.failed'}:
+                self.terminal = True
+                self.finish_reason = response.get('status')
+                self.error = response.get('error') or self.error
         else:
             self.response_id = event.get("id", self.response_id)
             if isinstance(event.get("usage"), dict):
@@ -78,9 +92,10 @@ class WireUsage:
             hit, write = r.get("cache_read_input_tokens", 0), r.get("cache_creation_input_tokens", 0)
             reasoning = r.get("reasoning_tokens")
         else:
-            prompt, output = r.get("prompt_tokens"), r.get("completion_tokens")
-            prompt_details = r.get("prompt_tokens_details") or {}
-            output_details = r.get("completion_tokens_details") or {}
+            responses = self.protocol == 'openai_responses'
+            prompt, output = r.get('input_tokens' if responses else 'prompt_tokens'), r.get('output_tokens' if responses else 'completion_tokens')
+            prompt_details = r.get('input_tokens_details' if responses else 'prompt_tokens_details') or {}
+            output_details = r.get('output_tokens_details' if responses else 'completion_tokens_details') or {}
             if not isinstance(prompt_details, dict) or not isinstance(output_details, dict):
                 return None
             hit = prompt_details.get("cached_tokens", 0)
@@ -93,7 +108,10 @@ class WireUsage:
             return None
         if reasoning is not None and (type(reasoning) is not int or reasoning < 0 or reasoning > output):
             return None
-        return ReportedUsage(miss, hit, write, output, reasoning)
+        # Official Sol long-context pricing applies to the full request, including
+        # cached input. Bind to an exact model, never all Responses providers.
+        long_sol = self.model == 'gpt-6.1-sol' and miss + hit > 272_000
+        return ReportedUsage(miss, hit, write, output, reasoning, 2 if long_sol else 1, 1.5 if long_sol else 1)
 
     def receipt(self):
         usage = self.reported()

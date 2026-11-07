@@ -41,7 +41,8 @@ class HarnessProviderTransport:
 
     def router(self):
         router = APIRouter()
-        path = '/v1/messages' if self.protocol == 'deepseek_messages' else '/v1/chat/completions'
+        path = {'deepseek_messages': '/v1/messages', 'qwen_chat': '/v1/chat/completions',
+                'openai_responses': '/v1/responses'}[self.protocol]
 
         @router.post(path)
         async def forward(request: Request):
@@ -70,7 +71,7 @@ class HarnessProviderTransport:
                 trust_env=False, follow_redirects=False,
                 timeout=httpx.Timeout(self.host.basis['timeout_seconds'], connect=15),
                 transport=httpx.AsyncHTTPTransport(retries=0))
-            meter = WireUsage(self.protocol)
+            meter = WireUsage(self.protocol, body['model'])
             response = None
 
             def record(value):

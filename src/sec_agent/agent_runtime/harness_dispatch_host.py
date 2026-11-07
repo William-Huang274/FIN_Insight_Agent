@@ -136,8 +136,9 @@ class HarnessDispatchHost:
             row = self.store.lookup(self.owner, self.budget, self._key(request_id))
             if row is None or row['status'] != 'dispatched':
                 raise DispatchBlocked('harness_wire_reservation_not_active')
+            output_fields = [body[k] for k in ('max_tokens', 'max_output_tokens') if k in body]
             if (body.get('model') != request['model'] or body.get('stream') is not True
-                    or body.get('max_tokens') != request.get('maxTokens')):
+                    or output_fields != [request.get('maxTokens')]):
                 self._persist(request_id, 'wire_rejected', {'reason': 'request_binding_mismatch', 'body': body})
                 raise DispatchBlocked('harness_wire_request_binding_mismatch')
             # Provider serialization includes schemas and protocol wrappers.
@@ -156,7 +157,7 @@ class HarnessDispatchHost:
                 raise DispatchBlocked('harness_wire_already_dispatched_no_resend') from None
             self._wire_pending = None
             self._public(request_id, {'event': 'started', 'input_characters': len(_bytes(body).decode('utf8')),
-                'max_output_tokens': body.get('max_tokens'), 'context_observation_sha256':observation['sha256']})
+                'max_output_tokens': output_fields[0], 'context_observation_sha256':observation['sha256']})
             return request_id
 
     def settle(self, request_id, chunks, terminal=None, *, unknown=False):
@@ -183,7 +184,7 @@ class HarnessDispatchHost:
             finish = chunks[-1] if chunks else {}
             finished = (finish.get('type') == 'finish'
                         and finish.get('reason', {}).get('kind') == terminal)
-            wire_success = meter is not None and meter.finish_reason in {'stop', 'tool_calls', 'end_turn', 'tool_use'}
+            wire_success = meter is not None and meter.finish_reason in {'stop', 'tool_calls', 'end_turn', 'tool_use', 'completed'}
             stop = (unknown or not finished or terminal not in {'stop', 'tool-calls'}
                     or not wire_success or actual is None)
             response = {'receipt': saved, 'payload_digest': payload_digest,

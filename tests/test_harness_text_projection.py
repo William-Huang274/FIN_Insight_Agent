@@ -7,7 +7,21 @@ from sec_agent.agent_runtime.harness_acp_session import (
     HarnessSession, HarnessSessionClient, TurnTextProjection,
     completed_text_projection,
     native_tool_recovery,
+    compatible_session_binding,
 )
+
+
+def test_model_takeover_cannot_change_authority_or_release_or_other_session():
+    prior={'session_id':'native','binding':{'execution_id':'task','manifest_digest':'grant','release':'pinned','model':'old'}}
+    binding={**prior['binding'],'model':'new'}
+    transition={'session_id':'native','from_model':'old','to_model':'new'}
+    assert not compatible_session_binding(prior,binding)
+    assert compatible_session_binding(prior,binding,transition)
+    for key in ('execution_id','manifest_digest','release'):
+        assert not compatible_session_binding(prior,{**binding,key:'changed'},transition)
+    assert not compatible_session_binding(prior,binding,{**transition,'session_id':'other'})
+    assert not compatible_session_binding(prior,binding,{**transition,'from_model':'other'})
+    assert compatible_session_binding({'session_id':'native','binding':binding},binding,transition)
 
 
 def chunk(text, message_id='answer'):

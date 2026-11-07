@@ -98,7 +98,17 @@ def completed_text_projection(prior, events):
     return {**prior, **fields}
 
 
-def completed_recovery(directory, *, previous_run_id, binding):
+def compatible_session_binding(saved, binding, transition=None):
+    if saved['binding'] == binding:
+        return True
+    return bool(transition and transition.get('session_id') == saved['session_id']
+        and transition.get('from_model') == saved['binding'].get('model')
+        and transition.get('to_model') == binding.get('model')
+        and {k:v for k,v in saved['binding'].items() if k != 'model'} ==
+            {k:v for k,v in binding.items() if k != 'model'})
+
+
+def completed_recovery(directory, *, previous_run_id, binding, transition=None):
     """Read a completed predecessor only after Java admitted its recovery.
 
     An incomplete/unknown provider response is deliberately not promoted. The
@@ -113,7 +123,7 @@ def completed_recovery(directory, *, previous_run_id, binding):
     if prior.get('status') != 'completed':
         return None
     session = json.loads(session_path.read_text(encoding='utf8'))
-    if session['binding'] != binding or prior['session_id'] != session['session_id']:
+    if not compatible_session_binding(session, binding, transition) or prior['session_id'] != session['session_id']:
         raise ValueError('harness_recovery_response_binding_mismatch')
     return completed_text_projection(prior, turn_path.with_name('events.private.jsonl'))
 
@@ -195,7 +205,8 @@ class HarnessSession:
 @asynccontextmanager
 async def admitted_acp_session(*, binary, arguments, environment, directory,
                                binding, run_id, authority, stop, mcp_servers,
-                               public=None, spawn=spawn_agent_process, workspace=None):
+                               public=None, spawn=spawn_agent_process, workspace=None, model_selection=None,
+                               transition=None):
     """Bind an execution workspace to one ACP session across admitted runs.
 
     `binding` comes from validated Java authority and host release selection,
@@ -208,7 +219,7 @@ async def admitted_acp_session(*, binary, arguments, environment, directory,
     directory.mkdir(parents=True, exist_ok=True)
     saved_path = directory / 'session-binding.json'
     prior = json.loads(saved_path.read_text(encoding='utf8')) if saved_path.exists() else None
-    if prior and prior['binding'] != binding:
+    if prior and not compatible_session_binding(prior, binding, transition):
         raise ValueError('harness_session_binding_mismatch')
     run_directory = directory / str(UUID(run_id))
     run_directory.mkdir(exist_ok=True)
@@ -221,9 +232,9 @@ async def admitted_acp_session(*, binary, arguments, environment, directory,
             if prior:
                 capabilities = initialized.agent_capabilities
                 if capabilities.session_capabilities and capabilities.session_capabilities.resume is not None:
-                    await connection.resume_session(session_id=prior['session_id'], cwd=str(workspace), mcp_servers=mcp_servers)
+                    response = await connection.resume_session(session_id=prior['session_id'], cwd=str(workspace), mcp_servers=mcp_servers)
                 elif capabilities.load_session:
-                    await connection.load_session(session_id=prior['session_id'], cwd=str(workspace), mcp_servers=mcp_servers)
+                    response = await connection.load_session(session_id=prior['session_id'], cwd=str(workspace), mcp_servers=mcp_servers)
                 else:
                     raise ValueError('harness_native_session_restore_unsupported')
                 session_id = prior['session_id']
@@ -232,6 +243,25 @@ async def admitted_acp_session(*, binary, arguments, environment, directory,
                 session_id = response.session_id
                 _persist(saved_path, {'binding': binding, 'session_id': session_id})
             await asyncio.to_thread(authority)
+            if model_selection:
+                # ACP's own configuration API records model changes in native
+                # history. Never patch old turns or manufacture a new transcript.
+                provider, model, effort = model_selection
+                expected = json.dumps([provider, model], separators=(',', ':'))
+                def values(result):
+                    return {o.id: o.current_value for o in result.config_options}
+                before = values(response)
+                if before.get('model') != expected:
+                    response = await connection.set_config_option(session_id=session_id, config_id='model', value=expected)
+                if values(response).get('reasoning_effort') != effort:
+                    response = await connection.set_config_option(session_id=session_id, config_id='reasoning_effort', value=effort)
+                after = values(response)
+                if after.get('model') != expected or after.get('reasoning_effort') != effort:
+                    raise ValueError('harness_native_model_selection_mismatch')
+                _persist(run_directory / 'native-model-selection.json', {'session_id': session_id,
+                    'before': before, 'after': after, 'previous_binding': prior['binding'] if prior else None,
+                    'binding': binding, 'transition': transition})
+                _persist(saved_path, {'binding': binding, 'session_id': session_id})
             try:
                 yield HarnessSession(connection, client, session_id, authority=authority, stop=stop,
                                      turn_path=run_directory / 'turn.private.json')

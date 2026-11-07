@@ -120,6 +120,13 @@ async def organization_harness_session(*, native, resources, authority, check, o
     run_directory = directory / rid
     run_directory.mkdir(exist_ok=True)
     owner = 'organization:' + grant['organization_id']
+    imported = {}
+    imported_navigation = {}
+    if options.get('legacy_receipt_import'):
+        from .harness_legacy_import import legacy_receipts, imported_web_navigation
+        await asyncio.to_thread(check)
+        imported = await asyncio.to_thread(legacy_receipts, options['legacy_receipt_import'], grant=grant)
+        imported_navigation = await asyncio.to_thread(imported_web_navigation, imported)
     # Prepare the fixed release before the first paid turn. Otherwise the
     # first MCP search spends its request deadline loading cached proofs even
     # though no new original needs verification. The maintained lifecycle owns
@@ -150,6 +157,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
         if not agent_identity and identity_file:
             agent_identity = Path(identity_file).read_text(encoding='utf8').strip()
         grants.append(public_web_tool(thread_id=tid, run_id=rid, paid_search=paid_search, sec_user_agent=agent_identity,
+            imported_navigation=imported_navigation,
             method_digest=sha256(research_system_prompt(['read_public_source', 'get_research_method']).encode('utf-8')).hexdigest(),
             cache_root=directory / 'public-source-cache', research_as_of=organization.research_as_of))
         from .market_prices import market_price_tool
@@ -244,11 +252,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 recovery_receipt = {**(recovery_receipt or {}), 'native_tool_failures': native_failures}
         if recovery_receipt:
             _persist(run_directory / 'tool-recovery.json', recovery_receipt)
-        imported = {}
         if options.get('legacy_receipt_import'):
-            from .harness_legacy_import import legacy_receipts
-            await asyncio.to_thread(check)
-            imported = await asyncio.to_thread(legacy_receipts, options['legacy_receipt_import'], grant=grant)
             await bridge.import_receipts(imported)
             # A pinned branch may begin at an earlier failed batch while Java
             # admits the new command against the latest outer checkpoint.

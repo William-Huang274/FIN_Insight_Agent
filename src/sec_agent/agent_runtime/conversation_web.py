@@ -94,7 +94,7 @@ def web_read_feedback(result):
     return details + feedback
 
 
-def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reader=None, research_as_of=None, paid_search=None, sec_user_agent=None):
+def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reader=None, research_as_of=None, paid_search=None, sec_user_agent=None, imported_navigation=None):
     from uuid import UUID
     thread_id, run_id = str(UUID(thread_id)), str(UUID(run_id))
     cutoff = datetime.fromisoformat(research_as_of.replace('Z', '+00:00')) if research_as_of else datetime.now(timezone.utc)
@@ -135,6 +135,8 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         reader = WebSourceReader(discovery=discovery,capture=cached)
 
     restored = set()
+    # Exact receipts from a host-verified import, never model-supplied task IDs.
+    imported_navigation = dict(imported_navigation or {})
 
     @tool(response_format="content_and_artifact")
     async def read_public_source(operation: Literal["search","read"], query: str = "",
@@ -199,15 +201,16 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                         receipt = DiscoveryReceipt.model_validate(raw)
                         if receipt.receipt_digest in restored:
                             continue
-                        if receipt.case_id != thread_id:
+                        if (receipt.case_id != thread_id and
+                                imported_navigation.get(receipt.receipt_digest) != receipt.case_id):
                             raise ValueError('public_source_restore_task_mismatch')
                         if receipt.data_snapshot_id != scope.data_snapshot_id or receipt.research_as_of[:10] != cutoff.date().isoformat():
                             continue
                         rebound = receipt.model_dump(mode='json', exclude={'receipt_digest'})
-                        rebound.update(execution_attempt_id=scope.execution_attempt_id,
+                        rebound.update(case_id=thread_id, execution_attempt_id=scope.execution_attempt_id,
                             run_scope_digest=scope.run_scope_digest, research_as_of=scope.research_as_of.astimezone(timezone.utc).isoformat(timespec='seconds'),
                             data_snapshot_id=scope.data_snapshot_id, method_sha256=scope.method_sha256)
-                        lineage = {key: rebound[key] for key in ('execution_attempt_id', 'run_scope_digest',
+                        lineage = {key: rebound[key] for key in ('case_id', 'execution_attempt_id', 'run_scope_digest',
                                    'research_as_of', 'data_snapshot_id', 'method_sha256')}
                         rebound['candidates'] = [{**candidate, **lineage} for candidate in rebound['candidates']]
                         reader.restore_navigation([{**rebound, 'receipt_digest': canonical_digest(rebound)}],

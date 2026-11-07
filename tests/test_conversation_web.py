@@ -94,6 +94,52 @@ def test_public_web_restores_discovery_between_runs_and_uses_task_cutoff(tmp_pat
     asyncio.run(check())
 
 
+def test_explicit_import_restores_only_pinned_public_directories(tmp_path):
+    from copy import deepcopy
+    from langchain_core.messages import ToolMessage
+    from langchain_core.tools import ToolException
+    from sec_agent.agent_runtime.harness_legacy_import import imported_web_navigation
+    import pytest
+    old_tid, new_tid = str(uuid4()), str(uuid4())
+    first, _, _ = _reader()
+    a = public_web_tool(thread_id=old_tid, run_id=str(uuid4()), method_digest='a'*64,
+        cache_root=tmp_path, reader=first, research_as_of='2026-09-23').tool
+    async def check():
+        visible, artifact = await a.coroutine(operation='search', query='public filing')
+        original = deepcopy(artifact)
+        message = ToolMessage(name='read_public_source', tool_call_id='search', content=visible, artifact=artifact)
+        runtime = SimpleNamespace(state={'messages': [message]})
+        authority = imported_web_navigation({'messages': [message]})
+        doc = json.loads(visible)['items'][0]['document_id']
+        for admitted in ({}, {key: 'another-task' for key in authority}):
+            reader, _, _ = _reader()
+            denied = public_web_tool(thread_id=new_tid, run_id=str(uuid4()), method_digest='b'*64,
+                cache_root=tmp_path, reader=reader, research_as_of='2026-09-23', imported_navigation=admitted).tool
+            with pytest.raises(ToolException, match='restore_task_mismatch'):
+                await denied.coroutine(operation='read', document_id=doc, runtime=runtime)
+        reader, _, text = _reader()
+        allowed = public_web_tool(thread_id=new_tid, run_id=str(uuid4()), method_digest='b'*64,
+            cache_root=tmp_path, reader=reader, research_as_of='2026-09-23', imported_navigation=authority).tool
+        read, _ = await allowed.coroutine(operation='read', document_id=doc, max_characters=1000, runtime=runtime)
+        assert json.loads(read)['items'][0]['passage'] == text[:1000]
+        rebound = next(iter(reader._candidates.values()))[0]
+        assert rebound.case_id == new_tid
+        assert rebound.candidates[0].candidate_id == original['web_navigation_receipts'][0]['candidates'][0]['candidate_id']
+        assert message.artifact == original
+        # Importing a later task's directory cannot move its sources before cutoff.
+        earlier, _, _ = _reader()
+        restricted = public_web_tool(thread_id=new_tid, run_id=str(uuid4()), method_digest='b'*64,
+            cache_root=tmp_path, reader=earlier, research_as_of='2026-06-30', imported_navigation=authority).tool
+        with pytest.raises(ToolException):
+            await restricted.coroutine(operation='read', document_id=doc, runtime=runtime)
+        assert not earlier._candidates
+        tampered = deepcopy(message)
+        tampered.artifact['web_navigation_receipts'][0]['candidates'][0]['snippet'] = 'changed'
+        with pytest.raises(ValueError, match='digest'):
+            imported_web_navigation({'messages': [tampered]})
+    asyncio.run(check())
+
+
 def test_general_web_reuses_readers_without_claiming_financial_review(tmp_path):
     reader,fetcher,text=_reader()
     grant=public_web_tool(thread_id=str(uuid4()),run_id=str(uuid4()),method_digest="a"*64,

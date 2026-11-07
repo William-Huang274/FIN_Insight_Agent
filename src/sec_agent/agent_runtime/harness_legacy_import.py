@@ -7,6 +7,28 @@ from pathlib import Path
 from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 
 
+def imported_web_navigation(imported):
+    """Receipt-specific authority derived only after legacy_receipts verifies bytes.
+
+    Original messages/locators remain unchanged. The web reader can rebind these
+    exact public directories to the admitted execution, with its own date scope.
+    This does not authorize other receipts from the same historical task.
+    """
+    from sec_agent.research_foundation.external_sources import DiscoveryReceipt
+    result = {}
+    for message in imported.get('messages', []):
+        artifact = getattr(message, 'artifact', None) or {}
+        if (getattr(message, 'name', None) != 'read_public_source' or
+                (getattr(message, 'status', None) != 'success' and not artifact.get('execution_stop'))):
+            continue
+        for raw in artifact.get('web_navigation_receipts', []):
+            if raw.get('receipt_digest') in result:
+                continue
+            receipt = DiscoveryReceipt.model_validate(raw)
+            result[receipt.receipt_digest] = receipt.case_id
+    return result
+
+
 def legacy_receipts(binding, *, grant):
     """Only deployment-owned exports may cross a replaced graph boundary.
 

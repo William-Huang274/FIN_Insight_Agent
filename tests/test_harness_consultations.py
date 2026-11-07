@@ -270,6 +270,66 @@ def test_scope_failure_replay_requires_all_received_and_priced(tmp_path, error_t
     assert not service.settled_scope_failure('key',record)
 
 
+def test_transport_recovery_matches_signed_unknown_ledger(tmp_path):
+    from contextlib import contextmanager
+    rows = [dict(call_id='paid', status='received', actual_micros=10, response={'stop_required':False}),
+            dict(call_id='failed', status='unknown', actual_micros=None, response=None)]
+    @contextmanager
+    def connection():
+        yield SimpleNamespace(execute=lambda *a:SimpleNamespace(fetchall=lambda:rows))
+    service=HarnessConsultations(directory=tmp_path/'jobs',saver=None,grants=[],tid='t',rid='new',
+        check=lambda:None,scope=lambda:None,budget=SimpleNamespace(owner='o',budget='b',store=SimpleNamespace(connection=connection)),
+        environment={},model='gpt-6.1-sol',basis={},as_of='2026-11-06',public_sink=lambda x:None)
+    record={'error_type':'ConnectError','scope':'t:old'}
+    assert not service.authorized_provider_failure('key',record,None)
+    assert not service.authorized_provider_failure('key',record,{'unknown_call_ids':['other']})
+    permit={'unknown_call_ids':['failed']}
+    assert service.authorized_provider_failure('key',record,permit)
+    for status in ('dispatched','reserved','received'):
+        rows[1]['status']=status
+        assert not service.authorized_provider_failure('key',record,permit)
+    rows[1]['status']='unknown'
+    rows[0]['response']['stop_required']=True
+    assert not service.authorized_provider_failure('key',record,permit)
+
+
+@pytest.mark.anyio
+async def test_transport_recovery_preserves_request_and_failed_record(tmp_path, monkeypatch):
+    import httpx
+    from contextlib import contextmanager, nullcontext
+    rows=[dict(call_id='failed',status='unknown',actual_micros=None,response=None)]
+    @contextmanager
+    def connection():
+        yield SimpleNamespace(execute=lambda *a:SimpleNamespace(fetchall=lambda:rows))
+    budget=SimpleNamespace(owner='o',budget='b',store=SimpleNamespace(connection=connection))
+    calls=[]
+    async def provider(**kw):
+        calls.append(kw)
+        if len(calls)==1: raise httpx.ConnectError('fixture')
+        return 'Independent result'
+    monkeypatch.setattr('sec_agent.agent_runtime.harness_consultations.independent_review',provider)
+    monkeypatch.setattr('sec_agent.adapters.explicit_run_recovery.verified_permit',lambda *a,**kw:{'unknown_call_ids':['failed']})
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'s.sqlite')) as saver:
+        def service(rid):
+            return HarnessConsultations(directory=tmp_path/'jobs',saver=saver,grants=[],tid='t',rid=rid,
+                check=lambda:None,scope=nullcontext,budget=budget,
+                environment={'FINSIGHT_ORGANIZATION_RUNTIME_SECRET':'fixture'},model='gpt-6.1-sol',basis={},
+                as_of='2026-11-06',public_sink=lambda x:None)
+        first=service('old')
+        result=await first.submit('Original question','Original context','investigate',False,[],{'messages':[]})
+        key=result['task_id']
+        with pytest.raises(httpx.ConnectError): await first.tasks[key]
+        await first.close()
+        second=service('new')
+        await second.recover_cancelled('old',tmp_path/'audit')
+        await second.tasks[key]
+        assert calls[1]['question']==calls[0]['question']
+        assert calls[1]['previous_scope']=='t:old'
+        assert json.loads((tmp_path/'jobs'/'history'/key/'old.json').read_text())['error_type']=='ConnectError'
+        assert rows[0]['status']=='unknown' and rows[0]['actual_micros'] is None
+        await second.close()
+
+
 @pytest.mark.anyio
 async def test_cancelled_consultation_requires_permit_and_reuses_exact_target(tmp_path, monkeypatch):
     observed=[]

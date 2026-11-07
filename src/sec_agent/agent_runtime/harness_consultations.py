@@ -130,6 +130,31 @@ class HarnessConsultations:
         return bool(rows) and all(r['status']=='received' and type(r['actual_micros']) is int
             and isinstance(r['response'], dict) and not r['response'].get('stop_required', True) for r in rows)
 
+    def authorized_provider_failure(self, key, record, permit):
+        """Admit a stopped transport failure only against its signed unknown-call set.
+
+        The provider replay still checks the exact saved request before retrying.
+        This does not settle the unknown charge or admit an in-flight request.
+        """
+        if (not permit or record.get('error_type') not in {
+                'ConnectError', 'ConnectTimeout', 'ReadTimeout', 'WriteTimeout',
+                'PoolTimeout', 'ReadError', 'WriteError', 'RemoteProtocolError', 'HTTPStatusError'}
+                or getattr(self.budget, 'store', None) is None):
+            return False
+        self.check()
+        with self.budget.store.connection() as db:
+            rows = db.execute('''SELECT call_id, status, actual_micros, response FROM fin_model_dispatch
+                WHERE owner_id=%s AND budget_id=%s AND basis->>'harness_execution_scope'=%s
+                AND basis->>'harness_dispatch_lane'=%s''',
+                (self.budget.owner, self.budget.budget, record['scope'], 'consult:'+key)).fetchall()
+        unknown = [r for r in rows if r['status'] == 'unknown']
+        authorized = set(permit.get('unknown_call_ids', []))
+        return bool(unknown) and all(
+            (r['status'] == 'unknown' and r['actual_micros'] is None and str(r['call_id']) in authorized)
+            or (r['status'] == 'received' and type(r['actual_micros']) is int
+                and isinstance(r['response'], dict) and not r['response'].get('stop_required', True))
+            for r in rows)
+
     async def recover_cancelled(self, previous_run_id, audit_root):
         """Resume only an explicitly authorized cancelled consultation, with its exact request.
 
@@ -155,6 +180,10 @@ class HarnessConsultations:
         for path, record in candidates:
             stopped_record = record
             scope_replay = await asyncio.to_thread(self.settled_scope_failure, path.stem, record)
+            origin_thread, origin_run = record['scope'].split(':')
+            permit = verified_permit(audit_root,origin_thread,origin_run,
+                secret=self.environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
+            provider_retry = await asyncio.to_thread(self.authorized_provider_failure, path.stem, record, permit)
             # An explicit run recovery may retry a known failed read. Check the
             # actual saved receipt and granted effect, not just an error string.
             # Paid unknown requests still require their separate provider permit.
@@ -169,7 +198,7 @@ class HarnessConsultations:
                     for m in history)
             # A checked zero-dispatch recovery failure cannot replace the prior
             # paid checkpoint. Follow its immutable history, with both proofs.
-            if record.get('error_type') != 'CancelledError' and not failed_read and not scope_replay:
+            if record.get('error_type') != 'CancelledError' and not failed_read and not scope_replay and not provider_retry:
                 thread, run = record['scope'].split(':')
                 prepared = verified_preparation_recovery(audit_root,thread,run,
                     secret=self.environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
@@ -190,7 +219,8 @@ class HarnessConsultations:
                                      secret=self.environment['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
             if not permit and not failed_read and not scope_replay:
                 raise RuntimeError('consultation_recovery_requires_explicit_paid_retry_authorization')
-            if record.get('error_type') != 'CancelledError' and not failed_read and not scope_replay:
+            provider_retry = await asyncio.to_thread(self.authorized_provider_failure, path.stem, record, permit)
+            if record.get('error_type') != 'CancelledError' and not failed_read and not scope_replay and not provider_retry:
                 raise RuntimeError('consultation_failure_requires_separate_reconciliation')
             key=path.stem
             if not await self.child(key).state():

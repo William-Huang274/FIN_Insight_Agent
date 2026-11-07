@@ -126,6 +126,13 @@ def restored_batch_feedback(messages, ids):
             continue
         failure = model_receipt(message)
         call = calls.get(message.tool_call_id, {})
+        if call.get('name') == message.name == 'read_current_report' and str(message.content) == 'invalid_read_window':
+            # Historical receipt stays unchanged. Today's schema gives an exact
+            # correction path; the author still chooses the field and page.
+            failure['read_options'] = {'tool':'read_current_report',
+                'submitted_arguments':deepcopy(call.get('args',{})),
+                'offset':{'minimum':0},'max_characters':{'minimum':1,'maximum':12000},
+                'continuation':'Use next_offset from each successful page.'}
         if call.get('name') == message.name == 'read_saved_result':
             target_id = call.get('args', {}).get('tool_call_id')
             if any(isinstance(row, ToolMessage) and row.tool_call_id == target_id

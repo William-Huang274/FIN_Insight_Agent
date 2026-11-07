@@ -82,6 +82,29 @@ async def test_report_draft_and_exact_field_windows_are_available_without_accept
         assert json.loads((await bridge.execute('read_current_report', {'view': 'draft'})).content)['found'] is False
 
 
+@pytest.mark.anyio
+async def test_actual_sol_read_window_rejection_is_actionable_and_next_read_runs(tmp_path):
+    from sec_agent.agent_runtime.harness_artifact_tools import artifact_tools
+    from test_on_demand_research import artifact_fixture, report
+    artifacts=artifact_fixture()
+    grants=artifact_tools(artifacts=lambda _:artifacts,memory=None,delivery_intent='report',require_review=False)
+    reader=next(g.tool for g in grants if g.tool.name=='read_current_report')
+    schema=reader.tool_call_schema.model_json_schema()['properties']
+    assert schema['max_characters']['maximum']==12000 and schema['offset']['minimum']==0
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'state.sqlite')) as saver:
+        bridge=HarnessBusinessTools(grants=grants,checkpointer=saver,thread_id='t',check=lambda:None,stop_on_tool_error=True)
+        await bridge.initialize({'messages':[],'report':report(artifacts),'report_version':5})
+        result=await bridge.call_tool(None,SimpleNamespace(name='read_current_report',arguments={
+            'offset':0,'max_characters':16000,'view':'accepted','field':'narrative_markdown'}))
+        assert not result.is_error and '12000' in result.content[0].text
+        charts=await bridge.call_tool(None,SimpleNamespace(name='read_current_report',arguments={
+            'offset':0,'max_characters':4000,'view':'accepted','field':'charts'}))
+        assert not charts.is_error
+        valid=await bridge.execute('read_current_report',{'max_characters':12000})
+        assert valid.status=='success' and json.loads(valid.content)['base_version']==5
+        assert (await bridge.state())['report']==report(artifacts)
+
+
 def test_small_explicit_read_windows_are_admitted_and_source_replies_discoverable():
     from langchain_core.messages import ToolMessage
     from sec_agent.agent_runtime.context_records import browse_checkpoint

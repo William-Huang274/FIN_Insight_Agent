@@ -1,6 +1,7 @@
 """Versioned FIN artifact operations reused by the ACP tool host."""
 import json
-from typing import Literal
+from typing import Literal, Annotated
+from pydantic import Field
 
 from langchain_core.tools import tool, ToolException
 from langchain_core.messages import ToolMessage
@@ -86,7 +87,8 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         return save_candidate(candidate, base_version, runtime)
 
     @tool
-    def read_current_report(runtime: ToolRuntime, offset: int = 0, max_characters: int = 6000,
+    def read_current_report(runtime: ToolRuntime, offset: Annotated[int, Field(ge=0, description='Character offset; follow next_offset to continue.')] = 0,
+                            max_characters: Annotated[int, Field(ge=1, le=12000, description='Read 1–12000 characters per page; follow next_offset for remaining text.')] = 6000,
                             view: Literal['accepted', 'draft'] = 'accepted',
                             field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema', 'review', 'revision_context'] = 'narrative_markdown'):
         """Read exact report fields for editing. Default is unescaped narrative prose.
@@ -102,7 +104,6 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         """
         if field == 'revision_context':
             if view != 'accepted': raise ToolException('revision_context_requires_accepted_view')
-            if offset<0 or not 1<=max_characters<=12000:raise ToolException('invalid_read_window')
             from .revision_context import current_revision_view
             value=current_revision_view(runtime.state)
             text=json.dumps(value,ensure_ascii=False)
@@ -116,7 +117,6 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         if field == 'review':
             review=runtime.state.get('active_report_review')
             if not review:return {'found':False,'field':'review'}
-            if offset<0 or not 1<=max_characters<=12000:raise ToolException('invalid_read_window')
             text=review['opinion']
             return {'found':True,'field':'review','reviewer':review['reviewer'],
                 'reviewed_report_digest':review['reviewed_report_digest'],'text':text[offset:offset+max_characters],
@@ -126,8 +126,6 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         report = runtime.state.get('report_draft' if view == 'draft' else 'report')
         if not report:
             return {'found': False, 'view': view, 'report_version': runtime.state.get('report_version', 0)}
-        if offset < 0 or not 1 <= max_characters <= 12000:
-            raise ToolException('invalid_read_window')
         fields = report if view == 'draft' else report_model_view(report)
         value = fields if field == 'all' else fields.get(field, '')
         text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)

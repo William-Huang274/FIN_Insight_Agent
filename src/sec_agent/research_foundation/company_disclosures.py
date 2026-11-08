@@ -81,21 +81,37 @@ def words(text):
     return " ".join(re.findall(r"[a-z0-9]+", text.casefold()))
 
 
+def issuer_words(text):
+    # SEC and queries differ in punctuation/spacing of initials (US / U.S.).
+    return re.sub(r'\b(?:[a-z] ){1,}[a-z]\b', lambda m: m[0].replace(' ', ''), words(text))
+
+
+_JURISDICTIONS = set('AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY'.lower().split())
+
+
+def issuer_names(title):
+    name = _SUFFIX.sub('', issuer_words(title)).strip()
+    names = {name}
+    # The SEC ticker directory can flatten a trailing registration tag to
+    # "NAME DE". Retain the original name too; never alter the row's CIK/title.
+    parts = name.split()
+    if len(parts) >= 3 and parts[-1] in _JURISDICTIONS:
+        names.add(' '.join(parts[:-1]))
+    return names
+
+
 def issuer_match(rows, query):
-    normalized = " " + words(query) + " "
+    normalized = " " + issuer_words(query) + " "
     matches = []
     for row in rows:
-        name = _SUFFIX.sub("", words(row["title"])).strip()
         ticker = row["ticker"]
         # Verified issuer-directory aliases share the SEC ticker row's actual CIK.
-        alias = words(_SITES[ticker][0]) if ticker in _SITES else ""
-        matched = max(
-            (len(n) for n in (name, alias) if len(n) >= 3 and f" {n} " in normalized),
-            default=0,
-        )
+        alias = issuer_words(_SITES[ticker][0]) if ticker in _SITES else ""
+        matched = [m.span() for name in issuer_names(row['title']) | {alias} if len(name) >= 3
+                   for m in re.finditer(r'(?<![a-z0-9])' + re.escape(name) + r'(?![a-z0-9])', normalized)]
         if matched:
-            matches.append((matched, row))
-        elif (
+            matches.extend((end-start, row, (start,end)) for start,end in matched)
+        if (
             query.strip().upper() == ticker
             or re.search(r"\$" + re.escape(ticker) + r"(?![A-Za-z0-9])", query)
             or (
@@ -109,11 +125,17 @@ def issuer_match(rows, query):
                 )
             )
         ):
-            matches.append((len(ticker), row))
+            matches.append((len(ticker), row, None))
+    # A short issuer name nested inside another complete matched name is not
+    # a separate mention. Keep independent mentions and explicit ticker matches
+    # ambiguous rather than selecting the longest company globally.
+    matches = [hit for hit in matches if hit[2] is None or not any(
+        other[2] is not None and other[2][0] <= hit[2][0] and hit[2][1] <= other[2][1]
+        and other[0] > hit[0] for other in matches)]
     if not matches:
         return None
     # Never silently choose among multiple companies/share classes with different CIKs.
-    if len({row["cik_str"] for _, row in matches}) != 1:
+    if len({row["cik_str"] for _, row, _ in matches}) != 1:
         return None
     return max(matches, key=lambda hit: hit[0])[1]
 

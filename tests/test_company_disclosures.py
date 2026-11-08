@@ -146,6 +146,25 @@ def test_known_alias_preserves_sec_row_identity_and_issuer_ambiguity():
     assert issuer_match(rows, "D.R. Horton and Toll Brothers orders") is None
 
 
+def test_sec_initials_jurisdiction_and_nested_names_preserve_actual_issuer():
+    rows = [dict(cik_str=36104, ticker='USB', title='US BANCORP DE'),
+            dict(cik_str=1295401, ticker='TBBK', title='Bancorp, Inc.')]
+    for query in ('U.S. Bancorp third quarter 2026 earnings net interest margin provision',
+                  'US Bancorp quarterly earnings', 'U S Bancorp results'):
+        assert issuer_match(rows, query) == rows[0]
+    assert issuer_match(rows, 'Bancorp, Inc. quarterly earnings') == rows[1]
+    assert issuer_match(rows, 'U.S. Bancorp and Bancorp, Inc. quarterly earnings') is None
+    assert issuer_match(rows, 'U.S. Bancorp versus $TBBK earnings') is None
+    assert rows[0]['title'] == 'US BANCORP DE'
+
+
+def test_nested_name_rule_is_span_based_not_global_longest_name_choice():
+    rows = [dict(cik_str=1, ticker='HBC', title='Harbor Bank Corp'),
+            dict(cik_str=2, ticker='NHB', title='Northern Harbor Bank Inc')]
+    assert issuer_match(rows, 'Northern Harbor Bank earnings') == rows[1]
+    assert issuer_match(rows, 'Northern Harbor Bank and Harbor Bank earnings') is None
+
+
 def test_sec_tables_and_inline_numbers_survive_without_hidden_xbrl():
     from sec_agent.research_foundation.company_disclosures import edgar_text
 

@@ -20,6 +20,19 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         version = runtime.state.get('report_version', 0) + 1
         result = {'saved': True, 'report_version': version, 'digest': canonical_sha256(report),
                   'review_status': 'not_assessed_in_this_record'}
+        from .conversation_tools import calculator_observations
+        from .quantitative_prose import audit_changes, sentence_edits
+        def wording(value):
+            return '\n'.join([value.get('title', ''), value.get('narrative_markdown', ''),
+                *[chart.get('interpretation', '') for chart in value.get('charts', [])]])
+        previous = wording(runtime.state.get('report') or {})
+        current = wording(report)
+        check = audit_changes(previous, current, calculator_observations(runtime.state.get('messages', [])))
+        check['coverage'] = {'report_version':version, 'report_digest':result['digest'],
+            'basis':'actual_saved_version_diff',
+            'changed_sentences':len(list(sentence_edits(previous, current))),
+            'financial_semantics_verified':False}
+        result['quantitative_change_check'] = check
         from .revision_context import consultation_revision_context
         context = consultation_revision_context(runtime.state.get('messages', []),
             runtime.state.get('report', {}).get('narrative_markdown', ''), report['narrative_markdown'],
@@ -184,6 +197,24 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         value = {'execution_status': 'submitted', 'artifact_kind': 'report', 'artifact_id': 'report',
                  'artifact_version': version, 'artifact_digest': canonical_sha256(report),
                  'review_status': 'not_assessed_in_this_record'}
+        # Only this exact version's save receipt is relevant. An earlier manual
+        # preview does not certify edits performed after it.
+        for message in reversed(runtime.state.get('messages', [])):
+            if not isinstance(message, ToolMessage) or message.status != 'success':
+                continue
+            try:
+                receipt = json.loads(message.content)
+            except (ValueError, TypeError):
+                continue
+            if (isinstance(receipt, dict) and receipt.get('saved') is True
+                    and receipt.get('report_version') == version
+                    and receipt.get('digest') == value['artifact_digest']):
+                check = receipt.get('quantitative_change_check')
+                if check:
+                    value['quantitative_change_check'] = {
+                        'coverage':check['coverage'], 'findings':check['findings'],
+                        'status':'advisory_not_financial_approval'}
+                break
         if runtime.state.get('active_report_review'):
             value['revision_context_readback']={'tool':'read_current_report','arguments':{'field':'revision_context'}}
             value['reviewed_report_digest']=runtime.state['active_report_review']['reviewed_report_digest']

@@ -683,7 +683,10 @@ class ExternalCaptureRequest(BaseModel):
     candidate_id: str = Field(min_length=1, max_length=128)
     branch_id: str = Field(min_length=1, max_length=96)
     run_scope: ResearchRunScope | ConversationSourceScope
-    max_characters: int = Field(default=12_000, ge=500, le=200_000)
+    # None retains the bounded transport's entire extraction for subsequent
+    # paginated navigation. It does not increase HTTP/PDF resource limits or
+    # the window returned to a model. Existing bounded capture callers remain.
+    max_characters: int | None = Field(default=12_000, ge=500, le=200_000)
     render_policy: Literal["auto", "static", "hosted", "browser"] = "auto"
     minimum_useful_characters: int = Field(default=200, ge=1, le=2_000)
     timeout_seconds: float = Field(default=20.0, ge=1.0, le=60.0)

@@ -1,6 +1,24 @@
 from sec_agent.agent_runtime.quantitative_prose import audit_changes
 
 
+def test_explicit_ratio_direction_and_ellipsis_use_actual_cited_calculations():
+    sources = {'CALC::first':dict(arithmetic_verified=True,value_decimal='1.03',expression='a/b'),
+               'CALC::second':dict(arithmetic_verified=True,value_decimal='1.89',expression='cash/due')}
+    old = '把698亿与680亿相比是1.03倍 [CALC::first]；现金对付款覆盖1.89倍 [CALC::second]。'
+    bad = '把698亿与680亿相比是**1.03倍** [CALC::first]；与同期末现金1,318亿美元相比则为**1.89倍** [CALC::second]。'
+    result = audit_changes(old, bad, sources)
+    found = [f for f in result['findings'] if f['kind']=='explicit_ratio_direction']
+    assert len(found)==1 and float(found[0]['recomputed_multiple']) < .53
+    good = '把698亿与680亿相比是1.03倍 [CALC::first]；现金1,318亿与698亿美元相比为1.89倍 [CALC::second]。'
+    assert not audit_changes(old, good, sources)['findings']
+    assert not audit_changes(bad, bad, sources)['findings']
+    assert not audit_changes(old, bad, {})['findings']
+
+
+def test_ratio_check_does_not_invent_financial_semantics():
+    assert not audit_changes('', '营运资本接近现金余额，说明流动负债较小。', {})['findings']
+
+
 def ratio(benefit, denominator, label):
     return dict(calculation_id='CALC::'+label, result_state='non_authoritative_metric', arithmetic_verified=True,
                 result_unit='ratio', value_decimal=str(benefit/denominator), expression='benefit / change',

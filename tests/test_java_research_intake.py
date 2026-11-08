@@ -43,7 +43,9 @@ def intake(tmp_path, monkeypatch):
         item = {'run_id': str(uuid4()), 'status': 'pending', 'metadata': kw['metadata'], 'config': kw['config']}
         runs.setdefault(str(tid), []).append(item)
         return deepcopy(item)
-    sdk = SimpleNamespace(threads=SimpleNamespace(create=create, get=get, update=update), runs=SimpleNamespace(create=run, list=list_runs))
+    async def search(*, ids, select, limit):
+        return [{key:value for key,value in (await get(tid)).items() if key in select} for tid in ids][:limit]
+    sdk = SimpleNamespace(threads=SimpleNamespace(create=create, get=get, update=update, search=search), runs=SimpleNamespace(create=run, list=list_runs))
     service = ReportSessionService('http://127.0.0.1:9999', None, sdk=sdk,
         research_profile={'default_question': 'synthetic research question', 'branch_topics': []}, attachment_store=TaskAttachmentStore(tmp_path/'attachments'))
     service.intake_enabled = True

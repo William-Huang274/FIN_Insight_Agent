@@ -80,16 +80,27 @@ def test_long_public_source_remains_readable_after_old_50000_capture_boundary():
     assert not read.items[0]["source_document_completeness_verified"]
 
 
-def test_real_capture_limit_is_disclosed_without_unbounded_fetch_or_silent_complete():
+def test_full_bounded_capture_remains_paginated_after_200k_and_searchable():
     reader, fetcher, _ = _reader(text="Long source text. " * 20000)
     doc_id = _call(reader, "search", query="long source").items[0]["document_id"]
     page = _call(reader, "read", document_id=doc_id, offset=190000, max_characters=24000)
-    assert len(page.items[0]["passage"]) == 10000
-    assert page.items[0]["captured_characters"] == 200000
-    assert page.items[0]["host_capture_truncated"] and page.items[0]["truncated"]
-    assert page.next_offset is None and len(fetcher.calls) == 1
-    end = _call(reader, "read", document_id=doc_id, offset=200000)
-    assert "Host capture truncated=True" in end.notice and not end.items
+    assert len(page.items[0]["passage"]) == 24000
+    assert page.items[0]["captured_characters"] == len(("Long source text. " * 20000).strip())
+    assert not page.items[0]["host_capture_truncated"] and page.items[0]["truncated"]
+    assert page.next_offset == 214000 and len(fetcher.calls) == 1
+    later = _call(reader, "read", document_id=doc_id, offset=214000)
+    assert later.items and later.source_snapshot_sha256 == page.source_snapshot_sha256
+    assert len(fetcher.calls) == 1
+
+
+def test_section_after_old_capture_limit_is_retrievable_without_full_prompt():
+    text = 'Earlier section.\n' * 14000 + '\nCash flow statement operating activities 12345.\n'
+    reader, fetcher, _ = _reader(text=text)
+    doc_id = _call(reader, 'search', query='filing').items[0]['document_id']
+    found = _call(reader, 'search', document_id=doc_id, query='12345', limit=1)
+    assert '12345' in found.items[0]['passage']
+    assert int(found.items[0]['passage_id'].split('::')[-2]) > 200000
+    assert len(found.items[0]['passage']) < 2500 and len(fetcher.calls) == 1
 
 
 def test_commercial_landing_page_is_explicitly_not_the_paid_report():

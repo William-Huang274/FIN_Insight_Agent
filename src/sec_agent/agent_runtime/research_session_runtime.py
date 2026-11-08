@@ -922,7 +922,8 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
     # budgets or models. They never fall through to the personal composition.
     from langgraph_sdk import get_client
     native = get_client()
-    initial_thread = await native.threads.get(thread_id)
+    from .native_thread_header import thread_header
+    initial_thread = await thread_header(native, thread_id)
     initial_metadata = initial_thread.get('metadata', {})
     if (initial_metadata.get('organization_execution') is not None
             or initial_metadata.get('surface') == 'organization_research_workbench'

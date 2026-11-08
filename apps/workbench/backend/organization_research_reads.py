@@ -91,7 +91,8 @@ class OrganizationReadScope:
 
     async def open(self):
         self.grant = await read_authority(self.project, self.execution)
-        self.thread = await self.service.sdk.threads.get(str(self.execution))
+        from sec_agent.agent_runtime.native_thread_header import thread_header
+        self.thread = await thread_header(self.service.sdk, self.execution)
         try:
             frozen = validate_thread(self.thread, self.grant)
             if frozen['configuration_digest'] != self.grant['configuration_digest']:

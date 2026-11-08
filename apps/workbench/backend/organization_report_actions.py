@@ -4,6 +4,7 @@ import json
 import os
 from types import SimpleNamespace
 from uuid import UUID
+from sec_agent.agent_runtime.native_thread_header import thread_header
 
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -111,7 +112,7 @@ def install_organization_report_action_routes(router, service):
         if on_demand(grant) and os.getenv('FINSIGHT_ON_DEMAND_ENABLED') != '1':
             raise HTTPException(503, '按需研究入口尚未启用')
         tid = grant['execution_id']
-        thread = await service.sdk.threads.get(tid)
+        thread = await thread_header(service.sdk, tid)
         preparation = await completed_predecessor(service, thread, grant['report_action_request']['previous_run_id'],
                                     recover=grant['report_action_request'].get('action') == 'recover')
         saved = await service.sdk.threads.get_state(tid)
@@ -145,7 +146,7 @@ def install_organization_report_action_routes(router, service):
     async def reconcile(execution_id: UUID, command_id: UUID, project_id: UUID, request: Request):
         grant = await action_authority(service, project_id, execution_id, command_id=command_id,
                                        root_action='/root-actions/' in request.url.path)
-        thread = await service.sdk.threads.get(str(execution_id))
+        thread = await thread_header(service.sdk, execution_id)
         runs = await service.all_runs(execution_id)
         candidates = [r for r in runs if (r.get('metadata', {}).get('organization_report_action') or {}).get(
             'report_action_operation_id') == grant['report_action_operation_id']]

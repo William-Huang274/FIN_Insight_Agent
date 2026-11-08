@@ -14,6 +14,20 @@ from test_external_sources import _run_scope, _FakeFetcher, _public_guard, _Sing
 BRANCH = "Q8_COMPETITION_VALUE_POOL"
 
 
+def test_full_capture_does_not_reuse_old_prefix_and_reuses_full_text_on_resume(tmp_path):
+    text = 'Original text. ' * 20000 + 'Late cash flow table.'
+    fetcher = _FakeFetcher(FetchedPage(final_url='https://example.com/annual', extracted_text=text))
+    tid = str(uuid4())
+    cache = service(tmp_path, tid, fetcher)
+    old = asyncio.run(cache.capture(request().model_copy(update={'max_characters':200000})))
+    full = asyncio.run(cache.capture(request().model_copy(update={'max_characters':None})))
+    resumed = asyncio.run(service(tmp_path, tid, fetcher).capture(request('A2').model_copy(update={'max_characters':None})))
+    assert old.truncated and len(old.text) == 200000
+    assert not full.truncated and full.text.endswith('Late cash flow table.')
+    assert resumed.text == full.text and resumed.text_digest == old.text_digest == full.text_digest
+    assert len(fetcher.calls) == 2 and full.text.startswith(old.text)
+
+
 def request(attempt="A1"):
     from sec_agent.research_foundation.contracts import bind_research_method, load_research_graph_foundation
     base = _run_scope(BRANCH)

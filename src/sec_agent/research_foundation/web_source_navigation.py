@@ -142,7 +142,7 @@ class WebSourceReader:
             result = await self.capture.capture(ExternalCaptureRequest(
                 discovery_receipt=discovery, candidate_id=candidate.candidate_id,
                 branch_id=branch_id, run_scope=run_scope, render_policy="auto",
-                max_characters=200000, timeout_seconds=30))
+                max_characters=None, timeout_seconds=30))
             if result.status != "captured":
                 return SourceDocumentResult(operation=request.operation, items=(), next_offset=None, total_matches=0,
                     source_snapshot_sha256=result.receipt_digest,

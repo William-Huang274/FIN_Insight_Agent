@@ -600,6 +600,8 @@ async def test_saved_report_versions_edits_citations_and_delivery_survive_restar
         assert not (await bridge.state()).get('report')
         saved = await bridge.execute('repair_report_fields', {'fields': {'title': candidate['title']}, 'base_version': 0})
         assert saved.status == 'success', saved.content
+        first_check = json.loads(saved.content)['quantitative_change_check']
+        assert first_check['coverage']['report_version'] == 1
         before = (await bridge.state())['report']
         assert before['citations']
         # Duplicate/old version cannot overwrite current content or count as delivery.
@@ -616,8 +618,18 @@ async def test_saved_report_versions_edits_citations_and_delivery_survive_restar
         after = await bridge.state()
         assert after['report']['citations'] == before['citations']
         assert after['report_version'] == 2
+        current_check = json.loads(saved.content)['quantitative_change_check']
+        assert current_check['coverage']['report_version'] == 2
+        assert current_check['coverage']['report_digest'] != first_check['coverage']['report_digest']
+        assert current_check['coverage']['basis'] == 'actual_saved_version_diff'
+        assert current_check['coverage']['changed_sentences'] > 0
+        assert current_check['coverage']['financial_semantics_verified'] is False
         final = await bridge.execute('deliver_current_report', {'version': 2})
         assert final.status == 'success'
+        delivered_check = json.loads(final.content)['quantitative_change_check']
+        assert delivered_check['coverage'] == current_check['coverage']
+        assert delivered_check['findings'] == current_check['findings']
+        assert delivered_check['status'] == 'advisory_not_financial_approval'
         assert (await bridge.state())['delivery']['artifact_version'] == 2
         await bridge.begin_command('new-question')
         assert (await bridge.state())['delivery'] is None

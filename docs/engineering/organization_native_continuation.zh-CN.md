@@ -37,6 +37,12 @@ Agent Server 会合并前序 checkpoint 的配置。接续请求显式将 `finsi
 
 ## 无模型验收
 
+组织接续派发、派发核对、组织读取准入及 runtime 路由识别只读取原生线程头。
+统一通过 SDK `threads.search(ids=[thread_id], select=[thread_id,status,metadata,created_at,updated_at])`
+在服务端投影，且必须精确返回一个相同身份的线程；不再为读取 metadata 使用包含完整 values 的 `threads.get`。
+这不替代当前用户权限校验，也不替代业务恢复所必需的 checkpoint 读取。
+验收分别记录线程头响应体积、完整状态恢复时间和命令派发结果，不能把一个接口变快当作启动全链路已通过。
+
 - Java：真实 Spring HTTP、Flyway、PostgreSQL；并发只派发一次、回执丢失/错配核对、独立 run 准入、换 checkpoint 冲突、撤权拒绝、当前读者列表过滤。Python 对端在这层用静态桩。
 - Python：固定命令与实际 SDK 请求一致，错 run/配置/checkpoint 不准入，前序未完成/未知用量不派发，撤权先于回执重放；父图用静态研究与审查产物从预研究进入首版报告。
 - 原生集成：隔离 Docker 网络内真实 Agent Server、PostgreSQL、Redis、Java、BFF；仅替换 provider 与身份测试边界。先预研究，再独立接续到“研究待处理”，保留预研究原稿，重复命令不增加运行，盗用命令创建另一 run 在模型调用前拒绝。此场景主动停止于未完成研究，不声称完整金融报告验收。

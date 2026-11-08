@@ -154,6 +154,54 @@ def amounts(text):
     return {Decimal(m[1].replace(',','')) * SCALE[m[2].lower()] for m in AMOUNT.finditer(text)}
 
 
+def explicit_ratio_checks(sentence, sources):
+    """Check an explicit amount comparison, not a financial interpretation.
+
+    A semicolon continuation '与 B 相比' can retain the explicitly stated A.
+    Only flag when an observed cited calculation confirms the written multiple;
+    otherwise leave ambiguous prose to its author. Never rewrite the formula.
+    """
+    findings, numerator = [], None
+    for clause in re.split(r'[；;]', sentence):
+        cited = [row for key, row in sources.items() if isinstance(row, dict)
+                 and row.get('arithmetic_verified') is True
+                 and (f'[{key}]' in clause or f'[{reference_handle(key)}]' in clause)]
+        if not cited:
+            # Do not inherit an ungrounded subject from unrelated prose.
+            numerator = None
+            continue
+        values = list(AMOUNT.finditer(clause))
+        multiple = re.search(NUM + r'\s*(?:\*\*)?\s*倍', clause)
+        if not multiple or '相比' not in clause or '与' not in clause:
+            numerator = None
+            continue
+        if len(values) == 2 and clause.find('与') >= values[0].end():
+            numerator = Decimal(values[0][1].replace(',', '')) * SCALE[values[0][2].lower()]
+        elif len(values) != 1 or numerator is None or not clause.lstrip().startswith('与'):
+            numerator = None
+            continue
+        denominator = Decimal(values[-1][1].replace(',', '')) * SCALE[values[-1][2].lower()]
+        if not denominator:
+            continue
+        written = Decimal(multiple[1].replace(',', ''))
+        tolerance = Decimal(1).scaleb(written.as_tuple().exponent) / 2
+        verified = []
+        for row in cited:
+            try:
+                if abs(Decimal(str(row['value_decimal'])) - written) <= tolerance:
+                    verified.append({k:row.get(k) for k in ('calculation_id', 'expression', 'value_decimal', 'result_unit')})
+            except (InvalidOperation, KeyError):
+                continue
+        expected = numerator / denominator
+        if verified and abs(expected - written) > tolerance:
+            findings.append({'kind':'explicit_ratio_direction', 'sentence':sentence,
+                'comparison_clause':clause, 'stated_numerator':str(numerator),
+                'stated_denominator':str(denominator), 'recomputed_multiple':str(expected),
+                'written_multiple':str(written), 'calculations':verified,
+                'action':'按句中数量顺序复算与所写倍数不一致；请确认比较方向、单位或改写主语。计算回执不因此失效，runtime未替作者选择方向。'})
+    return findings
+
+
 # Recognize explicit naming, rather than any co-occurrence of money and a rate.
 RATE_LABEL = re.compile(r'(?:利润率|毛利率|收益率|回报率|margin)\s*(?:为|是|达|约为|of|=|:)\s*[约$]?\s*([-+]?\d+(?:\.\d+)?)\s*(美分|美元|元|cents?\b|dollars?\b)', re.I)
 BACK_REFERENCE = re.compile(r'(?:后者|该差额|这一差额)[^。；，]{0,12}(?:称为|称作|叫作)[“「"]?[^。；，]{0,22}(?:利润率|毛利率|收益率|回报率)')
@@ -255,6 +303,7 @@ def audit_changes(before, after, sources, *, context='', earlier_notes=''):
         {reference_handle(k):v for k,v in sources.items() if isinstance(k,str) and isinstance(v,dict)}))
     for _, s in edits:
         findings.extend(metric_definition_checks(s))
+        findings.extend(explicit_ratio_checks(s, sources))
         if not re.search(r"\d", HANDLE.sub("", s)):
             continue
         values=amounts(s); rates=list(PERCENT.finditer(s)); matches=[]

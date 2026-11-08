@@ -4,7 +4,8 @@ from pathlib import Path
 
 def profile_overlay(*, model, protocol, endpoint, prompt, context_window,
                     output_tokens, summary_tokens, reasoning, dispatch_plugin,
-                    compaction_threshold=.8, wait_for_consultations=False, restore_route=None):
+                    compaction_threshold=.8, wait_for_consultations=False, restore_route=None,
+                    business_mcp=None):
     if protocol not in {'deepseek_messages', 'qwen_chat', 'openai_responses'}:
         raise ValueError('harness_protocol_not_qualified')
     if (not 0 < compaction_threshold < 1 or not 0 < output_tokens < context_window
@@ -48,6 +49,15 @@ def profile_overlay(*, model, protocol, endpoint, prompt, context_window,
             patch.extend(p for p in previous if p.get('id') == 'llm-deepseek')
         else:
             raise ValueError('harness_restore_route_not_qualified')
+    if business_mcp is not None:
+        # ACP's transport-only mount drops upstream MCP timeout settings. This
+        # execution-private process uses the public MCP plugin directly instead;
+        # keep the same tool namespace, auth and native session history.
+        patch += [{'insert': [{'id': 'fin-business-mcp',
+            'name': '@deepseek-ai/dsh-mcp-client', 'config': {
+                'transport': 'streamable-http', 'serverName': 'financial',
+                'url': endpoint + '/business/', 'headers': business_mcp,
+                'toolCallTimeoutMs': 300_000, 'failOnStartupError': True}}]}]
     patch += [{'insert': [
         {'id': 'fin-dispatch', 'name': str(Path(dispatch_plugin).resolve()),
          'config': {'endpoint': endpoint, 'tokenEnv': 'FIN_HARNESS_LOCAL_TOKEN',

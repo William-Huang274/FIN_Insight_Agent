@@ -12,7 +12,6 @@ import os
 from pathlib import Path
 import secrets
 
-from acp.schema import HttpMcpServer, HttpHeader
 from langchain_core.messages import AIMessage, ToolMessage, convert_to_messages, messages_from_dict
 from langgraph.graph import StateGraph, START, END
 from .checkpoint_objects import business_checkpointer
@@ -459,15 +458,15 @@ async def organization_harness_session(*, native, resources, authority, check, o
                     compaction_threshold=options.get('compaction_threshold', .8),
                     dispatch_plugin=phase_arguments['root'] / 'integrations/deepseek-harness/dispatch.mjs',
                     wait_for_consultations=consultations is not None,
-                    restore_route=options.get('native_restore_route'))
+                    restore_route=options.get('native_restore_route'),
+                    business_mcp={'Authorization': 'Bearer ' + token})
                 patch_path = run_directory / 'profile.patch.json'
                 _persist(patch_path, patch)
                 child_env = {k: v for k, v in environment.items() if k.upper() in {
                     'PATH', 'SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP', 'COMSPEC', 'PATHEXT'}}
                 child_env.update(DSH_HOME=str(session_directory / 'native'), HOME=str(session_directory), USERPROFILE=str(session_directory),
                                  FIN_HARNESS_LOCAL_TOKEN=token, NO_PROXY='127.0.0.1,localhost')
-                servers = [HttpMcpServer(type='http', name='financial', url=endpoint + '/business/',
-                            headers=[HttpHeader(name='Authorization', value='Bearer ' + token)])]
+                servers = []  # Configured once via the upstream MCP profile plugin.
                 new_session = not (session_directory / 'session-binding.json').exists()
                 async with admitted_acp_session(binary=str(binary), arguments=['--profile', 'sdk-minimal', '--patch', str(patch_path)],
                         environment=child_env, directory=session_directory, binding=binding, run_id=rid,

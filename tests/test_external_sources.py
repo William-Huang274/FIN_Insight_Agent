@@ -227,6 +227,23 @@ def _capture_request(
     )
 
 
+def test_exa_deadline_includes_connecting_before_tool_call():
+    class NeverConnects:
+        async def __aenter__(self):
+            await asyncio.Event().wait()
+        async def __aexit__(self, *args):
+            return False
+
+    async def check():
+        provider = ExaHostedMCPProvider(client_factory=NeverConnects, timeout_seconds=.02)
+        request = ExternalSearchRequest(query='official rates', branch_id='Q1_ISSUER_TRUTH',
+            run_scope=_run_scope('Q1_ISSUER_TRUTH'), purpose='timeout regression')
+        with pytest.raises(ExternalSourceError) as caught:
+            await asyncio.wait_for(provider.search(request), .5)
+        assert caught.value.code == 'exa_mcp_search_timeout'
+    asyncio.run(check())
+
+
 def test_exa_hosted_mcp_adapter_parses_locator_only_output() -> None:
     client = _FakeExaClient(
         "Title: Dell Q1 materials\n"

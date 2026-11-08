@@ -31,8 +31,13 @@ def anyio_backend():
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize('profile_mcp', [False, True])
 @pytest.mark.skipif(not os.getenv('FIN_TEST_DSH_BINARY'), reason='explicit pinned local binary required')
-async def test_real_process_tools_restart_compaction_and_cancel(tmp_path, monkeypatch):
+async def test_real_process_tools_restart_compaction_and_cancel(tmp_path, monkeypatch, profile_mcp):
+    if cache := os.getenv('FIN_TEST_DSH_PACKAGE_CACHE'):
+        target = tmp_path / '.cache' / 'pkg'
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.symlink_to(Path(cache).resolve(strict=True), target_is_directory=True)
     monkeypatch.setenv('FINSIGHT_WORKING_MEMORY_PATH', str(tmp_path / 'notes.sqlite'))
     task_id = str(uuid4())
     source = {'numeric_fact_id': 'NUMFACT::fixture', 'numeric_fact_authority': True,
@@ -41,6 +46,10 @@ async def test_real_process_tools_restart_compaction_and_cancel(tmp_path, monkey
     @tool(response_format='content_and_artifact')
     def query_financial_data():
         """Read synthetic original."""
+        if profile_mcp:
+            # Optional live-binary regression across ACP's former 60s limit.
+            import time
+            time.sleep(float(os.getenv('FIN_TEST_MCP_DELAY_SECONDS', '0')))
         value = {'authority_state': 's2_numeric_fact_query_result',
                  'results': [{'status': 'resolved', 'facts': [source]}]}
         return json.dumps(value), value
@@ -53,6 +62,7 @@ async def test_real_process_tools_restart_compaction_and_cancel(tmp_path, monkey
     requests = []
     progress = {'step': 0, 'summaries': 0, 'hold': False}
     entered = asyncio.Event()
+    release = asyncio.Event()
     memory = WorkingMemory(tmp_path / 'notes.sqlite', owner='fixture', workspace=task_id, actor='lead')
     basis = dict(node_role='lead', node_purpose='Synthetic native business-tool lifecycle qualification',
         input_scale='Synthetic original and stress text', required_outputs=['saved note and readback'],
@@ -67,7 +77,8 @@ async def test_real_process_tools_restart_compaction_and_cancel(tmp_path, monkey
         requests.append(body)
         if progress['hold']:
             entered.set()
-            await asyncio.Event().wait()
+            await release.wait()
+            return httpx.Response(503, json={'error': 'cancelled fixture transport'})
         compacting = 'acting as a compaction engine' in json.dumps(body.get('messages', [])[-1:])
         name, args = None, None
         if compacting:
@@ -135,14 +146,18 @@ async def test_real_process_tools_restart_compaction_and_cancel(tmp_path, monkey
                 patch = profile_overlay(model='fixture-model', protocol='deepseek_messages', endpoint=endpoint,
                     prompt='Synthetic financial test. Use the provided tools.', context_window=64000,
                     output_tokens=2048, summary_tokens=2048, reasoning='high', compaction_threshold=.2,
-                    dispatch_plugin=Path(__file__).resolve().parents[2] / 'integrations/deepseek-harness/dispatch.mjs')
+                    dispatch_plugin=Path(__file__).resolve().parents[2] / 'integrations/deepseek-harness/dispatch.mjs',
+                    business_mcp={'Authorization': 'Bearer ' + token} if profile_mcp else None)
                 next(p['config'] for p in patch if p.get('id') == 'compaction-basic').update(headroomTokens=2048, retainTokens=256)
                 patch_path = tmp_path / run_id / 'profile.json'
                 patch_path.write_text(json.dumps(patch), encoding='utf8')
                 env = {'DSH_HOME': str(tmp_path / 'dsh-home'), 'FIN_HARNESS_LOCAL_TOKEN': token,
-                       'HOME': str(tmp_path), 'USERPROFILE': str(tmp_path)}
+                       'HOME': str(tmp_path), 'USERPROFILE': str(tmp_path),
+                       'NO_PROXY': '127.0.0.1,localhost'}
                 mcp = [HttpMcpServer(type='http', name='financial', url=endpoint+'/business/',
                        headers=[HttpHeader(name='Authorization', value='Bearer '+token)])]
+                if profile_mcp:
+                    mcp = []
                 async with admitted_acp_session(binary=os.environ['FIN_TEST_DSH_BINARY'],
                         arguments=['--profile', 'sdk-minimal', '--patch', str(patch_path)], environment=env,
                         directory=tmp_path / 'session', binding={'task': task_id}, run_id=run_id,
@@ -150,7 +165,7 @@ async def test_real_process_tools_restart_compaction_and_cancel(tmp_path, monkey
                     yield active, bridge
     async with AsyncSqliteSaver.from_conn_string(str(tmp_path / 'business.sqlite')) as saver:
         async with session(saver) as (active, bridge):
-            result = await asyncio.wait_for(active.prompt('Read, calculate and save the fixture.'), 60)
+            result = await asyncio.wait_for(active.prompt('Read, calculate and save the fixture.'), 120)
             assert result['status'] == 'completed'
             assert len([m for m in (await bridge.state())['messages'] if m.type == 'tool']) == 3
         async with session(saver) as (active, bridge):
@@ -164,6 +179,7 @@ async def test_real_process_tools_restart_compaction_and_cancel(tmp_path, monkey
             task = asyncio.create_task(active.prompt('Cancellation fixture.'))
             await asyncio.wait_for(entered.wait(), 30)
             task.cancel()
+            release.set()  # Let the fake HTTP server shut down after cancellation.
             with pytest.raises(asyncio.CancelledError):
                 await task
             with pytest.raises(RuntimeError, match='stopped'):

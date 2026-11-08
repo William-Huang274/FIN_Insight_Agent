@@ -371,8 +371,12 @@ class ExaHostedMCPProvider:
             if getattr(request,field):
                 arguments[wire]=getattr(request,field).isoformat()
         try:
-            result = await _exa_call(lambda: self._client(advanced=advanced),
-                'web_search_advanced_exa' if advanced else 'web_search_exa', arguments, self.quota)
+            # Include connection setup/teardown, not just MCP call read time.
+            async with asyncio.timeout(self.timeout_seconds):
+                result = await _exa_call(lambda: self._client(advanced=advanced),
+                    'web_search_advanced_exa' if advanced else 'web_search_exa', arguments, self.quota)
+        except TimeoutError as exc:
+            raise ExternalSourceError('exa_mcp_search_timeout') from exc
         except ExternalSourceError:
             raise
         except Exception as exc:
@@ -1030,8 +1034,11 @@ class ExaHostedMCPPageFetcher:
     async def fetch(self, url: str, *, timeout_seconds: float) -> FetchedPage:
         requested_url = await asyncio.to_thread(self.guard.validate, url)
         try:
-            result = await _exa_call(lambda: self._client(timeout_seconds=timeout_seconds),
-                "web_fetch_exa", {"urls":[requested_url], "maxCharacters":self.max_characters}, self.quota)
+            async with asyncio.timeout(timeout_seconds):
+                result = await _exa_call(lambda: self._client(timeout_seconds=timeout_seconds),
+                    "web_fetch_exa", {"urls":[requested_url], "maxCharacters":self.max_characters}, self.quota)
+        except TimeoutError as exc:
+            raise ExternalSourceError('exa_mcp_web_fetch_timeout') from exc
         except ExternalSourceError:
             raise
         except Exception as exc:

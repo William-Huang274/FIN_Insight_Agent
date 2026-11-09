@@ -182,8 +182,6 @@ def publisher_markdown_day(text):
         return day
     # Publishers put the dateline immediately before or after the article title.
     stamp = lines[0] if lines[1].startswith('# ') else lines[1] if lines[0].startswith('# ') else ''
-    stamp = re.sub(r'(\d)(?:st|nd|rd|th)\b', r'\1', stamp)
-    stamp = re.sub(r',\s*(?=\d{4}$)', ', ', stamp)
     parsed = explicit_day(stamp)
     return max(day, parsed) if day and parsed else parsed or day
 
@@ -221,7 +219,7 @@ def publisher_html_day(html, index=False, *, url=None):
                     and len(publication.get_text(' ', strip=True)) < 180):
                 try:
                     declared = date.fromisoformat(stamp.get('datetime', '')[:10])
-                    printed = datetime.strptime(value, '%B %d, %Y').date()
+                    printed = explicit_day(value)
                     if declared == printed:
                         dates.append(declared)
                 except ValueError:
@@ -229,10 +227,9 @@ def publisher_html_day(html, index=False, *, url=None):
             if len(value) < 180 and re.search(r'\bPress Release\b', value, re.I):
                 match = re.fullmatch(r'([A-Za-z]+ \d{1,2}, \d{4})\s*\|[^|]{1,60}\|\s*Press Release', value, re.I)
                 if match:
-                    try:
-                        dates.append(datetime.strptime(match[1], '%B %d, %Y').date())
-                    except ValueError:
-                        pass
+                    parsed = explicit_day(match[1])
+                    if parsed:
+                        dates.append(parsed)
     # Native structured extraction owns JSON-LD, microdata and Open Graph.
     # FIN checks page identity / date semantics; it does not duplicate syntax parsing.
     from .publication_metadata import extract_publication_metadata
@@ -260,10 +257,9 @@ def publisher_html_day(html, index=False, *, url=None):
         while after and not after.get_text(' ',strip=True):
             after = after.find_next_sibling()
         if label and label.strip().lower() in {'press release','news release'} and after and label.parent in heading.parent.descendants:
-            try:
-                dates.append(datetime.strptime(after.get_text(' ',strip=True), '%B %d, %Y').date())
-            except ValueError:
-                pass
+            parsed = explicit_day(after.get_text(' ',strip=True))
+            if parsed:
+                dates.append(parsed)
     return max(dates,default=None)
 
 
@@ -291,9 +287,8 @@ def corroborated_dateline(markdown, html):
     heading = re.search(r'(?m)^# (.+)\n+([^\n]+)\n+([^\n]{32,})', markdown)
     if not heading:
         return None
-    try:
-        day = datetime.strptime(heading[2].strip(), '%B %d, %Y').date()
-    except ValueError:
+    day = explicit_day(heading[2].strip())
+    if not day:
         return None
     soup = BeautifulSoup(html, 'html.parser')
     label = ' '.join(heading[1].split())

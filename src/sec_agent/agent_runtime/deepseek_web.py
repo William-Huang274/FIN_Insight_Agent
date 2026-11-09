@@ -75,7 +75,10 @@ class DeepSeekWeb:
     async def _send(self, action, payload, key):
         b = self.budget
         try:
-            async with httpx.AsyncClient(timeout=20, transport=self.transport) as client:
+            # Fetch performs another origin retrieval; it is not a search-index lookup.
+            # Keep a finite deadline without retrying an unconfirmed paid request.
+            timeout = httpx.Timeout(60 if action == 'fetch' else 20, connect=20)
+            async with httpx.AsyncClient(timeout=timeout, transport=self.transport) as client:
                 response = await client.post('https://api.deepseek.com/v1/tools/' + action,
                     json=payload, headers={'Authorization':'Bearer ' + self.key})
             if response.status_code != 200:

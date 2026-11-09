@@ -441,7 +441,9 @@ class DatedWebDiscovery:
                     day = None
                     if self.origin_fetcher:
                         try:
-                            page = await self.origin_fetcher.fetch(locator, timeout_seconds=15)
+                            # Large official tables can exceed a short search deadline.
+                            # Give the original a bounded read before paying for hosted fetch.
+                            page = await self.origin_fetcher.fetch(locator, timeout_seconds=30)
                             if getattr(page,'origin_failure_code',None):
                                 # A successful hosted transcription does not erase
                                 # why direct origin access failed, especially when

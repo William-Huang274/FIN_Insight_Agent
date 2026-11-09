@@ -47,9 +47,11 @@ def test_ranked_search_and_fetch_reuse_budget_receipts():
         calls.append(req.url.path)
         body = json.loads(req.content)
         if req.url.path.endswith('/search'):
+            assert req.extensions['timeout']['read'] == 20
             assert body == {'count':5,'query':'release before:2026-10-01','need_content':False}
             return httpx.Response(200,json={'results':[{'title':'title','url':'https://example.org/report',
                  'snippet':'later changes','summary':'provider synthesis'}]})
+        assert req.extensions['timeout']['read'] == 60
         return httpx.Response(200,json={'content':'unverified hosted markdown'})
     ds = client(handler)
     for _ in range(2):

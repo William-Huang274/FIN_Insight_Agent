@@ -1,5 +1,7 @@
 # FinSight 文档
 
+公开网页解析的维护库替换、保留的官方文件/日期语义适配与验收边界见[公开资料解析](engineering/publication_parsing.zh-CN.md)。
+
 [原生 harness 按需调查与复核](engineering/harness_consultations.zh-CN.md)说明主模型可调用的独立 Agent 入口、结果交接、共用预算和故障边界；研究组织原则见[作者与复核分工](product/research_author_review_proposal.zh-CN.md)。
 
 [Congress.gov 官方 API 与文本读取](engineering/congress_api.zh-CN.md)说明法案记录、版本及程序动作工具、GovInfo 正文衔接、凭据配置和历史时点限制，不依赖浏览器交接。

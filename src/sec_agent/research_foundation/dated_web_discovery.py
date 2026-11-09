@@ -1,12 +1,12 @@
 """Resolve the publication day before handing any ranked hit to a dated task."""
 import asyncio
-import json
 from collections import Counter, OrderedDict
 from datetime import date, datetime
 import re
 from urllib.parse import urljoin, urlsplit, parse_qsl
 
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
+from .publication_metadata import explicit_day
 from .external_sources import (DiscoveryReceipt, ExternalSourceDiscovery, ExternalSourceError,
                                ProviderHit, PublicURLGuard, _host_in_domains)
 
@@ -158,22 +158,16 @@ def publisher_day(text, index=False, *, pdf=False):
                 if 2 <= len(address) <= 10 and any(re.search(r'\b\d{5}(?:-\d{4})?\b',s) for s in address):
                     masthead_dates.append(stamps[0][1])
     for value in re.findall(release_label, body) + _BLS_EMBARGO.findall(body[:1400]) + masthead_dates:
-        for fmt in ('%B %d, %Y','%b %d, %Y'):
-            try:
-                dates.add(datetime.strptime(value,fmt).date())
-                break
-            except ValueError:
-                continue
+        parsed = explicit_day(value)
+        if parsed:
+            dates.add(parsed)
     dateline = (r'^(?:(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),[ \t]+'
                 r'|(?i:Published|Updated)(?: on)?[: ]+|[A-Z][A-Z .,]{1,40}, )'
                 r'([A-Z][a-z]{2,8} \d{1,2}, \d{4})(?=[ \t]*$|[ \t]+[–—|]|[ \t]+/PRNewswire)')
     for match in re.finditer(dateline, body[:3200], re.MULTILINE | re.ASCII):
-        for fmt in ('%B %d, %Y','%b %d, %Y'):
-            try:
-                dates.add(datetime.strptime(match[1],fmt).date())
-                break
-            except ValueError:
-                continue
+        parsed = explicit_day(match[1])
+        if parsed:
+            dates.add(parsed)
     return max(dates,default=None)
 
 
@@ -190,13 +184,8 @@ def publisher_markdown_day(text):
     stamp = lines[0] if lines[1].startswith('# ') else lines[1] if lines[0].startswith('# ') else ''
     stamp = re.sub(r'(\d)(?:st|nd|rd|th)\b', r'\1', stamp)
     stamp = re.sub(r',\s*(?=\d{4}$)', ', ', stamp)
-    for fmt in ('%B %d, %Y', '%b %d, %Y'):
-        try:
-            parsed = datetime.strptime(stamp, fmt).date()
-            return max(day,parsed) if day else parsed
-        except ValueError:
-            continue
-    return day
+    parsed = explicit_day(stamp)
+    return max(day, parsed) if day and parsed else parsed or day
 
 
 def publisher_html_day(html, index=False, *, url=None):
@@ -244,54 +233,11 @@ def publisher_html_day(html, index=False, *, url=None):
                         dates.append(datetime.strptime(match[1], '%B %d, %Y').date())
                     except ValueError:
                         pass
-    def same_page(value):
-        return isinstance(value,str) and urljoin(url,value).split('#')[0] == url.split('#')[0]
-    if url:
-        # Schema.org microdata is equivalent to JSON-LD, but properties belong
-        # to their nearest itemscope. A related article's date must not qualify
-        # the current page; require its own exact mainEntityOfPage identity.
-        for article in soup.select('[itemscope][itemtype]'):
-            kinds = article.get('itemtype', '').split()
-            if not any(re.fullmatch(r'https?://schema.org/(?:Article|NewsArticle|Report)', k) for k in kinds):
-                continue
-            props = [p for p in article.select('[itemprop]') if p.find_parent(attrs={'itemscope':True}) is article]
-            identities = [p.get('href') or p.get('content') for p in props
-                          if 'mainEntityOfPage' in p.get('itemprop','').split()]
-            if not identities or not all(same_page(value) for value in identities):
-                continue
-            for prop in props:
-                if not set(prop.get('itemprop','').split()) & {'datePublished','dateModified'}:
-                    continue
-                try:
-                    dates.append(date.fromisoformat((prop.get('content') or prop.get('datetime') or '')[:10]))
-                except ValueError:
-                    continue
-        for script in soup.select('script[type="application/ld+json"]'):
-            try:
-                raw = json.loads(script.string or '')
-            except (ValueError,RecursionError):
-                continue
-            nodes = raw if isinstance(raw,list) else [raw]
-            for node in nodes:
-                if not isinstance(node,dict):
-                    continue
-                identity = node.get('mainEntityOfPage',node.get('url'))
-                if isinstance(identity,dict):
-                    identity=identity.get('@id')
-                if not same_page(identity):
-                    continue
-                for key in ('datePublished','dateModified'):
-                    try:
-                        dates.append(date.fromisoformat(str(node.get(key))[:10]))
-                    except ValueError:
-                        continue
-    og_url = soup.select_one('head meta[property="og:url"]')
-    if not url or not og_url or same_page(og_url.get('content')):
-        for tag in soup.select('head meta[property="article:published_time"], head meta[property="article:modified_time"], head meta[name="date.posted"]'):
-            try:
-                dates.append(date.fromisoformat(tag.get('content','')[:10]))
-            except ValueError:
-                continue
+    # Native structured extraction owns JSON-LD, microdata and Open Graph.
+    # FIN checks page identity / date semantics; it does not duplicate syntax parsing.
+    from .publication_metadata import extract_publication_metadata
+    metadata = extract_publication_metadata(html, url=url)
+    dates.extend(item.day for item in metadata.evidence)
     # A press-release label and its dateline in the same masthead, not a
     # timestamp from navigation, related articles or a search snippet.
     for label in soup.find_all(string=re.compile(r'^\s*press release\s*$', re.I)):
@@ -303,12 +249,9 @@ def publisher_html_day(html, index=False, *, url=None):
             continue
         stamp = masthead.find(['time','span','div'],class_=re.compile(r'date',re.I))
         if stamp:
-            for fmt in ('%B %d, %Y','%b %d, %Y','%m/%d/%Y'):
-                try:
-                    dates.append(datetime.strptime(stamp.get_text(' ',strip=True),fmt).date())
-                    break
-                except ValueError:
-                    continue
+            parsed = explicit_day(stamp.get_text(' ', strip=True))
+            if parsed:
+                dates.append(parsed)
     headings = soup.find_all('h1')
     if len(headings) == 1:
         heading = headings[0]

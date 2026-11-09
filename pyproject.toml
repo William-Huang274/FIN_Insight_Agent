@@ -72,9 +72,18 @@ external-search = [
   "ddgs==9.16.0",
   "trafilatura==2.2.0",
   "tencentcloud-sdk-python>=3.1.162",
+  "extruct==0.18.0",
+  "htmldate==1.10.0",
+  "dateparser==1.4.2",
 ]
 sec-source-library = ["sec2md==0.1.23"]
-public-source-library = ["trafilatura==2.2.0", "haystack-ai==2.26.0"]
+public-source-library = [
+    "trafilatura==2.2.0",
+    "haystack-ai==2.26.0",
+    "extruct==0.18.0",
+    "htmldate==1.10.0",
+    "dateparser==1.4.2",
+]
 retrieval-api = [
   "openai==3.6.0",
 ]

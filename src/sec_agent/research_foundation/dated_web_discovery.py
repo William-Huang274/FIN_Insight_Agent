@@ -287,7 +287,7 @@ def publisher_html_day(html, index=False, *, url=None):
                         continue
     og_url = soup.select_one('head meta[property="og:url"]')
     if not url or not og_url or same_page(og_url.get('content')):
-        for tag in soup.select('head meta[property="article:published_time"], head meta[property="article:modified_time"]'):
+        for tag in soup.select('head meta[property="article:published_time"], head meta[property="article:modified_time"], head meta[name="date.posted"]'):
             try:
                 dates.append(date.fromisoformat(tag.get('content','')[:10]))
             except ValueError:
@@ -525,6 +525,7 @@ class DatedWebDiscovery:
                                     if title and title.get_text(strip=True):
                                         candidate = candidate.model_copy(update={'title':title.get_text(' ',strip=True)[:512]})
                                 day = (publisher_markdown_day(page.extracted_text) if getattr(page,'extraction_method',None)=='deepseek_hosted_publication' else
+                                       publisher_html_day(page.html, bool(index), url=locator) if page.html else
                                        publisher_day(page.extracted_text, bool(index), pdf=getattr(page, 'content_type', None) == 'application/pdf') if getattr(page, 'extracted_text', None)
                                        else publisher_html_day(page.html, bool(index), url=locator))
                                 if not day:

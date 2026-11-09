@@ -7,6 +7,31 @@ from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery,
 from test_web_source_navigation import _reader, _call
 
 
+def test_posted_metadata_survives_extracted_body_and_cutoff():
+    from sec_agent.research_foundation.dated_web_discovery import publisher_html_day
+    from sec_agent.research_foundation.external_sources import FetchedPage
+    url = 'https://publisher.example/bulletin'
+    html = '<html><head><meta name="date.posted" content="2026-10-21 07:00:03"></head><body><h1>Bulletin</h1><p>Effective January 1, 2027.</p></body></html>'
+    assert publisher_html_day(html, url=url) == date(2026,10,21)
+    assert publisher_html_day(html.replace('date.posted','dc.date'), url=url) is None
+    assert publisher_html_day(html.replace('date.posted','date.archived'), url=url) is None
+    assert publisher_html_day(html.replace('2026-10-21','invalid'), url=url) is None
+    class Origin:
+        async def fetch(self, requested, **_):
+            return FetchedPage(final_url=requested,html=html,extracted_text='Bulletin. Effective January 1, 2027.')
+    html = html.replace('2026-10-21', '2026-06-21')
+    from datetime import datetime, timezone
+    from sec_agent.research_foundation.contracts import bind_research_method, load_research_graph_foundation
+    for cutoff, admitted in [('2026-06-20',False),('2026-06-21',True)]:
+        reader,_,_ = _reader(url=url,published=None)
+        reader.discovery = DatedWebDiscovery(reader.discovery,None,origin_fetcher=Origin())
+        scope = bind_research_method(load_research_graph_foundation(), ('Q8_COMPETITION_VALUE_POOL',),
+            research_as_of=datetime.fromisoformat(cutoff).replace(tzinfo=timezone.utc),
+            data_snapshot_id='TEST', execution_attempt_id='TEST').run_scope
+        result = _call(reader,'search',query='bulletin',scope=scope)
+        assert bool(result.items) == admitted
+
+
 def test_article_microdata_dates_require_exact_page_and_nearest_scope():
     from sec_agent.research_foundation.dated_web_discovery import publisher_html_day
     url='https://publisher.example/news/story'

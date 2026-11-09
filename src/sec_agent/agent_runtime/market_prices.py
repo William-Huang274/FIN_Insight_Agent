@@ -118,8 +118,9 @@ def market_price_tool(*, thread_id, cache_root, research_as_of=None, transport=p
         tape. Currency, time zone, sessions and basis accompany each source. ETFs
         are not their benchmark indices. For news timing and policy transmission,
         get_research_method(method_id='event_policy') provides optional methods.
-        Use calculate_research_metric for returns with the returned passage_id and
-        exact row quotations; retrieved prices alone do not attribute a move to news.
+        Use calculate_research_metric with source_id=passage_id and observation_field
+        (exact start_utc, end_utc, field), omitting quote/literal. Retrieved prices
+        alone do not attribute a move to news; a bar close is not necessarily daily close.
         """
         try:
             ticker = symbol.strip().upper()
@@ -198,6 +199,10 @@ def market_price_tool(*, thread_id, cache_root, research_as_of=None, transport=p
                     request=request, offset=offset, limit=limit),
                 readback={'tool':'read_market_prices', 'arguments':dict(symbol=ticker, start=start, end=end,
                     interval=interval, include_extended_hours=include_extended_hours, offset=offset, limit=limit)})
+            from sec_agent.research_foundation.structured_observations import market_fields
+            item['calculation_fields'] = [{'observation_field': v['selector'], 'value_decimal': v['value_decimal']}
+                                          for v in market_fields(item)]
+            item['calculation_guidance'] = 'Use source_id=passage_id and observation_field, without quote/literal. Select the intended interval; bar close is not necessarily daily close.'
             body = dict(operation='read', items=[item] if page else [], total_matches=len(snapshot['bars']),
                 next_offset=offset+len(page) if offset+len(page)<len(snapshot['bars']) else None,
                 market_metadata=metadata, evidence_admission_performed=False,

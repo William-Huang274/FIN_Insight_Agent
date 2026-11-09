@@ -95,6 +95,16 @@ def _parsing_record(method, original, normalized, **basis):
             "financial_semantics_verified": False}
 
 
+def literal_contexts(body, literal):
+    """All bounded exact-number neighborhoods, never an automatic operand repair."""
+    if not literal:
+        return []
+    matches = list(re.finditer(r'(?<![\w.,])' + re.escape(literal) + r'(?![\w]|[.,]\d)', body))
+    return [{'start': max(0, m.start()-700), 'end': min(len(body), m.end()+350),
+             'text': body[max(0, m.start()-700):min(len(body), m.end()+350)],
+             'total_matches': len(matches), 'selection_required': True} for m in matches[:8]]
+
+
 def resolve_quote(body, quote):
     """Only restore a unique contiguous table block with identical nonempty cells.
 

@@ -43,6 +43,13 @@ def operand_source_feedback(error, messages):
     operand = error.operand
     feedback = dict(code=error.code, operand=error.name, source_id=operand.source_id,
                     submitted_quote=operand.quote, submitted_literal=operand.literal)
+    from sec_agent.research_foundation.structured_observations import market_fields
+    fields = market_fields(error.observed_item or {})
+    if fields:
+        feedback['observed_fields'] = [{'observation_field': v['selector'], 'value_decimal': v['value_decimal']} for v in fields]
+        feedback['readback'] = {'tool': 'read_research_source', 'arguments': {'source_id': operand.source_id}}
+        feedback['next_step'] = 'Select the intended time interval and field; submit observation_field with source_id, omitting quote and literal. Values remain unrounded. A bar close is not necessarily an official daily close.'
+        return feedback
     if error.code == 'operand_quote_not_in_observed_source':
         feedback['readback'] = {'tool':'read_research_source', 'arguments':{'source_id':operand.source_id}}
         from sec_agent.research_foundation.source_quotes import quote_comparison
@@ -51,6 +58,8 @@ def operand_source_feedback(error, messages):
             feedback['quote_comparison'] = comparison
             feedback['next_step'] = 'Compare the original row and headings; choose the exact passage fragment supporting each operand and resubmit. No calculation was accepted.'
         else:
+            from sec_agent.research_foundation.source_quotes import literal_contexts
+            feedback['source_windows'] = literal_contexts(error.observed_text or '', operand.literal)
             feedback['next_step'] = 'Check the original wording, period and column, then select the supporting quote.'
         return feedback
 

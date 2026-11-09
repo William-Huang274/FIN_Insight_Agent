@@ -42,6 +42,9 @@ def model_receipt(result):
             pass
     value = {'receipt_id': result.tool_call_id, 'status': result.status,
              'result': present_references(source_result_view(body)) if result.status == 'success' else body}
+    if result.status == 'error':
+        value['execution_stop'] = not actionable_tool_feedback(result)
+        value['feedback_kind'] = 'correctable_selection' if not value['execution_stop'] else 'execution_failure'
     if result.status == 'success' and result.name in SAVED_RESULT_TOOLS:
         value['original_readback'] = {'tool': 'read_saved_result',
             'arguments': {'tool_call_id': result.tool_call_id},

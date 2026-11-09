@@ -29,6 +29,13 @@ _NUMERIC_START = rf"(?<!{_NUMERIC_IDENTIFIER_CHAR})(?<![.,])"
 _NUMERIC_END = rf"(?!{_NUMERIC_IDENTIFIER_CHAR}|[.,]\d)"
 
 
+class ObservationField(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    start_utc: str
+    end_utc: str
+    field: str = Field(description="Exact observed market field: open, high, low, close or volume. A bar close is not necessarily a daily close.")
+
+
 class CalculationOperand(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     source_id: str | None = Field(default=None, min_length=1, max_length=500,
@@ -39,6 +46,8 @@ class CalculationOperand(BaseModel):
         description="Contiguous source quote containing the literal; no paraphrase or ellipsis. Unique whitespace/table empty-cell layout differences can be restored with an original-input receipt; numbers, signs and nonempty cells must match. The author must check column and period meaning.")
     assumption_note: str | None = Field(default=None, min_length=1, max_length=1000,
         description="Required for an unsourced scenario/scale/day-count input. It will remain an explicit assumption, never source truth.")
+    observation_field: ObservationField | None = Field(default=None,
+        description="For an observed market passage, select exact start_utc, end_utc and field; omit quote and literal. Runtime reads the original value, never the display-rounded number.")
 
 
 class SourceBoundCalculation(BaseModel):
@@ -175,16 +184,19 @@ def operand_binding_feedback(parsed, operands):
 
 
 class OperandSourceError(ValueError):
-    def __init__(self, code, name, operand, *, observed_text=None):
+    def __init__(self, code, name, operand, *, observed_text=None, observed_item=None):
         super().__init__(code)
         self.code, self.name, self.operand = code, name, operand
         self.observed_text = observed_text
+        self.observed_item = observed_item
 
 
 def _bind_operand(name, operand, source_lookup):
     if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{0,31}", name):
         raise ValueError("operand_name_must_be_ascii_identifier")
     if operand.source_id is None:
+        if operand.observation_field is not None:
+            raise ValueError("observation_field_requires_observed_source")
         if not operand.assumption_note or operand.literal is None or operand.quote is not None:
             raise ValueError("unsourced_operand_requires_literal_and_explicit_assumption")
         value = _number(operand.literal)
@@ -198,7 +210,18 @@ def _bind_operand(name, operand, source_lookup):
             raise OperandSourceError("source_id_not_observed", name, operand) from exc
         if operand.assumption_note is not None:
             raise ValueError("source_operand_cannot_be_relabelled_assumption")
-        if item.get("result_state") == "numeric_fact" and item.get("numeric_fact_authority") is True:
+        if operand.observation_field is not None:
+            from .structured_observations import market_fields
+            selector = operand.observation_field.model_dump()
+            matches = [v for v in market_fields(item) if v['selector'] == selector]
+            if len(matches) != 1 or operand.quote is not None or operand.literal is not None:
+                raise OperandSourceError('observation_field_requires_unique_selection_without_literal_or_quote', name, operand, observed_item=item)
+            selected = matches[0]
+            value = _number(selected['value_decimal'])
+            binding = {'source_id': operand.source_id, 'authority': 'non_authoritative_source_reported',
+                       'observation_field': selector, 'observation_context': selected['context'],
+                       'literal': selected['value_decimal'], 'extraction_meaning_verified': False}
+        elif item.get("result_state") == "numeric_fact" and item.get("numeric_fact_authority") is True:
             value = _number(str(item["value_decimal"]))
             if operand.literal is not None and _number(operand.literal) != value:
                 raise ValueError("operand_value_differs_from_observed_s2_fact")
@@ -222,7 +245,7 @@ def _bind_operand(name, operand, source_lookup):
             text = str(item.get("passage") or item.get("bounded_excerpt") or "")
             quote, quote_recovery = resolve_quote(text, operand.quote or "")
             if not quote or quote not in text or operand.literal is None:
-                raise OperandSourceError("operand_quote_not_in_observed_source", name, operand, observed_text=text)
+                raise OperandSourceError("operand_quote_not_in_observed_source", name, operand, observed_text=text, observed_item=item)
             literal_pattern = _NUMERIC_START + re.escape(operand.literal)
             # A comma or period followed by prose is punctuation, whereas
             # one followed by a digit continues the numeric token.

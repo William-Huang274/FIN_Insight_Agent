@@ -300,6 +300,13 @@ class HarnessBusinessTools:
             current = await self._checkpoint_call(self.graph.aget_state, self.config)
             feedback = (restored_batch_feedback(current.values.get('messages', []), failed_receipt_ids)
                         if recovering and failed_receipt_ids else None)
+            if feedback:
+                for failure in feedback.get('failures', []):
+                    correction = reference_selection_feedback(failure.get('result', ''), self.tools)
+                    if correction:
+                        # Preserve the historical failure; expose today's repair
+                        # path without executing or rewriting the old proposal.
+                        failure['current_selection_feedback'] = correction
             if current.next:
                 calls = getattr(current.values.get('messages', [])[-1], 'tool_calls', [])
                 # Reads and host-declared pure checkpoint updates can resume the

@@ -282,3 +282,31 @@ def test_syndicated_article_cannot_use_the_parent_sites_older_timestamp():
     <article><script type="application/ld+json">{"mainEntityOfPage":{"@id":"https://example.org/business/article"},"datePublished":"2026-07-22T06:30:00-04:00"}</script><h1>Second quarter results</h1></article>"""
     assert publisher_html_day(html, url=url) == date(2026, 7, 22)
     assert publisher_html_day(html, url="https://example.org/another") is None
+
+
+def test_call_transcript_search_reaches_web_even_after_sec_and_blocked_ir():
+    from test_web_source_navigation import _reader, _call
+    from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery
+    from sec_agent.research_foundation.external_sources import FetchedPage, ExternalSourceError, ExternalSourceDiscovery
+    issuer = fake_issuer()
+    class Sources:
+        async def lookup(self, request): return issuer
+        async def get(self, url): return b'<html/>'
+        def learn_websites(self, *args): pass
+    class Web:
+        provider_id='fixture_search'
+        def __init__(self): self.scopes=[]
+        async def search(self, request):
+            self.scopes.append(request.include_domains)
+            url = 'https://ir.example.com/call' if request.include_domains else 'https://transcripts.example/call'
+            return [ProviderHit(title='Earnings call transcript',url=url)]
+    class Origin:
+        async def fetch(self,url,**_):
+            if url.startswith('https://ir.'): raise ExternalSourceError('capture_http_status_403')
+            return FetchedPage(final_url=url,html='<head><meta name="date.posted" content="2026-04-23"></head><h1>Call transcript</h1>')
+    web=Web();reader,_,_=_reader()
+    reader.discovery=DatedWebDiscovery(ExternalSourceDiscovery(primary=web),None,origin_fetcher=Origin(),companies=Sources())
+    found=_call(reader,'search',query='EX fiscal second quarter 2026 earnings call transcript')
+    assert any(not scope for scope in web.scopes)
+    assert any(x['source_url']=='https://transcripts.example/call' for x in found.items)
+    assert any(x['source_url'].startswith('https://www.sec.gov/') for x in found.items)

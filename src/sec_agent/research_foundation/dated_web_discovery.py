@@ -556,8 +556,10 @@ class DatedWebDiscovery:
                 providers = (ExternalSourceDiscovery(primary=CatalogSearch(catalog, self.origin_fetcher)), *providers)
         sites = ()
         saved_filings = []
+        web_requested = False
         if issuer:
             from .company_disclosures import FilingSearch, WebsiteSearch, _WEB
+            web_requested = bool(_WEB.search(request.query))
             domains = issuer.domains
             if request.include_domains:
                 domains = tuple(h for h in request.include_domains if _host_in_domains(h, issuer.domains))
@@ -567,13 +569,13 @@ class DatedWebDiscovery:
             if not request.include_domains or _host_in_domains('www.sec.gov',request.include_domains):
                 filing_source = FilingSearch(issuer,self.companies)
                 filings = (ExternalSourceDiscovery(primary=filing_source),)
-            if _WEB.search(request.query):
+            if web_requested:
                 # A website request must reach a web search even when EDGAR has a filing.
                 providers = ((*sites, *filings, *providers) if sites else (*providers, *filings))
             else:
                 providers = (*filings, *sites, *providers)
         for provider in providers:
-            if saved_filings and provider not in sites:
+            if saved_filings and provider not in sites and not web_requested:
                 admitted = saved_filings
                 break
             if provider is None:
@@ -626,17 +628,21 @@ class DatedWebDiscovery:
                             *filing_source.failures, *({'url':c.canonical_url,'stage':'filing_body','reason':out}
                             for c,out in zip(receipt.candidates,checked) if isinstance(out,str) and out != 'after_cutoff')]
                 attempts.append(attempt.model_copy(update=update) if update else attempt)
-            if admitted and sites and provider.primary is filing_source and not _WEB.search(request.query):
+            if admitted and issuer and provider.primary is filing_source and (sites or web_requested):
                 # Keep filings even if the IR site rejects the read. Try one active
                 # domain search so a readable company release can sit alongside EDGAR.
                 saved_filings = admitted
                 continue
             if saved_filings and receipt.attempted_providers:
+                if web_requested and not admitted:
+                    continue
                 combined = [saved_filings[0], *admitted[:1], *saved_filings[1:], *admitted[1:]]
                 admitted = list({c.canonical_url:c for c in combined}.values())[:request.max_results]
                 break
             if admitted or legislation_navigation:
                 break
+        if not admitted and saved_filings:
+            admitted = saved_filings
         body = receipt.model_dump(mode='json',exclude={'receipt_digest'})
         body['attempted_providers'] = [row.model_dump(mode='json') for row in attempts]
         body['candidates'] = [row.model_dump(mode='json') for row in admitted]

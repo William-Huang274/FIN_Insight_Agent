@@ -35,7 +35,7 @@ _DISCLOSURE = re.compile(
     re.I,
 )
 _WEB = re.compile(
-    r"investor relations|official website|company website|官网|公司网站|投资者关系",
+    r"investor relations|official website|company website|transcript|earnings call|conference call|interview|官网|公司网站|投资者关系|电话会|实录|访谈",
     re.I,
 )
 _TICKER_SUBJECT = re.compile(

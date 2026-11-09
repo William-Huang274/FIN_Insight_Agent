@@ -38,10 +38,11 @@ _WEB = re.compile(
     r"investor relations|official website|company website|官网|公司网站|投资者关系",
     re.I,
 )
-_TICKER_CONTEXT = re.compile(
-    r'earnings|quarter|\bQ[1-4]\b|\b(?:10-[KQ]|20-F|40-F|[68]-K)\b|filing|'
-    r'annual report|investor relations|official website|company website|revenue|margin|'
-    r'\b(?:stock|shares|ticker|NYSE|NASDAQ)\b|财报|业绩|申报|季报|年报|官网|公司网站|收入|毛利|股票', re.I)
+_TICKER_SUBJECT = re.compile(
+    r'^(?:\s+|(?=[\u3400-\u9fff]))(?:(?:fiscal\s+)?(?:FY\s*)?20\d{2}\s+)?'
+    r'(?:earnings\b|quarter(?:ly)?\b|Q[1-4]\b|(?:10-[KQ]|20-F|40-F|[68]-K)\b|filing\b|'
+    r'annual report\b|investor relations\b|official website\b|company website\b|revenue\b|margin\b|'
+    r'stock\b|shares\b|财报|业绩|申报|季报|年报|官网|公司网站|收入|毛利|股票)', re.I)
 _SUFFIX = re.compile(
     r"\s+(?:incorporated|inc|corp(?:oration)?|company|plc|ltd|holdings?)\b.*$", re.I
 )
@@ -114,15 +115,15 @@ def issuer_match(rows, query):
         if (
             query.strip().upper() == ticker
             or re.search(r"\$" + re.escape(ticker) + r"(?![A-Za-z0-9])", query)
+            or re.search(r"\b(?:NYSE|NASDAQ|ticker)\s*:?\s*" + re.escape(ticker) + r"(?![A-Za-z0-9])", query, re.I)
             or (
                 len(ticker) >= 2
-                # An uppercase topic/acronym alone is not an issuer identity.
-                # Generic "results" (e.g. election results) is not a filing cue.
-                and _TICKER_CONTEXT.search(query)
+                # A bare symbol can be a topic or acronym. Only infer it as
+                # the leading subject of a disclosure query, never from a
+                # financial word somewhere else in the sentence.
+                and query.lstrip().startswith(ticker)
+                and _TICKER_SUBJECT.search(query.lstrip()[len(ticker):])
                 and ticker not in {"IR", "SEC", "EPS", "FY", "US", "CEO", "CFO", "GAAP"}
-                and re.search(
-                    r"(?<![A-Za-z0-9])" + re.escape(ticker) + r"(?![A-Za-z0-9])", query
-                )
             )
         ):
             matches.append((len(ticker), row, None))

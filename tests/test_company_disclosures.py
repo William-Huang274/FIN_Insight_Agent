@@ -135,6 +135,22 @@ def test_distinct_issuers_cannot_be_silently_resolved_to_one():
     assert issuer_match(rows, "PulteGroup and Lennar earnings") is None
 
 
+def test_ticker_topic_does_not_hijack_another_company_disclosure_search():
+    rows = [dict(title='C3.ai, Inc.', ticker='AI', cik_str=1),
+            dict(title='FactSet Research Systems Inc', ticker='FDS', cik_str=2)]
+    for query in (
+        'FactSet Q1 2026 earnings call transcript AI adoption renewals December 2025',
+        'Cursor gross margin model costs negative 2026 AI coding startup unit economics',
+        'AI coding industry gross margin',
+    ):
+        assert issuer_match(rows, query) is None
+    for query in ('AI quarterly earnings', '$AI earnings', 'NYSE:AI earnings', 'C3.ai earnings'):
+        assert issuer_match(rows, query) == rows[0]
+    assert issuer_match(rows, 'FactSet Research Systems AI adoption quarterly earnings') == rows[1]
+    assert issuer_match(rows, 'FactSet Research Systems versus $AI earnings') is None
+    assert issuer_match(rows, 'FDS Q1 2026 earnings') == rows[1]
+
+
 def test_known_alias_preserves_sec_row_identity_and_issuer_ambiguity():
     rows = [
         dict(title="HORTON D R INC /DE/", ticker="DHI", cik_str=882184),

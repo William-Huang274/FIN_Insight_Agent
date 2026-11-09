@@ -460,7 +460,16 @@ class DatedWebDiscovery:
                                 failed(candidate,'direct_original_read',ExternalSourceError(page.origin_failure_code))
                             if page.final_url == locator:
                                 canonical = publisher_canonical_url(page.html, locator) if page.html and not index else None
-                                if canonical:
+                                # Some publishers redirect their canonical URL to a
+                                # parameterized rendering URL, whose HTML declares
+                                # the original canonical identity. That observed
+                                # round trip is not another document-navigation step.
+                                canonical_round_trip = bool(canonical and len(visited) >= 2
+                                                            and visited[-2] == canonical)
+                                if canonical and not canonical_round_trip and canonical not in visited:
+                                    declared_page = await self.origin_fetcher.fetch(canonical, timeout_seconds=30)
+                                    canonical_round_trip = declared_page.final_url == locator
+                                if canonical and not canonical_round_trip:
                                     # Fetch and date the declared page independently. Keep a
                                     # distinct candidate identity for its actual citation URL.
                                     return await verify(candidate.model_copy(update={
@@ -474,7 +483,7 @@ class DatedWebDiscovery:
                                     if title and title.get_text(strip=True):
                                         candidate = candidate.model_copy(update={'title':title.get_text(' ',strip=True)[:512]})
                                 day = (publisher_markdown_day(page.extracted_text) if getattr(page,'extraction_method',None)=='deepseek_hosted_publication' else
-                                       publisher_html_day(page.html, bool(index), url=locator) if page.html else
+                                       publisher_html_day(page.html, bool(index), url=canonical if canonical_round_trip else locator) if page.html else
                                        publisher_day(page.extracted_text, bool(index), pdf=getattr(page, 'content_type', None) == 'application/pdf') if getattr(page, 'extracted_text', None)
                                        else publisher_html_day(page.html, bool(index), url=locator))
                                 if not day:

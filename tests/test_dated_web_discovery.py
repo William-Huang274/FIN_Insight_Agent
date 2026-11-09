@@ -129,6 +129,36 @@ def test_guarded_publisher_redirect_dates_target_and_stops_cycles():
     assert 'publisher_navigation_cycle' in result.model_dump_json()
 
 
+def test_publisher_canonical_redirect_round_trip_keeps_actual_read_url_and_dates():
+    from sec_agent.research_foundation.external_sources import FetchedPage
+    base = 'https://example.com/earnings/'
+    rendered = base + '?region=public'
+    class Origin:
+        modified = '2026-06-20'
+        async def fetch(self, url, **_):
+            return FetchedPage(final_url=rendered, html=(
+                '<html><head><link rel="canonical" href="'+base+'">'
+                '<script type="application/ld+json">'+json.dumps({
+                    '@context':'https://schema.org', '@type':'NewsArticle',
+                    'mainEntityOfPage':base, 'datePublished':'2026-06-01',
+                    'dateModified':self.modified})+'</script></head><body>'
+                '<h1>Results</h1><p>Current original.</p></body></html>'))
+    origin = Origin()
+    reader,_,_ = _reader(url=base,published=None)
+    gate = DatedWebDiscovery(reader.discovery,None,origin_fetcher=origin)
+    reader.discovery=gate
+    result = _call(reader,'search',query=base)
+    assert len(result.items) == 1
+    assert result.items[0]['source_url'] == rendered
+    assert str(result.items[0]['publication_date']) == '2026-06-20'
+    gate.verified.clear()
+    assert _call(reader,'search',query=rendered).items[0]['source_url'] == rendered
+    origin.modified='2027-01-01';gate.verified.clear()
+    result = _call(reader,'search',query=base)
+    assert not result.items
+    assert 'after_cutoff' in result.model_dump_json()
+
+
 def test_undated_candidate_has_locator_feedback_but_no_text_or_late_candidate():
     from sec_agent.research_foundation.external_sources import FetchedPage
     url='https://example.com/notice'

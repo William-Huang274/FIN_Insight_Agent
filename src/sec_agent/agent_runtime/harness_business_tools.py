@@ -25,7 +25,7 @@ from mcp import types
 from .on_demand_research import OnDemandResearchState
 from .conversation_tools import SAVED_RESULT_TOOLS
 from .source_result_view import source_result_view
-from .source_references import present_references, expand_references
+from .source_references import present_references, expand_references, reference_selection_feedback
 
 
 def model_receipt(result):
@@ -433,7 +433,9 @@ class HarnessBusinessTools:
                 if name != 'check_quantitative_changes' or 'edits' not in arguments:
                     arguments = expand_references(arguments, state)
             except ValueError as exc:
-                receipt = ToolMessage(name=name, tool_call_id=call_id, status='error', content=str(exc))
+                feedback = reference_selection_feedback(exc, self.tools)
+                receipt = ToolMessage(name=name, tool_call_id=call_id, status='error',
+                    content=json.dumps(feedback, ensure_ascii=False) if feedback else str(exc))
                 await self._checkpoint_call(self.graph.aupdate_state, self.config, {'messages': [
                     AIMessage(content='', tool_calls=[{'name': name, 'args': arguments, 'id': call_id, 'type': 'tool_call'}]), receipt]}, as_node='tools')
                 return receipt

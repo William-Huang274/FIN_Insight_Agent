@@ -82,6 +82,23 @@ def expand_references(value, state):
     return visit(value)
 
 
+def reference_selection_feedback(error, granted_tools):
+    """Unknown/ambiguous references are selections, not failed source execution."""
+    code = str(error).split(':', 1)[0]
+    if code not in {'unobserved_source_reference', 'ambiguous_source_reference'}:
+        return None
+    options = []
+    if 'browse_context' in granted_tools:
+        options.append({'tool': 'browse_context', 'arguments': {'region': 'sources'}})
+    if 'read_current_report' in granted_tools:
+        options.append({'tool': 'read_current_report', 'arguments': {'field': 'all'}})
+    if not options:
+        return None
+    return {'code': code, 'error': str(error), 'operation_executed': False,
+            'arguments_modified': False, 'read_options': options,
+            'message': 'Read the current source identities and choose an exact reference. No source was guessed; the requested operation has not executed.'}
+
+
 def present_references(value):
     """Add handles only to read evidence/calculations, never retrieval candidates."""
     if isinstance(value, list):

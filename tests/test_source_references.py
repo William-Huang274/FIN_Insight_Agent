@@ -52,6 +52,20 @@ def test_short_reference_survives_restart_and_does_not_promote_candidates():
     assert present_references(sources[key])['citation_handle'] == handle
 
 
+def test_unknown_reference_returns_only_granted_readback_without_execution():
+    from sec_agent.agent_runtime.source_references import reference_selection_feedback
+    from sec_agent.agent_runtime.harness_business_tools import actionable_tool_feedback, model_receipt
+    error = ValueError('unobserved_source_reference:REF-8a5fc6da81d6807d')
+    feedback = reference_selection_feedback(error, {'browse_context'})
+    assert feedback['error'] == str(error) and not feedback['operation_executed']
+    assert feedback['read_options'] == [{'tool':'browse_context','arguments':{'region':'sources'}}]
+    receipt = ToolMessage(name='consult_research_agent',tool_call_id='reject',status='error',content=json.dumps(feedback))
+    assert actionable_tool_feedback(receipt)
+    assert model_receipt(receipt)['execution_stop'] is False
+    assert reference_selection_feedback(ValueError('source_reference_collision'), {'browse_context'}) is None
+    assert reference_selection_feedback(error, {}) is None
+
+
 def test_unique_abbreviations_only_and_display_never_rewrites_conclusions():
     key, current = state(); sources, handles = reference_sources(current)
     short = 'PASSAGE::…' + key[-16:]

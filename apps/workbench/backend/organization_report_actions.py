@@ -65,7 +65,10 @@ async def completed_predecessor(service, thread, previous_run_id, *, recover=Fal
         raise HTTPException(409, '存在后续运行，请刷新后核对最新操作')
     from .api.v1.report_sessions import public_run_usage
     events, usage = public_run_usage(service.audit_root, thread['thread_id'], previous_run_id)
-    if recover and usage is None:
+    if recover:
+        # A verified preparation can contain replay-only audit rows. Native
+        # admission checks this same signed permit regardless of audit presence;
+        # returning None here would produce a different dispatch fingerprint.
         from sec_agent.adapters.explicit_run_recovery import verified_preparation_recovery
         try:
             permitted = verified_preparation_recovery(service.audit_root, thread['thread_id'],

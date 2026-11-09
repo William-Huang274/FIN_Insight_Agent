@@ -107,8 +107,11 @@ def test_failed_root_recovery_is_explicit_idempotent_and_does_not_replace_histor
     assert s.intake.runs[s.grant['execution_id']][0]['status'] == 'error'
 
 
-def test_checked_preparation_failure_starts_unexecuted_command_from_saved_checkpoint(root, monkeypatch):
-    s = root; s.preparation = True; s.usage = None
+@pytest.mark.parametrize('usage', [None, {'recorded_requests': 3, 'not_attempted_requests': 3,
+                                       'unknown_or_pending_requests': 0, 'partial_audit': False}])
+def test_checked_preparation_failure_starts_unexecuted_command_from_saved_checkpoint(root, monkeypatch, usage, tmp_path):
+    s = root; s.preparation = True; s.usage = usage
+    s.intake.service.audit_root = tmp_path
     s.action_body['action'] = 'recover'
     s.action_grant['report_action_request_digest'] = 'sha256:'+sha256(json.dumps(s.action_body, separators=(',', ':')).encode()).hexdigest()
     s.intake.runs[s.grant['execution_id']][0]['status'] = 'error'
@@ -117,6 +120,7 @@ def test_checked_preparation_failure_starts_unexecuted_command_from_saved_checkp
     with TestClient(s.intake.app()) as c:
         accepted = submit(c, s)
         assert accepted.status_code == 200, accepted.text
+        assert reconcile(c, s).json() == accepted.json()
     assert s.baseline == original
     assert s.actual['checkpoint_id'] == s.baseline['checkpoint']['checkpoint_id']
     assert s.actual['input']['messages'][0]['content'] == s.action_body['message']

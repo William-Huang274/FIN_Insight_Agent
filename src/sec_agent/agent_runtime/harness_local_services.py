@@ -8,6 +8,21 @@ from fastapi import FastAPI
 from starlette.responses import Response
 import uvicorn
 
+
+async def verify_business_endpoint(endpoint, token, expected):
+    """Exercise MCP initialization and discovery before starting a model process."""
+    import httpx2
+    from mcp import Client
+    from mcp.client.streamable_http import streamable_http_client
+    async with httpx2.AsyncClient(headers={'Authorization': 'Bearer ' + token},
+                                  timeout=30, trust_env=False) as http:
+        async with Client(streamable_http_client(endpoint + '/business/', http_client=http),
+                          read_timeout_seconds=30) as client:
+            result = await client.list_tools()
+            actual = {tool.name for tool in result.tools}
+            if actual != set(expected):
+                raise RuntimeError('harness_business_tool_discovery_mismatch')
+
 from .harness_dispatch_host import dispatch_router
 
 
@@ -45,7 +60,9 @@ async def harness_local_services(*, business, dispatch, transport, token, readin
                         await task
                         raise RuntimeError('harness_private_service_did_not_start')
                     await asyncio.sleep(.02)
-            yield 'http://127.0.0.1:' + str(sock.getsockname()[1])
+            endpoint = 'http://127.0.0.1:' + str(sock.getsockname()[1])
+            await verify_business_endpoint(endpoint, token, business.tools)
+            yield endpoint
     finally:
         business.stop()
         server.should_exit = True

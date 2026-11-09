@@ -24,15 +24,17 @@ test('slow durable host readiness outlives 30s without reserving or cancelling c
 
 test('explicit cancellation still interrupts host readiness before spending', async () => {
   let stream, called=false
+  const cancellation = new AbortController()
   const server=createServer(async(req,res)=>{
     for await(const _ of req){}
     assert.equal(req.url,'/calls/ready');called=true
+    cancellation.abort()
   })
   server.listen(0,'127.0.0.1');await once(server,'listening')
   process.env.FIN_CANCEL_WAIT_TOKEN='fixture'
   try {
     apply({on(_,handler){stream=handler}}, {endpoint:`http://127.0.0.1:${server.address().port}`,tokenEnv:'FIN_CANCEL_WAIT_TOKEN',waitForConsultations:true})
-    await assert.rejects(async()=>{for await(const _ of stream({signal:AbortSignal.timeout(100)},async function*(){assert.fail('provider called')})){}},/abort|timeout/i)
+    await assert.rejects(async()=>{for await(const _ of stream({signal:cancellation.signal},async function*(){assert.fail('provider called')})){}},/abort|timeout/i)
     assert.equal(called,true)
   } finally {server.closeAllConnections();server.close();delete process.env.FIN_CANCEL_WAIT_TOKEN}
 })
@@ -121,4 +123,14 @@ test('host missing-usage stop prevents another call even after an upstream succe
     await assert.rejects(async () => {for await (const _ of stream({}, success)) { /* consume */ }}, /stopped/)
     assert.equal(forwarded, 1)
   } finally { server.closeAllConnections(); server.close(); delete process.env.FIN_TEST_DISPATCH_TOKEN }
+})
+
+test('missing business tools stop before reserve; compaction after discovery remains allowed', async () => {
+  let stream
+  process.env.FIN_TOOLS_TEST='fixture'
+  try {
+    apply({on(_,f){stream=f}}, {endpoint:'http://127.0.0.1:1',tokenEnv:'FIN_TOOLS_TEST',requireBusinessTools:true})
+    await assert.rejects(async()=>{for await(const _ of stream({toolHistory:{tools:[]}},async function*(){assert.fail('provider invoked')})){}}, /business MCP tools unavailable/)
+    await assert.rejects(async()=>{for await(const _ of stream({},async function*(){})){}}, /stopped/)
+  } finally {delete process.env.FIN_TOOLS_TEST}
 })

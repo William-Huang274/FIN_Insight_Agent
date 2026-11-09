@@ -15,6 +15,7 @@ export function apply(ctx, config) {
   const token = process.env[config.tokenEnv]
   if (!token) throw new Error('FIN dispatch credential unavailable')
   let stopped = false
+  let toolsVerified = false
   const post = async (path, body, signal, timeoutMs = 30_000) => {
     let response
     try {
@@ -30,6 +31,15 @@ export function apply(ctx, config) {
   }
   ctx.on('llm/stream', async function* (options, next) {
     if (stopped) throw new Error('FIN execution stopped after a failed or unresolved request')
+    if (!toolsVerified && config.requireBusinessTools) {
+      // Historical schemas alone do not prove a restored plugin is active.
+      const schemas = options.tools ?? []
+      if (!schemas.some(tool => tool.name?.startsWith('mcp__financial__'))) {
+        stopped = true
+        throw new Error('FIN business MCP tools unavailable before first model dispatch')
+      }
+      toolsVerified = true
+    }
     const requestId = randomUUID()
     // Signals and extension callbacks are process-local, not durable payloads.
     const { signal, ...request } = options

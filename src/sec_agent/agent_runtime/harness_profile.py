@@ -61,6 +61,7 @@ def profile_overlay(*, model, protocol, endpoint, prompt, context_window,
     patch += [{'insert': [
         {'id': 'fin-dispatch', 'name': str(Path(dispatch_plugin).resolve()),
          'config': {'endpoint': endpoint, 'tokenEnv': 'FIN_HARNESS_LOCAL_TOKEN',
+                    'requireBusinessTools': business_mcp is not None,
                     'waitForConsultations': wait_for_consultations}},
         {'id': 'fin-acp', 'name': '@deepseek-ai/dsh-acp', 'config': {'provider': provider, 'model': model}}]}]
     return patch

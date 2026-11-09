@@ -234,6 +234,24 @@ def test_host_restored_web_original_keeps_identity_and_requires_explicit_admissi
     assert result[calc['calculation_id']]['operands']['revenue']['source_id'] == key
 
 
+def test_market_field_calculation_survives_report_source_restore(navigation):
+    from test_source_references import source
+    from test_structured_observation_operands import fixture
+    from sec_agent.agent_runtime.public_source_restore import validated_public_source
+    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, calculate_from_sources
+    nav, _, _ = navigation
+    _, web = source()
+    market, selector = fixture()
+    web.update(market)
+    web['passage_id'] = key = 'PASSAGE::WEB::document::0::' + web['content_sha256'][:16]
+    web['source_locator'].update(character_end=len(web['passage']), content_sha256=web['content_sha256'])
+    calc = calculate_from_sources(SourceBoundCalculation(expression='a/2',
+        operands={'a':{'source_id':key,'observation_field':selector}}, result_unit='USD', rationale='fixture'),lambda _:web)
+    restored = nav.restore([{'status':'success','content':[web,calc]}],
+                           external_source_lookup=lambda _:validated_public_source(web))
+    assert restored[calc['calculation_id']] == calc
+
+
 def test_permission_change_after_navigation_drops_entire_response(navigation, monkeypatch):
     nav, state, _ = navigation
     original = nav.reader._after

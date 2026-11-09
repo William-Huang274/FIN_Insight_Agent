@@ -614,7 +614,10 @@ class OrganizationSourceNavigation:
                         operands[name] = {'literal':format(value, 'f'),
                                           'assumption_note':operand['assumption_note']}
                     elif authority == 'non_authoritative_source_reported':
-                        operands[name] = {key:operand[key] for key in ('source_id','quote','literal')}
+                        operands[name] = ({'source_id': operand['source_id'],
+                                           'observation_field': operand['observation_field']}
+                                          if 'observation_field' in operand else
+                                          {key:operand[key] for key in ('source_id','quote','literal')})
                         recovery = operand.get('quote_layout_recovery')
                         if recovery is not None:
                             # Re-run the original compatibility parse; feeding

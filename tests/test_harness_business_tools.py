@@ -42,7 +42,8 @@ from sec_agent.agent_runtime.harness_business_tools import HarnessBusinessTools
 from sec_agent.agent_runtime.harness_acp_session import admitted_acp_session
 
 
-def test_transport_recovery_only_returns_unique_committed_read_after_run_anchor(tmp_path):
+@pytest.mark.parametrize('notification_received', [True, False])
+def test_transport_recovery_only_returns_unique_committed_read_after_run_anchor(tmp_path, notification_received):
     from langchain_core.messages import AIMessage
     from sec_agent.agent_runtime.harness_business_tools import completed_transport_reads
     args = {'operation':'search', 'query':'effective', 'document_id':'WEB::document'}
@@ -53,6 +54,8 @@ def test_transport_recovery_only_returns_unique_committed_read_after_run_anchor(
     updates = [{'sessionUpdate':'tool_call_update', 'status':'completed', 'content':[{'content':{'text':json.dumps({'status':'success','receipt_id':'anchor'})}}]},
         {'sessionUpdate':'tool_call','toolCallId':'native','title':'mcp__financial__read_public_source','rawInput':args},
         {'sessionUpdate':'tool_call_update','toolCallId':'native','status':'failed','content':[{'content':{'text':'Error: Request timed out'}}]}]
+    if not notification_received:
+        updates.pop()
     path=tmp_path/'events.jsonl';path.write_text('\n'.join(json.dumps({'update':u}) for u in updates))
     recovered=completed_transport_reads(messages,path)
     assert recovered[0]['receipt']['receipt_id']=='current'
@@ -60,6 +63,10 @@ def test_transport_recovery_only_returns_unique_committed_read_after_run_anchor(
     assert not completed_transport_reads(messages[:-1],path)  # pending is not completion
     assert not completed_transport_reads(messages+[call('other'),result('other')],path)
     assert not completed_transport_reads(messages[:2],path)  # earlier history is not this run
+    updates.append({'sessionUpdate':'tool_call_update','toolCallId':'native','status':'completed',
+                    'content':[{'content':{'text':json.dumps({'status':'success','receipt_id':'current'})}}]})
+    path.write_text('\n'.join(json.dumps({'update':u}) for u in updates))
+    assert not completed_transport_reads(messages,path)  # already delivered
 
 
 def test_recovered_calculator_rechecks_original_without_rewriting_history():

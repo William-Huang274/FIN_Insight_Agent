@@ -134,6 +134,7 @@ def completed_transport_reads(messages, event_file):
         return []
     positions = {m.tool_call_id: i for i, m in enumerate(messages) if isinstance(m, ToolMessage)}
     anchor, pending, recovered = None, {}, []
+    delivered = set()
     for line in event_file.read_text(encoding='utf8').splitlines():
         update = json.loads(line).get('update', {})
         kind, identity = update.get('sessionUpdate'), update.get('toolCallId')
@@ -148,22 +149,23 @@ def completed_transport_reads(messages, event_file):
                     continue
                 if isinstance(receipt, dict) and receipt.get('status') == 'success' and receipt.get('receipt_id') in positions:
                     anchor = positions[receipt['receipt_id']]
-            if update.get('status') != 'failed' or identity not in pending:
-                continue
-            name, arguments, boundary = pending[identity]
-            if boundary is None or name not in SAVED_RESULT_TOOLS:
-                continue
-            matches = []
-            for i, message in enumerate(messages[boundary + 1:], boundary + 1):
-                for call in getattr(message, 'tool_calls', ()):
-                    original = message.additional_kwargs.get('original_tool_arguments', call.get('args'))
-                    if call.get('name') == name and original == arguments:
-                        matches.extend(m for m in messages[i + 1:] if isinstance(m, ToolMessage)
-                            and m.tool_call_id == call['id'] and m.name == name and m.status == 'success')
-            if len(matches) == 1:
-                recovered.append({'native_tool_call_id': identity, 'tool': name,
-                    'submitted_arguments': arguments, 'status': 'completed_before_transport_recovery',
-                    'receipt': model_receipt(matches[0]), 'original_transport_error_retained': True})
+                if isinstance(receipt, dict) and receipt.get('receipt_id') in positions:
+                    delivered.add(identity)
+    for identity, (name, arguments, boundary) in pending.items():
+        if identity in delivered or boundary is None or name not in SAVED_RESULT_TOOLS:
+            continue
+        matches = []
+        for i, message in enumerate(messages[boundary + 1:], boundary + 1):
+            for call in getattr(message, 'tool_calls', ()):
+                original = message.additional_kwargs.get('original_tool_arguments', call.get('args'))
+                if call.get('name') == name and original == arguments:
+                    matches.extend(m for m in messages[i + 1:] if isinstance(m, ToolMessage)
+                        and m.tool_call_id == call['id'] and m.name == name and m.status == 'success')
+        if len(matches) == 1:
+            recovered.append({'native_tool_call_id': identity, 'tool': name,
+                'submitted_arguments': arguments, 'status': 'completed_before_transport_recovery',
+                'receipt': model_receipt(matches[0]), 'original_transport_error_retained': True,
+                'notice': 'Committed tool receipt was not delivered before interruption; reuse it without executing again.'})
     return recovered
 
 

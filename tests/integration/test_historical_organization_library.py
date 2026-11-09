@@ -141,4 +141,4 @@ def test_historical_documents_authority_search_restart_and_revocation(monkeypatc
         try:
             s.compose('logs', '--no-color')
         finally:
-            s.compose('stop', '-t', '5'); s.bff.close(); s.native.close()
+            s.finish(); s.bff.close(); s.native.close()

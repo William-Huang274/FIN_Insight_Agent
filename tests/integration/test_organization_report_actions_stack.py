@@ -108,4 +108,4 @@ def test_browser_multiround_report_actions_restart_and_revocation(monkeypatch):
         try:
             s.compose('logs', '--no-color')
         finally:
-            s.compose('stop', '-t', '5'); s.bff.close(); s.native.close()
+            s.finish(); s.bff.close(); s.native.close()

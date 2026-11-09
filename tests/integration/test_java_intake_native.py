@@ -1,7 +1,7 @@
 """Opt-in real business intake -> native persisted queue; deterministic graph only.
 
-No production ports, source volumes or model provider credentials. Own compose
-services are stopped (not deleted); private logs, DB volume and receipts survive.
+No production ports, source volumes or model provider credentials. Successful
+disposable stacks are removed; failures and explicitly retained fixtures survive.
 """
 import hashlib
 import json
@@ -66,6 +66,10 @@ class Stack:
         self.events.mkdir()
         (self.state / 'calls').mkdir(parents=True)
         self.project = 'fin-intake-native-' + uuid4().hex[:12]
+        self.owned_project = self.project
+        self.disposable_copies = []
+        self.deterministic_model_fixture = True
+        self.preserve_model_storage = False
         self.docker = os.getenv('FINSIGHT_TEST_DOCKER') or shutil.which('docker')
         self.java = direct_java()
         assert self.docker and self.java
@@ -122,7 +126,13 @@ class Stack:
             'synthetic': self.synthetic_components, 'provider_calls': 0})
 
     def save(self, name, value):
+        if isinstance(value, dict) and isinstance(value.get('provider_calls'), (int, float)) and value['provider_calls'] > 0:
+            self.preserve_model_storage = True
         (self.output / (name + '.json')).write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding='utf-8')
+
+    def finish(self, *, failed=None):
+        from tests.integration.resource_retention import finish
+        return finish(self, failed=failed)
 
     def compose(self, *args):
         self.ordinal += 1
@@ -202,8 +212,9 @@ class Stack:
 
 
 @pytest.fixture(scope='module')
-def stack():
+def stack(request):
     s = Stack()
+    failures_before = request.session.testsfailed
     try:
         s.compose('up', '-d', '--pull', 'never', 'api')
         s.healthy()
@@ -223,7 +234,7 @@ def stack():
         try:
             s.compose('logs', '--no-color')
         finally:
-            s.compose('stop', '-t', '5')
+            s.finish(failed=sys.exc_info()[0] is not None or request.session.testsfailed > failures_before)
             s.bff.close()
             s.native.close()
 

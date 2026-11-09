@@ -257,6 +257,6 @@ def test_old_cards_publication_failures_concurrency_and_recovery(monkeypatch):
         try:
             s.compose("logs", "--no-color")
         finally:
-            s.compose("stop", "-t", "5")
+            s.finish()
             s.bff.close()
             s.native.close()

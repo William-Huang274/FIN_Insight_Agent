@@ -162,7 +162,7 @@ def test_organization_native_draft_reply_loss_restart_and_revocation(monkeypatch
         try:
             s.compose('logs', '--no-color')
         finally:
-            s.compose('stop', '-t', '5')
+            s.finish()
             java.close()
             s.bff.close()
             s.native.close()

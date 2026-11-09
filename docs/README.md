@@ -24,6 +24,8 @@
 
 当前0.1.4研究runtime开发与测点顺序见[按Agent流转的分段资格路线](engineering/runtime_flow_qualification.zh-CN.md)。
 
+集成测试结束后的资源处理见[测试环境保留与退役](engineering/qualification_retention.zh-CN.md)。
+
 Lead初步判断的依据边界、具体任务依赖和分阶段模型试验见[初步判断与模型选择](engineering/lead_reasoning_and_model_routing.zh-CN.md)。
 
 专家底稿与 Lead 成文实际使用的行文方法、支撑记录与正文分工见[投研写作方法](engineering/research_writing.zh-CN.md)。

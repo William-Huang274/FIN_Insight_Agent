@@ -177,6 +177,6 @@ def test_metric_cards_browser_publication_and_current_permissions(monkeypatch):
         try:
             s.compose('logs','--no-color')
         finally:
-            s.compose('stop','-t','5')
+            s.finish()
             s.bff.close()
             s.native.close()

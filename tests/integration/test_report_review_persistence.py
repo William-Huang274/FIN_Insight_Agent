@@ -173,7 +173,7 @@ def test_verifier_versions_restart_and_exact_history(monkeypatch):
         try:
             s.compose("logs", "--no-color")
         finally:
-            s.compose("stop", "-t", "5")
+            s.finish()
             s.native.close()
             s.bff.close()
 
@@ -251,6 +251,6 @@ def test_convergence_parent_corrections_and_review_history_after_restart(monkeyp
         try:
             s.compose("logs", "--no-color")
         finally:
-            s.compose("stop", "-t", "5")
+            s.finish()
             s.native.close()
             s.bff.close()

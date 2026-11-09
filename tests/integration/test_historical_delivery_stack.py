@@ -265,4 +265,4 @@ def test_historical_case_unified_business_delivery(monkeypatch):
             if process.poll() is None: process.terminate(); process.wait(timeout=20)
         for log in s.logs: log.close()
         try: s.compose('logs','--no-color')
-        finally: s.compose('stop','-t','5'); s.bff.close(); s.native.close()
+        finally: s.finish(); s.bff.close(); s.native.close()

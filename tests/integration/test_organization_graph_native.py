@@ -243,4 +243,4 @@ def test_real_native_organization_orientation_restart_and_mid_run_revocation(mon
         for log in s.logs:log.close()
         try:s.compose('logs','--no-color')
         finally:
-            s.compose('stop','-t','5');java.close();s.bff.close();s.native.close()
+            s.finish();java.close();s.bff.close();s.native.close()

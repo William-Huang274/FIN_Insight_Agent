@@ -924,7 +924,7 @@ def test_complete_sources_real_authority_publication_frozen_index_and_readback(m
         for log in s.logs: log.close()
         try:s.compose('logs','--no-color')
         finally:
-            s.compose('stop','-t','5');s.bff.close();s.native.close()
+            s.finish();s.bff.close();s.native.close()
             if getattr(s, 'retained_lease', None):
                 if s.retained_lease.read_text(encoding='utf8') != str(s.output):
                     raise ValueError('retained_fixture_lease_owner_changed')

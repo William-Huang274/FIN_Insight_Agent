@@ -58,6 +58,7 @@ def copy_publication(stack, publication_path, index_path):
             shutil.copyfile(source, target)
         if digest(target) != sha:
             raise ValueError('independent_copy_digest_mismatch')
+        stack.disposable_copies.append(str(target))
         checked.append({'file': str(target.relative_to(stack.output)), 'sha256': sha, 'bytes': target.stat().st_size})
     stack.save('independent-copy', {'status':'passed', 'files':checked, 'bytes':required,
         'source_publication_seal':digest(archive), 'source_index_seal':digest(index_path),

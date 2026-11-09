@@ -142,5 +142,5 @@ def test_continuous_answer_workpaper_restart_close_and_revocation():
         for log in s.logs: log.close()
         try: s.compose('logs', '--no-color')
         finally:
-            s.compose('stop', '-t', '5')
+            s.finish()
             s.bff.close(); s.native.close()

@@ -193,6 +193,6 @@ def test_historical_source_multi_identity_research_load(monkeypatch):
         try:
             s.compose('logs', '--no-color')
         finally:
-            s.compose('stop', '-t', '5')
+            s.finish()
             s.bff.close()
             s.native.close()

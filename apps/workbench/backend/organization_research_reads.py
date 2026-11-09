@@ -184,6 +184,65 @@ def install_organization_read_routes(router, service):
         return await scope.response({'report': values['report'], 'report_version': values.get('report_version'),
                                      'phase': values.get('phase'), 'read_only': True})
 
+    @router.get(prefix + '/report-versions')
+    async def report_versions(project_id: UUID, execution_id: UUID, before: UUID | None = None):
+        scope = await opened(project_id, execution_id)
+        history = await service.report_history(execution_id, before)
+        versions = {}
+        for state in history:
+            values = state.get('values') or {}
+            number = values.get('report_version')
+            if not number or not values.get('report'):
+                continue
+            versions.setdefault(number, {'version': number,
+                'checkpoint_id': state['checkpoint']['checkpoint_id'],
+                'created_at': state.get('created_at'), 'title': values['report']['title'],
+                'reason': values.get('report_revision_reason') or '保存的稿件版本；可查看实际正文差异'})
+        return await scope.response({'versions': list(versions.values()),
+            'next_cursor': history[-1]['checkpoint']['checkpoint_id'] if len(history) == 10 else None})
+
+    @router.get(prefix + '/report-versions/{checkpoint_id}')
+    async def report_version(project_id: UUID, execution_id: UUID, checkpoint_id: UUID):
+        scope = await opened(project_id, execution_id)
+        values = (await scope.state(checkpoint_id)).get('values') or {}
+        if not values.get('report'):
+            raise HTTPException(404, '该记录尚无报告')
+        return await scope.response({'report': values['report'], 'report_version': values.get('report_version'),
+            'checkpoint_id': str(checkpoint_id), 'reason': values.get('report_revision_reason')})
+
+    @router.get(prefix + '/report-diff')
+    async def report_diff(project_id: UUID, execution_id: UUID, before: UUID | None = None, after: UUID | None = None,
+                          before_execution: UUID | None = None):
+        from difflib import unified_diff
+        scope = await opened(project_id, execution_id)
+        if before is None and before_execution is None:
+            raise HTTPException(422, '请选择比较版本或研究记录')
+        previous_scope = await opened(project_id, before_execution) if before_execution and before_execution != execution_id else scope
+        old = (await previous_scope.state(before)).get('values') or {}
+        new = (await scope.state(after)).get('values') or {}
+        if not old.get('report') or not new.get('report'):
+            raise HTTPException(409, '所选版本没有可比较的报告')
+        await previous_scope.check()
+        return await scope.response({'before_version': old.get('report_version'), 'after_version': new.get('report_version'),
+            'reason': new.get('report_revision_reason') or '对照实际保存的正文；不代表复核已通过',
+            'diff': '\n'.join(unified_diff(old['report']['narrative_markdown'].splitlines(), new['report']['narrative_markdown'].splitlines(),
+                fromfile=f"v{old.get('report_version')}", tofile=f"v{new.get('report_version')}", lineterm='')),
+            'charts_changed': old['report'].get('charts',[]) != new['report'].get('charts',[]),
+            'before_citation_ids': list(old['report'].get('citations',{})),
+            'after_citation_ids': list(new['report'].get('citations',{})),
+            'citations_changed': old['report'].get('citations',{}) != new['report'].get('citations',{})})
+
+    @router.get(prefix + '/report/charts/{index}.png')
+    async def chart_image(project_id: UUID, execution_id: UUID, index: int, checkpoint_id: UUID | None = None):
+        scope = await opened(project_id, execution_id)
+        charts = ((await scope.state(checkpoint_id)).get('values',{}).get('report') or {}).get('charts',[])
+        if not 0 <= index < len(charts):
+            raise HTTPException(404, '该版本没有这幅图表')
+        from .application.report_delivery import chart_png
+        data = await run_in_threadpool(chart_png, charts[index])
+        await scope.check()
+        return Response(data, media_type='image/png', headers={'Cache-Control':'no-store'})
+
     @router.get(prefix + '/source')
     async def source(project_id: UUID, execution_id: UUID, source_id: str, offset: int = 0,
                      checkpoint_id: UUID | None = None):

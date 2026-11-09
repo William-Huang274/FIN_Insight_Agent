@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { sessionsApi, type ReportVersion, type ReportSnapshot, type ReportDiff } from "../api/reportSessions";
 import { ReportDiffView } from "./ReportDiffView";
 
-export function ReportVersions({ id, currentVersion, onSelect }: {
+export function ReportVersions({ id, currentVersion, onSelect, api=sessionsApi }: {
   id: string; currentVersion: number; onSelect: (report: ReportSnapshot | null) => void;
+  api?: Pick<typeof sessionsApi,'versions'|'version'|'diff'>;
 }) {
   const [versions, setVersions] = useState<ReportVersion[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -15,7 +16,7 @@ export function ReportVersions({ id, currentVersion, onSelect }: {
   useEffect(() => {
     let active = true;
     setSelected(""); setDiff(null); onSelect(null); setLoading(true); setError("");
-    sessionsApi.versions(id).then(page => {
+    api.versions(id).then(page => {
       if (active) { setVersions(page.versions); setCursor(page.next_cursor); }
     }).catch(e => { if (active) setError(e.message); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; epoch.current++; };
@@ -26,7 +27,7 @@ export function ReportVersions({ id, currentVersion, onSelect }: {
     if (!checkpoint) { setSelected(""); onSelect(null); return; }
     setLoading(true);
     try {
-      const report = await sessionsApi.version(id, checkpoint);
+      const report = await api.version(id, checkpoint);
       if (request === epoch.current) { setSelected(checkpoint); onSelect(report); }
     } catch (e) { if (request === epoch.current) setError((e as Error).message); }
     finally { if (request === epoch.current) setLoading(false); }
@@ -36,7 +37,7 @@ export function ReportVersions({ id, currentVersion, onSelect }: {
     const request = ++epoch.current;
     setLoading(true); setError("");
     try {
-      const page = await sessionsApi.versions(id, cursor);
+      const page = await api.versions(id, cursor);
       if (request === epoch.current) {
         setVersions(old => [...new Map([...page.versions, ...old].map(v => [v.version, v])).values()].sort((a, b) => b.version - a.version));
         setCursor(page.next_cursor);
@@ -47,7 +48,7 @@ export function ReportVersions({ id, currentVersion, onSelect }: {
   async function compare() {
     const request = ++epoch.current;
     setLoading(true); setError("");
-    try { const result = await sessionsApi.diff(id, selected); if (request === epoch.current) setDiff(result); }
+    try { const result = await api.diff(id, selected); if (request === epoch.current) setDiff(result); }
     catch (e) { if (request === epoch.current) setError((e as Error).message); }
     finally { if (request === epoch.current) setLoading(false); }
   }

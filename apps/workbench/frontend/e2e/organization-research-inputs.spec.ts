@@ -26,7 +26,7 @@ async function fixture(page:Page,role='researcher',continuous=false){
     else if(u.pathname.endsWith('/verify')){
       state.verifies++;
       if(state.hold)await new Promise<void>(resolve=>{state.release=resolve;});
-      if(state.revoked){await route.fulfill({status:404,json:{detail:'准备单或所选资料不可访问'}});return;}
+      if(state.revoked){await route.fulfill({status:404,json:{detail:'研究输入或所选资料不可访问'}});return;}
       result={manifest_digest:state.saved.manifest_digest,notice:'本次权限与原件校验通过；不是启动许可，未创建研究运行。'};
     }
     else if(u.pathname.endsWith('/executions'))result=state.execution?[{execution_id:state.execution.execution_id,preparation:'unknown',closed:false}]:[];
@@ -38,7 +38,7 @@ async function fixture(page:Page,role='researcher',continuous=false){
     else if(u.pathname.includes('/research-drafts/')){
       if(state.holdRead)await new Promise<void>(resolve=>{state.release=resolve;});
       const draft=state.drafts[u.pathname.split('/').at(-1)!];
-      if(state.revoked||!draft){await route.fulfill({status:404,json:{detail:'准备单或所选资料不可访问'}});return;}result=draft;
+      if(state.revoked||!draft){await route.fulfill({status:404,json:{detail:'研究输入或所选资料不可访问'}});return;}result=draft;
     }
     else if(u.pathname==='/api/v1/organization-research-capabilities')result={on_demand:continuous};
     else throw Error('Unexpected request '+r.method()+' '+u.pathname);
@@ -46,11 +46,11 @@ async function fixture(page:Page,role='researcher',continuous=false){
   });return state;
 }
 async function fill(page:Page){
-  await page.getByLabel('准备单标题',{exact:true}).fill('资本开支与现金流研究');
+  await page.getByLabel('议题名称',{exact:true}).fill('资本开支与现金流研究');
   await page.getByRole('textbox',{name:'研究问题',exact:true}).fill('请核对资本开支与现金流覆盖情况及原始来源。');
   await page.getByLabel('研究截止日期',{exact:true}).fill('2026-10-12');
   await page.getByRole('checkbox',{name:/季度资料固定副本/}).check();
-  await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
+  await page.getByRole('button',{name:'保存研究输入',exact:true}).click();
 }
 for(const delivery of ['answer','workpaper','report'])test(`continuous preparation freezes ${delivery} policy without starting a model`,async({page})=>{
   const state=await fixture(page,'researcher',true);
@@ -69,13 +69,13 @@ test('selected release survives response loss and copying while source changes r
   state.releases=[{release_id:release,model:'qwen3.7-text-embedding',index_digest:'c'.repeat(64),
     published_at:'2026-10-20T10:00:00Z',resource_ids:[resource]}];
   await page.goto(url);
-  await page.getByLabel('准备单标题',{exact:true}).fill('固定检索版本');
+  await page.getByLabel('议题名称',{exact:true}).fill('固定检索版本');
   await page.getByLabel('研究问题',{exact:true}).fill('研究固定披露中的现金流和资本支出变化。');
   await page.getByLabel('研究截止日期',{exact:true}).fill('2026-10-12');
   await page.getByRole('checkbox',{name:/季度资料固定副本/}).check();
   await page.getByLabel('检索版本',{exact:true}).selectOption(release);
   state.drop=true;
-  await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
+  await page.getByRole('button',{name:'保存研究输入',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('响应丢失');
   await page.reload();
   await page.getByRole('button',{name:'以原内容重试保存',exact:true}).click();
@@ -83,7 +83,7 @@ test('selected release survives response loss and copying while source changes r
   expect(state.posts).toHaveLength(2);
   expect(state.posts[1]).toEqual(state.posts[0]);
   expect(state.posts[0].retrieval_release_id).toBe(release);
-  await page.getByRole('button',{name:'复制为新准备单',exact:true}).click();
+  await page.getByRole('button',{name:'创建同议题实验分支',exact:true}).click();
   await expect(page.getByLabel('检索版本',{exact:true})).toHaveValue(release);
   await page.getByRole('checkbox',{name:/季度资料固定副本/}).uncheck();
   await expect(page.getByLabel('检索版本',{exact:true})).toHaveValue('');
@@ -95,18 +95,19 @@ test('one focal document uses a published nineteen-source scope and copying keep
   const ids=[resource,...Array.from({length:18},(_,i)=>`50000000-0000-4000-8000-${String(i).padStart(12,'0')}`)];
   state.releases=[{release_id:release,model:'qwen3.7-text-embedding',index_digest:'c'.repeat(64),published_at:'2026-10-20T10:00:00Z',resource_ids:ids}];
   await page.goto(url);
-  await page.getByLabel('准备单标题',{exact:true}).fill('范围独立的研究');
+  await page.getByLabel('议题名称',{exact:true}).fill('范围独立的研究');
   await page.getByLabel('研究问题',{exact:true}).fill('研究重点披露并检索其他资料中的补充证据。');
   await page.getByLabel('研究截止日期',{exact:true}).fill('2026-10-12');
   await page.getByRole('checkbox',{name:/季度资料固定副本/}).check();
   await page.getByLabel('检索版本',{exact:true}).selectOption(release);
-  await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
+  await page.getByRole('button',{name:'保存研究输入',exact:true}).click();
   await expect(page.getByText(/可检索资料范围：19/)).toBeVisible();
   expect(state.posts[0].resource_ids).toEqual([resource]);
   expect(state.posts[0].retrieval_resource_ids).toEqual(ids);
-  await page.getByRole('button',{name:'复制为新准备单',exact:true}).click();
+  await page.getByRole('button',{name:'创建同议题实验分支',exact:true}).click();
   await expect(page.getByText(/已选 1\/12/)).toBeVisible();
-  await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
+  await page.getByLabel('本轮变化说明',{exact:true}).fill('保留原资料范围，验证复制输入。');
+  await page.getByRole('button',{name:'保存研究输入',exact:true}).click();
   await expect(page.getByText(/可检索资料范围：19/)).toBeVisible();
   expect(state.posts[1].resource_ids).toEqual([resource]);
   expect(state.posts[1].retrieval_resource_ids).toEqual(ids);
@@ -127,7 +128,7 @@ for(const width of [1440,390])test(`frozen preparation, explicit verify and with
   state.revoked=true;await page.getByRole('button',{name:'重新校验权限与原件'}).click();await expect(page.getByRole('alert')).toContainText('不可访问');
   await expect(page.getByText('请核对资本开支与现金流覆盖情况及原始来源。',{exact:true})).toHaveCount(0);
   await expect(page.getByRole('button',{name:/资本开支与现金流研究/})).toHaveCount(0);expect(state.posts).toHaveLength(1);
-  await page.getByRole('button',{name:'新建准备单',exact:true}).click();
+  await page.getByRole('button',{name:'新建议题',exact:true}).click();
   await expect(page.getByRole('checkbox',{name:/季度资料固定副本/})).toHaveCount(0);
 });
 test('unknown response survives reload and explicit replay uses the same body',async({page})=>{
@@ -139,12 +140,12 @@ test('unknown response survives reload and explicit replay uses the same body',a
 });
 test('reading the original resolves a pending save; viewer has no mutation controls',async({page})=>{
   const state=await fixture(page);state.drop=true;await page.goto(url);await fill(page);
-  await expect(page.getByRole('alert')).toContainText('响应丢失');await page.getByRole('button',{name:'核对原准备单'}).click();
+  await expect(page.getByRole('alert')).toContainText('响应丢失');await page.getByRole('button',{name:'核对原研究输入'}).click();
   await expect(page.getByRole('heading',{name:'资本开支与现金流研究',exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'新建准备单',exact:true}).click();await expect(page.getByText(/上次提交待核对/)).toHaveCount(0);expect(state.posts).toHaveLength(1);
+  await page.getByRole('button',{name:'新建议题',exact:true}).click();await expect(page.getByText(/上次提交待核对/)).toHaveCount(0);expect(state.posts).toHaveLength(1);
   await page.goto('about:blank');await page.unroute('**/api/v1/**');const viewer=await fixture(page,'viewer');await page.goto(url);
-  await expect(page.getByText(/只读成员可以查看有权读取的准备单/)).toBeVisible();
-  await expect(page.getByRole('button',{name:'保存输入准备单'})).toHaveCount(0);expect(viewer.posts).toHaveLength(0);
+  await expect(page.getByText(/只读成员可以查看有权读取的研究输入/)).toBeVisible();
+  await expect(page.getByRole('button',{name:'保存研究输入'})).toHaveCount(0);expect(viewer.posts).toHaveLength(0);
 });
 test('late verification cannot replace a newly selected preparation form',async({page})=>{
   const state=await fixture(page);await page.goto(url);await fill(page);
@@ -172,16 +173,17 @@ for(const width of [1440,390])test(`copy corrects cutoff without changing origin
   await page.goto(url);await fill(page);
   await expect(page.getByRole('heading',{name:'资本开支与现金流研究',exact:true})).toBeVisible();
   const original=structuredClone(state.saved);
-  await page.getByRole('button',{name:'复制为新准备单',exact:true}).click();
+  await page.getByRole('button',{name:'创建同议题实验分支',exact:true}).click();
   await expect(page.getByRole('textbox',{name:'研究问题',exact:true})).toHaveValue(original.question);
   await expect(page.getByRole('checkbox',{name:/季度资料固定副本/})).toBeChecked();
   expect(state.posts).toHaveLength(1);
-  await page.getByLabel('准备单标题',{exact:true}).fill('修正截止日期');
+  await page.getByLabel('议题名称',{exact:true}).fill('修正截止日期');
+  await page.getByLabel('本轮变化说明',{exact:true}).fill('截止日期延长至10月13日，其他资料保持不变');
   await page.getByLabel('研究截止日期',{exact:true}).fill('2026-10-13');
   await page.screenshot({path:info.outputPath(`copy-preparation-${width}.png`),fullPage:true});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   state.drop=true;
-  await page.getByRole('button',{name:'保存输入准备单',exact:true}).click();
+  await page.getByRole('button',{name:'保存研究输入',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('响应丢失');
   await page.reload();await page.getByRole('button',{name:'以原内容重试保存',exact:true}).click();
   await expect(page.getByRole('heading',{name:'修正截止日期',exact:true})).toBeVisible();
@@ -189,7 +191,7 @@ for(const width of [1440,390])test(`copy corrects cutoff without changing origin
   expect(state.saved.id).not.toBe(original.id);
   expect(state.saved.manifest.inputs).toEqual(original.manifest.inputs);
   expect(state.drafts[original.id]).toEqual(original);expect(state.prepares).toHaveLength(0);
-  await page.getByRole('button',{name:'新建准备单',exact:true}).click();
+  await page.getByRole('button',{name:'新建议题',exact:true}).click();
   await expect(page.getByRole('textbox',{name:'研究问题',exact:true})).toHaveValue('');
   await expect(page.getByRole('checkbox',{name:/季度资料固定副本/})).not.toBeChecked();
 });
@@ -197,10 +199,10 @@ test('copy checks current permission and erases denied source without a write',a
   const state=await fixture(page);await page.goto(url);await fill(page);
   await expect(page.getByRole('heading',{name:'资本开支与现金流研究',exact:true})).toBeVisible();
   state.revoked=true;
-  await page.getByRole('button',{name:'复制为新准备单',exact:true}).click();
+  await page.getByRole('button',{name:'创建同议题实验分支',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('不可访问');
   await expect(page.getByText('请核对资本开支与现金流覆盖情况及原始来源。',{exact:true})).toHaveCount(0);
-  await page.getByRole('button',{name:'新建准备单',exact:true}).click();
+  await page.getByRole('button',{name:'新建议题',exact:true}).click();
   await expect(page.getByRole('textbox',{name:'研究问题',exact:true})).toHaveValue('');
   await expect(page.getByRole('checkbox')).toHaveCount(0);
   expect(state.posts).toHaveLength(1);
@@ -208,7 +210,7 @@ test('copy checks current permission and erases denied source without a write',a
 test('late copy response cannot overwrite navigation',async({page})=>{
   const state=await fixture(page);await page.goto(url);await fill(page);
   await expect(page.getByRole('heading',{name:'资本开支与现金流研究',exact:true})).toBeVisible();
-  state.holdRead=true;await page.getByRole('button',{name:'复制为新准备单',exact:true}).click();
+  state.holdRead=true;await page.getByRole('button',{name:'创建同议题实验分支',exact:true}).click();
   await expect.poll(()=>!!state.release).toBe(true);
   await page.goto(url);await expect(page.getByRole('heading',{name:'准备研究输入',exact:true})).toBeVisible();
   state.release!();
@@ -222,22 +224,22 @@ test('copied selection outside current resource page is visible and removable',a
   // Source is authorized but paginated out of the current resource list.
   await page.route('**/resources?offset=*',route=>route.fulfill({json:{items:[],next_offset:null}}));
   await page.reload();
-  await page.getByRole('button',{name:'复制为新准备单',exact:true}).click();
+  await page.getByRole('button',{name:'创建同议题实验分支',exact:true}).click();
   await expect(page.getByRole('checkbox')).toHaveCount(0);
   await page.getByRole('button',{name:'移除 季度资料固定副本',exact:true}).click();
-  await expect(page.getByRole('button',{name:'保存输入准备单',exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'保存研究输入',exact:true})).toBeDisabled();
   expect(state.posts).toHaveLength(1);
 });
 test('an unresolved different submission cannot be overwritten by copying a saved draft',async({page})=>{
   const state=await fixture(page);await page.goto(url);await fill(page);
   await expect(page.getByRole('heading',{name:'资本开支与现金流研究',exact:true})).toBeVisible();
   const originalId=state.saved.id;
-  await page.getByRole('button',{name:'新建准备单',exact:true}).click();
+  await page.getByRole('button',{name:'新建议题',exact:true}).click();
   state.drop=true;await fill(page);
   await expect(page.getByRole('alert')).toContainText('响应丢失');
   await page.goto(`${url}&draft=${originalId}`);
-  await expect(page.getByRole('button',{name:'复制为新准备单',exact:true})).toBeDisabled();
-  await page.getByRole('button',{name:'新建准备单',exact:true}).click();
+  await expect(page.getByRole('button',{name:'创建同议题实验分支',exact:true})).toBeDisabled();
+  await page.getByRole('button',{name:'新建议题',exact:true}).click();
   await expect(page.getByText(/上次提交待核对/)).toBeVisible();
   expect(state.posts).toHaveLength(2);
 });

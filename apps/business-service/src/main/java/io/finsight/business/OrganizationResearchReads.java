@@ -29,7 +29,7 @@ class OrganizationResearchReads {
         if(actor==null||actor.equals("local-pilot"))throw new ApiFailure(403,"组织研究需要独立登录身份");
         if(db.queryForList(OrganizationProjects.VISIBLE+" AND p.id=?",actor,project).isEmpty())throw new ApiFailure(404,"项目不可访问");
         var candidates=db.queryForList("WITH visible_drafts AS ("+OrganizationResearchDrafts.VISIBLE+") "+"""
-            SELECT b.id AS execution_id,b.draft_id,d.title,COALESCE(r.run_id,c.run_id,s.run_id) AS run_id
+            SELECT b.id AS execution_id,b.draft_id,d.title,d.topic_id,d.revision_note,d.research_as_of,d.created_at,COALESCE(r.run_id,c.run_id,s.run_id) AS run_id
             FROM organization_execution_binding b
             JOIN visible_drafts d ON d.id=b.draft_id
             JOIN organization_native_preparation p ON p.execution_id=b.id AND p.status='received'

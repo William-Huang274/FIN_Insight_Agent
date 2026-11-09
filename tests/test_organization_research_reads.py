@@ -67,6 +67,24 @@ def reading(organization, monkeypatch):
     return s
 
 
+def test_organization_versions_use_authorized_native_history(reading):
+    s=reading
+    async def history(tid,before=None):
+        assert str(tid)==s.grant['execution_id']
+        return [{'values':deepcopy(s.values),'checkpoint':{'checkpoint_id':s.checkpoint_id},'created_at':'2026-11-09'}]
+    s.intake.service.report_history=history
+    with TestClient(s.intake.app()) as client:
+        r=client.get(s.root+'/report-versions',headers=s.headers)
+        assert r.status_code==200 and r.json()['versions'][0]['version']==1
+        assert 'narrative_markdown' not in r.text
+        assert client.get(s.root+'/report-versions/'+s.checkpoint_id,headers=s.headers).json()['report_version']==1
+        d=client.get(s.root+'/report-diff?before='+s.checkpoint_id,headers=s.headers)
+        assert d.status_code==200 and d.json()['diff']==''
+        s.state['status']=404
+        assert client.get(s.root+'/report-versions',headers=s.headers).status_code==404
+        assert client.get(s.root+'/report-diff?before='+s.checkpoint_id,headers=s.headers).status_code==404
+
+
 def test_viewer_snapshot_report_citation_keep_private_routes_closed(reading):
     s=reading
     with TestClient(s.intake.app()) as c:

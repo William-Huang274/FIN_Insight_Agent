@@ -13,3 +13,8 @@ export function sourceUrl(value?: string): string | undefined {
     return url.href;
   } catch { return undefined; }
 }
+
+export function sourceHost(value?:string):string {
+  const url=sourceUrl(value);
+  return !url?'已保存原文':url.startsWith('/')?'本地资料':new URL(url).hostname;
+}

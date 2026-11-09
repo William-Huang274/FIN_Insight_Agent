@@ -21,7 +21,10 @@ class OrganizationResearchDrafts {
                   @NotBlank @Size(min=10,max=16000) String question,@NotNull LocalDate research_as_of,
                   @NotNull @Size(min=1,max=12) List<@NotNull UUID> resource_ids,
                   UUID retrieval_release_id,
-                  @Size(min=1,max=2048) List<@NotNull UUID> retrieval_resource_ids) {}
+                  @Size(min=1,max=2048) List<@NotNull UUID> retrieval_resource_ids,
+                  UUID parent_draft_id, @Size(max=1000) String revision_note) {}
+    record TopicLink(@NotNull UUID target_draft_id,@NotNull UUID expected_topic_id,
+                     @NotBlank @Size(max=1000) String revision_note) {}
     private final JdbcTemplate db;
     private final OrganizationProjects projects;
     private final ObjectMapper json;
@@ -58,10 +61,12 @@ class OrganizationResearchDrafts {
         return one(VISIBLE+" AND d.id=?",project,actor,actor,project,actor,id);
     }
     private Object view(Map<String,Object> row) {
-        return Map.of("id",row.get("id"),"project_id",row.get("project_id"),"title",row.get("title"),
+        var result=new HashMap<String,Object>(Map.of("id",row.get("id"),"project_id",row.get("project_id"),"title",row.get("title"),
             "question",row.get("question"),"manifest",parse(row.get("manifest_text")),
             "manifest_digest","sha256:"+row.get("manifest_digest"),"created_at",row.get("created_at"),
-            "status","inputs_saved","execution_enabled",false);
+            "status","inputs_saved","execution_enabled",false));
+        result.put("topic_id",row.get("topic_id"));result.put("parent_draft_id",row.get("parent_draft_id"));
+        result.put("revision_note",row.get("revision_note"));return result;
     }
     @GetMapping
     Object list(HttpServletRequest request,@PathVariable UUID projectId,@RequestParam(defaultValue="0") @Min(0) @Max(100000) int offset) {
@@ -72,6 +77,20 @@ class OrganizationResearchDrafts {
     }
     @GetMapping("/{id}")
     Object get(HttpServletRequest request,@PathVariable UUID projectId,@PathVariable UUID id) {return view(draft(actor(request),projectId,id));}
+    @PutMapping("/{id}/topic")
+    Object linkTopic(HttpServletRequest request,@PathVariable UUID projectId,@PathVariable UUID id,@Valid @RequestBody TopicLink body) {
+        String actor=actor(request);
+        return tx.execute(status->{
+            var project=projects.researchPreparation(actor,projectId,true);
+            var current=draft(actor,projectId,id);var target=draft(actor,projectId,body.target_draft_id());
+            if(db.update("UPDATE organization_research_draft SET topic_id=?,revision_note=? WHERE id=? AND topic_id=?",
+                target.get("topic_id"),body.revision_note().trim(),id,body.expected_topic_id())!=1)
+                throw new ApiFailure(409,"议题关联已变化，请刷新后重试");
+            db.update("INSERT INTO organization_project_audit(project_id,actor,action,target,revision) VALUES(?,?,'research_topic_link',?,?)",
+                projectId,actor,id+" -> "+target.get("topic_id"),project.get("revision"));
+            return view(draft(actor,projectId,id));
+        });
+    }
     @PostMapping
     Object create(HttpServletRequest request,@PathVariable UUID projectId,@Valid @RequestBody Create body) {
         String actor=actor(request);
@@ -120,8 +139,14 @@ class OrganizationResearchDrafts {
             if(body.retrieval_release_id()!=null)
                 manifest.set("retrieval_index",releases.freeze(projectId,body.retrieval_release_id(),inputs));
             String encoded=manifest.toString(),hash=Delegation.digest(encoded.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            int inserted=db.update("INSERT INTO organization_research_draft(id,project_id,organization_id,created_by,request_digest,title,question,research_as_of,manifest_text,manifest_digest) VALUES(?,?,?,?,?,?,?,?::date,?,?) ON CONFLICT DO NOTHING",
-                body.id(),projectId,project.get("organization_id"),actor,digest,body.title().trim(),body.question().trim(),body.research_as_of().toString(),encoded,hash);
+            UUID topic=body.id();
+            if(body.parent_draft_id()!=null) {
+                topic=(UUID)draft(actor,projectId,body.parent_draft_id()).get("topic_id");
+                if(body.revision_note()==null||body.revision_note().isBlank())throw new ApiFailure(422,"请说明本轮问题或资料有什么变化");
+            }
+            int inserted=db.update("INSERT INTO organization_research_draft(id,project_id,organization_id,created_by,request_digest,title,question,research_as_of,manifest_text,manifest_digest,topic_id,parent_draft_id,revision_note) VALUES(?,?,?,?,?,?,?,?::date,?,?,?,?,?) ON CONFLICT DO NOTHING",
+                body.id(),projectId,project.get("organization_id"),actor,digest,body.title().trim(),body.question().trim(),body.research_as_of().toString(),encoded,hash,
+                topic,body.parent_draft_id(),body.revision_note()==null?"":body.revision_note().trim());
             if(inserted!=1)throw new ApiFailure(409,"准备凭证已用于其他提交，请核对原准备单");
             for(var source:sources)db.update("INSERT INTO organization_research_input(draft_id,resource_id,space_id,resource_revision,binding) VALUES(?,?,?,?,?::jsonb)",
                 body.id(),source.get("id"),source.get("space_id"),source.get("revision"),source.get("encoded"));

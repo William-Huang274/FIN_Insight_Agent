@@ -20,6 +20,8 @@ class ReportChart(BaseModel):
     kind: Literal["bar", "line"] = "bar"
     unit: str = Field(min_length=1, max_length=80)
     scale_divisor: Literal[1, 1000, 1000000, 1000000000] = 1
+    after_heading: str = Field(default="", max_length=250,
+        description="Optional exact Markdown heading text (without #). Place chart at the end of that section, near its discussion. Empty preserves legacy appendix placement.")
     points: list[ChartPoint] = Field(min_length=2, max_length=36)
     interpretation: str = Field(min_length=10, max_length=1200,
         description="Explain the relationship, comparison periods and relevant caveat; no unsupported causal claim.")
@@ -75,7 +77,7 @@ def bind_report_charts(charts, source_lookup):
 def chart_submission_view(chart):
     """Recover the existing input schema from host-bound output, not new values."""
     return {**{k: chart[k] for k in ("title", "kind", "unit", "interpretation")},
-        "scale_divisor": chart.get("scale_divisor", 1),
+        "scale_divisor": chart.get("scale_divisor", 1), "after_heading": chart.get("after_heading", ""),
         "points": [{"label": p["label"], "series": p.get("series", ""),
             "source": {"source_id": p["source_id"], **{k: p.get("provenance", {})[k]
                 for k in ("literal", "quote") if k in p.get("provenance", {})}}} for p in chart["points"]]}

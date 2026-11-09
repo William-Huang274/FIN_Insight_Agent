@@ -43,6 +43,7 @@ for(const width of [1440,390])test(`organization report commands confirm and rec
   await expect(page.getByRole('button',{name:'核对报告操作',exact:true})).toBeVisible();
   await page.reload();expect(posts).toBe(1);
   await page.getByRole('button',{name:'核对报告操作',exact:true}).click();
+  await page.getByText('历史交流、复核意见与版本修改',{exact:true}).click();
   await expect(page.getByText('第一次回答，报告仍为 v1',{exact:true})).toBeVisible();
   await page.getByRole('textbox',{name:'问题或修订意见'}).fill('解释单位');
   await page.getByRole('button',{name:'核对并准备追问',exact:true}).click();
@@ -89,6 +90,7 @@ for(const width of [1440,390])test(`organization results read and revoked source
   await page.goto(`/workspace/projects?scope=organization&project=${project}&view=results`);
   await page.getByRole('button',{name:/固定资料研究/}).click();
   await expect(page.getByRole('heading',{name:'合成报告',exact:true})).toBeVisible();
+  await page.getByText('历史交流、复核意见与版本修改',{exact:true}).click();
   const reply=page.getByRole('region',{name:'任务交流记录'});
   const reference=reply.getByRole('button',{name:'依据 1',exact:true});
   await expect(reference).toHaveCount(2);
@@ -118,12 +120,12 @@ for(const width of [1440,390])test(`organization results read and revoked source
   missingCheckpoint=true;await page.reload();await expect(exports.getByRole('button',{name:'PDF',exact:true})).toBeDisabled();
   await expect(page.getByText('尚未取得报告版本记录，请刷新研究记录后导出。')).toBeVisible();
   missingCheckpoint=false;await page.reload();
-  await page.getByRole('button',{name:'查看引用 ORG:S1'}).click();await expect(page.getByText('固定引用片段',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:/已保存原文摘录/}).click();await expect(page.getByText('固定引用片段',{exact:true})).toBeVisible();
   await page.screenshot({path:info.outputPath(`organization-results-${width}.png`),fullPage:true});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   revoked=true;
   if(width===390)await exports.getByRole('button',{name:'网页阅读版',exact:true}).click();
-  else await page.getByRole('button',{name:'查看引用 ORG:S1'}).click();
+  else await page.getByRole('button',{name:/已保存原文摘录/}).click();
   await expect(page.getByRole('alert')).toContainText('资料当前不可访问');
   await expect(page.getByRole('heading',{name:'合成报告',exact:true})).toHaveCount(0);
   await expect(page.getByText('固定引用片段',{exact:true})).toHaveCount(0);
@@ -190,7 +192,7 @@ for(const width of [1440,390])test(`organization browser start unknown reconcile
   // Simulate a later saved report response, not another start/continue request.
   stage='report';await page.reload();await expect(page.getByRole('heading',{name:'静态业务闭环报告',exact:true})).toBeVisible();
   await expect(page.locator('.org-status')).toHaveText('报告待审阅');
-  await page.getByRole('button',{name:'查看引用 ORG:STATIC'}).click();await expect(page.getByText('静态原件引用',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:/已保存原文摘录/}).click();await expect(page.getByText('静态原件引用',{exact:true})).toBeVisible();
   const reportDownload=page.waitForEvent('download');await page.getByRole('button',{name:'Markdown',exact:true}).click();
   expect(await readFile((await (await reportDownload).path())!,'utf8')).toContain('仅验证交付，不评价金融结论。');
   expect(starts).toBe(1);expect(continues).toBe(1);expect(writes).toHaveLength(3);

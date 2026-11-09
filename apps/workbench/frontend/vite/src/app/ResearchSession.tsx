@@ -1,3 +1,4 @@
+import {ReportBody} from './ReportBody';
 import {AssetContextBanner} from './AssetContextBanner';
 import {ProjectAssetsPanel} from './ProjectAssetsPanel';
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -102,14 +103,6 @@ const phaseName: Record<string, string> = {
   research_incomplete_acknowledged: "已查看未完成研究",
   research_orientation_submitted: "预研究完成",
 };
-
-function chartSourceLinks(value: unknown): string[] {
-  if (Array.isArray(value)) return [...new Set(value.flatMap(chartSourceLinks))];
-  if (value && typeof value === "object") return [...new Set(Object.entries(value).flatMap(([key, item]) =>
-    ["source_url", "url"].includes(key) && typeof item === "string" ? (validLink(item) ? [item] : []) :
-    key === "citation_urls" && Array.isArray(item) ? item.filter((url): url is string => typeof url === "string" && !!validLink(url)) : chartSourceLinks(item)))];
-  return [];
-}
 
 export function ResearchSession() {
   const [params, setParams] = useSearchParams();
@@ -668,29 +661,13 @@ export function ResearchSession() {
                     {displayedReport && <div className="rs-export-actions"><span>导出这版报告</span>
                       {([['html', '网页阅读版'], ['pdf', 'PDF'], ['docx', 'Word'], ['pptx', 'PowerPoint'], ['md', 'Markdown']] as const).map(([format, label]) =>
                         <a key={format} href={`/api/v1/research-sessions/${id}/report/export/${format}${reportQuery}`} download>{label}</a>)}
-                      {!!displayedReport.charts?.length && <a href="#report-charts">查看 {displayedReport.charts.length} 幅图表</a>}
+                      {!!displayedReport.charts?.length && <a href="#report-chart-0">查看 {displayedReport.charts.length} 幅图表</a>}
                     </div>}
                     {displayedReport&&<SaveProjectReport key={`${id}:${historicalReport?.checkpoint_id||session.report_digest}`} thread={id}
                       version={historicalReport?.report_version||session.report_version||1} digest={historicalReport?.report_digest||session.report_digest}
                       checkpoint={historicalReport?.checkpoint_id} projects={projects.index.projects}
                       onOpen={project=>setParams({view:'project',project})}/>}
-                    <Markdown
-                      reportHeadings
-                      text={
-                        displayedReport?.narrative_markdown || (session.is_draft ? "研究尚未启动。这里将在研究完成后显示报告。" : session.status === "error" ? "本次尚未取得报告。请查看运行状态；失败记录与已有研究材料均保留。" : "报告尚未生成；请在研究现场查看真实任务进度。")
-                      }
-                      citations={displayedReport?.citations}
-                      onCitation={(key, citation) => cite(key, citation, historicalReport?.checkpoint_id)}
-                    />
-                    {!!displayedReport?.charts?.length && <h3 id="report-charts">图表与出处</h3>}
-                    {displayedReport?.charts?.map((chart, index) => <figure className="rs-research-chart" key={`${historicalReport?.report_version || session.report_version}-${index}`}>
-                      <img src={`/api/v1/research-sessions/${id}/report/charts/${index}.png${reportQuery || `?v=${session.report_version}`}`} alt={chart.title} />
-                      <figcaption>{chart.interpretation}</figcaption>
-                      <details><summary>图表数值与来源（{(chart.scale_divisor || 1) === 1 ? chart.unit : `${chart.scale_divisor!.toLocaleString()} ${chart.unit}`}）</summary><table><thead><tr><th>项目</th><th>系列</th><th>数值</th><th>来源</th></tr></thead>
-                        <tbody>{chart.points.map((point, p) => <tr key={p}><td>{point.label}</td><td>{point.series}</td><td>{point.value.toLocaleString()}</td>
-                          <td>{chartSourceLinks(point.provenance).map((url, n) => <a key={url} href={url} target="_blank" rel="noopener noreferrer">原始来源 {n + 1} </a>)}
-                            <details><summary>定位与计算明细</summary><small>{point.source_id}</small><pre>{JSON.stringify(point.provenance, null, 2)}</pre></details></td></tr>)}</tbody></table></details>
-                    </figure>)}
+                    {displayedReport?<ReportBody report={displayedReport} onCitation={(key,c)=>cite(key,c,historicalReport?.checkpoint_id)} chartUrl={index=>`/api/v1/research-sessions/${id}/report/charts/${index}.png${reportQuery||`?v=${session.report_version}`}`}/>:<p>报告尚未生成，请查看研究进展。</p>}
                   </article>
                 </section>
                 <div className="rs-conversation" aria-label="研究对话">

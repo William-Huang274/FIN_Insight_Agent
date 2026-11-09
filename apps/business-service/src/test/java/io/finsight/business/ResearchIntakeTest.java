@@ -618,6 +618,30 @@ class ResearchIntakeTest {
         workspace(admin,"POST",base+"/"+draft+"/material-access",null,409);
         workspace(admin,"GET","/projects/"+UUID.randomUUID()+"/research-drafts/"+draft,null,404);
     }
+    @Test void topic_lineage_preserves_inputs_and_requires_current_access() throws Exception {
+        var f=executionFixture();String base="/projects/"+f.project()+"/research-drafts";
+        UUID branch=UUID.randomUUID(),independent=UUID.randomUUID();
+        var body=new HashMap<String,Object>();body.put("id",branch);body.put("title","同一议题复测");
+        body.put("question","保持题面，验证新的公司披露读取路径。");body.put("research_as_of","2026-10-12");
+        body.put("resource_ids",List.of(f.resource()));body.put("parent_draft_id",f.draft());
+        workspace(f.researcher(),"POST",base,body,422);
+        body.put("revision_note","公司原件读取修复后的独立复测");
+        var saved=workspace(f.researcher(),"POST",base,body,200);
+        assertThat(saved.path("topic_id").asText()).isEqualTo(f.draft().toString());
+        assertThat(saved.path("parent_draft_id").asText()).isEqualTo(f.draft().toString());
+        assertThat(workspace(f.researcher(),"POST",base,body,200)).isEqualTo(saved);
+        body.remove("parent_draft_id");body.put("id",independent);
+        var separate=workspace(f.researcher(),"POST",base,body,200);
+        assertThat(separate.path("topic_id").asText()).isEqualTo(independent.toString());
+        var link=Map.of("target_draft_id",f.draft(),"expected_topic_id",independent,"revision_note","历史独立实验，保留原执行");
+        var linked=workspace(f.researcher(),"PUT",base+"/"+independent+"/topic",link,200);
+        assertThat(linked.path("manifest_digest")).isEqualTo(separate.path("manifest_digest"));
+        assertThat(linked.path("topic_id").asText()).isEqualTo(f.draft().toString());
+        workspace(f.researcher(),"PUT",base+"/"+independent+"/topic",link,409);
+        var foreign=executionFixture();
+        workspace(foreign.researcher(),"PUT",base+"/"+independent+"/topic",link,404);
+        assertThat(workspace(f.researcher(),"GET",base+"/"+f.draft(),null,200).path("manifest_digest").asText()).isEqualTo(f.digest());
+    }
     record ExecutionFixture(String admin,String researcher,UUID org,UUID project,UUID space,UUID resource,UUID draft,String digest) {
         String createPath() {return "/projects/"+project+"/research-drafts/"+draft+"/execution-bindings";}
     }
@@ -1012,10 +1036,11 @@ class ResearchIntakeTest {
         var reads=workspace(f.researcher(),"GET",base+"/read-access",null,200);
         assertThat(reads.path("run_id")).isEqualTo(receipt.path("run_id"));
         assertThat(reads.path("run_ids").size()).isEqualTo(2);
-        var next=new HashMap<>(body);next.put("id",UUID.randomUUID());next.put("previous_run_id",receipt.path("run_id").asText());
-        workspace(f.researcher(),"POST",commands,next,409); // Same checkpoint cannot be spent twice.
+        var next=new HashMap<>(body);next.put("id",UUID.randomUUID());
+        workspace(f.researcher(),"POST",commands,next,409); // Same checkpoint AND preceding run cannot be spent twice.
         // An explanation need not modify the report: a fresh native checkpoint
         // permits a different question with the SAME report version and digest.
+        next.put("previous_run_id",receipt.path("run_id").asText());
         next.put("checkpoint_id",UUID.randomUUID()); next.put("message","进一步解释这份报告的单位");
         var secondQuestion=workspace(f.researcher(),"POST",commands,next,200);
         assertThat(secondQuestion.path("status").asText()).isEqualTo("received");

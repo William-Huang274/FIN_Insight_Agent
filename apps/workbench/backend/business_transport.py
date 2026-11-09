@@ -18,7 +18,7 @@ from starlette.responses import JSONResponse, Response
 INTERNAL = '/api/v1/internal-research/'
 _PUBLIC = re.compile(r'(tasks|tasks/[0-9a-f-]{36}(?:/(?:prepare|start|reconcile))?)$')
 _SPACES = re.compile(r'workspaces(?:/(?:organizations|spaces|join)|/organizations/[0-9a-f-]{36}/(?:members|invites|remove-member)|/spaces/[0-9a-f-]{36}/(?:members|resources)|/resources/[0-9a-f-]{36}/revoke)?$')
-_ORG_PROJECTS = re.compile(r'workspaces/projects(?:/[0-9a-f-]{36}(?:/members|/(?:resources|research-drafts)(?:/[0-9a-f-]{36})?)?)?$')
+_ORG_PROJECTS = re.compile(r'workspaces/projects(?:/[0-9a-f-]{36}(?:/members|/resources(?:/[0-9a-f-]{36})?|/research-drafts(?:/[0-9a-f-]{36}(?:/topic)?)?)?)?$')
 _RETRIEVAL_RELEASES = re.compile(r'workspaces/projects/[0-9a-f-]{36}/retrieval-releases$')
 
 
@@ -168,7 +168,7 @@ def build_business_gateway():
         return {'enabled': bool(base), 'stage': 'personal_research_intake', 'team_collaboration': False,
                 'resource_spaces': resource_spaces_enabled(), 'organization_projects': resource_spaces_enabled()}
 
-    @router.api_route('/{path:path}', methods=['GET', 'POST'])
+    @router.api_route('/{path:path}', methods=['GET', 'POST', 'PUT'])
     async def forward(path: str, request: Request):
         from .authentication import current_owner
         owner = current_owner(request)
@@ -177,7 +177,9 @@ def build_business_gateway():
         release_read = request.method == 'GET' and _RETRIEVAL_RELEASES.fullmatch(path)
         if not _PUBLIC.fullmatch(path) and not ((_SPACES.fullmatch(path) or _ORG_PROJECTS.fullmatch(path) or release_read) and resource_spaces_enabled()):
             raise HTTPException(404)
-        if request.method == 'POST':
+        if request.method == 'PUT' and not re.fullmatch(r'workspaces/projects/[0-9a-f-]{36}/research-drafts/[0-9a-f-]{36}/topic', path):
+            raise HTTPException(404)
+        if request.method in {'POST', 'PUT'}:
             if request.headers.get('x-workbench-request') != '1':
                 raise HTTPException(403, '缺少工作台请求标识')
             origin = request.headers.get('origin')

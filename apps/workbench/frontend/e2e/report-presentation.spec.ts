@@ -1,0 +1,46 @@
+import {test,expect} from './identity-fixture';
+const project='20000000-0000-4000-8000-000000000002',execution='30000000-0000-4000-8000-000000000003';
+const old='60000000-0000-4000-8000-000000000006',current='60000000-0000-4000-8000-000000000007';
+for(const width of [1440,390])test(`report presentation and native versions ${width}`,async({page})=>{
+  await page.setViewportSize({width,height:960});
+  const base=`/api/v1/organization-projects/${project}/research/${execution}`;
+  const citation={claim:{statement:'Disclosure',kind:'fact'},sources:[{source_id:'PASSAGE::WEB::opaque',title:'Example Bank — Third Quarter Results',source_url:'https://example.com/results',period_end:'2026-09-30'}]};
+  const report={title:'银行研究',narrative_markdown:'## 经营比较\n\n| 公司 | 经营证据 | 当前判断 |\n|---|---|---|\n| Example Bank | '+('比较证据与解释。'.repeat(30))+' | 保留差异。 |\n\n[REF]\n\n> 附注：单位为百万美元。\n\n## 风险\n\n需要继续观察。',citations:{REF:citation},charts:[{title:'收入比较',after_heading:'经营比较',kind:'bar',unit:'USD',interpretation:'同期间来源绑定的收入比较。',points:[{label:'A',series:'收入',value:1},{label:'B',series:'收入',value:2}]}]};
+  await page.route('**/api/v1/**',async route=>{
+    const u=new URL(route.request().url());let value:any={};
+    if(u.pathname.endsWith('/business/config'))value={enabled:true,organization_projects:true};
+    else if(u.pathname==='/api/v1/projects')value={revision:0,projects:[],assignments:{},pinned:[]};
+    else if(u.pathname==='/api/v1/research-sessions')value=[];
+    else if(u.pathname===`/api/v1/business/workspaces/projects/${project}`)value={id:project,organization_name:'测试',name:'研究项目',role:'viewer',archived:false};
+    else if(u.pathname.endsWith('/members'))value=[];
+    else if(u.pathname===base+'/control')value={can_operate:false};
+    else if(u.pathname===base+'/report-versions')value={versions:[{version:1,title:'初稿',checkpoint_id:old,reason:'初稿'},{version:2,title:'修订稿',checkpoint_id:current,reason:'复核后修订'}],next_cursor:null};
+    else if(u.pathname===base+'/report-versions/'+old)value={report:{...report,title:'旧版报告'},report_version:1,checkpoint_id:old};
+    else if(u.pathname===base+'/report-diff')value={before_version:1,after_version:2,reason:'复核后修订',before_citation_ids:['REF'],after_citation_ids:['REF'],diff:'--- v1\n+++ v2\n@@ -1 +1,5 @@\n-原判断 [REF]\n+修订判断 [REF]\n+\n+| 公司 | 证据 | 判断 |\n+|---|---|---|\n+| Example | 已读来源 | 待观察 |',charts_changed:false,citations_changed:false};
+    else if(u.pathname===base+'/source'){expect(u.searchParams.get('checkpoint_id')).toBe(old);value={...citation.sources[0],text:'旧版本绑定的原文'};}
+    else if(u.pathname.endsWith('.png')){await route.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64')});return;}
+    else if(u.pathname===base)value={title:'银行议题',status:'idle',checkpoint_id:current,report_version:2,report};
+    else if(u.pathname===`/api/v1/organization-projects/${project}/research`)value={items:[{execution_id:execution,title:'银行议题'}],next_offset:null};
+    else if(u.pathname===base+'/report')value={report,report_version:2};
+    else throw Error('Unexpected API '+u.pathname);
+    await route.fulfill({json:value});
+  });
+  await page.goto(`/workspace/projects?scope=organization&project=${project}&view=results&execution=${execution}`);
+  await expect(page.getByRole('region',{name:'报告数据表，可横向滚动'})).toBeVisible();
+  await expect(page.locator('.fs-reference-card')).toContainText('Example Bank — Third Quarter Results');
+  await expect(page.locator('.fs-reference-card')).not.toContainText('PASSAGE::');
+  expect(await page.locator('.fs-report-figure').evaluate(e=>!!(e.compareDocumentPosition([...document.querySelectorAll('h2,h3')].find(n=>n.textContent==='风险')!)&Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  const headingIds=await page.locator('.fs-report-body [id^=report-section-]').evaluateAll(es=>es.map(e=>e.id));
+  expect(new Set(headingIds).size).toBe(headingIds.length);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.getByRole('button',{name:'查看版本与本轮变化 · v2'}).click();
+  await page.getByLabel('阅读报告版本').selectOption(old);
+  await expect(page.getByRole('heading',{name:'旧版报告'})).toBeVisible();
+  await page.getByRole('button',{name:'与当前版本比较'}).click();
+  await expect(page.getByLabel('报告修订前后对照')).toContainText('修订判断');
+  await expect(page.locator('.fs-diff-prose sup').first()).toHaveText('[1]');
+  await expect(page.getByRole('region',{name:'版本对照数据表，可横向滚动'})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.locator('.fs-reference-card').click();
+  await expect(page.getByLabel('引用快照内容')).toContainText('旧版本绑定的原文');
+});

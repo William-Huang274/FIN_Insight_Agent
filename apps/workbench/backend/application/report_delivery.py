@@ -84,9 +84,10 @@ def readable_report(report):
     return text, references
 
 
-def markdown_blocks(text):
+def markdown_blocks(text, charts=()):
     from markdown_it import MarkdownIt
-    tokens = MarkdownIt("commonmark").enable("table").parse(text)
+    from .report_flow import chart_tokens
+    tokens, placed = chart_tokens(MarkdownIt("commonmark").enable("table"), text, charts)
     blocks, index = [], 0
     def plain(token):
         if not token.children:
@@ -95,7 +96,9 @@ def markdown_blocks(text):
             for t in token.children if t.type in {"text", "code_inline", "softbreak", "hardbreak"})
     while index < len(tokens):
         token = tokens[index]
-        if token.type == "table_open":
+        if token.type == 'report_chart':
+            blocks.append(('chart', token.meta['index']))
+        elif token.type == "table_open":
             rows = []
             while index < len(tokens) and tokens[index].type != "table_close":
                 if tokens[index].type == "tr_open":
@@ -113,7 +116,7 @@ def markdown_blocks(text):
         elif token.type in {"fence", "code_block"}:
             blocks.append(("p", token.content))
         index += 1
-    return blocks
+    return blocks + [('chart', i) for i in range(len(charts)) if i not in placed]
 
 
 def chart_png(chart):
@@ -181,13 +184,23 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
         return pdf_report(report, review_status), "application/pdf"
     text, references = readable_report(report)
     charts = report.get("charts", [])
-    blocks = markdown_blocks(text)
+    blocks = markdown_blocks(text, charts)
     title = report["title"]
     if format == "md":
-        body = f"# {title}\n\n{review_status}\n\n{text}"
-        for chart in charts:
-            body += f"\n\n## {chart['title']}\n\n{chart['interpretation']}\n\n单位：{chart_display_unit(chart)}\n\n| 项目 | 系列 | 数值 |\n|---|---|---:|\n"
-            body += "\n".join(f"| {p['label']} | {p['series']} | {p['value']:g} |" for p in chart["points"])
+        from markdown_it import MarkdownIt
+        from .report_flow import chart_tokens
+        tokens, placed = chart_tokens(MarkdownIt('commonmark'), text, charts)
+        def chart_markdown(chart):
+            def cell(value):
+                return str(value).replace('|', '\\|').replace('\n', '<br>')
+            return f"\n\n### {chart['title']}\n\n{chart['interpretation']}\n\n单位：{chart_display_unit(chart)}\n\n| 项目 | 系列 | 数值 |\n|---|---|---:|\n" + "\n".join(f"| {cell(p['label'])} | {cell(p['series'])} | {p['value']:g} |" for p in chart['points']) + '\n\n'
+        lines = text.splitlines(keepends=True)
+        insertions = {}
+        for token in tokens:
+            if token.type == 'report_chart':
+                insertions.setdefault(token.meta['line'], []).append(chart_markdown(charts[token.meta['index']]))
+        body = f"# {title}\n\n{review_status}\n\n" + ''.join(''.join(insertions.get(i, [])) + (lines[i] if i < len(lines) else '') for i in range(len(lines)+1))
+        body += ''.join(chart_markdown(chart) for i, chart in enumerate(charts) if i not in placed)
         body += "\n\n## 来源\n\n" + "\n\n".join(references)
         return body.encode("utf-8"), "text/markdown; charset=utf-8"
     if format == "docx":
@@ -216,7 +229,11 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
         document.add_paragraph(title, "Title")
         document.add_paragraph(review_status)
         for kind, value in blocks:
-            if kind == "table":
+            if kind == 'chart':
+                chart = charts[value]
+                document.add_picture(io.BytesIO(chart_png(chart)), width=Inches(6.1))
+                document.add_paragraph(chart['interpretation'])
+            elif kind == "table":
                 width = max(len(row) for row in value)
                 table = document.add_table(rows=0, cols=width)
                 table.style = "Table Grid"
@@ -247,11 +264,6 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
                 document.add_paragraph()
             else:
                 document.add_paragraph(value, "Heading " + str(min(3, int(kind[1]))) if kind.startswith("h") else None)
-        if charts:
-            document.add_heading("图表与出处", 1)
-        for chart in charts:
-            document.add_picture(io.BytesIO(chart_png(chart)), width=Inches(6.1))
-            document.add_paragraph(chart["interpretation"])
         document.add_heading("来源", 1)
         for ref in references:
             paragraph = document.add_paragraph(ref)
@@ -300,7 +312,7 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
             page.notes_slide.notes_text_frame.text = notes
             return page
         slide(title, review_status, "\n\n".join(references))
-        for chart in charts:
+        def add_chart_slide(chart):
             page = slide(chart["title"], notes=chart["interpretation"] + "\n\n" + "\n\n".join(references))
             data = CategoryChartData()
             labels = list(dict.fromkeys(p["label"] for p in chart["points"]))
@@ -345,7 +357,10 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
                 slide(current_title + (f"（续 {part_index}）" if part_index else ""), part.strip(), "\n\n".join(references))
             chunks.clear()
         for kind, value in blocks:
-            if kind.startswith("h"):
+            if kind == 'chart':
+                flush()
+                add_chart_slide(charts[value])
+            elif kind.startswith("h"):
                 flush()
                 current_title = value
             elif kind == "table":

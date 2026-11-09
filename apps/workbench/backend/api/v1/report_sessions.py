@@ -578,6 +578,8 @@ def build_report_sessions_router(service):
             "diff": "\n".join(unified_diff(old["report"]["narrative_markdown"].splitlines(),
                 new["report"]["narrative_markdown"].splitlines(), fromfile=f"v{old['report_version']}",
                 tofile=f"v{new['report_version']}", lineterm="")),
+            "before_citation_ids": list(old["report"].get("citations", {})),
+            "after_citation_ids": list(new["report"].get("citations", {})),
             "charts_changed": old["report"].get("charts", []) != new["report"].get("charts", []),
             "citations_changed": old["report"].get("citations", {}) != new["report"].get("citations", {})}
 

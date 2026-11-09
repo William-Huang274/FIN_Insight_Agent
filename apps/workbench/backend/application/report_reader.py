@@ -155,14 +155,14 @@ def html_report(report, review_status, download_links=None):
     md = MarkdownIt("commonmark", {"html": False}).enable("table")
     cards = citation_cards(report)
     text, _ = readable_report(report)
-    tokens = md.parse(text)
+    from .report_flow import chart_tokens
+    tokens, placed_charts = chart_tokens(md, text, report.get('charts', []))
     toc = []
     for i, token in enumerate(tokens):
         if token.type == "heading_open":
             anchor = f"section-{len(toc) + 1}"
             token.attrSet("id", anchor)
             toc.append((anchor, tokens[i+1].content))
-    body = md.renderer.render(tokens, md.options, {})
     # Replace only rendered text nodes, not attributes or code/link targets.
     def references_in_html(value):
         pieces = re.split(r"(<[^>]+>)", value)
@@ -178,17 +178,19 @@ def html_report(report, review_status, download_links=None):
                     f'<sup class="cite"><a href="#ref-{m[1]}" aria-label="查看来源 {m[1]}">[{m[1]}]</a></sup>'
                     if 1 <= int(m[1]) <= len(cards) else m[0], piece)
         return "".join(pieces)
-    body = references_in_html(body).replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
     figures = []
     for i, chart in enumerate(report.get("charts", []), 1):
         data = base64.b64encode(chart_png(chart)).decode("ascii")
         rows = "".join(f"<tr><td>{escape(p['label'])}</td><td>{escape(p['series'])}</td><td>{p['value']:g}</td></tr>" for p in chart["points"])
-        figures.append(f'<figure><img alt="{escape(chart["title"], quote=True)}" src="data:image/png;base64,{data}">'
+        figures.append(f'<figure id="report-chart-{i-1}"><img alt="{escape(chart["title"], quote=True)}" src="data:image/png;base64,{data}">'
             f'<figcaption><strong>图 {i} · {escape(chart["title"])}</strong>'
             + references_in_html(md.render(chart["interpretation"]))
             + f'<details><summary>查看图表数据 · {escape(chart_display_unit(chart))}</summary>'
             f'<div class="table-wrap"><table><thead><tr><th>项目</th><th>系列</th><th>数值</th></tr></thead><tbody>{rows}</tbody></table></div></details>'
             + '<p class="meta">' + " · ".join(f'<a href="{escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">图表来源 {j+1}</a>' for j, url in enumerate(chart_source_links(chart))) + "</p></figcaption></figure>")
+    md.add_render_rule('report_chart', lambda self,tokens,idx,options,env: figures[tokens[idx].meta['index']])
+    body = references_in_html(md.renderer.render(tokens, md.options, {})).replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
+    appendix_figures = [f for i,f in enumerate(figures) if i not in placed_charts]
     refs = []
     for card in cards:
         sources = []
@@ -206,7 +208,7 @@ def html_report(report, review_status, download_links=None):
             + "".join(sources) + ('<p class="meta">此项为研究说明，未绑定外部来源。</p>' if not sources else "") + "</section>")
     navigation = "".join(f'<a href="#{anchor}">{escape(label)}</a>' for anchor, label in toc)
     if figures:
-        navigation += '<a href="#charts">图表与出处</a>'
+        navigation += '<a href="#report-chart-0">图表与出处</a>'
     navigation += '<a href="#sources">引用依据</a>'
     downloads = []
     for label, url in (download_links or {}).items():
@@ -224,7 +226,7 @@ def html_report(report, review_status, download_links=None):
         f'<span>{len(cards)} 项引用</span><span>{len(figures)} 张图表</span></div>'
         + (f'<div class="downloads">{"".join(downloads)}</div>' if downloads else "") + '</header>'
         f'<article>{body}</article>'
-        + (f'<section class="appendix" id="charts"><h2>图表与出处</h2>{"".join(figures)}</section>' if figures else "")
+        + (f'<section class="appendix" id="charts"><h2>图表与出处</h2>{"".join(appendix_figures)}</section>' if appendix_figures else "")
         + f'<section class="appendix" id="sources"><h2>引用依据</h2><p class="meta">编号与正文对应。引用说明与摘录保留作者的证据绑定，展示不代表对结论的另行确认。</p>{"".join(refs)}</section>'
         '<footer>FinSight · 本阅读版保留报告原有正文、引用对应关系及图表数据。审阅意见与运行记录单独保存。</footer>'
         '</main></div></body></html>').encode("utf-8")
@@ -290,11 +292,22 @@ def pdf_report(report, review_status):
         return Paragraph(txt(value), style)
     story = [para("FINSIGHT / RESEARCH", small), para(report["title"], title_style),
              para(review_status, small), Spacer(1, 12)]
-    tokens = md.parse(text)
+    from .report_flow import chart_tokens
+    tokens, placed_charts = chart_tokens(md, text, report.get('charts', []))
+    def add_chart(index):
+        chart = report['charts'][index]
+        story.extend([para(f"图 {index+1} · {chart['title']}", heading),
+            Image(io.BytesIO(chart_png(chart)), width=482, height=231.36)])
+        for fragment in md.parse(chart['interpretation']):
+            if fragment.type == 'inline':story.append(Paragraph(inline(fragment), small))
+        for url in chart_source_links(chart):
+            story.append(Paragraph(f'<link href="{escape(url, quote=True)}" color="#087c80">图表来源：{txt(url)}</link>', small))
     i, pending_heading, lists, prefix = 0, False, [], ""
     while i < len(tokens):
         token = tokens[i]
-        if token.type == "table_open":
+        if token.type == 'report_chart':
+            add_chart(token.meta['index'])
+        elif token.type == "table_open":
             rows = []
             while i < len(tokens) and tokens[i].type != "table_close":
                 item = tokens[i]
@@ -327,16 +340,10 @@ def pdf_report(report, review_status):
         elif token.type in {"fence", "code_block"}:
             story.append(para(token.content, small))
         i += 1
-    if report.get("charts"):
+    if any(i not in placed_charts for i in range(len(report.get('charts', [])))):
         story.extend([PageBreak(), para("图表与出处", heading)])
     for i, chart in enumerate(report.get("charts", []), 1):
-        story.extend([para(f"图 {i} · {chart['title']}", heading),
-            Image(io.BytesIO(chart_png(chart)), width=482, height=231.36)])
-        for token in md.parse(chart["interpretation"]):
-            if token.type == "inline":
-                story.append(Paragraph(inline(token), small))
-        for url in chart_source_links(chart):
-            story.append(Paragraph(f'<link href="{escape(url, quote=True)}" color="#087c80">图表来源：{txt(url)}</link>', small))
+        if i-1 not in placed_charts:add_chart(i-1)
     cards = citation_cards(report)
     if cards:
         story.extend([PageBreak(), para("来源索引", heading),

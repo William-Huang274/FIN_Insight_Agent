@@ -16,3 +16,28 @@
   background: var(--line, #e5e7eb);
   text-decoration: underline;
 }
+
+.fs-report-table { max-width:100%; overflow-x:auto; margin:24px 0; border:1px solid var(--border,#dce3ed); border-radius:10px; }
+.fs-report-table table { width:100%; border-collapse:collapse; font-size:14px; line-height:1.65; text-align:left; }
+.fs-report-table th,.fs-report-table td { min-width:150px; max-width:380px; padding:14px 16px; vertical-align:top; border-bottom:1px solid var(--border,#dce3ed); border-right:1px solid var(--border,#dce3ed); overflow-wrap:break-word; word-break:normal; }
+.fs-report-table th { background:var(--accent-soft,#edf2fa); font-weight:650; white-space:normal; }
+.fs-report-table tbody tr:nth-child(even) { background:var(--surface-muted,#f7f9fc); }
+.fs-report-table tr:last-child td { border-bottom:0; }
+.fs-report-table th:first-child,.fs-report-table td:first-child { min-width:130px; }
+.fs-report-note { margin:18px 0; padding:12px 18px; border-left:3px solid var(--accent,#4856c7); background:var(--accent-soft,#f1f4fc); font-size:.92em; }
+.fs-reference-list { display:grid; gap:8px; }
+.org-document .fs-reference-card { display:flex; align-items:flex-start; justify-content:flex-start; gap:12px; width:100%; padding:12px 16px; text-align:left; white-space:normal; }
+.fs-reference-card span { min-width:0; }
+.fs-reference-card > span:first-child { flex:0 0 2em; white-space:nowrap; }
+.fs-reference-card strong,.fs-reference-card small { display:block; overflow-wrap:anywhere; }
+.fs-reference-card strong { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.fs-reference-card small { color:var(--text-muted,#64748b); font-size:12px; margin-top:5px; }
+.fs-report-figure { margin:28px 0; }
+.fs-report-figure img { display:block; width:100%; height:auto; }
+.fs-report-figure figcaption { font-size:.9em; line-height:1.7; }
+.fs-version-controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:12px 0; }
+.fs-version-controls select { max-width:100%; padding:8px; }
+.fs-topic-group { margin:8px 0; }
+.fs-topic-group summary { cursor:pointer; padding:12px; font-weight:600; }
+.fs-topic-group .pw-row { width:100%; text-align:left; padding-left:22px; }
+@media print { .fs-report-table {overflow:visible;} .fs-report-table th,.fs-report-table td {min-width:0;font-size:9pt;padding:6px;} }

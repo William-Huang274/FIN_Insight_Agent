@@ -63,7 +63,11 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
     def save_research_report(report: dict, base_version: int, runtime: ToolRuntime) -> Command:
         """Save report={title: string (5-250 chars), narrative_markdown: string (200-80000 chars), charts: optional array}.
         Use current base_version (0 for new); exact observed IDs in brackets retain citation bindings.
-        Charts use title, kind (bar/line), unit, scale_divisor (1/1000/1000000/1000000000),
+        Use Markdown tables for comparisons and blockquotes for short explanatory notes beside
+        the relevant discussion. Choose charts when a visual comparison or trend clarifies the
+        answer; charts are optional, not a quota. after_heading selects the exact section heading
+        text (without #) after whose content the chart appears, instead of collecting all charts
+        at the end. Charts use title, kind (bar/line), unit, scale_divisor (1/1000/1000000/1000000000),
         interpretation, points [{label, series?, source:{source_id, literal?, quote?}}].
         Prose sources require a decimal literal and its exact contiguous quote; structured numeric
         facts or saved calculations need only source_id. Values are resolved by the host, not a

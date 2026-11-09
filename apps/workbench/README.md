@@ -23,6 +23,8 @@ The older fixed Evidence Pack view is available at `/workspace/evidence-packs`; 
 
 ## Develop and verify
 
+Report tables, readable citation cards, inline charts, native version comparisons and explicit topic lineage share the existing report and research-input contracts. See [presentation and topic semantics](../../docs/engineering/report_presentation_and_topics.zh-CN.md); historical grouping never merges native sessions or changes frozen inputs.
+
 Organization projects require the existing OIDC product identity and resource-space
 deployment switch. Their metadata and current membership are managed by Java; no
 private projects or documents are silently shared. Project-resource associations

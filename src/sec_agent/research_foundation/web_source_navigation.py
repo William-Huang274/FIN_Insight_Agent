@@ -214,7 +214,8 @@ class WebSourceReader:
             "title": candidate.title, "publication_date": candidate.published_at,
             "publication_date_status": "publication_day_checked" if dated else ("provider_metadata_only" if published else "unknown_must_resolve_for_time_sensitive_claims"),
             "source_role": "external_public_source_unverified", "source_read_method": result.capture_method,
-            "access_scope": "commercial_report_landing_page_only" if commercial_preview else "requested_url_body_only",
+            "access_scope": ("scholarly_metadata_and_abstract_only" if result.capture_method == 'arxiv_api_metadata'
+                             else "commercial_report_landing_page_only" if commercial_preview else "requested_url_body_only"),
             "writer_citable": True, "numeric_fact_authority": False,
             "truncated": end < len(result.text) or result.truncated,
             "source_document_completeness_verified": False,

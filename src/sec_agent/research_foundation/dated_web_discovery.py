@@ -326,12 +326,13 @@ class SearchReadOrigin:
 
 class DatedWebDiscovery:
     """Only admitted locators enter navigation, receipts and model input."""
-    def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None, search_backup=None, companies=None, legislation=None):
+    def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None, search_backup=None, companies=None, legislation=None, scholarly=None):
         self.discovery = discovery
         self.fetcher = fetcher
         self.fallback_discovery = fallback_discovery
         self.origin_fetcher = origin_fetcher
         self.companies = companies
+        self.scholarly = scholarly
         self.search_backup = search_backup
         self.verified = {}
         from .legislation_discovery import LegislationDiscovery
@@ -371,6 +372,14 @@ class DatedWebDiscovery:
                 return 'outside_requested_domains'
             if site_path and not (parsed.path == site_path or parsed.path.startswith(site_path+'/')):
                 return 'outside_requested_path'
+            if self.scholarly:
+                try:
+                    scholarly = await self.scholarly.resolve(candidate, cutoff)
+                    if scholarly is not None:
+                        return scholarly
+                except (ExternalSourceError, TimeoutError) as exc:
+                    failed(candidate, 'scholarly_api', exc)
+                    return 'scholarly_metadata_unavailable'
             if filtered_publication_catalog(url):
                 return 'publisher_directory_not_dated_document'
             if url in visited or len(visited) >= 6:
@@ -497,7 +506,8 @@ class DatedWebDiscovery:
                         except (ExternalSourceError, TimeoutError) as exc:
                             failed(candidate, 'original_read', exc)
                             status = re.fullmatch(r'(?:capture_http_status_|sec_http_)(\d{3})', getattr(exc,'code',''))
-                            origin_failure = f'origin_{status[1]}' if status else 'origin_unavailable'
+                            origin_failure = ('origin_access_challenge' if getattr(exc, 'code', '') == 'capture_access_challenge'
+                                              else f'origin_{status[1]}' if status else 'origin_unavailable')
                             if origin_failure == 'origin_403':
                                 copy = await dol_archive_copy(candidate, self.origin_fetcher, request.include_domains)
                                 if copy:
@@ -577,6 +587,7 @@ class DatedWebDiscovery:
                     for c,out in zip(receipt.candidates,checked)
                     if c.provider_id == attempt.provider_id and out in (
                         'date_unverified','date_lookup_unavailable','origin_403','origin_404','origin_unavailable',
+                        'origin_access_challenge','scholarly_metadata_unavailable',
                         'redirect_outside_requested_domains','publisher_navigation_cycle','publisher_directory_not_dated_document')]
                 if unresolved:
                     update['unresolved_originals'] = unresolved

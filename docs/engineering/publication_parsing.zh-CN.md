@@ -20,9 +20,11 @@
 
 - `dated_web_discovery`：来源域名与路径约束、目录/文章区分、重定向后重新核定、截止日门禁、恢复来源身份；Census 目录必须确实链接到目标文件，BLS/DOL 镜像须对应同一发布系列和日期。
 - 发布者报头：Press Release 与标题/日期的邻接关系、出版标签与 time 文本一致性、Plone 的 Last Modified 标签、 hosted 转写与原页面的对应关系。通用日期候选无法证明这些关系，因此保留薄 DOM/文本适配。
+- VitePress 文档：读取生成器声明及当前文档页脚的原生 `VPLastUpdated time[datetime]`，经既有 dateparser 解析为修改日；不取站点构建时间，不将修改日命名为首次发表日。存在 canonical/OG 身份冲突或非文档页脚时不采用。协议依据见 [VitePress Last Updated](https://vitepress.dev/reference/default-theme-last-updated)。
 - PDF：既有 pypdf/pdfplumber/PDFium 提取和窗口能力；法院 filed 印章、信函签发报头、公报 issue date 等身份适配。HTML 库不负责裁定政策生效日与文件发布日期。
 - `company_disclosures`、`government_publications`、`government_sources`：SEC accession/form/filingDate/reportDate、Congress 法案及文本版本、GovInfo 发布目录身份，优先采用官方结构化元数据，不经网页启发式日期覆盖。
 - `external_sources`：搜索提供方响应协议、URL 安全检查、抓取/缓存、原文保存与来源绑定；这些不是文章元数据解析。
+- arXiv：`scholarly_sources` 直接接官方 Atom API，复用 lxml 和现有受限 HTTP；按准确 ID 核验单条记录、版本与 published/updated，采用版本日期而非 feed 抓取时间。摘要链接返回有版本的官方元数据记录，明确不等于全文；PDF/HTML 分别读取和绑定。期后新版不会用首次提交日放行，也不自动选择旧版替模型研究。见 [arXiv API 的版本合同](https://github.com/arXiv/arxiv-docs/blob/develop/source/help/api/user-manual.md)。单会话复用元数据并遵循请求间隔，无供应商模型调用。
 - `web_source_navigation` 与来源绑定计算：分段回读、表格表头/期间/单位、准确引句与算式。这些金融证据语义不能交给日期解析库推断。
 
 这次盘点范围是联网资料的正文、元数据、时间和官方文件读取链路，不将全仓的财务数据解析、检索索引或 API 请求模型误归为可删除的网页解析器。
@@ -32,5 +34,9 @@
 运行 `tests/test_publication_metadata.py` 及 dated_web_discovery、company_disclosures、government_sources、publisher_catalogs、web_source_navigation 的回归测试。覆盖当前文章/推荐文章、图结构、发布日期/修改日、期前/期后、统计期间/发布日、无年份、版权年、目录、PDF、镜像及原提案恢复。真实页面应保存原 HTML、URL、摘要与提取结果在本地验收目录，不写入仓库。
 
 依赖库的候选提取正确不等于研究结论正确，也不保证未来所有网站模板可用。无法归属的日期继续返回真实障碍与查询入口；不静默改成“未披露”。锁定依赖版本，升级时复跑这组语义边界。
+
+安全验证页可返回 HTTP 200。静态读取对短小、带已知挑战脚本且无文章正文的响应返回 `capture_access_challenge`，保留原地址和实际失败阶段，不把挑战脚本交给正文/日期提取器，不执行脚本或自动处理验证码。可读的官方替代文档仍独立核验。
+
+DDGS 原生 ranker 会保留完全没有查询词对应的末尾候选。适配复用锁定版本 `SimpleFilterRanker` 的词提取/匹配，仅对至少两个有效词的查询剔除这个零对应组，数字年份不算对应；回执保留原始返回数量和 `no_query_term_overlap`，空结果反馈说明这是查询错配而非资料缺失。这不是语义重排或召回完整性保证，短查询保持原行为；没有新增付费判断模型。依赖升级须复测这一薄适配使用的原生方法。
 
 原站元数据核验的读取期限为 30 秒，避免大型官方表格尚未返回就转入付费抓取。DS Search 读取期限为 20 秒，DS Fetch 为 60 秒（连接均最多 20 秒）；抓取还包含提供方访问原站的时间。期限增加不增加自动重试次数，未确认付费响应仍保留未知用量并停止后续派发。

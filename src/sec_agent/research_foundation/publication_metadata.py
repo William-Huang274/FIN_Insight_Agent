@@ -108,5 +108,15 @@ def extract_publication_metadata(html, *, url=None):
             field = tag['name'].casefold()
             if field in fields:
                 add(fields[field], tag['content'], 'meta', field, url)
+        # VitePress owns this page-level lastUpdated component. Its empty time
+        # element is populated in the browser; datetime is the native contract.
+        # Do not infer publication from the site build timestamp or any time tag.
+        generator = soup.select_one('head meta[name="generator"]')
+        canonical = soup.select('head link[rel="canonical"][href]')
+        if (generator and generator.get('content', '').startswith('VitePress ')
+                and all(same_page(t['href']) for t in canonical)):
+            stamps = soup.select('.VPDocFooter .VPLastUpdated time[datetime]')
+            if len(stamps) == 1:
+                add('modified', stamps[0]['datetime'], 'vitepress', 'lastUpdated', url)
     return PublicationMetadata(native.title if native else None,
                                native.date if native else None, tuple(evidence))

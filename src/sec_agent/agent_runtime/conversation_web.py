@@ -51,12 +51,17 @@ def web_read_feedback(result):
     codes = set()
     engines = {}
     returned = 0
+    no_overlap = 0
     for attempt in (result.get('execution_receipt') or {}).get('attempts', []):
         counts.update(attempt.get('date_filter_counts', {}))
         codes.add(attempt.get('failure_code'))
         engines.update(attempt.get('engine_http', {}))
         returned += attempt.get('returned_hits', 0)
+        no_overlap += attempt.get('candidate_filter_counts', {}).get('no_query_term_overlap', 0)
     feedback = []
+    if no_overlap:
+        feedback.append({'kind':'fallback_query_mismatch','count':no_overlap,
+            'meaning':'备用搜索返回的这些候选与查询词没有可见对应，未当作有效结果。此检查不是语义相关性判断，也不证明资料不存在；可改用产品名、同义表达或明确发布者的站内查询。'})
     if returned and counts:
         feedback.append({'kind':'candidates_not_admitted', 'returned_hits':returned, 'reasons':dict(counts),
             'meaning':'检索找到了候选，当前没有可读的已核定版本。若已有公开 HTTPS 原件或出版页网址，可将完整网址作为 query 直接核查。'})
@@ -70,6 +75,10 @@ def web_read_feedback(result):
                 'method_id':'macro_valuation','section':'数据版本与当前研究入口'}}})
     if counts['origin_403'] or 'capture_http_status_403' in codes:
         feedback.append({'kind':'origin_403','meaning':'原站拒绝了本次访问（HTTP 403）。可查同一发布者的其他公开原件或正式转载，核对版本和出处。'})
+    if counts['origin_access_challenge']:
+        feedback.append({'kind':'origin_access_challenge','meaning':'原站返回安全验证页（可能是 HTTP 200），没有取得原文；这不是日期缺失或未披露。可查同发布者的产品文档、官方 API 或同版原件，不要把挑战脚本当正文。'})
+    if counts['scholarly_metadata_unavailable']:
+        feedback.append({'kind':'scholarly_metadata_unavailable','meaning':'论文官方版本元数据尚未取得，不能据此认定论文不存在。可用准确 arXiv ID/版本链接核查；版本日期与全文读取分别计。'})
     origin_http = {key[7:]:n for key,n in counts.items() if key.startswith('origin_') and key[7:].isdigit() and key != 'origin_403'}
     if origin_http:
         feedback.append({'kind':'origin_http','http_status_counts':origin_http,
@@ -122,6 +131,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         from sec_agent.research_foundation.public_posts import PublicPostFetcher
         from .market_prices import task_cutoff
         origin = SearchReadOrigin(PublicPostFetcher(origin, cutoff=task_cutoff(research_as_of)))
+        from sec_agent.research_foundation.scholarly_sources import ArxivSources
+        scholarly = ArxivSources(origin)
+        origin = scholarly
         capture = ExternalSourceCapture(guard=guard, static_fetcher=origin,
             hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard,max_characters=200000,quota=quota))
         cached = ScopedSourceCaptureCache(root=cache_root,thread_id=thread_id,capture=capture,guard=guard)
@@ -131,7 +143,8 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery
             discovery = DatedWebDiscovery(discovery, ExaHostedMCPPageFetcher(guard=guard,max_characters=8000,quota=quota),
                 fallback_discovery=ExternalSourceDiscovery(primary=fallback), origin_fetcher=origin,
-                search_backup=ExternalSourceDiscovery(primary=paid_search) if paid_search else None, companies=companies)
+                search_backup=ExternalSourceDiscovery(primary=paid_search) if paid_search else None, companies=companies,
+                scholarly=scholarly)
         reader = WebSourceReader(discovery=discovery,capture=cached)
 
     restored = set()
@@ -168,6 +181,10 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         post URL. Read returned documents to see original embed text, author and
         timestamp; search coverage is incomplete. A badge does not establish
         identity or factual truth. event_policy provides optional news methods.
+        arXiv abstract URLs resolve through its official versioned API record.
+        The returned abstract is not the full paper: follow its versioned PDF
+        or HTML link through search/read to inspect methods and results. A newer
+        revision is not admitted under the original submission date.
         For a dated task, search with a complete public HTTPS URL as query to verify
         that original or its publisher's catalog page directly. Use the returned
         document ID and source URL; each accepted page has its own identity.

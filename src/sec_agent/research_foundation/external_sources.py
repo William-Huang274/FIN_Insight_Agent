@@ -579,6 +579,7 @@ class ExternalSourceDiscovery:
 
             accepted_before = len(candidates)
             rejected_domains = 0
+            rejected_overlap = 0
             for provider_rank, hit in enumerate(hits, start=1):
                 if len(candidates) >= request.max_results:
                     break
@@ -587,6 +588,11 @@ class ExternalSourceDiscovery:
                 except ExternalSourceError:
                     continue
                 host = str(urlsplit(canonical_url).hostname or "").lower()
+                if provider.provider_id == 'ddgs_diagnostic_fallback':
+                    from .search_result_quality import has_query_overlap
+                    if not has_query_overlap(request.query, hit.title, hit.snippet, canonical_url):
+                        rejected_overlap += 1
+                        continue
                 if request.include_domains and not _host_in_domains(
                     host, request.include_domains
                 ):
@@ -639,8 +645,10 @@ class ExternalSourceDiscovery:
                     status="ok" if accepted else "zero_results",
                     returned_hits=len(hits),
                     accepted_hits=accepted,
-                    **({'candidate_filter_counts':{'outside_requested_domains':rejected_domains}}
-                       if rejected_domains else {}),
+                    **({'candidate_filter_counts':{
+                        **({'outside_requested_domains':rejected_domains} if rejected_domains else {}),
+                        **({'no_query_term_overlap':rejected_overlap} if rejected_overlap else {})}}
+                       if rejected_domains or rejected_overlap else {}),
                     **({"engine_http": engine_http} if engine_http else {}),
                     **({'runtime_compatibility':tuple(sorted({h.runtime_compatibility for h in hits if h.runtime_compatibility}))}
                        if any(h.runtime_compatibility for h in hits) else {}),
@@ -740,7 +748,7 @@ class FetchedPage(BaseModel):
     final_url: str
     html: str = ""
     extracted_text: str | None = None
-    extraction_method: Literal["sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "deepseek_hosted_publication"] | None = None
+    extraction_method: Literal["sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "deepseek_hosted_publication", "arxiv_api_metadata"] | None = None
     origin_failure_code: str | None = None
     status_code: int | None = None
     content_type: str | None = None
@@ -754,6 +762,7 @@ class CaptureAttempt(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     method: Literal[
+        "arxiv_api_metadata",
         "deepseek_hosted_publication",
         "deepseek_hosted_notice",
         "x_public_embed",
@@ -795,6 +804,7 @@ class CaptureReceipt(BaseModel):
     final_url: str | None
     source_domain: str | None
     capture_method: Literal[
+        "arxiv_api_metadata",
         "deepseek_hosted_publication",
         "deepseek_hosted_notice",
         "x_public_embed",
@@ -961,9 +971,12 @@ class StaticHTTPPageFetcher:
                         return FetchedPage(final_url=final_url, extracted_text="\n\n".join(parts),
                                            status_code=status_code, content_type="application/pdf")
                     encoding = str(response.encoding or "utf-8")
+                    html = bytes(body).decode(encoding, errors="replace")
+                    from .public_page_access import check_access_challenge
+                    check_access_challenge(html)
                     return FetchedPage(
                         final_url=final_url,
-                        html=bytes(body).decode(encoding, errors="replace"),
+                        html=html,
                         status_code=status_code,
                         content_type=response.headers.get("Content-Type"),
                     )
@@ -1273,6 +1286,7 @@ class ExternalSourceCapture:
         last_page: FetchedPage | None = None
         last_text = ""
         selected_method: Literal[
+            "arxiv_api_metadata",
             "deepseek_hosted_publication",
             "deepseek_hosted_notice",
             "x_public_embed",
@@ -1284,7 +1298,10 @@ class ExternalSourceCapture:
         ] | None = None
         from .public_posts import post_locator
         exact_public_post = post_locator(requested_url) is not None
-        if exact_public_post:
+        from .scholarly_sources import arxiv_locator
+        scholarly_locator = arxiv_locator(requested_url)
+        exact_scholarly_record = scholarly_locator is not None and scholarly_locator[0] == 'api'
+        if exact_public_post or exact_scholarly_record:
             # Hosted page text cannot replace an unavailable/version-rejected
             # post while retaining the original post's identity and timestamp.
             methods = [(method, fetcher) for method, fetcher in methods if method == 'trafilatura_static']
@@ -1296,6 +1313,8 @@ class ExternalSourceCapture:
                 )
                 if exact_public_post and page.extraction_method != 'x_public_embed':
                     raise ExternalSourceError('x_original_not_verified')
+                if exact_scholarly_record and page.extraction_method != 'arxiv_api_metadata':
+                    raise ExternalSourceError('arxiv_original_record_not_verified')
                 if page.status_code is not None and not (
                     200 <= page.status_code < 300
                 ):
@@ -1307,7 +1326,7 @@ class ExternalSourceCapture:
                 if page.origin_failure_code:
                     attempts.append(CaptureAttempt(method=method, status='tool_failure',
                         extracted_characters=0, failure_code=page.origin_failure_code))
-                if method == "trafilatura_static" and page.extraction_method in {"sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "deepseek_hosted_publication"}:
+                if method == "trafilatura_static" and page.extraction_method in {"sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "deepseek_hosted_publication", "arxiv_api_metadata"}:
                     method = page.extraction_method
                 if method == "trafilatura_static" and page.content_type == "application/pdf" and page.extracted_text is not None:
                     method = "pypdf_static"

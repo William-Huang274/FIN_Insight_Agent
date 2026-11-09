@@ -134,3 +134,19 @@ test('missing business tools stop before reserve; compaction after discovery rem
     await assert.rejects(async()=>{for await(const _ of stream({},async function*(){})){}}, /stopped/)
   } finally {delete process.env.FIN_TOOLS_TEST}
 })
+
+test('textual DSML is retained as failed output, never promoted or executed', async () => {
+  let stream; const receipts=[]
+  const server=createServer(async(req,res)=>{
+    let body='';for await(const part of req)body+=part
+    receipts.push({path:req.url,body:JSON.parse(body)})
+    res.end(JSON.stringify({status:req.url==='/calls/reserve'?'reserved':'saved',stopRequired:req.url==='/calls/settle'}))
+  })
+  server.listen(0,'127.0.0.1');await once(server,'listening');process.env.FIN_DSML_TEST='fixture'
+  try {
+    apply({on(_,f){stream=f}},{endpoint:`http://127.0.0.1:${server.address().port}`,tokenEnv:'FIN_DSML_TEST'})
+    await assert.rejects(async()=>{for await(const _ of stream({},async function*(){yield{type:'text-delta',text:'<｜｜DSML｜｜ calls>'};yield{type:'finish',reason:{kind:'stop'}}})){}},/textual tool protocol/)
+    assert.equal(receipts.at(-1).body.stopRequired,true)
+    await assert.rejects(async()=>{for await(const _ of stream({},async function*(){assert.fail('called')})){}},/stopped/)
+  } finally {server.closeAllConnections();server.close();delete process.env.FIN_DSML_TEST}
+})

@@ -66,13 +66,16 @@ export function apply(ctx, config) {
           continue
         }
         const reason = chunk.reason?.kind
-        const success = ['stop', 'tool-calls'].includes(reason)
+        const text = chunks.filter(c => c.type === 'text-delta').map(c => c.text ?? '').join('')
+        const leakedTools = /<[｜|]{1,2}DSML[｜|]{1,2}\s+(?:calls|function_calls|invoke)\b/u.test(text)
+        const success = ['stop', 'tool-calls'].includes(reason) && !leakedTools
         if (!success) stopped = true
         // Preserve the original terminal, including max-tokens, without turning
         // a saved response into successful research. Host persists before yield.
         const receipt = await post('/calls/settle', { requestId, chunks, terminal: reason, stopRequired: !success })
         if (receipt.stopRequired) stopped = true
         settled = true
+        if (leakedTools) throw new Error('FIN provider returned textual tool protocol; response retained, no tool executed')
         if (receipt.stopRequired && success) {
           throw new Error('FIN host saved the response but stopped execution; inspect its durable receipt')
         }

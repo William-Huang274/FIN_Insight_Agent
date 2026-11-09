@@ -101,6 +101,7 @@ def extract_publication_metadata(html, *, url=None):
     if not url or not og_urls or all(same_page(v) for v in og_urls):
         fields = {'date.posted': 'published', 'datepublished': 'published',
                   'pubdate': 'published', 'publishdate': 'published',
+                  'w_published_date': 'published',
                   'dcterms.issued': 'published', 'dc.date.issued': 'published',
                   'datemodified': 'modified', 'dcterms.modified': 'modified',
                   'dc.date.modified': 'modified'}
@@ -108,6 +109,17 @@ def extract_publication_metadata(html, *, url=None):
             field = tag['name'].casefold()
             if field in fields:
                 add(fields[field], tag['content'], 'meta', field, url)
+        # HTML's explicit pubdate attribute belongs to the nearest article.
+        # Require that article to contain the page's sole h1; recommendation
+        # cards and ordinary event time elements cannot date the current page.
+        headings = soup.find_all('h1')
+        canonical = soup.select('head link[rel="canonical"][href]')
+        if len(headings) == 1 and all(same_page(t['href']) for t in canonical):
+            article = headings[0].find_parent('article')
+            stamps = [t for t in article.select('time[pubdate][datetime]')
+                      if t.find_parent('article') is article] if article else []
+            if len(stamps) == 1:
+                add('published', stamps[0]['datetime'], 'html', 'time.pubdate', url)
         # VitePress owns this page-level lastUpdated component. Its empty time
         # element is populated in the browser; datetime is the native contract.
         # Do not infer publication from the site build timestamp or any time tag.

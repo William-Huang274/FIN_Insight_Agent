@@ -20,6 +20,7 @@
 
 - `dated_web_discovery`：来源域名与路径约束、目录/文章区分、重定向后重新核定、截止日门禁、恢复来源身份；Census 目录必须确实链接到目标文件，BLS/DOL 镜像须对应同一发布系列和日期。
 - 发布者报头：Press Release 与标题/日期的邻接关系、出版标签与 time 文本一致性、Plone 的 Last Modified 标签、 hosted 转写与原页面的对应关系。通用日期候选无法证明这些关系，因此保留薄 DOM/文本适配。
+- 明确的 CMS 发布元字段 `w_published_date` 按发布日期读取，`w_search_date` 不作为证据。HTML `time[pubdate][datetime]` 只归属于包含页面唯一主标题的最近 `article`；推荐文章、普通事件时间、多个冲突发布标记及 canonical/OG 身份冲突不采用。日期格式仍交给 dateparser，不新增手写日期解析器；原字段、页面身份和提取语法保留到证据记录。
 - VitePress 文档：读取生成器声明及当前文档页脚的原生 `VPLastUpdated time[datetime]`，经既有 dateparser 解析为修改日；不取站点构建时间，不将修改日命名为首次发表日。存在 canonical/OG 身份冲突或非文档页脚时不采用。协议依据见 [VitePress Last Updated](https://vitepress.dev/reference/default-theme-last-updated)。
 - PDF：既有 pypdf/pdfplumber/PDFium 提取和窗口能力；法院 filed 印章、信函签发报头、公报 issue date 等身份适配。HTML 库不负责裁定政策生效日与文件发布日期。
 - `company_disclosures`、`government_publications`、`government_sources`：SEC accession/form/filingDate/reportDate、Congress 法案及文本版本、GovInfo 发布目录身份，优先采用官方结构化元数据，不经网页启发式日期覆盖。

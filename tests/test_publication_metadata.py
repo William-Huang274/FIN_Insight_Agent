@@ -52,3 +52,28 @@ def test_vitepress_native_lastupdated_is_modified_not_build_or_event_date():
     assert not extract_publication_metadata(html.replace('VitePress','Other'),url=url).evidence
     assert not extract_publication_metadata(html.replace('<head>','<head><link rel="canonical" href="https://docs.example/other">'),url=url).evidence
     assert publisher_html_day(html.replace('2026-09-24','2026-11-24'),url=url)>date(2026,11,9)
+
+
+def test_explicit_cms_publication_field_does_not_adopt_search_or_event_date():
+    url='https://publisher.example/release'
+    html='''<html><head><meta property="og:url" content="https://publisher.example/release">
+    <meta name="w_published_date" content="2026-10-22T00:00:00.000Z">
+    <meta name="w_search_date" content="2027-01-01"></head><body><h1>Release</h1></body></html>'''
+    assert publisher_html_day(html,url=url)==date(2026,10,22)
+    assert publisher_html_day(html,url='https://publisher.example/other') is None
+    assert not extract_publication_metadata(html.replace('w_published_date','eventDate'),url=url).evidence
+
+
+def test_article_pubdate_preserves_identity_and_excludes_related_articles():
+    url='https://publisher.example/post'
+    html='''<html><head><title>Product release</title></head><body><main><article>
+    <header><h1>Product release</h1><time pubdate datetime="2026-08-26">08.26.26</time></header>
+    <p>Text</p><time datetime="2027-01-01">Event</time>
+    <article><h2>Related</h2><time pubdate datetime="2026-11-05">Later article</time></article>
+    </article></main></body></html>'''
+    meta=extract_publication_metadata(html,url=url)
+    assert [(e.kind,e.day,e.field) for e in meta.evidence]==[('published',date(2026,8,26),'time.pubdate')]
+    assert publisher_html_day(html.replace('2026-08-26','2026-12-26'),url=url)>date(2026,11,9)
+    assert not extract_publication_metadata(html.replace('<h1>Product release</h1>','<h2>Product release</h2>'),url=url).evidence
+    assert not extract_publication_metadata(html.replace('<head>','<head><link rel="canonical" href="https://publisher.example/other">'),url=url).evidence
+    assert not extract_publication_metadata(html.replace('<p>Text</p>','<time pubdate datetime="2026-09-01">Ambiguous</time>'),url=url).evidence

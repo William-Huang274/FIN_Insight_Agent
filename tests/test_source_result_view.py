@@ -174,4 +174,3 @@ def test_native_tool_schemas_are_not_source_records():
     envelope = {'result': {'input_schema': schema, 'outputSchema': schema}}
     assert source_result_view(envelope) == envelope
     assert source_result_view({'operation': {'x': 1}, 'result_state': []}) == {'operation': {'x': 1}, 'result_state': []}
-

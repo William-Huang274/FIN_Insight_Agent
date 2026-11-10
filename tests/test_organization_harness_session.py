@@ -22,6 +22,15 @@ def test_preparation_failure_retains_new_task_not_historical_review():
     assert module.review_command_text(command,old)==old[0].content
 
 
+def test_host_default_does_not_override_explicit_user_model_choice():
+    options=dict(model='gpt-6.1-sol', reasoning='high',
+                 default_model_profile={'model':'gpt-6.1-sol','reasoning':'high'})
+    selected=dict(model='deepseek-flash',reasoning_effort='high')
+    assert module.admitted_model_matches(options,SimpleNamespace(model='default'),selected)
+    assert not module.admitted_model_matches(options,SimpleNamespace(model='deepseek-flash'),selected)
+    assert not module.admitted_model_matches({**options,'model':'other'},SimpleNamespace(model='default'),selected)
+
+
 @pytest.fixture
 def anyio_backend():
     return 'asyncio'

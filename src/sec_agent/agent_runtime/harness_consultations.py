@@ -25,7 +25,8 @@ from sec_agent.adapters.model_dispatch_store import DispatchBlocked
 
 class HarnessConsultations:
     def __init__(self, *, directory, saver, grants, tid, rid, check, scope, budget,
-                 environment, model, basis, as_of, public_sink, research_depth='standard', research_question=None):
+                 environment, model, basis, as_of, public_sink, research_depth='standard', research_question=None,
+                 native_delegate=None):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
         self.saver, self.grants, self.tid, self.rid = saver, grants, tid, rid
@@ -33,6 +34,7 @@ class HarnessConsultations:
         self.environment, self.model, self.basis = environment, model, basis
         self.as_of, self.public_sink = as_of, public_sink
         self.research_question = research_question
+        self.native_delegate = native_delegate
         from sec_agent.research_foundation.research_depth import depth_guidance
         self.depth_content = depth_guidance(research_depth)
         self.tasks = {}
@@ -43,22 +45,26 @@ class HarnessConsultations:
 
     def tools(self):
         @tool
-        async def consult_research_agent(question: str, context: str, purpose: Literal['investigate', 'review'],
+        async def consult_research_agent(question: str, context: str, purpose: Literal['investigate', 'review', 'draft'],
                                          runtime: ToolRuntime, use_current_report: bool = False,
                                          method_ids: list[str] | None = None):
-            """Delegate one material research question to an independent Sol high agent with read-only sources,
+            """Delegate one material research question to the configured research agent with read-only sources,
             web/SEC/government/market/calculation tools and the same task budget. Use investigate for a relationship
             that needs separate evidence, review for an argument you want challenged; neither is mandatory.
             Explain the target relationship and its bearing on the main answer in context; include existing
             evidence handles and unresolved alternatives when known. No separate plan or template is required.
             Proposed formulas/comparisons are hypotheses: the investigator may revise them if they answer
-            a different question. It returns changes to the judgment with evidence, not a chapter to paste.
+            a different question. Draft assignments return an evidence-backed draft for your audit, not a final publication.
             use_current_report=true attaches the exact saved report; false works before drafting.
             The host separately supplies the original research question; your focus does not replace it.
             method_ids selects optional method-library IDs, not new permissions. Returns task_id promptly.
             Continue useful independent work, then read_research_agent_result; results are proposals, not verdicts.
             """
             return await self.submit(question, context, purpose, use_current_report, method_ids or [], runtime.state)
+
+        consult_research_agent.description += ('\nConfigured delegate: '+self.model+' high. '+
+            ('purpose=draft is available for investigation and drafting; you retain final research and publication responsibility.'
+             if self.native_delegate else 'purpose=draft is unavailable; use investigate or review.'))
 
         @tool
         async def read_research_agent_result(task_id: str, runtime: ToolRuntime, wait_seconds: int = 0):
@@ -76,6 +82,8 @@ class HarnessConsultations:
     async def submit(self, question, context, purpose, use_report, methods, state):
         from sec_agent.research_foundation.research_methods import preloaded_research_methods
         self.check()
+        if purpose not in {'investigate', 'review', 'draft'} or (purpose == 'draft' and not self.native_delegate):
+            raise ToolException('Use an admitted purpose: investigate/review; draft requires a configured native delegate.')
         if not question.strip() or len(question) > 2500 or len(context) > 24000:
             raise ToolException('Provide a nonempty question up to 2500 characters and context up to 24000.')
         try:
@@ -260,7 +268,11 @@ class HarnessConsultations:
             # completed reads stay in the checkpoint and writes remain blocked.
             await child.initialize(initial, recovering=previous_scope is not None)
             selected = Challenge(version=version(body), quote='', offset=0, question=request['question'])
-            opinion = await independent_review(selected=selected,
+            if self.native_delegate:
+                opinion = await self.native_delegate(key=key, request=request, bridge=child,
+                    previous_scope=previous_scope, audit_root=audit_root)
+            else:
+                opinion = await independent_review(selected=selected,
                 message=AIMessage(content=body), question=request['question']+'\n'+request['context'],
                 bridge=child, budget=self.budget, environment=self.environment, model=self.model,
                 scope=record['scope'], command_id='consult-'+key, authority=child.model_access,

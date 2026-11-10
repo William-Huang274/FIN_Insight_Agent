@@ -18,6 +18,45 @@ def anyio_backend():
 
 
 @pytest.mark.anyio
+async def test_native_flash_draft_is_proposal_with_original_scope_and_shared_evidence(tmp_path):
+    calls = []
+    @tool
+    def read_source_document(query: str):
+        """Read authorized source."""
+        return {'text':'Observed primary evidence', 'passage_id':'PASSAGE::fixture'}
+    async def native(**kwargs):
+        calls.append(kwargs)
+        assert 'consult_research_agent' not in kwargs['bridge'].tools
+        assert 'save_report' not in kwargs['bridge'].tools
+        await kwargs['bridge'].execute('read_source_document', {'query':'delegate selected query'})
+        return 'Draft with supported claims and unresolved alternatives'
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'state.sqlite')) as saver:
+        grants = [GrantedTool(read_source_document, 'read', 'source')]
+        service = HarnessConsultations(directory=tmp_path/'jobs', saver=saver, grants=grants,
+            tid='t', rid='r', check=lambda:None, scope=lambda:__import__('contextlib').nullcontext(),
+            budget=object(), environment={}, model='deepseek-flash', basis={}, as_of='2026-11-09',
+            public_sink=lambda x:None, research_question='Original comprehensive question', native_delegate=native)
+        bridge = HarnessBusinessTools(grants=grants+service.tools(), checkpointer=saver, thread_id='t', check=lambda:None)
+        service.parent = bridge
+        await bridge.initialize({'question':'Original comprehensive question', 'messages':[]})
+        description = bridge.tools['consult_research_agent'].description
+        assert 'deepseek-flash high' in description and 'independent Sol high' not in description
+        args = dict(question='Investigate and draft the assigned question', context='Lead preliminary understanding', purpose='draft')
+        receipt = await bridge.execute('consult_research_agent', args)
+        key = json.loads(receipt.content)['task_id']
+        await service.tasks[key]
+        result = await bridge.execute('read_research_agent_result', {'task_id':key})
+        payload = json.loads(result.content)
+        assert payload['purpose']=='draft' and payload['source_readback']
+        assert 'Draft with supported claims' in payload['opinion']
+        assert calls[0]['request']['research_task']['question']=='Original comprehensive question'
+        assert not (await bridge.state()).get('report')  # no automatic publication
+        await bridge.execute('consult_research_agent', args)
+        assert len(calls)==1
+        await service.close()
+
+
+@pytest.mark.anyio
 async def test_consultation_retry_chain_reuses_latest_record_without_dispatch():
     from copy import deepcopy
     from sec_agent.agent_runtime.answer_review_provider import saved_consultation_attempt

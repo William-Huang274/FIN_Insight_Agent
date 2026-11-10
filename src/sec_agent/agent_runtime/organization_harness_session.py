@@ -38,6 +38,19 @@ def native_messages(rows):
             else convert_to_messages([m])[0] if isinstance(m, dict) else m for m in rows]
 
 
+def admitted_model_matches(options, execution, selected):
+    """A host may bind the product's default choice; explicit user choices remain authoritative."""
+    host_default = options.get('default_model_profile')
+    if host_default:
+        return (getattr(execution, 'model', None) == 'default'
+                and host_default == {'model':options['model'], 'reasoning':options['reasoning']})
+    transition = options.get('native_model_transition')
+    takeover = (transition and transition.get('from_model') == selected['model']
+                and transition.get('to_model') == options['model'])
+    return ((options['model'] == selected['model'] or takeover)
+            and options['reasoning'] == selected['reasoning_effort'])
+
+
 def review_command_text(command, messages, *, preparation_recovery=False):
     from .answer_review import PREFIX
     text = command.get('message', '')
@@ -83,10 +96,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
         raise ValueError('harness_deployment_manifest_mismatch')
     execution = phase_arguments['execution']
     selected = execution.apply_profile(phase_arguments['profile'])['nodes']['lead']['profile']
-    transition = options.get('native_model_transition')
-    host_takeover = (transition and transition.get('from_model') == selected['model']
-                     and transition.get('to_model') == options['model'])
-    if (options['model'] != selected['model'] and not host_takeover) or options['reasoning'] != selected['reasoning_effort']:
+    if not admitted_model_matches(options, execution, selected):
         raise ValueError('harness_admitted_model_configuration_mismatch')
     budget = phase_arguments['budget_scope']
     if budget is None or options['model'] not in budget.prices:
@@ -218,14 +228,23 @@ async def organization_harness_session(*, native, resources, authority, check, o
         consultations = None
         if options.get('allow_agent_consultation'):
             from .harness_consultations import HarnessConsultations
-            reviewer = options.get('answer_review_model')
-            if reviewer != 'gpt-6.1-sol' or reviewer not in budget.prices or not environment.get('OPENAI_API_KEY'):
+            delegate = options.get('research_delegate')
+            reviewer = delegate['model'] if delegate else options.get('answer_review_model')
+            native_delegate = None
+            if delegate:
+                from .harness_delegate import NativeResearchDelegate
+                native_delegate = NativeResearchDelegate(options=delegate, parent_options=options,
+                    binary=binary, root=phase_arguments['root'], grant=grant, authority=authority,
+                    budget=budget, environment=environment, tid=tid, rid=rid,
+                    directory=business_directory/'consultations'/'native', public_sink=phase_arguments['public_sink'])
+            elif reviewer != 'gpt-6.1-sol' or reviewer not in budget.prices or not environment.get('OPENAI_API_KEY'):
                 raise ValueError('consultation_provider_not_admitted')
             consultations = HarnessConsultations(directory=business_directory/'consultations', saver=saver,
                 grants=list(grants), tid=tid, rid=rid, check=check, scope=scope, budget=budget,
                 environment=environment, model=reviewer, basis=options['token_budget_basis'],
                 as_of=organization.research_as_of, public_sink=phase_arguments['public_sink'],
-                research_depth=options.get('research_depth', 'standard'), research_question=grant['question'])
+                research_depth=options.get('research_depth', 'standard'), research_question=grant['question'],
+                native_delegate=native_delegate)
             grants.extend(consultations.tools())
         bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope,
             stop_on_tool_error=options.get('stop_on_tool_error') is True, note_versions=memory.export_markdown)
@@ -452,6 +471,12 @@ async def organization_harness_session(*, native, resources, authority, check, o
                     '\nSource acquisition at run start (not a completeness verdict): ' + json.dumps(research_start, ensure_ascii=False) +
                     '\nRequested delivery: ' + intent + '. Save useful working understanding as needed; only deliver the requested artifact form.'+
                     '\nUse returned citation_handle values in source_id fields and [REF-...] citations. They bind exact observed originals/calculations; do not shorten them further. Original long IDs remain compatible.') + depth_content + method_content
+                if options.get('research_delegate'):
+                    prompt += ('\n本次分工：你是主研究者和最终作者。先自行理解原题并调查近期事实，形成有依据的研究重点；'
+                        '再通过 consult_research_agent 将调查与草稿任务交给工具定义中的模型（purpose=draft）。'
+                        '你决定委派范围与方法，提供必要依据和未决问题，允许对方质疑你的假设。'
+                        '收到草稿后，由你对照原题、原件和推断进行审核，必要时亲自补查并重构最终报告。'
+                        '最终稿由你保存和交付，不再转回子模型成稿。不要把委派完成状态当作研究质量通过。')
                 patch = profile_overlay(model=options['model'], protocol=options['protocol'], endpoint=endpoint,
                     prompt=prompt, context_window=options['context_window'], output_tokens=options['output_tokens'],
                     summary_tokens=options['summary_tokens'], reasoning=options['reasoning'],

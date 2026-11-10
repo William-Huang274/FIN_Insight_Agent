@@ -1,6 +1,10 @@
 # 原生 harness 按需独立调查与复核
 
-宿主在已授权执行绑定启用 `allow_agent_consultation`，并配置现有 `answer_review_model`、价格与凭据后，主模型实际工具列表增加 `consult_research_agent` 和 `read_research_agent_result`。未配置时不披露能力，不以指引授权工具。当前独立执行器为 Sol high，主作者可继续 Flash high。
+宿主在已授权执行绑定启用 `allow_agent_consultation` 后，主模型实际工具列表增加 `consult_research_agent` 和 `read_research_agent_result`。未配置时不披露能力，不以指引授权工具。现有 `answer_review_model` 支持 Sol high 独立调查与复核；也可配置 `research_delegate` 使用原生 ACP 的 Flash high 调查及草稿委派。工具描述披露实际模型，不把模型选择交给任意工具参数。
+
+`research_delegate` 由部署端提供 model、protocol、provider、provider_endpoint、provider_key_env、reasoning、context_window、output_tokens、summary_tokens、compaction_threshold、token_budget_basis、reservation_micros、reservation_basis。当前限定已验收协议的 deepseek-flash/high；与主任务共用授权、费用账本和工具，只读来源与计算，不允许子任务递归委派或覆盖主稿。每个子任务使用独立原生会话，沿现有 ACP 历史、压缩与停止机制执行；不再实现另一套模型循环。`purpose=draft` 返回草稿和依据供主作者审核，保存完成不代表研究通过，只有主作者能决定补证及最终发布。未配置原生委派时，draft 返回明确未执行反馈。
+
+`default_model_profile={model,reasoning}` 可为产品的 default 选择绑定主模型，例如 Sol high。从空历史由 Sol 调查、委派 Flash、审核后自行成稿，无需伪造旧会话接管。该主机绑定不能覆盖用户显式选择的模型；没有此配置的旧任务及已授权 native_model_transition 保持兼容。角色分工属于本次任务要求，不新增全局固定研究流程。
 
 主作者提出具体问题、上下文、investigate/review 用途、可选方法 ID；可选择直接绑定当前保存稿，亦可在成稿前交接当前推断。任务返回编号，后续读取状态与结果，避免在原生 MCP 的 60 秒工具期限内等待整次研究。没有固定复核链、角色数量和必经次数。作者负责判断意见并统稿。
 

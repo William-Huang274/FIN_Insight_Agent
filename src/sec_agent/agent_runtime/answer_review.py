@@ -87,6 +87,17 @@ def apply_response(body, raw):
     return body, response.model_dump()
 
 
+def report_revision_task():
+    """Shared author responsibility for direct and delegated report reviews."""
+    return ('根据复核与必要补证，交付现在能成立的原问题答案，不预设保留旧结构或结论。'
+            '复核不是标准答案：可接受、部分接受或反驳，须给对应依据。对影响主结论的意见，'
+            '执行建议动作或给出有依据的替代处置；若原论证不成立，补证或改变适用范围，不能只加免责声明保留原推断。'
+            '判断变化应落实到依赖它的标题、摘要、比较、展望和结尾，包括本轮尚未编辑的位置。'
+            '复用仍成立的材料和计算，自行选择局部修改、重排或重写；不需额外计划表。'
+            '在交付说明中简述重要意见的接受或反驳依据、实际改变及未决影响，正文只呈现当前答案。'
+            '最终核对保存正文；完成工具调用或声称已修改不代表意见已落实。')
+
+
 def author_input(selected, message, review, *, current_report_version=None, recovery_command=None):
     from .quantitative_prose import metric_definition_checks, bound_claim_checks, sentences
     # A historical answer may predate the current checks. Assess the selected
@@ -107,9 +118,7 @@ def author_input(selected, message, review, *, current_report_version=None, reco
             evidence[handle] = fields
     task = '处理所选历史版本的局部异议。独立判断，可接受、部分接受或反驳。核对必要依据，保留仍成立的判断。返回 JSON 对象，reason 解释处置理由和仍成立的主要判断，edits 为 {before, after} 列表。before 必须是此版本唯一的逐字原文，包括 Markdown；可修改受影响的关联段。无需修改时返回空列表。新依据使用工具的准确引用句柄。'
     if selected.artifact == 'report':
-        task = ('根据独立复核及必要补证，重新判断原问题的答案，再更新当前报告。复核不是标准答案，接受、部分接受或反驳均须依据。'
-                '编辑范围由判断变化决定：事实纠正可只改相关段落；核心解释改变时重新组织标题、摘要、论证顺序和结论，不预设保留旧结构。'
-                '先据现有证据确定当前答案与主次，再选择保留、重排或替换内容，不需要额外提交计划。复用仍成立的材料、计算和内容；可用 edit_research_report 分批改写章节，也可用 save_research_report 保存重构稿。增量保存不是研究或改稿范围限制。'
+        task = (report_revision_task() + '可用 edit_research_report 分批改写，也可用 save_research_report 保存重构稿。'
                 'original_answer 是被复核的历史版本；当前稿可能已局部修改，以 current_report 和读取工具为准。准确引用身份保持不变，新依据使用工具的引用句柄。'
                 '完成后用 deliver_current_report 交付实际保存的版本，最后简述哪些判断及其依据改变、哪些仍成立。'
                 '无需修改时也说明理由并交付当前版本；收到复核意见不等于报告已通过独立复核。')

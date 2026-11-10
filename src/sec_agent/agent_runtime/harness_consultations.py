@@ -25,13 +25,14 @@ from sec_agent.adapters.model_dispatch_store import DispatchBlocked
 
 class HarnessConsultations:
     def __init__(self, *, directory, saver, grants, tid, rid, check, scope, budget,
-                 environment, model, basis, as_of, public_sink, research_depth='standard'):
+                 environment, model, basis, as_of, public_sink, research_depth='standard', research_question=None):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
         self.saver, self.grants, self.tid, self.rid = saver, grants, tid, rid
         self.check, self.scope, self.budget = check, scope, budget
         self.environment, self.model, self.basis = environment, model, basis
         self.as_of, self.public_sink = as_of, public_sink
+        self.research_question = research_question
         from sec_agent.research_foundation.research_depth import depth_guidance
         self.depth_content = depth_guidance(research_depth)
         self.tasks = {}
@@ -53,6 +54,7 @@ class HarnessConsultations:
             Proposed formulas/comparisons are hypotheses: the investigator may revise them if they answer
             a different question. It returns changes to the judgment with evidence, not a chapter to paste.
             use_current_report=true attaches the exact saved report; false works before drafting.
+            The host separately supplies the original research question; your focus does not replace it.
             method_ids selects optional method-library IDs, not new permissions. Returns task_id promptly.
             Continue useful independent work, then read_research_agent_result; results are proposals, not verdicts.
             """
@@ -86,6 +88,10 @@ class HarnessConsultations:
         body = report['narrative_markdown'] if report else context
         request = dict(question=question, context=context, purpose=purpose, report=report,
                        methods=methods, method_text=method_text, as_of=self.as_of, model=self.model)
+        original = self.research_question or state.get('question')
+        if original:
+            request['research_task'] = dict(question=original, as_of=self.as_of,
+                review_scope='current_report' if purpose == 'review' and use_report else 'delegated_question')
         key = canonical_sha256(request)
         path = self.directory / (key + '.json')
         if path.exists():
@@ -260,6 +266,7 @@ class HarnessConsultations:
                 scope=record['scope'], command_id='consult-'+key, authority=child.model_access,
                 basis=self.basis, as_of=self.as_of, public_sink=self.public_sink,
                 assignment_kind=request['purpose'], method_content=request['method_text'],
+                **({'research_task':request['research_task']} if 'research_task' in request else {}),
                 dispatch_lane='consult:'+key,previous_scope=previous_scope,audit_root=audit_root)
             self.check()
             _persist(self.directory/(key+'.json'), {**record,'status':'completed','opinion':opinion})
@@ -297,6 +304,9 @@ class HarnessConsultations:
                       target_digest=canonical_sha256(record['request']),
                       source_readback=[{'tool_call_id':m.tool_call_id,'tool':m.name}
                           for m in messages if isinstance(m, ToolMessage) and m.status=='success'])
+        if record['request']['purpose'] == 'review':
+            from .answer_review import report_revision_task
+            result['author_task'] = report_revision_task()
         return Command(update={'messages':[*messages, ToolMessage(name='read_research_agent_result',
             tool_call_id=runtime.tool_call_id, content=json.dumps(result,ensure_ascii=False))]})
 

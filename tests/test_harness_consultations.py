@@ -115,8 +115,45 @@ async def test_consultation_actual_tool_schema_read_merge_and_replay(tmp_path, m
         assert len(calls)==1
         assert '设备' not in calls[0]['message'].content  # no operator example injected as evidence
         assert calls[0]['assignment_kind']=='investigate'
+        assert calls[0]['research_task']=={'question':'original','as_of':'2026-11-06','review_scope':'delegated_question'}
+        assert 'author_task' not in json.loads(got.content)
         assert calls[0]['dispatch_lane']=='consult:'+key
         await service.ensure_finished()
+        await service.close()
+
+
+@pytest.mark.anyio
+async def test_review_preserves_original_scope_and_returns_author_actions(tmp_path, monkeypatch):
+    calls = []
+    async def provider(**kwargs):
+        calls.append(kwargs)
+        return 'Independent objection and proposed action.'
+    monkeypatch.setattr('sec_agent.agent_runtime.harness_consultations.independent_review', provider)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'scope.sqlite')) as saver:
+        service = HarnessConsultations(directory=tmp_path/'jobs', saver=saver, grants=[], tid='t', rid='r',
+            check=lambda:None, scope=lambda:__import__('contextlib').nullcontext(), budget=object(), environment={},
+            model='gpt-6.1-sol', basis={}, as_of='2026-11-06', public_sink=lambda x:None,
+            research_question='Compare adoption and economics across user groups')
+        bridge = HarnessBusinessTools(grants=service.tools(), checkpointer=saver, thread_id='t', check=lambda:None)
+        service.parent = bridge
+        await bridge.initialize({'question':'An author summary must not replace the admitted task',
+            'messages':[], 'report':{'narrative_markdown':'Original manuscript'}, 'report_version':1})
+        result = await bridge.execute('consult_research_agent', dict(question='Check one revenue figure',
+            context='Author believes market is settled', purpose='review', use_current_report=True))
+        key = json.loads(result.content)['task_id']
+        await service.tasks[key]
+        assert calls[0]['research_task']['question']=='Compare adoption and economics across user groups'
+        assert calls[0]['research_task']['review_scope']=='current_report'
+        assert calls[0]['question']=='Check one revenue figure\nAuthor believes market is settled'
+        assert calls[0]['message'].content=='Original manuscript'
+        got = await bridge.execute('read_research_agent_result',dict(task_id=key))
+        from sec_agent.agent_runtime.answer_review import report_revision_task
+        payload=json.loads(got.content)
+        assert payload['author_task']==report_revision_task()
+        assert payload['opinion']=='Independent objection and proposed action.'
+        saved=json.loads((tmp_path/'jobs'/f'{key}.json').read_text())
+        assert saved['request']['research_task']==calls[0]['research_task']
+        assert 'original_research_task' not in bridge.tools['consult_research_agent'].tool_call_schema.model_json_schema()['properties']
         await service.close()
 
 

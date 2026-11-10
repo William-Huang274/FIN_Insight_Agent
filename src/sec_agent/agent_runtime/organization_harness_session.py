@@ -225,7 +225,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 grants=list(grants), tid=tid, rid=rid, check=check, scope=scope, budget=budget,
                 environment=environment, model=reviewer, basis=options['token_budget_basis'],
                 as_of=organization.research_as_of, public_sink=phase_arguments['public_sink'],
-                research_depth=options.get('research_depth', 'standard'))
+                research_depth=options.get('research_depth', 'standard'), research_question=grant['question'])
             grants.extend(consultations.tools())
         bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope,
             stop_on_tool_error=options.get('stop_on_tool_error') is True, note_versions=memory.export_markdown)

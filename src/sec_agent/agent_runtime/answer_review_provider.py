@@ -219,7 +219,8 @@ async def authorized_review_retry(store, owner, budget_id, key, saved, *, wire,
 
 async def independent_review(*, selected, message, question, bridge, budget, environment,
                              model, scope, command_id, authority, basis, as_of, public_sink, previous_scope=None, audit_root=None,
-                             predecessor_scope=None, assignment_kind='review', method_content='', dispatch_lane=None):
+                             predecessor_scope=None, assignment_kind='review', method_content='', dispatch_lane=None,
+                             research_task=None):
     prices = budget.prices.get(model)
     if model != 'gpt-6.1-sol' or not prices or prices.currency != 'USD' or not environment.get('OPENAI_API_KEY'):
         raise ValueError('answer_review_provider_not_configured')
@@ -234,6 +235,7 @@ async def independent_review(*, selected, message, question, bridge, budget, env
         'max_output_tokens':12000}))
     refs = message.additional_kwargs.get('citation_bindings', {})
     inputs = [dict(role='user', content=json.dumps(dict(question=question, as_of=as_of,
+        **({'original_research_task':research_task} if research_task is not None else {}),
         answer=message.content, selected=selected.model_dump(), citation_keys=list(refs)), ensure_ascii=False))]
     if assignment_kind not in ('review', 'investigate'):
         raise ValueError('consultation_assignment_invalid')

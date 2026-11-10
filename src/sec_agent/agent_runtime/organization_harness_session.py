@@ -152,7 +152,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
     public_web = options.get('allow_public_web', False)
     grants.append(GrantedTool(organization_source_tool(navigation, check, public_web=public_web), 'read', '当前组织任务的固定来源'))
     if public_web:
-        from .conversation_web import public_web_tool
+        from .source_toolkit import source_tools
         from .deepseek_web import DeepSeekWeb
         from sec_agent.research_foundation.external_sources import PublicURLGuard
         key = environment.get('DEEPSEEK_API_KEY')
@@ -165,32 +165,12 @@ async def organization_harness_session(*, native, resources, authority, check, o
         identity_file = phase_arguments['settings'].get('sec_web_identity_file')
         if not agent_identity and identity_file:
             agent_identity = Path(identity_file).read_text(encoding='utf8').strip()
-        grants.append(public_web_tool(thread_id=tid, run_id=rid, paid_search=paid_search, sec_user_agent=agent_identity,
+        from sec_agent.research_foundation.congress_api import CongressAPI
+        grants.extend(source_tools(thread_id=tid, run_id=rid, paid_search=paid_search, sec_user_agent=agent_identity,
             imported_navigation=imported_navigation,
             method_digest=sha256(research_system_prompt(['read_public_source', 'get_research_method']).encode('utf-8')).hexdigest(),
-            cache_root=directory / 'public-source-cache', research_as_of=organization.research_as_of))
-        from .public_data import public_data_tool
-        public_data = public_data_tool(research_as_of=organization.research_as_of)
-        if public_data is not None:
-            grants.append(public_data)
-        from .hithink_data import hithink_data_tool
-        hithink = hithink_data_tool(research_as_of=organization.research_as_of)
-        if hithink is not None:
-            grants.append(hithink)
-        from .korean_disclosures import korean_disclosure_tool
-        korean = korean_disclosure_tool(research_as_of=organization.research_as_of)
-        if korean is not None:
-            grants.append(korean)
-        from .market_prices import market_price_tool
-        grants.append(market_price_tool(thread_id=tid, cache_root=directory / 'market-observations',
-                                       research_as_of=organization.research_as_of))
-        from .regional_disclosures import regional_disclosure_tool
-        grants.append(regional_disclosure_tool(thread_id=tid, cache_root=directory / 'regional-disclosures', research_as_of=organization.research_as_of))
-        from .legislation import legislation_tool
-        from sec_agent.research_foundation.congress_api import CongressAPI
-        grants.append(legislation_tool(thread_id=tid, cache_root=directory / 'legislation-observations',
-            research_as_of=organization.research_as_of,
-            api=CongressAPI(key=environment.get('CONGRESS_API_KEY', ''))))
+            cache_root=directory, research_as_of=organization.research_as_of,
+            congress_api=CongressAPI(key=environment.get('CONGRESS_API_KEY', ''))))
     grants.extend(GrantedTool(t, 'working_note_write' if t.name == 'WriteWorkingNote' else 'read',
                   '当前组织任务的版本化工作笔记') for t in working_memory_tools('research_partner', owner=owner, workspace=memory_workspace))
     # The business receipt store is the single historical readback surface.

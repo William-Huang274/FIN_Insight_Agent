@@ -11,6 +11,7 @@ from langchain_core.tools import ToolException
 RESULT_REGIONS = {
     "read_regional_disclosures": ("sources", "地区披露目录"),
     "query_public_data": ("sources", "财经数据接口与原始返回"),
+    "discover_source_tools": ("sources", "当前信息与数据能力目录"),
     "query_hithink": ("sources", "同花顺官方数据与原始返回"),
     "search_korean_disclosures": ("sources", "韩国官方申报目录与原件入口"),
     "read_legislation": ("sources", "官方法案记录与版本入口"),

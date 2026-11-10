@@ -48,30 +48,10 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
         fact_mart=Path(settings["conversation_fact_mart"]) if settings.get("conversation_fact_mart") else None)
     if store is not None:
         from hashlib import sha256
-        from .conversation_web import public_web_tool
-        grants.append(public_web_tool(thread_id=thread_id,run_id=run_id,
+        from .source_toolkit import source_tools
+        grants.extend(source_tools(thread_id=thread_id,run_id=run_id,
             method_digest=sha256((root / "configs/research/runtime/conversation.json").read_bytes()).hexdigest(),
-            cache_root=Path(os.environ["FINSIGHT_TASK_ATTACHMENTS_ROOT"]) / "public-source-cache"))
-        from .public_data import public_data_tool
-        public_data = public_data_tool()
-        if public_data is not None:
-            grants.append(public_data)
-        from .hithink_data import hithink_data_tool
-        hithink = hithink_data_tool()
-        if hithink is not None:
-            grants.append(hithink)
-        from .korean_disclosures import korean_disclosure_tool
-        korean = korean_disclosure_tool()
-        if korean is not None:
-            grants.append(korean)
-        from .market_prices import market_price_tool
-        grants.append(market_price_tool(thread_id=thread_id,
-            cache_root=Path(os.environ['FINSIGHT_TASK_ATTACHMENTS_ROOT']) / 'market-observations'))
-        from .regional_disclosures import regional_disclosure_tool
-        grants.append(regional_disclosure_tool(thread_id=thread_id, cache_root=Path(os.environ['FINSIGHT_TASK_ATTACHMENTS_ROOT']) / 'regional-disclosures'))
-        from .legislation import legislation_tool
-        grants.append(legislation_tool(thread_id=thread_id,
-            cache_root=Path(os.environ['FINSIGHT_TASK_ATTACHMENTS_ROOT']) / 'legislation-observations'))
+            cache_root=Path(os.environ["FINSIGHT_TASK_ATTACHMENTS_ROOT"])))
     if settings.get("conversation_sandbox_url"):
         from .sandbox_mcp import remote_sandbox_tool
         grants.append(remote_sandbox_tool(endpoint=settings["conversation_sandbox_url"],

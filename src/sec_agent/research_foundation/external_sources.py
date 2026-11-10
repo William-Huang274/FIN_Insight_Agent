@@ -911,106 +911,101 @@ class StaticHTTPPageFetcher:
         self.maximum_response_bytes = maximum_response_bytes
         self._session_factory = session_factory
 
-    def _fetch_sync(self, raw_url: str, timeout_seconds: float) -> FetchedPage:
-        import requests
+    @staticmethod
+    def _decode(body, final_url, status_code, content_type, maximum_response_bytes):
+        if body.startswith(b"%PDF-"):
+            from io import BytesIO
+            from pypdf import PdfReader
 
-        url = self.guard.validate(raw_url)
-        session_factory = self._session_factory or requests.Session
-        with session_factory() as session:
+            reader = PdfReader(BytesIO(body))
+            if reader.is_encrypted or len(reader.pages) > 250:
+                raise ExternalSourceError("capture_pdf_not_readable_within_limits")
+            parts = []
+            characters = 0
+            for page in reader.pages:
+                part = page.extract_text() or ""
+                characters += len(part)
+                if characters > maximum_response_bytes:
+                    raise ExternalSourceError("capture_pdf_text_too_large")
+                parts.append(part)
+            return FetchedPage(final_url=final_url, extracted_text="\n\n".join(parts),
+                               status_code=status_code, content_type="application/pdf")
+        # Requests defaults text/html without a charset to Latin-1.
+        # That fallback is not publisher metadata and corrupts Asian
+        # pages. Let the maintained decoder inspect BOM/meta/bytes;
+        # only an explicit HTTP charset takes precedence.
+        from email.message import Message
+        from bs4 import UnicodeDammit
+        header = Message()
+        header['content-type'] = content_type or ''
+        charset = header.get_content_charset()
+        decoded = UnicodeDammit(bytes(body), is_html=True,
+            known_definite_encodings=[charset] if charset else [])
+        if decoded.unicode_markup is None or decoded.contains_replacement_characters:
+            raise ExternalSourceError('capture_text_encoding_unresolved')
+        html = decoded.unicode_markup
+        from .public_page_access import check_access_challenge
+        check_access_challenge(html)
+        return FetchedPage(
+            final_url=final_url,
+            html=html,
+            status_code=status_code,
+            content_type=content_type,
+        )
+
+    async def _fetch(self, raw_url: str, timeout_seconds: float) -> FetchedPage:
+        import httpx
+        url = await asyncio.to_thread(self.guard.validate, raw_url)
+        factory = self._session_factory or httpx.AsyncClient
+        async with factory() as session:
             for redirect_index in range(self.maximum_redirects + 1):
-                with session.get(
-                    url,
-                    allow_redirects=False,
+                async with session.stream('GET', url, follow_redirects=False,
                     timeout=timeout_seconds,
-                    headers={"User-Agent": self.user_agent or f"{requests.utils.default_user_agent()} FinSight/0.1",
-                             "Accept":"text/html,application/xhtml+xml,application/pdf,text/plain,application/xml;q=0.9,*/*;q=0.8"},
-                    stream=True,
-                ) as response:
-                    if response.is_redirect or response.is_permanent_redirect:
+                    headers={'User-Agent': self.user_agent or 'FinSight/0.1 (public-source-reader)',
+                        'Accept':'text/html,application/xhtml+xml,application/pdf,text/plain,application/xml;q=0.9,*/*;q=0.8'}) as response:
+                    status = int(response.status_code)
+                    if status in (301, 302, 303, 307, 308):
                         if redirect_index >= self.maximum_redirects:
-                            raise ExternalSourceError("capture_redirect_limit_exceeded")
-                        location = str(response.headers.get("Location") or "").strip()
+                            raise ExternalSourceError('capture_redirect_limit_exceeded')
+                        location = str(response.headers.get('Location') or '').strip()
                         if not location:
-                            raise ExternalSourceError("capture_redirect_location_missing")
-                        url = self.guard.validate(urljoin(url, location))
+                            raise ExternalSourceError('capture_redirect_location_missing')
+                        url = await asyncio.to_thread(self.guard.validate, urljoin(url, location))
                         continue
-                    status_code = int(response.status_code)
-                    if status_code < 200 or status_code >= 300:
-                        raise ExternalSourceError(
-                            f"capture_http_status_{status_code}"
-                        )
-                    declared_length = str(
-                        response.headers.get("Content-Length") or ""
-                    ).strip()
-                    if (
-                        declared_length.isdigit()
-                        and int(declared_length) > self.maximum_response_bytes
-                    ):
-                        raise ExternalSourceError("capture_response_too_large")
+                    if status < 200 or status >= 300:
+                        raise ExternalSourceError(f'capture_http_status_{status}')
+                    declared = str(response.headers.get('Content-Length') or '').strip()
+                    if declared.isdigit() and int(declared) > self.maximum_response_bytes:
+                        raise ExternalSourceError('capture_response_too_large')
                     body = bytearray()
-                    for chunk in response.iter_content(chunk_size=64 * 1024):
-                        if not chunk:
-                            continue
+                    async for chunk in response.aiter_bytes():
                         body.extend(chunk)
                         if len(body) > self.maximum_response_bytes:
-                            raise ExternalSourceError("capture_response_too_large")
-                    final_url = self.guard.validate(str(response.url))
-                    if body.startswith(b"%PDF-"):
-                        from io import BytesIO
-                        from pypdf import PdfReader
-
-                        reader = PdfReader(BytesIO(body))
-                        if reader.is_encrypted or len(reader.pages) > 250:
-                            raise ExternalSourceError("capture_pdf_not_readable_within_limits")
-                        parts = []
-                        characters = 0
-                        for page in reader.pages:
-                            part = page.extract_text() or ""
-                            characters += len(part)
-                            if characters > self.maximum_response_bytes:
-                                raise ExternalSourceError("capture_pdf_text_too_large")
-                            parts.append(part)
-                        return FetchedPage(final_url=final_url, extracted_text="\n\n".join(parts),
-                                           status_code=status_code, content_type="application/pdf")
-                    # Requests defaults text/html without a charset to Latin-1.
-                    # That fallback is not publisher metadata and corrupts Asian
-                    # pages. Let the maintained decoder inspect BOM/meta/bytes;
-                    # only an explicit HTTP charset takes precedence.
-                    from email.message import Message
-                    from bs4 import UnicodeDammit
-                    header = Message()
-                    header['content-type'] = response.headers.get('Content-Type', '')
-                    charset = header.get_content_charset()
-                    decoded = UnicodeDammit(bytes(body), is_html=True,
-                        known_definite_encodings=[charset] if charset else [])
-                    if decoded.unicode_markup is None or decoded.contains_replacement_characters:
-                        raise ExternalSourceError('capture_text_encoding_unresolved')
-                    html = decoded.unicode_markup
-                    from .public_page_access import check_access_challenge
-                    check_access_challenge(html)
-                    return FetchedPage(
-                        final_url=final_url,
-                        html=html,
-                        status_code=status_code,
-                        content_type=response.headers.get("Content-Type"),
-                    )
-        raise ExternalSourceError("capture_static_unreachable")
+                            raise ExternalSourceError('capture_response_too_large')
+                    final_url = await asyncio.to_thread(self.guard.validate, str(response.url))
+                    return await asyncio.to_thread(self._decode, body, final_url, status,
+                        response.headers.get('Content-Type'), self.maximum_response_bytes)
+        raise ExternalSourceError('capture_static_unreachable')
 
     async def fetch(self, url: str, *, timeout_seconds: float) -> FetchedPage:
-        import requests
-
+        import httpx
         try:
-            return await asyncio.to_thread(self._fetch_sync, url, timeout_seconds)
+            # Socket inactivity limits do not bound slow headers or trickling
+            # bodies. This deadline covers the whole redirect/read lifecycle;
+            # cancellation closes the async stream instead of leaking a blocked
+            # requests thread. The caller may investigate other candidates.
+            async with asyncio.timeout(timeout_seconds):
+                return await self._fetch(url, timeout_seconds)
         except ExternalSourceError:
             raise
-        except requests.Timeout as exc:
-            raise ExternalSourceError("capture_static_timeout") from exc
-        except requests.ConnectionError as exc:
-            raise ExternalSourceError("capture_static_connection_failed") from exc
-        except requests.RequestException as exc:
-            raise ExternalSourceError("capture_static_request_failed") from exc
+        except (TimeoutError, httpx.TimeoutException) as exc:
+            raise ExternalSourceError('capture_static_timeout') from exc
+        except httpx.ConnectError as exc:
+            raise ExternalSourceError('capture_static_connection_failed') from exc
+        except httpx.HTTPError as exc:
+            raise ExternalSourceError('capture_static_request_failed') from exc
         except Exception as exc:
-            raise ExternalSourceError("capture_static_fetch_failed") from exc
+            raise ExternalSourceError('capture_static_fetch_failed') from exc
 
 
 class ExaHostedMCPPageFetcher:

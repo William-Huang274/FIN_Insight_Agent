@@ -7,7 +7,6 @@ from hashlib import sha256
 from typing import Any
 
 import pytest
-import requests
 
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.research_foundation.contracts import (
@@ -145,27 +144,27 @@ class _OversizedResponse:
     status_code = 200
     encoding = "utf-8"
 
-    def __enter__(self):
+    async def __aenter__(self):
         return self
 
-    def __exit__(self, *_: Any) -> None:
+    async def __aexit__(self, *_: Any) -> None:
         return None
 
     def raise_for_status(self) -> None:
         return None
 
-    def iter_content(self, *, chunk_size: int):
+    async def aiter_bytes(self):
         yield b"x" * 101
 
 
 class _FakeSession:
-    def __enter__(self):
+    async def __aenter__(self):
         return self
 
-    def __exit__(self, *_: Any) -> None:
+    async def __aexit__(self, *_: Any) -> None:
         return None
 
-    def get(self, *_: Any, **__: Any) -> _OversizedResponse:
+    def stream(self, *_: Any, **__: Any) -> _OversizedResponse:
         return _OversizedResponse()
 
 
@@ -175,7 +174,7 @@ class _ForbiddenResponse(_OversizedResponse):
 
 
 class _ForbiddenSession(_FakeSession):
-    def get(self, *_: Any, **__: Any) -> _ForbiddenResponse:
+    def stream(self, *_: Any, **__: Any) -> _ForbiddenResponse:
         return _ForbiddenResponse()
 
 
@@ -185,13 +184,13 @@ class _NotModifiedResponse(_OversizedResponse):
 
 
 class _NotModifiedSession(_FakeSession):
-    def get(self, *_: Any, **__: Any) -> _NotModifiedResponse:
+    def stream(self, *_: Any, **__: Any) -> _NotModifiedResponse:
         return _NotModifiedResponse()
 
 
 class _TimeoutSession(_FakeSession):
-    def get(self, *_: Any, **__: Any) -> _ForbiddenResponse:
-        raise requests.Timeout("fixture timeout")
+    def stream(self, *_: Any, **__: Any) -> _ForbiddenResponse:
+        raise __import__("httpx").ReadTimeout("fixture timeout")
 
 
 def _public_guard() -> PublicURLGuard:
@@ -676,13 +675,54 @@ def test_static_transport_enforces_response_byte_ceiling_before_read() -> None:
 def test_static_transport_negotiates_supported_documents_with_transparent_identity():
     seen=[]
     class Session(_FakeSession):
-        def get(self,*args,**kwargs):
+        def stream(self,*args,**kwargs):
             seen.append(kwargs['headers'])
-            return super().get(*args,**kwargs)
+            return super().stream(*args,**kwargs)
     fetcher=StaticHTTPPageFetcher(guard=_public_guard(),session_factory=Session,user_agent='FinSight test contact')
     asyncio.run(fetcher.fetch('https://example.com/',timeout_seconds=5))
     assert 'application/pdf' in seen[0]['Accept'] and 'text/html' in seen[0]['Accept']
     assert seen[0]['User-Agent']=='FinSight test contact'
+
+
+def test_static_transport_total_deadline_cancels_slow_headers_and_trickling_body():
+    import httpx
+    async def run(body):
+        closed = asyncio.Event()
+        class SlowBody(httpx.AsyncByteStream):
+            async def __aiter__(self):
+                while True:
+                    await asyncio.sleep(.01)
+                    yield b'x'
+            async def aclose(self):
+                closed.set()
+        async def handler(request):
+            if body:
+                return httpx.Response(200, headers={'Content-Type':'text/html'}, stream=SlowBody())
+            try:
+                await asyncio.Event().wait()
+            finally:
+                closed.set()
+        fetcher = StaticHTTPPageFetcher(guard=_public_guard(), session_factory=lambda:
+            httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+        with pytest.raises(ExternalSourceError) as error:
+            await asyncio.wait_for(fetcher.fetch('https://example.com/', timeout_seconds=.05), .5)
+        assert error.value.code == 'capture_static_timeout'
+        assert closed.is_set()
+    asyncio.run(run(False))
+    asyncio.run(run(True))
+
+
+def test_static_transport_redirect_cannot_bypass_public_address_check():
+    import httpx
+    calls = []
+    def handler(request):
+        calls.append(str(request.url))
+        return httpx.Response(302, headers={'Location':'http://127.0.0.1/private'})
+    fetcher = StaticHTTPPageFetcher(guard=_public_guard(), session_factory=lambda:
+        httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+    with pytest.raises(ExternalSourceError):
+        asyncio.run(fetcher.fetch('https://example.com/', timeout_seconds=1))
+    assert calls == ['https://example.com/']
 
 
 @pytest.mark.parametrize('content_type,body,expected', [
@@ -695,10 +735,10 @@ def test_static_transport_decodes_publisher_charset_not_requests_default(content
     class Response(_OversizedResponse):
         headers = {'Content-Type':content_type}
         encoding = 'ISO-8859-1'  # Requests' implicit fallback is not a declared charset.
-        def iter_content(self, **kwargs):
+        async def aiter_bytes(self):
             yield body
     class Session(_FakeSession):
-        def get(self, *args, **kwargs):
+        def stream(self, *args, **kwargs):
             return Response()
     result = asyncio.run(StaticHTTPPageFetcher(guard=_public_guard(),
         session_factory=Session).fetch('https://example.com/', timeout_seconds=5))

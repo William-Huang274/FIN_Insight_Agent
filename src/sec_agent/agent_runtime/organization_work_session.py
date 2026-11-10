@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from contextlib import nullcontext
 from copy import deepcopy
 import json
+import re
 from types import SimpleNamespace
 
 from langchain_core.tools import tool, ToolException
@@ -69,12 +70,17 @@ def select_observed_sources(question_state, *, source_ids=None):
             if source_id in selected:
                 return
             if source_id not in sources:
+                readback = {'tool': 'browse_context', 'arguments': {'region': 'sources'}}
+                if re.fullmatch(r'WEB::[0-9a-f]{64}', source_id):
+                    readback = {'tool': 'read_public_source', 'arguments': {'operation': 'read', 'document_id': source_id}}
+                elif re.fullmatch(r'fin-tool-[0-9a-f-]{36}', source_id):
+                    readback = {'tool': 'read_saved_result', 'arguments': {'tool_call_id': source_id}}
                 raise ToolException(json.dumps({
                     'code': 'source_not_observed_read_current_source_catalog',
                     'requested_source_id': source_id,
                     'meaning': 'This exact ID is not in the observed source receipts; this does not establish that the document is unavailable.',
-                    'readback': {'tool': 'browse_context', 'arguments': {'region': 'sources'}},
-                    'next_step': 'Use the returned read_saved_result entry to obtain the exact saved passage ID or the original read_source_document arguments. Do not construct a passage suffix from a node ID.'
+                    'readback': readback,
+                    'next_step': 'The indicated reader validates the exact requested ID within this task. This routing suggestion does not establish access or source availability. Do not reconstruct a passage suffix or repeat discovery before trying the existing readback.'
                 }, ensure_ascii=False))
             selected[source_id] = sources[source_id]
             for operand in sources[source_id].get('operands', {}).values():
@@ -106,7 +112,7 @@ def observed_source_tool(reader, check):
     """Reuse exact authorized source paging without an agent-loop dependency."""
     @tool
     def read_research_source(source_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 4000):
-        """Read an observed source. offset is a nonnegative character position. Request at least 100 characters. Each page returns up to 12000 characters; pass its next_offset to continue the same source."""
+        """Read an observed evidence passage or CALC source. For WEB document IDs use read_public_source(operation='read'); for fin-tool receipt IDs use read_saved_result. offset is nonnegative; request at least 100 characters. Each page returns up to 12000 characters; use next_offset to continue."""
         from .case_artifacts import read_source_window
         if offset < 0 or max_characters < 100:
             raise ToolException('invalid_source_read_window: use offset >= 0 and max_characters >= 100. '

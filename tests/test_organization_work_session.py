@@ -128,10 +128,14 @@ def test_native_work_session_uses_same_parent_and_does_not_start_old_graph(conti
     monkeypatch.setattr(OrganizationExecutionAuthority, 'request', lambda self, path, body: deepcopy(grant if path.endswith('/admit-start') else resources))
     async def get_run(t, r): return {'thread_id': tid, 'run_id': rid, 'status': 'running', **args}
     async def get_thread(t): return deepcopy(thread)
+    async def search_threads(*, ids, limit, select):
+        assert ids == [tid] and limit == 1
+        assert 'values' not in select
+        return [{k: deepcopy(v) for k, v in thread.items() if k in select}]
     saved_state = {'values': {}}
     async def saved(t, **kwargs): return deepcopy(saved_state)
     async def close(): pass
-    native = SimpleNamespace(runs=SimpleNamespace(get=get_run), threads=SimpleNamespace(get=get_thread, get_state=saved),
+    native = SimpleNamespace(runs=SimpleNamespace(get=get_run), threads=SimpleNamespace(get=get_thread, get_state=saved, search=search_threads),
                              http=SimpleNamespace(client=SimpleNamespace(aclose=close)))
     monkeypatch.setattr('langgraph_sdk.get_client', lambda: native)
     monkeypatch.setattr('sec_agent.agent_runtime.agent_server_entry._require_langsmith_execution_environment', lambda _: None)

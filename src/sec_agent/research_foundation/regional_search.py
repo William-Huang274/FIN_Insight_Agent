@@ -6,6 +6,7 @@ reads originals and binds citations through the existing discovery/capture path.
 from __future__ import annotations
 
 import os
+import re
 from typing import Literal
 from urllib.parse import urlsplit
 
@@ -58,6 +59,11 @@ class SearxNGProvider:
             for name, *details in failures:
                 observed['searxng:' + str(name)] = str(details[0])[:160] if details else 'unavailable'
         hits = []
+        # Enforce a single explicit site operator without altering the query.
+        # Multiple/OR/negative operators need their original engine semantics.
+        sites = re.findall(r'(?i)(?<!\S)site:([\w.-]+)(?=\s|$)', request.query)
+        site = sites[0].lower().strip('.') if len(sites) == 1 and not re.search(r'(?i)\bOR\b', request.query) else None
+        rejected_sites = 0
         for row in data['results']:
             if not isinstance(row, dict) or row.get('is_ad') or row.get('sponsored'):
                 continue
@@ -66,6 +72,10 @@ class SearxNGProvider:
             url, title = str(row.get('url') or ''), str(row.get('title') or '')
             if not title or urlsplit(url).scheme not in {'http', 'https'}:
                 continue
+            host = (urlsplit(url).hostname or '').lower()
+            if site and host != site and not host.endswith('.' + site):
+                rejected_sites += 1
+                continue
             # Metadata such as a repository's updated_at is NOT publication
             # of the underlying content. Verify dates at the original as usual.
             hits.append(ProviderHit(title=title, url=url, snippet=str(row.get('content') or ''), published_at=None))
@@ -73,6 +83,8 @@ class SearxNGProvider:
                 break
         if not hits and failures:
             raise ExternalSourceError('searxng_engines_unavailable')
+        if not hits and rejected_sites:
+            raise ExternalSourceError('searxng_site_constraint_ignored')
         return tuple(hits)
 
 

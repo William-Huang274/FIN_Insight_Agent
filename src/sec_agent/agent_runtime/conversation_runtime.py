@@ -56,6 +56,14 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
         public_data = public_data_tool()
         if public_data is not None:
             grants.append(public_data)
+        from .hithink_data import hithink_data_tool
+        hithink = hithink_data_tool()
+        if hithink is not None:
+            grants.append(hithink)
+        from .korean_disclosures import korean_disclosure_tool
+        korean = korean_disclosure_tool()
+        if korean is not None:
+            grants.append(korean)
         from .market_prices import market_price_tool
         grants.append(market_price_tool(thread_id=thread_id,
             cache_root=Path(os.environ['FINSIGHT_TASK_ATTACHMENTS_ROOT']) / 'market-observations'))

@@ -40,6 +40,16 @@ def test_captcha_is_fault_not_absence():
         _engine_http.reset(token)
 
 
+def test_site_ignored_by_upstream_is_feedback_not_successful_empty():
+    r = request()
+    r.query = 'site:imda.gov.sg generative AI'
+    provider = SearxNGProvider('http://localhost:8080', transport=httpx.MockTransport(
+        lambda req: httpx.Response(200, json={'results': [
+            {'title': 'AI dictionary', 'url': 'https://dictionary.example/ai', 'engines': ['bing china']}]})))
+    with pytest.raises(ExternalSourceError, match='searxng_site_constraint_ignored'):
+        asyncio.run(provider.search(r))
+
+
 @pytest.mark.parametrize('code', [403, 429, 502])
 def test_http_errors_preserved(code):
     provider = SearxNGProvider('http://localhost:8080', transport=httpx.MockTransport(lambda r: httpx.Response(code)))

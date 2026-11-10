@@ -46,6 +46,9 @@ def research_system_prompt(names, task_context=""):
                    'Use them when an external source can resolve the research question or a library gap; '
                    'a library miss does not require user intervention. Preserve the research cutoff and distinguish '
                    'publication date from capture date. Send only public search terms, not private materials.\n')
+        prompt += ('Search supports explicit bing_china/bing engines and regional languages. '
+                   'Use local-language names or quoted distinctive product/institution names when broad queries drift. '
+                   'A returned candidate is not evidence of relevance or authenticity; inspect its title, domain and original.\n')
     if "read_legislation" in names:
         prompt += ('\nOfficial bill records, actions and text versions are available via read_legislation. '
                    'Search receipts may return legislation_navigation instead of WEB documents; follow its exact next_calls, '
@@ -54,6 +57,15 @@ def research_system_prompt(names, task_context=""):
         prompt += ('\nquery_public_data exposes the AKTools interface catalog: search by Chinese/English topic or '
                    'source (e.g. 东方财富, 同花顺), inspect parameters, then fetch supported data. '
                    'Its current vendor tables are not automatically historical, verified financial evidence.\n')
+    if "query_hithink" in names:
+        prompt += ('\nquery_hithink provides official 同花顺 Financial-API data across A-share stocks, '
+                   'indices/sectors, funds, futures, options and symbol lookup. Discover a domain catalog, '
+                   'describe a relevant tool, then use its native schema. Resolve symbols first; '
+                   'retain periods, units and adjustment basis. This does not supply news/report full text.\n')
+    if "search_korean_disclosures" in names:
+        prompt += ('\nsearch_korean_disclosures searches official OpenDART Korean/English filing catalogs '
+                   'by publication date. Preserve returned filing IDs and revisions; follow original links '
+                   'through read_public_source before interpreting filing contents.\n')
     if "read_regional_disclosures" in names:
         prompt += ('\nread_regional_disclosures exposes Taiwan TWSE issuer navigation and current announcements; '
                    'its definition identifies the historical limits. Other markets remain separately scoped.\n')

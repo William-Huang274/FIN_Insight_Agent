@@ -28,20 +28,45 @@ SearXNG 的 `engines` 与 `categories` 同传会合并执行引擎，因此适�
 | 百度 | SearXNG 现成 Baidu 引擎 | 已接选择入口；本机实测 CAPTCHA，默认不调用，不绕过验证 |
 | GitHub | SearXNG 内置官方 REST 仓库搜索 | 经已配置网络代理取得仓库结果；源码/issue 的深入读取不能用仓库搜索替代 |
 | B 站 | SearXNG 内置 Bilibili 引擎 | 有现成实现，本机直连及代理仍 TLS 失败；不可算可用视频取证 |
-| 知乎、抖音、B 站等 | [TikHub API](https://api.tikhub.dev/)、[官方 MCP 分发](https://github.com/TikHub/tikhub-mcp-dist) | 已检查 OpenAPI 中实际搜索端点；需供应商凭据和费用授权，尚未接通真实内容。避免直接暴露全部接口；不安装不明二进制，不启用验证码破解等无关能力 |
+| 知乎、抖音、B 站等 | [MediaCrawler](https://github.com/NanmiCoder/MediaCrawler) | 用户已选择该栈，登录接入留待后续；本轮不启动个人会话采集。之前调查过 TikHub，当前不继续该供应商接入 |
 | 即梦 | [火山引擎即梦 API](https://docs.volcengine.com/docs/JimengAI/QuickStart?lang=zh) | 查到的是生成接口，不能冒充社区搜索 API；暂走公开页面及其他社区的产品体验资料 |
 | 东方财富/同花顺公共数据 | [AKShare](https://akshare.akfamily.xyz/data/stock/stock.html)、[AKTools](https://github.com/akfamily/aktools) | 官方配套 MCP 已接；东方财富新闻实际取数通过，同花顺主营介绍本机 TLS 失败。开放源码适配不等于数据供应商 SLA |
+| 同花顺官方 Financial-API | [Financial-API](https://github.com/HiThink-Tech/Financial-API) | 六个托管 MCP 域、72项能力按需发现；六域各一次真实取数通过。与上一行网页抓取及 iFinD 独立；历史版本限制见下文 |
 | 付费财经标准接口 | [Choice EMQuant](https://quantapi.eastmoney.com/Upload/EMQuantAPI_Python.pdf)、[iFinD](https://quantapi.51ifind.cn/gwstatic/static/ds_web/quantapi-web/download.html) | SDK/HTTP 及账户权限独立，不能以 AKShare 可访问推断已购买专业数据权限 |
 | 台湾 | [TWSE OpenAPI](https://openapi.twse.com.tw/) | 公司目录与当前重大讯息已真实读取；其他接口和完整历史档案未一并验收 |
 | 日本披露 | [EDINET 官方 API 说明](https://disclosure2dl.edinet-fsa.go.jp/guide/static/disclosure/WZEK0110.html) | v2 需申请密钥；未配置，不把 J-Quants 行情当申报全文 |
 | 日本行情 | [J-Quants](https://jpx-jquants.com/en/spec/quickstart) | 有官方 API；需账户/方案，且个人数据使用与面向用户的产品授权需区分 |
-| 韩国披露 | [OpenDART](https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE001&apiId=AE00001) | 官方披露 API 有明确参数，需认证密钥；DART 不等于 KRX 全部行情 |
+| 韩国披露 | [OpenDART](https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE001&apiId=AE00001) | 已配置密钥，中英披露目录均真实读取通过，保留申报日期及更正版本；DART 不等于 KRX 全部行情，全文读取未由目录验收替代 |
 | 香港披露 | [HKEX IIS](https://www.hkex.com.hk/Services/Market-Data-Services/Infrastructure/Issuer-Information-feed-Service-%28IIS%29?sc_lang=en) | 有正式披露传送服务与接入规范，需供应商准入；暂用 HKEXnews/发行人公开原件，不冒充免费 SEC 同类 API |
 | 澳门 | [MOX](https://cmox.mo/) | 找到公开披露页面；本轮未找到可直接开通、文档完备的标准开放 API，保留网页原件路径 |
 
 微软旧 [Bing Search APIs 已于 2025-08-11 退役](https://learn.microsoft.com/en-nz/lifecycle/announcements/bing-search-api-retirement)。本接入使用 SearXNG 维护的网页引擎，不是退役 API，也没有重新实现 Bing HTML 解析器。现有 DDGS 的 Bing 引擎在所查源码中被禁用，不能只改一个 backend 参数宣称接通。
 
 OpenBB 可作为多供应商金融数据平台候选，但不能替代社区内容和全球披露全文。MediaCrawler 等浏览器爬虫仍有登录、会话及维护成本，本轮不把它们接成默认无人工检索路径。当前选择 SearXNG + AKTools + 官方披露接口，避免另造一个通用爬虫平台。
+
+## 官方接口与搜索验收
+
+### 同花顺 Financial-API 与韩国 OpenDART（2026-11-10）
+
+同花顺官方新平台为 [Financial-API](https://github.com/HiThink-Tech/Financial-API)，不是 iFinD，也不是 AKShare 的同花顺抓取接口。已阅读仓库 README、REST 通用契约、MCP 接入及业务路由，并用实时 `tools/list` 验证六域：meta、a-share、a-share-index、fund、futures、options。配置 `HITHINK_FINANCE_API_KEY` 后，`query_hithink` 向作者和独立复核者统一提供 catalog/describe/call。每域按需发现，选定工具返回完整原生 schema；调用不重写模型参数、不逐次重复加载全部清单。现有保存及 `read_saved_result` 入口保留完整返回，大结果只向当前上下文披露预览。
+
+六域均已完成最小真实取数：标的检索、单只A股行情、区域指数目录、单只基金资料、期货品种、期权品种。72项工具全部可发现和按原生契约调用；这不代表72项分别已做数据质量验收。官方 MCP 的期货/期权 outputSchema 使用 OpenAPI `nullable`，与标准 JSON Schema 不同；适配仅转换该声明，由 SDK 的验证钩子继续校验所有约束，不改原始空值、不放过数值类型错误。HTTP/MCP正常不等于业务成功，须 `code=0`，错误码和 request_id 保留。
+
+本接入覆盖官方六个托管 MCP 的公开研究数据，不重复安装 CLI、另建 DuckDB、批量下载全市场历史或开放端内专用能力。CLI/SDK/REST 是同一数据服务的其他使用方式，不是每种都要维持一套运行链。公开能力不包括港美股行情、新闻/公告/研报全文、Level-2和交易；完整支持范围以实时清单及官方文档为准。
+
+历史截止日任务：元数据仅可用于标的定位，当前公司属性不作为历史事实；其他数据在未建立“当时已公开版本”合同前返回明确反馈，不把今天取得的财务表伪装成过去可见数据。因此本次并未完成同花顺数据对历史研究的全面引用与计算绑定。当前任务的数据返回同样保留供应商身份、字段和时间，不能仅因取数成功就标为 NumericFact。
+
+配置 `OPENDART_API_KEY` 后，`search_korean_disclosures` 使用官方韩文 `/api/list.json` 或英文 `/engapi/list.json`。两条路径实际认证及目录读取通过；保留原始申报号、更正版本和公开日期，返回对应原件链接。模型自行选择公司代码、语言、期间和分页，不能以当前最新报告覆盖原截止日版本。当前是披露发现，不是韩国股票行情或全文/XBRL全部接入。
+
+部署方把本机自定义凭据变量映射到上述标准变量；密钥只进入宿主/容器环境，不写入 Git、提示词、工具参数或回执URL。新工具沿用当前任务授权和回读机制。
+
+### Bing 亚太搜索实测边界
+
+对中国、日本、韩国、新加坡、台湾的六类查询分别调用大陆与国际入口，并检查原始源站请求、语言市场参数、直连/代理、短语及 RSS 对照。中国产品名能命中正式官网，但宽泛组合查询常退化为首词主题，部分国际路径出现无关站点；`site:` 查询也发生约束被源站忽略。完整查询实际送达，因此不能把该结果归因于模型没给完整查询，或仅修改HTML解析器宣称解决。
+
+单一明确 `site:` 约束在适配层做域名核对；若所有候选违背该约束，返回 `searxng_site_constraint_ignored`，不伪装成正常零结果。多重/OR查询不擅自简化。引用短语或具体产品/机构名可能改善发现，但不保证相关性。两条入口已接通传输，**Bing 单独覆盖亚太公开资料调查的质量验收未通过**；仍需现有 DS 搜索及官方原件路径互补。没有用这组预检答案注入研究模型。
+
+社区方向按用户选择转向 [MediaCrawler](https://github.com/NanmiCoder/MediaCrawler)，本轮不启动登录、不导入个人会话、不宣称已能读取视频/评论。EDINET 尚无密钥；官方 FAQ 第四节 Q20 记录认证后白屏与弹窗许可相关，应核对站点级弹窗设置，不能据此认定本机根因已确认。
 
 ## 可复现部署
 

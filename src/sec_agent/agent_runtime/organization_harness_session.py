@@ -173,6 +173,14 @@ async def organization_harness_session(*, native, resources, authority, check, o
         public_data = public_data_tool(research_as_of=organization.research_as_of)
         if public_data is not None:
             grants.append(public_data)
+        from .hithink_data import hithink_data_tool
+        hithink = hithink_data_tool(research_as_of=organization.research_as_of)
+        if hithink is not None:
+            grants.append(hithink)
+        from .korean_disclosures import korean_disclosure_tool
+        korean = korean_disclosure_tool(research_as_of=organization.research_as_of)
+        if korean is not None:
+            grants.append(korean)
         from .market_prices import market_price_tool
         grants.append(market_price_tool(thread_id=tid, cache_root=directory / 'market-observations',
                                        research_as_of=organization.research_as_of))

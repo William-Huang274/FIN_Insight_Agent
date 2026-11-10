@@ -2,11 +2,15 @@
 import asyncio
 from contextlib import asynccontextmanager
 import hmac
+import logging
 import socket
+import time
 
 from fastapi import FastAPI
 from starlette.responses import Response
 import uvicorn
+
+logger = logging.getLogger(__name__)
 
 
 async def verify_business_endpoint(endpoint, token, expected):
@@ -39,7 +43,32 @@ async def harness_local_services(*, business, dispatch, transport, token, readin
         api_key = request.headers.get('x-api-key', '')
         if not (hmac.compare_digest(credential, 'Bearer ' + token) or hmac.compare_digest(api_key, token)):
             return Response(status_code=401)
-        return await call_next(request)
+        # Record transport stages, never credentials, tool arguments or evidence.
+        # Python discovery and the native client's connection are independent.
+        rpc = None
+        if request.url.path.startswith('/business') and request.method == 'POST':
+            try:
+                body = await request.json()
+                candidate = body.get('method') if isinstance(body, dict) else None
+                if candidate in {'initialize', 'notifications/initialized', 'tools/list', 'tools/call'}:
+                    rpc = candidate
+            except ValueError:
+                pass
+        started = time.monotonic()
+        if rpc:
+            logger.info('harness_mcp_request_started', extra={'rpc_method': rpc})
+        try:
+            response = await call_next(request)
+        except BaseException:
+            if rpc:
+                logger.info('harness_mcp_request_failed', extra={'rpc_method': rpc,
+                    'elapsed_ms': round((time.monotonic() - started) * 1000, 2)})
+            raise
+        if rpc:
+            logger.info('harness_mcp_request_finished', extra={'rpc_method': rpc,
+                'http_status': response.status_code,
+                'elapsed_ms': round((time.monotonic() - started) * 1000, 2)})
+        return response
     app.mount('/business', mcp)
     app.include_router(dispatch_router(dispatch, token=token, readiness=readiness))
     app.include_router(transport.router())

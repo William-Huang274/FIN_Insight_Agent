@@ -71,14 +71,12 @@ class NativeResearchDelegate:
                 business_mcp={'Authorization':'Bearer '+token})
             patch_path = run/'profile.patch.json'
             _persist(patch_path, patch)
-            env = {k:v for k,v in self.environment.items() if k.upper() in {
-                'PATH','SYSTEMROOT','WINDIR','TEMP','TMP','COMSPEC','PATHEXT'}}
-            env.update(DSH_HOME=str(directory/'native'), HOME=str(directory), USERPROFILE=str(directory),
-                       FIN_HARNESS_LOCAL_TOKEN=token, NO_PROXY='127.0.0.1,localhost')
+            from .harness_storage import process_environment
+            env = process_environment(self.environment, directory, token)
             # Reuse the task's installed upstream packages; only conversation
             # state is isolated. Do not download/copy a package tree per child.
             shared_cache = self.directory.parent.parent/'.cache/pkg'
-            if shared_cache.is_dir():
+            if not self.environment.get('FINSIGHT_HARNESS_NATIVE_STORAGE_ROOT') and shared_cache.is_dir():
                 package_link = directory/'.cache/pkg'
                 package_link.parent.mkdir(parents=True, exist_ok=True)
                 if not package_link.exists():

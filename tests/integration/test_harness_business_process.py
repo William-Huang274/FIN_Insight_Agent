@@ -18,6 +18,7 @@ from sec_agent.agent_runtime.harness_acp_session import admitted_acp_session
 from sec_agent.agent_runtime.harness_business_tools import HarnessBusinessTools
 from sec_agent.agent_runtime.harness_local_services import harness_local_services
 from sec_agent.agent_runtime.harness_profile import profile_overlay
+from sec_agent.agent_runtime.harness_storage import process_environment
 from sec_agent.agent_runtime.harness_provider_transport import HarnessProviderTransport
 from sec_agent.agent_runtime.harness_dispatch_host import HarnessDispatchHost
 from sec_agent.agent_runtime.working_memory_tools import native_memory_scope, working_memory_tools
@@ -151,9 +152,10 @@ async def test_real_process_tools_restart_compaction_and_cancel(tmp_path, monkey
                 next(p['config'] for p in patch if p.get('id') == 'compaction-basic').update(headroomTokens=2048, retainTokens=256)
                 patch_path = tmp_path / run_id / 'profile.json'
                 patch_path.write_text(json.dumps(patch), encoding='utf8')
-                env = {'DSH_HOME': str(tmp_path / 'dsh-home'), 'FIN_HARNESS_LOCAL_TOKEN': token,
-                       'HOME': str(tmp_path), 'USERPROFILE': str(tmp_path),
-                       'NO_PROXY': '127.0.0.1,localhost'}
+                storage = {}
+                if root := os.getenv('FINSIGHT_HARNESS_NATIVE_STORAGE_ROOT'):
+                    storage['FINSIGHT_HARNESS_NATIVE_STORAGE_ROOT'] = root
+                env = process_environment(storage, tmp_path / 'session', token)
                 mcp = [HttpMcpServer(type='http', name='financial', url=endpoint+'/business/',
                        headers=[HttpHeader(name='Authorization', value='Bearer '+token)])]
                 if profile_mcp:

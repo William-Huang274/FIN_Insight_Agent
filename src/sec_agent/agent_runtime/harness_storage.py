@@ -9,7 +9,14 @@ def native_home(environment, directory):
     if not root:
         return directory / 'native'
     root = Path(root).resolve(strict=True)
-    return root / 'sessions' / sha256(str(directory).encode()).hexdigest() / 'native'
+    target = root / 'sessions' / sha256(str(directory).encode()).hexdigest() / 'native'
+    # Existing deployments remain readable until explicitly migrated. New
+    # sessions use the shared storage immediately; never create an empty
+    # replacement for an established conversation.
+    legacy = directory / 'native'
+    if not target.exists() and (directory / 'session-binding.json').exists() and legacy.is_dir():
+        return legacy
+    return target
 
 
 def process_environment(environment, directory, token):

@@ -30,3 +30,15 @@ def test_existing_session_requires_explicit_migration(tmp_path):
         process_environment(setting, session, 'local')
     native_home(setting, session).mkdir(parents=True)
     assert process_environment(setting, session, 'local')['DSH_HOME'] == str(native_home(setting, session))
+
+
+def test_unmigrated_existing_history_keeps_legacy_location(tmp_path):
+    root = tmp_path / 'volume'; root.mkdir()
+    session = tmp_path / 'session'; session.mkdir()
+    (session / 'session-binding.json').write_text('{}')
+    (session / 'native').mkdir()
+    (session / 'native' / 'history.jsonl').write_text('original')
+    env = process_environment({'FINSIGHT_HARNESS_NATIVE_STORAGE_ROOT': str(root)}, session, 'local')
+    assert env['DSH_HOME'] == str(session / 'native')
+    assert env['HOME'] == str(session)
+    assert (session / 'native' / 'history.jsonl').read_text() == 'original'

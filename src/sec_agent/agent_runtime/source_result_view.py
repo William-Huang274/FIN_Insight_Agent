@@ -5,6 +5,7 @@ limit candidates, or infer that two different periods/revisions are equivalent.
 """
 import ast
 import json
+from copy import deepcopy
 from collections.abc import Mapping
 
 
@@ -16,7 +17,8 @@ _PARSER_IMPLEMENTATION_KEYS = {"parser", "material_card_version"}
 
 
 def _navigation_envelope(row):
-    return (row.get('operation') in {'catalog', 'outline', 'search', 'read'}
+    return (isinstance(row.get('operation'), str)
+            and row.get('operation') in {'catalog', 'outline', 'search', 'read'}
             and isinstance(row.get('items'), list)
             and row.get('read_only') is True and 'source_snapshot_sha256' in row)
 
@@ -222,8 +224,12 @@ def _calculation_basis(row):
 def source_result_view(value):
     """Idempotent request-only projection shared by fresh and restored reads."""
     if isinstance(value, Mapping):
-        row = {k: source_result_view(v) for k, v in value.items() if k not in _TRANSPORT_KEYS}
-        if row.get("result_state") in _SOURCE_STATES and "metadata" in row:
+        # Tool schemas contain properties named operation/result_state/metadata.
+        # They are contracts, not source observations: preserve them verbatim.
+        schema_keys = {'input_schema', 'output_schema', 'inputSchema', 'outputSchema'}
+        row = {k: deepcopy(v) if k in schema_keys else source_result_view(v)
+               for k, v in value.items() if k not in _TRANSPORT_KEYS}
+        if isinstance(row.get('result_state'), str) and row.get("result_state") in _SOURCE_STATES and "metadata" in row:
             metadata = _metadata(row["metadata"])
             if isinstance(metadata, dict):
                 # The public card already carries these values. URL/date

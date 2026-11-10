@@ -164,3 +164,14 @@ def test_native_sdk_fresh_and_restored_history_projects_before_transport():
     assert item['readback'] == candidate()['readback']
     assert isinstance(item['metadata'], dict) and 'routing_metadata_v1' not in item['metadata']
     assert 'mcp_receipt_chain' not in last['content']
+def test_native_tool_schemas_are_not_source_records():
+    from sec_agent.agent_runtime.source_result_view import source_result_view
+    schema = {'type': 'object', 'properties': {
+        'operation': {'type': 'string', 'enum': ['search']},
+        'result_state': {'type': 'string'},
+        'mcp_receipt': {'type': 'object'},
+        'metadata': {'type': 'object', 'properties': {'parser': {'type': 'string'}}}}}
+    envelope = {'result': {'input_schema': schema, 'outputSchema': schema}}
+    assert source_result_view(envelope) == envelope
+    assert source_result_view({'operation': {'x': 1}, 'result_state': []}) == {'operation': {'x': 1}, 'result_state': []}
+

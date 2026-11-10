@@ -1,10 +1,13 @@
 import asyncio
+import json
 from uuid import uuid4
 
 from sec_agent.agent_runtime.source_toolkit import source_tools, source_catalog, CAPABILITIES
 from sec_agent.agent_runtime.conversation_agent import research_system_prompt
 from sec_agent.agent_runtime.answer_review_provider import review_tool_names
 from sec_agent.agent_runtime.conversation_tools import SAVED_RESULT_TOOLS
+from sec_agent.agent_runtime.harness_business_tools import model_receipt
+from langchain_core.messages import ToolMessage
 
 
 def test_single_factory_preserves_native_contracts_and_paths(tmp_path, monkeypatch):
@@ -29,6 +32,9 @@ def test_single_factory_preserves_native_contracts_and_paths(tmp_path, monkeypat
         original = next(g.tool for g in grants if g.tool.name == 'read_public_source')
         assert schema['input_schema'] == original.tool_call_schema.model_json_schema()
         assert 'search_language' in schema['input_schema']['properties']
+        projected = model_receipt(ToolMessage(content=json.dumps(schema),
+            name='discover_source_tools', tool_call_id='catalog-schema'))
+        assert projected['result']['input_schema'] == schema['input_schema']
     asyncio.run(read())
     prompt = research_system_prompt(names)
     assert 'discover_source_tools' in prompt and '同一个研究 MCP' in prompt

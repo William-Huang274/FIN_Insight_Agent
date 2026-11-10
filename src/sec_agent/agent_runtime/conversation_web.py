@@ -21,6 +21,32 @@ from sec_agent.research_foundation.web_source_navigation import WebSourceReader
 from .conversation_agent import GrantedTool
 
 
+def public_web_request_feedback(arguments):
+    """Describe a correctable operation/parameter mismatch without executing it."""
+    operation, document = arguments.get('operation'), arguments.get('document_id')
+    fields = []
+    if operation == 'read' and arguments.get('query'):
+        fields.append('query')
+    if operation != 'search' or document:
+        fields += [key for key in ('search_language', 'start_published_date', 'end_published_date')
+                   if arguments.get(key) is not None]
+        if arguments.get('search_backend', 'auto') != 'auto':
+            fields.append('search_backend')
+    if not fields:
+        return None
+    return {'feedback_kind': 'public_source_request_validation',
+        'code': 'parameters_not_applicable_to_operation', 'request_dispatched': False,
+        'request_modified': False, 'submitted_arguments': dict(arguments),
+        'inapplicable_fields': fields,
+        'read_options': [{'tool': 'read_public_source', 'operation': operation,
+            'document_id': document, 'remove_fields': fields}],
+        'next_step': 'Resubmit your intended operation without these fields. '
+            'Search backend, language and publication filters apply only to global search '
+            '(operation=search without document_id). Read uses document_id, offset and max_characters. '
+            'To search inside this document use operation=search, document_id and query. '
+            'No source selection or research judgment was changed.'}
+
+
 def search_execution_faults(result):
     """Metering/dispatch faults must not masquerade as a researched absence."""
     fatal = {'deepseek_web_response_unconfirmed', 'deepseek_web_prior_call_unresolved',
@@ -171,6 +197,8 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         or auto (existing providers plus configured regional fallback).
         search_language selects a locale such as zh-CN, zh-TW, ja-JP, ko-KR,
         en-US or ru-RU. Use local product names and native-language queries;
+        Backend, language and publication filters apply only to global search,
+        without document_id. Omit them when reading or searching inside a document.
         a site's location or a search result does not establish market coverage.
         site: can scope searches to zhihu.com, douyin.com, jimeng.jianying.com,
         eastmoney.com or 10jqka.com.cn. This is web discovery, not authenticated
@@ -218,6 +246,12 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         Captures are cached within this thread; they are not automatically
         admitted to a shared knowledge base. A new round may need a new search.
         """
+        feedback = public_web_request_feedback(dict(operation=operation, query=query,
+            document_id=document_id, offset=offset, max_characters=max_characters,
+            search_backend=search_backend, search_language=search_language,
+            start_published_date=start_published_date, end_published_date=end_published_date))
+        if feedback:
+            raise ToolException(json.dumps(feedback, ensure_ascii=False))
         try:
             # Discovery candidates belong to this task, not a transient run.
             # Restore only host-saved tool artifacts; the model cannot register URLs.
@@ -254,16 +288,12 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
                         reader.restore_navigation([{**rebound, 'receipt_digest': canonical_digest(rebound)}],
                             branch_id='conversation', run_scope=scope)
                         restored.add(receipt.receipt_digest)
-            if operation == "read" and query:
-                raise ValueError("read accepts document_id and character offset, not query. Use operation=search with document_id and query to locate a section, then read at character_start without query.")
             # SourceDocumentRequest owns the shared read-window bounds. Do not
             # impose an undisclosed, narrower limit in the conversation wrapper.
             previously_limited = quota and quota.limited
             date_filters = ({'end_published_date': scope.research_as_of.date()}
                             if operation == 'search' and not document_id else {})
             if search_backend != 'auto' or search_language:
-                if operation != 'search' or document_id:
-                    raise ValueError('search_backend_and_language_require_global_search')
                 date_filters.update(search_backend=search_backend, search_language=search_language)
             if start_published_date is not None:
                 date_filters['start_published_date'] = start_published_date

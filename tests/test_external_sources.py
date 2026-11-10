@@ -685,6 +685,26 @@ def test_static_transport_negotiates_supported_documents_with_transparent_identi
     assert seen[0]['User-Agent']=='FinSight test contact'
 
 
+@pytest.mark.parametrize('content_type,body,expected', [
+    ('text/html', '<meta charset="utf-8"><p>中文公开材料</p>'.encode('utf-8'), '中文公开材料'),
+    ('text/html', '<meta charset="gb18030"><p>中文公开材料</p>'.encode('gb18030'), '中文公开材料'),
+    ('text/html; charset=iso-8859-1', '<p>français</p>'.encode('iso-8859-1'), 'français'),
+    ('text/html', '<p>日本語の資料</p>'.encode('utf-8-sig'), '日本語の資料'),
+])
+def test_static_transport_decodes_publisher_charset_not_requests_default(content_type, body, expected):
+    class Response(_OversizedResponse):
+        headers = {'Content-Type':content_type}
+        encoding = 'ISO-8859-1'  # Requests' implicit fallback is not a declared charset.
+        def iter_content(self, **kwargs):
+            yield body
+    class Session(_FakeSession):
+        def get(self, *args, **kwargs):
+            return Response()
+    result = asyncio.run(StaticHTTPPageFetcher(guard=_public_guard(),
+        session_factory=Session).fetch('https://example.com/', timeout_seconds=5))
+    assert expected in result.html
+
+
 def test_static_transport_preserves_http_status_as_typed_failure() -> None:
     fetcher = StaticHTTPPageFetcher(
         guard=_public_guard(),

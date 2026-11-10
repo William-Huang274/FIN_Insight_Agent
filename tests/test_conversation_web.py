@@ -8,6 +8,41 @@ from sec_agent.research_foundation.external_sources import ConversationSourceSco
 from test_web_source_navigation import _reader
 
 
+def test_operation_mismatch_is_correctable_and_preserves_original_request(tmp_path):
+    from langchain_core.messages import AIMessage, ToolMessage
+    from langchain_core.tools import ToolException
+    from sec_agent.agent_runtime.harness_business_tools import actionable_tool_feedback, restored_batch_feedback
+    import pytest
+    reader, fetcher, _ = _reader()
+    grant = public_web_tool(thread_id=str(uuid4()), run_id=str(uuid4()),
+        method_digest='a'*64, cache_root=tmp_path, reader=reader).tool
+    async def run():
+        raw, _ = await grant.coroutine(operation='search', query='public filing')
+        doc = json.loads(raw)['items'][0]['document_id']
+        original = dict(operation='read', document_id=doc, max_characters=14000, search_language='sr-RS')
+        with pytest.raises(ToolException) as raised:
+            await grant.coroutine(**original)
+        feedback = json.loads(str(raised.value))
+        assert feedback['submitted_arguments']['document_id'] == doc
+        assert feedback['inapplicable_fields'] == ['search_language']
+        assert feedback['request_dispatched'] is feedback['request_modified'] is False
+        rejected = ToolMessage(name=grant.name, tool_call_id='failed', status='error', content=str(raised.value))
+        assert actionable_tool_feedback(rejected)
+        assert not fetcher.calls
+        old = rejected.model_copy(update={'content':'公开来源读取未完成，不代表信息未披露：search_backend_and_language_require_global_search'})
+        messages = [AIMessage(content='', tool_calls=[{'id':'failed','name':grant.name,'args':original}]), old]
+        restored = restored_batch_feedback(messages, {'failed'})
+        assert restored['failures'][0]['current_selection_feedback']['inapplicable_fields'] == ['search_language']
+        assert 'search_backend_and_language' in messages[-1].content
+        # Only the caller chooses to correct the request; no host auto-retry.
+        actual, _ = await grant.coroutine(operation='read', document_id=doc, max_characters=14000)
+        assert json.loads(actual)['items'][0]['document_id'] == doc
+        assert len(fetcher.calls) == 1
+        assert not actionable_tool_feedback(ToolMessage(name=grant.name, tool_call_id='auth',
+            status='error', content='authorization_denied'))
+    asyncio.run(run())
+
+
 def test_unknown_web_locator_returns_real_readbacks_without_fetch_or_substitution(tmp_path):
     from langchain_core.messages import ToolMessage
     from langchain_core.tools import ToolException
@@ -194,7 +229,8 @@ def test_general_web_reuses_readers_without_claiming_financial_review(tmp_path):
         assert item["result_state"]=="retrieval_candidate" and not item["writer_citable"]
         read=json.loads(await grant.tool.ainvoke({"operation":"read","document_id":item["document_id"],"max_characters":2000}))
         ambiguous=await grant.tool.ainvoke({"operation":"read","document_id":item["document_id"],"query":"ignored search"})
-        assert "Use operation=search" in ambiguous
+        assert json.loads(ambiguous)['inapplicable_fields'] == ['query']
+        assert "operation=search, document_id and query" in json.loads(ambiguous)['next_step']
         assert read["items"][0]["passage"]==text[:2000]
         assert not read["items"][0]["numeric_fact_authority"]
         assert read["evidence_admission_performed"] is False

@@ -48,7 +48,10 @@ class ScopedSourceCaptureCache:
         key = canonical_digest({"url": request.url, "render": request.render_policy,
             "max_characters": request.max_characters, "minimum": request.minimum_useful_characters,
             "snapshot": request.run_scope.data_snapshot_id,
-            "as_of": request.discovery_receipt.research_as_of, "cache_contract": 1})
+            # v2 decodes publisher HTML charsets before extraction. Do not
+            # replay legacy Latin-1 corruption as a newly captured original.
+            # Historical evidence is immutable and lives outside this cache.
+            "as_of": request.discovery_receipt.research_as_of, "cache_contract": 2})
         saved = None if force_refresh else await asyncio.to_thread(self._read, key)
         if saved is not None:
             original = CaptureReceipt.model_validate_json(saved)

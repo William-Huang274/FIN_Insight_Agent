@@ -70,6 +70,26 @@ def test_other_thread_and_explicit_refresh_cannot_reuse_previous_capture(tmp_pat
     assert len(fetcher.calls) == 3
 
 
+def test_legacy_decode_cache_is_retained_but_not_replayed(tmp_path):
+    from sec_agent.research.reviewed_evidence_pack import canonical_digest
+    fetcher = _FakeFetcher(FetchedPage(final_url='https://example.com/annual',
+        extracted_text='Correctly decoded source text. ' * 100))
+    cache = service(tmp_path, str(uuid4()), fetcher)
+    req = request()
+    prior = asyncio.run(cache.capture_service.capture(req))
+    old_key = canonical_digest({'url':req.url, 'render':req.render_policy,
+        'max_characters':req.max_characters, 'minimum':req.minimum_useful_characters,
+        'snapshot':req.run_scope.data_snapshot_id, 'as_of':req.discovery_receipt.research_as_of,
+        'cache_contract':1})
+    cache._write(old_key, prior)
+    fresh = asyncio.run(cache.capture(req))
+    assert len(fetcher.calls) == 2
+    assert fresh.capture_method != 'cached_public_source_replay'
+    assert cache._read(old_key) == prior.model_dump_json()
+    again = asyncio.run(cache.capture(request('A2')))
+    assert len(fetcher.calls) == 2 and again.text_digest == fresh.text_digest
+
+
 def test_failure_is_not_cached_and_namespace_cannot_escape(tmp_path):
     fetcher = _FakeFetcher(ExternalSourceError("network_failed"))
     cache = service(tmp_path, str(uuid4()), fetcher)

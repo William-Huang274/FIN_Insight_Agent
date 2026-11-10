@@ -183,6 +183,12 @@ def restored_batch_feedback(messages, ids):
             continue
         failure = model_receipt(message)
         call = calls.get(message.tool_call_id, {})
+        if call.get('name') == message.name == 'read_public_source':
+            from .conversation_web import public_web_request_feedback
+            correction = public_web_request_feedback(call.get('args', {}))
+            if correction and ('search_backend_and_language_require_global_search' in str(message.content)
+                               or 'read accepts document_id' in str(message.content)):
+                failure['current_selection_feedback'] = correction
         if call.get('name') == message.name == 'read_current_report' and str(message.content) == 'invalid_read_window':
             # Historical receipt stays unchanged. Today's schema gives an exact
             # correction path; the author still chooses the field and page.

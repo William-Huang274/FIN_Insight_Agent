@@ -972,8 +972,20 @@ class StaticHTTPPageFetcher:
                             parts.append(part)
                         return FetchedPage(final_url=final_url, extracted_text="\n\n".join(parts),
                                            status_code=status_code, content_type="application/pdf")
-                    encoding = str(response.encoding or "utf-8")
-                    html = bytes(body).decode(encoding, errors="replace")
+                    # Requests defaults text/html without a charset to Latin-1.
+                    # That fallback is not publisher metadata and corrupts Asian
+                    # pages. Let the maintained decoder inspect BOM/meta/bytes;
+                    # only an explicit HTTP charset takes precedence.
+                    from email.message import Message
+                    from bs4 import UnicodeDammit
+                    header = Message()
+                    header['content-type'] = response.headers.get('Content-Type', '')
+                    charset = header.get_content_charset()
+                    decoded = UnicodeDammit(bytes(body), is_html=True,
+                        known_definite_encodings=[charset] if charset else [])
+                    if decoded.unicode_markup is None or decoded.contains_replacement_characters:
+                        raise ExternalSourceError('capture_text_encoding_unresolved')
+                    html = decoded.unicode_markup
                     from .public_page_access import check_access_challenge
                     check_access_challenge(html)
                     return FetchedPage(

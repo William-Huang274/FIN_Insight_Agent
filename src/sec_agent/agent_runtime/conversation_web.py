@@ -90,6 +90,9 @@ def web_read_feedback(result):
         feedback.append({'kind':'public_post_access', 'outcomes':x_failures,
             'meaning':'公开帖读取未完成或版本不符合截止时点。不能据此认定作者未发言。可查该机构官网同步公告或准确注明来源的同期转述；蓝 V 不等于身份及内容已核实。',
             'method_readback':{'tool':'get_research_method','arguments':{'method_id':'event_policy','section':'发言原件与账号身份'}}})
+    if any(str(code).startswith('searxng_') for code in codes):
+        feedback.append({'kind':'regional_search_fault', 'codes':sorted(str(c) for c in codes if str(c).startswith('searxng_')),
+            'meaning':'所选检索通道未正常完成。not_configured 是部署未配置，CAPTCHA 是访问验证，timeout/TLS 是连接问题；均不表示没有资料。可选其他已配置通道或已知原件网址，不自动重复故障请求。'})
     if 'exa_mcp_rate_limited' in codes:
         feedback.append({'kind':'search_rate_limited','meaning':'Exa 本次限流；备用通道的结果另计。'})
     if 'deepseek_query_exceeds_128_characters' in codes:
@@ -137,6 +140,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         capture = ExternalSourceCapture(guard=guard, static_fetcher=origin,
             hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard,max_characters=200000,quota=quota))
         cached = ScopedSourceCaptureCache(root=cache_root,thread_id=thread_id,capture=capture,guard=guard)
+        from sec_agent.research_foundation.regional_search import SearxNGProvider, SelectedSearchDiscovery
+        regional_provider = SearxNGProvider()
+        regional = ExternalSourceDiscovery(primary=regional_provider)
         fallback = DDGSDiagnosticProvider()
         discovery = ExternalSourceDiscovery(primary=ExaHostedMCPProvider(quota=quota), diagnostic_fallback=None if research_as_of else fallback)
         if research_as_of:
@@ -144,7 +150,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             discovery = DatedWebDiscovery(discovery, ExaHostedMCPPageFetcher(guard=guard,max_characters=8000,quota=quota),
                 fallback_discovery=ExternalSourceDiscovery(primary=fallback), origin_fetcher=origin,
                 search_backup=ExternalSourceDiscovery(primary=paid_search) if paid_search else None, companies=companies,
-                scholarly=scholarly)
+                scholarly=scholarly, regional_discovery=regional if regional_provider.endpoint else None)
+        else:
+            discovery = SelectedSearchDiscovery(discovery, regional)
         reader = WebSourceReader(discovery=discovery,capture=cached)
 
     restored = set()
@@ -155,8 +163,21 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
     async def read_public_source(operation: Literal["search","read"], query: str = "",
             document_id: str | None = None, offset: int = 0, max_characters: int = 6000,
             start_published_date: str | None = None, end_published_date: str | None = None,
-            runtime: ToolRuntime = None):
+            search_backend: Literal['auto','bing','bing_china','baidu','github','bilibili'] = 'auto',
+            search_language: str | None = None, runtime: ToolRuntime = None):
         """Search public web sources, then read an exact returned WEB document ID.
+        Global discovery accepts search_backend=bing (international), bing_china,
+        baidu (opt-in), github (repository search), bilibili (video discovery),
+        or auto (existing providers plus configured regional fallback).
+        search_language selects a locale such as zh-CN, zh-TW, ja-JP, ko-KR,
+        en-US or ru-RU. Use local product names and native-language queries;
+        a site's location or a search result does not establish market coverage.
+        site: can scope searches to zhihu.com, douyin.com, jimeng.jianying.com,
+        eastmoney.com or 10jqka.com.cn. This is web discovery, not authenticated
+        community search, video transcription or a financial database API.
+        Engine availability is deployment-dependent; faults are reported, not
+        silently replaced with a different paid engine. Search previews are not
+        customer evidence until the actual content has been read and assessed.
         A company name/ticker and earnings period can locate SEC filings, including
         6-K/20-F/40-F and amendments. An explicit SEC form selects that form from
         the issuer's inventory. Use YYYY-MM-DD start_published_date/end_published_date
@@ -240,6 +261,10 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
             previously_limited = quota and quota.limited
             date_filters = ({'end_published_date': scope.research_as_of.date()}
                             if operation == 'search' and not document_id else {})
+            if search_backend != 'auto' or search_language:
+                if operation != 'search' or document_id:
+                    raise ValueError('search_backend_and_language_require_global_search')
+                date_filters.update(search_backend=search_backend, search_language=search_language)
             if start_published_date is not None:
                 date_filters['start_published_date'] = start_published_date
             if end_published_date is not None:

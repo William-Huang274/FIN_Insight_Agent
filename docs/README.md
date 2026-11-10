@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[地区检索与公共数据接入](engineering/regional_research_sources.zh-CN.md)记录 Bing 中外入口、SearXNG、AKTools MCP、台湾官方目录及其他社区/地区接口的实测状态和凭据边界。
+
 [软件与 Agent 市场研究预检](engineering/software_research_preflight.zh-CN.md)说明产品采用、用户证据、服务经济性的方法章节入口、联网验收及跨委派/压缩的研究质量检查。
 
 公开网页解析的维护库替换、保留的官方文件/日期语义适配与验收边界见[公开资料解析](engineering/publication_parsing.zh-CN.md)。

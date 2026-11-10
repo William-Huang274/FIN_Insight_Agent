@@ -1,0 +1,15 @@
+services:
+  regional-search:
+    image: searxng/searxng@sha256:287af61f1a13e86d02974fcde91a3413a9945788de38b61ffbc491d81a19bcc2
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FIN_SEARXNG_PORT:-22846}:8080"
+    volumes:
+      - "${FIN_SEARXNG_SETTINGS:?Set an absolute path to your private SearXNG settings}:/etc/searxng/settings.yml:ro"
+    mem_limit: 384m
+    cpus: 1
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"

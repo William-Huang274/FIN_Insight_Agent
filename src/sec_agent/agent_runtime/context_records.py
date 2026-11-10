@@ -9,6 +9,8 @@ from langchain_core.tools import ToolException
 
 
 RESULT_REGIONS = {
+    "read_regional_disclosures": ("sources", "地区披露目录"),
+    "query_public_data": ("sources", "财经数据接口与原始返回"),
     "read_legislation": ("sources", "官方法案记录与版本入口"),
     "read_market_prices": ("sources", "带时点的行情来源"),
     "query_financial_data": ("numbers", "财务查询"),

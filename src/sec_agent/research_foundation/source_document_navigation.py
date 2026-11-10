@@ -88,6 +88,8 @@ class SourceDocumentRequest(BaseModel):
     max_characters: int = Field(default=24000, ge=100, le=80000,
         description='Maximum returned text window (100–80000 characters). Small windows may split tables; use next_readback for exact continuation.')
     include_domains: tuple[str, ...] = Field(default_factory=tuple, max_length=12)
+    search_backend: Literal['auto', 'bing', 'bing_china', 'baidu', 'github', 'bilibili'] = 'auto'
+    search_language: str | None = Field(default=None, pattern=r'^(all|[a-z]{2,3}(-[A-Za-z]{2,4})?)$')
     start_published_date: date | None = None
     end_published_date: date | None = None
 
@@ -115,7 +117,7 @@ class SourceDocumentRequest(BaseModel):
         # store when the receiving endpoint parses the base request type.
         if "source_space" not in self.model_fields_set and self.source_space == 'local':
             body.pop("source_space", None)
-        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'graph_predicates','graph_direction','graph_review','data_kind','data_group','account_path','fiscal_year','fiscal_period','company_section','derived_view','date_start','date_end','metric_section','metric_record_id','compare_entity_ids','metric_period_kind','metric_frequency','metric_alignment'):
+        for key in ('search_backend','search_language','include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'graph_predicates','graph_direction','graph_review','data_kind','data_group','account_path','fiscal_year','fiscal_period','company_section','derived_view','date_start','date_end','metric_section','metric_record_id','compare_entity_ids','metric_period_kind','metric_frequency','metric_alignment'):
             if key not in self.model_fields_set:
                 body.pop(key,None)
         return body
@@ -164,7 +166,7 @@ class SourceDocumentRequest(BaseModel):
             raise ValueError('relation_or_observation_requires_entity_id_from_catalog')
         if self.source_space == 'library' and self.operation not in {'catalog', 'outline', 'search', 'read', 'related','observations','company','data'}:
             raise ValueError('library_supports_catalog_outline_search_read_related_observations_company_data')
-        if (self.include_domains or self.start_published_date or self.end_published_date) and (
+        if (self.search_backend != 'auto' or self.search_language or self.include_domains or self.start_published_date or self.end_published_date) and (
                 self.source_space != 'web' or self.operation != 'search' or self.document_id):
             raise ValueError('publication_and_domain_filters_require_web_discovery')
         if self.start_published_date and self.end_published_date and self.start_published_date > self.end_published_date:

@@ -1,0 +1,88 @@
+import asyncio
+from types import SimpleNamespace
+
+import httpx
+import pytest
+
+from sec_agent.research_foundation.external_sources import ExternalSourceError, _engine_http
+from sec_agent.research_foundation.regional_search import SearxNGProvider, SelectedSearchDiscovery
+
+
+def request(backend='bing_china'):
+    return SimpleNamespace(query='WorkBuddy 腾讯', search_backend=backend,
+                           search_language='zh-CN', max_results=5)
+
+
+def test_selected_engine_locale_and_ad_identity():
+    def reply(r):
+        assert r.url.params['engines'] == 'bing china'
+        assert r.url.params['language'] == 'zh-CN'
+        assert 'categories' not in r.url.params  # would add all engines in that category
+        return httpx.Response(200, json={'results': [
+            {'title': 'official', 'url': 'https://www.workbuddy.cn/', 'engines': ['bing china'], 'publishedDate': '2020-01-01'},
+            {'title': 'wrong engine', 'url': 'https://example.com/', 'engines': ['baidu']},
+            {'title': 'ad', 'url': 'https://ads.example.com/', 'engines': ['bing china'], 'is_ad': True},
+        ]})
+    hits = asyncio.run(SearxNGProvider('http://localhost:8080', transport=httpx.MockTransport(reply)).search(request()))
+    assert len(hits) == 1 and hits[0].published_at is None
+
+
+def test_captcha_is_fault_not_absence():
+    observed = {}
+    token = _engine_http.set(observed)
+    try:
+        provider = SearxNGProvider('http://localhost:8080', transport=httpx.MockTransport(
+            lambda r: httpx.Response(200, json={'results': [], 'unresponsive_engines': [['baidu', 'CAPTCHA']]})))
+        with pytest.raises(ExternalSourceError, match='searxng_engines_unavailable'):
+            asyncio.run(provider.search(request('baidu')))
+        assert observed == {'searxng:baidu': 'CAPTCHA'}
+    finally:
+        _engine_http.reset(token)
+
+
+@pytest.mark.parametrize('code', [403, 429, 502])
+def test_http_errors_preserved(code):
+    provider = SearxNGProvider('http://localhost:8080', transport=httpx.MockTransport(lambda r: httpx.Response(code)))
+    with pytest.raises(ExternalSourceError, match=f'searxng_http_{code}'):
+        asyncio.run(provider.search(request()))
+
+
+def test_explicit_selection_does_not_call_paid_default():
+    class Never:
+        async def search(self, r):
+            pytest.fail('selected engine must not call default')
+    class Regional:
+        async def search(self, r):
+            return r.search_backend
+    assert asyncio.run(SelectedSearchDiscovery(Never(), Regional()).search(request())) == 'bing_china'
+
+
+def test_legacy_request_digests_do_not_gain_default_fields():
+    from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
+    old = SourceDocumentRequest(source_space='web', operation='search', query='test')
+    assert 'search_backend' not in old.model_dump()
+    assert 'search_language' not in old.model_dump()
+    with pytest.raises(ValueError, match='require_web_discovery'):
+        SourceDocumentRequest(source_space='local', operation='search', query='test', search_backend='bing')
+
+
+def test_dated_explicit_engine_never_falls_through_to_paid_search():
+    from datetime import datetime, timezone
+    from sec_agent.research_foundation.contracts import bind_research_method, load_research_graph_foundation
+    from sec_agent.research_foundation.external_sources import ExternalSourceDiscovery, ExternalSearchRequest
+    from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery
+    scope = bind_research_method(load_research_graph_foundation(), ('Q1_ISSUER_TRUTH',),
+        research_as_of=datetime(2026, 9, 2, tzinfo=timezone.utc),
+        data_snapshot_id='test', execution_attempt_id='test').run_scope
+    class Never:
+        async def search(self, r): raise AssertionError('must not call another engine')
+    class Empty:
+        provider_id = 'searxng'
+        async def search(self, r): return ()
+    gate = DatedWebDiscovery(Never(), None, search_backup=Never(), fallback_discovery=Never(),
+                            regional_discovery=ExternalSourceDiscovery(primary=Empty()))
+    r = ExternalSearchRequest(query='test', branch_id='Q1_ISSUER_TRUTH', run_scope=scope,
+                              purpose='test regional discovery', search_backend='bing')
+    receipt = asyncio.run(gate.search(r))
+    assert not receipt.candidates
+    assert [a.provider_id for a in receipt.attempted_providers] == ['searxng']

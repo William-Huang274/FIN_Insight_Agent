@@ -169,9 +169,15 @@ async def organization_harness_session(*, native, resources, authority, check, o
             imported_navigation=imported_navigation,
             method_digest=sha256(research_system_prompt(['read_public_source', 'get_research_method']).encode('utf-8')).hexdigest(),
             cache_root=directory / 'public-source-cache', research_as_of=organization.research_as_of))
+        from .public_data import public_data_tool
+        public_data = public_data_tool(research_as_of=organization.research_as_of)
+        if public_data is not None:
+            grants.append(public_data)
         from .market_prices import market_price_tool
         grants.append(market_price_tool(thread_id=tid, cache_root=directory / 'market-observations',
                                        research_as_of=organization.research_as_of))
+        from .regional_disclosures import regional_disclosure_tool
+        grants.append(regional_disclosure_tool(thread_id=tid, cache_root=directory / 'regional-disclosures', research_as_of=organization.research_as_of))
         from .legislation import legislation_tool
         from sec_agent.research_foundation.congress_api import CongressAPI
         grants.append(legislation_tool(thread_id=tid, cache_root=directory / 'legislation-observations',

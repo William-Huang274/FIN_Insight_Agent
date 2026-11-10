@@ -326,13 +326,14 @@ class SearchReadOrigin:
 
 class DatedWebDiscovery:
     """Only admitted locators enter navigation, receipts and model input."""
-    def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None, search_backup=None, companies=None, legislation=None, scholarly=None):
+    def __init__(self, discovery, fetcher, *, fallback_discovery=None, origin_fetcher=None, search_backup=None, companies=None, legislation=None, scholarly=None, regional_discovery=None):
         self.discovery = discovery
         self.fetcher = fetcher
         self.fallback_discovery = fallback_discovery
         self.origin_fetcher = origin_fetcher
         self.companies = companies
         self.scholarly = scholarly
+        self.regional_discovery = regional_discovery
         self.search_backup = search_backup
         self.verified = {}
         from .legislation_discovery import LegislationDiscovery
@@ -359,7 +360,7 @@ class DatedWebDiscovery:
             site_path = scope.path.rstrip('/') or None
 
         filing_source = None
-        issuer = None if direct or not self.companies else await self.companies.lookup(request)
+        issuer = None if direct or request.search_backend != 'auto' or not self.companies else await self.companies.lookup(request)
         legislation_navigation = {}
         verification_failures = {}
         def failed(candidate, stage, exc):
@@ -548,8 +549,11 @@ class DatedWebDiscovery:
             return candidate.model_copy(update={'published_at':day.isoformat(),'snippet':''})
 
         attempts = []
-        providers = (ExternalSourceDiscovery(primary=PublicLocator()),) if direct else (self.discovery, self.search_backup, self.fallback_discovery)
-        if not direct and self.origin_fetcher:
+        providers = (ExternalSourceDiscovery(primary=PublicLocator()),) if direct else (self.discovery, self.search_backup, self.regional_discovery, self.fallback_discovery)
+        if not direct and request.search_backend != 'auto':
+            from .regional_search import SearxNGProvider
+            providers = (self.regional_discovery or ExternalSourceDiscovery(primary=SearxNGProvider()),)
+        if not direct and request.search_backend == 'auto' and self.origin_fetcher:
             from .publisher_catalogs import CatalogSearch, PublisherCatalog
             catalog = PublisherCatalog.match(request)
             if catalog:

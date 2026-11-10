@@ -78,13 +78,15 @@ class ExternalSearchRequest(BaseModel):
     purpose: str = Field(min_length=3, max_length=500)
     max_results: int = Field(default=5, ge=1, le=8)
     include_domains: tuple[str, ...] = Field(default_factory=tuple, max_length=12)
+    search_backend: Literal['auto', 'bing', 'bing_china', 'baidu', 'github', 'bilibili'] = 'auto'
+    search_language: str | None = Field(default=None, pattern=r'^(all|[a-z]{2,3}(-[A-Za-z]{2,4})?)$')
     start_published_date: date | None = None
     end_published_date: date | None = None
 
     @model_serializer(mode='wrap')
     def preserve_legacy_digest(self, handler):
         body=handler(self)
-        for key in ('start_published_date','end_published_date'):
+        for key in ('search_backend','search_language','start_published_date','end_published_date'):
             if key not in self.model_fields_set:
                 body.pop(key,None)
         return body
@@ -588,7 +590,7 @@ class ExternalSourceDiscovery:
                 except ExternalSourceError:
                     continue
                 host = str(urlsplit(canonical_url).hostname or "").lower()
-                if provider.provider_id == 'ddgs_diagnostic_fallback':
+                if provider.provider_id in {'ddgs_diagnostic_fallback', 'searxng'}:
                     from .search_result_quality import has_query_overlap
                     if not has_query_overlap(request.query, hit.title, hit.snippet, canonical_url):
                         rejected_overlap += 1

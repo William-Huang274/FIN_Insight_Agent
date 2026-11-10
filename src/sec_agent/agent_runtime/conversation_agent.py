@@ -50,6 +50,13 @@ def research_system_prompt(names, task_context=""):
         prompt += ('\nOfficial bill records, actions and text versions are available via read_legislation. '
                    'Search receipts may return legislation_navigation instead of WEB documents; follow its exact next_calls, '
                    'then choose and read a text version. A challenged Congress.gov webpage does not block this API route.\n')
+    if "query_public_data" in names:
+        prompt += ('\nquery_public_data exposes the AKTools interface catalog: search by Chinese/English topic or '
+                   'source (e.g. 东方财富, 同花顺), inspect parameters, then fetch supported data. '
+                   'Its current vendor tables are not automatically historical, verified financial evidence.\n')
+    if "read_regional_disclosures" in names:
+        prompt += ('\nread_regional_disclosures exposes Taiwan TWSE issuer navigation and current announcements; '
+                   'its definition identifies the historical limits. Other markets remain separately scoped.\n')
     if "read_market_prices" in names:
         prompt += ('\nread_market_prices provides dated intraday OHLCV with explicit time zones and pagination. '
                    'Use it when testing a reported market reaction; it does not identify the cause of a price change.\n')

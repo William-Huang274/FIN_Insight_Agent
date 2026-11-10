@@ -1,0 +1,25 @@
+use_default_settings:
+  engines:
+    keep_only: [bing, baidu, bilibili, github]
+server:
+  secret_key: replace-with-a-generated-private-value
+  limiter: false
+  image_proxy: false
+search:
+  formats: [html, json]
+outgoing:
+  request_timeout: 12.0
+  max_request_timeout: 20.0
+engines:
+  - name: bing
+    disabled: false
+  - name: bing china
+    engine: bing
+    base_url: https://cn.bing.com
+    disabled: false
+  - name: baidu
+    disabled: true
+  - name: github
+    disabled: false
+  - name: bilibili
+    disabled: false

@@ -105,7 +105,7 @@ class WebSourceReader:
             receipt = await self.discovery.search(ExternalSearchRequest(
                 query=request.query, branch_id=branch_id, run_scope=run_scope,
                 purpose="Agent-selected public source research; no Evidence or NumericFact promotion",
-                **{k:getattr(request,k) for k in ('include_domains','start_published_date','end_published_date') if k in request.model_fields_set},
+                **{k:getattr(request,k) for k in ('search_backend','search_language','include_domains','start_published_date','end_published_date') if k in request.model_fields_set},
                 max_results=min(request.limit, 8)))
             if any(a.model_dump().get('legislation_navigation') for a in receipt.attempted_providers):
                 self._navigation_receipts[receipt.receipt_digest]=receipt

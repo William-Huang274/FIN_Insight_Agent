@@ -139,7 +139,13 @@ class HarnessConsultations:
         # existing response in this lane is settled. This grants no dispatch:
         # the provider still checks saved fingerprints and reserve() rechecks
         # current funds, authority and unresolved calls before the next request.
-        if record.get('error_type') not in {'WorkingMemoryAccessDenied', 'CancelledError', 'DispatchBlocked'}:
+        allowed = {'WorkingMemoryAccessDenied', 'CancelledError', 'DispatchBlocked'}
+        if self.native_delegate:
+            # MCP/AnyIO teardown wraps a cancelled native child in a group.
+            # Explicit recovery still requires every child dispatch settled;
+            # a parent's unknown call is separately gated by run admission.
+            allowed |= {'ExceptionGroup', 'BaseExceptionGroup'}
+        if record.get('error_type') not in allowed:
             return False
         if getattr(self.budget, 'store', None) is None:
             return False
@@ -266,11 +272,11 @@ class HarnessConsultations:
             # A signed recovery may have stopped inside a read, between two
             # provider calls. The shared bridge resumes only that pending read;
             # completed reads stay in the checkpoint and writes remain blocked.
-            await child.initialize(initial, recovering=previous_scope is not None)
+            recovery = await child.initialize(initial, recovering=previous_scope is not None)
             selected = Challenge(version=version(body), quote='', offset=0, question=request['question'])
             if self.native_delegate:
                 opinion = await self.native_delegate(key=key, request=request, bridge=child,
-                    previous_scope=previous_scope, audit_root=audit_root)
+                    previous_scope=previous_scope, audit_root=audit_root, recovery_receipt=recovery)
             else:
                 opinion = await independent_review(selected=selected,
                 message=AIMessage(content=body), question=request['question']+'\n'+request['context'],

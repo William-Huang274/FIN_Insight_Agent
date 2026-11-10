@@ -37,7 +37,7 @@ class NativeResearchDelegate:
                 or not environment.get(options['provider_key_env'])):
             raise ValueError('native_delegate_provider_not_admitted')
 
-    async def __call__(self, *, key, request, bridge, previous_scope=None, **unused):
+    async def __call__(self, *, key, request, bridge, previous_scope=None, recovery_receipt=None, **unused):
         o, budget = self.options, self.budget
         directory = self.directory / key
         run = directory / self.rid
@@ -90,6 +90,8 @@ class NativeResearchDelegate:
                 payload['readback'] = 'browse_context and read_saved_result provide inherited successful source and calculation receipts.'
                 if previous_scope:
                     payload['continuation'] = 'Continue the same assignment using saved successful results; do not repeat completed work.'
+                if recovery_receipt:
+                    payload['runtime_recovery'] = recovery_receipt
                 result = await session.prompt(json.dumps(payload, ensure_ascii=False))
                 if result['status'] != 'completed' or not result['text'].strip():
                     raise RuntimeError('harness_delegate_not_completed')

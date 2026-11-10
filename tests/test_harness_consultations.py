@@ -17,6 +17,26 @@ def anyio_backend():
     return 'asyncio'
 
 
+def test_native_grouped_stop_recovery_requires_all_child_dispatches_settled(tmp_path):
+    from contextlib import contextmanager
+    rows=[{'status':'received','actual_micros':10,'response':{'stop_required':False}}]
+    @contextmanager
+    def connection():
+        yield SimpleNamespace(execute=lambda *a:SimpleNamespace(fetchall=lambda:rows))
+    service=HarnessConsultations(directory=tmp_path,saver=None,grants=[],tid='t',rid='next',check=lambda:None,
+        scope=lambda:None,budget=SimpleNamespace(store=SimpleNamespace(connection=connection),owner='o',budget='b'),
+        environment={},model='deepseek-flash',basis={},as_of='2026-11-09',public_sink=None,native_delegate=object())
+    record={'error_type':'ExceptionGroup','scope':'t:old'}
+    assert service.settled_scope_failure('key',record)
+    rows.append({'status':'unknown','actual_micros':None,'response':None})
+    assert not service.settled_scope_failure('key',record)
+    rows[:]=[{'status':'received','actual_micros':10,'response':{'stop_required':True}}]
+    assert not service.settled_scope_failure('key',record)
+    rows[:]=[{'status':'received','actual_micros':10,'response':{'stop_required':False}}]
+    service.native_delegate=None
+    assert not service.settled_scope_failure('key',record)
+
+
 @pytest.mark.anyio
 async def test_native_flash_draft_is_proposal_with_original_scope_and_shared_evidence(tmp_path):
     calls = []

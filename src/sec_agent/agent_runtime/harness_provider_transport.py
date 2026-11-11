@@ -41,11 +41,27 @@ class HarnessProviderTransport:
         self.headers, self.token, self.client = dict(provider_headers), token, client
         self.proxy = proxy
         self.meters = {}
+        self._owned_client = None
 
     def provider_client(self):
         return httpx.AsyncClient(trust_env=False, follow_redirects=False,
             timeout=httpx.Timeout(self.host.basis['timeout_seconds'], connect=15),
-            transport=httpx.AsyncHTTPTransport(retries=0, proxy=self.proxy))
+            transport=httpx.AsyncHTTPTransport(retries=0, proxy=self.proxy,
+                limits=httpx.Limits(max_connections=4, max_keepalive_connections=2,
+                                    keepalive_expiry=60)))
+
+    def request_client(self):
+        if self.client is not None:
+            return self.client
+        if self._owned_client is None:
+            self._owned_client = self.provider_client()
+        return self._owned_client
+
+    async def aclose(self):
+        # Pool lifetime is one admitted run, never shared across credentials.
+        client, self._owned_client = self._owned_client, None
+        if client is not None:
+            await client.aclose()
 
     def meter(self, request_id):
         # Only closed/durably recorded wire observations may settle a bill.
@@ -78,8 +94,7 @@ class HarnessProviderTransport:
                     headers[name] = request.headers[name]
             # Fail storage admission before constructing/opening a connection.
             stream = (self.host.receipts / (request_id + '.wire-events.jsonl')).open('xb')
-            owned = self.client is None
-            client = self.client or self.provider_client()
+            client = self.request_client()
             meter = WireUsage(self.protocol, body['model'])
             response = None
 
@@ -105,20 +120,23 @@ class HarnessProviderTransport:
                     finalize()
                     await response.aclose()
                     stream.close()
-                    if owned:
-                        await client.aclose()
                     return Response(content, status_code=response.status_code,
                                     media_type='application/json')
             except BaseException as exc:
                 meter.error = {'transport_error_type': type(exc).__name__}
+                causes, cause = [], exc.__cause__
+                while cause is not None and len(causes) < 5:
+                    causes.append(type(cause).__name__)
+                    cause = cause.__cause__
+                if causes:
+                    meter.error['cause_types'] = causes
                 try:
                     finalize()
                 finally:
                     stream.close()
                     if response is not None:
                         await response.aclose()
-                    if owned:
-                        await client.aclose()
+                    await self.aclose()
                 if isinstance(exc, httpx.TransportError):
                     # Do not expose exception text (it can contain proxy credentials),
                     # invent usage, or retry. The native host still stops this run.
@@ -156,7 +174,5 @@ class HarnessProviderTransport:
                 finally:
                     stream.close()
                     await response.aclose()
-                    if owned:
-                        await client.aclose()
             return StreamingResponse(events(), media_type='text/event-stream')
         return router

@@ -159,3 +159,25 @@ def test_disk_failure_prevents_transport(setup, monkeypatch):
     with pytest.raises(OSError):
         client.post(path, json=body, headers=headers)
     assert not calls
+
+
+def test_run_client_pool_reused_and_only_owned_client_closed(setup, monkeypatch):
+    import asyncio
+    from types import SimpleNamespace
+    closed = []
+    async def close():
+        closed.append(True)
+    pooled = SimpleNamespace(aclose=close)
+    transport = HarnessProviderTransport(setup[0], protocol='openai_responses',
+        endpoint='https://provider.invalid/test', provider_headers={}, token='x'*32)
+    created = []
+    monkeypatch.setattr(transport, 'provider_client', lambda: created.append(True) or pooled)
+    assert transport.request_client() is transport.request_client() is pooled
+    assert len(created) == 1
+    asyncio.run(transport.aclose())
+    asyncio.run(transport.aclose())
+    assert len(closed) == 1
+    transport.client = pooled
+    assert transport.request_client() is pooled
+    asyncio.run(transport.aclose())
+    assert len(closed) == 1

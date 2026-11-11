@@ -102,3 +102,4 @@ async def harness_local_services(*, business, dispatch, transport, token, readin
                 task.cancel()
                 await asyncio.gather(task, return_exceptions=True)
         sock.close()
+        await transport.aclose()

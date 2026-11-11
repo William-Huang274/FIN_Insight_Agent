@@ -43,6 +43,21 @@ def operand_source_feedback(error, messages):
     operand = error.operand
     feedback = dict(code=error.code, operand=error.name, source_id=operand.source_id,
                     submitted_quote=operand.quote, submitted_literal=operand.literal)
+    if error.code in {'unsourced_operand_requires_literal_and_explicit_assumption',
+                      'observation_field_requires_observed_source',
+                      'source_operand_cannot_be_relabelled_assumption'}:
+        feedback.update(feedback_kind='calculation_operand_validation',
+            calculation_executed=False, request_modified=False,
+            submitted_operand=operand.model_dump(exclude_none=True),
+            constraints={
+                'assumption': {'required': ['literal', 'assumption_note'],
+                               'omit': ['source_id', 'quote', 'observation_field']},
+                'observed_source': {'required': ['source_id'], 'omit': ['assumption_note'],
+                                    'binding': 'Use the source-type binding described in the tool schema.'}},
+            next_step='Choose whether this operand is an explicit assumption or an observed source value. '
+                      'Supply the corresponding fields and resubmit the intended calculation. '
+                      'Numbers in an explanation are not extracted or chosen for you; no calculation was accepted.')
+        return feedback
     from sec_agent.research_foundation.structured_observations import market_fields
     fields = market_fields(error.observed_item or {})
     if fields:

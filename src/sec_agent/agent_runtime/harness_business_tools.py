@@ -61,6 +61,15 @@ def actionable_tool_feedback(result):
         value = json.loads(text)
     except ValueError:
         value = None
+    if (result.name == 'calculate_research_metric' and isinstance(value, dict)
+            and value.get('feedback_kind') == 'calculation_operand_validation'
+            and value.get('code') in {'unsourced_operand_requires_literal_and_explicit_assumption',
+                                     'observation_field_requires_observed_source',
+                                     'source_operand_cannot_be_relabelled_assumption'}
+            and value.get('calculation_executed') is False
+            and value.get('request_modified') is False
+            and isinstance(value.get('constraints'), dict)):
+        return True
     if (result.name == 'read_market_prices' and isinstance(value, dict)
             and value.get('feedback_kind') == 'market_request_validation'
             and value.get('code') == 'invalid_market_window'

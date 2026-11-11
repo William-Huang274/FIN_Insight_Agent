@@ -234,6 +234,41 @@ def test_host_restored_web_original_keeps_identity_and_requires_explicit_admissi
     assert result[calc['calculation_id']]['operands']['revenue']['source_id'] == key
 
 
+def test_provider_prediction_snapshot_restores_and_rejects_identity_changes(navigation):
+    from copy import deepcopy
+    from sec_agent.research_foundation.expectation_sources import expectation_passage
+    from sec_agent.agent_runtime.public_source_restore import validated_public_source
+    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
+    nav, _, _ = navigation
+    row = expectation_passage(rows=[{'date': '2027-12-31', 'eps': '10'}],
+        metadata={'provider': 'alpha_vantage_official_mcp', 'symbol': 'TEST', 'dataset': 'estimates',
+                  'captured_at': '2026-11-11T08:05:27+00:00'},
+        source_url='https://www.alphavantage.co/query?function=EARNINGS_ESTIMATES&symbol=TEST',
+        title='TEST estimates', readback={'tool': 'read_saved_result'})
+    assert 'capture_receipt_digest' not in row['source_locator']
+    key = row['passage_id']
+    original = deepcopy(row)
+    restored = nav.restore([{'status': 'success', 'content': [row]}],
+        external_source_lookup=lambda _: validated_public_source(row))
+    assert restored[key] == original and row == original
+    calc = nav.calculate(SourceBoundCalculation.model_validate({'expression': 'eps * 2',
+        'operands': {'eps': {'source_id': key, 'literal': '10', 'quote': '"eps": "10"'}},
+        'result_unit': 'scenario units', 'rationale': 'Test source restoration'}))
+    restored = nav.restore([{'status': 'success', 'content': [row, calc]}],
+        external_source_lookup=lambda _: validated_public_source(row))
+    assert restored[calc['calculation_id']]['value_decimal'] == '20'
+    for field, value in [('passage', row['passage'].replace('"10"', '"11"')),
+                         ('source_url', row['source_url'].replace('TEST', 'OTHER')),
+                         ('document_id', 'WEB::EXPECTATIONS::other'),
+                         ('source_read_method', 'html'), ('numeric_fact_authority', True)]:
+        with pytest.raises(ValueError, match='identity_changed'):
+            validated_public_source({**row, field: value})
+    changed = deepcopy(row)
+    changed['source_locator']['captured_at'] = '2026-11-12T08:05:27+00:00'
+    with pytest.raises(ValueError, match='identity_changed'):
+        validated_public_source(changed)
+
+
 def test_market_field_calculation_survives_report_source_restore(navigation):
     from test_source_references import source
     from test_structured_observation_operands import fixture

@@ -1,6 +1,41 @@
 """Source-bound public prediction snapshots; provider data is not a forecast truth."""
 from hashlib import sha256
 import json
+from datetime import datetime
+from urllib.parse import parse_qs, urlsplit
+
+
+def valid_prediction_snapshot_identity(item):
+    """Validate the native provider receipt, including older saved snapshots.
+
+    These are JSON observations, not HTML captures. Their content-addressed
+    document includes the capture time and provider metadata. Never fabricate a
+    web capture receipt or refresh the observation while restoring its identity.
+    The caller must already have authenticated the task-owned receipt stream.
+    """
+    try:
+        text = item['passage']
+        lines = text.splitlines()
+        metadata = json.loads(lines[0])
+        rows = [json.loads(line) for line in lines[1:]]
+        locator = item['source_locator']
+        captured = metadata['captured_at']
+        url = urlsplit(item['source_url'])
+        function = {'estimates': 'EARNINGS_ESTIMATES', 'earnings_history': 'EARNINGS'}[metadata['dataset']]
+        canonical = expectation_passage(rows=rows, metadata=metadata,
+            source_url=item['source_url'], title=item.get('title'), readback=item.get('readback'))
+        return (item.get('source_read_method') == 'provider_prediction_snapshot'
+            and item.get('source_kind') == 'market_expectations'
+            and metadata['provider'] == 'alpha_vantage_official_mcp'
+            and datetime.fromisoformat(captured).utcoffset() is not None
+            and locator['captured_at'] == captured
+            and url.scheme == 'https' and url.netloc == 'www.alphavantage.co' and url.path == '/query'
+            and parse_qs(url.query) == {'function': [function], 'symbol': [metadata['symbol']]}
+            and bool(rows) and all(isinstance(row, dict) for row in rows)
+            and all(item[key] == canonical[key] for key in
+                ('document_id', 'passage_id', 'passage', 'content_sha256', 'source_locator')))
+    except (KeyError, ValueError, TypeError, AttributeError, IndexError):
+        return False
 
 
 def expectation_passage(*, rows, metadata, source_url, title, readback):

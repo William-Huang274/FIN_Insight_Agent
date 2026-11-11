@@ -21,10 +21,12 @@ CAPABILITIES = {
         '历史时点只可用当前身份定位，不把当前公告快照当历史档案。'),
     'read_market_prices': ('data', '带时间、交易时段与分页的市场 OHLCV',
         '记录实际延迟、区间与单位；价格本身不能识别原因。'),
+    'read_market_expectations': ('data', 'Alpha Vantage 官方收入/EPS预测、预测修订、实际与预期差异',
+        '当前供应商样本，按目标财政期间分页；非任意历史时点档案。缺失币种/口径保持未知，沿来源回执计算。'),
     'query_hithink': ('data', '同花顺官方 A股、指数、基金、期货、期权与标的定位',
         'catalog→describe→call 使用六域原生 schema；不供应新闻研报全文。历史版本限制以回执为准。'),
     'query_public_data': ('data', 'AKTools/AKShare 多供应商公共数据与东方财富资讯发现',
-        'search→describe→data，先检查接口来源及参数；当前表不自动成为历史可见的金融事实。'),
+        'search→describe→data；A股预测 stock_profit_forecast_em，港股预测 stock_hk_profit_forecast_et。保留原件表头与单位，当前表不自动成为历史事实。'),
 }
 
 
@@ -87,6 +89,7 @@ def source_tools(*, thread_id, run_id, method_digest, cache_root, research_as_of
     from .legislation import legislation_tool
     from .public_data import public_data_tool
     from .hithink_data import hithink_data_tool
+    from .market_expectations import market_expectations_tool
     from .korean_disclosures import korean_disclosure_tool
     root = Path(cache_root)
     grants = [
@@ -98,5 +101,6 @@ def source_tools(*, thread_id, run_id, method_digest, cache_root, research_as_of
         legislation_tool(thread_id=thread_id, cache_root=root/'legislation-observations', research_as_of=research_as_of, api=congress_api),
     ]
     grants.extend(g for g in (public_data_tool(research_as_of=research_as_of),
+        market_expectations_tool(research_as_of=research_as_of),
         hithink_data_tool(research_as_of=research_as_of), korean_disclosure_tool(research_as_of=research_as_of)) if g is not None)
     return [source_catalog(grants), *grants]

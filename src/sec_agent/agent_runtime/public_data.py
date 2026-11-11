@@ -10,7 +10,7 @@ from langchain_core.tools import tool
 from .conversation_agent import GrantedTool
 
 
-def public_data_tool(*, research_as_of=None, endpoint=None, client_factory=None):
+def public_data_tool(*, research_as_of=None, endpoint=None, client_factory=None, original_reader=None):
     endpoint = endpoint or os.environ.get('FIN_AKTOOLS_MCP_URL', '')
     if not endpoint and not client_factory:
         return None
@@ -87,6 +87,24 @@ def public_data_tool(*, research_as_of=None, endpoint=None, client_factory=None)
                 if operation == 'search' and isinstance(data, dict) and isinstance(data.get('items'), list):
                     data = {**data, 'items': data['items'][:limit]}
                 visible.update(status='ok', result=data)
+                from sec_agent.research_foundation.forecast_originals import FORECAST_INTERFACES, read_forecast_original
+                if operation == 'data' and interface in FORECAST_INTERFACES and not historical:
+                    from sec_agent.research_foundation.public_provider_cache import PublicProviderCache
+                    from pathlib import Path
+                    import tempfile
+                    root = Path(os.environ.get('FIN_PUBLIC_DATA_CACHE_ROOT') or Path(tempfile.gettempdir()) / 'finsight-public-data')
+                    reader = original_reader or read_forecast_original
+                    async def capture():
+                        return await reader(interface, parameters or {})
+                    original = await PublicProviderCache(root, provider='forecast_originals', daily_limit=1000).get(
+                        {'interface': interface, 'parameters': parameters or {}}, capture)
+                    visible['original'] = {k:v for k,v in original.items() if k != 'item'}
+                    visible['items'] = [original['item']] if original.get('item') else []
+                    visible['data_semantics'] = {
+                        'normalized_table_currency': None, 'normalized_table_unit': None,
+                        'forecast_published_at': None,
+                        'report_count_is_not_analyst_count': interface == 'stock_profit_forecast_em',
+                        'instruction': 'Read the exact original passage for header units and periods. No automatic unit restoration or historic-vintage inference; unavailable originals leave the normalized values unbound.'}
         except Exception as exc:
             # Do not echo transport exception strings containing credential URLs.
             visible.update(status='provider_unavailable', error_type=type(exc).__name__,

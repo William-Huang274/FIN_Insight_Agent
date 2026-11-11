@@ -78,8 +78,15 @@ def source_items_from_tool(tool_name: str, body: dict) -> dict[str, dict]:
     Callers own their native messages/composition lifetime. This is a projection,
     not another source store or evidence-admission system.
     """
-    if tool_name == 'read_market_prices':
+    if tool_name in {'read_market_prices', 'read_market_expectations'}:
         tool_name = 'read_source_document'
+    if tool_name == 'query_public_data' and body.get('status') == 'ok':
+        # Only exact, acquired original passages can enter the calculator. The
+        # normalized third-party table is deliberately not promoted here.
+        return {p['passage_id']: dict(p) for p in body.get('items', [])
+                if p.get('result_state') == 'source_bound_passage' and p.get('writer_citable') is True
+                and p.get('numeric_fact_authority') is False
+                and p.get('source_kind') == 'forecast_original' and p.get('passage_id') and p.get('passage')}
     if tool_name == "query_company_financial_facts" and body.get("authority_state") == "s2_numeric_fact_query_result":
         return {f["numeric_fact_id"]: {**f, "result_state": "numeric_fact"}
                 for row in body.get("results", []) if row.get("status") == "resolved"

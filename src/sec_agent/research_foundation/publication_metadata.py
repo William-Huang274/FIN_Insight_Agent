@@ -5,6 +5,7 @@ Never pass the research cutoff to a date extractor: doing so can hide an update.
 """
 from dataclasses import dataclass
 from datetime import date
+import re
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -114,6 +115,17 @@ def extract_publication_metadata(html, *, url=None):
         # cards and ordinary event time elements cannot date the current page.
         headings = soup.find_all('h1')
         canonical = soup.select('head link[rel="canonical"][href]')
+        # A consensus publication has a dated edition heading before its table.
+        # This is snapshot/edition metadata, not a date in the forecast rows.
+        # Do not borrow dates from arbitrary headings, related articles or events.
+        if (len(headings) == 1 and re.fullmatch(r'(?:Analyst\s+)?Consensus|一致预期', headings[0].get_text(' ', strip=True), re.I)
+                and all(same_page(t['href']) for t in canonical)):
+            first = headings[0].find_next(['h2', 'table', 'article'])
+            if first and first.name == 'h2':
+                text = first.get_text(' ', strip=True)
+                match = re.fullmatch(r'[^\n]{0,80}\bconsensus\s*[-–—:]\s*(.{8,40})', text, re.I)
+                if match:
+                    add('modified', match[1], 'html', 'consensus.edition_heading', url)
         if len(headings) == 1 and all(same_page(t['href']) for t in canonical):
             article = headings[0].find_parent('article')
             stamps = [t for t in article.select('time[pubdate][datetime]')

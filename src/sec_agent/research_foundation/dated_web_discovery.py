@@ -483,7 +483,9 @@ class DatedWebDiscovery:
                                     title = BeautifulSoup(page.html, 'html.parser').find('h1')
                                     if title and title.get_text(strip=True):
                                         candidate = candidate.model_copy(update={'title':title.get_text(' ',strip=True)[:512]})
-                                day = (publisher_markdown_day(page.extracted_text) if getattr(page,'extraction_method',None)=='deepseek_hosted_publication' else
+                                from .spreadsheet_sources import XLSX_TYPE, spreadsheet_publication_day
+                                day = (spreadsheet_publication_day(page.extracted_text) if page.content_type == XLSX_TYPE else
+                                       publisher_markdown_day(page.extracted_text) if getattr(page,'extraction_method',None)=='deepseek_hosted_publication' else
                                        publisher_html_day(page.html, bool(index), url=canonical if canonical_round_trip else locator) if page.html else
                                        publisher_day(page.extracted_text, bool(index), pdf=getattr(page, 'content_type', None) == 'application/pdf') if getattr(page, 'extracted_text', None)
                                        else publisher_html_day(page.html, bool(index), url=locator))

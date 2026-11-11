@@ -913,6 +913,10 @@ class StaticHTTPPageFetcher:
 
     @staticmethod
     def _decode(body, final_url, status_code, content_type, maximum_response_bytes):
+        from .spreadsheet_sources import XLSX_TYPE, spreadsheet_text
+        if (content_type or '').split(';')[0] == XLSX_TYPE or urlsplit(final_url).path.lower().endswith('.xlsx'):
+            return FetchedPage(final_url=final_url, extracted_text=spreadsheet_text(body,
+                maximum_characters=maximum_response_bytes), status_code=status_code, content_type=XLSX_TYPE)
         if body.startswith(b"%PDF-"):
             from io import BytesIO
             from pypdf import PdfReader

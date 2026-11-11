@@ -9,6 +9,7 @@ from langchain_core.tools import ToolException
 
 
 RESULT_REGIONS = {
+    "read_market_expectations": ("sources", "市场预期与预测修订快照"),
     "read_regional_disclosures": ("sources", "地区披露目录"),
     "query_public_data": ("sources", "财经数据接口与原始返回"),
     "discover_source_tools": ("sources", "当前信息与数据能力目录"),

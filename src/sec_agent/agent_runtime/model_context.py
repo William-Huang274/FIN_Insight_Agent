@@ -16,6 +16,7 @@ from typing_extensions import NotRequired
 
 
 REREADABLE_TOOLS = frozenset({
+    "read_market_expectations",
     "discover_source_tools", "read_legislation", "query_public_data", "query_hithink", "search_korean_disclosures", "read_regional_disclosures",
     "read_market_prices",
     "read_public_source", "read_company_library", "read_task_material", "query_financial_data", "read_saved_result",

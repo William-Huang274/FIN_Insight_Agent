@@ -34,7 +34,7 @@ def investigator_instructions():
 def review_tool_names(available):
     # Same authorized tool host, no note/report mutation or separate search stack.
     return tuple(name for name in ('discover_source_tools', 'read_source_document', 'read_research_source', 'get_research_method', 'browse_context', 'read_saved_result',
-                 'read_public_source', 'read_legislation', 'query_public_data', 'query_hithink', 'search_korean_disclosures', 'read_regional_disclosures', 'read_market_prices', 'calculate_research_metric')
+                 'read_public_source', 'read_legislation', 'query_public_data', 'query_hithink', 'search_korean_disclosures', 'read_regional_disclosures', 'read_market_prices', 'read_market_expectations', 'calculate_research_metric')
                  if name in available)
 
 

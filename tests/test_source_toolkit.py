@@ -11,7 +11,7 @@ from langchain_core.messages import ToolMessage
 
 
 def test_single_factory_preserves_native_contracts_and_paths(tmp_path, monkeypatch):
-    for name in ('FIN_AKTOOLS_MCP_URL', 'HITHINK_FINANCE_API_KEY', 'OPENDART_API_KEY'):
+    for name in ('FIN_AKTOOLS_MCP_URL', 'HITHINK_FINANCE_API_KEY', 'OPENDART_API_KEY', 'ALPHAVANTAGE_API_KEY'):
         monkeypatch.delenv(name, raising=False)
     grants = source_tools(thread_id=str(uuid4()), run_id=str(uuid4()),
                           method_digest='a'*64, cache_root=tmp_path, research_as_of='2026-06-30')
@@ -42,6 +42,7 @@ def test_single_factory_preserves_native_contracts_and_paths(tmp_path, monkeypat
 
 
 def test_configured_native_domains_and_catalog_grouping(tmp_path, monkeypatch):
+    monkeypatch.setenv('ALPHAVANTAGE_API_KEY', 'test')
     monkeypatch.setenv('HITHINK_FINANCE_API_KEY', 'test')
     monkeypatch.setenv('OPENDART_API_KEY', 'test')
     monkeypatch.setenv('FIN_AKTOOLS_MCP_URL', 'http://127.0.0.1:22847/mcp')
@@ -50,4 +51,4 @@ def test_configured_native_domains_and_catalog_grouping(tmp_path, monkeypatch):
     assert set(g.tool.name for g in grants) == set(CAPABILITIES) | {'discover_source_tools'}
     _, data = asyncio.run(grants[0].tool.coroutine(group='data'))
     assert all(r['configured'] and r['group'] == 'data' for r in data['tools'])
-    assert len(data['tools']) == 3
+    assert len(data['tools']) == 4

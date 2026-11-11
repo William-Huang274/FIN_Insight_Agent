@@ -5,6 +5,17 @@ from sec_agent.research_foundation.publication_metadata import extract_publicati
 from sec_agent.research_foundation.dated_web_discovery import publisher_html_day
 
 
+def test_headless_publisher_document_keeps_bound_jsonld_without_inventing_date():
+    url='https://publisher.example/article'
+    plain='<html><body><h1>Research release</h1><p>2026-11-11 is an event date.</p></body></html>'
+    assert not extract_publication_metadata(plain,url=url).evidence
+    graph={'@context':'https://schema.org','@type':'NewsArticle','url':url,'datePublished':'2026-06-01'}
+    body=plain.replace('</body>','<script type="application/ld+json">'+json.dumps(graph)+'</script></body>')
+    meta=extract_publication_metadata(body,url=url)
+    assert [(e.kind,e.day,e.syntax) for e in meta.evidence]==[('published',date(2026,6,1),'json-ld')]
+    assert not extract_publication_metadata(body,url='https://publisher.example/other').evidence
+
+
 def test_native_graph_extraction_keeps_attribution_and_newer_version():
     url = 'https://publisher.example/article'
     graph = {'@context': 'https://schema.org', '@graph': [

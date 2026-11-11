@@ -48,11 +48,18 @@ def extract_publication_metadata(html, *, url=None):
     # Trafilatura uses htmldate natively. Its broad candidate is retained separately
     # from attributed evidence; no URL fetch is permitted through this interface.
     import extruct
+    from lxml.html import document_fromstring
     from trafilatura.metadata import extract_metadata
     native = extract_metadata(html, default_url=url, extensive=False,
         date_config={'extensive_search': False, 'original_date': True})
-    structured = extruct.extract(html, base_url=url or '',
-        syntaxes=['json-ld', 'microdata', 'opengraph'], uniform=True)
+    # extruct's OpenGraph reader requires document.head. Valid body-only HTML
+    # (including fragments returned by publishers) has no such element. Keep
+    # JSON-LD/microdata extraction, but do not invent a head or a publication date.
+    tree = document_fromstring(html)
+    syntaxes = ['json-ld', 'microdata']
+    if tree.head is not None:
+        syntaxes.append('opengraph')
+    structured = extruct.extract(tree, base_url=url or '', syntaxes=syntaxes, uniform=True)
     evidence = []
 
     def same_page(identity):

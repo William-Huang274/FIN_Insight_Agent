@@ -4,6 +4,8 @@
 
 ## 已接入并替换的能力
 
+正文片段可能没有 HTML head。extruct 的 Open Graph 提取器依赖 head，因此适配层先使用 lxml 文档树检查结构；无 head 时继续原生 JSON-LD/Microdata 提取，跳过不适用的 Open Graph，不伪造头部、发布日期，也不吞掉其他解析故障。真实查询曾因这一缺口终止整批候选核验，回归覆盖无日期正文、绑定 JSON-LD 及错误页面身份。
+
 | 对象 | 维护依赖 | FIN 保留的职责 |
 | --- | --- | --- |
 | HTML 正文与表格转 Markdown | 既有 Trafilatura | 抓取失败分类、准确 URL、来源及字符窗口身份；不另造通用正文提取器 |

@@ -208,7 +208,8 @@ def restored_batch_feedback(messages, ids):
         if call.get('name') == message.name == 'read_saved_result':
             target_id = call.get('args', {}).get('tool_call_id')
             if any(isinstance(row, ToolMessage) and row.tool_call_id == target_id
-                   and row.name in SAVED_RESULT_TOOLS and row.status == 'success' for row in messages[:index]):
+                   and (row.status == 'error' or (row.name in SAVED_RESULT_TOOLS and row.status == 'success'))
+                   for row in messages[:index]):
                 failure['available_original'] = {'tool':'read_saved_result', 'arguments':{'tool_call_id':target_id}}
         if call.get('name') == message.name == 'calculate_research_metric':
             args = call.get('args', {}).get('request', {})

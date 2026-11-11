@@ -147,7 +147,7 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
     @tool
     def read_saved_result(tool_call_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 6000,
                           json_pointer: str | None = None):
-        """Read a prior successful data tool result from this conversation's original checkpoint.
+        """Read a saved data result or a failed tool receipt from this conversation.
 
         Use the original tool_call_id when an old result was omitted from the
         current request. No web/SQL request is repeated. Pagination preserves
@@ -157,11 +157,14 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         selected value; omit the pointer to read the original serialized receipt.
         JSON results also return field_index with exact pointers and small scalar
         values, so a result field can be selected without guessing character offsets.
+        Failed receipts retain original_status=error. Reading their error text
+        never replays the operation or turns it into successful source evidence.
         """
         if offset < 0 or not 1 <= max_characters <= 24000:
             raise ToolException("请选择非负字符偏移和1至24000字符的窗口")
         saved = next((m for m in runtime.state.get("messages", []) if isinstance(m, ToolMessage)
-                      and m.tool_call_id == tool_call_id and m.name in SAVED_RESULT_TOOLS and m.status == "success"), None)
+                      and m.tool_call_id == tool_call_id
+                      and (m.status == 'error' or (m.name in SAVED_RESULT_TOOLS and m.status == "success"))), None)
         if saved is None:
             prior_read = next((m for m in runtime.state.get('messages', []) if isinstance(m,ToolMessage)
                 and m.tool_call_id == tool_call_id and m.name == 'read_saved_result' and m.status == 'success'),None)
@@ -201,12 +204,14 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
             parsed = selected
         fields = saved_result_field_index(parsed, json_pointer or "")
         return {"original_tool": saved.name, "original_tool_call_id": tool_call_id,
+                "original_status": saved.status,
+                **({'result_state':'saved_failure_receipt', 'source_evidence':False} if saved.status == 'error' else {}),
                 "content": content[offset:offset+max_characters], "offset": offset,
                 "next_offset": offset+max_characters if offset+max_characters < len(content) else None,
                   "total_characters": len(content), "new_tool_dispatch": False,
                   **({"field_index": fields} if fields is not None else {}),
                   **({"json_pointer": json_pointer} if json_pointer is not None else {})}
-    grants.append(GrantedTool(read_saved_result, "read", "本对话原生checkpoint中的成功数据读取记录"))
+    grants.append(GrantedTool(read_saved_result, "read", "本对话成功数据回执或失败工具记录；只读不重放"))
     if attachment_store is not None:
         from sec_agent.research_foundation.public_library import library_nodes
         from sec_agent.research_foundation.source_document_navigation import navigate_source_nodes

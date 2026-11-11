@@ -75,3 +75,36 @@ def test_role_guidance_keeps_review_and_draft_distinct():
     assert '具体建议动作' in module.delegation_guidance('review')
     with pytest.raises(ValueError):
         module.delegation_guidance('publish')
+
+
+def test_report_handoff_preserves_body_and_binding_without_snapshot_copies():
+    from copy import deepcopy
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    source = 'PASSAGE::WEB::document::0::revision'
+    request = dict(purpose='review', question='Challenge the investment relation',
+        as_of='2026-11-11', method_text='guidance', research_task={'question': 'Original scope'},
+        report={'title': 'Current report', 'narrative_markdown': 'Actual unchanged wording',
+                'charts': [{'title': 'Scenario', 'points': [1, 2]}],
+                'citations': {source: {'claim': {'statement': 'Observed change'},
+                    'sources': [{'source_id': source, 'title': 'Original', 'unit': 'USD',
+                                 'publication_date': '2026-11-10', 'text': 'large original' * 1000}]}}})
+    original = deepcopy(request)
+    payload = module.delegation_payload(request)
+    assert request == original
+    assert payload['report']['narrative_markdown'] == request['report']['narrative_markdown']
+    assert payload['report']['charts'] == request['report']['charts']
+    assert payload['research_task'] == request['research_task']
+    citation = payload['report']['citations'][source]
+    assert citation['readback'] == {'tool': 'read_research_source', 'arguments': {'source_id': source}}
+    assert citation['sources'][0]['unit'] == 'USD'
+    assert citation['sources'][0]['publication_date'] == '2026-11-10'
+    assert 'text' not in citation['sources'][0]
+    assert payload['reviewed_report_digest'] == canonical_sha256(request['report'])
+    assert len(json.dumps(payload)) < len(json.dumps(request)) / 5
+    recovery = {'pending_receipt': 'exact-receipt'}
+    resumed = module.delegation_payload(request, previous_scope='thread:run', recovery_receipt=recovery)
+    assert 'report' not in resumed and 'research_task' not in resumed
+    assert resumed['question'] == request['question']
+    assert resumed['reviewed_report_digest'] == payload['reviewed_report_digest']
+    assert resumed['runtime_recovery'] == recovery
+    assert 'method_text' not in payload

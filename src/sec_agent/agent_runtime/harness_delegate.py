@@ -27,6 +27,45 @@ def delegation_guidance(purpose):
         '可支持的正面发现与仍未解决的关系一起返回，不只交风险清单。')
 
 
+def delegation_payload(request, *, previous_scope=None, recovery_receipt=None):
+    """Project a frozen assignment, not its redundant evidence snapshots.
+
+    The persisted request/digest and inherited canonical tool results stay intact.
+    Native recovery already restores the assignment and history; appending them
+    again doubles large reports on every interruption.
+    """
+    from .research_graph_contracts import canonical_sha256
+    from .source_references import reference_handle
+    report = request.get('report')
+    if previous_scope:
+        payload = {'continuation': 'Continue the same assignment using saved successful results; do not repeat completed work.',
+                   'purpose': request['purpose'], 'question': request['question'],
+                   'as_of': request['as_of']}
+    else:
+        payload = {k: v for k, v in request.items() if k != 'method_text'}
+        if report:
+            citations = {}
+            for source_id, citation in report.get('citations', {}).items():
+                citations[source_id] = {
+                    'citation_handle': reference_handle(source_id),
+                    'readback': {'tool': 'read_research_source', 'arguments': {'source_id': source_id}},
+                    'claim': citation.get('claim'),
+                    'sources': [{k: v for k, v in source.items() if k in {
+                        'source_id', 'title', 'source_url', 'publication_date', 'publication_date_status',
+                        'period', 'unit', 'revision', 'source_role', 'numeric_fact_authority',
+                    }} for source in citation.get('sources', [])],
+                }
+            payload['report'] = {**report, 'citations': citations}
+            payload['citation_notice'] = ('Citation entries are navigation, not full evidence. '
+                'Read the exact inherited original with the supplied readback; original snapshots remain saved.')
+    if report:
+        payload['reviewed_report_digest'] = canonical_sha256(report)
+    payload['readback'] = 'browse_context and read_saved_result provide inherited successful source and calculation receipts.'
+    if recovery_receipt:
+        payload['runtime_recovery'] = recovery_receipt
+    return payload
+
+
 class NativeResearchDelegate:
     """No provider loop, duplicate history, artifact writer or independent permission grant."""
     def __init__(self, *, options, parent_options, binary, root, grant, authority, budget,
@@ -101,12 +140,8 @@ class NativeResearchDelegate:
             async with admitted_acp_session(binary=str(self.binary), arguments=['--profile','sdk-minimal','--patch',str(patch_path)],
                     environment=env, directory=directory, binding=binding, run_id=self.rid,
                     authority=authority, stop=bridge.stop, mcp_servers=[], workspace=directory) as session:
-                payload = {k:v for k,v in request.items() if k != 'method_text'}
-                payload['readback'] = 'browse_context and read_saved_result provide inherited successful source and calculation receipts.'
-                if previous_scope:
-                    payload['continuation'] = 'Continue the same assignment using saved successful results; do not repeat completed work.'
-                if recovery_receipt:
-                    payload['runtime_recovery'] = recovery_receipt
+                payload = delegation_payload(request, previous_scope=previous_scope,
+                    recovery_receipt=recovery_receipt)
                 result = await session.prompt(json.dumps(payload, ensure_ascii=False))
                 if result['status'] != 'completed' or not result['text'].strip():
                     raise RuntimeError('harness_delegate_not_completed')

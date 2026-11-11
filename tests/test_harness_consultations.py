@@ -35,6 +35,17 @@ def test_native_grouped_stop_recovery_requires_all_child_dispatches_settled(tmp_
     rows[:]=[{'status':'received','actual_micros':10,'response':{'stop_required':False}}]
     service.native_delegate=None
     assert not service.settled_scope_failure('key',record)
+    # Completed native output is recoverable after host-side publication failed,
+    # but incomplete output or any unsettled charge must remain blocked.
+    record['error_type']='RuntimeError'
+    service.native_delegate=SimpleNamespace(completed_result=lambda *a:{'text':'Saved draft'})
+    assert service.settled_scope_failure('key',record)
+    rows[0]['status']='unknown'
+    assert not service.settled_scope_failure('key',record)
+    rows[0]['status']='received'
+    service.native_delegate=SimpleNamespace(completed_result=lambda *a:None)
+    assert not service.settled_scope_failure('key',record)
+
 
 
 @pytest.mark.anyio
@@ -49,6 +60,7 @@ async def test_native_flash_draft_is_proposal_with_original_scope_and_shared_evi
         assert 'consult_research_agent' not in kwargs['bridge'].tools
         assert 'save_report' not in kwargs['bridge'].tools
         await kwargs['bridge'].execute('read_source_document', {'query':'delegate selected query'})
+        kwargs['bridge'].stop()  # Real native ACP teardown closes this process bridge.
         return 'Draft with supported claims and unresolved alternatives'
     async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'state.sqlite')) as saver:
         grants = [GrantedTool(read_source_document, 'read', 'source')]

@@ -163,6 +163,11 @@ class HarnessConsultations:
             # Explicit recovery still requires every child dispatch settled;
             # a parent's unknown call is separately gated by run admission.
             allowed |= {'ExceptionGroup', 'BaseExceptionGroup'}
+        if record.get('error_type') == 'RuntimeError' and self.native_delegate:
+            completed = getattr(self.native_delegate, 'completed_result', None)
+            if (callable(completed) and record['scope'].startswith(self.tid+':')
+                    and completed(key, record['scope'])):
+                allowed.add('RuntimeError')
         if record.get('error_type') not in allowed:
             return False
         if getattr(self.budget, 'store', None) is None:
@@ -312,14 +317,18 @@ class HarnessConsultations:
                 dispatch_lane='consult:'+key,previous_scope=previous_scope,audit_root=audit_root)
             self.check()
             from .research_actions import latest_assessment
-            assessment = latest_assessment((await child.state()).get('messages', []), key)
+            # Native process teardown stops its bridge. Read its durable journal
+            # through a fresh host reader with current parent authority; never
+            # reopen the stopped process's model/tool admission.
+            assessment = latest_assessment((await self.child(key).state()).get('messages', []), key)
             _persist(self.directory/(key+'.json'), {**record,'status':'completed','opinion':opinion,
                 **({'assessment':assessment} if assessment else {})})
         except BaseException as exc:
             _persist(self.directory/(key+'.json'), {**record,'status':'failed','error_type':type(exc).__name__,
                 **({'failure_code':str(exc)} if isinstance(exc,DispatchBlocked) or
                    (isinstance(exc,(ValueError,RuntimeError))
-                    and str(exc).startswith(('answer_review_','harness_business_tool_'))) else {})})
+                    and str(exc).startswith(('answer_review_','harness_business_tool_')) or
+                    isinstance(exc, RuntimeError) and str(exc) == 'harness_execution_stopped') else {})})
             if self.parent:
                 self.parent.failed_receipt = 'consult-'+key
             raise

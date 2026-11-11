@@ -37,16 +37,26 @@ class NativeResearchDelegate:
                 or not environment.get(options['provider_key_env'])):
             raise ValueError('native_delegate_provider_not_admitted')
 
+    def completed_result(self, key, previous_scope):
+        """Only a bound, terminal native delivery can bypass another model turn."""
+        thread, run = previous_scope.split(':', 1)
+        if thread != self.tid:
+            raise ValueError('consultation_recovery_execution_mismatch')
+        binding = dict(execution_id=self.tid, manifest_digest=self.grant['manifest_digest'],
+                       release=self.parent_options['binary_sha256'], model=self.options['model'])
+        result = completed_recovery(self.directory/key, previous_run_id=run, binding=binding)
+        return result if result and result.get('text', '').strip() else None
+
     async def __call__(self, *, key, request, bridge, previous_scope=None, recovery_receipt=None, **unused):
         o, budget = self.options, self.budget
         directory = self.directory / key
         run = directory / self.rid
-        binding = dict(execution_id=self.tid, manifest_digest=self.grant['manifest_digest'],
-                       release=self.parent_options['binary_sha256'], model=o['model'])
         if previous_scope:
-            recovered = completed_recovery(directory, previous_run_id=previous_scope.split(':')[1], binding=binding)
+            recovered = self.completed_result(key, previous_scope)
             if recovered is not None:
                 return recovered['text']
+        binding = dict(execution_id=self.tid, manifest_digest=self.grant['manifest_digest'],
+                       release=self.parent_options['binary_sha256'], model=o['model'])
         token = secrets.token_urlsafe(32)
         def authority():
             bridge.model_access()

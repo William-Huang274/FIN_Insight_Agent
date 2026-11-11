@@ -64,6 +64,10 @@ async def test_native_delegate_uses_shared_host_and_isolated_native_session(tmp_
     # Native completion can be reused without making another provider request.
     monkeypatch.setattr(module,'completed_recovery',lambda *a,**k:{'text':'Saved completed draft'})
     assert await delegate(key='task',request=request,bridge=bridge,previous_scope='execution:old')=='Saved completed draft'
+    with pytest.raises(ValueError, match='execution_mismatch'):
+        delegate.completed_result('task','other:old')
+    monkeypatch.setattr(module,'completed_recovery',lambda *a,**k:None)
+    assert delegate.completed_result('task','execution:old') is None
 
 
 def test_role_guidance_keeps_review_and_draft_distinct():

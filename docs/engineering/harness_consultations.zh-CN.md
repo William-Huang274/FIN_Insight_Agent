@@ -1,5 +1,7 @@
 # 原生 harness 按需独立调查与复核
 
+研究范围观察、调查事项、作者版本化处置与交付反馈见[研究事项交接](research_action_handoff.zh-CN.md)。原意见、来源、预算与恢复身份保持；新事项不构成自动金融审批。
+
 宿主在已授权执行绑定启用 `allow_agent_consultation` 后，主模型实际工具列表增加 `consult_research_agent` 和 `read_research_agent_result`。未配置时不披露能力，不以指引授权工具。现有 `answer_review_model` 支持 Sol high 独立调查与复核；也可配置 `research_delegate` 使用原生 ACP 的 Flash high 调查及草稿委派。工具描述披露实际模型，不把模型选择交给任意工具参数。
 
 `research_delegate` 由部署端提供 model、protocol、provider、provider_endpoint、provider_key_env、reasoning、context_window、output_tokens、summary_tokens、compaction_threshold、token_budget_basis、reservation_micros、reservation_basis。当前限定已验收协议的 deepseek-flash/high；与主任务共用授权、费用账本和工具，只读来源与计算，不允许子任务递归委派或覆盖主稿。每个子任务使用独立原生会话，沿现有 ACP 历史、压缩与停止机制执行；不再实现另一套模型循环。`purpose=draft` 返回草稿和依据供主作者审核，保存完成不代表研究通过，只有主作者能决定补证及最终发布。未配置原生委派时，draft 返回明确未执行反馈。

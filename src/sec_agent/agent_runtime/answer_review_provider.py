@@ -34,7 +34,7 @@ def investigator_instructions():
 def review_tool_names(available):
     # Same authorized tool host, no note/report mutation or separate search stack.
     return tuple(name for name in ('discover_source_tools', 'read_source_document', 'read_research_source', 'get_research_method', 'browse_context', 'read_saved_result',
-                 'read_public_source', 'read_legislation', 'query_public_data', 'query_hithink', 'search_korean_disclosures', 'read_regional_disclosures', 'read_market_prices', 'read_market_expectations', 'calculate_research_metric')
+                 'read_public_source', 'read_legislation', 'query_public_data', 'query_hithink', 'search_korean_disclosures', 'read_regional_disclosures', 'read_market_prices', 'read_market_expectations', 'calculate_research_metric', 'record_research_assessment')
                  if name in available)
 
 
@@ -240,6 +240,9 @@ async def independent_review(*, selected, message, question, bridge, budget, env
     if assignment_kind not in ('review', 'investigate'):
         raise ValueError('consultation_assignment_invalid')
     instructions = (reviewer_instructions() if assignment_kind == 'review' else investigator_instructions()) + method_content
+    if 'record_research_assessment' in names:
+        instructions += ('\n本次提供 record_research_assessment：完成调查后，用它记录原题覆盖依据及仍影响主结论的执行事项，'
+                         '再返回意见正文。没有实质缺口可以记录空 actions，但需说明依据；不要为填表制造问题。')
     async with httpx.AsyncClient(proxy=environment.get('FINSIGHT_REVIEW_HTTPS_PROXY'), trust_env=False,
                                  timeout=httpx.Timeout(profile.timeout_seconds, connect=25)) as http:
         seen = {}

@@ -458,7 +458,14 @@ async def organization_harness_session(*, native, resources, authority, check, o
             async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token,
                     readiness=consultations.dispatch_ready if consultations else None) as endpoint:
                 from .source_acquisition_view import acquisition_snapshot
-                research_start = acquisition_snapshot((await bridge.state()).get('messages', []))
+                start_state = await bridge.state()
+                research_start = acquisition_snapshot(start_state.get('messages', []))
+                from .research_actions import research_action_view
+                action_view = research_action_view(start_state)
+                research_start['research_actions'] = {
+                    'pending_material': action_view['pending_material'],
+                    'unstructured_results': len(action_view['unstructured_results']),
+                    'readback': action_view['readback'], 'semantic_clearance': False}
                 prompt = research_system_prompt(bridge.tools, 'Research as of: ' + organization.research_as_of +
                     '\nThis cutoff bounds admissible public information; it is not proof of current knowledge or completed research. '
                     'The current user command defines the decision objective; preserve useful prior evidence, investigate changes relevant to that objective.'+

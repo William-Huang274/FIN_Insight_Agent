@@ -40,6 +40,11 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
             original_title=runtime.state.get('report', {}).get('title',''), candidate_title=report['title'])
         if context:
             result['revision_context'] = context
+        from .research_actions import research_action_view
+        actions = research_action_view({**runtime.state, 'report':report, 'report_version':version})
+        if actions['actions'] or actions['unstructured_results']:
+            result['research_actions'] = {'pending_material':actions['pending_material'],
+                'readback':actions['readback'], 'status':'saving_does_not_resolve_research_issues'}
         return Command(update={'report': report, 'report_version': version, 'report_draft': None,
             'report_draft_base_version': None, 'delivery': None,
             'messages': [ToolMessage(tool_call_id=runtime.tool_call_id, content=json.dumps(result, ensure_ascii=False))]})
@@ -107,7 +112,7 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
     def read_current_report(runtime: ToolRuntime, offset: Annotated[int, Field(ge=0, description='Character offset; follow next_offset to continue.')] = 0,
                             max_characters: Annotated[int, Field(ge=1, le=12000, description='Read 1–12000 characters per page; follow next_offset for remaining text.')] = 6000,
                             view: Literal['accepted', 'draft'] = 'accepted',
-                            field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema', 'review', 'revision_context'] = 'narrative_markdown'):
+                            field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema', 'review', 'revision_context', 'research_actions'] = 'narrative_markdown'):
         """Read exact report fields for editing. Default is unescaped narrative prose.
 
         view=draft reads the saved but unaccepted proposal for repair_report_fields;
@@ -118,7 +123,16 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         field=revision_context reads saved change batches and possible related current wording,
         including untouched headings/conclusions, with opinion readback. Paginated navigation,
         not semantic approval; historical batches can be superseded by later edits.
+        field=research_actions reads imported research gaps, concrete next actions and author
+        dispositions at the current version. Missing assessment is not scope clearance.
         """
+        if field == 'research_actions':
+            from .research_actions import research_action_view
+            value = research_action_view(runtime.state)
+            text = json.dumps(value, ensure_ascii=False)
+            return {'field':field, 'report_version':runtime.state.get('report_version',0),
+                'text':text[offset:offset+max_characters], 'offset':offset,'total_characters':len(text),
+                'next_offset':offset+max_characters if offset+max_characters<len(text) else None}
         if field == 'revision_context':
             if view != 'accepted': raise ToolException('revision_context_requires_accepted_view')
             from .revision_context import current_revision_view
@@ -190,7 +204,10 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
 
     @tool
     def deliver_current_report(version: int, runtime: ToolRuntime) -> Command:
-        """Deliver the saved current report; no prose resubmission and no claim of independent approval."""
+        """Deliver the saved current report. Imported material research actions need current-version
+        author dispositions through respond_research_action; this is not independent approval.
+        Unresolved issues can be disclosed, or reasoned rebuttals retained; no automatic research loop.
+        """
         if delivery_intent != 'report':
             raise ToolException('requested_delivery_is_not_report')
         report = runtime.state.get('report')
@@ -198,9 +215,22 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
             raise ToolException('report_version_changed_read_current_report')
         if require_review:
             raise ToolException('independent_report_review_not_yet_qualified_in_harness_adapter')
+        from .research_actions import research_action_view
+        actions = research_action_view(runtime.state)
+        if actions['pending_material']:
+            return Command(update={'messages':[ToolMessage(tool_call_id=runtime.tool_call_id,
+                content=json.dumps({'delivered':False, 'status':'research_actions_need_disposition',
+                    'pending_material':actions['pending_material'], 'readback':actions['readback'],
+                    'next_tool':'respond_research_action',
+                    'meaning':'Resolve, rebut or disclose actual remaining limits in the report. No financial verdict or mandatory new search.'}))]})
         value = {'execution_status': 'submitted', 'artifact_kind': 'report', 'artifact_id': 'report',
                  'artifact_version': version, 'artifact_digest': canonical_sha256(report),
                  'review_status': 'not_assessed_in_this_record'}
+        value['research_action_status'] = {'recorded':len(actions['actions']),
+            'unstructured_results':len(actions['unstructured_results']),
+            'independent_clearance':False,
+            'unresolved':[a['action_id'] for a in actions['actions']
+                if (a['author_response'] or {}).get('disposition') == 'unresolved']}
         # Only this exact version's save receipt is relevant. An earlier manual
         # preview does not certify edits performed after it.
         for message in reversed(runtime.state.get('messages', [])):
@@ -231,8 +261,9 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         tools.append(deliver_current_report)
     for t in tools:
         t.handle_tool_error = True
-    return [GrantedTool(t, 'read' if t is read_current_report else 'task_artifact_write',
+    from .research_actions import author_action_tool
+    return [author_action_tool(), *[GrantedTool(t, 'read' if t is read_current_report else 'task_artifact_write',
                        '当前任务版本化成果；不代表独立复核',
                        recovery_semantics='checkpoint_only' if t in (
                            save_research_report, repair_report_fields, edit_research_report, deliver_current_report) else 'manual')
-            for t in tools]
+            for t in tools]]

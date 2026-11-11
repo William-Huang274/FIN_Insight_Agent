@@ -64,6 +64,9 @@ class NativeResearchDelegate:
             prompt = research_system_prompt(bridge.tools, delegation_guidance(request['purpose']) +
                 '\nResearch as of: '+request['as_of']+
                 '\nUse returned citation_handle values and [REF-...] citations; never shorten source IDs.') + request['method_text']
+            if request.get('assessment_contract') == 1:
+                prompt += ('\n返回成果前使用 record_research_assessment 保存原题覆盖依据及尚影响主结论的执行事项。'
+                           '没有实质缺口可记录空 actions，说明依据；不要为填表制造问题。')
             patch = profile_overlay(model=o['model'], protocol=o['protocol'], endpoint=endpoint, prompt=prompt,
                 context_window=o['context_window'], output_tokens=o['output_tokens'], summary_tokens=o['summary_tokens'],
                 reasoning=o['reasoning'], compaction_threshold=o.get('compaction_threshold', .8),

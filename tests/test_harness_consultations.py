@@ -174,7 +174,9 @@ async def test_consultation_actual_tool_schema_read_merge_and_replay(tmp_path, m
         assert len(calls)==1
         assert '设备' not in calls[0]['message'].content  # no operator example injected as evidence
         assert calls[0]['assignment_kind']=='investigate'
-        assert calls[0]['research_task']=={'question':'original','as_of':'2026-11-06','review_scope':'delegated_question'}
+        actual_task = calls[0]['research_task']
+        assert {k:v for k,v in actual_task.items() if k!='observations'}=={'question':'original','as_of':'2026-11-06','review_scope':'delegated_question'}
+        assert actual_task['observations']['acquisition']['research_coverage']=='not_established_by_runtime'
         assert 'author_task' not in json.loads(got.content)
         assert calls[0]['dispatch_lane']=='consult:'+key
         await service.ensure_finished()
@@ -211,7 +213,7 @@ async def test_review_preserves_original_scope_and_returns_author_actions(tmp_pa
         assert payload['author_task']==report_revision_task()
         assert payload['opinion']=='Independent objection and proposed action.'
         saved=json.loads((tmp_path/'jobs'/f'{key}.json').read_text())
-        assert saved['request']['research_task']==calls[0]['research_task']
+        assert {**saved['request']['research_task'], 'observations':saved['observations']}==calls[0]['research_task']
         assert 'original_research_task' not in bridge.tools['consult_research_agent'].tool_call_schema.model_json_schema()['properties']
         await service.close()
 

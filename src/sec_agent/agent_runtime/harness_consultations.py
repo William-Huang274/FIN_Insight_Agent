@@ -95,7 +95,8 @@ class HarnessConsultations:
             raise ToolException('No saved report yet; use_current_report=false with current reasoning, or save a report first.')
         body = report['narrative_markdown'] if report else context
         request = dict(question=question, context=context, purpose=purpose, report=report,
-                       methods=methods, method_text=method_text, as_of=self.as_of, model=self.model)
+                       methods=methods, method_text=method_text, as_of=self.as_of, model=self.model,
+                       assessment_contract=1)
         original = self.research_question or state.get('question')
         if original:
             request['research_task'] = dict(question=original, as_of=self.as_of,
@@ -111,7 +112,13 @@ class HarnessConsultations:
                 raise RuntimeError('consultation_failed_requires_recovery:' + key)
             return dict(task_id=key, status=record['status'], reused=True,
                         read_tool='read_research_agent_result')
-        record = dict(request=request, status='running', scope=self.tid+':'+self.rid)
+        from .source_acquisition_view import acquisition_snapshot
+        from .research_actions import research_action_view
+        # Freeze observations beside the request, not in its identity: rereading
+        # a task result must not create a fresh paid investigation.
+        record = dict(request=request, status='running', scope=self.tid+':'+self.rid,
+            observations={'acquisition': acquisition_snapshot(state.get('messages', [])),
+                          'prior_actions': research_action_view(state)})
         _persist(path, record)
         # Freeze only source/tool records; do not copy the author's argument history.
         source_messages = [m for m in state.get('messages', [])
@@ -124,7 +131,15 @@ class HarnessConsultations:
 
     def child(self, key):
         allowed = set(review_tool_names([g.tool.name for g in self.grants])) | {'read_saved_result'}
-        return HarnessBusinessTools(grants=[g for g in self.grants if g.tool.name in allowed],
+        grants = [g for g in self.grants if g.tool.name in allowed]
+        path = self.directory / (key + '.json')
+        record = json.loads(path.read_text(encoding='utf8')) if path.exists() else {}
+        request = record.get('request', {})
+        if request.get('assessment_contract') == 1:
+            from .research_actions import assessment_tool
+            grants.append(assessment_tool(key, request,
+                record.get('observations', {}).get('prior_actions', {}).get('actions', [])))
+        return HarnessBusinessTools(grants=grants,
             checkpointer=self.saver, thread_id=self.tid+':consult:'+key,
             check=self.parent.access if self.parent else self.check,
             scope=self.scope, stop_on_tool_error=True)
@@ -274,8 +289,14 @@ class HarnessConsultations:
             # completed reads stay in the checkpoint and writes remain blocked.
             recovery = await child.initialize(initial, recovering=previous_scope is not None)
             selected = Challenge(version=version(body), quote='', offset=0, question=request['question'])
+            # Old paid recovery keeps its original protocol. New assignments
+            # receive actual acquisition/disposition state, not a guessed scope score.
+            input_request = {**request}
+            if 'observations' in record:
+                input_request['research_task'] = {**request.get('research_task', {}),
+                    'observations': record['observations']}
             if self.native_delegate:
-                opinion = await self.native_delegate(key=key, request=request, bridge=child,
+                opinion = await self.native_delegate(key=key, request=input_request, bridge=child,
                     previous_scope=previous_scope, audit_root=audit_root, recovery_receipt=recovery)
             else:
                 opinion = await independent_review(selected=selected,
@@ -284,10 +305,13 @@ class HarnessConsultations:
                 scope=record['scope'], command_id='consult-'+key, authority=child.model_access,
                 basis=self.basis, as_of=self.as_of, public_sink=self.public_sink,
                 assignment_kind=request['purpose'], method_content=request['method_text'],
-                **({'research_task':request['research_task']} if 'research_task' in request else {}),
+                **({'research_task':input_request['research_task']} if 'research_task' in input_request else {}),
                 dispatch_lane='consult:'+key,previous_scope=previous_scope,audit_root=audit_root)
             self.check()
-            _persist(self.directory/(key+'.json'), {**record,'status':'completed','opinion':opinion})
+            from .research_actions import latest_assessment
+            assessment = latest_assessment((await child.state()).get('messages', []), key)
+            _persist(self.directory/(key+'.json'), {**record,'status':'completed','opinion':opinion,
+                **({'assessment':assessment} if assessment else {})})
         except BaseException as exc:
             _persist(self.directory/(key+'.json'), {**record,'status':'failed','error_type':type(exc).__name__,
                 **({'failure_code':str(exc)} if isinstance(exc,DispatchBlocked) or
@@ -322,6 +346,13 @@ class HarnessConsultations:
                       target_digest=canonical_sha256(record['request']),
                       source_readback=[{'tool_call_id':m.tool_call_id,'tool':m.name}
                           for m in messages if isinstance(m, ToolMessage) and m.status=='success'])
+        result['assessment'] = record.get('assessment')
+        result['assessment_status'] = 'recorded_model_judgment' if result['assessment'] else 'not_recorded_no_scope_clearance'
+        if result['assessment']:
+            result['action_readback'] = {'tool':'read_current_report','arguments':{'field':'research_actions'}}
+            result['next_action'] = ('Investigate material issues, then decide the current answer. Save the report and '
+                'use respond_research_action to bind each disposition to actual wording. A rebuttal is allowed; '
+                'unresolved gaps must remain explicit. Returning an opinion or saving prose does not resolve an issue.')
         if record['request']['purpose'] == 'review':
             from .answer_review import report_revision_task
             result['author_task'] = report_revision_task()

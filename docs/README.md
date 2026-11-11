@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[研究事项交接](engineering/research_action_handoff.zh-CN.md)说明模型缺口如何进入原生委派、稿件版本和交付反馈；[研究质量与产品边界](product/research_quality_delivery.zh-CN.md)合并六项方法与五项执行优化，并列出机构研究对照后的后续验收。
+
 [地区检索与公共数据接入](engineering/regional_research_sources.zh-CN.md)记录 Bing 中外入口、SearXNG、AKTools MCP、台湾官方目录及其他社区/地区接口的实测状态和凭据边界。
 
 [市场预期与公开共识](engineering/market_expectations.zh-CN.md)记录 Alpha Vantage 官方 MCP、A/HK 预测原件、XLSX 读取，以及日期、单位、共享缓存和配额边界。

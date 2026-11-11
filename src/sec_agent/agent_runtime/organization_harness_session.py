@@ -21,7 +21,7 @@ from .conversation_tools import conversation_tools, SAVED_RESULT_TOOLS
 from .harness_acp_session import admitted_acp_session, completed_recovery, _persist
 from .harness_business_tools import HarnessBusinessTools
 from .harness_dispatch_host import HarnessDispatchHost
-from .harness_provider_transport import HarnessProviderTransport
+from .harness_provider_transport import HarnessProviderTransport, model_provider_proxy
 from .harness_local_services import harness_local_services
 from .harness_profile import profile_overlay
 from .on_demand_research import OnDemandResearchState
@@ -298,7 +298,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
             dispatch_lane='author' if consultations else None)
         key = environment[options['provider_key_env']]
         transport = HarnessProviderTransport(dispatch, protocol=options['protocol'], endpoint=options['provider_endpoint'],
-            provider_headers={'Authorization': 'Bearer ' + key}, token=token)
+            provider_headers={'Authorization': 'Bearer ' + key}, token=token,
+            proxy=model_provider_proxy(environment, options['protocol']))
         dispatch.wire_usage = transport.meter
 
         async def guard(state):

@@ -13,15 +13,21 @@ from urllib.parse import urlsplit
 import httpx
 from httpx_sse import EventSource
 from fastapi import APIRouter, HTTPException, Request
-from starlette.responses import StreamingResponse, Response
+from starlette.responses import StreamingResponse, Response, JSONResponse
 
 from sec_agent.adapters.model_dispatch_store import DispatchBlocked
 from .harness_usage import WireUsage
 
 
+def model_provider_proxy(environment, protocol):
+    """Host-only network route; reuse the admitted OpenAI review proxy on migration."""
+    return environment.get('FINSIGHT_MODEL_HTTPS_PROXY') or (
+        environment.get('FINSIGHT_REVIEW_HTTPS_PROXY') if protocol == 'openai_responses' else None)
+
+
 class HarnessProviderTransport:
     def __init__(self, host, *, protocol, endpoint, provider_headers, token,
-                 client=None, allow_loopback_fixture=False):
+                 client=None, allow_loopback_fixture=False, proxy=None):
         parsed = urlsplit(endpoint)
         if (parsed.username or parsed.password or parsed.query or parsed.fragment
                 or not parsed.hostname or not (parsed.scheme == 'https' or
@@ -33,7 +39,13 @@ class HarnessProviderTransport:
         WireUsage(protocol)  # validate before serving
         self.host, self.protocol, self.endpoint = host, protocol, endpoint
         self.headers, self.token, self.client = dict(provider_headers), token, client
+        self.proxy = proxy
         self.meters = {}
+
+    def provider_client(self):
+        return httpx.AsyncClient(trust_env=False, follow_redirects=False,
+            timeout=httpx.Timeout(self.host.basis['timeout_seconds'], connect=15),
+            transport=httpx.AsyncHTTPTransport(retries=0, proxy=self.proxy))
 
     def meter(self, request_id):
         # Only closed/durably recorded wire observations may settle a bill.
@@ -67,10 +79,7 @@ class HarnessProviderTransport:
             # Fail storage admission before constructing/opening a connection.
             stream = (self.host.receipts / (request_id + '.wire-events.jsonl')).open('xb')
             owned = self.client is None
-            client = self.client or httpx.AsyncClient(
-                trust_env=False, follow_redirects=False,
-                timeout=httpx.Timeout(self.host.basis['timeout_seconds'], connect=15),
-                transport=httpx.AsyncHTTPTransport(retries=0))
+            client = self.client or self.provider_client()
             meter = WireUsage(self.protocol, body['model'])
             response = None
 
@@ -110,6 +119,12 @@ class HarnessProviderTransport:
                         await response.aclose()
                     if owned:
                         await client.aclose()
+                if isinstance(exc, httpx.TransportError):
+                    # Do not expose exception text (it can contain proxy credentials),
+                    # invent usage, or retry. The native host still stops this run.
+                    return JSONResponse({'error': {'code': 'provider_transport_failed',
+                        'type': type(exc).__name__, 'upstream_response_received': response is not None,
+                        'usage_known': False, 'retry_performed': False}}, status_code=502)
                 raise
 
             async def events():

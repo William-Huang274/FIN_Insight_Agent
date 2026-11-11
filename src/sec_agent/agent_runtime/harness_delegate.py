@@ -8,7 +8,7 @@ from .harness_acp_session import admitted_acp_session, completed_recovery, _pers
 from .harness_dispatch_host import HarnessDispatchHost
 from .harness_local_services import harness_local_services
 from .harness_profile import profile_overlay
-from .harness_provider_transport import HarnessProviderTransport
+from .harness_provider_transport import HarnessProviderTransport, model_provider_proxy
 
 
 def delegation_guidance(purpose):
@@ -68,7 +68,8 @@ class NativeResearchDelegate:
             reservation_basis=o['reservation_basis'], receipts=run/'wire', wire_usage=lambda _: None,
             public_sink=self.public_sink, dispatch_lane='consult:'+key)
         transport = HarnessProviderTransport(dispatch, protocol=o['protocol'], endpoint=o['provider_endpoint'],
-            provider_headers={'Authorization': 'Bearer '+self.environment[o['provider_key_env']]}, token=token)
+            provider_headers={'Authorization': 'Bearer '+self.environment[o['provider_key_env']]}, token=token,
+            proxy=model_provider_proxy(self.environment, o['protocol']))
         dispatch.wire_usage = transport.meter
         async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token) as endpoint:
             prompt = research_system_prompt(bridge.tools, delegation_guidance(request['purpose']) +

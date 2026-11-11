@@ -39,6 +39,8 @@ DS 为 MIT、Codex 为 Apache-2.0；发行时保留相应通知及依赖许可�
 
 ## 3. 最小 FIN 适配，不再制造执行内核
 
+模型网络路由由宿主统一配置：`FINSIGHT_MODEL_HTTPS_PROXY` 可明确指定原生模型转发代理；未设置时，OpenAI Responses 继续复用已有的 `FINSIGHT_REVIEW_HTTPS_PROXY`，主作者和原生委派保持一致，DeepSeek 不隐式使用仅供 OpenAI 复核的旧配置。代理和凭据不进入模型输入。连接错误返回 `provider_transport_failed`（502），明确未收到上游响应及用量未知；真正的上游 HTTP 错误保留原状态。网络失败不自动重试、不将未知费用置零，旧失败记录保持原样。无生成连通检查只能证明当次可达，不能证明后续长请求稳定。
+
 ### 3.1 任务入口和事件
 
 保留 Java/BFF 当前业务授权、命令身份、取消和成果接口。内部记录业务 command/run 与上游 session/turn/request 的映射；浏览器不能提交上游历史或冒充来源。正常状态由上游事件投影，不能另起状态机反复猜测模型是否已提交。

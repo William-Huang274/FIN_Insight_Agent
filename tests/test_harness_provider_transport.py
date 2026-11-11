@@ -17,6 +17,8 @@ def wire_fixture(setup, protocol='qwen_chat', failure=None):
     def respond(req):
         calls.append(req)
         assert req.headers['authorization'] == 'Bearer provider-secret'
+        if failure == 'connect':
+            raise httpx.ConnectError('sensitive proxy detail must not escape')
         if failure == 'http':
             return httpx.Response(402, json={'error': 'fixture insufficient balance'})
         if protocol == 'qwen_chat':
@@ -117,6 +119,37 @@ def test_claim_receipt_prevents_replay_after_host_reconstruction(setup):
     host._wire_pending = (rid, request)  # even an erroneous re-arm cannot resend
     with pytest.raises(DispatchBlocked, match='already_dispatched'):
         host.claim_wire(body)
+
+
+def test_connection_failure_is_not_upstream_500_and_keeps_unknown_hold(setup):
+    host, request, client, path, headers, body, calls, transport = wire_fixture(setup, 'openai_responses', 'connect')
+    rid = str(uuid4())
+    host.reserve(rid, request)
+    response = client.post(path, json=body, headers=headers)
+    assert response.status_code == 502
+    assert response.json()['error'] == {'code': 'provider_transport_failed', 'type': 'ConnectError',
+        'upstream_response_received': False, 'usage_known': False, 'retry_performed': False}
+    assert transport.meter(rid).receipt()['usage'] is None
+    assert host.settle(rid, finish(), 'error')['stopRequired'] is True
+    assert len(calls) == 1
+    assert 'sensitive proxy' not in response.text
+
+
+def test_native_proxy_route_preserves_migrated_openai_configuration(setup, monkeypatch):
+    from sec_agent.agent_runtime.harness_provider_transport import model_provider_proxy
+    legacy = {'FINSIGHT_REVIEW_HTTPS_PROXY': 'http://proxy.invalid:8080'}
+    assert model_provider_proxy(legacy, 'openai_responses') == legacy['FINSIGHT_REVIEW_HTTPS_PROXY']
+    assert model_provider_proxy(legacy, 'deepseek_messages') is None
+    configured = {**legacy, 'FINSIGHT_MODEL_HTTPS_PROXY': 'http://other.invalid:8080'}
+    assert model_provider_proxy(configured, 'openai_responses') == configured['FINSIGHT_MODEL_HTTPS_PROXY']
+    seen = {}
+    monkeypatch.setattr(httpx, 'AsyncHTTPTransport', lambda **kw: seen.update(kw) or object())
+    monkeypatch.setattr(httpx, 'AsyncClient', lambda **kw: seen.update(kw) or object())
+    transport = HarnessProviderTransport(setup[0], protocol='openai_responses', endpoint='https://provider.invalid/test',
+        provider_headers={}, token='x'*32, proxy=model_provider_proxy(legacy, 'openai_responses'))
+    transport.provider_client()
+    assert seen['proxy'] == legacy['FINSIGHT_REVIEW_HTTPS_PROXY'] and seen['retries'] == 0
+    assert seen['trust_env'] is False and seen['follow_redirects'] is False
 
 
 def test_disk_failure_prevents_transport(setup, monkeypatch):

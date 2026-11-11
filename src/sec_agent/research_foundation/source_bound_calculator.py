@@ -104,6 +104,35 @@ def source_items_from_tool(tool_name: str, body: dict) -> dict[str, dict]:
     return {}
 
 
+def source_observation_identity(item):
+    """Compare evidence identity independently of equivalent read navigation.
+
+    Full original receipts remain unchanged. For market pages the requested
+    page capacity is not evidence: different limits can return identical bars.
+    Content, capture, window, symbol, interval and actual offsets still match.
+    """
+    from datetime import datetime, timezone
+    value = deepcopy(item)
+    for key in ('operand_source_aliases', 'fact_request_id', 'mcp_receipt_chain',
+                'source_tool_lane_receipt_id'):
+        value.pop(key, None)
+    if value.get('source_kind') == 'market_observations':
+        locator = value.get('source_locator', {})
+        locator.pop('limit', None)
+        readback = value.get('readback', {})
+        args = readback.get('arguments', {})
+        if readback.get('tool') == 'read_market_prices':
+            args.pop('limit', None)
+            for key in ('start', 'end'):
+                try:
+                    instant = datetime.fromisoformat(args[key])
+                    if instant.tzinfo is not None:
+                        args[key] = instant.astimezone(timezone.utc).isoformat()
+                except (KeyError, TypeError, ValueError):
+                    pass  # Invalid or missing navigation does not become equivalent.
+    return value
+
+
 def sources_from_receipts(receipts) -> dict[str, dict]:
     """Project trusted successful tool receipts without a framework transcript.
 

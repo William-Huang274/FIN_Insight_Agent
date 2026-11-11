@@ -27,7 +27,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 from .case_review_agent import _text_values, InvalidToolCallFeedback
 from .specialist_graph import SpecialistClaim
 from sec_agent.research_foundation.research_methods import BASIC_RESEARCH_GUIDANCE, METHOD_TOOL_GUIDANCE
-from sec_agent.research_foundation.source_bound_calculator import source_items_from_tool
+from sec_agent.research_foundation.source_bound_calculator import source_items_from_tool, source_observation_identity
 
 
 class CaseClaim(BaseModel):
@@ -243,10 +243,7 @@ def observed_sources(messages):
         current = source_items_from_tool(message.name, message.artifact)
         for ref, item in current.items():
             if ref in sources and sources[ref] != item:
-                # The same S2 observation can be returned for different queries.
-                before, after = dict(sources[ref]), dict(item)
-                before.pop("fact_request_id", None)
-                after.pop("fact_request_id", None)
+                before, after = source_observation_identity(sources[ref]), source_observation_identity(item)
                 if before != after:
                     raise ValueError("new_source_observation_conflict")
             sources[ref] = deepcopy(item)

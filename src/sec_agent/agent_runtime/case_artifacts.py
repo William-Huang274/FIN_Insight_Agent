@@ -211,10 +211,8 @@ class CaseArtifacts:
             if matches:
                 # Re-reading the same source creates new transport receipts,
                 # not a new evidence version. Keep each receipt in its archive.
-                normalized = [{k: v for k, v in item.items() if k not in {
-                    "operand_source_aliases", "fact_request_id",
-                    "mcp_receipt_chain", "source_tool_lane_receipt_id",
-                }} for item in matches]
+                from sec_agent.research_foundation.source_bound_calculator import source_observation_identity
+                normalized = [source_observation_identity(item) for item in matches]
                 if any(item != normalized[0] for item in normalized[1:]):
                     raise ValueError("canonical_source_observation_conflict:" + source_id)
                 return deepcopy(matches[0])

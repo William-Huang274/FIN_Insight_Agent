@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[电力产业链投资方向验收](product/power_value_capture_validation.zh-CN.md)给出下一候选题、机构研报渠道边界及经营—预期—价格对照；[作者与复核分工](product/research_author_review_proposal.zh-CN.md)确立当前稿复查、强模型最终责任与原生接管边界。
+
 [研究事项交接](engineering/research_action_handoff.zh-CN.md)说明模型缺口如何进入原生委派、稿件版本和交付反馈；[研究质量与产品边界](product/research_quality_delivery.zh-CN.md)合并六项方法与五项执行优化，并列出机构研究对照后的后续验收。
 
 [地区检索与公共数据接入](engineering/regional_research_sources.zh-CN.md)记录 Bing 中外入口、SearXNG、AKTools MCP、台湾官方目录及其他社区/地区接口的实测状态和凭据边界。

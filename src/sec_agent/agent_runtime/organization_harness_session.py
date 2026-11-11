@@ -478,6 +478,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
                         '你决定委派范围与方法，提供必要依据和未决问题，允许对方质疑你的假设。'
                         '收到草稿后，由你对照原题、原件和推断进行审核，必要时亲自补查并重构最终报告。'
                         '最终稿由你保存和交付，不再转回子模型成稿。不要把委派完成状态当作研究质量通过。')
+                from .synthesis_guidance import final_author_guidance
+                prompt += final_author_guidance(options)
                 patch = profile_overlay(model=options['model'], protocol=options['protocol'], endpoint=endpoint,
                     prompt=prompt, context_window=options['context_window'], output_tokens=options['output_tokens'],
                     summary_tokens=options['summary_tokens'], reasoning=options['reasoning'],

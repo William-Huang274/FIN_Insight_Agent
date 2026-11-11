@@ -115,12 +115,29 @@ def research_action_view(state):
     for action in actions:
         if action['action_id'] in resolutions:
             action['reviewer_resolution'] = resolutions[action['action_id']]
-            action['status'] = 'reviewer_reported_resolved'
+            action['resolution_current'] = bool(digest and
+                action['reviewer_resolution']['report_digest'] == digest)
+            if action['resolution_current']:
+                action['status'] = 'reviewer_reported_resolved'
     return {'actions': actions, 'unstructured_results': unstructured,
         'pending_material': [a['action_id'] for a in actions if a.get('material') and not a['response_current']
-                             and not a.get('reviewer_resolution')],
+                             and not a.get('resolution_current')],
+        'awaiting_independent_resolution': [a['action_id'] for a in actions
+            if a.get('material') and not a.get('resolution_current')],
         'report_digest': digest, 'coverage': 'recorded_model_issues_only_not_exhaustive',
         'readback': {'tool': 'read_current_report', 'arguments': {'field': 'research_actions'}}}
+
+
+def synthesis_working_view(state):
+    """Project current bindings, never generate or choose the author's conclusions."""
+    view = research_action_view(state)
+    return {'question': state.get('question'), 'report_version': state.get('report_version', 0),
+        'report_digest': view['report_digest'], 'current_title': (state.get('report') or {}).get('title'),
+        'research_actions': view,
+        'report_readback': {'tool': 'read_current_report', 'arguments': {'field': 'all'}},
+        'related_changes_readback': {'tool': 'read_current_report', 'arguments': {'field': 'revision_context'}},
+        'working_understanding': 'Read/update existing working notes and their evidence handles; this view does not invent a consensus or endorse an old thesis.',
+        'responsibility': 'Re-answer the original question from current evidence. Test the replacement explanation as well as the rejected one. Old titles, ranking and structure are not constraints. Current author dispositions are not independent resolutions.'}
 
 
 def author_action_tool():

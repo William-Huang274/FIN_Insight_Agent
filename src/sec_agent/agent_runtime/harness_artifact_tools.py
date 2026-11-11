@@ -112,7 +112,7 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
     def read_current_report(runtime: ToolRuntime, offset: Annotated[int, Field(ge=0, description='Character offset; follow next_offset to continue.')] = 0,
                             max_characters: Annotated[int, Field(ge=1, le=12000, description='Read 1–12000 characters per page; follow next_offset for remaining text.')] = 6000,
                             view: Literal['accepted', 'draft'] = 'accepted',
-                            field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema', 'review', 'revision_context', 'research_actions'] = 'narrative_markdown'):
+                            field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema', 'review', 'revision_context', 'research_actions', 'synthesis_context'] = 'narrative_markdown'):
         """Read exact report fields for editing. Default is unescaped narrative prose.
 
         view=draft reads the saved but unaccepted proposal for repair_report_fields;
@@ -125,10 +125,13 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         not semantic approval; historical batches can be superseded by later edits.
         field=research_actions reads imported research gaps, concrete next actions and author
         dispositions at the current version. Missing assessment is not scope clearance.
+        field=synthesis_context supplies the current question/version, action dispositions and
+        evidence/revision readback for final synthesis; it does not certify the author's thesis.
         """
-        if field == 'research_actions':
-            from .research_actions import research_action_view
-            value = research_action_view(runtime.state)
+        if field in ('research_actions', 'synthesis_context'):
+            from .research_actions import research_action_view, synthesis_working_view
+            value = (synthesis_working_view(runtime.state) if field == 'synthesis_context'
+                     else research_action_view(runtime.state))
             text = json.dumps(value, ensure_ascii=False)
             return {'field':field, 'report_version':runtime.state.get('report_version',0),
                 'text':text[offset:offset+max_characters], 'offset':offset,'total_characters':len(text),
@@ -229,6 +232,7 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         value['research_action_status'] = {'recorded':len(actions['actions']),
             'unstructured_results':len(actions['unstructured_results']),
             'independent_clearance':False,
+            'awaiting_independent_resolution':actions['awaiting_independent_resolution'],
             'unresolved':[a['action_id'] for a in actions['actions']
                 if (a['author_response'] or {}).get('disposition') == 'unresolved']}
         # Only this exact version's save receipt is relevant. An earlier manual

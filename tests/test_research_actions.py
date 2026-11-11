@@ -69,6 +69,11 @@ async def test_model_action_survives_import_restart_and_drives_version_bound_dis
         issue = imported['assessment']['actions'][0]['action_id']
         assert observed[0]['research_task']['question']=='Global adoption and business models'
         assert research_action_view(await bridge.state())['pending_material']==[issue]
+        context = await bridge.execute('read_current_report', {'field':'synthesis_context','max_characters':12000})
+        working = json.loads(json.loads(context.content)['text'])
+        assert working['report_version']==1
+        assert working['research_actions']['awaiting_independent_resolution']==[issue]
+        assert working['research_actions']['actions'][0]['review_readback']['arguments']['task_id']==key
         # Reading again imports no duplicate obligations and dispatches no model.
         await bridge.execute('read_research_agent_result',{'task_id':key})
         await bridge.execute('consult_research_agent',args)
@@ -96,6 +101,7 @@ async def test_model_action_survives_import_restart_and_drives_version_bound_dis
         assert json.loads(accepted.content)['recorded']
         delivered = await bridge.execute('deliver_current_report',{'version':1})
         assert json.loads(delivered.content)['research_action_status']['independent_clearance'] is False
+        assert json.loads(delivered.content)['research_action_status']['awaiting_independent_resolution']==[issue]
         # A model can give a bad rebuttal: the host only verified its identity.
         # Any changed report invalidates the old response, never silently clears it.
         await bridge.execute('repair_report_fields',{'fields':{'title':'A changed current title'},'base_version':1})
@@ -142,9 +148,17 @@ async def test_review_can_retire_known_old_action_without_automatic_semantic_app
         assessment=json.loads(got.content)
         imported=ToolMessage(name='read_research_agent_result',tool_call_id='new',content=json.dumps({
             'task_id':'new','status':'completed','assessment':assessment,'reviewed_report_digest':assessment['reviewed_report_digest']}))
-        view=research_action_view({'messages':[old,imported]})
+        current={'title':'Current','narrative_markdown':'Current evidence'}
+        view=research_action_view({'messages':[old,imported],'report':current})
         assert not view['pending_material']
+        assert not view['awaiting_independent_resolution']
         assert view['actions'][0]['reviewer_resolution']['status']=='reviewer_reported_resolved_not_runtime_certification'
+        changed=research_action_view({'messages':[old,imported],
+            'report':{**current,'title':'A stronger replacement claim'}})
+        assert changed['pending_material']==['old:issue']
+        assert changed['awaiting_independent_resolution']==['old:issue']
+        assert not changed['actions'][0]['resolution_current']
+        assert changed['actions'][0]['reviewer_resolution']  # history retained
 
 
 def test_worked_methods_are_selectable_and_catalog_discloses_them():

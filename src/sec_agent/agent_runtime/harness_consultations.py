@@ -56,6 +56,9 @@ class HarnessConsultations:
             Proposed formulas/comparisons are hypotheses: the investigator may revise them if they answer
             a different question. Draft assignments return an evidence-backed draft for your audit, not a final publication.
             use_current_report=true attaches the exact saved report; false works before drafting.
+            After material reconstruction, review the actual replacement explanation with
+            purpose=review and use_current_report=true; a pre-draft opinion cannot clear final prose.
+            Give the reviewer the original decision and unresolved relationships, not a requested verdict.
             The host separately supplies the original research question; your focus does not replace it.
             method_ids selects optional method-library IDs, not new permissions. Returns task_id promptly.
             Continue useful independent work, then read_research_agent_result; results are proposals, not verdicts.

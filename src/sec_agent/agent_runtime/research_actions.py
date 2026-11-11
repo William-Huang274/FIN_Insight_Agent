@@ -6,7 +6,7 @@ not whether a financial interpretation is correct. No second task/state store.
 import json
 from typing import Literal
 
-from langchain_core.messages import ToolMessage
+from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
@@ -42,7 +42,7 @@ def assessment_tool(task_id, request, prior_actions=()):
     known_prior = {row['action_id'] for row in prior_actions}
     @tool
     def record_research_assessment(scope_explanation: str, actions: list[ResearchAction], runtime: ToolRuntime,
-                                  resolved_action_ids: list[str] | None = None):
+                                  resolved_action_ids: list[str] | None = None, finding: str | None = None):
         """Save your investigation/review findings before returning your final opinion.
         Explain which parts of the original question the actual evidence supports and what
         could change the main answer. Record only consequential unresolved issues as actions;
@@ -52,6 +52,10 @@ def assessment_tool(task_id, request, prior_actions=()):
         A review of the current report may resolve prior action IDs actually supplied in its
         handoff, after checking the author's text and evidence. Explain why in scope_explanation.
         Never mark an issue resolved just because the author acknowledged it.
+        finding may explain the substantive result: what the comparison established,
+        what changed relative to the starting explanation, and its decision implication.
+        Include source/calculation handles. Preserve supported positive findings, not
+        only objections. This is public research prose, not private reasoning or a checklist.
         """
         if not scope_explanation.strip():
             return {'recorded': False, 'feedback': 'Explain the scope actually supported by the evidence.'}
@@ -68,6 +72,8 @@ def assessment_tool(task_id, request, prior_actions=()):
                      actions=rows, resolved_action_ids=resolved, target_digest=canonical_sha256(request),
                      reviewed_report_digest=canonical_sha256(request['report']) if request.get('report') else None,
                      status='model_assessment_not_runtime_certification')
+        if finding and finding.strip():
+            value['finding'] = finding
         return Command(update={'messages': [ToolMessage(name='record_research_assessment',
             tool_call_id=runtime.tool_call_id, content=json.dumps(value, ensure_ascii=False))]})
 
@@ -134,10 +140,58 @@ def synthesis_working_view(state):
     return {'question': state.get('question'), 'report_version': state.get('report_version', 0),
         'report_digest': view['report_digest'], 'current_title': (state.get('report') or {}).get('title'),
         'research_actions': view,
+        'current_research': research_working_view(state),
         'report_readback': {'tool': 'read_current_report', 'arguments': {'field': 'all'}},
         'related_changes_readback': {'tool': 'read_current_report', 'arguments': {'field': 'revision_context'}},
         'working_understanding': 'Read/update existing working notes and their evidence handles; this view does not invent a consensus or endorse an old thesis.',
         'responsibility': 'Re-answer the original question from current evidence. Test the replacement explanation as well as the rejected one. Old titles, ranking and structure are not constraints. Current author dispositions are not independent resolutions.'}
+
+
+def research_working_view(state):
+    """Journal navigation for current understanding, not another summary or state store.
+
+    Exact duplicate requests are observable; their usefulness and the completeness of
+    research are not. Never stop a run or certify a thesis from these counters.
+    Note versions remain in WorkingMemory and are read under the caller's authority.
+    """
+    messages = state.get('messages', [])
+    calls = {call['id']: call for message in messages if isinstance(message, AIMessage)
+             for call in message.tool_calls}
+    notes, investigations, repeated, observed = {}, {}, {}, {}
+    from .context_records import RESULT_REGIONS
+    for message, value in receipts(messages):
+        if message.name == 'WriteWorkingNote' and value.get('saved') and value.get('note_id'):
+            key = value['note_id']
+            prior = notes.get(key)
+            if prior and prior['observed_version'] > value.get('version', 0):
+                continue
+            notes[key] = {'note_id': key, 'observed_version': value.get('version', 0),
+                'title': calls.get(message.tool_call_id, {}).get('args', {}).get('title'),
+                'receipt_id': message.tool_call_id,
+                'readback': {'tool': 'ReadWorkingNote', 'arguments': {'note_id': key}},
+                'notice': 'Read current version; a colleague or user may have updated it since this receipt.'}
+        if message.name == 'read_research_agent_result' and value.get('status') == 'completed':
+            key = value.get('task_id')
+            if key:
+                assessment = value.get('assessment') or {}
+                investigations[key] = {'task_id': key, 'purpose': value.get('purpose'),
+                    'finding': assessment.get('finding'),
+                    'scope_explanation': assessment.get('scope_explanation'),
+                    'readback': {'tool': 'read_research_agent_result', 'arguments': {'task_id': key}},
+                    'status': 'investigator_proposal_not_author_adoption'}
+        if message.name in RESULT_REGIONS and message.tool_call_id in calls:
+            call = calls[message.tool_call_id]
+            key = canonical_sha256({'tool': message.name, 'arguments': call.get('args', {})})
+            if key in observed:
+                repeated.setdefault(key, {'tool': message.name, 'receipt_ids': [observed[key]]})['receipt_ids'].append(message.tool_call_id)
+            else:
+                observed[key] = message.tool_call_id
+    return {'working_notes': list(notes.values()), 'investigations': list(investigations.values()),
+        'repeated_observations': list(repeated.values()),
+        'notes_discovery': {'tool': 'SearchWorkingNotes', 'arguments': {'query': ''}},
+        'evidence_discovery': {'tool': 'browse_context', 'arguments': {'region': 'sources'}},
+        'progress_interpretation': 'Repeated exact reads may be legitimate. Decide whether new evidence changed the explanation, its scope, magnitude or investment implication. Counts and empty issues do not establish adequacy.',
+        'stopping_decision': 'Investigate a material, answer-changing uncertainty when a useful next observation is available. Otherwise deliver the supported answer and its specific remaining conditions; do not manufacture a precise forecast or search indefinitely.'}
 
 
 def author_action_tool():

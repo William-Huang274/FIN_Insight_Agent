@@ -53,6 +53,10 @@ class HarnessConsultations:
             that needs separate evidence, review for an argument you want challenged; neither is mandatory.
             Explain the target relationship and its bearing on the main answer in context; include existing
             evidence handles and unresolved alternatives when known. No separate plan or template is required.
+            Choose an assignment for the observation that could change your answer: a customer's
+            purchase/renewal decision, competitors' supply response, cash conversion or a forecast assumption.
+            A company summary is useful only when it resolves that question. Ask for the resulting
+            change in understanding, not a predetermined conclusion or a chapter to paste.
             Proposed formulas/comparisons are hypotheses: the investigator may revise them if they answer
             a different question. Draft assignments return an evidence-backed draft for your audit, not a final publication.
             use_current_report=true attaches the exact saved report; false works before drafting.
@@ -116,11 +120,12 @@ class HarnessConsultations:
             return dict(task_id=key, status=record['status'], reused=True,
                         read_tool='read_research_agent_result')
         from .source_acquisition_view import acquisition_snapshot
-        from .research_actions import research_action_view
+        from .research_actions import research_action_view, research_working_view
         # Freeze observations beside the request, not in its identity: rereading
         # a task result must not create a fresh paid investigation.
         record = dict(request=request, status='running', scope=self.tid+':'+self.rid,
             observations={'acquisition': acquisition_snapshot(state.get('messages', [])),
+                          'current_research': research_working_view(state),
                           'prior_actions': research_action_view(state)})
         _persist(path, record)
         # Freeze only source/tool records; do not copy the author's argument history.

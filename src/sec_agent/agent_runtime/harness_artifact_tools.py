@@ -125,8 +125,10 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         not semantic approval; historical batches can be superseded by later edits.
         field=research_actions reads imported research gaps, concrete next actions and author
         dispositions at the current version. Missing assessment is not scope clearance.
-        field=synthesis_context supplies the current question/version, action dispositions and
-        evidence/revision readback for final synthesis; it does not certify the author's thesis.
+        field=synthesis_context works before and after drafting: current question/version,
+        current note pointers, investigation findings, action dispositions, exact repeated reads
+        and evidence/revision readback. Use it at a handoff or synthesis decision, not after
+        every read. Counts are not research adequacy; it does not certify the author's thesis.
         """
         if field in ('research_actions', 'synthesis_context'):
             from .research_actions import research_action_view, synthesis_working_view

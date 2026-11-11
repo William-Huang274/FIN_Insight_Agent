@@ -66,7 +66,12 @@ WORKING_MEMORY_GUIDANCE = """
 Working memory is available through WriteWorkingNote, ReadWorkingNote and SearchWorkingNotes.
 Save useful current understanding when it changes or a handoff needs it.
 Use natural prose/Markdown in the user's language; no required template or note before taking action.
-Record what you established, source references when available, uncertainty, user corrections and next work.
+Organize consequential notes around a question or explanatory relationship, not a sequence of tool calls.
+Keep the current answer, the observation that supports or changed it, the plausible alternative and the
+next discriminating observation together in ordinary prose. Explain how this affects the user's decision.
+Use the same note/title when revising that relationship; retract superseded claims rather than appending
+an incompatible new conclusion. Preserve supported positive findings and source/calculation handles.
+This is for key judgments only: do not create a note for every fact or duplicate full source documents.
 Use a descriptive title: subject/company, period when relevant, and research topic (in the user's language).
 The title helps discovery; the returned note_id is the stable lookup key. Copy it, never guess it from the title.
 Working papers are a separate region from conversation history and exact query/calculation receipts.

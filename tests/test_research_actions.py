@@ -39,6 +39,7 @@ async def test_model_action_survives_import_restart_and_drives_version_bound_dis
         assert 'save_research_report' not in child.tools
         evidence = await child.execute('read_source_document', {'query':'Model selected cohort comparison'})
         receipt = await child.execute('record_research_assessment', {
+            'finding':'The observed large cohort renews; the small cohort remains unmeasured.',
             'scope_explanation':'The original question concerns several business models; the current evidence covers one.',
             'actions':[{'question_or_claim':'All customers renew', 'gap':'Only one cohort observed',
                 'consequence':'Retention and market size could change', 'next_action':'Compare renewal outcomes or narrow the population'}]})
@@ -66,12 +67,14 @@ async def test_model_action_survives_import_restart_and_drives_version_bound_dis
         got = await bridge.execute('read_research_agent_result',{'task_id':key})
         imported = json.loads(got.content)
         assert imported['assessment']['scope_explanation'].startswith('The original')
+        assert imported['assessment']['finding'].startswith('The observed')
         issue = imported['assessment']['actions'][0]['action_id']
         assert observed[0]['research_task']['question']=='Global adoption and business models'
         assert research_action_view(await bridge.state())['pending_material']==[issue]
         context = await bridge.execute('read_current_report', {'field':'synthesis_context','max_characters':12000})
         working = json.loads(json.loads(context.content)['text'])
         assert working['report_version']==1
+        assert working['current_research']['investigations'][0]['finding'].startswith('The observed')
         assert working['research_actions']['awaiting_independent_resolution']==[issue]
         assert working['research_actions']['actions'][0]['review_readback']['arguments']['task_id']==key
         # Reading again imports no duplicate obligations and dispatches no model.
@@ -169,3 +172,44 @@ def test_worked_methods_are_selectable_and_catalog_discloses_them():
     assert '教学假设' in selected and '13.3%' in selected
     assert '## 执行顺序' not in selected
     assert section in METHOD_TOOL_GUIDANCE
+
+
+def test_working_view_keeps_current_note_identity_without_copying_body_or_grading_repetition():
+    from langchain_core.messages import AIMessage
+    from sec_agent.agent_runtime.research_actions import synthesis_working_view
+    def call(key, name, args):
+        return AIMessage(content='', tool_calls=[{'id':key,'name':name,'args':args}])
+    def result(key, name, value):
+        return ToolMessage(name=name, tool_call_id=key, content=json.dumps(value))
+    messages = [call('n1','WriteWorkingNote',{'title':'Customer renewal','body':'Old claim'}),
+        result('n1','WriteWorkingNote',{'saved':True,'note_id':'stable','version':1}),
+        call('n2','WriteWorkingNote',{'title':'Customer renewal','body':'Current narrower claim'}),
+        result('n2','WriteWorkingNote',{'saved':True,'note_id':'stable','version':2}),
+        call('n3','WriteWorkingNote',{'title':'Customer renewal','body':'Unsaved claim'}),
+        result('n3','WriteWorkingNote',{'saved':False,'note_id':'stable','current_version':2})]
+    for key, offset in [('s1',0),('s2',0),('s3',6000)]:
+        messages += [call(key,'read_public_source',{'source_id':'original','offset':offset}),
+            result(key,'read_public_source',{'text':'Exact source'})]
+    view = synthesis_working_view({'question':'Investment decision','messages':messages})
+    current = view['current_research']
+    assert view['report_version']==0  # useful before a report exists
+    assert len(current['working_notes'])==1
+    note = current['working_notes'][0]
+    assert note['observed_version']==2 and note['title']=='Customer renewal'
+    assert note['readback']['arguments']=={'note_id':'stable'}  # current scoped read, not stale version
+    assert 'Old claim' not in json.dumps(view) and 'Unsaved claim' not in json.dumps(view)
+    assert current['repeated_observations']==[{'tool':'read_public_source','receipt_ids':['s1','s2']}]
+    assert 'adequacy' in current['progress_interpretation']
+    assert 'stop' not in current and 'quality_pass' not in current
+
+
+def test_reviewer_has_read_only_note_access_and_forward_method_entry():
+    from sec_agent.agent_runtime.answer_review_provider import review_tool_names
+    from sec_agent.research_foundation.research_methods import get_research_method, METHOD_TOOL_GUIDANCE
+    names = review_tool_names(['ReadWorkingNote','SearchWorkingNotes','WriteWorkingNote','save_research_report'])
+    assert names==('ReadWorkingNote','SearchWorkingNotes')
+    for method, section in [('research_loop','从核心发现到交叉验证'),
+                            ('scenario_sensitivity','从公开事实到前瞻判断')]:
+        assert section in METHOD_TOOL_GUIDANCE
+        chapter = get_research_method(method, section)
+        assert '教学假设' in chapter['content']

@@ -24,6 +24,10 @@ SAVED_RESULT_TOOLS = frozenset({"read_market_expectations", "discover_source_too
     "create_report_chart", "list_financial_data", "ReadWorkingNote", "read_handoff_material", "read_handoff_evidence",
     "read_source_document", "read_research_source", "read_delegated_evidence", "read_delegated_note", "check_quantitative_changes"})
 
+# Audit decisions are readable history, never source observations or new effects.
+SAVED_AUDIT_TOOLS = frozenset({'respond_research_action', 'record_research_assessment'})
+READABLE_RESULT_TOOLS = SAVED_RESULT_TOOLS | SAVED_AUDIT_TOOLS
+
 
 def calculator_observations(messages):
     observed = {}
@@ -159,12 +163,14 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         values, so a result field can be selected without guessing character offsets.
         Failed receipts retain original_status=error. Reading their error text
         never replays the operation or turns it into successful source evidence.
+        Saved review assessments and author dispositions can also be read by
+        exact receipt ID; these are historical model judgments, not evidence.
         """
         if offset < 0 or not 1 <= max_characters <= 24000:
             raise ToolException("请选择非负字符偏移和1至24000字符的窗口")
         saved = next((m for m in runtime.state.get("messages", []) if isinstance(m, ToolMessage)
                       and m.tool_call_id == tool_call_id
-                      and (m.status == 'error' or (m.name in SAVED_RESULT_TOOLS and m.status == "success"))), None)
+                      and (m.status == 'error' or (m.name in READABLE_RESULT_TOOLS and m.status == "success"))), None)
         if saved is None:
             prior_read = next((m for m in runtime.state.get('messages', []) if isinstance(m,ToolMessage)
                 and m.tool_call_id == tool_call_id and m.name == 'read_saved_result' and m.status == 'success'),None)
@@ -174,14 +180,19 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
                 except (ValueError,TypeError):
                     prior = {}
                 original = prior.get('original_tool_call_id')
-                if any(isinstance(m,ToolMessage) and m.tool_call_id==original and m.name in SAVED_RESULT_TOOLS
+                if any(isinstance(m,ToolMessage) and m.tool_call_id==original and m.name in READABLE_RESULT_TOOLS
                        and m.status=='success' for m in runtime.state.get('messages',[])):
                     return {'result_state':'original_result_selection_required', 'requested_tool_call_id':tool_call_id,
                         'meaning':'This is a saved read operation; address the original data receipt. Select its field explicitly.',
                         'new_tool_dispatch':False, 'readback':{'tool':'read_saved_result','arguments':{
                             'tool_call_id':original,'offset':0,'max_characters':max_characters}},
                         'previously_read_field':prior.get('json_pointer')}
-            raise ToolException("当前对话没有这条成功数据读取记录；不能跨窗口猜测或回放失败操作")
+            raise ToolException(json.dumps({'code':'saved_receipt_selection_required',
+                'requested_tool_call_id':tool_call_id, 'new_tool_dispatch':False,
+                'source_evidence':False,
+                'message':'No readable receipt with this identity in the current conversation. Select an observed ID; no cross-thread lookup or operation replay was performed.',
+                'read_options':[{'tool':'browse_context','arguments':{'region':'sources'}},
+                                {'tool':'browse_context','arguments':{'region':'numbers'}}]},ensure_ascii=False))
         content = saved.content if isinstance(saved.content, str) else json.dumps(saved.content, ensure_ascii=False)
         try:
             parsed = json.loads(content)
@@ -206,6 +217,9 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         return {"original_tool": saved.name, "original_tool_call_id": tool_call_id,
                 "original_status": saved.status,
                 **({'result_state':'saved_failure_receipt', 'source_evidence':False} if saved.status == 'error' else {}),
+                **({'result_state':'saved_audit_receipt', 'source_evidence':False,
+                    'notice':'Historical model judgment; inspect its bound report version before reuse.'}
+                   if saved.status == 'success' and saved.name in SAVED_AUDIT_TOOLS else {}),
                 "content": content[offset:offset+max_characters], "offset": offset,
                 "next_offset": offset+max_characters if offset+max_characters < len(content) else None,
                   "total_characters": len(content), "new_tool_dispatch": False,

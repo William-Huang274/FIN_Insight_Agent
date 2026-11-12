@@ -98,6 +98,31 @@ def test_saved_result_field_index_is_bounded_and_does_not_truncate_values():
     assert saved_result_field_index([None, False, 3])["fields"][2] == {"json_pointer": "/2", "kind": "scalar", "value": 3}
 
 
+@pytest.mark.parametrize('name', ['respond_research_action', 'record_research_assessment'])
+def test_saved_audit_receipt_is_readable_but_not_source_evidence(name):
+    import json
+    from types import SimpleNamespace
+    from sec_agent.agent_runtime.harness_business_tools import actionable_tool_feedback, model_receipt
+    from sec_agent.agent_runtime.conversation_tools import calculator_observations
+    from langchain_core.tools import ToolException
+    reader = next(g.tool for g in conversation_tools(thread_id='audit') if g.tool.name == 'read_saved_result')
+    raw = json.dumps({'disposition':'revised', 'report_digest':'old-version', 'rationale':'Original judgment'})
+    original = ToolMessage(name=name, tool_call_id='audit-id', content=raw)
+    runtime = SimpleNamespace(state={'messages':[original]})
+    result = reader.func(tool_call_id='audit-id', runtime=runtime)
+    assert result['content'] == raw and result['source_evidence'] is False
+    assert result['result_state'] == 'saved_audit_receipt' and result['new_tool_dispatch'] is False
+    assert model_receipt(original)['original_readback']['arguments']['tool_call_id'] == 'audit-id'
+    assert calculator_observations([original]) == {}
+    assert reader.func(tool_call_id='audit-id', runtime=runtime, json_pointer='/report_digest')['content'] == 'old-version'
+    with pytest.raises(ToolException) as exc:
+        reader.func(tool_call_id='audit-id', runtime=SimpleNamespace(state={'messages':[]}))
+    rejected = ToolMessage(name='read_saved_result', tool_call_id='rejected', status='error', content=str(exc.value))
+    assert actionable_tool_feedback(rejected)
+    feedback = json.loads(rejected.content)
+    assert feedback['source_evidence'] is False and 'content' not in feedback
+
+
 def test_recreated_agent_calculates_from_checkpoint_artifacts_and_isolates_threads():
     checkpoint = InMemorySaver()
     config = {"configurable": {"thread_id": "source-owner"}}

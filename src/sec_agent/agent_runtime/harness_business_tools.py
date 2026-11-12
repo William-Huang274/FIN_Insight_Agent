@@ -23,7 +23,7 @@ from mcp.server import Server
 from mcp import types
 
 from .on_demand_research import OnDemandResearchState
-from .conversation_tools import SAVED_RESULT_TOOLS
+from .conversation_tools import SAVED_RESULT_TOOLS, READABLE_RESULT_TOOLS
 from .source_result_view import source_result_view
 from .source_references import present_references, expand_references, reference_selection_feedback
 
@@ -45,7 +45,7 @@ def model_receipt(result):
     if result.status == 'error':
         value['execution_stop'] = not actionable_tool_feedback(result)
         value['feedback_kind'] = 'correctable_selection' if not value['execution_stop'] else 'execution_failure'
-    if result.status == 'success' and result.name in SAVED_RESULT_TOOLS:
+    if result.status == 'success' and result.name in READABLE_RESULT_TOOLS:
         value['original_readback'] = {'tool': 'read_saved_result',
             'arguments': {'tool_call_id': result.tool_call_id},
             'format': 'Exact canonical JSON; json_pointer and offsets address the original, not this presentation.'}
@@ -208,7 +208,7 @@ def restored_batch_feedback(messages, ids):
         if call.get('name') == message.name == 'read_saved_result':
             target_id = call.get('args', {}).get('tool_call_id')
             if any(isinstance(row, ToolMessage) and row.tool_call_id == target_id
-                   and (row.status == 'error' or (row.name in SAVED_RESULT_TOOLS and row.status == 'success'))
+                   and (row.status == 'error' or (row.name in READABLE_RESULT_TOOLS and row.status == 'success'))
                    for row in messages[:index]):
                 failure['available_original'] = {'tool':'read_saved_result', 'arguments':{'tool_call_id':target_id}}
         if call.get('name') == message.name == 'calculate_research_metric':

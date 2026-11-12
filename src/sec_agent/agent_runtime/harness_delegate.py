@@ -44,20 +44,36 @@ def delegation_payload(request, *, previous_scope=None, recovery_receipt=None):
     else:
         payload = {k: v for k, v in request.items() if k != 'method_text'}
         if report:
-            citations = {}
+            citations, source_catalog = {}, {}
             for source_id, citation in report.get('citations', {}).items():
                 citations[source_id] = {
                     'citation_handle': reference_handle(source_id),
                     'readback': {'tool': 'read_research_source', 'arguments': {'source_id': source_id}},
-                    'claim': citation.get('claim'),
-                    'sources': [{k: v for k, v in source.items() if k in {
+                    'claim': {k: v for k, v in (citation.get('claim') or {}).items()
+                              if k in {'kind', 'statement', 'numeric_authority'}},
+                    'source_refs': [],
+                }
+                for source in citation.get('sources', []):
+                    entry = {k: v for k, v in source.items() if k in {
                         'source_id', 'title', 'source_url', 'publication_date', 'publication_date_status',
                         'period', 'unit', 'revision', 'source_role', 'numeric_fact_authority',
-                    }} for source in citation.get('sources', [])],
-                }
+                    }}
+                    # Exact metadata deduplication only: distinct revisions or
+                    # units never share a catalog identity.
+                    identity = canonical_sha256(entry)
+                    source_catalog[identity] = entry
+                    if identity not in citations[source_id]['source_refs']:
+                        citations[source_id]['source_refs'].append(identity)
             payload['report'] = {**report, 'citations': citations}
+            payload['source_catalog'] = source_catalog
             payload['citation_notice'] = ('Citation entries are navigation, not full evidence. '
                 'Read the exact inherited original with the supplied readback; original snapshots remain saved.')
+        task = payload.get('research_task')
+        if task and task.get('observations'):
+            from .research_actions import compact_action_view
+            observations = task['observations']
+            payload['research_task'] = {**task, 'observations': {**observations,
+                'prior_actions': compact_action_view(observations.get('prior_actions', {}))}}
     if report:
         payload['reviewed_report_digest'] = canonical_sha256(report)
     payload['readback'] = 'browse_context and read_saved_result provide inherited successful source and calculation receipts.'

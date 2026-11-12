@@ -6,6 +6,7 @@
  * The bridge is opt-in until that host endpoint is qualified and deployed.
  */
 import { randomUUID } from 'node:crypto'
+import { installDeliveryConclusion } from './delivery.mjs'
 
 export function apply(ctx, config) {
   const base = new URL(config.endpoint)
@@ -14,6 +15,7 @@ export function apply(ctx, config) {
   }
   const token = process.env[config.tokenEnv]
   if (!token) throw new Error('FIN dispatch credential unavailable')
+  if (config.concludeDelivery) installDeliveryConclusion(ctx)
   let stopped = false
   let toolsVerified = false
   const post = async (path, body, signal, timeoutMs = 30_000) => {

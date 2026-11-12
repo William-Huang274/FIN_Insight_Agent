@@ -112,10 +112,15 @@ def research_action_view(state):
             continue
         for action in assessment.get('actions', []):
             response = responses.get(action['action_id'])
-            current = bool(response and response.get('report_digest') == digest)
+            from .research_disposition_binding import scope_unchanged
+            current = bool(response and (response.get('report_digest') == digest
+                or scope_unchanged(state.get('report') or {}, response)))
+            response_view = {k: v for k, v in response.items() if k != 'disposition_scope'} if response else None
             actions.append({**action, 'task_id': task_id, 'review_receipt': message.tool_call_id,
                 'reviewed_report_digest': result.get('reviewed_report_digest'),
-                'author_response': response, 'response_current': current,
+                'author_response': response_view, 'response_current': current,
+                'response_binding': ('exact_report' if response and response.get('report_digest') == digest
+                    else 'unchanged_textual_scope' if current else 'requires_recheck'),
                 'status': 'author_disposition_not_independent_clearance' if current else 'needs_author_decision',
                 'review_readback': {'tool': 'read_research_agent_result', 'arguments': {'task_id': task_id}}})
         for action_id in assessment.get('resolved_action_ids', []):
@@ -138,12 +143,41 @@ def research_action_view(state):
         'readback': {'tool': 'read_current_report', 'arguments': {'field': 'research_actions'}}}
 
 
+def compact_action_view(view):
+    """All issue identities remain; settled response prose is read on demand."""
+    rows = []
+    for action in view.get('actions', []):
+        row = dict(action)
+        if row.get('review_receipt'):
+            row['review_readback'] = {'tool': 'read_saved_result',
+                'arguments': {'tool_call_id': row['review_receipt']}}
+        response = row.get('author_response')
+        if response and response.get('receipt_id'):
+            row['author_response'] = {k: response.get(k) for k in
+                ('disposition', 'current_quote', 'report_version', 'report_digest', 'receipt_id')}
+            row['author_response']['readback'] = {'tool': 'read_saved_result',
+                'arguments': {'tool_call_id': response['receipt_id']}}
+        rows.append(row)
+    return {**view, 'actions': rows}
+
+
 def synthesis_working_view(state):
     """Project current bindings, never generate or choose the author's conclusions."""
-    view = research_action_view(state)
+    view = compact_action_view(research_action_view(state))
     # Retain binding and navigation, not settled audit prose, in the writing entry.
     # Version changes reactivate an old issue automatically through the existing view.
-    active = [a for a in view['actions'] if not a.get('resolution_current')]
+    active = []
+    for action in view['actions']:
+        if action.get('resolution_current'):
+            continue
+        row = dict(action)
+        if row.get('response_current') and row.get('author_response'):
+            response = row['author_response']
+            row['author_response'] = {k: response.get(k) for k in
+                ('disposition', 'report_version', 'report_digest', 'receipt_id')}
+            row['author_response']['readback'] = {'tool': 'read_saved_result',
+                'arguments': {'tool_call_id': response['receipt_id']}}
+        active.append(row)
     resolved = [{'action_id': a['action_id'], 'status': a['status'],
                  'reviewer_resolution': a['reviewer_resolution']}
                 for a in view['actions'] if a.get('resolution_current')]
@@ -193,7 +227,7 @@ def research_working_view(state):
                 investigations[key] = {'task_id': key, 'purpose': value.get('purpose'),
                     'finding': assessment.get('finding'),
                     'scope_explanation': assessment.get('scope_explanation'),
-                    'readback': {'tool': 'read_research_agent_result', 'arguments': {'task_id': key}},
+                    'readback': {'tool': 'read_saved_result', 'arguments': {'tool_call_id': message.tool_call_id}},
                     'status': 'investigator_proposal_not_author_adoption'}
         if message.name in RESULT_REGIONS and message.tool_call_id in calls:
             call = calls[message.tool_call_id]
@@ -254,6 +288,8 @@ def author_action_tool():
             'rationale': rationale, 'current_quote': current_quote, 'evidence_receipts': evidence_receipts,
             'report_version': report_version, 'report_digest': view['report_digest'],
             'status': 'author_disposition_not_independent_clearance'}
+        from .research_disposition_binding import disposition_scope
+        value['disposition_scope'] = disposition_scope(report, current_quote)
         return Command(update={'messages': [ToolMessage(name='respond_research_action',
             tool_call_id=runtime.tool_call_id, content=json.dumps(value, ensure_ascii=False))]})
 

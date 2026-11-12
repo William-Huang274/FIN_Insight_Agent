@@ -4,6 +4,41 @@ from contextlib import asynccontextmanager
 
 from uuid import uuid4
 
+
+@pytest.mark.anyio
+async def test_note_feedback_is_durable_and_exactly_readable_before_projection(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from langchain_core.tools import tool
+    from sec_agent.agent_runtime.conversation_tools import conversation_tools
+    from sec_agent.agent_runtime import quantitative_prose
+    @tool
+    def WriteWorkingNote(body: str):
+        """Synthetic note persistence receipt."""
+        return {'saved': True, 'note_id': 'note', 'version': 1}
+    check = {'findings': [{'kind': 'fixture', 'sentence': 'Current claim',
+                           'basis': {'exact': 'source ' * 1000}}],
+             'linked_ratio_bases': [], 'cited_claim_context': []}
+    monkeypatch.setattr(quantitative_prose, 'audit_changes', lambda *a, **k: check)
+    grants = [GrantedTool(WriteWorkingNote, 'working_note_write', 'fixture')]
+    grants += [g for g in conversation_tools(thread_id='t') if g.tool.name == 'read_saved_result']
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'tools.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='t', check=lambda: None,
+                                      note_versions=lambda *args: {})
+        await bridge.initialize({'question': 'fixture', 'messages': []})
+        returned = await bridge.call_tool(None, SimpleNamespace(name='WriteWorkingNote', arguments={'body': 'Current claim'}))
+        view = json.loads(returned.content[0].text)
+        entry = view['result']['quantitative_change_check']['findings'][0]
+        assert 'basis' not in entry
+        read = entry['details_readback']
+        result = await bridge.execute(read['tool'], {**read['arguments'], 'max_characters': 12000})
+        assert result.status == 'success'
+        value = json.loads(result.content)
+        assert value['source_evidence'] is False
+        assert json.loads(value['content']) == check['findings'][0]
+        notes = [m for m in (await bridge.state())['messages'] if m.type == 'tool' and m.name == 'WriteWorkingNote']
+        assert len(notes) == 1
+        assert json.loads(notes[0].content)['quantitative_change_check'] == check
+
 @pytest.fixture
 def anyio_backend():
     return 'asyncio'

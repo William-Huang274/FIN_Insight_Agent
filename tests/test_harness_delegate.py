@@ -77,6 +77,20 @@ def test_role_guidance_keeps_review_and_draft_distinct():
         module.delegation_guidance('publish')
 
 
+def test_handoff_deduplicates_only_identical_source_metadata():
+    source = {'source_id': 'source', 'title': 'Company', 'period': '2026Q2', 'unit': 'USD', 'revision': 'v1'}
+    revised = {**source, 'revision': 'v2'}
+    other_unit = {**source, 'unit': 'USD million'}
+    request = {'purpose': 'review', 'question': 'Original scope', 'as_of': '2026-11-12',
+        'report': {'title': 'Current', 'narrative_markdown': 'Current claim', 'charts': [],
+                   'citations': {'a': {'sources': [source, source, revised]},
+                                 'b': {'sources': [source, other_unit]}}}}
+    view = module.delegation_payload(request)
+    assert len(view['source_catalog']) == 3
+    assert len(view['report']['citations']['a']['source_refs']) == 2
+    assert len(view['report']['citations']['b']['source_refs']) == 2
+
+
 def test_report_handoff_preserves_body_and_binding_without_snapshot_copies():
     from copy import deepcopy
     from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
@@ -96,9 +110,10 @@ def test_report_handoff_preserves_body_and_binding_without_snapshot_copies():
     assert payload['research_task'] == request['research_task']
     citation = payload['report']['citations'][source]
     assert citation['readback'] == {'tool': 'read_research_source', 'arguments': {'source_id': source}}
-    assert citation['sources'][0]['unit'] == 'USD'
-    assert citation['sources'][0]['publication_date'] == '2026-11-10'
-    assert 'text' not in citation['sources'][0]
+    original_source = payload['source_catalog'][citation['source_refs'][0]]
+    assert original_source['unit'] == 'USD'
+    assert original_source['publication_date'] == '2026-11-10'
+    assert 'text' not in original_source
     assert payload['reviewed_report_digest'] == canonical_sha256(request['report'])
     assert len(json.dumps(payload)) < len(json.dumps(request)) / 5
     recovery = {'pending_receipt': 'exact-receipt'}

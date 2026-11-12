@@ -37,6 +37,14 @@ async def test_model_action_survives_import_restart_and_drives_version_bound_dis
         assert 'record_research_assessment' in child.tools
         assert 'respond_research_action' not in child.tools
         assert 'save_research_report' not in child.tools
+        if len(observed) > 1:
+            inherited = [m for m in (await child.state())['messages']
+                         if m.name == 'respond_research_action' and json.loads(m.content).get('recorded')]
+            assert len(inherited) == 1
+            read = await child.execute('read_saved_result', {'tool_call_id': inherited[0].tool_call_id})
+            audit = json.loads(read.content)
+            assert audit['source_evidence'] is False
+            assert json.loads(audit['content'])['rationale'].startswith('Model explains')
         evidence = await child.execute('read_source_document', {'query':'Model selected cohort comparison'})
         receipt = await child.execute('record_research_assessment', {
             'finding':'The observed large cohort renews; the small cohort remains unmeasured.',
@@ -48,6 +56,8 @@ async def test_model_action_survives_import_restart_and_drives_version_bound_dis
 
     monkeypatch.setattr('sec_agent.agent_runtime.harness_consultations.independent_review', provider)
     source_grants = [GrantedTool(read_source_document,'read','source')]
+    from sec_agent.agent_runtime.conversation_tools import conversation_tools
+    source_grants += [g for g in conversation_tools(thread_id='t') if g.tool.name == 'read_saved_result']
     art_grants = artifact_tools(artifacts=lambda _:artifacts,memory=None,delivery_intent='report',require_review=False)
     db = str(tmp_path/'state.sqlite')
     async with AsyncSqliteSaver.from_conn_string(db) as saver:
@@ -71,12 +81,13 @@ async def test_model_action_survives_import_restart_and_drives_version_bound_dis
         issue = imported['assessment']['actions'][0]['action_id']
         assert observed[0]['research_task']['question']=='Global adoption and business models'
         assert research_action_view(await bridge.state())['pending_material']==[issue]
+
         context = await bridge.execute('read_current_report', {'field':'synthesis_context','max_characters':12000})
         working = json.loads(json.loads(context.content)['text'])
         assert working['report_version']==1
         assert working['current_research']['investigations'][0]['finding'].startswith('The observed')
         assert working['research_actions']['awaiting_independent_resolution']==[issue]
-        assert working['research_actions']['actions'][0]['review_readback']['arguments']['task_id']==key
+        assert working['research_actions']['actions'][0]['review_readback']['arguments']['tool_call_id']==got.tool_call_id
         # Reading again imports no duplicate obligations and dispatches no model.
         await bridge.execute('read_research_agent_result',{'task_id':key})
         await bridge.execute('consult_research_agent',args)
@@ -102,6 +113,12 @@ async def test_model_action_survives_import_restart_and_drives_version_bound_dis
         assert not json.loads(rejected.content)['recorded']
         accepted = await bridge.execute('respond_research_action',response)
         assert json.loads(accepted.content)['recorded']
+        # Reviewer can read the original audit without author's write tools.
+        service.parent, service.saver = bridge, saver
+        second = await service.submit(question='Review replacement', context='Current argument',
+                                      purpose='review', use_report=True, methods=[], state=await bridge.state())
+        await service.tasks[second['task_id']]
+        assert len(observed) == 2
         delivered = await bridge.execute('deliver_current_report',{'version':1})
         assert json.loads(delivered.content)['research_action_status']['independent_clearance'] is False
         assert json.loads(delivered.content)['research_action_status']['awaiting_independent_resolution']==[issue]

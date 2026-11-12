@@ -131,9 +131,11 @@ class HarnessConsultations:
                           'prior_actions': research_action_view(state)})
         _persist(path, record)
         # Freeze only source/tool records; do not copy the author's argument history.
+        from .conversation_tools import SAVED_AUDIT_TOOLS
+        inherited = set(review_tool_names([g.tool.name for g in self.grants])) | SAVED_AUDIT_TOOLS
         source_messages = [m for m in state.get('messages', [])
                            if isinstance(m, ToolMessage) and m.status == 'success'
-                           and m.name in review_tool_names([g.tool.name for g in self.grants])]
+                           and m.name in inherited]
         initial = {'question':question, 'messages':source_messages}
         self.tasks[key] = asyncio.create_task(self.run(key, record, initial, body),
                                              context=self.execution_context.copy())

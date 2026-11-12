@@ -42,6 +42,13 @@ def model_receipt(result):
             pass
     value = {'receipt_id': result.tool_call_id, 'status': result.status,
              'result': present_references(source_result_view(body)) if result.status == 'success' else body}
+    if result.status == 'success' and isinstance(body, dict) and body.get('quantitative_change_check'):
+        from .research_feedback_view import quantitative_feedback_view
+        value['result']['quantitative_change_check'] = quantitative_feedback_view(
+            body['quantitative_change_check'], result.tool_call_id)
+    if isinstance(value['result'], dict) and 'disposition_scope' in value['result']:
+        scope = value['result'].pop('disposition_scope')
+        value['result']['scope_binding'] = 'section_and_shared_wording' if scope else 'whole_report'
     if result.status == 'error':
         value['execution_stop'] = not actionable_tool_feedback(result)
         value['feedback_kind'] = 'correctable_selection' if not value['execution_stop'] else 'execution_failure'
@@ -412,9 +419,8 @@ class HarnessBusinessTools:
             result = await self.execute(params.name, params.arguments or {})
             if self.stop_on_tool_error and result.status == 'error' and not actionable_tool_feedback(result):
                 self.failed_receipt = self.failed_receipt or result.tool_call_id
-            view = model_receipt(result)
             if params.name == 'WriteWorkingNote' and self.note_versions:
-                saved = view['result']
+                saved = json.loads(result.content)
                 if isinstance(saved, dict) and saved.get('saved') and not saved.get('unchanged'):
                     from .conversation_tools import calculator_observations
                     from .quantitative_prose import audit_changes
@@ -430,7 +436,13 @@ class HarnessBusinessTools:
                         report = audit_changes(previous if args.get('mode') != 'append' else '',
                             body, calculator_observations(messages), context=previous if args.get('mode') == 'append' else '')
                         if report['findings'] or report['linked_ratio_bases'] or report['cited_claim_context']:
-                            view['quantitative_change_check'] = report
+                            # Save the exact advisory next to the successful note receipt.
+                            # A projection alone is not an addressable readback target.
+                            saved['quantitative_change_check'] = report
+                            result = result.model_copy(update={'content': json.dumps(saved, ensure_ascii=False)})
+                            await self._checkpoint_call(self.graph.aupdate_state, self.config,
+                                {'messages': [result]}, as_node='tools')
+            view = model_receipt(result)
             text = json.dumps(view, ensure_ascii=False, separators=(',', ':'))
             # A completed rejection with a usable repair path is a tool result,
             # not an MCP execution failure. Native ACP also gates failed events;

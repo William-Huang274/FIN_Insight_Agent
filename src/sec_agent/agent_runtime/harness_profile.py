@@ -16,6 +16,11 @@ def profile_overlay(*, model, protocol, endpoint, prompt, context_window,
                 'persistent-bash', 'persistent-pwsh', 'llm-retry']
     patch = [{'id': name, 'disabled': True} for name in disabled]
     provider = {'deepseek_messages': 'deepseek-official', 'qwen_chat': 'fin-qwen', 'openai_responses': 'fin-openai'}[protocol]
+    # Research pressure target, not model capacity. The native pre-step meter
+    # includes the latest committed tool batch and keeps protocol-balanced tails.
+    # Legacy run options must not silently keep future Sol runs at 300k+.
+    if protocol == 'openai_responses' and 'sol' in model.lower():
+        compaction_threshold = min(compaction_threshold, 258_000 / context_window)
     patch += [{'id': 'system-prompt', 'config': {'includeHarnessIdentity': False,
         'includeRuntimeContext': False, 'personaPrefix': prompt}},
         {'id': 'compaction-basic', 'config': {'thresholdRatio': compaction_threshold,
@@ -62,6 +67,7 @@ def profile_overlay(*, model, protocol, endpoint, prompt, context_window,
         {'id': 'fin-dispatch', 'name': str(Path(dispatch_plugin).resolve()),
          'config': {'endpoint': endpoint, 'tokenEnv': 'FIN_HARNESS_LOCAL_TOKEN',
                     'requireBusinessTools': business_mcp is not None,
+                    'concludeDelivery': business_mcp is not None,
                     'waitForConsultations': wait_for_consultations}},
         {'id': 'fin-acp', 'name': '@deepseek-ai/dsh-acp', 'config': {'provider': provider, 'model': model}}]}]
     return patch

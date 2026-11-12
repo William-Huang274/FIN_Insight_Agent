@@ -342,6 +342,11 @@ async def organization_harness_session(*, native, resources, authority, check, o
             if consultations:
                 await consultations.ensure_finished()
             business = await bridge.state()
+            delivery = business.get('delivery')
+            if delivery and delivery.get('artifact_kind') == 'report' and (
+                    delivery.get('artifact_version') != business.get('report_version') or
+                    delivery.get('artifact_digest') != canonical_sha256(business.get('report'))):
+                raise RuntimeError('delivered_report_changed_before_projection')
             from .task_outcome import TaskOutcome
             from .source_references import render_answer_references
             delivered = result['text']
@@ -372,7 +377,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
             before = {m.id for m in state.get('messages', []) if m.id}
             receipts = [m for m in business.get('messages', []) if m.id not in before]
             delivery = business.get('delivery')
-            if result.get('status') == 'completed' and result.get('text'):
+            if result.get('status') == 'completed' and (result.get('text') or delivery):
                 _persist(last_delivery, {'run_id': result.get('reused_from_run', rid),
                                          **({'answer_version': canonical_sha256(text)} if challenge and challenge[0].artifact == 'answer' else {})})
             submitted = bool(delivery) or (intent == 'answer' and bool(result['text']))

@@ -192,6 +192,21 @@ def extract_publication_metadata(html, *, url=None):
                 add('published', previous.get_text(' ', strip=True), 'html',
                     'press_release.preceding_dateline', url)
             article = headings[0].find_parent('article')
+            # WordPress themes commonly expose a post-header byline rather than
+            # structured date metadata. Require the current article's own sole
+            # heading, post identity and author/date pair, never related cards.
+            post_header = headings[0].find_parent('header', class_='post-header')
+            if (article and post_header and post_header.find_parent('article') is article
+                    and {'post', 'type-post'} <= set(article.get('class', []))
+                    and not article.find_parent(['aside', 'nav', 'blockquote'])):
+                bylines = post_header.select('.post-info')
+                if len(bylines) == 1:
+                    dates = bylines[0].select(':scope > li > .date')
+                    authors = bylines[0].select(':scope > li > .author')
+                    if (len(dates) == len(authors) == 1 and authors[0].get_text(strip=True)
+                            and not dates[0].find(['a', 'p', 'time'])):
+                        add('published', dates[0].get_text(' ', strip=True),
+                            'wordpress', 'post_header.byline_date', url)
             stamps = [t for t in article.select('time[pubdate][datetime]')
                       if t.find_parent('article') is article] if article else []
             if len(stamps) == 1:

@@ -144,3 +144,21 @@ def test_decoded_xhtml_encoding_declaration_preserves_metadata():
     result = extract_publication_metadata(html, url='https://example.com/report')
     assert result.title == '情報通信白書'
     assert result.version_day.isoformat() == '2026-07-01'
+
+
+def test_wordpress_byline_requires_current_post_header_identity():
+    html = '''<html><head><title>Results</title></head><body>
+    <article class="post type-post"><header class="post-header"><h1>Results</h1>
+    <ul class="post-info"><li><span class="date">October 28, 2026</span></li>
+    <li><span class="author">Publisher</span></li></ul></header>
+    <p>Quarter ended September 30, 2026.</p>
+    <aside><div class="date">January 1, 2027</div></aside></article></body></html>'''
+    url = 'https://example.com/results'
+    assert publisher_html_day(html, url=url) == date(2026, 10, 28)
+    for changed in [html.replace('post-header', 'event-header'),
+                    html.replace('post type-post', 'event'),
+                    html.replace('class="author"', 'class="venue"'),
+                    html.replace('</ul>', '<li><span class="date">October 29, 2026</span></li></ul>'),
+                    html.replace('<head>', '<head><link rel="canonical" href="https://example.com/other">'),
+                    html.replace('<article', '<blockquote><article').replace('</article>', '</article></blockquote>')]:
+        assert not extract_publication_metadata(changed, url=url).evidence

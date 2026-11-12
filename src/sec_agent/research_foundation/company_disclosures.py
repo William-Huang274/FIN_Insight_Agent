@@ -7,7 +7,7 @@ import re
 from html import escape
 from io import BytesIO
 from datetime import date, timedelta
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urlencode, urljoin, urlsplit
 
 from bs4 import BeautifulSoup
 from connectors.sec_edgar_connector import SecEdgarConnector, SecEdgarConnectorError
@@ -44,7 +44,7 @@ _TICKER_SUBJECT = re.compile(
     r'annual report\b|investor relations\b|official website\b|company website\b|revenue\b|margin\b|'
     r'stock\b|shares\b|财报|业绩|申报|季报|年报|官网|公司网站|收入|毛利|股票)', re.I)
 _SUFFIX = re.compile(
-    r"\s+(?:incorporated|inc|corp(?:oration)?|company|plc|ltd|holdings?)\b.*$", re.I
+    r"\s+(?:incorporated|inc|corp(?:oration)?|company|plc|ltd|pbc|holdings?)\b.*$", re.I
 )
 _ANNUAL = {"10-K", "10-KT", "20-F", "40-F"}
 _PERIODIC = _ANNUAL | {"10-Q", "10-QT"}
@@ -183,6 +183,38 @@ class CompanySources:
         except SecEdgarConnectorError as exc:
             raise ExternalSourceError(exc.reason_code or "sec_transport_error") from exc
 
+    async def registration_issuer(self, request):
+        """Discover non-ticker registrants in SEC's index, then read submissions.
+
+        Index excerpts are navigation only. Do not choose the issuer of a filing
+        merely mentioning the requested company or invent a trading symbol.
+        """
+        form = re.search(r'\b(?:[SF]-[1348]|424B4)(?:/A)?\b', request.query, re.I)
+        if not form:
+            return None
+        subject = re.sub(r'\bsite:\S+', '', request.query[:form.start()], flags=re.I)
+        subject = re.sub(r'\b(?:SEC|EDGAR|form|registration|filing|20\d{2})\b', '', subject, flags=re.I).strip()
+        if not subject or len(subject) > 100 or '://' in subject:
+            return None
+        cutoff = request.run_scope.research_as_of.date().isoformat()
+        url = 'https://efts.sec.gov/LATEST/search-index?' + urlencode({
+            'q': subject, 'forms': form.group().upper(), 'dateRange': 'custom',
+            'startdt': '2001-01-01', 'enddt': cutoff, 'from': 0, 'size': 100})
+        data = json.loads(await self.get(url, timeout=20))
+        rows = {}
+        for hit in data.get('hits', {}).get('hits', []):
+            source = hit.get('_source', {})
+            filed = source.get('file_date', '')
+            if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', filed) or filed > cutoff:
+                continue
+            ciks, names = source.get('ciks', []), source.get('display_names', [])
+            if len(ciks) != 1 or len(names) != 1 or not str(ciks[0]).isdigit():
+                continue
+            cik = str(ciks[0]).zfill(10)
+            name = re.sub(r'\s*\(CIK\s+\d+\)\s*$', '', names[0]).strip()
+            rows[(cik, name)] = dict(title=name, ticker='CIK:' + cik, cik_str=cik)
+        return issuer_match(list(rows.values()), subject)
+
     async def fetch(self, url, *, timeout_seconds):
         if (
             urlsplit(url).netloc == "www.sec.gov"
@@ -245,6 +277,11 @@ class CompanySources:
         except (ExternalSourceError, ValueError) as exc:
             error = getattr(exc, "code", "sec_directory_invalid")
             row = None
+        if not row:
+            try:
+                row = await self.registration_issuer(request)
+            except (ExternalSourceError, ValueError, TypeError, KeyError) as exc:
+                error = getattr(exc, 'code', 'sec_registration_index_invalid')
         if not row and (
             error or any(words(request.query) == words(v[0]) for v in _SITES.values())
         ):

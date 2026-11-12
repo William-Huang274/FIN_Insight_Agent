@@ -70,8 +70,10 @@ class SecEdgarConnector:
     def read_public_resource(self, url: str, *, timeout: float, max_bytes: int = 16_000_000) -> bytes:
         """Bounded SEC-only transport for online tools. Don't forward the SEC identity on redirects."""
         parsed = urlsplit(url)
-        if (parsed.scheme != 'https' or parsed.netloc not in {'data.sec.gov', 'www.sec.gov'}
-                or not parsed.path.startswith(('/files/', '/submissions/', '/Archives/edgar/data/'))):
+        ordinary = (parsed.netloc in {'data.sec.gov', 'www.sec.gov'}
+                    and parsed.path.startswith(('/files/', '/submissions/', '/Archives/edgar/data/')))
+        fulltext = parsed.netloc == 'efts.sec.gov' and parsed.path == '/LATEST/search-index'
+        if parsed.scheme != 'https' or not (ordinary or fulltext):
             raise SecEdgarConnectorError('Untrusted SEC endpoint', reason_code='sec_url_outside_contract')
         with self._live_lock:
             delay = self.min_interval - (time.monotonic() - SecEdgarConnector._last_live_request)

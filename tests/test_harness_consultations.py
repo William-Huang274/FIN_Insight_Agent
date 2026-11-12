@@ -326,6 +326,42 @@ async def test_host_wait_uses_durable_explicit_read_not_submission(tmp_path, mon
 
 
 @pytest.mark.anyio
+async def test_budget_wait_preserves_active_native_child_without_paid_parent_polling(tmp_path):
+    finish = asyncio.Event()
+    service = HarnessConsultations(directory=tmp_path, saver=None, grants=[], tid='t', rid='r',
+        check=lambda: None, scope=lambda: None, budget=object(), environment={},
+        model='deepseek-flash', basis={}, as_of='2026-11-11', public_sink=None,
+        native_delegate=SimpleNamespace(options={'reservation_micros':400000}))
+    snapshot = {'available_micros':3045333, 'delivery_floor_micros':0}
+    parent = SimpleNamespace(store=SimpleNamespace(snapshot=lambda *args:dict(snapshot)),
+                             owner='o', budget='b', reservation=3100000)
+    child = asyncio.create_task(finish.wait())
+    service.tasks['child'] = child
+    try:
+        assert await service.dispatch_ready(timeout=0, parent_dispatch=parent)=={'status':'waiting'}
+        assert not child.done()
+        waiter = asyncio.create_task(service.dispatch_ready(timeout=10, parent_dispatch=parent))
+        await asyncio.sleep(.01); waiter.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await waiter
+        assert not child.done()
+        # Settlement alone must not let a child's next request race the parent.
+        snapshot['available_micros'] += 400000
+        assert await service.dispatch_ready(timeout=0, parent_dispatch=parent)=={'status':'waiting'}
+        snapshot['available_micros'] = 3500000
+        assert await service.dispatch_ready(timeout=0, parent_dispatch=parent)=={'status':'ready'}
+        snapshot['delivery_floor_micros'] = 1
+        assert await service.dispatch_ready(timeout=0, parent_dispatch=parent)=={'status':'waiting'}
+        finish.set(); await child
+        snapshot['available_micros'] = 0
+        # After completion normal atomic budget admission owns stop; nothing
+        # here releases holds, creates credit or retries a failed request.
+        assert await service.dispatch_ready(timeout=0, parent_dispatch=parent)=={'status':'ready'}
+    finally:
+        await service.close()
+
+
+@pytest.mark.anyio
 async def test_child_uses_run_context_after_submitting_memory_scope_exits(tmp_path, monkeypatch):
     from sec_agent.agent_runtime.working_memory_tools import native_memory_scope
     from sec_agent.agent_runtime.working_memory import WorkingMemoryAccessDenied

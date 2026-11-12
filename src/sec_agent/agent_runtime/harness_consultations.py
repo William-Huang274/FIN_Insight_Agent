@@ -378,10 +378,12 @@ class HarnessConsultations:
         return Command(update={'messages':[*messages, ToolMessage(name='read_research_agent_result',
             tool_call_id=runtime.tool_call_id, content=json.dumps(result,ensure_ascii=False))]})
 
-    async def dispatch_ready(self, timeout=20):
+    async def dispatch_ready(self, timeout=20, *, parent_dispatch=None):
         """Wait outside model dispatch and its financial reservation.
 
-        Only explicit result reads suspend the author, not task submission. Derive
+        Explicit result reads suspend the author. Near the shared budget limit,
+        also wait for active native children instead of cancelling paid work
+        when the next author reservation fails. Derive
         the wait from durable receipts so cancel/recovery cannot forget it. The
         private host endpoint long-polls small state, never the large LLM request.
         """
@@ -404,6 +406,17 @@ class HarnessConsultations:
                     raise RuntimeError('consultation_interrupted_reconcile_provider_ledger_before_resume')
             else:
                 tasks.append(task)
+        active = [task for task in self.tasks.values() if not task.done()]
+        if active and parent_dispatch is not None and self.native_delegate is not None:
+            snapshot = await asyncio.to_thread(parent_dispatch.store.snapshot,
+                parent_dispatch.owner, parent_dispatch.budget)
+            # A child can settle and reserve between ready and reserve. Leave
+            # room for each active child's next request, not just current holds.
+            child_reservation = self.native_delegate.options['reservation_micros']
+            required = (parent_dispatch.reservation + len(active) * child_reservation
+                        + snapshot['delivery_floor_micros'])
+            if snapshot['available_micros'] < required:
+                tasks.extend(task for task in active if task not in tasks)
         if tasks:
             await asyncio.wait(tasks, timeout=timeout)
         await asyncio.to_thread(self.check)

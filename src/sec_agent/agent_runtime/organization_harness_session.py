@@ -457,7 +457,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
                         reviewer=review['reviewer'],opinion=review['opinion'])
 
             async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token,
-                    readiness=consultations.dispatch_ready if consultations else None) as endpoint:
+                    readiness=(lambda: consultations.dispatch_ready(parent_dispatch=dispatch))
+                        if consultations else None) as endpoint:
                 from .source_acquisition_view import acquisition_snapshot
                 start_state = await bridge.state()
                 research_start = acquisition_snapshot(start_state.get('messages', []))

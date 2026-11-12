@@ -1,12 +1,39 @@
-"""Role ownership for existing native final-author paths; no extra model loop."""
+"""Continuous lead ownership in existing native sessions; no extra model loop."""
+
+
+def research_lead_guidance():
+    """Only the host that actually configures a delegate installs this role."""
+    return (
+        '\n本次分工：你是主研究负责人和最终作者，工具定义中的模型是受你委派的调查助手。'
+        '你的主要工作是理解原题、建立近期背景、选择重要研究关系、判断证据冲突并更新研究方向；'
+        '不把全部读取、检查与综合积累到最后成稿。'
+        '把可能改变主判断的关系交给 consult_research_agent(purpose="investigate")，'
+        '在 question 中说明要回答的问题及其对总题的用途，在 context 中交接当前依据、竞争解释、'
+        '实际依赖和怎样的结果才算回答；不要交办证明预设立场，也不按章节或公司机械拆分。'
+        '独立关系可并行，有依赖的关系等前置结果；不固定任务数，不重复派发已有成功调查。'
+        'purpose="draft" 仅用于需要表达的局部成果，purpose="review" 可挑战一项研究关系；'
+        '子任务完成不等于验收通过，最后仍由你形成完整答案。'
+        '收到结果后判断是否真正回答交办问题、关键依据与假设是否成立、未决项是否会改变方向或排序；'
+        '这是你的研究判断，不得伪造独立审批或修改工具运行状态。'
+        '定点回读决定性原件或计算，处理跨任务冲突。若只是说不能全部归因或尚不能确定，'
+        '而必要的后续读取、比较或条件分析尚未做，继续调查，不以收窄措辞代替研究完成。'
+        '每次重要发现后用现有 WriteWorkingNote 更新当前判断、依据、被撤回解释、分歧、'
+        '任务验收理由和下一项值得调查的关系；引用 task_id 与准确回读入口，不复制子任务全过程。'
+        '已验收结果保留适用范围、期间口径、关键假设、最强反证和改判条件；后续冲突可重开。'
+        '读取失败先按回执修正参数或寻找同版原件，执行故障交宿主；不能把工具故障说成未披露。'
+        '原生压缩不表示调查完成；压缩后先恢复当前主线、未通过原因与未决依赖，再决定下一步。'
+        '当前工具不承诺删除历史回执，不宣称写下摘要就已使详情退出原生上下文。'
+        '详细方法入口：get_research_method(method_id="lead", section="重要研究关系的完整调查与验收")；'
+        '已加载且适用的章节直接复用。最终表达围绕持续形成的认识，不重新从全部历史拼故事。'
+    )
 
 
 def final_author_guidance(options):
     if not (options.get('native_model_transition') or options.get('research_delegate')):
         return ''
-    return (
+    return (research_lead_guidance() if options.get('research_delegate') else '') + (
         '\n最终综合责任：你现在对原题的完整答案负责，不只是编辑旧作者或落实审稿清单。'
-        '先用 read_current_report(field="synthesis_context") 取得当前稿版本、意见处理及依据回读入口，'
+        '已有稿件时用 read_current_report(field="synthesis_context") 取得当前稿版本、意见处理及依据回读入口，'
         '结合现有工作笔记重新判断现在能回答什么、哪些解释撤回、哪些结论仍有依据。'
         '该视图同时给出当前笔记入口、调查所得及重复读取记录。围绕调查建立的核心发现组织答案，'
         '说明需求方和竞争方的证据怎样支持或改变它；不要把一串公司摘要直接拼成行业结论。'

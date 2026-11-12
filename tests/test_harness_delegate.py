@@ -60,6 +60,9 @@ async def test_native_delegate_uses_shared_host_and_isolated_native_session(tmp_
     assert observed['input']['research_task']==request['research_task']
     patch=Path(observed['acp']['arguments'][-1]).read_text(encoding='utf8')
     assert '完整草稿' in patch and '不会直接覆盖' in patch
+    assert '问题理解、定向取证、比较或计算、条件判断与自查' in patch
+    assert '来源仅部分读取且关键段未查时继续分页或定位' in patch
+    assert '主研究负责人和最终作者' not in patch
     assert 'llm-retry' in patch and '"maxRetries": 0' in patch
     # Native completion can be reused without making another provider request.
     monkeypatch.setattr(module,'completed_recovery',lambda *a,**k:{'text':'Saved completed draft'})

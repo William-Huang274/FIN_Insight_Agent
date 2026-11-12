@@ -10,11 +10,20 @@ def _encoded(value):
 
 def observe_context(body):
     calls, groups, sizes, blocksizes = {}, {}, Counter(), Counter()
+    largest = []
     messages=body.get('messages',body.get('input',[]))
     if not isinstance(messages,list): messages=[]
     for position,message in enumerate(messages):
         if not isinstance(message,dict): continue
-        sizes[str(message.get('role','unknown'))]+=len(_encoded(message))
+        role = str(message.get('role', 'unknown'))
+        characters = len(_encoded(message))
+        sizes[role] += characters
+        # Positions and sizes permit locating oversized handoffs without copying
+        # source text, private reasoning, arguments or credentials to telemetry.
+        largest.append({'message_index': position, 'role': role,
+                        'characters': characters})
+        largest.sort(key=lambda row: -row['characters'])
+        del largest[8:]
         toolcalls=list(message.get('tool_calls',[]) or [])
         results=[]
         if message.get('type') == 'function_call':
@@ -54,6 +63,7 @@ def observe_context(body):
         for g in groups.values() if g['calls']>1]
     repeated.sort(key=lambda r:-r['identical_result_repeats'])
     return {'message_count':len(messages),'message_characters_by_role':dict(sizes),
+        'largest_messages': largest,
         'content_block_characters_by_type':dict(blocksizes), 'system_characters':len(_encoded(body.get('system',''))),
         'observed_tool_calls':sum(g['calls'] for g in groups.values()),
         'tool_schema_characters':len(_encoded(body.get('tools',[]))),

@@ -73,6 +73,8 @@ async def test_native_flash_draft_is_proposal_with_original_scope_and_shared_evi
         await bridge.initialize({'question':'Original comprehensive question', 'messages':[]})
         description = bridge.tools['consult_research_agent'].description
         assert 'deepseek-flash high' in description and 'independent Sol high' not in description
+        assert 'not proof of your hypothesis' in description
+        assert 'does not certify the whole question' in description
         args = dict(question='Investigate and draft the assigned question', context='Lead preliminary understanding', purpose='draft')
         receipt = await bridge.execute('consult_research_agent', args)
         key = json.loads(receipt.content)['task_id']

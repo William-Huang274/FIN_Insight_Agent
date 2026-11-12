@@ -479,12 +479,6 @@ async def organization_harness_session(*, native, resources, authority, check, o
                     '\nSource acquisition at run start (not a completeness verdict): ' + json.dumps(research_start, ensure_ascii=False) +
                     '\nRequested delivery: ' + intent + '. Save useful working understanding as needed; only deliver the requested artifact form.'+
                     '\nUse returned citation_handle values in source_id fields and [REF-...] citations. They bind exact observed originals/calculations; do not shorten them further. Original long IDs remain compatible.') + depth_content + method_content
-                if options.get('research_delegate'):
-                    prompt += ('\n本次分工：你是主研究者和最终作者。先自行理解原题并调查近期事实，形成有依据的研究重点；'
-                        '再通过 consult_research_agent 将调查与草稿任务交给工具定义中的模型（purpose=draft）。'
-                        '你决定委派范围与方法，提供必要依据和未决问题，允许对方质疑你的假设。'
-                        '收到草稿后，由你对照原题、原件和推断进行审核，必要时亲自补查并重构最终报告。'
-                        '最终稿由你保存和交付，不再转回子模型成稿。不要把委派完成状态当作研究质量通过。')
                 from .synthesis_guidance import final_author_guidance
                 prompt += final_author_guidance(options)
                 patch = profile_overlay(model=options['model'], protocol=options['protocol'], endpoint=endpoint,

@@ -60,6 +60,12 @@ def assessment_tool(task_id, request, prior_actions=()):
         establish a baseline. Do not invent probabilities or treat a failed read as nondisclosure.
         Include source/calculation handles. Preserve supported positive findings, not
         only objections. This is public research prose, not private reasoning or a checklist.
+        Report the completed analytical relationship, not merely a limit on an extreme claim.
+        Distinguish work not attempted, a partially read source, tool access failure, and an
+        investigated public-information limit. Where material, explain the supported magnitude,
+        timing or conditions and what additional observation would change the answer.
+        This result is subject to lead acceptance; recording it does not mean acceptance or
+        removal of the investigation history from context.
         """
         if not scope_explanation.strip():
             return {'recorded': False, 'feedback': 'Explain the scope actually supported by the evidence.'}

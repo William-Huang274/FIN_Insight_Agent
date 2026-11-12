@@ -101,3 +101,17 @@ def test_context_observation_native_anthropic_blocks_are_counted_without_reasoni
     assert value['repeated_argument_groups'][0]['identical_result_repeats']==2
     assert value['content_block_characters_by_type']['thinking']>0
     assert 'private trace' not in json.dumps(value)
+
+
+def test_context_observation_locates_large_messages_without_copying_payloads():
+    body = {'input': [{'role': 'tool', 'content': 'secret-result-' + 'x' * n}
+                      for n in range(12)]}
+    original = deepcopy(body)
+    result = observe_context(body)
+    assert body == original
+    assert len(result['largest_messages']) == 8
+    assert result['largest_messages'][0]['message_index'] == 11
+    assert all(set(row) == {'message_index', 'role', 'characters'}
+               for row in result['largest_messages'])
+    assert 'secret-result-' not in json.dumps(result)
+    assert 'tokens' not in result and 'stop' not in result

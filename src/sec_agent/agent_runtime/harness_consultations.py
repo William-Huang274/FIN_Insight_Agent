@@ -65,6 +65,10 @@ class HarnessConsultations:
             After material reconstruction, review the actual replacement explanation with
             purpose=review and use_current_report=true; a pre-draft opinion cannot clear final prose.
             Give the reviewer the original decision and unresolved relationships, not a requested verdict.
+            For an investigation, define the material relationship and how its answer could change the
+            decision; request evidence, analysis and a conditional finding, not proof of your hypothesis.
+            Check each returned result before relying on it and update your working understanding.
+            A locally checked result does not certify the whole question or authorize history deletion.
             The host separately supplies the original research question; your focus does not replace it.
             method_ids selects optional method-library IDs, not new permissions. Returns task_id promptly.
             Continue useful independent work, then read_research_agent_result; results are proposals, not verdicts.

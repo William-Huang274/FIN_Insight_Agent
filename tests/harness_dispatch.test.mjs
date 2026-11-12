@@ -4,6 +4,17 @@ import { createServer } from 'node:http'
 import { once } from 'node:events'
 import { apply } from '../integrations/deepseek-harness/dispatch.mjs'
 
+test('missing acceptance service blocks dispatch instead of silently disabling accounting', async () => {
+  let stream
+  process.env.FIN_ACCEPTANCE_FIXTURE='fixture'
+  try {
+    apply({inject(){},on(_name,handler){stream=handler}}, {endpoint:'http://127.0.0.1:1',
+      tokenEnv:'FIN_ACCEPTANCE_FIXTURE',waitForConsultations:true})
+    await assert.rejects(async()=>{for await(const _ of stream({},async function*(){assert.fail('provider called')})){}},
+      /context service unavailable/)
+  } finally {delete process.env.FIN_ACCEPTANCE_FIXTURE}
+})
+
 test('slow durable host readiness outlives 30s without reserving or cancelling child work', async () => {
   const paths=[]; let stream, forwarded=0
   const server=createServer(async(req,res)=>{
@@ -15,7 +26,7 @@ test('slow durable host readiness outlives 30s without reserving or cancelling c
   server.listen(0,'127.0.0.1');await once(server,'listening')
   process.env.FIN_SLOW_WAIT_TOKEN='fixture'
   try {
-    apply({on(_,handler){stream=handler}}, {endpoint:`http://127.0.0.1:${server.address().port}`,tokenEnv:'FIN_SLOW_WAIT_TOKEN',waitForConsultations:true})
+    apply({inject(_names,fn){fn({on(){},effect(){}})},on(_,handler){stream=handler}}, {endpoint:`http://127.0.0.1:${server.address().port}`,tokenEnv:'FIN_SLOW_WAIT_TOKEN',waitForConsultations:true})
     for await(const _ of stream({},async function*(){forwarded++;yield{type:'finish',reason:{kind:'stop'}}})){}
     assert.equal(forwarded,1)
     assert.deepEqual(paths,['/calls/ready','/calls/reserve','/calls/settle'])
@@ -33,7 +44,7 @@ test('explicit cancellation still interrupts host readiness before spending', as
   server.listen(0,'127.0.0.1');await once(server,'listening')
   process.env.FIN_CANCEL_WAIT_TOKEN='fixture'
   try {
-    apply({on(_,handler){stream=handler}}, {endpoint:`http://127.0.0.1:${server.address().port}`,tokenEnv:'FIN_CANCEL_WAIT_TOKEN',waitForConsultations:true})
+    apply({inject(_names,fn){fn({on(){},effect(){}})},on(_,handler){stream=handler}}, {endpoint:`http://127.0.0.1:${server.address().port}`,tokenEnv:'FIN_CANCEL_WAIT_TOKEN',waitForConsultations:true})
     await assert.rejects(async()=>{for await(const _ of stream({signal:cancellation.signal},async function*(){assert.fail('provider called')})){}},/abort|timeout/i)
     assert.equal(called,true)
   } finally {server.closeAllConnections();server.close();delete process.env.FIN_CANCEL_WAIT_TOKEN}
@@ -49,7 +60,7 @@ test('host wait does not send large context, reserve budget or call provider unt
   server.listen(0,'127.0.0.1');await once(server,'listening')
   process.env.FIN_TEST_DISPATCH_TOKEN='fixture'
   try {
-    apply({on(_,handler){stream=handler}},{endpoint:`http://127.0.0.1:${server.address().port}`,tokenEnv:'FIN_TEST_DISPATCH_TOKEN',waitForConsultations:true})
+    apply({inject(_names,fn){fn({on(){},effect(){}})},on(_,handler){stream=handler}},{endpoint:`http://127.0.0.1:${server.address().port}`,tokenEnv:'FIN_TEST_DISPATCH_TOKEN',waitForConsultations:true})
     for await(const _ of stream({messages:['large-context'.repeat(10000)]},async function*(){forwarded++;yield{type:'finish',reason:{kind:'stop'}}})){}
     assert.equal(forwarded,1)
     assert.equal(receipts.filter(r=>r.path==='/calls/reserve').length,1)

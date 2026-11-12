@@ -89,8 +89,97 @@ class HarnessConsultations:
             """
             return await self.read(task_id, wait_seconds, runtime)
 
+        @tool
+        async def assess_research_result(task_id: str, result_digest: str,
+                disposition: Literal['accepted', 'needs_work', 'reopened'], finding: str,
+                scope_and_conditions: str, counterevidence: str, unresolved: str,
+                evidence_receipt_ids: list[str], runtime: ToolRuntime):
+            """Record your judgment after reading a specific delegated result. Accept only after
+            checking the assigned relationship, evidence and conditional finding. Preserve period,
+            units, scope, assumptions, strongest countercase and remaining unknowns in concise prose;
+            explain explicitly when no counterevidence or unresolved issue was found. Bind key
+            evidence using returned tool_call_id handles. Accepted results leave active native
+            context as this summary plus exact readback; originals remain saved. This is your
+            bounded research judgment, not runtime certification or clearance of report review
+            actions. Use needs_work/reopened when further investigation is material; commission
+            that work separately. Do not accept merely to reduce tokens. Changed results require
+            a fresh read and decision. Never suppress an unresolved condition in the summary.
+            """
+            return self.assess(task_id, result_digest, disposition, finding, scope_and_conditions,
+                               counterevidence, unresolved, evidence_receipt_ids, runtime.state)
+
         return [GrantedTool(t, 'delegated_task_control', '同一预算内的按需只读调查及独立复核')
-                for t in (consult_research_agent, read_research_agent_result)]
+                for t in (consult_research_agent, read_research_agent_result, assess_research_result)]
+
+    def assess(self, key, digest, disposition, finding, conditions, counterevidence, unresolved, evidence, state):
+        from .research_result_acceptance import result_version
+        self.check()
+        feedback = {'decision_recorded': False, 'readback': {'tool': 'read_research_agent_result',
+                     'arguments': {'task_id': key}}}
+        if len(key) != 64 or any(c not in '0123456789abcdef' for c in key):
+            return {**feedback, 'error': 'Use the returned task_id.'}
+        path = self.directory/(key+'.json')
+        record = json.loads(path.read_text(encoding='utf8')) if path.exists() else {}
+        if record.get('status') != 'completed' or result_version(record) != digest:
+            return {**feedback, 'error': 'Result unavailable or changed; read the current completed result first.'}
+        messages = state.get('messages', [])
+        observed = [json.loads(m.content) for m in messages if isinstance(m, ToolMessage)
+                    and m.name == 'read_research_agent_result' and m.status == 'success']
+        if not any(b.get('task_id') == key and b.get('result_digest') == digest for b in observed):
+            return {**feedback, 'error': 'Read this exact result before assessing it.'}
+        texts = [finding, conditions, counterevidence, unresolved]
+        if (disposition not in {'accepted', 'needs_work', 'reopened'}
+                or any(not s.strip() for s in texts) or sum(map(len, texts)) > 10000):
+            return {**feedback, 'error': 'Provide a concise finding, scope/conditions, counterevidence and unresolved state (total <=10000 characters).'}
+        from .conversation_tools import READABLE_RESULT_TOOLS
+        available = {m.tool_call_id for m in messages if isinstance(m, ToolMessage) and m.status == 'success'
+                     and m.name in READABLE_RESULT_TOOLS}
+        if not evidence or len(evidence) > 24 or any(e not in available for e in evidence):
+            return {**feedback, 'error': 'Bind 1-24 successfully read evidence/result receipt IDs; no invented handles.'}
+        return dict(decision_recorded=True, task_id=key, result_digest=digest, disposition=disposition,
+                    finding=finding, scope_and_conditions=conditions, counterevidence=counterevidence,
+                    unresolved=unresolved, evidence_readback=[{'tool':'read_saved_result',
+                        'arguments':{'tool_call_id':e}} for e in dict.fromkeys(evidence)])
+
+    async def context_projection(self, candidates):
+        """Authenticated host projection; never trust a model's invented acceptance marker."""
+        from .research_result_acceptance import latest_decisions, result_version, accepted_projection
+        from .harness_business_tools import model_receipt
+        self.check()
+        if not self.parent:
+            return {'replacements': []}
+        messages = (await self.parent.state()).get('messages', [])
+        decisions = latest_decisions(messages)
+        originals = {m.tool_call_id:m for m in messages if isinstance(m, ToolMessage)
+                     and m.name == 'read_research_agent_result' and m.status == 'success'}
+        replacements = []
+        for item in candidates:
+            original = originals.get(item.get('receipt_id'))
+            if original is None:
+                if item.get('retired'):
+                    raise RuntimeError('accepted_result_original_receipt_missing')
+                continue
+            body = json.loads(original.content)
+            key, digest = body.get('task_id'), body.get('result_digest')
+            if not key or not digest:
+                continue  # Legacy results need a fresh version-bound read.
+            decision, decision_id = decisions.get(key, ({}, None))
+            path = self.directory/(key+'.json')
+            if not path.exists():
+                raise RuntimeError('accepted_result_task_record_missing')
+            record = json.loads(path.read_text(encoding='utf8'))
+            accepted = (decision.get('disposition') == 'accepted' and decision.get('result_digest') == digest
+                        and record.get('status') == 'completed' and result_version(record) == digest)
+            if accepted:
+                replacement = accepted_projection(original, decision, decision_id)
+            elif item.get('retired'):
+                replacement = model_receipt(original)
+                replacement['context_notice'] = 'Acceptance is no longer current. Reassess before relying on this historical result.'
+            else:
+                continue
+            replacements.append({'receipt_id': original.tool_call_id, 'result_digest': digest, 'receipt': replacement})
+        self.check()
+        return {'replacements': replacements}
 
     async def submit(self, question, context, purpose, use_report, methods, state):
         from sec_agent.research_foundation.research_methods import preloaded_research_methods
@@ -372,6 +461,9 @@ class HarnessConsultations:
                       source_readback=[{'tool_call_id':m.tool_call_id,'tool':m.name}
                           for m in messages if isinstance(m, ToolMessage) and m.status=='success'])
         result['assessment'] = record.get('assessment')
+        from .research_result_acceptance import result_version
+        result['result_digest'] = result_version(record)
+        result['acceptance_tool'] = 'assess_research_result'
         result['assessment_status'] = 'recorded_model_judgment' if result['assessment'] else 'not_recorded_no_scope_clearance'
         if result['assessment']:
             result['action_readback'] = {'tool':'read_current_report','arguments':{'field':'research_actions'}}

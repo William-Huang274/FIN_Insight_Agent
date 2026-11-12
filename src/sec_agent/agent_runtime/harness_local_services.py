@@ -31,7 +31,7 @@ from .harness_dispatch_host import dispatch_router
 
 
 @asynccontextmanager
-async def harness_local_services(*, business, dispatch, transport, token, readiness=None):
+async def harness_local_services(*, business, dispatch, transport, token, readiness=None, context_projection=None):
     if len(token.encode()) < 32:
         raise ValueError('harness_local_credential_requires_32_bytes')
     mcp = business.server.streamable_http_app(streamable_http_path='/', json_response=True,
@@ -72,6 +72,13 @@ async def harness_local_services(*, business, dispatch, transport, token, readin
     app.mount('/business', mcp)
     app.include_router(dispatch_router(dispatch, token=token, readiness=readiness))
     app.include_router(transport.router())
+    from pydantic import BaseModel, Field
+    class ProjectionRequest(BaseModel):
+        candidates: list[dict] = Field(max_length=2000)
+
+    @app.post('/context/accepted-results')
+    async def accepted_results(body: ProjectionRequest):
+        return await context_projection(body.candidates) if context_projection else {'replacements': []}
     sock = socket.socket()
     sock.bind(('127.0.0.1', 0))
     server = uvicorn.Server(uvicorn.Config(app, log_level='error', lifespan='off'))

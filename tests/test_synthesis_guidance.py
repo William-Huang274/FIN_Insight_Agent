@@ -7,9 +7,9 @@ def test_lead_entry_is_scoped_and_method_section_is_actually_readable():
     assert text.count('本次分工：') == 1
     assert 'purpose="investigate"' in text
     assert '不把全部读取、检查与综合积累到最后成稿' in text
-    assert '当前工具不承诺删除历史回执' in text
+    assert 'assess_research_result' in text and '不要为省上下文而验收' in text
     section = get_research_method('lead', '重要研究关系的完整调查与验收')
-    assert section['content_version'] == 13
+    assert section['content_version'] == 14
     assert section['grants_authority'] is False
     for concept in ['最强反证', '未通过', '真实依赖', '子助手', '开业批次']:
         assert concept in section['content']

@@ -1,6 +1,20 @@
 # DeepSeek Harness host boundary (qualification, not enabled in production)
 
 `dispatch.mjs` uses upstream `llm/stream`, covering normal and compaction calls.
+For native parents with consultations, `accepted-results.mjs` also uses the
+maintained session-query service and logged `tool/result` surface replacement.
+The host's authenticated `/context/accepted-results` endpoint reads version-bound
+`assess_research_result` decisions from the existing business checkpointer.
+Only exact completed result receipts accepted by the lead are replaced, before
+native pressure measurement; message/call identities and full original logs stay
+intact. Restart replays the native replacements. Reopening restores still-active
+receipt nodes; already-compacted history is recovered through explicit readback.
+Unaccepted work, direct source reads and deliberate `read_saved_result` rereads
+are retained. A short original is retained when the summary would be larger.
+This is context lifecycle management, not automated research approval. The
+session-query dependency is mounted only for consultation parents; missing
+activation fails before dispatch. See
+[`research_relationship_preflight.zh-CN.md`](../../docs/engineering/research_relationship_preflight.zh-CN.md).
 It does not implement a model loop, summary scheduler, finance validator, retry,
 or task planner. One process belongs to one admitted FIN execution. Load it only
 with an explicit loopback host endpoint and an environment credential reference.

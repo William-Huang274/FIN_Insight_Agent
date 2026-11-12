@@ -63,6 +63,8 @@ def profile_overlay(*, model, protocol, endpoint, prompt, context_window,
                 'transport': 'streamable-http', 'serverName': 'financial',
                 'url': endpoint + '/business/', 'headers': business_mcp,
                 'toolCallTimeoutMs': 300_000, 'failOnStartupError': True}}]}]
+    if wait_for_consultations:
+        patch += [{'insert': [{'id': 'fin-session-query', 'name': '@deepseek-ai/dsh-session-query'}]}]
     patch += [{'insert': [
         {'id': 'fin-dispatch', 'name': str(Path(dispatch_plugin).resolve()),
          'config': {'endpoint': endpoint, 'tokenEnv': 'FIN_HARNESS_LOCAL_TOKEN',

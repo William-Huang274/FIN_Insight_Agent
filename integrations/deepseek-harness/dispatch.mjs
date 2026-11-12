@@ -7,6 +7,8 @@
  */
 import { randomUUID } from 'node:crypto'
 import { installDeliveryConclusion } from './delivery.mjs'
+import { installAcceptedResults } from './accepted-results.mjs'
+
 
 export function apply(ctx, config) {
   const base = new URL(config.endpoint)
@@ -31,8 +33,15 @@ export function apply(ctx, config) {
     if (!response.ok) throw new Error(`FIN dispatch host refused ${path}: ${response.status}`)
     return response.json()
   }
+  let acceptanceReady = !config.waitForConsultations
+  if (config.waitForConsultations) ctx.inject(['sessionQuery'], child => {
+    installAcceptedResults(child, post)
+    acceptanceReady = true
+    child.effect(() => () => { acceptanceReady = false })
+  })
   ctx.on('llm/stream', async function* (options, next) {
     if (stopped) throw new Error('FIN execution stopped after a failed or unresolved request')
+    if (!acceptanceReady) throw new Error('FIN accepted-result context service unavailable')
     if (!toolsVerified && config.requireBusinessTools) {
       // Historical schemas alone do not prove a restored plugin is active.
       const schemas = options.tools ?? []

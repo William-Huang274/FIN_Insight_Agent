@@ -20,6 +20,15 @@ from acp import PROTOCOL_VERSION, spawn_agent_process, text_block
 from acp.schema import ClientCapabilities, Implementation, RequestPermissionResponse
 
 
+def native_lookup_rejection(value):
+    """Only an exact native lookup rejection proves no operation was executed."""
+    blocks = value.get('content') or []
+    return (value.get('sessionUpdate') == 'tool_call_update'
+        and value.get('status') == 'failed' and len(blocks) == 1
+        and re.fullmatch(r'Error: unknown tool "mcp__financial__[A-Za-z0-9_]+"',
+            blocks[0].get('content', {}).get('text', '')) is not None)
+
+
 def native_tool_recovery(events, tool_names):
     """Explain an exact case mismatch against today's grants; never execute it."""
     names = ['mcp__financial__' + name for name in tool_names]
@@ -38,6 +47,7 @@ def native_tool_recovery(events, tool_names):
             candidates = [name for name in names if name.casefold() == submitted.casefold()]
             failures.append({'tool_call_id': value['toolCallId'], 'submitted_tool': submitted,
                 'status': 'not_executed', 'available_exact_names': candidates,
+                'available_tool_names': names if not candidates else candidates,
                 'feedback': 'Tool names are case-sensitive. Use the available tool definition; '
                             'this failed call has not saved or changed any artifact.'})
     return failures
@@ -146,7 +156,8 @@ class HarnessSessionClient:
         # financial admission for a live failure too, but not replayed history
         # emitted while loading a saved ACP session.
         if (self.active_turn and self.stop_on_failure
-                and value.get('sessionUpdate') == 'tool_call_update' and value.get('status') == 'failed'):
+                and value.get('sessionUpdate') == 'tool_call_update' and value.get('status') == 'failed'
+                and not native_lookup_rejection(value)):
             self.stop_on_failure()
         if value.get('sessionUpdate') == 'agent_message_chunk':
             content = value.get('content', {})

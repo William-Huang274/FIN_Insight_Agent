@@ -133,4 +133,3 @@ def test_q4_detail_dateline_is_bound_to_title_not_site_heading():
     assert not evidence(html.replace('content="Example Reports Results"', 'content="News overview"'))
     assert not evidence(html.replace('class="evergreen-news-date-time"', 'class="body-quote"'))
     assert not evidence(html.replace('<body>', '<body><aside>').replace('</body>', '</aside></body>'))
-

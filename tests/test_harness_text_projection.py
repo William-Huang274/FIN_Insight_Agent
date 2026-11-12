@@ -135,3 +135,17 @@ def test_native_unknown_tool_feedback_uses_only_actual_grants(tmp_path):
     assert result[0]['status'] == 'not_executed'
     assert native_tool_recovery(events, ['write_report'])[0]['available_exact_names'] == []
     assert events.read_bytes() == before
+
+
+@pytest.mark.anyio
+async def test_unexecuted_native_lookup_can_be_corrected_but_execution_fault_stops(tmp_path):
+    stopped = []
+    client = HarnessSessionClient(tmp_path / 'events.jsonl', stop_on_failure=lambda: stopped.append(True))
+    client.active_turn = True
+    value = {'sessionUpdate': 'tool_call_update', 'toolCallId': 'x', 'status': 'failed',
+             'content': [{'content': {'text': 'Error: unknown tool "mcp__financial__read_source"'}}]}
+    await client.session_update('s', SimpleNamespace(model_dump=lambda **_: value))
+    assert stopped == []
+    value['content'][0]['content']['text'] = 'Error: permission denied after dispatch'
+    await client.session_update('s', SimpleNamespace(model_dump=lambda **_: value))
+    assert stopped == [True]

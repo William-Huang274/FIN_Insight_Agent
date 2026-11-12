@@ -7,6 +7,16 @@ from sec_agent.research_foundation.dated_web_discovery import DatedWebDiscovery,
 from test_web_source_navigation import _reader, _call
 
 
+def test_working_paper_cover_dates_use_current_revision_not_first_or_body():
+    cover = 'Artificial Intelligence in the Firm\nAuthors\nCurrent: November 9, 2026\nFirst: January 7, 2026\nAbstract\nStudy findings.'
+    assert publisher_day(cover,pdf=True) == date(2026,11,9)
+    assert publisher_day(cover.replace('November 9','November 19'),pdf=True) > date(2026,11,12)
+    assert publisher_day(cover) is None
+    assert publisher_day('Title\nAbstract\n'+cover,pdf=True) is None
+    assert publisher_day(cover.replace('First: January 7, 2026','Reporting period: January 7, 2026'),pdf=True) is None
+    assert publisher_day(cover.replace('First: January 7, 2026','First: December 7, 2026'),pdf=True) is None
+
+
 def test_posted_metadata_survives_extracted_body_and_cutoff():
     from sec_agent.research_foundation.dated_web_discovery import publisher_html_day
     from sec_agent.research_foundation.external_sources import FetchedPage

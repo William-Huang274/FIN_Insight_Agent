@@ -31,6 +31,30 @@ SAVED_AUDIT_TOOLS = frozenset({'respond_research_action', 'record_research_asses
 READABLE_RESULT_TOOLS = SAVED_RESULT_TOOLS | SAVED_AUDIT_TOOLS
 
 
+def expression_binding_feedback(request, error):
+    """Project an exact evaluator rejection; never repair the submitted formula."""
+    from sec_agent.research_foundation.source_bound_calculator import operand_binding_feedback
+    try:
+        parsed = ast.parse(request.expression, mode='eval')
+    except (SyntaxError, ValueError, TypeError):
+        return None
+    reason = operand_binding_feedback(parsed, request.operands)
+    if not reason or str(error) != 'calculation_rejected:ValueError:' + reason:
+        return None
+    used = {node.id for node in ast.walk(parsed) if isinstance(node, ast.Name)}
+    return {'code':'formula_operand_names_mismatch',
+            'feedback_kind':'calculation_expression_validation',
+            'submitted_expression':request.expression,
+            'submitted_operands':request.model_dump(mode='json')['operands'],
+            'missing_bindings':sorted(used.difference(request.operands)),
+            'unused_bindings':sorted(set(request.operands).difference(used)),
+            'calculation_executed':False, 'request_modified':False,
+            'constraints':{'formula_names':'Every variable must have a binding; every binding must be used.',
+                           'sourced_values':'Use bound variables, not unbound numeric replacements.'},
+            'next_step':'Choose the intended expression and units, correct its variable bindings, and resubmit. Runtime has not selected a formula or converted units.',
+            'read_options':[{'tool':'browse_context','arguments':{'region':'sources'}}]}
+
+
 def expression_constant_feedback(request, error):
     """Expose the existing evaluator's rejected constants without rewriting math."""
     code = 'constant_must_be_small_integer_use_operand_for_decimal'
@@ -334,7 +358,7 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         except OperandSourceError as exc:
             raise ToolException(json.dumps(operand_source_feedback(exc, messages), ensure_ascii=False)) from exc
         except (ValueError, KeyError) as exc:
-            feedback = expression_constant_feedback(request, exc)
+            feedback = expression_binding_feedback(request, exc) or expression_constant_feedback(request, exc)
             if feedback:
                 raise ToolException(json.dumps(feedback, ensure_ascii=False)) from exc
             raise ToolException("计算未通过来源绑定或表达式检查，请回读实际来源并修正参数：" + str(exc)) from exc

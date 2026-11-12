@@ -335,6 +335,34 @@ async def test_decimal_constant_feedback_keeps_native_loop_open_without_acceptin
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize('expression,missing,unused', [('(1-0.37)*100', [], ['a']), ('b/100', ['b'], ['a'])])
+async def test_formula_binding_feedback_preserves_rejection_and_allows_author_correction(tmp_path, expression, missing, unused):
+    from types import SimpleNamespace
+    from copy import deepcopy
+    from sec_agent.agent_runtime.conversation_tools import conversation_tools, expression_binding_feedback
+    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
+    grants = [g for g in conversation_tools(thread_id='t') if g.tool.name == 'calculate_research_metric']
+    args = {'request': {'expression':expression,
+        'operands':{'a':{'literal':'37','assumption_note':'Synthetic percentage for adapter test'}},
+        'result_unit':'percent','rationale':'Synthetic feedback test'}}
+    original = deepcopy(args)
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'binding.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='t', check=lambda:None, stop_on_tool_error=True)
+        await bridge.initialize({'messages':[]})
+        bad = await bridge.call_tool(None, SimpleNamespace(name='calculate_research_metric',arguments=args))
+        value = bad.structured_content
+        assert not bad.is_error and value['status'] == 'error' and not value['execution_stop']
+        assert value['result']['missing_bindings'] == missing and value['result']['unused_bindings'] == unused
+        assert value['result']['submitted_operands']['a']['literal'] == '37'
+        assert args == original and not value['result']['calculation_executed']
+        bridge.model_access()
+        args['request']['expression'] = '100-a'
+        good = await bridge.call_tool(None, SimpleNamespace(name='calculate_research_metric',arguments=args))
+        assert good.structured_content['result']['value_decimal'] == '63'
+        assert expression_binding_feedback(SourceBoundCalculation.model_validate(original['request']), ValueError('storage_corrupt')) is None
+
+
+@pytest.mark.anyio
 async def test_interrupted_read_resumes_exact_pending_call_preserving_successes(tmp_path):
     calls = []
     broken = True

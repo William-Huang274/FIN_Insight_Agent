@@ -186,7 +186,7 @@ def completed_transport_reads(messages, event_file):
 
 
 def restored_batch_feedback(messages, ids):
-    from .conversation_tools import calculator_observations, operand_source_feedback
+    from .conversation_tools import calculator_observations, operand_source_feedback, expression_binding_feedback
     from sec_agent.research_foundation.source_bound_calculator import (
         OperandSourceError, SourceBoundCalculation, calculate_from_sources)
     calls, failures, revalidated = {}, [], []
@@ -221,6 +221,7 @@ def restored_batch_feedback(messages, ids):
         if call.get('name') == message.name == 'calculate_research_metric':
             args = call.get('args', {}).get('request', {})
             prior = messages[:index]
+            request = None
             try:
                 request = SourceBoundCalculation.model_validate(args)
                 checked = calculate_from_sources(request, calculator_observations(prior).__getitem__)
@@ -229,8 +230,10 @@ def restored_batch_feedback(messages, ids):
                 if exc.code in str(message.content) or (exc.code == 'source_id_not_observed'
                         and exc.operand.source_id in str(message.content)):
                     failure['feedback'] = operand_source_feedback(exc, prior)
-            except (ValueError, KeyError):
-                pass
+            except (ValueError, KeyError) as exc:
+                correction = expression_binding_feedback(request, exc) if request is not None else None
+                if correction:
+                    failure['current_selection_feedback'] = correction
             else:
                 # This is a new deterministic check, not a rewritten historical
                 # receipt or a saved calculation. The exact original proposal

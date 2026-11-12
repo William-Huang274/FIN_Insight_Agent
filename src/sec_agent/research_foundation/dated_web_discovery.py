@@ -124,6 +124,17 @@ def publisher_day(text, index=False, *, pdf=False):
                      r'\s*([A-Za-z]{3,9} \d{1,2}, \d{4})\b')
     masthead_dates = []
     if pdf:
+        # Academic working-paper cover: distinguish the current revision from
+        # first circulation. Require both labelled dates before the abstract;
+        # dates quoted in findings or bibliography cannot date this version.
+        cover = re.split(r'(?im)^\s*Abstract\s*$', body[:1800], maxsplit=1)
+        if len(cover) == 2:
+            current = re.findall(r'(?im)^\s*Current(?: version)?\s*:\s*([^\n]+)\s*$', cover[0])
+            first = re.findall(r'(?im)^\s*First(?: version)?\s*:\s*([^\n]+)\s*$', cover[0])
+            if len(current) == len(first) == 1:
+                latest, initial = explicit_day(current[0].strip()), explicit_day(first[0].strip())
+                if latest and initial and latest >= initial:
+                    dates.add(latest)
         # Federal docket stamps identify this filed document, unlike a date
         # mentioned in allegations. Conflicting stamped dates need resolution.
         filed = set(re.findall(r'Case(?: No\.)?\s+[\w:.-]+\s+Document\s+\d+(?:-\d+)?\s+'
@@ -453,7 +464,8 @@ class DatedWebDiscovery:
                         try:
                             # Large official tables can exceed a short search deadline.
                             # Give the original a bounded read before paying for hosted fetch.
-                            page = await self.origin_fetcher.fetch(locator, timeout_seconds=30)
+                            original_timeout = 50 if urlsplit(locator).path.lower().endswith('.pdf') else 30
+                            page = await self.origin_fetcher.fetch(locator, timeout_seconds=original_timeout)
                             if getattr(page,'origin_failure_code',None):
                                 # A successful hosted transcription does not erase
                                 # why direct origin access failed, especially when

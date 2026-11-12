@@ -134,6 +134,33 @@ def extract_publication_metadata(html, *, url=None):
                 if match:
                     add('modified', match[1], 'html', 'consensus.edition_heading', url)
         if len(headings) == 1 and all(same_page(t['href']) for t in canonical):
+            # A news-detail header labels DATE beside CATEGORY, separate from
+            # the article prose. Require the publisher's news-index breadcrumb
+            # and an explicit header container, not an arbitrary event date.
+            header = headings[0].parent
+            news_links = [a for a in header.select('nav a[href]')
+                          if re.search(r'/(?:news|press)/?$', a['href'])]
+            if (news_links and (header.name == 'header' or any(
+                    re.search(r'(?:^|[-_])head(?:er)?$', c, re.I) for c in header.get('class', [])))
+                    and len(header.get_text(' ', strip=True)) < 700):
+                labels = header.find_all(string=re.compile(r'^\s*DATE\s*:\s*$', re.I))
+                if len(labels) == 1:
+                    stamp = labels[0].parent.find_next_sibling()
+                    if stamp and not stamp.find(['a','p','div']):
+                        add('published', stamp.get_text(' ', strip=True), 'html',
+                            'news_header.labelled_date', url)
+            # A labelled press-release title can have its publication dateline
+            # immediately before it (common in Japanese publisher mastheads).
+            # Attribute only that sibling, never another date in the article.
+            heading = headings[0]
+            previous = heading.find_previous_sibling()
+            if (re.match(r'^(?:Press Release\s*[:：]|プレスリリース\s*[:：]|新闻稿\s*[:：])',
+                         heading.get_text(' ', strip=True), re.I)
+                    and previous is not None and previous.name in {'p', 'time'}
+                    and any(re.search(r'(?:^|[-_])date$', c, re.I) for c in previous.get('class', []))
+                    and not previous.find(['a', 'time', 'p'])):
+                add('published', previous.get_text(' ', strip=True), 'html',
+                    'press_release.preceding_dateline', url)
             article = headings[0].find_parent('article')
             stamps = [t for t in article.select('time[pubdate][datetime]')
                       if t.find_parent('article') is article] if article else []

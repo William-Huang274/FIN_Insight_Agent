@@ -88,3 +88,31 @@ def test_article_pubdate_preserves_identity_and_excludes_related_articles():
     assert not extract_publication_metadata(html.replace('<h1>Product release</h1>','<h2>Product release</h2>'),url=url).evidence
     assert not extract_publication_metadata(html.replace('<head>','<head><link rel="canonical" href="https://publisher.example/other">'),url=url).evidence
     assert not extract_publication_metadata(html.replace('<p>Text</p>','<time pubdate datetime="2026-09-01">Ambiguous</time>'),url=url).evidence
+
+
+def test_preceding_press_release_dateline_excludes_event_body_and_wrong_identity():
+    url = 'https://publisher.example/news/release'
+    html = '''<html><head><title>Release</title></head><body><main><div>
+    <p class="page-content__date">2026.03.04</p><h1>プレスリリース：企業導入</h1>
+    <p>Event scheduled for 2027.01.01</p></div></main></body></html>'''
+    meta = extract_publication_metadata(html, url=url)
+    assert [(e.kind, e.day, e.field) for e in meta.evidence] == [
+        ('published', date(2026,3,4), 'press_release.preceding_dateline')]
+    assert publisher_html_day(html.replace('2026.03.04','2026.12.04'),url=url) > date(2026,11,12)
+    for changed in [html.replace('プレスリリース：','Event: '),
+                    html.replace('</p><h1>','</p><p>Other prose</p><h1>'),
+                    html.replace('page-content__date','event'),
+                    html.replace('<head>','<head><link rel="canonical" href="https://publisher.example/other">'),
+                    html.replace('<head>','<head><meta property="og:url" content="https://publisher.example/other">')]:
+        assert not extract_publication_metadata(changed,url=url).evidence
+
+
+def test_news_detail_header_date_requires_news_navigation_and_local_label():
+    url='https://publisher.example/jp/news/123/'
+    html='''<html><head><title>Release</title></head><body><main>
+    <div class="detail__head"><nav><a href="/jp/news/">News</a></nav><h1>Deployment</h1>
+    <div><span>DATE :</span><span>2026.03.04</span></div></div><p>Event 2027.01.01</p></main></body></html>'''
+    assert publisher_html_day(html,url=url)==date(2026,3,4)
+    for changed in [html.replace('/jp/news/','/jp/events/'), html.replace('detail__head','detail__body'),
+                    html.replace('DATE :','EVENT DATE :'), html.replace('<head>', '<head><meta property="og:url" content="https://publisher.example/other">')]:
+        assert not extract_publication_metadata(changed,url=url).evidence

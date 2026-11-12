@@ -96,3 +96,40 @@ def test_dated_explicit_engine_never_falls_through_to_paid_search():
     receipt = asyncio.run(gate.search(r))
     assert not receipt.candidates
     assert [a.provider_id for a in receipt.attempted_providers] == ['searxng']
+
+
+def test_disabled_selected_engine_never_contacts_upstream(monkeypatch):
+    monkeypatch.setenv('FIN_SEARCH_DISABLED_BACKENDS', 'bing,bing_china')
+    provider = SearxNGProvider('http://localhost:8080', transport=httpx.MockTransport(
+        lambda r: pytest.fail('unhealthy engine must not be retried')))
+    for backend in ('auto', 'bing', 'bing_china'):
+        with pytest.raises(ExternalSourceError, match='selected_engines_disabled'):
+            asyncio.run(provider.search(request(backend)))
+
+
+def test_partial_disable_retains_other_auto_engine(monkeypatch):
+    monkeypatch.setenv('FIN_SEARCH_DISABLED_BACKENDS', 'bing')
+    def reply(r):
+        assert r.url.params['engines'] == 'bing china'
+        return httpx.Response(200, json={'results': []})
+    provider = SearxNGProvider('http://localhost:8080', transport=httpx.MockTransport(reply))
+    assert asyncio.run(provider.search(request('auto'))) == ()
+
+
+def test_search_health_disclosed_at_entrance_and_catalog(monkeypatch):
+    from sec_agent.agent_runtime.source_toolkit import source_tool_guidance, source_catalog
+    monkeypatch.setenv('FIN_SEARCH_DISABLED_BACKENDS', 'bing,bing_china')
+    monkeypatch.setenv('FIN_SEARCH_DISABLED_REASON', 'query_constraints_ignored')
+    assert 'query_constraints_ignored' in source_tool_guidance(['read_public_source'])
+    result = asyncio.run(source_catalog([]).tool.ainvoke({'tool_name': 'read_public_source'}))
+    assert 'bing_china' in result and 'query_constraints_ignored' in result
+
+
+def test_disabled_feedback_exposes_actual_alternative(monkeypatch):
+    from sec_agent.agent_runtime.conversation_web import web_read_feedback
+    monkeypatch.setenv('FIN_SEARCH_DISABLED_BACKENDS', 'bing,bing_china')
+    notes = web_read_feedback({'items': [], 'execution_receipt': {'attempts': [
+        {'failure_code': 'searxng_selected_engines_disabled_use_auto_or_other_backend'}]}})
+    note = next(n for n in notes if n['kind'] == 'disabled_search_backend')
+    assert note['alternative']['arguments']['search_backend'] == 'auto'
+    assert note['disabled_backends'] == ['bing', 'bing_china']

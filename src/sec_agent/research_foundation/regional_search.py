@@ -19,6 +19,17 @@ ENGINES = {'bing': 'bing', 'bing_china': 'bing china', 'baidu': 'baidu',
            'github': 'github', 'bilibili': 'bilibili'}
 
 
+def search_availability():
+    """Deployment health overrides, not a claim that configured engines work."""
+    disabled = set(os.environ.get('FIN_SEARCH_DISABLED_BACKENDS', '').split(','))
+    return {'disabled_backends': [name for name in ENGINES if name in disabled],
+            'reason': os.environ.get('FIN_SEARCH_DISABLED_REASON', 'deployment_health_check_failed'),
+            'alternative': {'tool': 'read_public_source',
+                            'arguments': {'operation': 'search', 'search_backend': 'auto'},
+                            'instruction': 'Keep your original query; auto skips disabled engines. '
+                                           'This is a retrieval fault, not evidence that information is absent.'}}
+
+
 class SearxNGProvider:
     provider_id = 'searxng'
 
@@ -34,8 +45,18 @@ class SearxNGProvider:
         if not self.endpoint:
             raise ExternalSourceError('searxng_not_configured')
         backend = getattr(request, 'search_backend', 'auto')
+        availability = search_availability()
+        disabled = set(availability['disabled_backends'])
+        selected = [backend] if backend != 'auto' else ['bing', 'bing_china']
+        enabled = [name for name in selected if name not in disabled]
+        if not enabled:
+            observed = _engine_http.get()
+            if observed is not None:
+                for name in selected:
+                    observed['searxng:' + ENGINES[name]] = 'disabled: ' + availability['reason'][:120]
+            raise ExternalSourceError('searxng_selected_engines_disabled_use_auto_or_other_backend')
         # Baidu is explicitly selectable, never silently added to the default.
-        engines = ENGINES.get(backend, 'bing,bing china')
+        engines = ','.join(ENGINES[name] for name in enabled)
         language = getattr(request, 'search_language', None) or ('zh-CN' if backend in {'bing_china', 'baidu', 'bilibili'} else 'all')
         try:
             async with httpx.AsyncClient(timeout=30, transport=self.transport, follow_redirects=False) as client:

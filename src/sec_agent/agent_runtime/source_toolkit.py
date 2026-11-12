@@ -31,6 +31,10 @@ CAPABILITIES = {
 
 
 def source_tool_guidance(names):
+    from sec_agent.research_foundation.regional_search import search_availability
+    health = search_availability()
+    health_note = ('\n当前部署已停用搜索入口：' + ', '.join(health['disabled_backends']) +
+                  '（' + health['reason'] + '）。保留原查询使用 auto 或其他已配置入口；渠道故障不表示资料不存在。') if health['disabled_backends'] else ''
     available = [name for name in CAPABILITIES if name in names]
     if not available:
         return ''
@@ -43,7 +47,7 @@ def source_tool_guidance(names):
         '按研究范围选择当地语言、机构或产品名称，不以英语索引代表全球。'
         '只发送公开检索词，保留研究截止日；搜索摘要、目录和当前数据不自动成为已读原件或历史事实。'
         '收到官方 API 或原件导航时沿准确入口读取；访问失败要与不存在区分，依据反馈换可用路径。'
-        '各工具完整结果沿现有 read_saved_result 回读，不需要重新搜索已成功取得的材料。\n')
+        '各工具完整结果沿现有 read_saved_result 回读，不需要重新搜索已成功取得的材料。\n') + health_note
 
 
 def source_catalog(grants):
@@ -75,6 +79,9 @@ def source_catalog(grants):
                          'Configured does not mean live reachability or sufficient coverage. '
                          'Unavailable channels do not imply that a market has no information.',
                 'not_integrated': ['MediaCrawler authenticated community content', 'EDINET API', 'J-Quants']}
+        if not tool_name or tool_name == 'read_public_source':
+            from sec_agent.research_foundation.regional_search import search_availability
+            out['search_availability'] = search_availability()
         return json.dumps(out, ensure_ascii=False), out
 
     return GrantedTool(discover_source_tools, 'read', '当前授权信息/数据能力目录及原生参数')

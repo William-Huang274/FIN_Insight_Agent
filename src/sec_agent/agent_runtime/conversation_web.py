@@ -119,6 +119,9 @@ def web_read_feedback(result):
     if any(str(code).startswith('searxng_') for code in codes):
         feedback.append({'kind':'regional_search_fault', 'codes':sorted(str(c) for c in codes if str(c).startswith('searxng_')),
             'meaning':'所选检索通道未正常完成。not_configured 是部署未配置，CAPTCHA 是访问验证，timeout/TLS 是连接问题；均不表示没有资料。可选其他已配置通道或已知原件网址，不自动重复故障请求。'})
+    if 'searxng_selected_engines_disabled_use_auto_or_other_backend' in codes:
+        from sec_agent.research_foundation.regional_search import search_availability
+        feedback.append({'kind': 'disabled_search_backend', **search_availability()})
     if 'exa_mcp_rate_limited' in codes:
         feedback.append({'kind':'search_rate_limited','meaning':'Exa 本次限流；备用通道的结果另计。'})
     if 'deepseek_query_exceeds_128_characters' in codes:

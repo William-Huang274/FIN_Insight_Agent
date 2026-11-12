@@ -293,7 +293,7 @@ def _bind_operand(name, operand, source_lookup):
                 # Product specifications commonly write counts as "8x GPU".
                 # Keep exact quote/literal binding; do not accept identifiers,
                 # longer numbers or arbitrary unit suffixes by dropping \w.
-                quantity_match = re.search(literal_pattern + r"[xX](?=\s|$)", quote)
+                quantity_match = re.search(literal_pattern + r"[xX]" + numeric_end, quote)
                 if quantity_match is None:
                     # Exact SI/IEC specification suffixes, case-sensitive.
                     # This recognizes a token boundary, not a unit conversion

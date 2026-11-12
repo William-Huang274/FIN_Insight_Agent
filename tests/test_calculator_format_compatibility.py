@@ -31,6 +31,19 @@ def test_grouping_and_case_keep_original_input_and_audit():
     assert not result['financial_semantics_verified']
 
 
+@pytest.mark.parametrize('quote',['Self-reported speed is 3x.', 'Speed: 3x, value: 2x.', 'Speed (3x)'])
+def test_multiplier_suffix_accepts_punctuation_without_changing_scale(quote):
+    result=run('3',quote,unit='multiple')
+    assert result['value_decimal']=='2'
+    assert result['operands']['N_total']['runtime_compatibility_parse']['matched_text']=='3x'
+
+
+@pytest.mark.parametrize('quote',['Code 3xyz','Identifier 3x2','Value 3x.5','Value 13x.'])
+def test_multiplier_suffix_rejects_identifiers_and_partial_tokens(quote):
+    with pytest.raises(ValueError,match='numeric_literal_not_in_exact_source_quote'):
+        run('3',quote)
+
+
 def test_case_is_not_folded_and_units_are_not_rewritten():
     unit='respondent records; '+ 'scope remains conditional and requires semantic review. '*2
     request={'action':'calculate','result':None,'calculations':[{

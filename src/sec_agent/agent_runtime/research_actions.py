@@ -54,6 +54,10 @@ def assessment_tool(task_id, request, prior_actions=()):
         Never mark an issue resolved just because the author acknowledged it.
         finding may explain the substantive result: what the comparison established,
         what changed relative to the starting explanation, and its decision implication.
+        Check both unjustified certainty and failure to choose despite sufficient evidence.
+        Explain why one conditional outlook is better supported than the strongest alternative,
+        or which discriminating observation is still missing. A sensitivity table alone does not
+        establish a baseline. Do not invent probabilities or treat a failed read as nondisclosure.
         Include source/calculation handles. Preserve supported positive findings, not
         only objections. This is public research prose, not private reasoning or a checklist.
         """
@@ -137,14 +141,23 @@ def research_action_view(state):
 def synthesis_working_view(state):
     """Project current bindings, never generate or choose the author's conclusions."""
     view = research_action_view(state)
+    # Retain binding and navigation, not settled audit prose, in the writing entry.
+    # Version changes reactivate an old issue automatically through the existing view.
+    active = [a for a in view['actions'] if not a.get('resolution_current')]
+    resolved = [{'action_id': a['action_id'], 'status': a['status'],
+                 'reviewer_resolution': a['reviewer_resolution']}
+                for a in view['actions'] if a.get('resolution_current')]
+    current_actions = {**view, 'actions': active, 'resolved_actions': resolved}
+    from .source_acquisition_view import acquisition_snapshot
     return {'question': state.get('question'), 'report_version': state.get('report_version', 0),
         'report_digest': view['report_digest'], 'current_title': (state.get('report') or {}).get('title'),
-        'research_actions': view,
+        'research_actions': current_actions,
         'current_research': research_working_view(state),
+        'acquisition': acquisition_snapshot(state.get('messages', [])),
         'report_readback': {'tool': 'read_current_report', 'arguments': {'field': 'all'}},
         'related_changes_readback': {'tool': 'read_current_report', 'arguments': {'field': 'revision_context'}},
-        'working_understanding': 'Read/update existing working notes and their evidence handles; this view does not invent a consensus or endorse an old thesis.',
-        'responsibility': 'Re-answer the original question from current evidence. Test the replacement explanation as well as the rejected one. Old titles, ranking and structure are not constraints. Current author dispositions are not independent resolutions.'}
+        'working_understanding': 'Read/update current notes; replace superseded accounts rather than append correction history. Historical note versions, full research_actions and revision_context remain readable. No text is automatically rewritten or certified.',
+        'responsibility': 'Re-answer the original question from current evidence: state the outlook you favor, why it is better supported than alternatives, and what would change it. A sensitivity or return hurdle is not a baseline forecast. Investigate answer-changing access failures; do not call them exhausted public information. Test replacement explanations. Old titles and structure are not constraints; author dispositions are not independent resolutions.'}
 
 
 def research_working_view(state):
@@ -168,7 +181,10 @@ def research_working_view(state):
             notes[key] = {'note_id': key, 'observed_version': value.get('version', 0),
                 'title': calls.get(message.tool_call_id, {}).get('args', {}).get('title'),
                 'receipt_id': message.tool_call_id,
+                'write_mode': value.get('write_mode', calls.get(message.tool_call_id, {}).get('args', {}).get('mode', 'unknown')),
                 'readback': {'tool': 'ReadWorkingNote', 'arguments': {'note_id': key}},
+                'observed_version_readback': {'tool': 'ReadWorkingNote', 'arguments': {
+                    'note_id': key, 'version': value.get('version', 0)}},
                 'notice': 'Read current version; a colleague or user may have updated it since this receipt.'}
         if message.name == 'read_research_agent_result' and value.get('status') == 'completed':
             key = value.get('task_id')

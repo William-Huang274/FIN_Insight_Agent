@@ -127,7 +127,7 @@ def browse_checkpoint(messages, region, query="", offset=0):
         return {'region':region,'items':flat[offset:offset+12],'total_matches':len(flat),
             'next_offset':offset+12 if offset+12<len(flat) else None,
             'retrieval':'checkpoint_metadata_literal_no_remote_calls',
-            'notice':'Exact URL observations, not proof a research question is resolved or sources are equivalent. A read window is not a complete document. Old failures remain; use new evidence to reconsider old missing-source statements.'}
+            'notice':'Exact URL and query observations, not proof a research question is resolved or sources are equivalent. Empty searches without a URL remain visible. A read window is not a complete document. Old failures remain; use new evidence to reconsider old missing-source statements.'}
     rows = [r for r in checkpoint_index(messages, for_search=True) if r["region"] == region]
     rows.reverse()  # Recent first, but pagination can reach all old records.
     if query.strip():

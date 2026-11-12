@@ -57,6 +57,8 @@ class HarnessConsultations:
             purchase/renewal decision, competitors' supply response, cash conversion or a forecast assumption.
             A company summary is useful only when it resolves that question. Ask for the resulting
             change in understanding, not a predetermined conclusion or a chapter to paste.
+            For forecasts ask why one conditional outlook is favored, not only which claims are
+            too strong. A useful review can identify supported judgments the author failed to make.
             Proposed formulas/comparisons are hypotheses: the investigator may revise them if they answer
             a different question. Draft assignments return an evidence-backed draft for your audit, not a final publication.
             use_current_report=true attaches the exact saved report; false works before drafting.

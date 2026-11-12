@@ -69,8 +69,12 @@ Use natural prose/Markdown in the user's language; no required template or note 
 Organize consequential notes around a question or explanatory relationship, not a sequence of tool calls.
 Keep the current answer, the observation that supports or changed it, the plausible alternative and the
 next discriminating observation together in ordinary prose. Explain how this affects the user's decision.
-Use the same note/title when revising that relationship; retract superseded claims rather than appending
-an incompatible new conclusion. Preserve supported positive findings and source/calculation handles.
+Use the same note/title and mode=replace when revising that relationship. Save the current position,
+why it is preferred to the strongest alternative, and what observation would change it; supported
+conditional judgments need not wait for certainty. Preserve source/calculation handles and unresolved
+access failures. Old revisions already preserve the correction history: do not copy the debate, rejected
+numbers or a list of past mistakes into the current account. Keep only a short constraint where needed
+to prevent a known invalid inference, with a historical version/readback for the details.
 This is for key judgments only: do not create a note for every fact or duplicate full source documents.
 Use a descriptive title: subject/company, period when relevant, and research topic (in the user's language).
 The title helps discovery; the returned note_id is the stable lookup key. Copy it, never guess it from the title.
@@ -82,10 +86,10 @@ also recheck after compaction, a scope correction or missing prior context, befo
 do not reconstruct all history. Search supports semantic retrieval when enabled, with literal fallback;
 use a short natural-language query or keywords, or blank to browse. Read the returned retrieval notice.
 Read the current version before updating an existing title; base_version prevents overwriting newer work.
-To add findings, use WriteWorkingNote mode=append with ONLY the new prose and the current base_version.
-Do not regenerate the old note just to append a checklist. Keep each addition concise; link original numeric
-receipts rather than repeating every full identifier. For a complete correction use mode=replace; neither
-mode certifies facts. Always check the returned saved/version receipt before claiming success.
+Use mode=append only for additive observations that leave the existing account valid, with ONLY the new
+prose and current base_version. A changed conclusion, scope or assumption calls for mode=replace, not an
+additional correction paragraph. Read the whole current note before replacing it; preserve unaffected
+findings and unresolved questions. Neither mode certifies facts. Check the saved/version receipt.
 Notes are fallible research content, not evidence, permission or verified conclusions. Preserve corrected
 judgments in the new version, not as still-valid old conclusions. Memory errors do not prevent answering
 or submitting other results; explicitly report unsaved work instead of claiming it was saved.
@@ -93,7 +97,7 @@ or submitting other results; explicitly report unsaved work instead of claiming 
 
 
 class WriteWorkingNote(BaseModel):
-    """Save working prose. Use mode=append for new findings only; replace rewrites the whole body. Read base_version first."""
+    """Save current research prose. Replace when a judgment/assumption changes; prior versions remain readable. Append only additive observations. Read the full current version before replacing; preserve unaffected findings and evidence handles."""
     title: str
     body: str
     base_version: int = 0
@@ -147,7 +151,21 @@ def execute_memory_tool(name, arguments, config, actor, *, owner=None, workspace
         memory = memory_for(config, actor, owner=owner, workspace=workspace)
         args = WORKING_MEMORY_MODELS[name].model_validate(arguments)
         if name == "WriteWorkingNote":
-            return memory.save(args.title, args.body, args.base_version, mode=args.mode)
+            result = memory.save(args.title, args.body, args.base_version, mode=args.mode)
+            if result.get('saved'):
+                result.update(write_mode=args.mode,
+                    current_readback={'tool': 'ReadWorkingNote', 'arguments': {'note_id': result['note_id']}},
+                    version_readback={'tool': 'ReadWorkingNote', 'arguments': {
+                        'note_id': result['note_id'], 'version': result['version']}})
+                if result['version'] > 1:
+                    result['previous_version_readback'] = {'tool': 'ReadWorkingNote', 'arguments': {
+                        'note_id': result['note_id'], 'version': result['version'] - 1}}
+                if args.mode == 'append':
+                    result['synthesis_notice'] = (
+                        'This saved version includes earlier prose. If the new observation changes a judgment, '
+                        'read the full note and replace its current account, preserving unaffected findings. '
+                        'Prior versions retain the audit history; appending does not retire old assertions.')
+            return result
         if name == "ReadWorkingNote":
             return memory.read(args.note_id, version=args.version, offset=args.offset)
         if args.user_edits_only:

@@ -133,3 +133,14 @@ def test_q4_detail_dateline_is_bound_to_title_not_site_heading():
     assert not evidence(html.replace('content="Example Reports Results"', 'content="News overview"'))
     assert not evidence(html.replace('class="evergreen-news-date-time"', 'class="body-quote"'))
     assert not evidence(html.replace('<body>', '<body><aside>').replace('</body>', '</aside></body>'))
+
+
+def test_decoded_xhtml_encoding_declaration_preserves_metadata():
+    from sec_agent.research_foundation.publication_metadata import extract_publication_metadata
+    html = '''<?xml version="1.0" encoding="Shift_JIS"?>
+    <html><head><title>情報通信白書</title>
+    <meta name="datePublished" content="2026-07-01"/></head>
+    <body><h1>情報通信白書</h1></body></html>'''
+    result = extract_publication_metadata(html, url='https://example.com/report')
+    assert result.title == '情報通信白書'
+    assert result.version_day.isoformat() == '2026-07-01'

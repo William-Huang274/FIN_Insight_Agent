@@ -116,3 +116,21 @@ def test_news_detail_header_date_requires_news_navigation_and_local_label():
     for changed in [html.replace('/jp/news/','/jp/events/'), html.replace('detail__head','detail__body'),
                     html.replace('DATE :','EVENT DATE :'), html.replace('<head>', '<head><meta property="og:url" content="https://publisher.example/other">')]:
         assert not extract_publication_metadata(changed,url=url).evidence
+def test_q4_detail_dateline_is_bound_to_title_not_site_heading():
+    from sec_agent.research_foundation.publication_metadata import extract_publication_metadata
+    html = '''<html><head><title>Example Reports Results</title>
+    <meta property="og:title" content="Example Reports Results"></head><body>
+    <h1>Learn More</h1><div class="evergreen-news-details">
+    <div class="evergreen-news-details-item">
+    <div class="evergreen-news-headline"><h3 class="evergreen-news-title">Example Reports Results</h3></div>
+    <div class="evergreen-news-date-time"><span class="evergreen-news-date-text">October 21, 2026</span></div>
+    <div class="evergreen-news-body">Quarter ended September 30, 2026.</div>
+    </div></div></body></html>'''
+    def evidence(value):
+        return [e for e in extract_publication_metadata(value, url='https://example.com/results').evidence
+                if e.syntax == 'q4-evergreen']
+    assert [e.day.isoformat() for e in evidence(html)] == ['2026-10-21']
+    assert not evidence(html.replace('content="Example Reports Results"', 'content="News overview"'))
+    assert not evidence(html.replace('class="evergreen-news-date-time"', 'class="body-quote"'))
+    assert not evidence(html.replace('<body>', '<body><aside>').replace('</body>', '</aside></body>'))
+

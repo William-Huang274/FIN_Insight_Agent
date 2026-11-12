@@ -117,6 +117,21 @@ def extract_publication_metadata(html, *, url=None):
             field = tag['name'].casefold()
             if field in fields:
                 add(fields[field], tag['content'], 'meta', field, url)
+        # Q4's Evergreen news-detail component uses h3, not the site's h1.
+        # Bind its sibling dateline to the sole detail title and body. Related
+        # news cards, body dates and arbitrary date classes are not metadata.
+        items = soup.select('.evergreen-news-details .evergreen-news-details-item')
+        if len(items) == 1:
+            item = items[0]
+            titles = item.select(':scope > .evergreen-news-headline .evergreen-news-title')
+            stamps = item.select(':scope > .evergreen-news-date-time > .evergreen-news-date-text')
+            bodies = item.select(':scope > .evergreen-news-body')
+            if (len(titles) == len(stamps) == len(bodies) == 1
+                    and native and native.title
+                    and titles[0].get_text(' ', strip=True) == native.title
+                    and not item.find_parent(['aside', 'nav', 'blockquote'])):
+                add('published', stamps[0].get_text(' ', strip=True),
+                    'q4-evergreen', 'news_detail.dateline', url)
         # HTML's explicit pubdate attribute belongs to the nearest article.
         # Require that article to contain the page's sole h1; recommendation
         # cards and ordinary event time elements cannot date the current page.

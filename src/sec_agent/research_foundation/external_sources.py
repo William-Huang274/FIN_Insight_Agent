@@ -478,7 +478,8 @@ class DDGSDiagnosticProvider:
                    'ja-jp':'jp-jp', 'ko-kr':'kr-kr', 'en-us':'us-en',
                    'en-gb':'uk-en', 'ru-ru':'ru-ru', 'all':'wt-wt'}
         region = regions.get(locale, 'wt-wt')
-        return list(ObservedDDGS(timeout=12).text(request.query, backend="yahoo,brave,duckduckgo",
+        from .public_network import proxy_url
+        return list(ObservedDDGS(timeout=12, proxy=proxy_url()).text(request.query, backend="yahoo,brave,duckduckgo",
                                                    region=region, max_results=request.max_results))
 
     async def search(self, request: ExternalSearchRequest) -> Sequence[ProviderHit]:
@@ -967,7 +968,8 @@ class StaticHTTPPageFetcher:
     async def _fetch(self, raw_url: str, timeout_seconds: float) -> FetchedPage:
         import httpx
         url = await asyncio.to_thread(self.guard.validate, raw_url)
-        factory = self._session_factory or httpx.AsyncClient
+        from .public_network import http_options
+        factory = self._session_factory or (lambda: httpx.AsyncClient(**http_options()))
         async with factory() as session:
             for redirect_index in range(self.maximum_redirects + 1):
                 async with session.stream('GET', url, follow_redirects=False,
@@ -1155,7 +1157,8 @@ class PlaywrightPageFetcher:
         canonical = await asyncio.to_thread(self.guard.validate, url)
         try:
             async with async_playwright() as playwright:
-                browser = await playwright.chromium.launch(headless=True)
+                from .public_network import browser_options
+                browser = await playwright.chromium.launch(headless=True, **browser_options())
                 try:
                     context = await browser.new_context(service_workers="block")
 

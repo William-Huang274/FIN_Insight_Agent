@@ -71,11 +71,17 @@ def web_read_feedback(result):
     details = ([{'kind':'source_verification_failures','stages':dict(verification),
         'meaning':'搜索与读取分开计。original_read 是原站访问；deepseek_fetch 是 DS 网页抓取；date_verification 是日期核验/备用读取。这些失败不表示 DS Search 没有返回候选，也不表示信息不存在。'}]
         if verification else [])
+    from sec_agent.research_foundation.public_network import network_feedback
+    route_failures = list(verification) + [str(a.get('failure_code', '')) for a in
+        (result.get('execution_receipt') or {}).get('attempts', [])]
+    route_feedback = ([network_feedback()] if any(any(marker in failure.lower()
+        for marker in ('connection', 'timeout', 'tls', 'dns', 'connecterror'))
+        for failure in route_failures) else [])
     if any('browser:' in failure for failure in verification):
         details.append({'kind':'browser_read_incomplete',
             'meaning':'已尝试浏览器读取，仍未取得可用正文。not_installed 是部署缺少浏览器；content_incomplete 是动态内容仍未加载；access_challenge 是访问验证。保留网址，修复工具或改读发布者其他原件，不得当作未披露。'})
     if result.get('items'):
-        return details
+        return details + route_feedback
     counts = Counter()
     codes = set()
     engines = {}
@@ -135,7 +141,7 @@ def web_read_feedback(result):
         feedback.append({'kind':'fallback_empty','meaning':'DDGS 报告未返回结果，原因未明。可换资料产品或参考期间；本次未检得不能证明没有披露。'})
     elif 'ddgs_search_failed' in codes:
         feedback.append({'kind':'fallback_failed','meaning':'DDGS 搜索调用失败，本次没有完成备用检索。'})
-    return details + feedback
+    return details + feedback + route_feedback
 
 
 def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reader=None, research_as_of=None, paid_search=None, sec_user_agent=None, imported_navigation=None):

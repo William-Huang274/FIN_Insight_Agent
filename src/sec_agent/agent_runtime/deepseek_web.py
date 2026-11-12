@@ -78,7 +78,9 @@ class DeepSeekWeb:
             # Fetch performs another origin retrieval; it is not a search-index lookup.
             # Keep a finite deadline without retrying an unconfirmed paid request.
             timeout = httpx.Timeout(60 if action == 'fetch' else 20, connect=20)
-            async with httpx.AsyncClient(timeout=timeout, transport=self.transport) as client:
+            from sec_agent.research_foundation.public_network import http_options
+            async with httpx.AsyncClient(timeout=timeout, transport=self.transport,
+                    **({} if self.transport is not None else http_options())) as client:
                 response = await client.post('https://api.deepseek.com/v1/tools/' + action,
                     json=payload, headers={'Authorization':'Bearer ' + self.key})
             if response.status_code != 200:

@@ -271,6 +271,35 @@ async def test_schema_rejection_allows_author_correction_without_waiving_executi
 
 
 @pytest.mark.anyio
+async def test_decimal_constant_feedback_keeps_native_loop_open_without_accepting_formula(tmp_path):
+    from types import SimpleNamespace
+    from sec_agent.agent_runtime.conversation_tools import conversation_tools, expression_constant_feedback
+    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
+    grants = [g for g in conversation_tools(thread_id='t') if g.tool.name == 'calculate_research_metric']
+    args = {'request': {'expression':'a/210.02128',
+        'operands':{'a':{'literal':'420.04256','assumption_note':'Synthetic test amount'}},
+        'result_unit':'ratio','rationale':'Synthetic input feedback test'}}
+    async with AsyncSqliteSaver.from_conn_string(str(tmp_path/'decimal.sqlite')) as saver:
+        bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id='t',
+            check=lambda:None, stop_on_tool_error=True)
+        await bridge.initialize({'messages':[]})
+        bad = await bridge.call_tool(None, SimpleNamespace(name='calculate_research_metric',arguments=args))
+        feedback = bad.structured_content
+        assert not bad.is_error and feedback['status'] == 'error'
+        assert feedback['result']['rejected_constants'] == ['210.02128']
+        assert feedback['result']['request_modified'] is False
+        assert 'value_decimal' not in feedback['result']
+        bridge.model_access()
+        args['request']['expression']='a/b'
+        args['request']['operands']['b']={'literal':'210.02128','assumption_note':'Synthetic hypothetical divisor'}
+        good = await bridge.call_tool(None, SimpleNamespace(name='calculate_research_metric',arguments=args))
+        assert good.structured_content['status'] == 'success'
+        assert good.structured_content['result']['value_decimal'] == '2'
+        assert expression_constant_feedback(SourceBoundCalculation.model_validate(args['request']),
+            ValueError('source_integrity_mismatch')) is None
+
+
+@pytest.mark.anyio
 async def test_interrupted_read_resumes_exact_pending_call_preserving_successes(tmp_path):
     calls = []
     broken = True

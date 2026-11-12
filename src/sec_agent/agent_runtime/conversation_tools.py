@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import date
 from contextlib import closing
+import ast
 import json
 from pathlib import Path
 import sqlite3
@@ -27,6 +28,25 @@ SAVED_RESULT_TOOLS = frozenset({"read_market_expectations", "discover_source_too
 # Audit decisions are readable history, never source observations or new effects.
 SAVED_AUDIT_TOOLS = frozenset({'respond_research_action', 'record_research_assessment'})
 READABLE_RESULT_TOOLS = SAVED_RESULT_TOOLS | SAVED_AUDIT_TOOLS
+
+
+def expression_constant_feedback(request, error):
+    """Expose the existing evaluator's rejected constants without rewriting math."""
+    code = 'constant_must_be_small_integer_use_operand_for_decimal'
+    if str(error) != 'calculation_rejected:ValueError:' + code:
+        return None
+    parsed = ast.parse(request.expression, mode='eval')
+    constants = [ast.get_source_segment(request.expression, node) for node in ast.walk(parsed)
+                 if isinstance(node, ast.Constant)
+                 and (type(node.value) is not int or abs(node.value) > 10**12)]
+    return {'code':code, 'feedback_kind':'calculation_expression_validation',
+            'submitted_expression':request.expression, 'rejected_constants':constants,
+            'calculation_executed':False, 'request_modified':False,
+            'constraints':{'inline_constants':'integers only, absolute value <= 1000000000000',
+                'other_values':'Use named operands with exact source bindings; only genuinely hypothetical values may use explicit assumptions.'},
+            'next_step':'Choose the intended formula and units, bind each rejected value as an operand, then resubmit. No value, source or unit conversion was selected by runtime.',
+            'read_options':[{'tool':'browse_context','arguments':{'region':'numbers'}},
+                            {'tool':'browse_context','arguments':{'region':'sources'}}]}
 
 
 def calculator_observations(messages):
@@ -313,6 +333,9 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         except OperandSourceError as exc:
             raise ToolException(json.dumps(operand_source_feedback(exc, messages), ensure_ascii=False)) from exc
         except (ValueError, KeyError) as exc:
+            feedback = expression_constant_feedback(request, exc)
+            if feedback:
+                raise ToolException(json.dumps(feedback, ensure_ascii=False)) from exc
             raise ToolException("计算未通过来源绑定或表达式检查，请回读实际来源并修正参数：" + str(exc)) from exc
         return json.dumps(result, ensure_ascii=False), result
     grants.append(GrantedTool(calculate_research_metric, "read", "已读取来源的精确计算，无文件或数据库写入"))

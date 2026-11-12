@@ -20,6 +20,11 @@ RUN cd /deps/FIN_Insight_Agent \
     && rm -f /tmp/finsight-agent-runtime-requirements.txt
 # -- End of local dependencies install --
 
+# The public-source reader uses bounded headless rendering for JS shells.
+# Install the browser matching the locked Python binding and its shared libs.
+RUN python -m playwright install --with-deps --only-shell chromium \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV LANGGRAPH_HTTP='{"disable_a2a": true, "disable_mcp": true, "disable_ui": true, "disable_webhooks": true}'
 ENV LANGSERVE_GRAPHS='{"dell_reference_vertical": {"path": "sec_agent.agent_runtime.agent_server_entry:research_graph", "description": "Research and report-review workflow"}}'
 

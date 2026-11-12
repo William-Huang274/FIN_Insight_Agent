@@ -373,6 +373,8 @@ class DatedWebDiscovery:
         filing_source = None
         issuer = None if direct or request.search_backend != 'auto' or not self.companies else await self.companies.lookup(request)
         legislation_navigation = {}
+        publisher_navigation = {}
+        fetched_pages = {}
         verification_failures = {}
         def failed(candidate, stage, exc):
             counts = verification_failures.setdefault(candidate.provider_id, Counter())
@@ -465,7 +467,9 @@ class DatedWebDiscovery:
                             # Large official tables can exceed a short search deadline.
                             # Give the original a bounded read before paying for hosted fetch.
                             original_timeout = 50 if urlsplit(locator).path.lower().endswith('.pdf') else 30
-                            page = await self.origin_fetcher.fetch(locator, timeout_seconds=original_timeout)
+                            page = fetched_pages.pop(locator, None)
+                            if page is None:
+                                page = await self.origin_fetcher.fetch(locator, timeout_seconds=original_timeout)
                             if getattr(page,'origin_failure_code',None):
                                 # A successful hosted transcription does not erase
                                 # why direct origin access failed, especially when
@@ -481,6 +485,7 @@ class DatedWebDiscovery:
                                                             and visited[-2] == canonical)
                                 if canonical and not canonical_round_trip and canonical not in visited:
                                     declared_page = await self.origin_fetcher.fetch(canonical, timeout_seconds=30)
+                                    fetched_pages[canonical] = declared_page
                                     canonical_round_trip = declared_page.final_url == locator
                                 if canonical and not canonical_round_trip:
                                     # Fetch and date the declared page independently. Keep a
@@ -502,6 +507,8 @@ class DatedWebDiscovery:
                                        publisher_day(page.extracted_text, bool(index), pdf=getattr(page, 'content_type', None) == 'application/pdf') if getattr(page, 'extracted_text', None)
                                        else publisher_html_day(page.html, bool(index), url=locator))
                                 if not day:
+                                    from .public_origin import observed_navigation
+                                    publisher_navigation[url] = observed_navigation(page.html, page.final_url) if page.html else []
                                     from .government_sources import dated_bill_catalog, bill_version_dates
                                     catalog = dated_bill_catalog(locator,page.extracted_text or page.html or '',cutoff)
                                     if catalog:
@@ -530,7 +537,8 @@ class DatedWebDiscovery:
                         except (ExternalSourceError, TimeoutError) as exc:
                             failed(candidate, 'original_read', exc)
                             status = re.fullmatch(r'(?:capture_http_status_|sec_http_)(\d{3})', getattr(exc,'code',''))
-                            origin_failure = ('origin_access_challenge' if getattr(exc, 'code', '') == 'capture_access_challenge'
+                            origin_failure = ('origin_access_challenge' if 'capture_access_challenge' in getattr(exc, 'code', '')
+                                              else 'origin_render_failed' if ';browser:' in getattr(exc, 'code', '')
                                               else f'origin_{status[1]}' if status else 'origin_unavailable')
                             if origin_failure == 'origin_403':
                                 copy = await dol_archive_copy(candidate, self.origin_fetcher, request.include_domains)
@@ -610,13 +618,15 @@ class DatedWebDiscovery:
                 update = {'date_filter_counts':dict(counts)} if counts else {}
                 unresolved = [{'url':c.canonical_url, 'reason':out,
                     'writer_citable':False, 'content_withheld':True,
+                    **({'observed_navigation':publisher_navigation[c.canonical_url]}
+                       if publisher_navigation.get(c.canonical_url) else {}),
                     'publisher_search':{'tool':'read_public_source','arguments':{
                         'operation':'search','query':request.query
                             if not direct else 'site:'+(urlsplit(c.canonical_url).hostname or '')+' '+urlsplit(c.canonical_url).path.split('/')[-1]}}}
                     for c,out in zip(receipt.candidates,checked)
                     if c.provider_id == attempt.provider_id and out in (
                         'date_unverified','date_lookup_unavailable','origin_403','origin_404','origin_unavailable',
-                        'origin_access_challenge','scholarly_metadata_unavailable',
+                        'origin_access_challenge','origin_render_failed','scholarly_metadata_unavailable',
                         'redirect_outside_requested_domains','publisher_navigation_cycle','publisher_directory_not_dated_document')]
                 if unresolved:
                     update['unresolved_originals'] = unresolved

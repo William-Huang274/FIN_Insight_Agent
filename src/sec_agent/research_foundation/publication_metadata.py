@@ -134,6 +134,18 @@ def extract_publication_metadata(html, *, url=None):
                 if match:
                     add('modified', match[1], 'html', 'consensus.edition_heading', url)
         if len(headings) == 1 and all(same_page(t['href']) for t in canonical):
+            # Documentation footer's explicitly labelled update time. Attribute
+            # only a short metadata container, never an event/body date or quote.
+            for stamp in soup.select('time[datetime]'):
+                parent = stamp.parent
+                label = parent.get_text(' ', strip=True)
+                if (not parent.find_parent(['blockquote', 'aside', 'nav'])
+                        and any(re.match(r'(?i)^update[-_]?time(?:[-_]|$)', c)
+                                for c in parent.get('class', []))
+                        and len(label) < 100
+                        and re.match(r'^(?:更新时间|最后更新|Last updated)\s*[:：]', label, re.I)
+                        and len(parent.select('time')) == 1):
+                    add('modified', stamp['datetime'], 'html', 'document_footer.updated', url)
             # A news-detail header labels DATE beside CATEGORY, separate from
             # the article prose. Require the publisher's news-index breadcrumb
             # and an explicit header container, not an arbitrary event date.

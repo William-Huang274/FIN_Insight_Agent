@@ -471,8 +471,15 @@ class DDGSDiagnosticProvider:
                     client.request = record
                 return engines
 
+        # Tool locale must reach the fallback too: DDGS otherwise defaults to
+        # us-en even for an explicitly Chinese/Japanese/Korean research request.
+        locale = (request.search_language or 'all').lower()
+        regions = {'zh-cn':'cn-zh', 'zh-tw':'tw-tzh', 'zh-hk':'hk-tzh',
+                   'ja-jp':'jp-jp', 'ko-kr':'kr-kr', 'en-us':'us-en',
+                   'en-gb':'uk-en', 'ru-ru':'ru-ru', 'all':'wt-wt'}
+        region = regions.get(locale, 'wt-wt')
         return list(ObservedDDGS(timeout=12).text(request.query, backend="yahoo,brave,duckduckgo",
-                                                   max_results=request.max_results))
+                                                   region=region, max_results=request.max_results))
 
     async def search(self, request: ExternalSearchRequest) -> Sequence[ProviderHit]:
         observed = _engine_http.get()
@@ -750,7 +757,7 @@ class FetchedPage(BaseModel):
     final_url: str
     html: str = ""
     extracted_text: str | None = None
-    extraction_method: Literal["sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "deepseek_hosted_publication", "arxiv_api_metadata"] | None = None
+    extraction_method: Literal["sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "deepseek_hosted_publication", "arxiv_api_metadata", "playwright_browser"] | None = None
     origin_failure_code: str | None = None
     status_code: int | None = None
     content_type: str | None = None
@@ -1134,6 +1141,13 @@ class PlaywrightPageFetcher:
 
     async def fetch(self, url: str, *, timeout_seconds: float) -> FetchedPage:
         try:
+            async with asyncio.timeout(timeout_seconds):
+                return await self._fetch_page(url, timeout_seconds=timeout_seconds)
+        except TimeoutError as exc:
+            raise ExternalSourceError('capture_browser_timeout') from exc
+
+    async def _fetch_page(self, url: str, *, timeout_seconds: float) -> FetchedPage:
+        try:
             from playwright.async_api import async_playwright
         except ImportError as exc:  # pragma: no cover - dependency profile guard
             raise ExternalSourceError("playwright_dependency_missing") from exc
@@ -1161,12 +1175,28 @@ class PlaywrightPageFetcher:
                         raise ExternalSourceError(
                             f"capture_http_status_{status_code}"
                         )
-                    await page.wait_for_timeout(750)
+                    # DOMContentLoaded precedes hydration. Wait for load within a
+                    # bounded interval, then two stable visible-text observations.
+                    # networkidle is unsuitable for pages with telemetry streams.
+                    try:
+                        await page.wait_for_load_state('load', timeout=min(8000, round(timeout_seconds * 500)))
+                    except Exception:
+                        pass  # The total deadline and content checks still apply.
+                    previous = None
+                    for _ in range(10):
+                        await page.wait_for_timeout(500)
+                        current = await page.locator('body').inner_text(timeout=2000)
+                        if current == previous and len(current.strip()) >= 500:
+                            break
+                        previous = current
                     final_url = await asyncio.to_thread(self.guard.validate, page.url)
                     html = self._require_bounded_html(await page.content())
+                    from .public_page_access import check_access_challenge
+                    check_access_challenge(html)
                     return FetchedPage(
                         final_url=final_url,
                         html=html,
+                        extraction_method='playwright_browser',
                         status_code=status_code,
                         content_type=await response.header_value("content-type"),
                     )
@@ -1175,6 +1205,8 @@ class PlaywrightPageFetcher:
         except ExternalSourceError:
             raise
         except Exception as exc:
+            if 'Executable doesn' in str(exc) or 'playwright install' in str(exc):
+                raise ExternalSourceError('capture_browser_not_installed') from exc
             raise ExternalSourceError("capture_browser_fetch_failed") from exc
 
 
@@ -1191,6 +1223,7 @@ def trafilatura_extract_text(html: str) -> str:
                 include_links=True,
                 include_comments=False,
                 include_tables=True,
+                favor_recall=True,
                 no_fallback=False,
             )
             or ""
@@ -1339,7 +1372,7 @@ class ExternalSourceCapture:
                 if page.origin_failure_code:
                     attempts.append(CaptureAttempt(method=method, status='tool_failure',
                         extracted_characters=0, failure_code=page.origin_failure_code))
-                if method == "trafilatura_static" and page.extraction_method in {"sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "deepseek_hosted_publication", "arxiv_api_metadata"}:
+                if method == "trafilatura_static" and page.extraction_method in {"sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "deepseek_hosted_publication", "arxiv_api_metadata", "playwright_browser"}:
                     method = page.extraction_method
                 if method == "trafilatura_static" and page.content_type == "application/pdf" and page.extracted_text is not None:
                     method = "pypdf_static"

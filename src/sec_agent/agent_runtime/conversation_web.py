@@ -71,6 +71,9 @@ def web_read_feedback(result):
     details = ([{'kind':'source_verification_failures','stages':dict(verification),
         'meaning':'搜索与读取分开计。original_read 是原站访问；deepseek_fetch 是 DS 网页抓取；date_verification 是日期核验/备用读取。这些失败不表示 DS Search 没有返回候选，也不表示信息不存在。'}]
         if verification else [])
+    if any('browser:' in failure for failure in verification):
+        details.append({'kind':'browser_read_incomplete',
+            'meaning':'已尝试浏览器读取，仍未取得可用正文。not_installed 是部署缺少浏览器；content_incomplete 是动态内容仍未加载；access_challenge 是访问验证。保留网址，修复工具或改读发布者其他原件，不得当作未披露。'})
     if result.get('items'):
         return details
     counts = Counter()
@@ -154,6 +157,9 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         quota = ExaTaskQuota(Path(cache_root).resolve() / thread_id)
         guard = PublicURLGuard()
         origin = StaticHTTPPageFetcher(guard=guard)
+        from sec_agent.research_foundation.public_origin import PublicOriginFetcher
+        from sec_agent.research_foundation.external_sources import PlaywrightPageFetcher
+        origin = PublicOriginFetcher(origin, PlaywrightPageFetcher(guard=guard))
         from sec_agent.research_foundation.government_sources import GovernmentSourceFetcher
         origin = GovernmentSourceFetcher(origin, paid_search)
         if research_as_of:
@@ -209,6 +215,12 @@ def public_web_tool(*, thread_id, run_id, method_digest, cache_root: Path, reade
         Engine availability is deployment-dependent; faults are reported, not
         silently replaced with a different paid engine. Search previews are not
         customer evidence until the actual content has been read and assessed.
+        Thin JavaScript pages receive one bounded Playwright rendering attempt.
+        Access challenges and incomplete rendering remain tool obstacles, not
+        evidence of absent disclosure. Undated pages can return observed_navigation
+        URLs in unresolved_originals: follow a chosen official documentation or
+        pricing link through search(query=URL). These links are navigation only;
+        they do not inherit a parent's date or prove historical availability.
         A company name/ticker and earnings period can locate SEC filings, including
         6-K/20-F/40-F and amendments. An explicit SEC form selects that form from
         the issuer's inventory. Use YYYY-MM-DD start_published_date/end_published_date

@@ -1219,7 +1219,7 @@ def trafilatura_extract_text(html: str) -> str:
     except ImportError as exc:  # pragma: no cover - dependency profile guard
         raise ExternalSourceError("trafilatura_dependency_missing") from exc
     try:
-        return str(
+        text = str(
             trafilatura.extract(
                 html,
                 output_format="markdown",
@@ -1231,6 +1231,27 @@ def trafilatura_extract_text(html: str) -> str:
             )
             or ""
         ).strip()
+        # Scholarly publishers often expose the full text only in Highwire
+        # metadata. Readability extraction can keep the filename but discard
+        # its href. Preserve the declared route, not a guessed PDF filename.
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html, "html.parser")
+        pdf_urls = []
+        for tag in soup.select('head meta[name="citation_pdf_url"][content]'):
+            url = str(tag.get("content", "")).strip()
+            parsed = urlsplit(url)
+            if (parsed.scheme in {"http", "https"} and parsed.hostname
+                    and not parsed.username and not parsed.password
+                    and not any(char.isspace() or char in '<>"' for char in url)
+                    and url not in text and url not in pdf_urls):
+                pdf_urls.append(url)
+        if text and pdf_urls:
+            # Keep navigation before the extracted body: a malformed citation
+            # code block in the publisher's export can swallow appended links.
+            text = ("Publisher-declared full-text links (not yet read; dates not inherited):\n"
+                    + "\n".join(f"<{url}>" for url in pdf_urls) + "\n\n" + text)
+        return text
     except Exception as exc:
         raise ExternalSourceError("trafilatura_extract_failed") from exc
 

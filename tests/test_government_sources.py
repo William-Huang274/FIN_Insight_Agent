@@ -179,6 +179,40 @@ def test_original_html_keeps_links_and_dated_read_offers_check_not_authorized_ch
     assert 'document_id' not in link and not link['writer_citable'] and not link['publication_date_inherited']
 
 
+def test_publisher_pdf_metadata_survives_readability_without_authorizing_pdf():
+    from sec_agent.research_foundation.source_link_navigation import observed_document_links
+    pdf = 'https://publisher.example/storage/00vol/article.pdf'
+    html = ('<html><head><meta name="citation_pdf_url" content="' + pdf + '">'
+            '<meta name="citation_pdf_url" content="' + pdf + '">'
+            '<meta name="citation_pdf_url" content="javascript:bad">'
+            '<meta name="citation_pdf_url" content="https://user:pass@example.org/a.pdf">'
+            '</head><body><article><h1>Research publication</h1>'
+            + '<p>The measured result and its conditions remain in the article.</p>' * 20
+            + '</article></body></html>')
+    text = trafilatura_extract_text(html)
+    assert text.count(pdf) == 1
+    assert 'not yet read; dates not inherited' in text
+    assert 'javascript:bad' not in text and 'user:pass' not in text
+    links = observed_document_links(text, 'https://publisher.example/article')
+    assert [row['url'] for row in links] == [pdf]
+
+
+def test_pdf_metadata_alone_does_not_turn_empty_page_into_body(monkeypatch):
+    import trafilatura
+    monkeypatch.setattr(trafilatura, 'extract', lambda *args, **kwargs: None)
+    assert trafilatura_extract_text('<html><head><meta name="citation_pdf_url" '
+        'content="https://publisher.example/paper.pdf"></head></html>') == ''
+
+
+def test_pdf_navigation_precedes_unclosed_publisher_citation_block(monkeypatch):
+    import trafilatura
+    from sec_agent.research_foundation.source_link_navigation import observed_document_links
+    monkeypatch.setattr(trafilatura, 'extract', lambda *args, **kwargs: 'Abstract\n\n```bibtex\nentry')
+    text = trafilatura_extract_text('<html><head><meta name="citation_pdf_url" '
+        'content="https://publisher.example/paper.pdf"></head></html>')
+    assert observed_document_links(text, 'https://publisher.example/article')[0]['url'] == 'https://publisher.example/paper.pdf'
+
+
 def test_fetch_failure_is_recorded_separately_from_successful_search():
     reader, _, _=_reader(url='https://example.com/undated',published=None)
     reader.discovery.primary.provider_id='deepseek_search'

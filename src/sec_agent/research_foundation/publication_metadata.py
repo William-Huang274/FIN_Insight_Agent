@@ -202,7 +202,7 @@ def extract_publication_metadata(html, *, url=None):
             og_titles = soup.select('head meta[property="og:title"]')
             title_ok = (post_header and headings[0].find_parent('header') is post_header) or (
                 len(titles) == len(og_titles) == 1
-                and titles[0].get_text(' ', strip=True) == og_titles[0].get('content'))
+                and titles[0].get_text(' ', strip=True) == og_titles[0].get('content', '').split(' | ', 1)[0])
             if (post_article and title_ok
                     and not post_article.find_parent(['aside', 'nav', 'blockquote'])):
                 bylines = post_header.select('.post-info')

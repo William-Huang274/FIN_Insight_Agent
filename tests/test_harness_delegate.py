@@ -94,6 +94,22 @@ def test_handoff_deduplicates_only_identical_source_metadata():
     assert len(view['report']['citations']['b']['source_refs']) == 2
 
 
+def test_claim_catalog_deduplicates_exact_claims_without_changing_authority():
+    from copy import deepcopy
+    claim = {'kind': 'source_reference', 'statement': 'Navigation only', 'numeric_authority': 'none'}
+    calculated = {**claim, 'numeric_authority': 'calculation'}
+    request = {'purpose': 'review', 'question': 'Original scope', 'as_of': '2026-11-13',
+        'report': {'narrative_markdown': 'Current answer', 'citations': {
+            'one': {'claim': claim}, 'two': {'claim': claim}, 'three': {'claim': calculated}}}}
+    before = deepcopy(request)
+    view = module.delegation_payload(request)
+    assert request == before and len(view['claim_catalog']) == 2
+    for key, citation in request['report']['citations'].items():
+        projected = view['report']['citations'][key]
+        assert view['claim_catalog'][projected['claim_ref']] == citation['claim']
+        assert projected['readback']['arguments']['source_id'] == key
+
+
 def test_report_handoff_preserves_body_and_binding_without_snapshot_copies():
     from copy import deepcopy
     from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256

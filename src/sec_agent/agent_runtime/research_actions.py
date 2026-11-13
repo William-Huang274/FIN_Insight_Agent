@@ -210,6 +210,8 @@ def research_working_view(state):
     messages = state.get('messages', [])
     calls = {call['id']: call for message in messages if isinstance(message, AIMessage)
              for call in message.tool_calls}
+    from .research_result_acceptance import latest_decisions
+    decisions = latest_decisions(messages)
     notes, investigations, repeated, observed = {}, {}, {}, {}
     from .context_records import RESULT_REGIONS
     for message, value in receipts(messages):
@@ -231,10 +233,22 @@ def research_working_view(state):
             if key:
                 assessment = value.get('assessment') or {}
                 investigations[key] = {'task_id': key, 'purpose': value.get('purpose'),
+                    'result_digest': value.get('result_digest'),
                     'finding': assessment.get('finding'),
                     'scope_explanation': assessment.get('scope_explanation'),
                     'readback': {'tool': 'read_saved_result', 'arguments': {'tool_call_id': message.tool_call_id}},
                     'status': 'investigator_proposal_not_author_adoption'}
+                decision, decision_receipt = decisions.get(key, ({}, None))
+                if value.get('result_digest') and decision.get('result_digest') == value['result_digest']:
+                    # Carry the lead's exact, version-bound understanding, not a
+                    # new summary of it. The original proposal remains readable.
+                    investigations[key].pop('finding')
+                    investigations[key].pop('scope_explanation')
+                    investigations[key].update(
+                        status='lead_decision_not_independent_certification',
+                        lead_decision=decision,
+                        decision_readback={'tool': 'read_saved_result', 'arguments': {
+                            'tool_call_id': decision_receipt}})
         if message.name in RESULT_REGIONS and message.tool_call_id in calls:
             call = calls[message.tool_call_id]
             key = canonical_sha256({'tool': message.name, 'arguments': call.get('args', {})})

@@ -55,13 +55,16 @@ def delegation_payload(request, *, previous_scope=None, recovery_receipt=None):
     else:
         payload = {k: v for k, v in request.items() if k != 'method_text'}
         if report:
-            citations, source_catalog = {}, {}
+            citations, source_catalog, claim_catalog = {}, {}, {}
             for source_id, citation in report.get('citations', {}).items():
+                claim = {k: v for k, v in (citation.get('claim') or {}).items()
+                         if k in {'kind', 'statement', 'numeric_authority'}}
+                claim_id = canonical_sha256(claim)
+                claim_catalog[claim_id] = claim
                 citations[source_id] = {
                     'citation_handle': reference_handle(source_id),
                     'readback': {'tool': 'read_research_source', 'arguments': {'source_id': source_id}},
-                    'claim': {k: v for k, v in (citation.get('claim') or {}).items()
-                              if k in {'kind', 'statement', 'numeric_authority'}},
+                    'claim_ref': claim_id,
                     'source_refs': [],
                 }
                 for source in citation.get('sources', []):
@@ -77,7 +80,9 @@ def delegation_payload(request, *, previous_scope=None, recovery_receipt=None):
                         citations[source_id]['source_refs'].append(identity)
             payload['report'] = {**report, 'citations': citations}
             payload['source_catalog'] = source_catalog
+            payload['claim_catalog'] = claim_catalog
             payload['citation_notice'] = ('Citation entries are navigation, not full evidence. '
+                'Resolve claim_ref through claim_catalog and source_refs through source_catalog. '
                 'Read the exact inherited original with the supplied readback; original snapshots remain saved.')
         task = payload.get('research_task')
         if task and task.get('observations'):
@@ -145,8 +150,9 @@ class NativeResearchDelegate:
                 '\nResearch as of: '+request['as_of']+
                 '\nUse returned citation_handle values and [REF-...] citations; never shorten source IDs.') + request['method_text']
             if request.get('assessment_contract') == 1:
-                prompt += ('\n返回成果前使用 record_research_assessment 保存原题覆盖依据及尚影响主结论的执行事项。'
-                           '没有实质缺口可记录空 actions，说明依据；不要为填表制造问题。')
+                prompt += ('\n返回成果前使用 record_research_assessment：finding 保存调查或复核建立的认识及其对当前判断的影响，'
+                           'scope_explanation 说明实际覆盖；actions 仅记录仍影响答案的后续事项。'
+                           '没有实质缺口可记录空 actions；不要为填表制造问题。')
             patch = profile_overlay(model=o['model'], protocol=o['protocol'], endpoint=endpoint, prompt=prompt,
                 context_window=o['context_window'], output_tokens=o['output_tokens'], summary_tokens=o['summary_tokens'],
                 reasoning=o['reasoning'], compaction_threshold=o.get('compaction_threshold', .8),

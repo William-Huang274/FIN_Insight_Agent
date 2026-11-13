@@ -5,7 +5,7 @@ from copy import deepcopy
 from langchain_core.messages import AIMessage, ToolMessage
 
 from sec_agent.agent_runtime.context_records import browse_checkpoint
-from sec_agent.agent_runtime.research_actions import research_action_view, synthesis_working_view
+from sec_agent.agent_runtime.research_actions import research_action_view, synthesis_working_view, research_working_view
 from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
 from sec_agent.agent_runtime.source_acquisition_view import acquisition_snapshot
 from sec_agent.agent_runtime.working_memory_tools import execute_memory_tool
@@ -15,6 +15,35 @@ def observation(key, args, result, status='success'):
     return [AIMessage(content='', tool_calls=[{'id': key, 'name': 'read_public_source', 'args': args}]),
             ToolMessage(tool_call_id=key, name='read_public_source', status=status,
                         content=json.dumps(result))]
+
+
+def test_current_understanding_uses_matching_lead_decision_without_erasing_proposal():
+    original = ToolMessage(name='read_research_agent_result', tool_call_id='original', content=json.dumps({
+        'status': 'completed', 'task_id': 'study', 'result_digest': 'v1', 'purpose': 'investigate',
+        'assessment': {'finding': 'Rejected calculation', 'scope_explanation': 'Original scope'}}))
+    decision = {'decision_recorded': True, 'task_id': 'study', 'result_digest': 'v1',
+        'disposition': 'needs_work', 'finding': 'Current conditional interpretation',
+        'scope_and_conditions': 'Customer approval required', 'counterevidence': 'Possible delay',
+        'unresolved': 'Magnitude still material', 'evidence_receipt_ids': ['source']}
+    saved = ToolMessage(name='assess_research_result', tool_call_id='decision', content=json.dumps(decision))
+    state = {'messages': [original, saved]}
+    before = original.content
+    entry = research_working_view(state)['investigations'][0]
+    assert entry['lead_decision'] == decision
+    assert entry['readback']['arguments']['tool_call_id'] == 'original'
+    assert entry['decision_readback']['arguments']['tool_call_id'] == 'decision'
+    assert 'Rejected calculation' not in json.dumps(entry)
+    assert original.content == before
+    # A different result version or an unsuccessful decision cannot retire this proposal.
+    saved.content = json.dumps({**decision, 'result_digest': 'v2'})
+    assert research_working_view(state)['investigations'][0]['finding'] == 'Rejected calculation'
+    saved.content = json.dumps(decision)
+    saved.status = 'error'
+    assert 'lead_decision' not in research_working_view(state)['investigations'][0]
+    # Reopening carries the open condition, never an accepted certification.
+    saved.status = 'success'
+    saved.content = json.dumps({**decision, 'disposition': 'reopened'})
+    assert research_working_view(state)['investigations'][0]['lead_decision']['disposition'] == 'reopened'
 
 
 def test_no_url_search_failure_survives_handoff_and_candidate_is_not_a_read():

@@ -155,6 +155,10 @@ def test_wordpress_byline_requires_current_post_header_identity():
     <aside><div class="date">January 1, 2027</div></aside></article></body></html>'''
     url = 'https://example.com/results'
     assert publisher_html_day(html, url=url) == date(2026, 10, 28)
+    themed = html.replace('<title>Results</title>', '<title>Results | Newsroom</title><meta property="og:title" content="Results | Newsroom">')
+    themed = themed.replace('<body>', '<body><h1>Site logo</h1>').replace('<h1>Results</h1>', '<h2 class="post-title">Results</h2>')
+    assert publisher_html_day(themed, url=url) == date(2026, 10, 28)
+    assert not extract_publication_metadata(themed.replace('content="Results | Newsroom"', 'content="Other | Newsroom"'), url=url).evidence
     for changed in [html.replace('post-header', 'event-header'),
                     html.replace('post type-post', 'event'),
                     html.replace('class="author"', 'class="venue"'),

@@ -26,6 +26,15 @@ def observed_navigation(html, url, limit=12):
     """URLs only: undated titles/snippets must not leak through the date gate."""
     soup = BeautifulSoup(html, 'html.parser')
     links = {}
+    canonical = soup.select('head link[rel="canonical"][href]')
+    if len(canonical) == 1:
+        target = urljoin(url, canonical[0]['href']).split('#')[0]
+        p = urlsplit(target)
+        # A publisher's alternate canonical URL is a useful next read, not
+        # authority to transfer the current page's date or content identity.
+        if (p.scheme == 'https' and p.hostname == urlsplit(url).hostname
+                and not p.username and not p.password and target != url):
+            links[target] = -1
     for a in soup.select('a[href]'):
         target = urljoin(url, a['href']).split('#')[0]
         p = urlsplit(target)

@@ -5,6 +5,19 @@ import pytest
 
 from sec_agent.research_foundation.external_sources import FetchedPage, ExternalSourceError
 from sec_agent.research_foundation.public_origin import PublicOriginFetcher, observed_navigation
+
+
+def test_canonical_alternate_is_first_navigation_without_date_inheritance():
+    url = 'https://publisher.example/de/blog/customer'
+    html = '''<html><head><link rel="canonical" href="https://publisher.example/blog/customer"></head>
+    <body><a href="/pricing">Plans</a><a href="/blog/customer">Article</a></body></html>'''
+    links = observed_navigation(html, url, limit=1)
+    assert links == [{'url': 'https://publisher.example/blog/customer', 'writer_citable': False,
+                      'publication_date_inherited': False, 'readback': {'tool': 'read_public_source',
+                      'arguments': {'operation': 'search', 'query': 'https://publisher.example/blog/customer'}}}]
+    for changed in (html.replace('https://publisher.example/blog/customer', 'https://other.example/blog/customer'),
+                    html.replace('</head>', '<link rel="canonical" href="/other"></head>')):
+        assert observed_navigation(changed, url, limit=1)[0]['url'] == 'https://publisher.example/pricing'
 from sec_agent.research_foundation.dated_web_discovery import publisher_html_day
 
 URL = 'https://example.org/product'

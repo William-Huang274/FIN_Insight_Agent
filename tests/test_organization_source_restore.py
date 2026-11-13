@@ -132,6 +132,14 @@ def test_unscoped_assumptions_do_not_establish_organization_authority(archive):
         'a':{'literal':'3','assumption_note':'Scenario'}},result_unit='USD',rationale='Scenario'), lambda key:None)
     with pytest.raises(ValueError,match='scope_unproven'):
         fresh(nav).restore(observations(value))
+    key = value['calculation_id']
+    assert fresh(nav).restore(observations(value), execution_calculation_lookup={key:value}.get)[key] == value
+    with pytest.raises(ValueError,match='scope_unproven'):
+        fresh(nav).restore(observations(value), execution_calculation_lookup={}.get)
+    changed = deepcopy(value)
+    changed['value_decimal'] = '999'
+    with pytest.raises(ValueError,match='mismatch'):
+        fresh(nav).restore(observations(changed), execution_calculation_lookup={key:changed}.get)
 
 
 @pytest.mark.parametrize('fault', ['text','reference','execution','missing_scope','value','unit','formula','quote','provenance','authority','duplicate'])

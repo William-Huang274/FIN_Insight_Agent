@@ -93,10 +93,16 @@ def select_observed_sources(question_state, *, source_ids=None):
 
 
 def artifact_reader_from_sources(data, navigation, sources, *, allow_public_sources=False):
-    """Restore observed source identities through the existing authorized reader."""
+    """Restore host-selected receipts from this execution's authenticated checkpoint.
+
+    ``sources`` must come from select_observed_sources, never model-supplied
+    content. Pure assumption calculations use this checkpoint provenance while
+    restore still recomputes their receipt and checks any explicit scope.
+    """
     from .case_artifacts import CaseArtifacts
     from .public_source_restore import validated_public_source
     validated = navigation.restore([{'status': 'success', 'content': list(sources.values())}],
+        execution_calculation_lookup=lambda key: sources.get(key),
         **({'external_source_lookup': lambda key: validated_public_source(sources[key])} if allow_public_sources else {}))
     result = CaseArtifacts.from_observed_sources(validated, case_id=data.foundation_binding.case_id,
                                                  research_as_of=data.foundation_binding.research_as_of)

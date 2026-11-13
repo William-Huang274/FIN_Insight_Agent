@@ -546,7 +546,7 @@ class OrganizationSourceNavigation:
         return {'execution_id': self.reader.authority.execution_id,
                 'manifest_digest': self.reader.authority.manifest_digest}
 
-    def restore(self, observations, *, external_source_lookup=None):
+    def restore(self, observations, *, external_source_lookup=None, execution_calculation_lookup=None):
         """Revalidate host-saved originals and calculations; publish only a complete batch.
 
         This is not a model-facing registration API or checkpoint authenticity proof.
@@ -601,7 +601,12 @@ class OrganizationSourceNavigation:
                 if saved_scope is None and not any(o.get('authority') in {
                         'non_authoritative_source_reported', 'non_authoritative_calculation'}
                         for o in saved['operands'].values()):
-                    raise ValueError('organization_restore_calculation_scope_unproven')
+                    # Pure scenarios have no source dependency to prove scope.
+                    # Only an authenticated current-execution checkpoint can
+                    # supply that provenance; never infer it from saved prose.
+                    if (execution_calculation_lookup is None
+                            or execution_calculation_lookup(source_id) != saved):
+                        raise ValueError('organization_restore_calculation_scope_unproven')
                 operands = {}
                 for name, operand in saved['operands'].items():
                     authority = operand.get('authority')

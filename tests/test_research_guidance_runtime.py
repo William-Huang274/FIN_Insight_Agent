@@ -118,7 +118,7 @@ def test_temporal_methods_disclosed_without_preloading_case_answers():
 def test_decision_method_replaces_redundant_guidance_and_preserves_callable_chapter():
     from sec_agent.agent_runtime.conversation_agent import research_system_prompt
     method = get_research_method('research_loop', '证据怎样推进判断')
-    assert method['content_version'] == 9
+    assert method['content_version'] == 11
     prompt = research_system_prompt({'get_research_method','consult_research_agent'})
     assert '证据怎样推进判断' in prompt and method['content'] not in prompt
     assert prompt.count(BASIC_RESEARCH_GUIDANCE.strip()) == 1

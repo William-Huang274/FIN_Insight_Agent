@@ -67,6 +67,9 @@ class HarnessConsultations:
             Give the reviewer the original decision and unresolved relationships, not a requested verdict.
             For an investigation, define the material relationship and how its answer could change the
             decision; request evidence, analysis and a conditional finding, not proof of your hypothesis.
+            If the assignment narrows an earlier question, retain the answer-changing remainder in context
+            and say who will pursue it. A counterexample can disprove a universal claim without answering
+            the original question about the most likely outcome.
             Check each returned result before relying on it and update your working understanding.
             A locally checked result does not certify the whole question or authorize history deletion.
             The host separately supplies the original research question; your focus does not replace it.
@@ -102,7 +105,11 @@ class HarnessConsultations:
             context as this summary plus exact readback; originals remain saved. This is your
             bounded research judgment, not runtime certification or clearance of report review
             actions. Use needs_work/reopened when further investigation is material; commission
-            that work separately. Do not accept merely to reduce tokens. Changed results require
+            that work separately. In finding/unresolved compare the assigned question with the actual answer:
+            say whether remaining uncertainty changes direction, magnitude, timing or only precision,
+            and whether a feasible comparison could change your choice. Accepting a scoped result does
+            not close the broader question; keep its material remainder in current working understanding.
+            Do not accept merely to reduce tokens. Changed results require
             a fresh read and decision. Never suppress an unresolved condition in the summary.
             """
             return self.assess(task_id, result_digest, disposition, finding, scope_and_conditions,

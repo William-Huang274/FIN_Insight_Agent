@@ -247,7 +247,7 @@ def research_working_view(state):
         'notes_discovery': {'tool': 'SearchWorkingNotes', 'arguments': {'query': ''}},
         'evidence_discovery': {'tool': 'browse_context', 'arguments': {'region': 'sources'}},
         'progress_interpretation': 'Repeated exact reads may be legitimate. Decide whether new evidence changed the explanation, its scope, magnitude or investment implication. Counts and empty issues do not establish adequacy.',
-        'stopping_decision': 'Investigate a material, answer-changing uncertainty when a useful next observation is available. Otherwise deliver the supported answer and its specific remaining conditions; do not manufacture a precise forecast or search indefinitely.'}
+        'stopping_decision': 'Compare the original relationship with the answer actually established. Stopping an unproductive data search does not settle the relationship: use supported ranges or comparisons to assess direction, magnitude and timing. Pursue a feasible answer-changing analysis; otherwise give the supported conditional judgment or identify the material answer still incomplete. No precise forecast or endless search is required.'}
 
 
 def author_action_tool():
@@ -258,8 +258,11 @@ def author_action_tool():
         """Record how a material investigation/review action is handled in the saved current report.
         First investigate/change the report as needed. Cite the exact current wording, your reason
         and successful source/calculation receipt IDs (read_saved_result/browse_context provide them).
-        Rebuttal requires evidence. Unresolved is valid only as an explicit remaining limitation
-        in the quoted report wording; it is not a claim of research success. The host checks binding,
+        Rebuttal requires evidence. For unresolved, quote the affected conditional judgment or a
+        relevant adjacent note and explain in rationale what remains unknown and how it affects that
+        judgment. Material conditions must stay visible to readers; historical mistakes and unused
+        algorithms belong in this record, not mandatory disclaimer sentences. Unresolved is not a
+        claim of research success. The host checks binding,
         not truth. After editing the report, recheck affected decisions at the new version.
         """
         state = runtime.state

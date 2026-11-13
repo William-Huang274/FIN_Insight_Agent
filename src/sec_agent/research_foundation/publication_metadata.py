@@ -195,10 +195,16 @@ def extract_publication_metadata(html, *, url=None):
             # WordPress themes commonly expose a post-header byline rather than
             # structured date metadata. Require the current article's own sole
             # heading, post identity and author/date pair, never related cards.
-            post_header = headings[0].find_parent('header', class_='post-header')
-            if (article and post_header and post_header.find_parent('article') is article
-                    and {'post', 'type-post'} <= set(article.get('class', []))
-                    and not article.find_parent(['aside', 'nav', 'blockquote'])):
+            post_headers = soup.select('article.post.type-post > header.post-header')
+            post_header = post_headers[0] if len(post_headers) == 1 else None
+            post_article = post_header.find_parent('article') if post_header else None
+            titles = post_header.select('.post-title') if post_header else []
+            og_titles = soup.select('head meta[property="og:title"]')
+            title_ok = (post_header and headings[0].find_parent('header') is post_header) or (
+                len(titles) == len(og_titles) == 1
+                and titles[0].get_text(' ', strip=True) == og_titles[0].get('content'))
+            if (post_article and title_ok
+                    and not post_article.find_parent(['aside', 'nav', 'blockquote'])):
                 bylines = post_header.select('.post-info')
                 if len(bylines) == 1:
                     dates = bylines[0].select(':scope > li > .date')

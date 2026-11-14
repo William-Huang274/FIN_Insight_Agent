@@ -57,13 +57,13 @@ def workpaper_tools(workspace, actor='root', *, assignment=None):
         return guarded(read_paper, actor, topic_id, revision, field=field, offset=offset, max_characters=max_characters)
 
     @tool
-    def research_updates(after_sequence: int = 0, limit: int = 8):
+    def research_updates(after_sequence: int = 0, limit: int = 8, include_catalog: bool = False):
         """Read bounded asynchronous workpaper update metadata and topic coverage. Use the returned cursor;
         important findings can change the scope or another topic. This does not wait or trigger models.
         Pending work is handled by the host; do independent work or wait through consultation tools,
         never repeatedly poll this tool in paid turns. Counts do not certify research completeness.
         """
-        return guarded(workspace.catalog, after=after_sequence, limit=limit)
+        return guarded(workspace.catalog, after=after_sequence, limit=limit, include_catalog=include_catalog or after_sequence==0)
 
     @tool
     def read_workpaper_evidence(receipt_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 12000):
@@ -90,7 +90,16 @@ def workpaper_tools(workspace, actor='root', *, assignment=None):
         return Command(update={'messages': [*([original] if not existing else []),
             ToolMessage(name='read_workpaper_evidence', tool_call_id=runtime.tool_call_id, content=json.dumps(result,ensure_ascii=False))]})
 
-    tools = [publish_research_workpaper, read_research_workpaper, research_updates, read_workpaper_evidence]
+    @tool
+    def read_authoring_context(section_ids: list[str] | None = None, revision: int | None = None, include_history: bool = False):
+        """Read current public judgments and related argument materials, or a historical judgment revision.
+        Sections expand their own dependencies; the overall answer stays a short orientation. Read
+        complete linked workpapers before judging sufficiency. include_history adds resolved issues
+        and withdrawn explanations; old judgments do not imply old live issue status. This is read-only.
+        """
+        return guarded(workspace.authoring.context, section_ids, revision, include_history)
+
+    tools = [publish_research_workpaper, read_research_workpaper, research_updates, read_workpaper_evidence, read_authoring_context]
     if actor == 'root':
         @tool
         def update_research_understanding(base_revision: int, patch: UnderstandingPatch, runtime: ToolRuntime):
@@ -102,16 +111,6 @@ def workpaper_tools(workspace, actor='root', *, assignment=None):
             No extra narrative plan required. Use read_authoring_context to recover the materialized current view.
             """
             return guarded(workspace.authoring.update, base_revision, patch, actor+':'+runtime.tool_call_id)
-
-        @tool
-        def read_authoring_context(section_ids: list[str] | None = None, revision: int | None = None):
-            """Read current understanding and the argument outline, or an exact historical revision.
-            Select sections to include only their judgments and dependencies plus the overall thesis;
-            complete workpapers and original evidence remain behind exact readbacks. This view contains
-            assumptions, counterevidence, withdrawn explanations, open issues and affected sections.
-            Read actual arguments as needed; do not treat this compact view as sufficient source material.
-            """
-            return guarded(workspace.authoring.context, section_ids, revision)
 
         @tool
         def open_authoring_issue(base_revision: int, issue: AuthoringIssue, report_version: int, runtime: ToolRuntime):
@@ -127,19 +126,29 @@ def workpaper_tools(workspace, actor='root', *, assignment=None):
         @tool
         def resolve_authoring_issue(issue_id: str, base_revision: int,
                                     disposition: Literal['revised','retained','bounded_answer'],
-                                    explanation: str, result_workpapers: list[Adoption], report_version: int, runtime: ToolRuntime):
+                                    explanation: str, result_workpapers: list[Adoption], report_version: int, runtime: ToolRuntime,
+                                    prose_uses: list[SectionUse] | None = None, evidence_receipt_ids: list[str] | None = None):
             """After investigation/reassessment and prose revision, record your actual handling of an issue.
             Read the linked complete result, update affected judgments, and save the report first. Missing
-            links/access failures require a workpaper from the linked investigation, even for a bounded
-            answer. You may retain a supported judgment with reasons. This records your decision, not approval.
+            links/access failures require a linked workpaper OR successful original source/calculation
+            receipt IDs you directly investigated. Supply prose_uses identifying the resolved passages;
+            the surrounding paragraphs are tracked so unrelated edits do not reopen this issue. Without
+            anchors the whole affected field is tracked conservatively. You may retain a supported judgment.
             Later changes to related judgments or result versions reopen the issue for reassessment.
             """
             if not runtime.state.get('report') or runtime.state.get('report_version') != report_version:
                 return {'error': 'report_version_changed_read_current_report'}
+            ids=evidence_receipt_ids or []
+            observed={m.tool_call_id:messages_to_dict([m])[0] for m in runtime.state.get('messages',[])
+                if isinstance(m,ToolMessage) and m.status=='success' and m.name in SAVED_RESULT_TOOLS
+                and m.name not in {'ReadWorkingNote','read_handoff_material','read_delegated_note','check_quantitative_changes'}}
+            if len(ids)>24 or len(ids)!=len(set(ids)) or any(k not in observed for k in ids):
+                return {'saved':False,'error':'direct_evidence_must_be_successfully_observed_source_or_calculation'}
             return guarded(workspace.authoring.resolve, issue_id, base_revision, disposition, explanation,
-                           result_workpapers, runtime.state['report'])
+                           result_workpapers, runtime.state['report'],prose_uses=prose_uses,
+                           direct_evidence={k:observed[k] for k in ids})
 
-        tools += [update_research_understanding, read_authoring_context, open_authoring_issue, resolve_authoring_issue]
+        tools += [update_research_understanding, open_authoring_issue, resolve_authoring_issue]
 
         @tool
         def prepare_research_synthesis(topic_ids: list[str], scope_rationale: str):
@@ -166,7 +175,7 @@ def workpaper_tools(workspace, actor='root', *, assignment=None):
                     raise WorkpaperConflict('understanding_changed_refresh_synthesis')
                 if topic_id not in snapshot['selected']:
                     raise WorkpaperConflict('topic_not_selected_in_synthesis')
-                return workspace.read(actor, topic_id, snapshot['selected'][topic_id]['revision'],
+                return read_paper(actor, topic_id, snapshot['selected'][topic_id]['revision'],
                                       offset=offset, max_characters=max_characters)
             return guarded(read)
 

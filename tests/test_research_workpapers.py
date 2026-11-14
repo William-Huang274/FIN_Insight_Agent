@@ -113,13 +113,13 @@ def test_duplicate_source_identity_and_workspace_scope(tmp_path):
         s.register('a','b','A',reuse=True)
 
 
-def test_snapshot_new_findings_require_explicit_scope_reconsideration(tmp_path):
+def test_snapshot_unselected_findings_notify_without_invalidating_dependencies(tmp_path):
     s=store(tmp_path);s.register('a','root','A');s.publish('a',0,paper(),{},'a')
     frozen=s.prepare('root',['a'],'A alone answers the bounded question')
     with pytest.raises(WorkpaperConflict,match='read_selected'):
         s.bind(frozen['snapshot_id'],'report')
     s.read('root','a');s.bind(frozen['snapshot_id'],'report')
     s.register('b','root','New unexpected factor');s.publish('b',0,paper('Countercase'),{},'b')
-    assert s.snapshot(frozen['snapshot_id'])['changed_topics']==['b']
-    with pytest.raises(WorkpaperConflict,match='research_changed'):
-        s.require_current_binding('report')
+    assert s.snapshot(frozen['snapshot_id'])['changed_topics']==[]
+    assert s.snapshot(frozen['snapshot_id'])['unselected_updates']==['b']
+    s.require_current_binding('report')

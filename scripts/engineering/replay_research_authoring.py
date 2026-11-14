@@ -155,7 +155,7 @@ async def replay(directory):
             nodes['thesis']=judgment('thesis','采购分层增长，价值更先体现为客户净节省；供应商分化',depends=['customer','pricing'])
             await call(root,'update_research_understanding',dict(base_revision=2,patch=dict(reason='新的比较改变总判断',judgments=[nodes['thesis']])))
             current,new_receipt=await call(root,'read_authoring_context',{})
-            projection=await service.context_projection([{'receipt_id':old_receipt.tool_call_id}])
+            projection=await service.context_projection([{'receipt_id':old_receipt.tool_call_id},{'receipt_id':new_receipt.tool_call_id}])
             checks['old_same_scope_context_retires_after_current_read']=bool(projection['replacements'])
             captures.append({'native_context_projection':projection})
             excerpts={'summary':'采购将分层增长，客户净节省比供应商普遍增利更有依据。',
@@ -181,8 +181,8 @@ async def replay(directory):
                     if value['next_offset'] is None:break
                     offset=value['next_offset']
             bound,_=await call(root,'bind_research_synthesis',dict(snapshot_id=frozen['snapshot_id'],report_version=2,
-                section_uses=[dict(section_id=k,excerpt=v) for k,v in excerpts.items()]))
-            checks['actual_prose_has_judgment_and_exact_basis']=len(bound['authoring']['sections'])==4
+                section_uses=[dict(section_id=k,excerpt=v) for k,v in excerpts.items()]+[dict(section_id='summary',field='title',excerpt=final['title'])]))
+            checks['actual_prose_has_judgment_and_exact_basis']=bound['authoring']['mapped_sections']==5
             mapping=[];offset=0
             while True:
                 chunk,_=await call(root,'read_current_report',dict(field='argument_map',offset=offset,max_characters=12000))
@@ -195,7 +195,7 @@ async def replay(directory):
             checks['actual_delivery_succeeds']=bool((await root.state()).get('delivery'))
             checks['unchanged_judgment_not_rewritten']=current['judgments']['energy']==initial_view['judgments']['energy']
             restored=ResearchWorkpapers(workspace.path,root_id='authoring-fixture',question=question,as_of='2026-11-14',check=lambda:None)
-            checks['restart_retains_history_and_all_resolutions']=restored.authoring.context(revision=1)['judgments']==initial_view['judgments'] and all(i['status']=='resolved' for i in restored.authoring.context()['issues'])
+            checks['restart_retains_history_and_all_resolutions']=restored.authoring.context(revision=1)['judgments']==initial_view['judgments'] and all(i['status']=='resolved' for i in restored.authoring.context(include_history=True)['issues'])
             old_result,_=await call(root,'read_research_agent_result',{'task_id':jobs['customer']['task_id']})
             checks['old_job_returns_original_version']=old_result['workpaper']['revision']==1
             (directory/'authoring-input.json').write_text(json.dumps(windows,ensure_ascii=False,indent=2),encoding='utf8')

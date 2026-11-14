@@ -62,7 +62,7 @@ def test_atomic_patch_idempotency_cycles_and_concurrency(tmp_path):
         s.authoring.update(2,dict(reason='Bad cycle',judgments=[judgment('cost',depends=['thesis'])]),'cycle')
     assert s.authoring.context()['revision']==2
     def attempt(i):
-        try:return s.authoring.update(2,dict(reason=str(i)),str(i))
+        try:return s.authoring.update(2,dict(reason=str(i),sections=[section('cost',['cost'],i)]),str(i))
         except WorkpaperConflict:return None
     with ThreadPoolExecutor(2) as pool:
         assert sum(v is not None for v in pool.map(attempt,[1,2]))==1
@@ -87,7 +87,7 @@ def test_multiple_issues_independent_resolution_binding_and_reopen(tmp_path):
     with pytest.raises(WorkpaperConflict,match='investigation_result'):
         s.authoring.resolve('gap',1,'bounded_answer','No search result',[],report)
     s.authoring.resolve('wording',1,'revised','Clarified the unit',[],report)
-    statuses={i['id']:i['status'] for i in s.authoring.context()['issues']}
+    statuses={i['id']:i['status'] for i in s.authoring.context(include_history=True)['issues']}
     assert statuses=={'gap':'open','wording':'resolved'}
     s.register('followup','root','Investigate actual total cost')
     s.publish('followup',0,paper('Net costs after review'),{},'f1',assignment={'authoring_issue_id':'gap','task_id':'actual-task'})
@@ -100,14 +100,14 @@ def test_multiple_issues_independent_resolution_binding_and_reopen(tmp_path):
     s.bind(frozen['snapshot_id'],canonical_sha256(report),report=report,section_uses=uses)
     s.require_current_binding(canonical_sha256(report))
     s.publish('followup',1,paper('Changed followup'),{},'f2',assignment={'authoring_issue_id':'gap'})
-    assert {i['id']:i['status'] for i in s.authoring.context()['issues']}=={'gap':'open','wording':'resolved'}
+    assert {i['id']:i['status'] for i in s.authoring.context(include_history=True)['issues']}=={'gap':'open','wording':'resolved'}
     assert s.authoring.handoff('gap')['issue']['report_digest']==canonical_sha256(report)
 
 
 def test_snapshot_understanding_change_and_new_issue_block_old_delivery(tmp_path):
     s,*_=initialized(tmp_path)
     frozen=s.prepare('root',['cost','competition'],'Basis')
-    s.authoring.update(1,dict(reason='Changed outline',sections=[section('cost',['cost'],9)]),'u2')
+    s.authoring.update(1,dict(reason='Changed outline',sections=[section('cost',['competition'],9)]),'u2')
     assert s.snapshot(frozen['snapshot_id'])['understanding_changed']
     with pytest.raises(WorkpaperConflict,match='understanding_changed'):
         s.bind(frozen['snapshot_id'],'report')
@@ -158,7 +158,8 @@ def test_context_retirement_requires_new_current_same_scope_view(tmp_path):
     current=s.authoring.context(['cost'])
     m1,m2=msg('old',old),msg('new',current)
     assert not authoring_context_replacements([m1],[{'receipt_id':'old'}],current)
-    replacement=authoring_context_replacements([m1,m2],[{'receipt_id':'old'}],current)[0]
+    assert not authoring_context_replacements([m1,m2],[{'receipt_id':'old'}],current)
+    replacement=authoring_context_replacements([m1,m2],[{'receipt_id':'old'},{'receipt_id':'new'}],current)[0]
     assert replacement['receipt']['result']['current_view_receipt_id']=='new'
     historical=msg('history',s.authoring.context(['cost'],revision=1))
     assert not authoring_context_replacements([historical,m2],[{'receipt_id':'history'}],current)

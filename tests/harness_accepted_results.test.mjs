@@ -2,7 +2,7 @@ import {test} from 'node:test'
 import assert from 'node:assert/strict'
 import {installAcceptedResults} from '../integrations/deepseek-harness/accepted-results.mjs'
 
-for (const toolName of ['read_research_agent_result','read_next_research_result','read_research_workpaper','read_workpaper_evidence','read_authoring_context'])
+for (const toolName of ['read_research_agent_result','read_next_research_result','read_research_workpaper','read_workpaper_evidence','read_authoring_context','read_synthesis_material'])
 test(`${toolName}: logged replacement preserves pairing, skips unaccepted sources, reopens and survives restore`, async () => {
   const hooks = {}
   const original = {receipt_id:'r1', status:'success', result:{result_digest:'v1', opinion:'long evidence'.repeat(200)}}
@@ -35,4 +35,23 @@ test(`${toolName}: logged replacement preserves pairing, skips unaccepted source
   accepted=false;await step();assert.equal(events.length,5)
   assert.equal(events[4].data.message.content[0].text,JSON.stringify(original))
   assert.ok(session.surface.nodes.includes(2))
+})
+
+test('replacement dependencies must still be visible after awaiting host projection', async () => {
+  const hooks={}
+  const receipt=id=>({receipt_id:id,status:'success',result:{result_digest:id,body:'data'.repeat(1000)}})
+  const events=['old','new'].flatMap((id,i)=>[
+    {seq:2*i,type:'assistant/message',data:{message:{content:[{type:'tool-call',id,name:'mcp__financial__read_authoring_context'}]}}},
+    {seq:2*i+1,type:'tool/result',data:{message:{toolCallId:id,content:[{type:'text',text:JSON.stringify(receipt(id))}]}}}
+  ])
+  let writes=0
+  const session={id:'s',surface:{nodes:[0,1,2,3]},append(){writes++}}
+  installAcceptedResults({on(name,fn){hooks[name]=fn},sessionQuery:{async readSurface(){return {events}}}},async()=>{
+    // Simulate a native compaction/rebase while the authenticated host calculates its projection.
+    session.surface.nodes=[0,1]
+    return {replacements:[{receipt_id:'old',result_digest:'old',receipt:{receipt_id:'old',status:'success',result:{
+      result_digest:'old',context_state:'superseded_authoring_view',current_view_receipt_id:'new'}}}]}
+  })
+  await hooks['agent/pre-step']({agent:{session},signal:new AbortController().signal},async()=>{})
+  assert.equal(writes,0)
 })

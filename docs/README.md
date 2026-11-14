@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[当前研究链路的完整离线验收](engineering/research_authoring_chain.zh-CN.md)说明相关正文失效、依赖范围、直接补查、复核输入、局部材料选择及原生上下文退出与恢复。
+
 [增量研究认识与成文断点](engineering/incremental_research_authoring.zh-CN.md)记录当前判断的增量维护、证据关联骨架、分章节选材、成文补查交接与实际正文追溯，以及多断点离线回放。
 
 [专题研究交接与成文快照](engineering/research_topic_handoffs.zh-CN.md)记录独立专题负责人、异步结果读取、完整底稿与版本依赖、验收后上下文退出，以及无模型调用的三层交接离线回放。

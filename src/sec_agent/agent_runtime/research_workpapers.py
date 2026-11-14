@@ -209,7 +209,7 @@ class ResearchWorkpapers:
                 'requires_reassessment': stale, 'current_revision': latest.get(topic_id),
                 'read_scope': 'Observed window, not proof of full reading or semantic acceptance.'}
 
-    def catalog(self, *, after=0, limit=8):
+    def catalog(self, *, after=0, limit=8, include_catalog=None):
         if after < 0 or not 1 <= limit <= 20:
             raise WorkpaperConflict('invalid_update_window')
         with self.connection() as db:
@@ -225,7 +225,9 @@ class ResearchWorkpapers:
                     'current_revision': latest.get(key),
                     'status': 'needs_reassessment' if key in latest and self._stale(db, self._get(db,key,latest[key]),latest)
                         else 'saved_proposal' if key in latest else 'not_yet_delivered'}
-                    for key,parent,question in db.execute('SELECT id,parent,question FROM topics ORDER BY id')],
+                    for key,parent,question in db.execute('SELECT id,parent,question FROM topics ORDER BY id')
+                    if (include_catalog if include_catalog is not None else after==0) or key in {r[1] for r in rows}],
+                'catalog_scope':'all' if (include_catalog if include_catalog is not None else after==0) else 'updated_topics',
                 'notice': 'Updates are asynchronous proposals. Read important changes; no count certifies coverage.'}
 
     def evidence(self, receipt_id):
@@ -260,15 +262,17 @@ class ResearchWorkpapers:
                 'catalog_versions': latest, 'as_of': db.execute('SELECT as_of FROM identity').fetchone()[0]}
             understanding = self.authoring._state(db)
             if understanding['revision']:
-                if self.authoring._impacts(db, understanding):
-                    raise WorkpaperConflict('reassess_judgments_before_synthesis')
                 needed = self.authoring._closure(understanding, understanding['lead_judgment_ids'] +
                     [j for s in understanding['sections'].values() for j in s['judgment_ids']])
+                if set(self.authoring._impacts(db,understanding)) & needed:
+                    raise WorkpaperConflict('reassess_judgments_before_synthesis')
                 for key in needed:
                     for ref in understanding['judgments'][key]['workpapers']:
                         if selected.get(ref['topic_id']) != {k:ref[k] for k in ('revision','digest')}:
                             raise WorkpaperConflict('select_outline_argument_materials')
                 payload.update(understanding_revision=understanding['revision'], understanding_digest=understanding['digest'])
+                payload['understanding_basis']=self.authoring.synthesis_basis(understanding)
+            payload['invalidation_scope']='selected_dependencies'
             key = canonical_sha256(payload)
             db.execute('INSERT OR IGNORE INTO snapshots VALUES (?,?)', (key, json.dumps(payload, ensure_ascii=False)))
             return {'snapshot_id': key, **payload, 'next_step': 'Read selected complete argument windows with read_synthesis_material; then compose and check the whole report.'}
@@ -282,9 +286,13 @@ class ResearchWorkpapers:
             if canonical_sha256(value) != snapshot_id:
                 raise RuntimeError('synthesis_snapshot_integrity_failure')
             latest = self._latest(db)
-            return {**value, 'changed_topics': [key for key in set(latest) | set(value['catalog_versions'])
+            scope=value['selected'] if value.get('invalidation_scope')=='selected_dependencies' else set(latest)|set(value['catalog_versions'])
+            state=self.authoring._state(db)
+            return {**value, 'changed_topics': [key for key in scope
                 if latest.get(key) != value['catalog_versions'].get(key)],
-                'understanding_changed': value.get('understanding_digest') != self.authoring._state(db)['digest']}
+                'unselected_updates':[key for key in set(latest)|set(value['catalog_versions']) if key not in scope and latest.get(key)!=value['catalog_versions'].get(key)],
+                'understanding_changed': (value['understanding_basis'] != self.authoring.synthesis_basis(state)
+                    if 'understanding_basis' in value else value.get('understanding_digest') != state['digest'])}
 
     def bind(self, snapshot_id, report_digest, *, report=None, section_uses=None):
         with self.connection() as db:
@@ -292,7 +300,9 @@ class ResearchWorkpapers:
             if not row:
                 raise WorkpaperConflict('unknown_synthesis_snapshot')
             snap = json.loads(row[0])
-            if snap['catalog_versions'] != self._latest(db):
+            latest=self._latest(db)
+            scope=snap['selected'] if snap.get('invalidation_scope')=='selected_dependencies' else set(latest)|set(snap['catalog_versions'])
+            if any(snap['catalog_versions'].get(k)!=latest.get(k) for k in scope):
                 raise WorkpaperConflict('research_changed_refresh_synthesis')
             for key, ref in snap['selected'].items():
                 if not db.execute('SELECT 1 FROM reads WHERE actor=? AND topic=? AND revision=?', ('root',key,ref['revision'])).fetchone():
@@ -300,9 +310,11 @@ class ResearchWorkpapers:
             authoring = self.authoring.binding(db, snap, report_digest, report, section_uses)
             db.execute('INSERT OR REPLACE INTO bindings VALUES (?,?)', (report_digest,snapshot_id))
         return {'bound': True, 'snapshot_id': snapshot_id, 'report_digest': report_digest,
-                'authoring': authoring, 'semantic_approval': False}
+                'authoring': {'understanding_revision':authoring['understanding_revision'],
+                    'mapped_sections':len(authoring['sections']), 'readback':{'tool':'read_current_report','arguments':{'field':'argument_map'}}} if authoring else None,
+                'coverage':'mapped_passages_not_semantic_approval','semantic_approval': False}
 
-    def require_current_binding(self, report_digest):
+    def require_current_binding(self, report_digest, report=None):
         with self.connection() as db:
             if not db.execute('SELECT 1 FROM papers').fetchone() and not self.authoring._state(db)['revision']:
                 return  # Unmigrated legacy task: preserve existing delivery contract.
@@ -316,5 +328,5 @@ class ResearchWorkpapers:
             raise WorkpaperConflict('understanding_changed_refresh_synthesis')
         with self.connection() as db:
             state = self.authoring._state(db)
-            if any(i['status'] == 'open' for i in self.authoring._issues(db,state)):
+            if any(i['status'] == 'open' for i in self.authoring._issues(db,state,report)):
                 raise WorkpaperConflict('resolve_authoring_issues_before_delivery')

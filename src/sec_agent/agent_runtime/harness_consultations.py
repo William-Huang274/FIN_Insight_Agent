@@ -227,25 +227,36 @@ class HarnessConsultations:
                         accepted_reads[receipt_id]=(decision,decision_id,p)
                     stack.extend(self.workspace.read(self.actor,d['topic_id'],d['revision'],field='metadata') for d in p['dependencies'])
         originals = {m.tool_call_id:m for m in messages if isinstance(m, ToolMessage)
-                     and m.name in {'read_research_agent_result','read_research_workpaper','read_workpaper_evidence'} and m.status == 'success'}
+                     and m.name in {'read_research_agent_result','read_research_workpaper','read_synthesis_material','read_workpaper_evidence'} and m.status == 'success'}
         replacements = []
         authoring_ids = {m.tool_call_id for m in messages if isinstance(m,ToolMessage) and m.name=='read_authoring_context'}
         if self.workspace and self.actor == 'root' and any(c.get('receipt_id') in authoring_ids for c in candidates):
             from .research_authoring import authoring_context_replacements
-            replacements = authoring_context_replacements(messages, candidates, self.workspace.authoring.context())
+            views={}
+            def current_view(sections,history):
+                key=(tuple(sorted(sections)),history)
+                if key not in views:
+                    views[key]=self.workspace.authoring.context(sections,include_history=history)
+                return views[key]
+            replacements = authoring_context_replacements(messages, candidates, current_view)
+        from .research_authoring import material_context_replacements
+        replacements.extend(material_context_replacements(messages,candidates))
         handled = {r['receipt_id'] for r in replacements}
+        handled.update(key for r in replacements for key in r['receipt'].get('result',{}).get('active_window_receipts',[]))
         for item in candidates:
             if item.get('receipt_id') in handled:
                 continue
             original = originals.get(item.get('receipt_id'))
             if original is None:
+                if item.get('receipt_id') in authoring_ids:
+                    continue
                 if item.get('retired'):
                     raise RuntimeError('accepted_result_original_receipt_missing')
                 continue
             body = json.loads(original.content)
             if original.name != 'read_research_agent_result':
                 identity = ((body.get('topic_id'),body.get('revision'),body.get('digest'))
-                            if original.name == 'read_research_workpaper' else body.get('receipt_id'))
+                            if original.name in {'read_research_workpaper','read_synthesis_material'} else body.get('receipt_id'))
                 decision,decision_id,paper=accepted_reads.get(identity,({},None,{}))
                 # A deliberate new read after acceptance stays visible until a later assessment.
                 if decision and positions[decision_id] > positions[original.tool_call_id]:
@@ -323,6 +334,16 @@ class HarnessConsultations:
         if original:
             request['research_task'] = dict(question=original, as_of=self.as_of,
                 review_scope='current_report' if purpose == 'review' and use_report else 'delegated_question')
+        if self.workspace and purpose=='review':
+            current=self.workspace.authoring.review_handoff()
+            previous=[json.loads(p.read_text(encoding='utf8')) for p in self.directory.glob('*.json')]
+            since=max((r['request'].get('current_understanding',{}).get('understanding_revision',0)
+                for r in previous if r.get('status')=='completed' and r.get('request',{}).get('purpose')=='review'
+                and r['request'].get('current_understanding',{}).get('understanding_revision',0)<(current or {}).get('understanding_revision',0)),default=0)
+            if since:
+                current=self.workspace.authoring.review_handoff(since)
+            if current:
+                request['current_understanding']=current
         key = canonical_sha256(request)
         path = self.directory / (key + '.json')
         if path.exists():

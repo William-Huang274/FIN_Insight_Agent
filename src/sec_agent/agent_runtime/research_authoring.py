@@ -4,6 +4,7 @@ This is a provenance contract, not a semantic judge or another agent scheduler.
 Historical states are immutable; unchanged judgments retain their exact basis.
 """
 import json
+from contextlib import nullcontext
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 from .research_graph_contracts import canonical_sha256
@@ -69,6 +70,7 @@ class ResearchAuthoring:
                 CREATE TABLE IF NOT EXISTS authoring_resolutions (id TEXT, revision INTEGER, payload TEXT,
                     PRIMARY KEY(id,revision));
                 CREATE TABLE IF NOT EXISTS section_bindings (report_digest TEXT PRIMARY KEY, payload TEXT);
+                CREATE TABLE IF NOT EXISTS authoring_report (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT);
             ''')
 
     @staticmethod
@@ -99,7 +101,10 @@ class ResearchAuthoring:
                     reasons.append({'workpaper': ref, 'current_revision': latest.get(ref['topic_id'])})
             for upstream in node['depends_on']:
                 if node['basis'][upstream] != canonical_sha256(state['judgments'][upstream]):
-                    reasons.append({'judgment_changed': upstream})
+                    previous = next((json.loads(row[0])['judgments'].get(upstream) for row in db.execute(
+                        'SELECT payload FROM understanding ORDER BY revision DESC')
+                        if canonical_sha256(json.loads(row[0])['judgments'].get(upstream)) == node['basis'][upstream]), None)
+                    reasons.append({'judgment_changed': upstream, 'changed_fields': self._difference(previous or {}, state['judgments'][upstream])})
             if reasons:
                 affected[key] = reasons
         while True:
@@ -179,6 +184,11 @@ class ResearchAuthoring:
                     raise WorkpaperConflict('outline_requires_active_judgment')
             payload = {'judgments': nodes, 'sections': sections, 'lead_judgment_ids': leads,
                        'change': patch, 'previous_revision': base_revision}
+            if all(payload[k] == state[k] for k in ('judgments','sections','lead_judgment_ids')):
+                result = {'saved': True, 'unchanged': True, 'revision': base_revision, 'digest': state['digest'],
+                          'updated_judgments': [], 'requires_reassessment': self._impacts(db,state)}
+                db.execute('INSERT INTO commands VALUES (?,?,?)', (command_id,fingerprint,json.dumps(result)))
+                return result
             revision = base_revision + 1
             digest = canonical_sha256(payload)
             db.execute('INSERT INTO understanding VALUES (?,?,?)', (revision, digest, json.dumps(payload, ensure_ascii=False)))
@@ -186,6 +196,7 @@ class ResearchAuthoring:
             result = {'saved': True, 'revision': revision, 'digest': digest, 'updated_judgments': sorted(changed),
                       'requires_reassessment': affected, 'readback': {'tool': 'read_authoring_context', 'arguments': {}},
                       'semantic_approval': False}
+            result['changes'] = {key:self._difference(state['judgments'].get(key,{}),nodes[key]) for key in sorted(changed)}
             db.execute('INSERT INTO commands VALUES (?,?,?)', (command_id, fingerprint, json.dumps(result)))
             return result
 
@@ -201,7 +212,19 @@ class ResearchAuthoring:
             visit(key)
         return selected
 
-    def _issues(self, db, state):
+    @staticmethod
+    def _difference(before, after):
+        return {k:{'before':before.get(k),'after':after.get(k)} for k in sorted(set(before)|set(after))
+                if k != 'basis' and before.get(k) != after.get(k)}
+
+    def observe_report(self, report):
+        with self.w.connection() as db:
+            db.execute('INSERT OR REPLACE INTO authoring_report VALUES (1,?)',(json.dumps(report,ensure_ascii=False),))
+
+    def _issues(self, db, state, report=None):
+        if report is None:
+            row = db.execute('SELECT payload FROM authoring_report WHERE id=1').fetchone()
+            report = json.loads(row[0]) if row else None
         result = []
         for (payload,) in db.execute('SELECT payload FROM authoring_issues ORDER BY id'):
             issue = json.loads(payload)
@@ -209,6 +232,16 @@ class ResearchAuthoring:
             resolution = json.loads(row[0]) if row else None
             current = self._section_basis(state, issue['section_ids'])
             closed = resolution and current == resolution['basis']
+            if closed and report is not None:
+                tracking = resolution.get('prose')
+                if tracking:
+                    closed = all(report.get(a['field'],'').count(a['excerpt']) == 1 for a in tracking['anchors'])
+                    closed = closed and all(canonical_sha256(report.get(k,'')) == v for k,v in tracking['fields'].items())
+                    forbidden = tracking.get('removed_quote')
+                    if forbidden and forbidden['quote'] in report.get(forbidden['field'],''):
+                        closed = False
+                else:
+                    closed = canonical_sha256(report) == resolution['report_digest']
             if closed:
                 for ref in resolution['results']:
                     paper = self.w._get(db,ref['topic_id'],ref['revision'])
@@ -219,17 +252,19 @@ class ResearchAuthoring:
 
     @staticmethod
     def _section_basis(state, ids):
-        sections = {key: state['sections'].get(key) for key in ids}
+        sections = {key: ({k:v for k,v in state['sections'][key].items() if k != 'order'}
+                         if key in state['sections'] else None) for key in ids}
         nodes = ResearchAuthoring._closure(state, [j for s in sections.values() if s for j in s['judgment_ids']])
         return {'sections': sections, 'judgments': {key: canonical_sha256(state['judgments'][key]) for key in sorted(nodes)}}
 
-    def context(self, section_ids=None, revision=None):
-        with self.w.connection() as db:
+    def context(self, section_ids=None, revision=None, include_history=False, *, _db=None):
+        with (self.w.connection() if _db is None else nullcontext(_db)) as db:
             state = self._state(db, revision)
             ids = list(state['sections']) if section_ids is None else section_ids
             if any(key not in state['sections'] for key in ids):
                 raise WorkpaperConflict('unknown_authoring_section')
-            nodes = self._closure(state, state['lead_judgment_ids'] + [j for key in ids for j in state['sections'][key]['judgment_ids']])
+            nodes = self._closure(state, (state['lead_judgment_ids'] if section_ids is None else [])+
+                                  [j for key in ids for j in state['sections'][key]['judgment_ids']])
             affected = self._impacts(db, state)
             papers = {}
             for key in nodes:
@@ -239,18 +274,23 @@ class ResearchAuthoring:
                         'readback': {'tool': 'read_research_workpaper', 'arguments': {'topic_id': ref['topic_id'], 'revision': ref['revision']}},
                         'evidence_receipt_ids': paper['evidence_receipt_ids']}
             identity = db.execute('SELECT question,as_of FROM identity').fetchone()
-            issues = self._issues(db, state)
-            generation = canonical_sha256([state['digest'], self.w._latest(db), issues])
+            issues = [i for i in self._issues(db,state) if set(i['section_ids']) & set(ids)
+                      and (include_history or i['status']=='open')]
+            visible_nodes = {k:state['judgments'][k] for k in sorted(nodes)}
+            leads = {k:{f:state['judgments'][k][f] for f in ('statement','conditions','counterevidence','remaining')}
+                     for k in state['lead_judgment_ids'] if k not in nodes}
+            scoped_impacts = {k:v for k,v in affected.items() if k in nodes or k in leads}
+            generation = canonical_sha256([visible_nodes,leads,[state['sections'][k] for k in ids],scoped_impacts,issues])
             value = {'revision': state['revision'], 'digest': state['digest'], 'historical_read': revision is not None,
                 'context_generation': generation,
                 'question': identity[0], 'as_of': identity[1],
-                'lead_judgment_ids': state['lead_judgment_ids'], 'judgments': {k: state['judgments'][k] for k in sorted(nodes)},
-                'outline': sorted(state['sections'].values(), key=lambda s: (s['order'], s['id'])),
-                'selected_sections': ids, 'materials': list(papers.values()), 'requires_reassessment': affected,
+                'lead_judgment_ids': state['lead_judgment_ids'], 'lead_overview': leads, 'judgments': visible_nodes,
+                'outline': sorted([state['sections'][k] for k in ids], key=lambda s: (s['order'], s['id'])),
+                'selected_sections': ids, 'include_history':include_history, 'materials': list(papers.values()), 'requires_reassessment': scoped_impacts,
                 'affected_sections': [k for k,s in state['sections'].items() if any(j in affected for j in s['judgment_ids'])],
                 'issues': [{**{k:v for k,v in i.items() if k not in {'basis','resolution'}},
                     'resolution': {k:v for k,v in i['resolution'].items() if k != 'basis'} if i['resolution'] else None} for i in issues],
-                'withdrawn': [{'id': k, 'statement': n['statement'], 'reason': n['rationale']} for k,n in state['judgments'].items() if n['status']=='withdrawn'],
+                'withdrawn': [{'id': k, 'statement': n['statement'], 'reason': n['rationale']} for k,n in state['judgments'].items() if include_history and n['status']=='withdrawn'],
                 'notice': 'Current public understanding and navigation. Read complete relevant arguments; this is not evidence or semantic approval.'}
             return {**value, 'result_digest': canonical_sha256(value)}
 
@@ -275,17 +315,38 @@ class ResearchAuthoring:
                     'next_step': 'For evidence gaps consult_research_agent(authoring_issue_id=...); for expression update the affected prose. Reassess affected judgments then resolve_authoring_issue.'}
 
     def handoff(self, issue_id):
-        view = self.context()
-        issue = next((i for i in view['issues'] if i['id'] == issue_id), None)
-        if not issue or issue['status'] != 'open':
-            raise WorkpaperConflict('authoring_issue_not_open')
-        view = self.context(issue['section_ids'])
+        with self.w.connection() as db:
+            state=self._state(db)
+            issue=next((i for i in self._issues(db,state) if i['id']==issue_id),None)
+            if not issue or issue['status']!='open':
+                raise WorkpaperConflict('authoring_issue_not_open')
+            issue={k:v for k,v in issue.items() if k not in {'basis','resolution'}}
+            view=self.context(issue['section_ids'],_db=db)
         return {'issue': issue, 'understanding_revision': view['revision'], 'original_question': view['question'],
-                'as_of': view['as_of'], 'lead_judgments': view['lead_judgment_ids'], 'judgments': view['judgments'],
+                'as_of': view['as_of'], 'lead_judgments': view['lead_overview'], 'judgments': view['judgments'],
                 'sections': [s for s in view['outline'] if s['id'] in issue['section_ids']], 'materials': view['materials'],
                 'instruction': 'Investigate this relationship and its implications; the existing judgment is revisable. Return a complete workpaper, not just replacement wording.'}
 
-    def resolve(self, issue_id, base_revision, disposition, explanation, results, report):
+    def synthesis_basis(self, state):
+        return canonical_sha256({'lead_judgment_ids':state['lead_judgment_ids'],
+            'sections':self._section_basis(state,list(state['sections'])),
+            'leads':{k:state['judgments'][k] for k in self._closure(state,state['lead_judgment_ids'])}})
+
+    def review_handoff(self, since_revision=0):
+        with self.w.connection() as db:
+            state=self._state(db)
+            if not state['revision']:
+                return None
+            previous=self._state(db,since_revision) if since_revision else {'judgments':{}}
+            changed={k:list(self._difference(previous['judgments'].get(k,{}),v)) for k,v in state['judgments'].items()
+                     if previous['judgments'].get(k)!=v}
+            return {'understanding_revision':state['revision'], 'comparison_base_revision':since_revision,
+                'lead_judgments':{k:state['judgments'][k] for k in state['lead_judgment_ids']},
+                'changed_judgments':changed,'outline':list(state['sections'].values()),
+                'readback':{'tool':'read_authoring_context','arguments':{'revision':state['revision']}},
+                'instruction':'Review the actual report and updated explanation against the original question. Changed field names are navigation; read the exact current judgments and complete arguments. Current judgments are revisable, not an answer key.'}
+
+    def resolve(self, issue_id, base_revision, disposition, explanation, results, report, *, prose_uses=None, direct_evidence=None):
         if disposition not in {'revised', 'retained', 'bounded_answer'} or not explanation.strip():
             raise WorkpaperConflict('explicit_resolution_required')
         refs = [Adoption.model_validate(r).model_dump(mode='json') for r in results]
@@ -300,7 +361,7 @@ class ResearchAuthoring:
             basis = self._section_basis(state, issue['section_ids'])
             if any(k in affected for k in basis['judgments']):
                 raise WorkpaperConflict('reassess_affected_judgments_before_resolution')
-            if issue['kind'] in {'missing_link', 'access_failure'} and not refs:
+            if issue['kind'] in {'missing_link', 'access_failure'} and not refs and not direct_evidence:
                 raise WorkpaperConflict('investigation_result_required_even_for_bounded_answer')
             for ref in refs:
                 paper = self.w._get(db, ref['topic_id'], ref['revision'])
@@ -310,12 +371,34 @@ class ResearchAuthoring:
                     raise WorkpaperConflict('resolution_requires_current_linked_result')
                 if not db.execute('SELECT 1 FROM reads WHERE actor=? AND topic=? AND revision=?', ('root',ref['topic_id'],ref['revision'])).fetchone():
                     raise WorkpaperConflict('read_resolution_argument_first')
-            value = {'disposition': disposition, 'explanation': explanation, 'results': refs, 'basis': basis,
+            anchors = [SectionUse.model_validate(u).model_dump(mode='json') for u in (prose_uses or [])]
+            if any(a['section_id'] not in issue['section_ids'] or report.get(a['field'],'').count(a['excerpt']) != 1 for a in anchors):
+                raise WorkpaperConflict('resolution_prose_requires_unique_related_passage')
+            # Track whole paragraphs around explicit anchors; a tiny unchanged phrase cannot hide a
+            # changed assertion in the same paragraph. Legacy callers conservatively track the field.
+            for a in anchors:
+                text=report[a['field']];start=text.index(a['excerpt']);end=start+len(a['excerpt'])
+                left=text.rfind('\n\n',0,start);right=text.find('\n\n',end)
+                a['excerpt']=text[0 if left<0 else left+2:len(text) if right<0 else right]
+            prose={'anchors':anchors,'fields':{} if anchors else {issue['field']:canonical_sha256(report.get(issue['field'],''))}}
+            if disposition=='revised' and issue['quote'] not in report.get(issue['field'],''):
+                prose['removed_quote']={'field':issue['field'],'quote':issue['quote']}
+            value = {'disposition': disposition, 'explanation': explanation, 'results': refs, 'basis': basis, 'prose':prose,
+                     'direct_evidence':list(direct_evidence or {}),
                      'report_digest': canonical_sha256(report), 'understanding_revision': base_revision}
+            for key,evidence in (direct_evidence or {}).items():
+                wire=json.dumps(evidence,ensure_ascii=False,sort_keys=True)
+                old=db.execute('SELECT payload FROM evidence WHERE id=?',(key,)).fetchone()
+                if old and old[0]!=wire:
+                    raise RuntimeError('evidence_identity_collision')
+                db.execute('INSERT OR IGNORE INTO evidence VALUES (?,?)',(key,wire))
             previous = db.execute('SELECT revision,payload FROM authoring_resolutions WHERE id=? ORDER BY revision DESC LIMIT 1',(issue_id,)).fetchone()
             if not previous or json.loads(previous[1]) != value:
                 db.execute('INSERT INTO authoring_resolutions VALUES (?,?,?)',(issue_id,previous[0]+1 if previous else 1,json.dumps(value,ensure_ascii=False)))
-            return {'saved': True, 'issue_id': issue_id, 'resolution': value, 'semantic_approval': False}
+            db.execute('INSERT OR REPLACE INTO authoring_report VALUES (1,?)',(json.dumps(report,ensure_ascii=False),))
+            return {'saved': True, 'issue_id': issue_id, 'disposition':disposition,
+                    'readback':{'tool':'read_authoring_context','arguments':{'section_ids':issue['section_ids'],'include_history':True}},
+                    'semantic_approval': False}
 
     def binding(self, db, snapshot, report_digest, report, section_uses):
         state = self._state(db)
@@ -323,15 +406,19 @@ class ResearchAuthoring:
             return None  # Existing tasks keep their legacy whole-report contract.
         if report is not None and canonical_sha256(report) != report_digest:
             raise WorkpaperConflict('report_digest_does_not_match_saved_prose')
-        if snapshot.get('understanding_digest') != state['digest']:
+        if (snapshot.get('understanding_basis') != self.synthesis_basis(state) if 'understanding_basis' in snapshot
+                else snapshot.get('understanding_digest') != state['digest']):
             raise WorkpaperConflict('understanding_changed_refresh_synthesis')
-        if self._impacts(db, state):
+        needed=self._closure(state,state['lead_judgment_ids']+[j for s in state['sections'].values() for j in s['judgment_ids']])
+        if set(self._impacts(db, state)) & needed:
             raise WorkpaperConflict('reassess_judgments_before_delivery')
         if not state['lead_judgment_ids'] or not state['sections']:
             raise WorkpaperConflict('authoring_requires_current_thesis_and_outline')
-        if any(i['status'] == 'open' for i in self._issues(db,state)):
+        if any(i['status'] == 'open' for i in self._issues(db,state,report)):
             raise WorkpaperConflict('resolve_authoring_issues_before_delivery')
         uses = [SectionUse.model_validate(u).model_dump(mode='json') for u in (section_uses or [])]
+        if (report or {}).get('title') and not any(u['field']=='title' for u in uses):
+            raise WorkpaperConflict('bind_report_title_to_current_judgment')
         if len({(u['section_id'],u['field'],u['excerpt']) for u in uses}) != len(uses) or {u['section_id'] for u in uses} != set(state['sections']):
             raise WorkpaperConflict('bind_each_outline_section_to_saved_prose')
         for use in uses:
@@ -371,6 +458,18 @@ def authoring_context_replacements(messages, candidates, current):
     from langchain_core.messages import ToolMessage
     from .harness_business_tools import model_receipt
     originals, newest = {}, {}
+    active={c['receipt_id'] for c in candidates if not c.get('retired')}
+    def scope(body):
+        return (tuple(sorted(body['selected_sections'])),body.get('include_history',False))
+    def live(body):
+        try:
+            return current(body['selected_sections'],body.get('include_history',False)) if callable(current) else current
+        except WorkpaperConflict as exc:
+            if str(exc)!='unknown_authoring_section':
+                raise
+            # Removing a provisional section is legitimate. Its historical view has no same-scope
+            # replacement; preserve/restore it instead of failing the native pre-step hook.
+            return {'context_generation':None,'revision':None}
     for message in messages:
         if not isinstance(message,ToolMessage) or message.name != 'read_authoring_context' or message.status != 'success':
             continue
@@ -378,23 +477,23 @@ def authoring_context_replacements(messages, candidates, current):
         if 'result_digest' not in body:
             continue
         originals[message.tool_call_id] = (message,body)
-        if not body.get('historical_read') and body.get('context_generation') == current['context_generation']:
-            newest[tuple(sorted(body['selected_sections']))] = message.tool_call_id
+        if (message.tool_call_id in active and not body.get('historical_read')
+                and body.get('context_generation') == live(body)['context_generation']):
+            newest[scope(body)] = message.tool_call_id
     replacements = []
     for candidate in candidates:
         pair = originals.get(candidate.get('receipt_id'))
         if not pair:
             continue
         message,body = pair
-        newer = newest.get(tuple(sorted(body['selected_sections'])))
-        if (newer and newer != message.tool_call_id and not body.get('historical_read')
-                and body.get('context_generation') != current['context_generation']):
+        newer = newest.get(scope(body))
+        if newer and newer != message.tool_call_id and not body.get('historical_read'):
             receipt = {'receipt_id':message.tool_call_id,'status':'success','result':{
                 'result_digest':body['result_digest'],'context_state':'superseded_authoring_view',
-                'old_revision':body['revision'],'current_revision':current['revision'],
+                'old_revision':body['revision'],'current_revision':live(body)['revision'],
                 'current_view_receipt_id':newer,
                 'current_readback':{'tool':'read_authoring_context','arguments':{'section_ids':body['selected_sections']}},
-                'original_readback':{'tool':'read_authoring_context','arguments':{'section_ids':body['selected_sections'],'revision':body['revision']}}}}
+                'original_readback':{'tool':'read_saved_result','arguments':{'tool_call_id':message.tool_call_id}}}}
         elif candidate.get('retired'):
             receipt = model_receipt(message)
             receipt['context_notice'] = 'No current same-scope replacement has been read; recover current authoring context.'
@@ -402,3 +501,48 @@ def authoring_context_replacements(messages, candidates, current):
             continue
         replacements.append({'receipt_id':message.tool_call_id,'result_digest':body['result_digest'],'receipt':receipt})
     return replacements
+
+
+def material_context_replacements(messages, candidates):
+    """Retire exact duplicate windows only while later covering reads remain active."""
+    from langchain_core.messages import ToolMessage
+    from .harness_business_tools import model_receipt
+    from .research_result_acceptance import workpaper_conditions
+    active={c['receipt_id'] for c in candidates if not c.get('retired')}
+    rows={}
+    for index,message in enumerate(messages):
+        if isinstance(message,ToolMessage) and message.status=='success' and message.name in {'read_research_workpaper','read_synthesis_material'}:
+            body=json.loads(message.content)
+            if body.get('result_digest') and isinstance(body.get('body'),str):
+                rows[message.tool_call_id]=(index,message,body)
+    result=[];retiring=set()
+    for item in sorted(candidates,key=lambda c:rows.get(c['receipt_id'],(-1,))[0],reverse=True):
+        row=rows.get(item['receipt_id'])
+        if not row:
+            continue
+        index,message,body=row
+        start=body['offset'];end=start+len(body['body']);cursor=start;cover=[]
+        windows=sorted((other['offset'],other['offset']+len(other['body']),key,other) for key,(i,m,other) in rows.items()
+            if i>index and key in active and key not in retiring and all(other.get(k)==body.get(k) for k in ('topic_id','revision','digest')))
+        for left,right,key,other in windows:
+            if left>cursor or right<=cursor:
+                continue
+            lo=max(start,left);hi=min(end,right)
+            if body['body'][lo-start:hi-start]!=other['body'][lo-left:hi-left]:
+                continue
+            cursor=min(end,right);cover.append(key)
+            if cursor==end:
+                break
+        if cursor==end and cover:
+            retiring.add(message.tool_call_id)
+            receipt={'receipt_id':message.tool_call_id,'status':'success','result':{
+                'result_digest':body['result_digest'],'context_state':'duplicate_material_window',
+                'active_window_receipts':cover,'workpaper_conditions':workpaper_conditions(body),
+                'original_readback':{'tool':'read_saved_result','arguments':{'tool_call_id':message.tool_call_id}}}}
+        elif item.get('retired') and item.get('context_state')=='duplicate_material_window':
+            receipt=model_receipt(message)
+            receipt['context_notice']='Covering windows left the active surface; exact original restored.'
+        else:
+            continue
+        result.append({'receipt_id':message.tool_call_id,'result_digest':body['result_digest'],'receipt':receipt})
+    return result

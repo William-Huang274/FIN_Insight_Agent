@@ -45,6 +45,8 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review, resear
         if actions['actions'] or actions['unstructured_results']:
             result['research_actions'] = {'pending_material':actions['pending_material'],
                 'readback':actions['readback'], 'status':'saving_does_not_resolve_research_issues'}
+        if research_workspace is not None:
+            research_workspace.authoring.observe_report(report)
         return Command(update={'report': report, 'report_version': version, 'report_draft': None,
             'report_draft_base_version': None, 'delivery': None,
             'messages': [ToolMessage(tool_call_id=runtime.tool_call_id, content=json.dumps(result, ensure_ascii=False))]})
@@ -231,7 +233,7 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review, resear
         if research_workspace is not None:
             from .research_workpapers import WorkpaperConflict
             try:
-                research_workspace.require_current_binding(canonical_sha256(report))
+                research_workspace.require_current_binding(canonical_sha256(report),report)
             except WorkpaperConflict as exc:
                 return {'delivered':False, 'error':str(exc),
                     'readback':{'tool':'research_updates','arguments':{}},

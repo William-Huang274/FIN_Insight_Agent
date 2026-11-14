@@ -65,6 +65,15 @@ def research_system_prompt(names, task_context=""):
                    'original-question coverage. Read relevant argument windows with read_synthesis_material. '
                    'Compose your current best answer, then bind_research_synthesis to the saved report before delivery. '
                    'Unfinished answer-changing relationships remain your responsibility; a compact index is not evidence.\n')
+    if "update_research_understanding" in names:
+        prompt += ('Maintain important current judgments incrementally with update_research_understanding; '
+                   'omit unchanged entries. Connect the provisional argument outline to those judgments and exact '
+                   'workpapers. read_authoring_context selects the overall answer plus needed section materials. '
+                   'Evidence can change the outline. While writing, open_authoring_issue records an exact saved '
+                   'passage and affected sections; consult_research_agent(authoring_issue_id=...) carries that '
+                   'context into investigation. Reassess affected judgments, revise saved prose and resolve the '
+                   'issue before binding section passages to the current report. This contract tracks decisions; '
+                   'you still judge whether the reasoning answers the original question.\n')
     if "browse_context" in names:
         prompt += ('\nbrowse_context(region="acquisition") returns persisted source acquisition events: '
                    'candidates, read passages and access/verification obstacles, with exact receipt readbacks. '

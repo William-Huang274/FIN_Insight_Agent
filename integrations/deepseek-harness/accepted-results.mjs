@@ -12,6 +12,8 @@ function receiptOf(event) {
   } catch { return null }
 }
 
+const isRetired = receipt => ['accepted_result_summary', 'superseded_authoring_view'].includes(receipt.result?.context_state)
+
 export function installAcceptedResults(ctx, post) {
   const states = new WeakMap()
   const track = (state, event) => {
@@ -44,14 +46,15 @@ export function installAcceptedResults(ctx, post) {
       if (!active.has(seq)) { state.results.delete(seq); continue }
       const message = event.data.message
       if (!['mcp__financial__read_research_agent_result', 'mcp__financial__read_next_research_result',
-        'mcp__financial__read_research_workpaper', 'mcp__financial__read_workpaper_evidence']
+        'mcp__financial__read_research_workpaper', 'mcp__financial__read_workpaper_evidence',
+        'mcp__financial__read_authoring_context']
         .includes(state.calls.get(message.toolCallId))) continue
       const receipt = receiptOf(event)
       if (receipt) candidates.push({event, receipt})
     }
     if (candidates.length) {
       const response = await post('/context/accepted-results', {candidates: candidates.map(({receipt}) => ({
-        receipt_id: receipt.receipt_id, retired: receipt.result.context_state === 'accepted_result_summary',
+        receipt_id: receipt.receipt_id, retired: isRetired(receipt),
       }))}, signal)
       const replacements = new Map(response.replacements.map(r => [r.receipt_id, r]))
       for (const {event, receipt} of candidates) {
@@ -62,8 +65,7 @@ export function installAcceptedResults(ctx, post) {
         // A short original may be cheaper than its acceptance envelope. Never
         // discard information merely to increase input; updated/revoked summaries
         // must still be refreshed regardless of their new size.
-        if (receipt.result.context_state !== 'accepted_result_summary' &&
-            replacement.receipt.result.context_state === 'accepted_result_summary' &&
+        if (!isRetired(receipt) && isRetired(replacement.receipt) &&
             text.length >= JSON.stringify(receipt).length) continue
         signal.throwIfAborted()
         if (!session.surface.nodes.includes(event.seq)) throw new Error('FIN acceptance surface changed during projection')

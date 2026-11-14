@@ -112,7 +112,7 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review, resear
     def read_current_report(runtime: ToolRuntime, offset: Annotated[int, Field(ge=0, description='Character offset; follow next_offset to continue.')] = 0,
                             max_characters: Annotated[int, Field(ge=1, le=12000, description='Read 1–12000 characters per page; follow next_offset for remaining text.')] = 6000,
                             view: Literal['accepted', 'draft'] = 'accepted',
-                            field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema', 'review', 'revision_context', 'research_actions', 'synthesis_context'] = 'narrative_markdown'):
+                            field: Literal['narrative_markdown', 'title', 'charts', 'all', 'schema', 'review', 'revision_context', 'research_actions', 'synthesis_context', 'argument_map'] = 'narrative_markdown'):
         """Read exact report fields for editing. Default is unescaped narrative prose.
 
         view=draft reads the saved but unaccepted proposal for repair_report_fields;
@@ -131,6 +131,8 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review, resear
         and evidence/revision readback. Use it at a handoff or synthesis decision, not after
         every read. Counts are not research adequacy; it does not certify the author's thesis.
         Settled review prose stays in research_actions/revision_context; it is not writing material.
+        field=argument_map traces actual bound section passages to exact public judgments and workpaper
+        versions. It is paginated provenance, not a semantic review. Unbound drafts return found=false.
         """
         if field in ('research_actions', 'synthesis_context'):
             from .research_actions import research_action_view, synthesis_working_view
@@ -138,7 +140,7 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review, resear
                      else research_action_view(runtime.state))
             if field == 'synthesis_context' and research_workspace is not None:
                 value = {**value, 'research_workpapers': research_workspace.catalog(),
-                    'authoring_entry': 'prepare_research_synthesis selects exact current versions; read_synthesis_material reads complete arguments by window; bind_research_synthesis binds the saved report.'}
+                    'authoring_entry': 'read_authoring_context returns current judgments, outline, affected sections and material readbacks; update_research_understanding changes only affected entries. prepare_research_synthesis freezes versions; bind_research_synthesis binds section passages and current report.'}
             text = json.dumps(value, ensure_ascii=False)
             return {'field':field, 'report_version':runtime.state.get('report_version',0),
                 'text':text[offset:offset+max_characters], 'offset':offset,'total_characters':len(text),
@@ -169,6 +171,9 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review, resear
             return {'found': False, 'view': view, 'report_version': runtime.state.get('report_version', 0)}
         fields = report if view == 'draft' else report_model_view(report)
         value = fields if field == 'all' else fields.get(field, '')
+        if field == 'argument_map':
+            value = (research_workspace.authoring.report_map(canonical_sha256(report)) if research_workspace
+                     else {'found':False,'reason':'authoring_workspace_unavailable'})
         text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
         return {'found': True, 'view': view, 'field': field, 'accepted': view == 'accepted',
                 'report_version': runtime.state.get('report_version', 0),

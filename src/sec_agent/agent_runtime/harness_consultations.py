@@ -53,7 +53,7 @@ class HarnessConsultations:
         async def consult_research_agent(question: str, context: str, purpose: Literal['investigate', 'review', 'draft'],
                                          runtime: ToolRuntime, use_current_report: bool = False,
                                          method_ids: list[str] | None = None, topic_lead: bool = False,
-                                         topic_id: str | None = None):
+                                         topic_id: str | None = None, authoring_issue_id: str | None = None):
             """Delegate one material research question to the configured research agent with read-only sources,
             web/SEC/government/market/calculation tools and the same task budget. Use investigate for a relationship
             that needs separate evidence, review for an argument you want challenged; neither is mandatory.
@@ -81,9 +81,11 @@ class HarnessConsultations:
             The host separately supplies the original research question; your focus does not replace it.
             method_ids selects optional method-library IDs, not new permissions. Returns task_id promptly.
             Continue useful independent work, then read_research_agent_result; results are proposals, not verdicts.
+            For a saved writing discontinuity, pass authoring_issue_id: the host attaches its exact original
+            passage, current affected judgments, section purpose and source versions. No need to paste history.
             """
             return await self.submit(question, context, purpose, use_current_report, method_ids or [], runtime.state,
-                                     topic_lead=topic_lead, topic_id=topic_id)
+                                     topic_lead=topic_lead, topic_id=topic_id, authoring_issue_id=authoring_issue_id)
 
         if self.workspace and self.topic_delegate:
             consult_research_agent.description += ('\nUse topic_lead=true for a substantial relationship requiring ongoing '
@@ -227,7 +229,14 @@ class HarnessConsultations:
         originals = {m.tool_call_id:m for m in messages if isinstance(m, ToolMessage)
                      and m.name in {'read_research_agent_result','read_research_workpaper','read_workpaper_evidence'} and m.status == 'success'}
         replacements = []
+        authoring_ids = {m.tool_call_id for m in messages if isinstance(m,ToolMessage) and m.name=='read_authoring_context'}
+        if self.workspace and self.actor == 'root' and any(c.get('receipt_id') in authoring_ids for c in candidates):
+            from .research_authoring import authoring_context_replacements
+            replacements = authoring_context_replacements(messages, candidates, self.workspace.authoring.context())
+        handled = {r['receipt_id'] for r in replacements}
         for item in candidates:
+            if item.get('receipt_id') in handled:
+                continue
             original = originals.get(item.get('receipt_id'))
             if original is None:
                 if item.get('retired'):
@@ -276,7 +285,7 @@ class HarnessConsultations:
         self.check()
         return {'replacements': replacements}
 
-    async def submit(self, question, context, purpose, use_report, methods, state, *, topic_lead=False, topic_id=None):
+    async def submit(self, question, context, purpose, use_report, methods, state, *, topic_lead=False, topic_id=None, authoring_issue_id=None):
         from sec_agent.research_foundation.research_methods import preloaded_research_methods
         self.check()
         if purpose not in {'investigate', 'review', 'draft'} or (purpose == 'draft' and not self.native_delegate):
@@ -295,6 +304,14 @@ class HarnessConsultations:
         request = dict(question=question, context=context, purpose=purpose, report=report,
                        methods=methods, method_text=method_text, as_of=self.as_of, model=selected_model,
                        assessment_contract=1)
+        if authoring_issue_id:
+            if not self.workspace or self.actor != 'root':
+                raise ToolException('Authoring issue delegation requires the root workspace.')
+            from .research_workpapers import WorkpaperConflict
+            try:
+                request['authoring_issue'] = self.workspace.authoring.handoff(authoring_issue_id)
+            except WorkpaperConflict as exc:
+                return {'submitted': False, 'error': str(exc), 'readback': {'tool':'read_authoring_context','arguments':{}}}
         if topic_lead and (not self.workspace or not self.topic_delegate or self.depth >= 3):
             raise ToolException('Topic delegation unavailable or depth reached; use a scoped investigator.')
         if topic_id and not self.workspace:
@@ -381,7 +398,8 @@ class HarnessConsultations:
         if self.workspace and record.get('workpaper_actor'):
             from .research_workpaper_tools import workpaper_tools
             grants.extend(workpaper_tools(self.workspace, record['workpaper_actor'], assignment={
-                'task_id':key, 'question':request['question'], 'purpose':request['purpose']}))
+                'task_id':key, 'question':request['question'], 'purpose':request['purpose'],
+                **({'authoring_issue_id':request['authoring_issue']['issue']['id']} if request.get('authoring_issue') else {})}))
             if request.get('workpaper_assignment', {}).get('topic_lead'):
                 if key not in self.nested:
                     self.nested[key] = HarnessConsultations(directory=self.directory/'topics'/key,

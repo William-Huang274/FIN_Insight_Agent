@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[增量研究认识与成文断点](engineering/incremental_research_authoring.zh-CN.md)记录当前判断的增量维护、证据关联骨架、分章节选材、成文补查交接与实际正文追溯，以及多断点离线回放。
+
 [专题研究交接与成文快照](engineering/research_topic_handoffs.zh-CN.md)记录独立专题负责人、异步结果读取、完整底稿与版本依赖、验收后上下文退出，以及无模型调用的三层交接离线回放。
 
 [当前研究认识与交叉验证](engineering/research_understanding_handoff.zh-CN.md)记录工作笔记、调查发现、按需挑战、前瞻情景和最终综合的优化；新增有依据的基准选择、纠错历史回读及空搜索进度交接，并区分离线回放与真实研究验收。

@@ -9,7 +9,8 @@ from langgraph.types import Command
 from .conversation_agent import GrantedTool
 from .conversation_tools import SAVED_RESULT_TOOLS
 from .research_graph_contracts import canonical_sha256
-from .research_workpapers import ResearchWorkpaper, WorkpaperConflict
+from .research_workpapers import ResearchWorkpaper, WorkpaperConflict, Adoption
+from .research_authoring import UnderstandingPatch, AuthoringIssue, SectionUse
 
 
 def workpaper_tools(workspace, actor='root', *, assignment=None):
@@ -17,8 +18,10 @@ def workpaper_tools(workspace, actor='root', *, assignment=None):
         try:
             return fn(*args, **kwargs)
         except WorkpaperConflict as exc:
+            authoring = (getattr(fn, '__self__', None) is workspace.authoring or
+                         any(word in str(exc) for word in ('understanding','judgment','outline','section','authoring')))
             return {'saved': False, 'error': str(exc),
-                'readback': {'tool': 'research_updates', 'arguments': {}},
+                'readback': {'tool': 'read_authoring_context' if authoring and actor == 'root' else 'research_updates', 'arguments': {}},
                 'notice': 'Correct the selection or reassess current evidence. No content was silently changed.'}
 
     def read_paper(*args, **kwargs):
@@ -90,6 +93,55 @@ def workpaper_tools(workspace, actor='root', *, assignment=None):
     tools = [publish_research_workpaper, read_research_workpaper, research_updates, read_workpaper_evidence]
     if actor == 'root':
         @tool
+        def update_research_understanding(base_revision: int, patch: UnderstandingPatch, runtime: ToolRuntime):
+            """Update only changed public judgments/argument sections; omitted entries retain their exact basis.
+            Stable IDs connect conclusions, assumptions, counterevidence, workpaper versions and upstream
+            judgments. Lead IDs identify the current overall answer. The outline is provisional: evidence
+            can change its thesis, order and scope. A revised premise marks downstream judgments for your
+            reassessment, never automatic reversal. Withdraw a judgment explicitly; do not silently erase it.
+            No extra narrative plan required. Use read_authoring_context to recover the materialized current view.
+            """
+            return guarded(workspace.authoring.update, base_revision, patch, actor+':'+runtime.tool_call_id)
+
+        @tool
+        def read_authoring_context(section_ids: list[str] | None = None, revision: int | None = None):
+            """Read current understanding and the argument outline, or an exact historical revision.
+            Select sections to include only their judgments and dependencies plus the overall thesis;
+            complete workpapers and original evidence remain behind exact readbacks. This view contains
+            assumptions, counterevidence, withdrawn explanations, open issues and affected sections.
+            Read actual arguments as needed; do not treat this compact view as sufficient source material.
+            """
+            return guarded(workspace.authoring.context, section_ids, revision)
+
+        @tool
+        def open_authoring_issue(base_revision: int, issue: AuthoringIssue, report_version: int, runtime: ToolRuntime):
+            """Record a concrete incoherence in saved prose with exact quote, sections and current basis.
+            field selects title or narrative_markdown. Classify missing link, stale basis, expression, thesis conflict or access failure. For research
+            pass its ID to consult_research_agent(authoring_issue_id=...); exact origin and related current
+            judgments are attached automatically. Multiple issues remain independent; no full research restart.
+            """
+            if not runtime.state.get('report') or runtime.state.get('report_version') != report_version:
+                return {'error': 'report_version_changed_read_current_report'}
+            return guarded(workspace.authoring.open_issue, base_revision, issue, runtime.state['report'])
+
+        @tool
+        def resolve_authoring_issue(issue_id: str, base_revision: int,
+                                    disposition: Literal['revised','retained','bounded_answer'],
+                                    explanation: str, result_workpapers: list[Adoption], report_version: int, runtime: ToolRuntime):
+            """After investigation/reassessment and prose revision, record your actual handling of an issue.
+            Read the linked complete result, update affected judgments, and save the report first. Missing
+            links/access failures require a workpaper from the linked investigation, even for a bounded
+            answer. You may retain a supported judgment with reasons. This records your decision, not approval.
+            Later changes to related judgments or result versions reopen the issue for reassessment.
+            """
+            if not runtime.state.get('report') or runtime.state.get('report_version') != report_version:
+                return {'error': 'report_version_changed_read_current_report'}
+            return guarded(workspace.authoring.resolve, issue_id, base_revision, disposition, explanation,
+                           result_workpapers, runtime.state['report'])
+
+        tools += [update_research_understanding, read_authoring_context, open_authoring_issue, resolve_authoring_issue]
+
+        @tool
         def prepare_research_synthesis(topic_ids: list[str], scope_rationale: str):
             """Freeze the current research versions for authoring. Select substantive workpapers, explain
             original-question coverage, omissions and still-unfinished relationships. Transitive dependencies
@@ -110,6 +162,8 @@ def workpaper_tools(workspace, actor='root', *, assignment=None):
                 snapshot = workspace.snapshot(snapshot_id)
                 if snapshot['changed_topics']:
                     raise WorkpaperConflict('research_changed_refresh_synthesis')
+                if snapshot['understanding_changed']:
+                    raise WorkpaperConflict('understanding_changed_refresh_synthesis')
                 if topic_id not in snapshot['selected']:
                     raise WorkpaperConflict('topic_not_selected_in_synthesis')
                 return workspace.read(actor, topic_id, snapshot['selected'][topic_id]['revision'],
@@ -117,15 +171,21 @@ def workpaper_tools(workspace, actor='root', *, assignment=None):
             return guarded(read)
 
         @tool
-        def bind_research_synthesis(snapshot_id: str, report_version: int, runtime: ToolRuntime):
+        def bind_research_synthesis(snapshot_id: str, report_version: int, runtime: ToolRuntime,
+                                   section_uses: list[SectionUse] | None = None):
             """After whole-report reading, bind the saved report to the research versions actually used.
             Check title, summary, cross-section explanations and important assumptions. This validates
             identities and version currency, not financial correctness. Changed research needs reassessment;
             it cannot be acknowledged away by citing an old snapshot. Existing report citations remain required.
+            With an argument outline, bind each section to an exact unique passage in saved prose through
+            section_uses (field=title or narrative_markdown). A section can bind several distinct passages,
+            including its summary and conclusion. Current judgments and workpaper versions bind automatically.
             """
             if not runtime.state.get('report') or report_version != runtime.state.get('report_version'):
                 return {'error':'report_version_changed_read_current_report'}
-            return guarded(workspace.bind, snapshot_id, canonical_sha256(runtime.state['report']))
+            return guarded(workspace.bind, snapshot_id, canonical_sha256(runtime.state['report']),
+                           report=runtime.state['report'], section_uses=section_uses)
         tools += [prepare_research_synthesis, read_synthesis_material, bind_research_synthesis]
-    return [GrantedTool(t, 'task_artifact_write' if t.name in {'publish_research_workpaper','bind_research_synthesis'} else 'read',
+    return [GrantedTool(t, 'task_artifact_write' if t.name in {'publish_research_workpaper','bind_research_synthesis',
+        'update_research_understanding','open_authoring_issue','resolve_authoring_issue'} else 'read',
         'Versioned research delivery and scoped original readback') for t in tools]

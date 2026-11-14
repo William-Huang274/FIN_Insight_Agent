@@ -98,6 +98,28 @@ def delegation_payload(request, *, previous_scope=None, recovery_receipt=None):
     return payload
 
 
+def delegate_prompt(request, tools, *, topic_lead=False):
+    """One prompt assembly for native dispatch and offline input inspection."""
+    prompt = research_system_prompt(tools, delegation_guidance(request['purpose']) +
+        '\nResearch as of: '+request['as_of']+
+        '\nUse returned citation_handle values and [REF-...] citations; never shorten source IDs.') + request['method_text']
+    if request.get('assessment_contract') == 1 and 'record_research_assessment' in tools:
+        prompt += ('\n返回成果前使用 record_research_assessment：finding 保存调查或复核建立的认识及其对当前判断的影响，'
+                   'scope_explanation 说明实际覆盖；actions 仅记录仍影响答案的后续事项。'
+                   '没有实质缺口可记录空 actions；不要为填表制造问题。')
+    if request.get('workpaper_assignment'):
+        prompt += ('\n本次专题身份为 '+request['current_topic_id']+'。用 research_updates 查已有成果，'
+            'read_research_workpaper 回读本专题当前版与需要的关联论证；完整旧会话不作为新输入。'
+            '交付前必须 publish_research_workpaper 保存完整可独立阅读的研究成果，包含分析、假设、反证和后续责任。'
+            '终态回复可以简短；持久底稿必须完整。依赖其他成果时先读正文并绑定精确版本。')
+        if topic_lead:
+            prompt += ('你承担专题研究负责人责任：先充分探索问题和比较对象，再安排相关调查；'
+                '独立任务可并行，read_next_research_result 按完成顺序接收，不等所有任务汇合。'
+                '逐项验收并更新专题判断；发现可行且会改判的未决关系继续调查。'
+                '向总负责人交付本专题的判断及影响，不替总题宣布研究完成。')
+    return prompt
+
+
 class NativeResearchDelegate:
     """No provider loop, duplicate history, artifact writer or independent permission grant."""
     def __init__(self, *, options, parent_options, binary, root, grant, authority, budget,
@@ -152,23 +174,7 @@ class NativeResearchDelegate:
         async with harness_local_services(business=bridge, dispatch=dispatch, transport=transport, token=token,
                 readiness=(lambda: consultations.dispatch_ready(parent_dispatch=dispatch)) if consultations else None,
                 context_projection=consultations.context_projection if consultations else None) as endpoint:
-            prompt = research_system_prompt(bridge.tools, delegation_guidance(request['purpose']) +
-                '\nResearch as of: '+request['as_of']+
-                '\nUse returned citation_handle values and [REF-...] citations; never shorten source IDs.') + request['method_text']
-            if request.get('assessment_contract') == 1 and 'record_research_assessment' in bridge.tools:
-                prompt += ('\n返回成果前使用 record_research_assessment：finding 保存调查或复核建立的认识及其对当前判断的影响，'
-                           'scope_explanation 说明实际覆盖；actions 仅记录仍影响答案的后续事项。'
-                           '没有实质缺口可记录空 actions；不要为填表制造问题。')
-            if request.get('workpaper_assignment'):
-                prompt += ('\n本次专题身份为 '+request['current_topic_id']+'。用 research_updates 查已有成果，'
-                    'read_research_workpaper 回读本专题当前版与需要的关联论证；完整旧会话不作为新输入。'
-                    '交付前必须 publish_research_workpaper 保存完整可独立阅读的研究成果，包含分析、假设、反证和后续责任。'
-                    '终态回复可以简短；持久底稿必须完整。依赖其他成果时先读正文并绑定精确版本。')
-                if consultations:
-                    prompt += ('你承担专题研究负责人责任：先充分探索问题和比较对象，再安排相关调查；'
-                        '独立任务可并行，read_next_research_result 按完成顺序接收，不等所有任务汇合。'
-                        '逐项验收并更新专题判断；发现可行且会改判的未决关系继续调查。'
-                        '向总负责人交付本专题的判断及影响，不替总题宣布研究完成。')
+            prompt = delegate_prompt(request, bridge.tools, topic_lead=consultations is not None)
             patch = profile_overlay(model=o['model'], protocol=o['protocol'], endpoint=endpoint, prompt=prompt,
                 context_window=o['context_window'], output_tokens=o['output_tokens'], summary_tokens=o['summary_tokens'],
                 reasoning=o['reasoning'], compaction_threshold=o.get('compaction_threshold', .8),

@@ -13,10 +13,10 @@ from pathlib import Path
 
 from langchain_core.tools import tool
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-from sec_agent.agent_runtime.conversation_agent import GrantedTool, research_system_prompt
+from sec_agent.agent_runtime.conversation_agent import GrantedTool
 from sec_agent.agent_runtime.harness_business_tools import HarnessBusinessTools
 from sec_agent.agent_runtime.harness_consultations import HarnessConsultations
-from sec_agent.agent_runtime.harness_delegate import delegation_payload
+from sec_agent.agent_runtime.harness_delegate import delegation_payload, delegate_prompt
 from sec_agent.agent_runtime.research_workpaper_tools import workpaper_tools
 from sec_agent.agent_runtime.research_workpapers import ResearchWorkpapers, WorkpaperConflict
 
@@ -62,7 +62,7 @@ async def replay(directory):
         bridge=kwargs['bridge']; request=kwargs['request']; key=kwargs['key']; actor=request['current_topic_id']
         jobs[request['question']]={'key':key,'actor':actor,'bridge':bridge}
         captures.append({'native_input_projection':delegation_payload(request),
-                         'tool_names':list(bridge.tools),'system_prompt':research_system_prompt(bridge.tools)})
+                         'tool_names':list(bridge.tools),'system_prompt':delegate_prompt(request,bridge.tools,topic_lead=kwargs['consultations'] is not None)})
         if request['question']=='客户采购专题':
             assert 'consult_research_agent' in bridge.tools
             await gate.wait()

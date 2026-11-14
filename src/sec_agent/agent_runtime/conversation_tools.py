@@ -26,7 +26,8 @@ SAVED_RESULT_TOOLS = frozenset({"read_market_expectations", "discover_source_too
     "read_source_document", "read_research_source", "read_delegated_evidence", "read_delegated_note", "check_quantitative_changes"})
 
 # Audit decisions are readable history, never source observations or new effects.
-SAVED_AUDIT_TOOLS = frozenset({'respond_research_action', 'record_research_assessment', 'assess_research_result',
+SAVED_AUDIT_TOOLS = frozenset({'publish_research_workpaper', 'read_research_workpaper', 'read_synthesis_material',
+    'respond_research_action', 'record_research_assessment', 'assess_research_result',
     'read_research_agent_result', 'WriteWorkingNote', 'save_research_report', 'repair_report_fields', 'edit_research_report'})
 READABLE_RESULT_TOOLS = SAVED_RESULT_TOOLS | SAVED_AUDIT_TOOLS
 

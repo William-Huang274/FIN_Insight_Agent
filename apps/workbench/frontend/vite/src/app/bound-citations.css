@@ -25,6 +25,9 @@
 .fs-report-table tr:last-child td { border-bottom:0; }
 .fs-report-table th:first-child,.fs-report-table td:first-child { min-width:130px; }
 .fs-report-note { margin:18px 0; padding:12px 18px; border-left:3px solid var(--accent,#4856c7); background:var(--accent-soft,#f1f4fc); font-size:.92em; }
+.fs-report-note-expandable summary { cursor:pointer; font-weight:600; color:var(--accent,#4856c7); }
+.fs-report-note-expandable summary:focus-visible { outline:2px solid currentColor; outline-offset:4px; }
+.fs-report-note-expandable[open] summary { margin-bottom:10px; }
 .fs-reference-list { display:grid; gap:8px; }
 .org-document .fs-reference-card { display:flex; align-items:flex-start; justify-content:flex-start; gap:12px; width:100%; padding:12px 16px; text-align:left; white-space:normal; }
 .fs-reference-card span { min-width:0; }

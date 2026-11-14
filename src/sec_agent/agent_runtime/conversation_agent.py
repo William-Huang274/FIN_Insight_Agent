@@ -54,6 +54,17 @@ def research_system_prompt(names, task_context=""):
     if "WriteWorkingNote" in names:
         from .working_memory_tools import WORKING_MEMORY_GUIDANCE
         prompt += WORKING_MEMORY_GUIDANCE
+    if "publish_research_workpaper" in names:
+        prompt += ('\nResearch workpapers are durable, versioned deliverables. Preserve the current answer, public '
+                   'argument, conditions, counterevidence and unfinished relationships with publish_research_workpaper. '
+                   'research_updates gives navigation; read_research_workpaper and read_workpaper_evidence recover '
+                   'full arguments and exact evidence without copying entire child histories. Adopt exact revisions '
+                   'and reassess changed premises. A saved artifact is a proposal, not semantic approval. ')
+    if "prepare_research_synthesis" in names:
+        prompt += ('Before authoring, use prepare_research_synthesis to select current workpapers and explain '
+                   'original-question coverage. Read relevant argument windows with read_synthesis_material. '
+                   'Compose your current best answer, then bind_research_synthesis to the saved report before delivery. '
+                   'Unfinished answer-changing relationships remain your responsibility; a compact index is not evidence.\n')
     if "browse_context" in names:
         prompt += ('\nbrowse_context(region="acquisition") returns persisted source acquisition events: '
                    'candidates, read passages and access/verification obstacles, with exact receipt readbacks. '

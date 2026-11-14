@@ -232,10 +232,15 @@ def research_working_view(state):
             key = value.get('task_id')
             if key:
                 assessment = value.get('assessment') or {}
+                paper = value.get('workpaper') or {}
                 investigations[key] = {'task_id': key, 'purpose': value.get('purpose'),
                     'result_digest': value.get('result_digest'),
-                    'finding': assessment.get('finding'),
-                    'scope_explanation': assessment.get('scope_explanation'),
+                    'finding': paper.get('finding',assessment.get('finding')),
+                    'scope_explanation': paper.get('conditions',assessment.get('scope_explanation')),
+                    **({'workpaper_readback':value.get('workpaper_readback'),
+                        'workpaper_ref':{k:paper[k] for k in ('topic_id','revision','digest')},
+                        'requires_reassessment':paper.get('requires_reassessment',[]),
+                        'current_revision':paper.get('current_revision')} if paper else {}),
                     'readback': {'tool': 'read_saved_result', 'arguments': {'tool_call_id': message.tool_call_id}},
                     'status': 'investigator_proposal_not_author_adoption'}
                 decision, decision_receipt = decisions.get(key, ({}, None))

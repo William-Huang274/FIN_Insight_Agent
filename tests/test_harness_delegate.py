@@ -13,14 +13,17 @@ def anyio_backend():
 
 
 @pytest.mark.anyio
-async def test_native_delegate_uses_shared_host_and_isolated_native_session(tmp_path, monkeypatch):
+@pytest.mark.parametrize('decision_role',[False, True])
+async def test_native_delegate_uses_shared_host_and_isolated_native_session(tmp_path, monkeypatch,decision_role):
     observed = {}
     options = dict(model='deepseek-flash', protocol='deepseek_messages', reasoning='high',
         provider='deepseek-official', provider_key_env='KEY', provider_endpoint='https://provider.invalid',
         context_window=1048576, output_tokens=65536, summary_tokens=16000,
         compaction_threshold=.33, token_budget_basis={'purpose':'fixture'},
         reservation_micros=400000, reservation_basis='same authorized budget')
-    budget = SimpleNamespace(store=object(), owner='owner', budget='shared', prices={'deepseek-flash':object()})
+    if decision_role:
+        options.update(model='gpt-6.1-sol',protocol='openai_responses',provider='openai',context_window=258000)
+    budget = SimpleNamespace(store=object(), owner='owner', budget='shared', prices={options['model']:object()})
     def dispatch(**kw):
         observed['dispatch']=kw
         return SimpleNamespace()
@@ -43,10 +46,10 @@ async def test_native_delegate_uses_shared_host_and_isolated_native_session(tmp_
     monkeypatch.setattr(module,'harness_local_services',local)
     monkeypatch.setattr(module,'admitted_acp_session',acp)
     bridge=SimpleNamespace(model_access=lambda:None, stop=object(), tools={})
-    delegate=module.NativeResearchDelegate(options=options, parent_options={'binary_sha256':'release'},
+    delegate=module.NativeResearchDelegate(options=options, parent_options={**options,'binary_sha256':'release'},
         binary=tmp_path/'binary', root=tmp_path, grant={'manifest_digest':'manifest'}, authority=lambda:{},
         budget=budget, environment={'KEY':'secret', 'OTHER_SECRET':'secret2', 'PATH':'fixture'},
-        tid='execution',rid='run',directory=tmp_path/'tasks',public_sink=None)
+        tid='execution',rid='run',directory=tmp_path/'tasks',public_sink=None,decision_role=decision_role)
     request=dict(purpose='draft', as_of='2026-11-09', method_text='',
         question='Lead assignment', research_task={'question':'Original task'})
     result=await delegate(key='task',request=request,bridge=bridge)

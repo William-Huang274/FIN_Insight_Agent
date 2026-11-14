@@ -6,6 +6,7 @@ for(const width of [1440,390])test(`report presentation and native versions ${wi
   const base=`/api/v1/organization-projects/${project}/research/${execution}`;
   const citation={claim:{statement:'Disclosure',kind:'fact'},sources:[{source_id:'PASSAGE::WEB::opaque',title:'Example Bank — Third Quarter Results',source_url:'https://example.com/results',period_end:'2026-09-30'}]};
   const report={title:'银行研究',narrative_markdown:'## 经营比较\n\n| 公司 | 经营证据 | 当前判断 |\n|---|---|---|\n| Example Bank | '+('比较证据与解释。'.repeat(30))+' | 保留差异。 |\n\n[REF]\n\n> 附注：单位为百万美元。\n\n## 风险\n\n需要继续观察。',citations:{REF:citation},charts:[{title:'收入比较',after_heading:'经营比较',kind:'bar',unit:'USD',interpretation:'同期间来源绑定的收入比较。',points:[{label:'A',series:'收入',value:1},{label:'B',series:'收入',value:2}]}]};
+  report.narrative_markdown+='\n\n> [!NOTE] 计算口径\n> 支撑细节按作者标注折叠。 [REF]\n\n关键条件仍在正文，不依赖打开附注。';
   await page.route('**/api/v1/**',async route=>{
     const u=new URL(route.request().url());let value:any={};
     if(u.pathname.endsWith('/business/config'))value={enabled:true,organization_projects:true};
@@ -27,6 +28,13 @@ for(const width of [1440,390])test(`report presentation and native versions ${wi
   });
   await page.goto(`/workspace/projects?scope=organization&project=${project}&view=results&execution=${execution}`);
   await expect(page.getByRole('region',{name:'报告数据表，可横向滚动'})).toBeVisible();
+  const note=page.locator('details.fs-report-note-expandable');
+  await expect(note.locator('summary')).toHaveText('计算口径');
+  await expect(note.locator('div')).not.toBeVisible();
+  await expect(page.getByText('关键条件仍在正文，不依赖打开附注。')).toBeVisible();
+  await note.locator('summary').click();
+  await expect(note.locator('div')).toBeVisible();
+  await expect(note).toContainText('支撑细节按作者标注折叠。');
   await expect(page.locator('.fs-reference-card')).toContainText('Example Bank — Third Quarter Results');
   await expect(page.locator('.fs-reference-card')).not.toContainText('PASSAGE::');
   expect(await page.locator('.fs-report-figure').evaluate(e=>!!(e.compareDocumentPosition([...document.querySelectorAll('h2,h3')].find(n=>n.textContent==='风险')!)&Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);

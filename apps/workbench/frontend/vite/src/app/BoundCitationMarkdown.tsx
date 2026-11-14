@@ -5,6 +5,7 @@ import {remarkReportHeadings} from './remarkReportHeadings';
 import {sourceUrl,sourceHost} from './sourceUrl';
 import type {Citation, Source} from '../api/reportSessions';
 import './bound-citations.css';
+import {ReportNote} from './ReportNote';
 
 export function citationPreview(citation: Citation) {
   const sources = citation.sources.map(s => [
@@ -42,6 +43,6 @@ export function BoundCitationMarkdown({text, citations = {}, onCitation, reportH
       const url = sourceUrl(href);
       return url ? <a href={url} target="_blank" rel="noopener noreferrer">{children}</a> : <span>{children}</span>;
     }, table: ({children}) => <div className="fs-report-table" role="region" aria-label="报告数据表，可横向滚动" tabIndex={0}><table>{children}</table></div>,
-    blockquote: ({children}) => <blockquote className="fs-report-note">{children}</blockquote>,
+    blockquote: ({children}) => <ReportNote>{children}</ReportNote>,
     img: ({alt}) => <span className="rs-image-note">[图示：{alt || '未自动加载外部图片'}]</span>}}>{text}</ReactMarkdown>;
 }

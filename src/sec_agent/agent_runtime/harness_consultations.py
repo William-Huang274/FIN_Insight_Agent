@@ -26,7 +26,8 @@ from sec_agent.adapters.model_dispatch_store import DispatchBlocked
 class HarnessConsultations:
     def __init__(self, *, directory, saver, grants, tid, rid, check, scope, budget,
                  environment, model, basis, as_of, public_sink, research_depth='standard', research_question=None,
-                 native_delegate=None):
+                 native_delegate=None, workspace=None, actor='root', topic_delegate=None,
+                 depth=0, family=None):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
         self.saver, self.grants, self.tid, self.rid = saver, grants, tid, rid
@@ -35,7 +36,11 @@ class HarnessConsultations:
         self.as_of, self.public_sink = as_of, public_sink
         self.research_question = research_question
         self.native_delegate = native_delegate
+        self.workspace, self.actor, self.topic_delegate = workspace, actor, topic_delegate
+        self.depth, self.family, self.nested = depth, family if family is not None else [], {}
+        self.family.append(self)
         from sec_agent.research_foundation.research_depth import depth_guidance
+        self.research_depth = research_depth
         self.depth_content = depth_guidance(research_depth)
         self.tasks = {}
         self.parent = None
@@ -47,7 +52,8 @@ class HarnessConsultations:
         @tool
         async def consult_research_agent(question: str, context: str, purpose: Literal['investigate', 'review', 'draft'],
                                          runtime: ToolRuntime, use_current_report: bool = False,
-                                         method_ids: list[str] | None = None):
+                                         method_ids: list[str] | None = None, topic_lead: bool = False,
+                                         topic_id: str | None = None):
             """Delegate one material research question to the configured research agent with read-only sources,
             web/SEC/government/market/calculation tools and the same task budget. Use investigate for a relationship
             that needs separate evidence, review for an argument you want challenged; neither is mandatory.
@@ -76,7 +82,17 @@ class HarnessConsultations:
             method_ids selects optional method-library IDs, not new permissions. Returns task_id promptly.
             Continue useful independent work, then read_research_agent_result; results are proposals, not verdicts.
             """
-            return await self.submit(question, context, purpose, use_current_report, method_ids or [], runtime.state)
+            return await self.submit(question, context, purpose, use_current_report, method_ids or [], runtime.state,
+                                     topic_lead=topic_lead, topic_id=topic_id)
+
+        if self.workspace and self.topic_delegate:
+            consult_research_agent.description += ('\nUse topic_lead=true for a substantial relationship requiring ongoing '
+                'local decisions and worker delegation. The topic lead uses the root decision model in an isolated '
+                'native context and shared budget. Return topic_id for a later assignment to the same durable topic; '
+                'its current workpaper, not full old conversations, is the continuity record. Independent tasks run '
+                'asynchronously; read_next_research_result consumes whichever finishes first. Topic depth <=3, '
+                'shared active-task admission <=8; do not create a layer for a simple lookup. A topic result must '
+                'persist a complete workpaper; parent adoption does not settle remaining original-question duties.')
 
         consult_research_agent.description += ('\nConfigured delegate: '+self.model+' high. '+
             ('purpose=draft is available for investigation and drafting; you retain final research and publication responsibility.'
@@ -91,6 +107,28 @@ class HarnessConsultations:
             usable in this author's source and calculation tools. Resolve a submitted consultation before delivery.
             """
             return await self.read(task_id, wait_seconds, runtime)
+
+        @tool
+        async def read_next_research_result(task_ids: list[str], runtime: ToolRuntime):
+            """Import one completed result among explicit pending task IDs, without a wave barrier.
+            If none is complete the host waits for the first completion before another model call.
+            Remove returned task_id from your pending set; do independent work when useful.
+            """
+            if not task_ids or len(task_ids) > 8:
+                raise ToolException('Choose 1-8 pending task IDs.')
+            for key in task_ids:
+                if len(key) != 64 or any(c not in '0123456789abcdef' for c in key):
+                    raise ToolException('Use returned task IDs.')
+                path = self.directory/(key+'.json')
+                if not path.exists():
+                    raise ToolException('Unknown task in this workspace.')
+                record = json.loads(path.read_text(encoding='utf8'))
+                if record['status'] == 'failed':
+                    raise RuntimeError('consultation_failed_requires_recovery:'+key)
+                if record['status'] == 'completed':
+                    return await self.read(key, 0, runtime)
+            return {'status':'waiting', 'pending_task_ids':list(dict.fromkeys(task_ids)),
+                    'host_wait_before_next_model':True}
 
         @tool
         async def assess_research_result(task_id: str, result_digest: str,
@@ -116,7 +154,7 @@ class HarnessConsultations:
                                counterevidence, unresolved, evidence_receipt_ids, runtime.state)
 
         return [GrantedTool(t, 'delegated_task_control', '同一预算内的按需只读调查及独立复核')
-                for t in (consult_research_agent, read_research_agent_result, assess_research_result)]
+                for t in (consult_research_agent, read_research_agent_result, read_next_research_result, assess_research_result)]
 
     def assess(self, key, digest, disposition, finding, conditions, counterevidence, unresolved, evidence, state):
         from .research_result_acceptance import result_version
@@ -129,6 +167,13 @@ class HarnessConsultations:
         record = json.loads(path.read_text(encoding='utf8')) if path.exists() else {}
         if record.get('status') != 'completed' or result_version(record) != digest:
             return {**feedback, 'error': 'Result unavailable or changed; read the current completed result first.'}
+        if disposition == 'accepted' and self.workspace and record.get('workpaper_ref'):
+            ref = record['workpaper_ref']
+            current = self.workspace.read(self.actor, ref['topic_id'], ref['revision'], field='metadata')
+            if current['current_revision'] != ref['revision'] or current['requires_reassessment']:
+                return {**feedback, 'error': 'Research premises changed; reassess current workpaper before accepting.'}
+            if not self.workspace.observed(self.actor,ref['topic_id'],ref['revision']):
+                return {**feedback, 'error':'Read the underlying argument before accepting; result metadata is navigation.'}
         messages = state.get('messages', [])
         observed = [json.loads(m.content) for m in messages if isinstance(m, ToolMessage)
                     and m.name == 'read_research_agent_result' and m.status == 'success']
@@ -150,15 +195,37 @@ class HarnessConsultations:
 
     async def context_projection(self, candidates):
         """Authenticated host projection; never trust a model's invented acceptance marker."""
-        from .research_result_acceptance import latest_decisions, result_version, accepted_projection
+        from .research_result_acceptance import latest_decisions, result_version, accepted_projection, workpaper_conditions
         from .harness_business_tools import model_receipt
         self.check()
         if not self.parent:
             return {'replacements': []}
         messages = (await self.parent.state()).get('messages', [])
         decisions = latest_decisions(messages)
+        positions = {m.tool_call_id:i for i,m in enumerate(messages) if isinstance(m,ToolMessage)}
+        accepted_reads = {}
+        if self.workspace:
+            for key,(decision,decision_id) in decisions.items():
+                path = self.directory/(key+'.json')
+                if decision.get('disposition') != 'accepted' or not path.exists():
+                    continue
+                record = json.loads(path.read_text(encoding='utf8'))
+                if (record.get('status') != 'completed' or not record.get('workpaper_ref')
+                        or result_version(record) != decision.get('result_digest')):
+                    continue
+                ref = record['workpaper_ref']
+                paper = self.workspace.read(self.actor,ref['topic_id'],ref['revision'],field='metadata')
+                if paper['current_revision'] != ref['revision'] or paper['requires_reassessment']:
+                    continue
+                stack=[paper]
+                while stack:
+                    p=stack.pop()
+                    accepted_reads[(p['topic_id'],p['revision'],p['digest'])]=(decision,decision_id,p)
+                    for receipt_id in p['evidence_receipt_ids']:
+                        accepted_reads[receipt_id]=(decision,decision_id,p)
+                    stack.extend(self.workspace.read(self.actor,d['topic_id'],d['revision'],field='metadata') for d in p['dependencies'])
         originals = {m.tool_call_id:m for m in messages if isinstance(m, ToolMessage)
-                     and m.name == 'read_research_agent_result' and m.status == 'success'}
+                     and m.name in {'read_research_agent_result','read_research_workpaper','read_workpaper_evidence'} and m.status == 'success'}
         replacements = []
         for item in candidates:
             original = originals.get(item.get('receipt_id'))
@@ -167,6 +234,24 @@ class HarnessConsultations:
                     raise RuntimeError('accepted_result_original_receipt_missing')
                 continue
             body = json.loads(original.content)
+            if original.name != 'read_research_agent_result':
+                identity = ((body.get('topic_id'),body.get('revision'),body.get('digest'))
+                            if original.name == 'read_research_workpaper' else body.get('receipt_id'))
+                decision,decision_id,paper=accepted_reads.get(identity,({},None,{}))
+                # A deliberate new read after acceptance stays visible until a later assessment.
+                if decision and positions[decision_id] > positions[original.tool_call_id]:
+                    replacement={'receipt_id':original.tool_call_id,'status':'success','result':{
+                        'result_digest':body['result_digest'],'context_state':'accepted_result_summary',
+                        'acceptance':decision,'argument_identity':identity,
+                        'workpaper_conditions':workpaper_conditions(paper),
+                        'original_readback':{'tool':'read_saved_result','arguments':{'tool_call_id':original.tool_call_id}}}}
+                elif item.get('retired'):
+                    replacement=model_receipt(original)
+                    replacement['context_notice']='Acceptance reopened or premises changed; reassess the original argument.'
+                else:
+                    continue
+                replacements.append({'receipt_id':original.tool_call_id,'result_digest':body['result_digest'],'receipt':replacement})
+                continue
             key, digest = body.get('task_id'), body.get('result_digest')
             if not key or not digest:
                 continue  # Legacy results need a fresh version-bound read.
@@ -177,6 +262,9 @@ class HarnessConsultations:
             record = json.loads(path.read_text(encoding='utf8'))
             accepted = (decision.get('disposition') == 'accepted' and decision.get('result_digest') == digest
                         and record.get('status') == 'completed' and result_version(record) == digest)
+            if accepted and self.workspace and record.get('workpaper_ref'):
+                ref=record['workpaper_ref']
+                accepted=(ref['topic_id'],ref['revision'],ref['digest']) in accepted_reads
             if accepted:
                 replacement = accepted_projection(original, decision, decision_id)
             elif item.get('retired'):
@@ -188,7 +276,7 @@ class HarnessConsultations:
         self.check()
         return {'replacements': replacements}
 
-    async def submit(self, question, context, purpose, use_report, methods, state):
+    async def submit(self, question, context, purpose, use_report, methods, state, *, topic_lead=False, topic_id=None):
         from sec_agent.research_foundation.research_methods import preloaded_research_methods
         self.check()
         if purpose not in {'investigate', 'review', 'draft'} or (purpose == 'draft' and not self.native_delegate):
@@ -203,9 +291,17 @@ class HarnessConsultations:
         if use_report and not report:
             raise ToolException('No saved report yet; use_current_report=false with current reasoning, or save a report first.')
         body = report['narrative_markdown'] if report else context
+        selected_model = getattr(self.topic_delegate,'options',{}).get('model',self.model) if topic_lead else self.model
         request = dict(question=question, context=context, purpose=purpose, report=report,
-                       methods=methods, method_text=method_text, as_of=self.as_of, model=self.model,
+                       methods=methods, method_text=method_text, as_of=self.as_of, model=selected_model,
                        assessment_contract=1)
+        if topic_lead and (not self.workspace or not self.topic_delegate or self.depth >= 3):
+            raise ToolException('Topic delegation unavailable or depth reached; use a scoped investigator.')
+        if topic_id and not self.workspace:
+            raise ToolException('Topic workspace unavailable.')
+        if self.workspace:
+            request['workpaper_assignment'] = {'parent_topic': self.actor, 'topic_id': topic_id,
+                'topic_lead': topic_lead, 'depth': self.depth+1}
         original = self.research_question or state.get('question')
         if original:
             request['research_task'] = dict(question=original, as_of=self.as_of,
@@ -220,7 +316,28 @@ class HarnessConsultations:
             if record['status'] == 'failed':
                 raise RuntimeError('consultation_failed_requires_recovery:' + key)
             return dict(task_id=key, status=record['status'], reused=True,
-                        read_tool='read_research_agent_result')
+                        read_tool='read_research_agent_result',
+                        **({'topic_id':record['workpaper_actor']} if record.get('workpaper_actor') else {}))
+        active = [(service,k,t) for service in self.family for k,t in service.tasks.items() if not t.done()]
+        active_leads = sum(bool(json.loads((service.directory/(k+'.json')).read_text(encoding='utf8'))
+                              ['request'].get('workpaper_assignment',{}).get('topic_lead')) for service,k,_ in active)
+        if topic_lead and active_leads >= 3:
+            return {'submitted':False,'status':'topic_capacity_unavailable',
+                    'next_action':'Use a scoped investigator or finish an existing topic before adding a decision layer.',
+                    'limits':{'active_topic_leads':3}}
+        if len(active) >= 8:
+            return {'submitted':False, 'status':'capacity_wait', 'host_wait_before_next_model':True,
+                    'next_action':'Host waits for active work to finish; then reconsider this assignment or read its completed results.',
+                    'limits':{'active_tasks':8,'active_topic_leads':3}}
+        if self.workspace:
+            actor = topic_id or key
+            try:
+                self.workspace.register(actor, self.actor, question, reuse=bool(topic_id))
+            except ValueError as exc:
+                raise ToolException(str(exc)) from exc
+            if topic_id and any(not t.done() and json.loads((service.directory/(k+'.json')).read_text(encoding='utf8'))
+                    .get('workpaper_actor') == actor for service in self.family for k,t in service.tasks.items()):
+                raise ToolException('Topic already running; wait for its current result before continuing.')
         from .source_acquisition_view import acquisition_snapshot
         from .research_actions import research_action_view, research_working_view
         # Freeze observations beside the request, not in its identity: rereading
@@ -229,17 +346,27 @@ class HarnessConsultations:
             observations={'acquisition': acquisition_snapshot(state.get('messages', [])),
                           'current_research': research_working_view(state),
                           'prior_actions': research_action_view(state)})
+        if self.workspace:
+            record['workpaper_actor'] = actor
+            record['base_workpaper_revision'] = next(t['current_revision'] or 0 for t in self.workspace.catalog()['topics'] if t['topic_id']==actor)
+            # The durable catalog is current; historical adoption prose may predate a changed premise.
+            # Keep current note navigation, not copies of every old judgment in the new assignment.
+            record['observations']['current_research'] = {
+                'workpapers':self.workspace.catalog(),
+                'working_notes':record['observations']['current_research']['working_notes'],
+                'notice':'Read current complete workpapers and their premises; old task completion or adoption is not current scope clearance.'}
         _persist(path, record)
         # Freeze only source/tool records; do not copy the author's argument history.
-        from .conversation_tools import SAVED_AUDIT_TOOLS
-        inherited = set(review_tool_names([g.tool.name for g in self.grants])) | SAVED_AUDIT_TOOLS
+        from .conversation_tools import SAVED_AUDIT_TOOLS, SAVED_RESULT_TOOLS
+        inherited = SAVED_RESULT_TOOLS if self.workspace else set(review_tool_names([g.tool.name for g in self.grants])) | SAVED_AUDIT_TOOLS
         source_messages = [m for m in state.get('messages', [])
                            if isinstance(m, ToolMessage) and m.status == 'success'
                            and m.name in inherited]
         initial = {'question':question, 'messages':source_messages}
         self.tasks[key] = asyncio.create_task(self.run(key, record, initial, body),
                                              context=self.execution_context.copy())
-        return dict(task_id=key, status='running', read_tool='read_research_agent_result')
+        return dict(task_id=key, status='running', read_tool='read_research_agent_result',
+                    **({'topic_id':actor} if self.workspace else {}))
 
     def child(self, key):
         allowed = set(review_tool_names([g.tool.name for g in self.grants])) | {'read_saved_result'}
@@ -247,14 +374,32 @@ class HarnessConsultations:
         path = self.directory / (key + '.json')
         record = json.loads(path.read_text(encoding='utf8')) if path.exists() else {}
         request = record.get('request', {})
-        if request.get('assessment_contract') == 1:
+        if request.get('assessment_contract') == 1 and (not record.get('workpaper_actor') or request.get('purpose')=='review'):
             from .research_actions import assessment_tool
             grants.append(assessment_tool(key, request,
                 record.get('observations', {}).get('prior_actions', {}).get('actions', [])))
-        return HarnessBusinessTools(grants=grants,
+        if self.workspace and record.get('workpaper_actor'):
+            from .research_workpaper_tools import workpaper_tools
+            grants.extend(workpaper_tools(self.workspace, record['workpaper_actor'], assignment={
+                'task_id':key, 'question':request['question'], 'purpose':request['purpose']}))
+            if request.get('workpaper_assignment', {}).get('topic_lead'):
+                if key not in self.nested:
+                    self.nested[key] = HarnessConsultations(directory=self.directory/'topics'/key,
+                        saver=self.saver, grants=self.grants, tid=self.tid, rid=self.rid, check=self.check,
+                        scope=self.scope, budget=self.budget, environment=self.environment, model=self.model,
+                        basis=self.basis, as_of=self.as_of, public_sink=self.public_sink,
+                        research_depth=self.research_depth,
+                        research_question=self.research_question, native_delegate=self.native_delegate,
+                        workspace=self.workspace, actor=record['workpaper_actor'], topic_delegate=self.topic_delegate,
+                        depth=self.depth+1, family=self.family)
+                grants.extend(self.nested[key].tools())
+        bridge = HarnessBusinessTools(grants=grants,
             checkpointer=self.saver, thread_id=self.tid+':consult:'+key,
             check=self.parent.access if self.parent else self.check,
             scope=self.scope, stop_on_tool_error=True)
+        if key in self.nested:
+            self.nested[key].parent = bridge
+        return bridge
 
     def settled_scope_failure(self, key, record):
         """Explicit recovery may replay received output after a host-scope fault.
@@ -273,7 +418,8 @@ class HarnessConsultations:
             # a parent's unknown call is separately gated by run admission.
             allowed |= {'ExceptionGroup', 'BaseExceptionGroup'}
         if record.get('error_type') == 'RuntimeError' and self.native_delegate:
-            completed = getattr(self.native_delegate, 'completed_result', None)
+            executor = self.topic_delegate if record.get('request',{}).get('workpaper_assignment',{}).get('topic_lead') else self.native_delegate
+            completed = getattr(executor, 'completed_result', None)
             if (callable(completed) and record['scope'].startswith(self.tid+':')
                     and completed(key, record['scope'])):
                 allowed.add('RuntimeError')
@@ -405,6 +551,8 @@ class HarnessConsultations:
             # provider calls. The shared bridge resumes only that pending read;
             # completed reads stay in the checkpoint and writes remain blocked.
             recovery = await child.initialize(initial, recovering=previous_scope is not None)
+            if previous_scope and key in self.nested:
+                await self.nested[key].recover_cancelled(previous_scope.split(':',1)[1], audit_root)
             selected = Challenge(version=version(body), quote='', offset=0, question=request['question'])
             # Old paid recovery keeps its original protocol. New assignments
             # receive actual acquisition/disposition state, not a guessed scope score.
@@ -413,8 +561,11 @@ class HarnessConsultations:
                 input_request['research_task'] = {**request.get('research_task', {}),
                     'observations': record['observations']}
             if self.native_delegate:
-                opinion = await self.native_delegate(key=key, request=input_request, bridge=child,
-                    previous_scope=previous_scope, audit_root=audit_root, recovery_receipt=recovery)
+                executor = self.topic_delegate if request.get('workpaper_assignment',{}).get('topic_lead') else self.native_delegate
+                input_request['current_topic_id'] = record.get('workpaper_actor')
+                opinion = await executor(key=key, request=input_request, bridge=child,
+                    previous_scope=previous_scope, audit_root=audit_root, recovery_receipt=recovery,
+                    consultations=self.nested.get(key))
             else:
                 opinion = await independent_review(selected=selected,
                 message=AIMessage(content=body), question=request['question']+'\n'+request['context'],
@@ -430,6 +581,16 @@ class HarnessConsultations:
             # through a fresh host reader with current parent authority; never
             # reopen the stopped process's model/tool admission.
             assessment = latest_assessment((await self.child(key).state()).get('messages', []), key)
+            if self.workspace and record.get('workpaper_actor'):
+                # Native final text is also durably retained below. Explicit published analysis is
+                # required for topic handoff; a short terminal reply cannot stand in for a workpaper.
+                current = self.workspace.catalog()['topics']
+                revision = next(t['current_revision'] or 0 for t in current if t['topic_id']==record['workpaper_actor'])
+                if revision <= record.get('base_workpaper_revision',0):
+                    record = {**record, 'unpublished_opinion':opinion}
+                    raise RuntimeError('research_workpaper_missing_before_handoff')
+                published = self.workspace.read(self.actor, record['workpaper_actor'], revision, field='metadata')
+                record = {**record, 'workpaper_ref':{k:published[k] for k in ('topic_id','revision','digest')}}
             _persist(self.directory/(key+'.json'), {**record,'status':'completed','opinion':opinion,
                 **({'assessment':assessment} if assessment else {})})
         except BaseException as exc:
@@ -467,6 +628,19 @@ class HarnessConsultations:
                       target_digest=canonical_sha256(record['request']),
                       source_readback=[{'tool_call_id':m.tool_call_id,'tool':m.name}
                           for m in messages if isinstance(m, ToolMessage) and m.status=='success'])
+        if self.workspace and record.get('workpaper_actor'):
+            actor = record['workpaper_actor']
+            ref = record['workpaper_ref']
+            current = self.workspace.read(self.actor, actor, ref['revision'], field='metadata')
+            if current['digest'] != ref['digest']:
+                raise RuntimeError('consultation_workpaper_identity_mismatch')
+            result.pop('opinion')
+            result['workpaper'] = current
+            result['workpaper_readback'] = {'tool':'read_research_workpaper', 'arguments':{'topic_id':actor,'revision':current['revision']}}
+            # Full child journal stays in its checkpoint. Evidence is imported only when requested.
+            messages = []
+            result['source_readback'] = [{'tool':'read_workpaper_evidence','arguments':{'receipt_id':e}}
+                                       for e in current['evidence_receipt_ids']]
         result['assessment'] = record.get('assessment')
         from .research_result_acceptance import result_version
         result['result_digest'] = result_version(record)
@@ -494,13 +668,40 @@ class HarnessConsultations:
         """
         await asyncio.to_thread(self.check)
         waiting = {}
+        any_wait = []
+        capacity_wait = False
         if self.parent:
             for message in (await self.parent.state()).get('messages', []):
+                if isinstance(message,ToolMessage) and message.name=='consult_research_agent' and message.status=='success':
+                    capacity_wait=json.loads(message.content).get('status')=='capacity_wait'
+                if isinstance(message, ToolMessage) and message.name == 'read_next_research_result' and message.status == 'success':
+                    any_wait = json.loads(message.content).get('pending_task_ids', [])
                 if isinstance(message, ToolMessage) and message.name == 'read_research_agent_result' and message.status == 'success':
                     result = json.loads(message.content)
                     if isinstance(result, dict) and result.get('task_id'):
                         waiting[result['task_id']] = result.get('status') != 'completed'
         tasks = []
+        if capacity_wait:
+            active=[t for service in self.family for t in service.tasks.values() if not t.done()]
+            # The caller is itself a task in its parent's service. Waiting for all would deadlock.
+            active=[t for t in active if t is not asyncio.current_task()]
+            if len(active) >= 8:
+                done,_=await asyncio.wait(active,timeout=timeout,return_when=asyncio.FIRST_COMPLETED)
+                for t in done:
+                    t.result()
+                if not done:
+                    return {'status':'waiting'}
+        if any_wait:
+            pending = [self.tasks[k] for k in any_wait if k in self.tasks]
+            if len(pending) != len(any_wait):
+                raise RuntimeError('consultation_interrupted_reconcile_provider_ledger_before_resume')
+            if not any(t.done() for t in pending):
+                await asyncio.wait(pending, timeout=timeout, return_when=asyncio.FIRST_COMPLETED)
+            for t in pending:
+                if t.done():
+                    t.result()
+            if not any(t.done() for t in pending):
+                return {'status':'waiting'}
         for key, pending in waiting.items():
             if not pending:
                 continue
@@ -517,8 +718,14 @@ class HarnessConsultations:
                 parent_dispatch.owner, parent_dispatch.budget)
             # A child can settle and reserve between ready and reserve. Leave
             # room for each active child's next request, not just current holds.
-            child_reservation = self.native_delegate.options['reservation_micros']
-            required = (parent_dispatch.reservation + len(active) * child_reservation
+            child_reservations = 0
+            for key, task in self.tasks.items():
+                if task.done():
+                    continue
+                record = json.loads((self.directory/(key+'.json')).read_text(encoding='utf8'))
+                executor = self.topic_delegate if record['request'].get('workpaper_assignment',{}).get('topic_lead') else self.native_delegate
+                child_reservations += executor.options['reservation_micros']
+            required = (parent_dispatch.reservation + child_reservations
                         + snapshot['delivery_floor_micros'])
             if snapshot['available_micros'] < required:
                 tasks.extend(task for task in active if task not in tasks)
@@ -535,8 +742,14 @@ class HarnessConsultations:
             raise RuntimeError('consultation_pending_at_delivery')
         for task in self.tasks.values():
             task.result()
+        # Restarted services may have durable jobs without in-memory asyncio tasks.
+        if any(json.loads(p.read_text(encoding='utf8'))['status'] != 'completed'
+               for p in self.directory.glob('*.json')):
+            raise RuntimeError('consultation_unfinished_persisted_at_delivery')
 
     async def close(self):
+        for service in self.nested.values():
+            await service.close()
         for task in self.tasks.values():
             if not task.done():
                 task.cancel()

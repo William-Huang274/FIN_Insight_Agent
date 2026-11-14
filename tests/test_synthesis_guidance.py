@@ -9,9 +9,10 @@ def test_lead_entry_is_scoped_and_method_section_is_actually_readable():
     assert '不把全部读取、检查与综合积累到最后成稿' in text
     assert 'assess_research_result' in text and '不要为省上下文而验收' in text
     section = get_research_method('lead', '重要研究关系的完整调查与验收')
-    assert section['content_version'] == 15
+    assert section['content_version'] == 16
+    assert 'topic_lead' in section['content'] and 'publish_research_workpaper' in section['content']
     assert section['grants_authority'] is False
-    for concept in ['最强反证', '未通过', '真实依赖', '子助手', '开业批次']:
+    for concept in ['最强反证', '未通过', '真实依赖', '普通执行者', '开业批次']:
         assert concept in section['content']
     # Native takeover without a configured delegate must not disclose that role.
     assert '本次分工：' not in final_author_guidance({'native_model_transition': { 'to_model': 'sol'}})

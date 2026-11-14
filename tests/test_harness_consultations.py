@@ -339,6 +339,7 @@ async def test_budget_wait_preserves_active_native_child_without_paid_parent_pol
                              owner='o', budget='b', reservation=3100000)
     child = asyncio.create_task(finish.wait())
     service.tasks['child'] = child
+    (tmp_path/'child.json').write_text(json.dumps({'request':{}}),encoding='utf8')
     try:
         assert await service.dispatch_ready(timeout=0, parent_dispatch=parent)=={'status':'waiting'}
         assert not child.done()

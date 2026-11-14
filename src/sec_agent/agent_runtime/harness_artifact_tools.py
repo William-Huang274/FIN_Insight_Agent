@@ -15,7 +15,7 @@ from .delegated_task_tools import saved_note_artifact
 from .report_synthesis_agent import CaseReport
 
 
-def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
+def artifact_tools(*, artifacts, memory, delivery_intent, require_review, research_workspace=None):
     def accepted(runtime, report):
         version = runtime.state.get('report_version', 0) + 1
         result = {'saved': True, 'report_version': version, 'digest': canonical_sha256(report),
@@ -136,6 +136,9 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
             from .research_actions import research_action_view, synthesis_working_view
             value = (synthesis_working_view(runtime.state) if field == 'synthesis_context'
                      else research_action_view(runtime.state))
+            if field == 'synthesis_context' and research_workspace is not None:
+                value = {**value, 'research_workpapers': research_workspace.catalog(),
+                    'authoring_entry': 'prepare_research_synthesis selects exact current versions; read_synthesis_material reads complete arguments by window; bind_research_synthesis binds the saved report.'}
             text = json.dumps(value, ensure_ascii=False)
             return {'field':field, 'report_version':runtime.state.get('report_version',0),
                 'text':text[offset:offset+max_characters], 'offset':offset,'total_characters':len(text),
@@ -220,6 +223,14 @@ def artifact_tools(*, artifacts, memory, delivery_intent, require_review):
         report = runtime.state.get('report')
         if not report or version != runtime.state.get('report_version'):
             raise ToolException('report_version_changed_read_current_report')
+        if research_workspace is not None:
+            from .research_workpapers import WorkpaperConflict
+            try:
+                research_workspace.require_current_binding(canonical_sha256(report))
+            except WorkpaperConflict as exc:
+                return {'delivered':False, 'error':str(exc),
+                    'readback':{'tool':'research_updates','arguments':{}},
+                    'next_step':'Prepare current research synthesis, read needed arguments, reassess affected prose, and bind the current report.'}
         if require_review:
             raise ToolException('independent_report_review_not_yet_qualified_in_harness_adapter')
         from .research_actions import research_action_view

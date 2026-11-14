@@ -1,5 +1,7 @@
 # FinSight 文档
 
+[专题研究交接与成文快照](engineering/research_topic_handoffs.zh-CN.md)记录独立专题负责人、异步结果读取、完整底稿与版本依赖、验收后上下文退出，以及无模型调用的三层交接离线回放。
+
 [当前研究认识与交叉验证](engineering/research_understanding_handoff.zh-CN.md)记录工作笔记、调查发现、按需挑战、前瞻情景和最终综合的优化；新增有依据的基准选择、纠错历史回读及空搜索进度交接，并区分离线回放与真实研究验收。
 
 [电力产业链投资方向验收](product/power_value_capture_validation.zh-CN.md)给出下一候选题、机构研报渠道边界及经营—预期—价格对照；[作者与复核分工](product/research_author_review_proposal.zh-CN.md)确立当前稿复查、强模型最终责任与原生接管边界。

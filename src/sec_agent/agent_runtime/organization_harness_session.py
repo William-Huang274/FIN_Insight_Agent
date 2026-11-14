@@ -213,7 +213,13 @@ async def organization_harness_session(*, native, resources, authority, check, o
                          if isinstance(m, AIMessage) and m.content == prior_answer), None)
     review_context = (prior_answer, prior_review['opinion']) if prior_review and prior_review.get('opinion') else None
     grants.append(quantitative_prose_tool(prior_answer, lambda: review_context))
-    grants.extend(artifact_tools(artifacts=artifacts, memory=memory, delivery_intent=intent, require_review=require_review))
+    from .research_workpapers import ResearchWorkpapers
+    from .research_workpaper_tools import workpaper_tools
+    workspace = ResearchWorkpapers(business_directory/'research-workpapers.sqlite', root_id=tid,
+        question=grant['question'], as_of=organization.research_as_of, check=check)
+    grants.extend(workpaper_tools(workspace))
+    grants.extend(artifact_tools(artifacts=artifacts, memory=memory, delivery_intent=intent,
+                                 require_review=require_review, research_workspace=workspace))
     scope = lambda: native_memory_scope(owner, memory_workspace, access_check=check, allow_remote_search=False)
     # Same task's isolated replays share immutable payloads, not mutable
     # conversation/history or working-note state. Native ACP owns that history.
@@ -225,12 +231,18 @@ async def organization_harness_session(*, native, resources, authority, check, o
             delegate = options.get('research_delegate')
             reviewer = delegate['model'] if delegate else options.get('answer_review_model')
             native_delegate = None
+            topic_delegate = None
             if delegate:
                 from .harness_delegate import NativeResearchDelegate
                 native_delegate = NativeResearchDelegate(options=delegate, parent_options=options,
                     binary=binary, root=phase_arguments['root'], grant=grant, authority=authority,
                     budget=budget, environment=environment, tid=tid, rid=rid,
                     directory=business_directory/'consultations'/'native', public_sink=phase_arguments['public_sink'])
+                topic_delegate = NativeResearchDelegate(options=options, parent_options=options,
+                    binary=binary, root=phase_arguments['root'], grant=grant, authority=authority,
+                    budget=budget, environment=environment, tid=tid, rid=rid,
+                    directory=business_directory/'consultations'/'topic-native',
+                    public_sink=phase_arguments['public_sink'], decision_role=True)
             elif reviewer != 'gpt-6.1-sol' or reviewer not in budget.prices or not environment.get('OPENAI_API_KEY'):
                 raise ValueError('consultation_provider_not_admitted')
             consultations = HarnessConsultations(directory=business_directory/'consultations', saver=saver,
@@ -238,7 +250,7 @@ async def organization_harness_session(*, native, resources, authority, check, o
                 environment=environment, model=reviewer, basis=options['token_budget_basis'],
                 as_of=organization.research_as_of, public_sink=phase_arguments['public_sink'],
                 research_depth=options.get('research_depth', 'standard'), research_question=grant['question'],
-                native_delegate=native_delegate)
+                native_delegate=native_delegate, workspace=workspace if native_delegate else None, topic_delegate=topic_delegate)
             grants.extend(consultations.tools())
         bridge = HarnessBusinessTools(grants=grants, checkpointer=saver, thread_id=tid, check=check, scope=scope,
             stop_on_tool_error=options.get('stop_on_tool_error') is True, note_versions=memory.export_markdown)

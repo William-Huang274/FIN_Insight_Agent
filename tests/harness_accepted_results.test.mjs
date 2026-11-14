@@ -2,13 +2,14 @@ import {test} from 'node:test'
 import assert from 'node:assert/strict'
 import {installAcceptedResults} from '../integrations/deepseek-harness/accepted-results.mjs'
 
-test('logged replacement preserves pairing, skips unaccepted sources, reopens and survives restore', async () => {
+for (const toolName of ['read_research_agent_result','read_next_research_result','read_research_workpaper','read_workpaper_evidence'])
+test(`${toolName}: logged replacement preserves pairing, skips unaccepted sources, reopens and survives restore`, async () => {
   const hooks = {}
   const original = {receipt_id:'r1', status:'success', result:{result_digest:'v1', opinion:'long evidence'.repeat(200)}}
   const compact = {receipt_id:'r1', status:'success', result:{result_digest:'v1',context_state:'accepted_result_summary',
     condition:'2027 ramp assumed', unresolved:'utilization unknown'},original_readback:{tool:'read_saved_result'}}
   const events = [
-    {seq:0,type:'assistant/message',data:{message:{content:[{type:'tool-call',id:'call',name:'mcp__financial__read_research_agent_result'}]}}},
+    {seq:0,type:'assistant/message',data:{message:{content:[{type:'tool-call',id:'call',name:'mcp__financial__'+toolName}]}}},
     {seq:1,type:'tool/result',data:{turn:1,step:1,message:{id:'original',role:'tool',toolCallId:'call',content:[{type:'text',text:JSON.stringify(original)}]}}},
     {seq:2,type:'tool/result',data:{message:{toolCallId:'unknown',content:[{type:'text',text:JSON.stringify(original)}]}}},
   ]

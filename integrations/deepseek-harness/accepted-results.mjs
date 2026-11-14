@@ -43,7 +43,9 @@ export function installAcceptedResults(ctx, post) {
     for (const [seq, event] of state.results) {
       if (!active.has(seq)) { state.results.delete(seq); continue }
       const message = event.data.message
-      if (state.calls.get(message.toolCallId) !== 'mcp__financial__read_research_agent_result') continue
+      if (!['mcp__financial__read_research_agent_result', 'mcp__financial__read_next_research_result',
+        'mcp__financial__read_research_workpaper', 'mcp__financial__read_workpaper_evidence']
+        .includes(state.calls.get(message.toolCallId))) continue
       const receipt = receiptOf(event)
       if (receipt) candidates.push({event, receipt})
     }

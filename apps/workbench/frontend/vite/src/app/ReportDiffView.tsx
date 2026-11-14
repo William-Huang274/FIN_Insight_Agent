@@ -3,6 +3,7 @@ import { parsePatch } from "diff";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { remarkBoundCitations } from "./remarkBoundCitations";
+import { ReportNote } from './ReportNote';
 import type { ReportDiff } from "../api/reportSessions";
 import './bound-citations.css';
 
@@ -25,7 +26,7 @@ export function ReportDiffView({ value, proseOnly=false }: { value: ReportDiff; 
       const text = h.lines.filter(line => line.startsWith(sign) || line.startsWith(" ")).map(line => context || line.startsWith(sign) ? line.slice(1) : "").join("\n").trim();
       return <section key={side} className={`fs-diff-side ${side}`} aria-label={side === "before" ? "修订前" : "修订后"}>
         <h4>{side === "before" ? "修订前" : "修订后"} <span>v{side === "before" ? value.before_version : value.after_version} · 第 {i + 1} 处</span></h4>
-        <div className="fs-diff-prose"><ReactMarkdown remarkPlugins={[remarkGfm, [remarkBoundCitations, { ids }]]} skipHtml components={{ table: ({children}) => <div className="fs-report-table" role="region" aria-label="版本对照数据表，可横向滚动" tabIndex={0}><table>{children}</table></div>, blockquote: ({children}) => <blockquote className="fs-report-note">{children}</blockquote>, img: ({alt}) => <span>{alt}</span>, a: ({children,href}) => href?.startsWith('#claim:')?<sup title="编号对应此版本；切换到该版本可查看引用依据。">[{children}]</sup>:<span>{children}</span> }}>{text || (side === "before" ? "此处为新增内容。" : "此处内容已删除。")}</ReactMarkdown></div>
+        <div className="fs-diff-prose"><ReactMarkdown remarkPlugins={[remarkGfm, [remarkBoundCitations, { ids }]]} skipHtml components={{ table: ({children}) => <div className="fs-report-table" role="region" aria-label="版本对照数据表，可横向滚动" tabIndex={0}><table>{children}</table></div>, blockquote: ({children}) => <ReportNote>{children}</ReportNote>, img: ({alt}) => <span>{alt}</span>, a: ({children,href}) => href?.startsWith('#claim:')?<sup title="编号对应此版本；切换到该版本可查看引用依据。">[{children}]</sup>:<span>{children}</span> }}>{text || (side === "before" ? "此处为新增内容。" : "此处内容已删除。")}</ReactMarkdown></div>
       </section>;
     })}</div>)}
     <details className="fs-diff-raw"><summary>原始差异记录</summary><pre>{value.diff}</pre></details>

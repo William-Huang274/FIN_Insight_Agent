@@ -6,7 +6,10 @@ from .research_graph_contracts import canonical_sha256
 
 
 def result_version(record):
-    return canonical_sha256({k: record.get(k) for k in ('request', 'opinion', 'assessment')})
+    payload = {k: record.get(k) for k in ('request', 'opinion', 'assessment')}
+    if 'workpaper_ref' in record:
+        payload['workpaper_ref'] = record['workpaper_ref']
+    return canonical_sha256(payload)
 
 
 def latest_decisions(messages):
@@ -19,6 +22,12 @@ def latest_decisions(messages):
     return decisions
 
 
+def workpaper_conditions(paper):
+    """Exact author-supplied boundaries, never a second model summary."""
+    return {k:paper[k] for k in ('topic_id','revision','digest','original_task','as_of','finding',
+        'conditions','counterevidence','remaining','disposition','dependencies') if k in paper}
+
+
 def accepted_projection(original, decision, decision_receipt):
     """A lead's bounded judgment, never runtime certification or new evidence."""
     body = json.loads(original.content)
@@ -28,6 +37,7 @@ def accepted_projection(original, decision, decision_receipt):
             'task_id': body['task_id'], 'result_digest': body['result_digest'],
             'context_state': 'accepted_result_summary',
             'acceptance': decision,
+            **({'workpaper_conditions':workpaper_conditions(body['workpaper'])} if body.get('workpaper') else {}),
             'acceptance_readback': {'tool': 'read_saved_result', 'arguments': {'tool_call_id': decision_receipt}},
             'meaning': 'Lead accepted this bounded result, not the entire report. Reopen if material evidence changes.',
         },

@@ -259,7 +259,7 @@ async def organization_work_session(*, native, resources, authority, check, orga
         '当前组织任务的版本化工作笔记') for t in working_memory_tools('research_partner', owner=owner, workspace=tid))
     grants.extend(await admitted_delegation_tools(sdk=native, resources=resources, run_authority=authority,
         root_thread_id=tid, root_run_id=rid, specification=spec, settings=phase_arguments['settings'], environment=environment))
-    summary = summary_middleware(spec, public=phase_arguments['public_sink'], private=phase_arguments['private_sink'],
+    summary = summary_middleware(spec, api_key=phase_arguments['api_key'], public=phase_arguments['public_sink'], private=phase_arguments['private_sink'],
         access_check=check, budget_scope=budget)
     if grant.get('report_action_request', {}).get('action') == 'recover':
         summary.authorized_recovery_id = grant['report_command_id']

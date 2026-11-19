@@ -27,6 +27,9 @@ class OrganizationSourceNavigation:
             raise ValueError('organization_source_requires_workbench_origin')
         self.reader, self.workbench_url = reader, workbench_url.rstrip('/')
         import os
+        self.default_retrieval_mode = os.getenv('FINSIGHT_ORGANIZATION_DEFAULT_RETRIEVAL') or None
+        if self.default_retrieval_mode not in (None, 'hybrid', 'bm25'):
+            raise ValueError('organization_default_retrieval_configuration_invalid')
         self.table_completion = os.getenv('FINSIGHT_ORGANIZATION_TABLE_COMPLETION', '')
         if self.table_completion not in ('', 'bounded.v1'):
             raise ValueError('organization_table_completion_configuration_invalid')
@@ -76,6 +79,12 @@ class OrganizationSourceNavigation:
 
     def navigate(self, request):
         request = SourceDocumentRequest.model_validate(request)
+        if request.source_space == 'organization' and request.operation == 'search':
+            mode = request.organization_retrieval_mode or self.default_retrieval_mode
+            if mode:
+                request = request.model_copy(update={'organization_retrieval_mode': mode})
+            if mode == 'bm25' and (request.entity_id or request.organization_query_planning):
+                raise ValueError('organization_graph_and_query_planning_require_hybrid_mode')
         if self._retrieval_lifecycle is not None:
             if request.operation == 'catalog':
                 return self._retrieval_lifecycle.catalog(self, request)
@@ -90,7 +99,8 @@ class OrganizationSourceNavigation:
         with self._navigation_lock:
             if request.operation == 'catalog':
                 return self._catalog(request)
-            if (self.table_completion and request.operation == 'search'
+            table_completion = self.table_completion and request.organization_retrieval_mode != 'bm25'
+            if (table_completion and request.operation == 'search'
                     and request.source_space == 'organization' and self.hybrid is None):
                 raise ValueError('organization_table_completion_requires_verified_navigation')
             if request.operation != 'search' or self.hybrid is None:
@@ -99,7 +109,7 @@ class OrganizationSourceNavigation:
             if request.document_id and request.document_id not in {self._identity(i) for i in manifest['inputs']}:
                 raise OrganizationSourceSelectionError()
             pinned = manifest.get('retrieval_index')
-            if self.table_completion and pinned is None and request.source_space == 'organization':
+            if table_completion and pinned is None and request.source_space == 'organization':
                 raise ValueError('organization_table_completion_requires_verified_navigation')
             if pinned is None or request.source_space != 'organization':
                 return self._navigate(request)
@@ -109,7 +119,7 @@ class OrganizationSourceNavigation:
             cache = self._search_cache
             key, epoch = cache.key(before, request), cache.epoch()
             _, release_index, _, _ = self.hybrid.load_frozen(manifest)
-            if self.table_completion and 'navigation_index' not in release_index:
+            if table_completion and 'navigation_index' not in release_index:
                 raise ValueError('organization_table_completion_requires_verified_navigation')
             result = cache.get(key, epoch)
             if result is not None:
@@ -269,6 +279,22 @@ class OrganizationSourceNavigation:
             tokenize(request.query), population_cache=None if planned_lexical else self._lexical_statistics,
             vocabulary_only=planned_lexical, metadata_index=self._lexical_statistics.metadata)
         literal = [rows[i] for i in sorted(overlap, key=lambda i:(-float(scores[i]),rows[i]['node_id']))]
+        if request.organization_retrieval_mode == 'bm25':
+            # Score all eligible postings, but materialize only the requested page of verified original text.
+            page = candidates.materialize(literal[request.offset:request.offset + request.limit], manifest)
+            receipt = {'mode': 'organization-bm25.v1', 'provider_calls': 0, 'lexical_source': 'published_release'}
+            result = navigate_source_nodes(page, request.model_copy(update={'offset': 0}),
+                snapshot=self.reader.authority.manifest_digest[7:], allowed_space='organization', hybrid_enabled=False,
+                ranker=lambda *_: (page, receipt),
+                lexical_scorer=lambda rows, tokens: ([0.] * len(rows), list(range(len(rows))), has_terms))
+            end = request.offset + len(page)
+            updates = {'total_matches': len(literal), 'next_offset': end if end < len(literal) else None}
+            if filter_receipt is not None:
+                updates.update(organization_filter_receipt=OrganizationSourceFilterReceipt.model_validate(filter_receipt),
+                               notice=result.notice + filter_notice(filter_receipt))
+            candidates.check()
+            return self._decorate(result.model_copy(update=updates), candidates.origins,
+                {row['node_id']: row['original_source'] for row in page if 'original_source' in row})
         needs, lanes = None, []
         if planned_lexical:
             from retrieval.organization_search_needs import compile_needs, lexical_candidates
@@ -374,6 +400,8 @@ class OrganizationSourceNavigation:
         if request.page_start is not None or request.page_end is not None:
             raise ValueError('organization_projection_has_no_pdf_page_locator')
         before, manifest, bindings = self.reader._grant()
+        if request.organization_retrieval_mode == 'hybrid' and (self.hybrid is None or not manifest.get('retrieval_index')):
+            raise ValueError('organization_hybrid_search_requires_pinned_release')
         if request.operation == 'search' and manifest.get('retrieval_index') is not None and self.hybrid is None:
             raise ValueError('organization_frozen_index_requires_configured_storage')
         selected = {self._identity(item): item for item in manifest['inputs']}
@@ -476,6 +504,9 @@ class OrganizationSourceNavigation:
                 (lexical_document(row) for row in rows), tokens, corpus_key=key.digest(),
                 verified_population=True)
         def rank(rows, query, snapshot, literal):
+            if request.organization_retrieval_mode == 'bm25':
+                return literal, {'mode': 'organization-bm25.v1', 'provider_calls': 0,
+                    'lexical_source': lexical_source if projection_cache is not None else 'bound_originals'}
             ranked, receipt = self.hybrid.rank(rows, query, snapshot, literal)
             receipt['lexical_source'] = lexical_source
             if projection_cache is not None:
@@ -485,7 +516,7 @@ class OrganizationSourceNavigation:
         try:
             result = navigate_source_nodes(nodes, request, snapshot=self.reader.authority.manifest_digest[7:],
                 allowed_space='organization', hybrid_enabled=False,
-                ranker=rank if self.hybrid is not None else None,
+                ranker=rank if self.hybrid is not None or request.organization_retrieval_mode == 'bm25' else None,
                 lexical_scorer=lexical_score if projection_cache is not None else None)
         except ValueError as exc:
             if str(exc) != 'source_node_not_in_selected_document':

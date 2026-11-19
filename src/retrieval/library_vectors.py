@@ -85,8 +85,11 @@ def open_cache(root):
 
 
 def plan(library,root,*,model=MODEL):
+    return _plan_rows(inputs(library), library.manifest['sha256'], root, model)
+
+
+def _plan_rows(rows, corpus_digest, root, model):
     if model not in SUPPORTED_MODELS:raise ValueError('unsupported_corpus_embedding_model')
-    rows=inputs(library)
     unique={vector_key(r['text'],model):r['text'] for r in rows}
     batch_size=20 if model=='qwen3.7-text-embedding' else 10
     with closing(open_cache(root)) as db:
@@ -102,19 +105,28 @@ def plan(library,root,*,model=MODEL):
       'limits':{'batch_size':batch_size,'max_requests':ceil(len(missing)/batch_size),'max_workers':4,'attempts_per_request':1,'request_timeout_seconds':90,'minimum_dispatch_interval_seconds':0.6,'estimated_tokens_per_rolling_minute':600000,'token_estimate':'UTF8 bytes times adaptive ratio, initially0.5, raised to1.2times observed token/byte ratio; not billing usage'},
       'stop_behavior':'Withhold each failed/unknown batch without retry; stop dispatch immediately on429/account errors, or after3 consecutive/10 total other failures; drain in-flight outcomes and refuse incomplete publication',
       'blocked_keys':len(blocked.intersection(missing)),
-      'model':model,'dimensions':DIM,'library_sha256':library.manifest['sha256'],
+      'model':model,'dimensions':DIM,'library_sha256':corpus_digest,
       'provider_contract':'https://www.alibabacloud.com/help/en/model-studio/text-embedding-synchronous-api',
       'contract_checked_at':'2026-09-22','pricing_note':'Actual provider token usage retained; no fixed total cost promised; regional billing applies'}
 
 
 def prepare(library,root,api_key,audit,*,execute=False,skip_blocked=False,retry_request_ids=(),model=MODEL,stop_file=None):
+    return prepare_rows(inputs(library), library.manifest['sha256'], root, api_key, audit, execute=execute,
+                        skip_blocked=skip_blocked, retry_request_ids=retry_request_ids, model=model, stop_file=stop_file)
+
+
+def prepare_rows(rows, corpus_digest, root, api_key, audit, *, execute=False, skip_blocked=False,
+                 retry_request_ids=(), model=MODEL, stop_file=None, max_requests=None):
+    """Embed exact caller-authorized text. Row id and source_id preserve the original mapping."""
     root=Path(root);audit=Path(audit);audit.mkdir(parents=True,exist_ok=True)
-    rows,missing,basis=plan(library,root,model=model)
+    rows,missing,basis=_plan_rows(rows,corpus_digest,root,model)
     basis['stop_file']=str(stop_file) if stop_file else None
     (audit/'TokenBudgetBasis.json').write_text(json.dumps(basis,indent=2),encoding='utf8')
     if not execute:return basis
+    if max_requests is not None and basis['limits']['max_requests'] > max_requests:
+        raise ValueError('embedding_plan_exceeds_approved_request_limit')
     if (root/'chunk-vector-manifest.json').is_file():
-        manifest,_,_=ready_index(root,library.manifest['sha256'])
+        manifest,_,_=ready_index(root,corpus_digest)
         if manifest['embedding_model']!=model:raise ValueError('published_embedding_model_mismatch')
         if missing:raise ValueError('published_vector_cache_incomplete')
         (audit/'embedding-result.json').write_text(json.dumps(manifest,indent=2),encoding='utf8')
@@ -215,7 +227,7 @@ def prepare(library,root,api_key,audit,*,execute=False,skip_blocked=False,retry_
             if status=='completed':
                 for k,v in json.loads(payload).get('usage',{}).items():
                     if isinstance(v,(int,float)):usage[k]=usage.get(k,0)+v
-        manifest={'version':VERSION,'library_sha256':library.manifest['sha256'],'embedding_model':model,
+        manifest={'version':VERSION,'library_sha256':corpus_digest,'embedding_model':model,
            'dimensions':DIM,'chunks':len(rows),'unique_vectors':len(keys),'scope':'all readable child chunks; original parents preserved',
            'matrix_sha256':digest(root/'chunk-vectors.npy'),'mapping_sha256':digest(root/'chunk-vector-map.json'),
            'usage':usage,'semantic_accuracy_evaluated':False}

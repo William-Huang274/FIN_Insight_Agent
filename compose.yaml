@@ -24,6 +24,7 @@ services:
     ports:
       - "127.0.0.1:${FINSIGHT_WORKBENCH_PORT:-8765}:8765"
     environment:
+      FINSIGHT_ALLOW_LOCAL_PROVIDER_KEY: ${FINSIGHT_ALLOW_LOCAL_PROVIDER_KEY:-0}
       FINSIGHT_PERSONAL_KEY_STORE: /app/state/personal-keys
       FINSIGHT_PERSONAL_KEY_FILE: /run/secrets/personal-research.key
       FINSIGHT_PERSONAL_RESEARCH_ENABLED: "1"

@@ -171,10 +171,10 @@ async def organization_graph(config, native, thread):
             if not continuous:
                 raise ValueError("organization_profile_requires_continuous_execution")
             from .organization_model_profiles import execution_profile
-            reference, template, credentials = await asyncio.to_thread(execution_profile, settings, environment,
-                grant, thread_id, load_keys=True)
-            if reference != execution.runtime_profile:
-                raise ValueError("organization_profile_binding_changed")
+            _, template, credentials = await asyncio.to_thread(execution_profile, settings, environment,
+                grant, thread_id, load_keys=True, expected_reference=execution.runtime_profile)
+            for name in ("OPENAI_API_KEY", "DEEPSEEK_API_KEY"):
+                environment.pop(name, None)
             environment.update(credentials)
             settings = {**settings, "harness_execution_bindings": {
                 **settings.get("harness_execution_bindings", {}), thread_id: template}}
@@ -186,7 +186,7 @@ async def organization_graph(config, native, thread):
             api_key=None if harness_selected else SecretStr(os.environ['DEEPSEEK_API_KEY']),
             public_sink=public, private_sink=private, studio=studio, execution=execution,
             budget_scope=budget, organization_data_factory=organization, run_access_check=check,
-            environment={**os.environ, 'FINSIGHT_RESEARCH_AS_OF':cutoff})
+            environment={**environment, 'FINSIGHT_RESEARCH_AS_OF':cutoff})
         if continuous:
             # Only deployment-owned bindings select the replacement. Browser
             # commands retain the same Java admission/configuration contract.

@@ -62,10 +62,7 @@ class ResearchKeys:
 
 
 def requires_personal_key(owner):
-    return owner != "local-pilot" or (
-        bool(os.getenv("FINSIGHT_PERSONAL_KEY_STORE")) and
-        os.getenv("FINSIGHT_ALLOW_LOCAL_PROVIDER_KEY") != "1"
-    )
+    return owner != "local-pilot" or os.getenv("FINSIGHT_ALLOW_LOCAL_PROVIDER_KEY") != "1"
 
 
 def personal_research_key(metadata):
@@ -75,4 +72,9 @@ def personal_research_key(metadata):
         if not store:
             raise ValueError("personal_provider_key_required")
         return store.read(owner)
+    store = ResearchKeys.configured()
+    if store and store.contains(owner):
+        return store.read(owner)
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        raise ValueError("local_provider_key_unavailable")
     return SecretStr(os.environ["DEEPSEEK_API_KEY"])

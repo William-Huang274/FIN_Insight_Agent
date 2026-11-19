@@ -48,6 +48,7 @@ def install_organization_command_routes(router, service, browser_write):
     async def capabilities():
         settings = host_settings(os.environ)
         return response({'on_demand': os.getenv('FINSIGHT_ON_DEMAND_ENABLED') == '1',
+            **({'source_search': True} if os.getenv('FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED') == '1' else {}),
             **({'model_profiles': True} if settings.get('organization_profile_bindings') else {})})
 
     async def model_profiles(project_id, draft_id, settings):

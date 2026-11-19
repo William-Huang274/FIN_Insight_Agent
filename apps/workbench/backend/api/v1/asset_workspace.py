@@ -61,7 +61,14 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None,
         try: return fn(*args)
         except KeyError: raise HTTPException(404, '项目、资产或交接记录不存在') from None
         except (AssetConflict, ProjectAssetUnavailable, RevisionConflict) as exc: raise HTTPException(409, str(exc)) from None
-        except ValueError as exc: raise HTTPException(422, str(exc) if str(exc).startswith('选择内容超过') else '资产内容或版本参数不适用') from None
+        except ValueError as exc:
+            retrieval_errors = {
+                'organization_hybrid_search_requires_pinned_release': '混合检索需要绑定已发布的检索版本。当前执行可使用 BM25 关键词检索。',
+                'organization_query_embedding_not_configured': '此问题没有预置查询向量，部署尚未启用查询 embedding。可使用 BM25 关键词检索。',
+                'organization_graph_and_query_planning_require_hybrid_mode': '图关系和自动查询规划需要显式选择混合检索。',
+            }
+            message = str(exc)
+            raise HTTPException(422, retrieval_errors.get(message, message if message.startswith('选择内容超过') else '资产内容或版本参数不适用')) from None
         except OSError: raise HTTPException(409, '保存的原件暂不可读取，请保留记录并检查存储') from None
 
     @router.post('/organization-projects/{project_id}/research-drafts/{draft_id}/executions/{execution_id}/navigate')

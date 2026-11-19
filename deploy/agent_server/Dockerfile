@@ -11,7 +11,7 @@ COPY pyproject.toml uv.lock /deps/FIN_Insight_Agent/
 # Install locked third-party dependencies BEFORE frequently changed source.
 # Source/config changes must not redownload the entire runtime over the proxy.
 RUN cd /deps/FIN_Insight_Agent \
-    && uv export --quiet --locked --no-dev --extra agent-runtime --extra external-search --no-emit-project \
+    && uv export --quiet --locked --no-dev --extra agent-runtime --extra retrieval-api --extra external-search --no-emit-project \
         --no-header --no-annotate --format requirements-txt \
         --output-file /tmp/finsight-agent-runtime-requirements.txt \
     && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir \
@@ -35,6 +35,7 @@ RUN PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -
 # -- End of ensuring user deps did not inadvertently overwrite langgraph-api --
 
 COPY src /deps/FIN_Insight_Agent/src
+COPY integrations/deepseek-harness/*.mjs /deps/FIN_Insight_Agent/integrations/deepseek-harness/
 COPY README.md /deps/FIN_Insight_Agent/
 RUN cd /deps/FIN_Insight_Agent \
     && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -e .

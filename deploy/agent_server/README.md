@@ -43,6 +43,10 @@ docker compose -f compose.yaml -f deploy/agent_server/compose.native.yaml ps
 
 The overlay adds a private native API, a dedicated pgvector PostgreSQL instance for threads and checkpoints, and Redis for queue coordination. It registers research, conversation and delegated-task graphs. Open [Research](http://127.0.0.1:8765/workspace/session) to prepare a new task. Starting it or sending a conversation message uses the selected provider and may incur charges. Recover failed or unknown submissions through their existing records. An infrastructure restart does not authorize resubmission.
 
+## Organization search
+
+Use the [organization retrieval setup](../organization/README.md) to export the authorized source projection, publish document vectors and BM25 postings, register a fixed release, and enable optional query embeddings or reranking.
+
 ## Data and storage
 
 * **SEC company data.** Set `FINSIGHT_SEC_CONTACT_EMAIL` to your own real address in `.env` and recreate the workbench after changes. From a project, select the SEC source, enter a ticker and ten-digit CIK, then refresh. Capture retains the original companyfacts and submissions JSON, source URL, time and digest. For command-line filing ingestion, set `SEC_USER_AGENT` to your own application name and contact address. Example from the source checkout:
@@ -68,3 +72,5 @@ uv run --no-sync python scripts/deployment/host_service.py workbench
 ```
 
 `--db-port`, `--business-port`, `--ui-port`, `--native-port` and `--state-directory` select isolated endpoints and storage. Host mode requires a separately configured native endpoint for research. The default Compose deployment keeps its database private to its network.
+
+For the optional funded GPT-6.2 Sol high / DeepSeek Flash organization profile, use the checked-in settings generator, explicit budget funding command, and production readiness check in the [Workbench deployment instructions](../../apps/workbench/README.md#provision-the-optional-organization-model-combination).

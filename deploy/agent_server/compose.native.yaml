@@ -31,6 +31,7 @@ services:
       LANGSMITH_HIDE_OUTPUTS: "true"
       LANGSERVE_GRAPHS: '{"research_session":{"path":"sec_agent.agent_runtime.research_session_runtime:research_session_graph"},"conversation_session":{"path":"sec_agent.agent_runtime.conversation_runtime:conversation_session_graph"},"delegated_task":{"path":"sec_agent.agent_runtime.delegated_task_graph:delegated_task_session_graph"}}'
       FIN_REPO_ROOT: /deps/FIN_Insight_Agent
+      FINSIGHT_ALLOW_LOCAL_PROVIDER_KEY: ${FINSIGHT_ALLOW_LOCAL_PROVIDER_KEY:-0}
       FINSIGHT_PERSONAL_KEY_STORE: /app/state/personal-keys
       FINSIGHT_PERSONAL_KEY_FILE: /run/secrets/personal-research.key
       FINSIGHT_PERSONAL_RESEARCH_ENABLED: "1"
@@ -47,10 +48,12 @@ services:
       FINSIGHT_ON_DEMAND_ENABLED: ${FINSIGHT_ON_DEMAND_ENABLED:-0}
       FINSIGHT_TASK_ATTACHMENTS_ROOT: /app/state/attachments
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
-      QWEN_API_KEY: ${QWEN_API_KEY:-}
       SEC_USER_AGENT: ${SEC_USER_AGENT:-}
       FINSIGHT_SEC_CONTACT_EMAIL: ${FINSIGHT_SEC_CONTACT_EMAIL:-}
       CONGRESS_API_KEY: ${CONGRESS_API_KEY:-}
+      OPENDART_API_KEY: ${OPENDART_API_KEY:-}
+      HITHINK_FINANCE_API_KEY: ${HITHINK_FINANCE_API_KEY:-}
+      ALPHAVANTAGE_API_KEY: ${ALPHAVANTAGE_API_KEY:-}
     volumes:
       - finsight-workbench-state:/app/state
       - ./.secrets/personal-research.key:/run/secrets/personal-research.key:ro

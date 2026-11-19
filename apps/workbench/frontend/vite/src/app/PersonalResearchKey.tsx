@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ResearchConfiguration } from "../api/reportSessions";
 
 export function PersonalResearchKey({ configuration, onChange }: {
-  configuration: ResearchConfiguration;
+  configuration: Pick<ResearchConfiguration, "personal_keys_enabled" | "personal_key_required" | "personal_key_configured">;
   onChange: (configured: boolean) => void;
 }) {
   const [key, setKey] = useState("");

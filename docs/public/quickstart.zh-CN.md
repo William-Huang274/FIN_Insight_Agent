@@ -30,6 +30,8 @@ docker compose -f compose.yaml -f deploy/agent_server/compose.native.yaml up -d 
 
 研究附件属于该会话。要让同一项目持续检索某份资料，应从项目资料入口上传，等待解析及索引发布，再通过资料库检索并打开原文。向量和重排服务需要另行配置。SEC 等数据源使用部署者自己的联系信息和 API 授权。详见[部署说明](../../deploy/agent_server/README.md)。
 
+外部数据授权填写在私有 `.env`。SEC EDGAR 使用 `SEC_USER_AGENT` 或 `FINSIGHT_SEC_CONTACT_EMAIL` 标识请求者。Alpha Vantage、韩国 OpenDART、同花顺分别读取 `ALPHAVANTAGE_API_KEY`、`OPENDART_API_KEY`、`HITHINK_FINANCE_API_KEY`。这些是部署侧数据工具凭据，与个人研究页面保存的模型密钥分别管理。留空时相应的付费或受限接口不可用。
+
 ## 快捷验证
 
 ```sh
@@ -38,3 +40,5 @@ uv run --no-sync python -m scripts.dev.verify_public_checkout
 ```
 
 此命令检查 HTTP 服务与未配置状态。要生成一份合成报告用于检查导出，可追加 `--output-directory .local/sample-report` 并使用尚未存在的目录。在 `apps/workbench/frontend` 运行 `npm ci` 和 `npm run build` 检查前端类型和生产构建。
+
+组织连续研究支持由 GPT-6.2 Sol high 主持、按需调用 DeepSeek Flash 调查。管理员需要为指定组织、草稿和执行准备模型凭据及独立预算。工作台部署文档提供从公开配置开始生成私有设置、授权和检查预算的三条命令。通过检查后，在对应草稿的“模型组合”中选择。[组织模型组合部署步骤](../../apps/workbench/README.md#provision-the-optional-organization-model-combination)

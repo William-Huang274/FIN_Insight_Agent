@@ -10,7 +10,7 @@ from uuid import UUID
 from langchain_core.language_models.fake_chat_models import FakeMessagesListChatModel
 from langchain_core.runnables import RunnableConfig
 from langgraph_sdk.runtime import ServerRuntime
-from pydantic import SecretStr
+from .personal_research_keys import ResearchKeys, personal_research_key, requires_personal_key
 
 from .conversation_agent import build_conversation_agent
 from .conversation_tools import conversation_tools
@@ -65,12 +65,25 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
     if store:
         from sec_agent.research_foundation.project_asset_access import require_task_assets
         audit.source_access_check = lambda: require_task_assets(store, thread_id)
-    model = case_chat_model(profile, basis, SimpleNamespace(base_url="https://api.deepseek.com"), SecretStr(os.environ["DEEPSEEK_API_KEY"]), streaming=True,
-                            context_editing=specification.get("context_editing"))
     try:
-        thread = await sdk.threads.get(thread_id)
-        metadata = thread.get("metadata", {})
         import asyncio
+        from .native_thread_header import thread_header
+        thread = await thread_header(sdk, thread_id)
+        metadata = thread.get("metadata", {})
+        if metadata.get("surface") != "finsight_general_conversation" or metadata.get("graph") != "conversation_session":
+            raise ValueError("conversation_thread_identity_mismatch")
+        owner = metadata.get("owner_id", "local-pilot")
+        if not isinstance(owner, str) or not owner or owner.startswith("organization:"):
+            raise ValueError("conversation_owner_invalid")
+        if metadata.get("harness") == "hermes":
+            key_store = ResearchKeys.configured()
+            if (requires_personal_key(owner) or metadata.get("personal_provider_key")
+                    or (key_store and await asyncio.to_thread(key_store.contains, owner))):
+                raise ValueError("hermes_personal_credentials_not_supported")
+        else:
+            api_key = await asyncio.to_thread(personal_research_key, metadata)
+            model = case_chat_model(profile, basis, SimpleNamespace(base_url="https://api.deepseek.com"),
+                api_key, streaming=True, context_editing=specification.get("context_editing"))
         from .research_budget import budget_from_host
         budget_scope = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,
             metadata=metadata, environment=os.environ)
@@ -133,7 +146,7 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
                 actor=memory_actor,model=profile.model,target=target,task_context=task_context,public_sink=public)
         else:
             from .conversation_summary import summary_middleware
-            summary = summary_middleware(specification, public=public, private=private,
+            summary = summary_middleware(specification, api_key=api_key, public=public, private=private,
                 access_check=audit.source_access_check, budget_scope=budget_scope)
             yield build_conversation_agent(model=model, grants=grants,
                 permission_mode=ids.get("permission_mode", "request_standard"), checkpointer=None,

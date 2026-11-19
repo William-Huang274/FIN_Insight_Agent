@@ -132,8 +132,9 @@ async def delegated_task_session_graph(config: RunnableConfig, runtime: ServerRu
         audit = CaseModelAudit(actor='delegated_task', profile=profile, basis=basis,
             public_sink=public, private_sink=private, stream_public=True, source_access_check=check,
             dispatch_guard=budget.guard('conversation', profile))
+        api_key = SecretStr(os.environ['DEEPSEEK_API_KEY'])
         model = case_chat_model(profile, basis, SimpleNamespace(base_url='https://api.deepseek.com'),
-                                SecretStr(os.environ['DEEPSEEK_API_KEY']), streaming=True,
+                                api_key, streaming=True,
                                 context_editing=spec.get('context_editing'))
         memory = WorkingMemory(os.environ['FINSIGHT_WORKING_MEMORY_PATH'], owner=owner, workspace=child,
             actor='delegated_task', access_check=check, allow_remote_search=False)
@@ -157,7 +158,7 @@ async def delegated_task_session_graph(config: RunnableConfig, runtime: ServerRu
                    + '\nUse complete_delegated_task to return your answer or saved workpaper. '
                      'A working-note save is progress, not submission or independent review.')
         from .conversation_summary import summary_middleware
-        summary = summary_middleware(spec, public=public, private=private, access_check=check, budget_scope=budget)
+        summary = summary_middleware(spec, api_key=api_key, public=public, private=private, access_check=check, budget_scope=budget)
         audit.working_note_context = lambda: current_work_catalog(memory)
         with native_memory_scope(owner, child, access_check=check, allow_remote_search=False):
             yield build_conversation_agent(model=model, grants=grants, permission_mode='request_standard',

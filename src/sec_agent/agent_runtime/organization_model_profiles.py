@@ -1,11 +1,13 @@
 """Bind an opt-in organization harness profile to one already funded execution."""
 from copy import deepcopy
 from hashlib import sha256
+from functools import lru_cache
 import json
 from pathlib import Path
 from uuid import UUID
 
 from .research_budget import budget_from_host
+from .model_execution_policy import file_sha256
 
 
 class ProfileUnavailable(ValueError):
@@ -17,7 +19,14 @@ def host_settings(environment):
     return json.loads(Path(path).read_text(encoding="utf8")) if path else {}
 
 
-def execution_profile(settings, environment, scope, tid, *, load_keys=False):
+@lru_cache(maxsize=32)
+def _catalogue_digest(path, device, inode, size, mtime_ns, ctime_ns):
+    # The additional arguments are the stat identity of this catalogue entry.
+    return file_sha256(path)
+
+
+def execution_profile(settings, environment, scope, tid, *, load_keys=False,
+                      catalogue=False, expected_reference=None):
     binding = settings.get("organization_profile_bindings", {}).get(tid)
     if not binding:
         raise ProfileUnavailable("organization_profile_binding_missing")
@@ -48,12 +57,25 @@ def execution_profile(settings, environment, scope, tid, *, load_keys=False):
             raise ProfileUnavailable("organization_profile_reservation_basis_required")
     fingerprint = json.dumps([tid, binding, template, budget], sort_keys=True, separators=(",", ":")).encode()
     reference = "sol-high-flash@" + sha256(fingerprint).hexdigest()
-    if sha256(Path(template["binary"]).read_bytes()).hexdigest() != template["binary_sha256"]:
-        raise ProfileUnavailable("organization_profile_binary_mismatch")
-    directory = Path(environment["FINSIGHT_ORGANIZATION_MODEL_KEYS"]) / org
-    keys = {"FINSIGHT_TASK_OPENAI_KEY": directory / "openai.key",
-            "FINSIGHT_TASK_DEEPSEEK_KEY": directory / "deepseek.key"}
-    if not all(path.is_file() and path.stat().st_size > 0 for path in keys.values()):
+    if expected_reference is not None:
+        if expected_reference != reference:
+            raise ProfileUnavailable("organization_profile_binding_changed")
+        # The admitted harness launcher independently hashes the executable before use.
+    else:
+        path = Path(template["binary"]).resolve(strict=True)
+        if catalogue:
+            stat = path.stat()
+            digest = _catalogue_digest(path, stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+        else:
+            digest = file_sha256(path)
+        if digest != template["binary_sha256"]:
+            raise ProfileUnavailable("organization_profile_binary_mismatch")
+    directory = Path(environment["FINSIGHT_ORGANIZATION_MODEL_KEYS"]).resolve(strict=True) / org
+    if directory.resolve(strict=True) != directory:
+        raise ProfileUnavailable("organization_model_credentials_directory_mismatch")
+    keys = {"FINSIGHT_TASK_OPENAI_KEY": (directory / "openai.key").resolve(strict=True),
+            "FINSIGHT_TASK_DEEPSEEK_KEY": (directory / "deepseek.key").resolve(strict=True)}
+    if not all(path.is_relative_to(directory) and path.is_file() and 0 < path.stat().st_size <= 4096 for path in keys.values()):
         raise ProfileUnavailable("organization_model_credentials_unavailable")
     template.update(model="gpt-6.2-sol", reasoning="high", protocol="openai_responses", provider="fin-openai",
         provider_endpoint="https://api.openai.com/v1/responses", provider_key_env="FINSIGHT_TASK_OPENAI_KEY",
@@ -73,7 +95,7 @@ def available_profiles(settings, environment, scope):
         if not all(binding.get(key) == value for key, value in scope.items()):
             continue
         try:
-            ref, _, _ = execution_profile(settings, environment, scope, tid)
+            ref, _, _ = execution_profile(settings, environment, scope, tid, catalogue=True)
             budget_from_host(settings, thread_id=tid, metadata={"owner_id": "organization:" + scope["organization_id"]},
                 environment=environment)
         except Exception:

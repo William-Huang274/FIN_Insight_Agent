@@ -10,6 +10,10 @@
 !src/**/*.py
 !src/**/*.sql
 !src/sec_agent/research_foundation/methods/*.md
+!src/sec_agent/research_foundation/methods_judgment/*.md
+!integrations/
+!integrations/deepseek-harness/
+!integrations/deepseek-harness/*.mjs
 # The source allowlist above must never re-admit interpreter/build residue.
 **/__pycache__/**
 **/*.pyc

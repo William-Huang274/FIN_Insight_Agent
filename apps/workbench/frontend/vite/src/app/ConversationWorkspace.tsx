@@ -1,3 +1,4 @@
+import { PersonalResearchKey } from "./PersonalResearchKey";
 import {AssetContextBanner} from './AssetContextBanner';
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
@@ -39,6 +40,14 @@ export default function ConversationWorkspace({embedded}:{embedded?:EmbeddedConv
   const [handoff, setHandoff] = useState<HandoffPreview | null>(null), [handoffNote, setHandoffNote] = useState("");
   const [copied, setCopied] = useState(false);
   const [harness,setHarness]=useState('native');
+  const [keyStatus,setKeyStatus]=useState<{personal_keys_enabled?:boolean;personal_key_required?:boolean;personal_key_configured?:boolean}|null>(null);
+  useEffect(()=>{
+    let live=true;
+    fetch('/api/v1/personal-research-key',{cache:'no-store'}).then(async response=>{
+      if(response.ok && live){const value=await response.json();if(live)setKeyStatus(value);}
+    }).catch(()=>{});
+    return ()=>{live=false;};
+  },[]);
   const [draftMessages, setDraftMessages] = useState<Record<string, string>>({});
   const reading = useRef<HTMLDivElement>(null), followBottom = useRef(true);
   useEffect(() => { followBottom.current = true; }, [id]);
@@ -118,7 +127,10 @@ export default function ConversationWorkspace({embedded}:{embedded?:EmbeddedConv
         <input ref={uploadInput} type="file" multiple hidden aria-label="添加对话资料" disabled={sending || !!active} accept=".pdf,.docx,.md,.txt,.html,.htm,.png,.jpg,.jpeg,.webp" onChange={e=>{setFiles(rows=>[...rows,...Array.from(e.target.files || [])]);e.target.value="";}}/>
         <button disabled={sending || !!active || (session?.harness||harness)==='hermes'} onClick={()=>uploadInput.current?.click()}><Paperclip size={16}/>添加资料 · 仅用于本对话</button>
         <label className="fs-sr-only" htmlFor="assistant-message">发送消息</label><textarea id="assistant-message" value={text} onChange={e=>setText(e.target.value)} rows={3} maxLength={15500} placeholder="输入问题，或继续修改刚才的回答…"/>
-        <label className="fs-harness-selector">执行方式 <select aria-label="执行方式" value={id?(session?.harness||'native'):harness} disabled={!!id||sending} onChange={e=>{setHarness(e.target.value);if(e.target.value==='hermes')setFiles([]);}}><option value="native">当前 Agent</option><option value="hermes">Hermes · 工作底稿试用</option></select></label>{(session?.harness||harness)==='hermes'&&<small>本试用支持普通问答和工作底稿读写检索；执行方式在本窗口固定，其他工具尚未接入。</small>}
+        {keyStatus&&(keyStatus.personal_keys_enabled||keyStatus.personal_key_required)&&<details>
+          <summary>个人模型密钥</summary><PersonalResearchKey configuration={keyStatus} onChange={configured=>
+            setKeyStatus(previous=>({...previous,personal_key_configured:configured}))}/></details>}
+        <label className="fs-harness-selector">执行方式 <select aria-label="执行方式" value={id?(session?.harness||'native'):harness} disabled={!!id||sending} onChange={e=>{setHarness(e.target.value);if(e.target.value==='hermes')setFiles([]);}}><option value="native">当前 Agent</option>{((session?.harness||harness)==='hermes' || (keyStatus && !keyStatus.personal_key_required && !keyStatus.personal_key_configured)) && <option value="hermes">Hermes · 工作底稿试用</option>}</select></label>{(session?.harness||harness)==='hermes'&&<small>本试用支持普通问答和工作底稿读写检索；执行方式在本窗口固定，其他工具尚未接入。</small>}
         <div className="fs-assistant-controls"><label>模型 <select value={model} onChange={e=>setModel(e.target.value)} disabled={sending || !!active || awaitingApproval}><option value="deepseek-v4-flash">DeepSeek V4 Flash</option><option value="deepseek-v4-pro">DeepSeek V4 Pro</option></select></label><label className="fs-permission-selector">权限 <select value={permission} onChange={e=>setPermission(e.target.value)} disabled={sending || !!active || awaitingApproval}><option value="request_standard">请求标准</option><option value="approve_for_me">代我批准</option><option value="full_access">完全访问权限</option></select></label>{active ? <button onClick={async()=>{try {await request(`/${id}/stop`,{}); await refresh();} catch(e){setError((e as Error).message);}}}><Square size={16}/>停止</button> : <button className="fs-primary" disabled={!text.trim() || sending || awaitingApproval} onClick={send}><ArrowUp size={17}/>{sending ? "发送中" : "发送"}</button>}</div>
         <small>{session?.permissions_notice || "当前工具范围：对话资料读取与精确计算。选择权限模式不会自动开放用户文件、终端或服务器访问。"}</small>
       </footer>

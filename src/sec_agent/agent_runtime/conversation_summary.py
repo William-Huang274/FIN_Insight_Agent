@@ -1,11 +1,10 @@
 """One summary policy for the main conversation and delegated native work."""
 import json
-import os
 from types import SimpleNamespace
 from pydantic import SecretStr
 
 
-def summary_middleware(specification, *, public, private, access_check, budget_scope):
+def summary_middleware(specification, *, api_key: SecretStr, public, private, access_check, budget_scope):
     from .model_context import RequestSummaryMiddleware
     from .deepseek_structured_agents import DeepSeekModelProfile, TokenBudgetBasis
     from .case_review_agent import CaseModelAudit, case_chat_model
@@ -18,7 +17,7 @@ def summary_middleware(specification, *, public, private, access_check, budget_s
     audit.working_note_context = lambda: ''
     policy = specification.get('context_editing', {}).get('policy', 'legacy_window')
     model = case_chat_model(profile, basis, SimpleNamespace(base_url='https://api.deepseek.com'),
-        SecretStr(os.environ['DEEPSEEK_API_KEY']),
+        api_key,
         # The middleware already selected and projected this bounded prefix.
         # At SDK serialization preserve the same lossless policy, without a
         # second navigation retirement or legacy release_history pass.

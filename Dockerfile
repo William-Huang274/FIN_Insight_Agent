@@ -68,7 +68,7 @@ ARG OCI_SOURCE=https://github.com/William-Huang274/FIN_Insight_Agent
 ENV WORKBENCH_IMAGE_KIND=current-product
 ENV WORKBENCH_RUNTIME_PROFILE=research-session
 ENV WORKBENCH_DATA_UPDATE_MODE=external_data_build_jobs
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-dev --no-editable --extra agent-runtime --extra external-search --extra workbench-auth --extra workbench-delivery
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-dev --no-editable --extra agent-runtime --extra retrieval-api --extra external-search --extra workbench-auth --extra workbench-delivery
 COPY --from=workbench-frontend /app/apps/workbench/frontend/dist ./apps/workbench/frontend/dist
 RUN rm -f /bin/uv /bin/uvx
 LABEL org.opencontainers.image.source=${OCI_SOURCE} \

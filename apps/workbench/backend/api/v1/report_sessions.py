@@ -31,7 +31,7 @@ from sec_agent.agent_runtime.targeted_revision import report_digest, validate_re
 from .research_studio import build_studio_router, run_configuration, owned_configuration
 from sec_agent.agent_runtime.execution_options import ExecutionOptions
 from sec_agent.agent_runtime.manual_review import manual_review_available, apply_manual_review
-from ...authentication import service_owner
+from ...authentication import current_owner, service_owner
 
 SURFACE = 'research_workbench'
 GRAPH = 'report_session'
@@ -519,6 +519,14 @@ def build_report_sessions_router(service):
     def personal_enabled():
         return os.getenv('FINSIGHT_ON_DEMAND_ENABLED') != '1' or os.getenv('FINSIGHT_PERSONAL_RESEARCH_ENABLED') == '1'
 
+    @router.get("/personal-research-key")
+    async def personal_key_status(request: Request, response: Response):
+        response.headers["Cache-Control"] = "private, no-store"
+        owner = current_owner(request)
+        store = ResearchKeys.configured()
+        return {"personal_keys_enabled": store is not None, "personal_key_required": requires_personal_key(owner),
+            "personal_key_configured": bool(store and await run_in_threadpool(store.contains, owner))}
+
     @router.put("/personal-research-key")
     @router.delete("/personal-research-key")
     async def personal_key(request: Request):
@@ -526,7 +534,7 @@ def build_report_sessions_router(service):
         store = ResearchKeys.configured()
         if not store:
             raise HTTPException(503, "部署尚未配置个人凭据存储")
-        owner = service_owner()
+        owner = current_owner(request)
         if request.method == "DELETE":
             await run_in_threadpool(store.remove, owner)
             return {"configured": False}

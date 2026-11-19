@@ -3,6 +3,7 @@ import {ArrowRight} from 'lucide-react';
 import {useSearchParams} from 'react-router';
 import {assetRequest} from '../api/assetWorkspace';
 import {browserOwner} from './IdentityBoundary';
+import {OrganizationSourceSearch} from './OrganizationSourceSearch';
 
 export function OrganizationPrepareExecution({project,draft,digest}:{project:string;draft:string;digest:string}){
   const [,setParams]=useSearchParams();const [rows,setRows]=useState<{execution_id:string;closed:boolean;preparation:string}[]>([]);
@@ -35,6 +36,8 @@ export function OrganizationPrepareExecution({project,draft,digest}:{project:str
     finally{operation.current=false;setBusy(false);}}
   return <section className="org-actions" aria-label="准备执行"><h4>准备执行</h4><p>固定研究方式并创建执行记录，此步骤不调用模型。随后在同一研究页确认启动。</p>
     {error&&<p role="alert">{error}</p>}
+    {rows.filter(row=>!row.closed && row.preparation==='received').map(row=>
+      <OrganizationSourceSearch key={row.execution_id} project={project} draft={draft} execution={row.execution_id}/>)}
     {rows.map(row=><p key={row.execution_id}>{row.closed?'已有一项关闭的执行':row.preparation==='received'?<button disabled={busy} onClick={()=>open(row.execution_id)}>查看已有研究执行 →</button>:row.preparation==='absent'?<button disabled={busy} onClick={()=>void prepare(row.execution_id)}>完成已有执行的准备</button>:<button disabled={busy} onClick={()=>void reconcile(row.execution_id)}>核对原准备结果</button>}</p>)}
     <div className="pw-toolbar">{continuous?<label>希望得到的成果<select aria-label="希望得到的成果" disabled={busy||!!sessionStorage.getItem(slot)} value={delivery} onChange={e=>setDelivery(e.target.value)}><option value="answer">回答与解释</option><option value="workpaper">工作底稿</option><option value="report">完整报告</option></select></label>:<label>研究方式 <select disabled={busy||!!sessionStorage.getItem(slot)} value={mode} onChange={e=>setMode(e.target.value)}><option value="auto">自由调度</option><option value="standard">标准协作</option></select></label>}
     {profiles.length>0 && <label>模型组合<select aria-label="模型组合" value={selectedProfile}

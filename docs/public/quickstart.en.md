@@ -36,3 +36,5 @@ uv run --no-sync python -m scripts.dev.verify_public_checkout
 ```
 
 To create synthetic exports, add `--output-directory .local/sample-report` using a new directory. To build the frontend, run `npm ci` followed by `npm run build` in `apps/workbench/frontend`. These checks do not contact a paid model.
+
+For an organization execution with GPT-6.2 Sol high as lead and DeepSeek Flash as investigator, provision the two organization credentials and fund the execution before selecting the combination in its draft. The [organization model profile setup](../../apps/workbench/README.md#provision-the-optional-organization-model-combination) includes the settings generator, budget authorization and deployment check.

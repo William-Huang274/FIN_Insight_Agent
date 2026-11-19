@@ -101,6 +101,30 @@ def public_message_delta(data):
     return {"id": chunk["id"], "text": content} if isinstance(content, str) and content else None
 
 
+async def conversation_key_binding(metadata, current_owner_id):
+    from sec_agent.agent_runtime.personal_research_keys import ResearchKeys, requires_personal_key
+    owner = metadata.get("owner_id", "local-pilot")
+    if owner != current_owner_id:
+        raise HTTPException(404, "对话不存在")
+    store = ResearchKeys.configured()
+    configured = bool(store and await run_in_threadpool(store.contains, owner))
+    required = requires_personal_key(owner) or metadata.get("personal_provider_key") or configured
+    if metadata.get("harness") == "hermes" and required:
+        raise HTTPException(409, "Hermes 尚不支持个人密钥，请使用当前 Agent 新建对话")
+    if required and not configured:
+        raise HTTPException(409, "请先在对话页的“个人模型密钥”中保存自己的 DeepSeek API Key")
+    return {"personal_provider_key": True} if required else {}
+
+
+async def bind_conversation_run(service, thread, owner):
+    metadata = thread["metadata"]
+    if metadata.get("surface") != SURFACE or metadata.get("graph") != GRAPH:
+        raise HTTPException(404, "对话不存在")
+    binding = await conversation_key_binding(metadata, owner)
+    if binding and not metadata.get("personal_provider_key"):
+        await service.sdk.threads.update(str(thread["thread_id"]), metadata=binding)
+
+
 def build_conversations_router(service):
     router = APIRouter(prefix="/conversations")
     def browser_write(request):
@@ -113,10 +137,11 @@ def build_conversations_router(service):
                 or metadata.get("owner_id", "local-pilot") != current_owner(request)):
             raise HTTPException(404, "对话不存在")
         return thread
-    async def invoke(thread_id, body):
+    async def invoke(thread_id, body, owner):
         if not service.research_profile:
             raise HTTPException(503, "本部署未启用模型运行")
         thread=await service.sdk.threads.get(str(thread_id))
+        await bind_conversation_run(service, thread, owner)
         if thread.get('metadata', {}).get('asset_context'):
             if thread['metadata'].get('asset_context_status') != 'ready':
                 raise HTTPException(409, '资产资料尚未准备完成，不能启动模型')
@@ -214,10 +239,12 @@ def build_conversations_router(service):
             raise HTTPException(503, "本部署未启用模型运行")
         if body.harness=='hermes' and not os.environ.get('FINSIGHT_HERMES_URL'):
             raise HTTPException(503,'本部署尚未连接 Hermes')
+        metadata = {"surface": SURFACE, "graph": GRAPH, "title": body.message[:80], "owner_id": current_owner(request), "harness":body.harness}
+        metadata.update(await conversation_key_binding(metadata, current_owner(request)))
         # Validate the actual deployed graph before creating a paid-capable thread.
         await service.sdk.assistants.get_graph(GRAPH)
-        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.message[:80], "owner_id": current_owner(request),'harness':body.harness})
-        run = await invoke(thread["thread_id"], body)
+        thread = await service.sdk.threads.create(metadata=metadata)
+        run = await invoke(thread["thread_id"], body, current_owner(request))
         return {"thread_id": thread["thread_id"], "run_id": run["run_id"]}
     @router.post("/drafts")
     async def draft(body: ConversationDraft, request: Request):
@@ -272,7 +299,7 @@ def build_conversations_router(service):
         state = await service.sdk.threads.get_state(str(thread_id))
         if any(t.get("interrupts") for t in state.get("tasks", [])):
             raise HTTPException(409, "请先处理当前等待批准的操作")
-        run = await invoke(thread_id, body)
+        run = await invoke(thread_id, body, current_owner(request))
         return {"thread_id": str(thread_id), "run_id": run["run_id"]}
     @router.post("/{thread_id}/approvals")
     async def approve(thread_id: UUID, body: ConversationApproval, request: Request):
@@ -298,6 +325,7 @@ def build_conversations_router(service):
         if thread.get("status") != "interrupted" or not runs or runs[0]["status"] not in {"interrupted", "success"}:
             raise HTTPException(409, "原运行当前不在等待批准状态")
         previous = runs[0].get("metadata", {})
+        await bind_conversation_run(service, thread, current_owner(request))
         selected = ConversationMessage(message="批准恢复", model=previous["model"], permission_mode=previous["permission_mode"])
         run = await service.sdk.runs.create(str(thread_id), GRAPH,
             command={"resume": {body.interrupt_id: {"decisions": [{"type": d} for d in body.decisions]}}},
@@ -345,6 +373,7 @@ def build_conversations_router(service):
         attachments = await run_in_threadpool(service.attachment_store.list,str(thread_id)) if getattr(service,'attachment_store',None) else []
         target = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH,
             "owner_id": metadata.get("owner_id", "local-pilot"),
+            **({"personal_provider_key": True} if metadata.get("personal_provider_key") else {}),
             "title": ("接续 · " + (metadata.get("title") or "对话"))[:80],
             "handoff": {"source_thread": str(thread_id), "checkpoint_id": str(body.checkpoint_id), "note": body.note,
                         **({"working_notes": notes} if notes else {}),

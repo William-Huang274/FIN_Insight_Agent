@@ -120,7 +120,8 @@ async def organization_harness_session(*, native, resources, authority, check, o
     admitted = {**admitted, 'messages': native_messages(admitted.get('messages', []))}
     binary = Path(options['binary']).resolve(strict=True)
     # Check the small pinned executable at launch, not every library object.
-    if sha256(binary.read_bytes()).hexdigest() != options['binary_sha256']:
+    from .model_execution_policy import file_sha256
+    if await asyncio.to_thread(file_sha256, binary) != options['binary_sha256']:
         raise ValueError('harness_executable_release_mismatch')
     directory = Path(environment['FINSIGHT_HARNESS_STATE_ROOT']).resolve() / tid
     directory.mkdir(parents=True, exist_ok=True)

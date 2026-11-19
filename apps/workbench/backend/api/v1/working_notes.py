@@ -47,7 +47,7 @@ async def edit_working_note(thread_id, owner, body):
 
 
 async def revise_working_note(service, thread_id, owner, body):
-    from .conversations import SURFACE, GRAPH
+    from .conversations import SURFACE, GRAPH, conversation_key_binding
     if not service.research_profile:
         raise HTTPException(503,'本部署未启用模型运行')
     import os
@@ -58,7 +58,8 @@ async def revise_working_note(service, thread_id, owner, body):
         raise HTTPException(409,'底稿版本已变化，请读取最新版本后再提交意见')
     target = {k:note[k] for k in ('id','title','actor','version')}
     target['workspace'] = str(thread_id)
-    thread = await service.sdk.threads.create(metadata={'surface':SURFACE,'graph':GRAPH,'owner_id':owner,
+    binding = await conversation_key_binding({'owner_id': owner, 'harness': body.harness}, owner)
+    thread = await service.sdk.threads.create(metadata={'surface':SURFACE,'graph':GRAPH,'owner_id':owner, **binding,
         'title':'底稿修订 · '+note['title'][:60],'working_note_target':target,'harness':body.harness})
     run = await service.sdk.runs.create(thread['thread_id'],GRAPH,
         input={'messages':[{'role':'user','content':body.instruction}]},

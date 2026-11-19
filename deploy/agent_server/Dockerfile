@@ -11,7 +11,7 @@ COPY pyproject.toml uv.lock /deps/FIN_Insight_Agent/
 # Install locked third-party dependencies BEFORE frequently changed source.
 # Source/config changes must not redownload the entire runtime over the proxy.
 RUN cd /deps/FIN_Insight_Agent \
-    && uv export --quiet --locked --no-dev --extra agent-runtime --extra external-search --no-emit-project \
+    && uv export --quiet --locked --no-dev --extra agent-runtime --extra retrieval-api --extra external-search --no-emit-project \
         --no-header --no-annotate --format requirements-txt \
         --output-file /tmp/finsight-agent-runtime-requirements.txt \
     && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir \
@@ -19,6 +19,11 @@ RUN cd /deps/FIN_Insight_Agent \
         -r /tmp/finsight-agent-runtime-requirements.txt \
     && rm -f /tmp/finsight-agent-runtime-requirements.txt
 # -- End of local dependencies install --
+
+# The public-source reader uses bounded headless rendering for JS shells.
+# Install the browser matching the locked Python binding and its shared libs.
+RUN python -m playwright install --with-deps --only-shell chromium \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV LANGGRAPH_HTTP='{"disable_a2a": true, "disable_mcp": true, "disable_ui": true, "disable_webhooks": true}'
 ENV LANGSERVE_GRAPHS='{"dell_reference_vertical": {"path": "sec_agent.agent_runtime.agent_server_entry:research_graph", "description": "Research and report-review workflow"}}'
@@ -30,16 +35,11 @@ RUN PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -
 # -- End of ensuring user deps did not inadvertently overwrite langgraph-api --
 
 COPY src /deps/FIN_Insight_Agent/src
+COPY integrations/deepseek-harness/*.mjs /deps/FIN_Insight_Agent/integrations/deepseek-harness/
 COPY README.md /deps/FIN_Insight_Agent/
 RUN cd /deps/FIN_Insight_Agent \
     && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -e .
-COPY configs/research/cases/growth_quality.json /deps/FIN_Insight_Agent/configs/research/cases/
-COPY configs/research/model_routing.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/quick_answer.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/reference_foundation.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/runtime/conversation.json /deps/FIN_Insight_Agent/configs/research/runtime/
-COPY configs/research/runtime/research_session.json /deps/FIN_Insight_Agent/configs/research/runtime/
-COPY configs/research/structured_agents.json /deps/FIN_Insight_Agent/configs/research/
+COPY configs/research /deps/FIN_Insight_Agent/configs/research
 # -- End of minimum local package sources --
 
 # -- Remove build package managers from the final image --

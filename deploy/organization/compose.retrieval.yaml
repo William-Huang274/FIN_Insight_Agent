@@ -1,0 +1,22 @@
+# Apply together with the native and identity overlays for organization projects.
+x-organization-retrieval: &organization-retrieval
+  FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT: /app/state/organization-indexes
+  FINSIGHT_ORGANIZATION_DEFAULT_RETRIEVAL: ${FINSIGHT_ORGANIZATION_DEFAULT_RETRIEVAL:-bm25}
+  FINSIGHT_ORGANIZATION_QUERY_EMBEDDING: ${FINSIGHT_ORGANIZATION_QUERY_EMBEDDING:-}
+  FINSIGHT_ORGANIZATION_RERANK: ${FINSIGHT_ORGANIZATION_RERANK:-}
+  FINSIGHT_ORGANIZATION_RERANK_MODEL: ${FINSIGHT_ORGANIZATION_RERANK_MODEL:-qwen3-rerank}
+  QWEN_API_KEY: ${QWEN_API_KEY:-}
+services:
+  workbench:
+    environment:
+      <<: *organization-retrieval
+      FINSIGHT_RESOURCE_SPACES_ENABLED: "1"
+      FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED: "1"
+      FINSIGHT_ORGANIZATION_PREPARATION_ENABLED: "1"
+  langgraph-api:
+    # Both processes write scoped ranking caches beside immutable releases
+    # on the workbench state volume. Match its existing owner.
+    user: "10001:10001"
+    environment:
+      <<: *organization-retrieval
+      HOME: /tmp

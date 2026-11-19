@@ -1,24 +1,68 @@
 """User research scope over native run configuration, never provider authority."""
 from copy import deepcopy
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
+
+
+DeliveryIntent = Literal["answer", "workpaper", "report"]
 
 
 class ExecutionOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    mode: Literal["standard", "auto", "selected", "single"] = "standard"
-    model: Literal["default", "deepseek-v4-flash", "deepseek-v4-pro"] = "default"
+    mode: Literal["standard", "auto", "selected", "single", "normal"] = "standard"
+    model: Literal["default", "deepseek-flash", "deepseek-v4-flash", "deepseek-v4-pro"] = "default"
+    runtime_profile: str | None = Field(default=None, pattern=r"^sol-high-flash@[a-f0-9]{64}$")
+    delivery_intent: DeliveryIntent = Field(default="report",
+        description="Requested deliverable, independent of actor count or research scope. Omitted legacy configurations retain their report workflow; this field grants no execution or review authority.")
+    require_report_review: bool = Field(default=False, strict=True,
+        description="User requires a completed independent check of the delivered report version; not a guarantee of financial correctness.")
     branch_ids: list[str] = Field(default_factory=list, max_length=24)
+    require_all_branches: bool = Field(default=False, strict=True,
+        description="Explicit fixed-catalog coverage for a user-requested study or qualification only. Standard full research does not imply all catalog topics.")
+    continuation_scope: Literal["original_question", "original_plan"] = Field(
+        default="original_question",
+        description="User-owned continuation scope. Reuse completed work and allow Lead to fill gaps in the original question by default. Set original_plan only when the user explicitly forbids adding tasks to an existing plan; not inferred from saved workpapers or technical recovery.",
+    )
+
+    @model_serializer(mode="wrap")
+    def preserve_delivery_omission(self, handler):
+        """Interpret a legacy omission without adding it to the serialized value."""
+        body = handler(self)
+        if self.runtime_profile is None:
+            body.pop("runtime_profile", None)
+        if "delivery_intent" not in self.model_fields_set:
+            body.pop("delivery_intent", None)
+        if "require_report_review" not in self.model_fields_set:
+            body.pop("require_report_review", None)
+        return body
+
+    def require_report_workflow(self):
+        """Do not silently run report stages for an as-yet unsupported deliverable.
+
+        This belongs to the existing report executor, not to the shared option
+        validator. The on-demand executor will consume the same intent when its
+        authorization and artifact interfaces are integrated.
+        """
+        if self.delivery_intent != "report":
+            raise ValueError("delivery_intent_not_supported_by_report_workflow:" + self.delivery_intent)
 
     @model_validator(mode="after")
     def scope_shape(self):
+        if "runtime_profile" in self.model_fields_set and not self.runtime_profile:
+            raise ValueError("organization_runtime_profile_required")
+        if self.runtime_profile and (self.model != "default" or self.mode != "auto" or self.require_report_review):
+            raise ValueError("organization_profile_requires_automatic_execution_without_mandatory_report_review")
+        if self.require_report_review and self.delivery_intent != 'report':
+            raise ValueError('report_review_requires_report_delivery')
+        if self.require_all_branches and self.mode != "standard":
+            raise ValueError("完整目录覆盖须显式使用standard模式；不能隐含限制自主研究")
         if len(set(self.branch_ids)) != len(self.branch_ids):
             raise ValueError("研究范围不能重复")
         if self.mode == "selected" and not self.branch_ids:
             raise ValueError("指定专家模式至少选择一个研究方向")
         if self.mode == "single" and len(self.branch_ids) != 1:
             raise ValueError("单 Agent 研究需要选择一个主研究方向")
-        if self.mode in {"standard", "auto"} and self.branch_ids:
+        if self.mode in {"standard", "auto", "normal"} and self.branch_ids:
             raise ValueError("自动或完整研究不接受隐藏的方向限制")
         return self
 
@@ -36,7 +80,7 @@ class ExecutionOptions(BaseModel):
                 node["budget"]["comparable_run_evidence"] += (
                     f" User-selected model {self.model} for {role}; existing role input/output and stop contract retained; "
                     "cross-model quality and cost require a separately recorded run, no assumed equivalence.")
-        if self.mode == "single":
+        if self.mode in {"single", "normal"}:
             result["max_parallel_tasks"] = 1
         return result
 

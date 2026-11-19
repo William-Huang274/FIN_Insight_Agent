@@ -108,6 +108,8 @@ def build_snapshot(
 ) -> dict[str, Any]:
     kernel_payload = _read_json(kernel_path)
     kernel = load_financial_research_kernel(kernel_payload)
+    if not kernel.cases:
+        raise ValueError('Research snapshot requires a kernel configuration with explicit case profiles.')
     allowed_tickers = {
         ticker
         for profile in kernel.cases.values()

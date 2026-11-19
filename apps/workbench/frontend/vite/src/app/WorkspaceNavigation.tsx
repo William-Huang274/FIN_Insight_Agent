@@ -11,21 +11,23 @@ export const taskViews = [
 ] as const;
 export const pageTitles: Record<string, string> = { completed: "已完成研究", home: "开始研究", studio: "研究配置", all: "全部研究", inbox: "待审阅", new: "新建研究", preferences: "外观与偏好", review: "审查意见", ...Object.fromEntries(taskViews.map(v => [v.id, v.title])) };
 export const isResearchComplete = (s: Session) => !["busy","error"].includes(s.status) && ["human_completed","human_reviewed_not_released"].includes(s.phase || "");
-export const sessionStatus = (s: Session) => s.is_draft || s.phase === "draft" ? "资料准备中" : s.status === "busy" ? "运行中" : s.status === "error" ? "执行失败" : s.phase === "research_needs_attention" ? "研究受阻 · 待处理" : s.phase === "single_agent_unreviewed" ? "单 Agent 结果 · 未复核" : s.phase === "human_completed" ? `人工修改 ${s.human_edit_count || s.human_edits?.length || 0} 次 · 已完成` : s.phase === "human_reviewed_not_released" ? "已人工审阅" : s.status === "interrupted" ? "等待审阅" : "已保存";
+export const sessionStatus = (s: Session) => s.is_draft || s.phase === "draft" ? "资料准备中" : s.status === "busy" ? "运行中" : s.status === "error" ? "执行失败" : s.phase === "research_orientation_submitted" ? "预研究完成" : s.phase === "research_needs_attention" ? "研究受阻 · 待处理" : s.phase === "single_agent_unreviewed" ? "单 Agent 结果 · 未复核" : s.phase === "human_completed" ? `人工修改 ${s.human_edit_count || s.human_edits?.length || 0} 次 · 已完成` : s.phase === "human_reviewed_not_released" ? "已人工审阅" : s.status === "interrupted" ? "等待审阅" : "已保存";
 
-export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse, navigate, projects, onProjects }: { sessions: Session[]; id: string; page: string; collapsed: boolean; onCollapse: () => void; navigate: (page: string, id?: string) => void; projects: ProjectIndex; onProjects: (index: ProjectIndex) => void }) {
+export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse, navigate, projects, onProjects, editingDisabled, onOpenProject }: { sessions: Session[]; id: string; page: string; collapsed: boolean; onCollapse: () => void; navigate: (page: string, id?: string) => void; projects: ProjectIndex; onProjects: (index: ProjectIndex) => Promise<boolean>; editingDisabled: boolean; onOpenProject: (id:string)=>void }) {
   const dataArea = ["library", "financial-data"].includes(page);
   const organize = useRef<HTMLDialogElement>(null);
   const [projectName, setProjectName] = useState("");
   const drawer = useRef<HTMLDialogElement>(null);
-  const go = (view: string, thread?: string) => { navigate(view, thread); drawer.current?.close(); };
+  const go = (view: string, thread?: string) => { if(['library','financial-data'].includes(view)){window.location.assign(`/workspace/assets?view=${view}`);return;} navigate(view, thread); drawer.current?.close(); };
   const content = (mobile = false) => <>
     <div className="fs-brand"><span className="fs-logo"><Layers size={21} /></span><strong>FinSight<small>RESEARCH WORKSPACE</small></strong>
       <button aria-label={mobile ? "关闭导航" : collapsed ? "展开侧边栏" : "收起侧边栏"} onClick={() => mobile ? drawer.current?.close() : onCollapse()}>{mobile ? <X size={17} /> : collapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></div>
-    <div className="fs-area-switch" aria-label="工作区域"><button title="研究工作台" aria-pressed={!dataArea} onClick={()=>go("home")}><Layers size={16}/><span>研究工作台</span></button><button title="资料与数据" aria-pressed={dataArea} onClick={()=>go("library")}><Database size={16}/><span>资料与数据</span></button></div>
+    <div className="fs-area-switch" aria-label="工作区域"><button title="研究工作台" aria-pressed={!dataArea} onClick={()=>go("home")}><Layers size={16}/><span>研究工作台</span></button><button title="资产工作区" aria-pressed={dataArea} onClick={()=>go("library")}><Database size={16}/><span>资产工作区</span></button></div>
     {dataArea ? <><nav className="fs-global-nav" aria-label="资料与数据导航"><button aria-current={page==="library"?"page":undefined} onClick={()=>go("library")}><BookOpen size={17}/><span>公司资料库</span></button><button aria-current={page==="financial-data"?"page":undefined} onClick={()=>go("financial-data")}><Database size={17}/><span>财务数据</span></button></nav><div className="fs-library-guide">查阅公开资料与财务数据覆盖。研究问题、底稿和历史报告在研究工作台中。</div></> : <>
     <button className="fs-create" title="新建研究" onClick={() => go("new")}><Plus size={17} /><span>新建研究</span></button>
     <a className="fs-assistant-entry" href="/workspace/assistant"><MessageSquare size={17}/><span>通用对话</span></a>
+    <a className="fs-assistant-entry" href="/workspace/projects"><FolderOpen size={17}/><span>所有项目</span></a>
+    <a className="fs-assistant-entry" href="/workspace/assets?view=files"><Database size={17}/><span>资料库</span></a>
     <nav aria-label={mobile ? "移动工作区导航" : "工作区导航"} className="fs-global-nav">{[
       { id: "home", title: "开始研究", icon: House }, { id: "studio", title: "研究配置", icon: Workflow }, { id: "completed", title: "已完成研究", icon: BookOpen }, { id: "all", title: "全部研究", icon: FolderOpen }, { id: "inbox", title: "待审阅", icon: ShieldCheck },
     ].map(item => <button title={item.title} aria-current={page === item.id ? "page" : undefined} key={item.id} onClick={() => go(item.id)}><item.icon size={17} /><span>{item.title}</span></button>)}</nav>
@@ -35,7 +37,7 @@ export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse,
         {[{id:"__completed",name:"已完成研究"}, ...projects.projects, {id:"",name:"进行中与待处理"}].map(project => {
           const items = sessions.filter(s => project.id === "__completed" ? isResearchComplete(s) : !isResearchComplete(s) && (projects.assignments[s.thread_id] || "") === project.id);
           if (!project.id && !items.length) return null;
-          return <details className="fs-project" key={project.id} open><summary><ChevronRight size={13} /><FolderOpen size={16} /><span>{project.name}</span><small>{items.length}</small></summary>
+          return <details className="fs-project" key={project.id} open><summary><ChevronRight size={13} /><FolderOpen size={16} /><span>{project.name}</span><small>{items.length}</small>{project.id && project.id !== '__completed' && <button aria-label={`打开项目 ${project.name}`} onClick={e=>{e.preventDefault();e.stopPropagation();drawer.current?.close();onOpenProject(project.id);}}>资料</button>}</summary>
             {items.map(s => <div key={s.thread_id} className={s.thread_id === id ? "fs-task selected" : "fs-task"}>
               <button className="fs-task-link" title={s.title} onClick={() => go("graph", s.thread_id)}><FileClock size={15} /><span><span className="fs-task-title">{s.title || "未命名研究"}</span><small>{sessionStatus(s)} · {s.thread_id.slice(-6)}</small></span></button>
               {s.thread_id === id && !["home","all","completed","inbox","preferences","studio","new"].includes(page) && <div className="fs-subnav">{taskViews.map(v => <button key={v.id} aria-current={page === v.id ? "page" : undefined} onClick={() => go(v.id, id)}><v.icon size={15} />{v.title}</button>)}</div>}
@@ -52,13 +54,13 @@ export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse,
     <button className="fs-mobile-nav" aria-label="打开导航" onClick={() => drawer.current?.showModal()}><PanelLeftOpen size={18} /></button>
     <dialog ref={drawer} className="fs-nav-dialog">{content(true)}</dialog>
     <dialog ref={organize} className="fs-organize-dialog" aria-label="管理项目">
-      <header><div><h2>整理你的研究</h2><p>项目 → 研究任务 → 报告、追问与修订。归类与置顶保存在此浏览器。</p></div><button aria-label="关闭项目管理" onClick={() => organize.current?.close()}><X size={19} /></button></header>
-      <form onSubmit={e => { e.preventDefault(); const name = projectName.trim(); if (!name || projects.projects.some(p => p.name === name)) return; onProjects({...projects, projects:[...projects.projects,{id:crypto.randomUUID(),name}]}); setProjectName(""); }}>
+      <header><div><h2>整理你的研究</h2><p>项目 → 研究任务 → 报告、追问与修订。项目、归类与置顶保存在当前工作台服务。</p></div><button aria-label="关闭项目管理" onClick={() => organize.current?.close()}><X size={19} /></button></header>
+      <fieldset disabled={editingDisabled}><form onSubmit={e => { e.preventDefault(); const name = projectName.trim(); if (!name || projects.projects.some(p => p.name === name)) return; void onProjects({...projects, projects:[...projects.projects,{id:crypto.randomUUID(),name}]}).then(saved=>{if(saved)setProjectName("");}); }}>
         <input aria-label="新项目名称" maxLength={60} value={projectName} onChange={e => setProjectName(e.target.value)} placeholder="如：AI 基础设施、消费行业…" /><button disabled={!projectName.trim() || projects.projects.some(p => p.name === projectName.trim())}><FolderPlus size={16} />创建项目</button>
       </form>
       <div className="fs-organize-list">{sessions.map(s => <div key={s.thread_id}><span>{s.title || "未命名研究"}<small>{s.thread_id.slice(-6)}</small></span>
         <select aria-label={`归类 ${s.title}`} value={projects.assignments[s.thread_id] || ""} onChange={e => onProjects({...projects,assignments:{...projects.assignments,[s.thread_id]:e.target.value}})}><option value="">未归类研究</option>{projects.projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
         <button aria-label={`置顶 ${s.title}`} aria-pressed={projects.pinned.includes(s.thread_id)} onClick={() => onProjects({...projects,pinned:projects.pinned.includes(s.thread_id) ? projects.pinned.filter(p => p !== s.thread_id) : [...projects.pinned,s.thread_id]})}><Pin size={16} /></button>
-      </div>)}</div>
+      </div>)}</div></fieldset>
     </dialog></>;
 }

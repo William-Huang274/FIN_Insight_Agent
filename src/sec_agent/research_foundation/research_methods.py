@@ -4,48 +4,158 @@ This module selects packaged documents. It does not dispatch agents, grant tool
 permissions, maintain a registry database, or read caller-supplied file paths.
 """
 from importlib.resources import files
+from hashlib import sha256
+import re
 
 
 METHODS = {
-    "lead": ("研究任务规划", "拆题、选择专家与依赖、根据结果补研究。"),
-    "finance": ("增长、盈利与现金兑现", "可比口径、三表关联、目标完成要求与来源绑定计算。"),
-    "industry_product": ("行业与产品传导", "需求、客户、架构、供货、竞争与财务影响。"),
-    "counter": ("反证与替代解释", "检验主要判断、最强反证及可观察的改变判断条件。"),
-    "writer": ("综合研究与可读交付", "判断驱动写作、必要图表、自由正文与局部修订。"),
-    "verifier": ("研究与报告复核", "来源上下文、关键核算、因果与重要分析遗漏。"),
+    "event_policy": ("新闻、政治事件与市场反应", "制度变化、实施概率与市场定价；政治权限和条件路径、替代方案、经营对象对比；媒体解释求证与行情时序。"),
+    "report_processing": ("新报告定位、提取与更新", "先查已有结构化记录，按原页表头与附注调整提取方案，校验口径并交接更新；区分读取与入库权限。"),
+    "research_orientation": ("总题初步研究与首批专题", "按实际资料形成初步判断和证据触发的派工依据，在专题执行前停止。"),
+    "research_loop": ("从问题到解释", "研究时点与近期事实背景；重点与比较对象；证据如何改变下一项读取、计算和判断，含完整转折例题。"),
+    "scenario_sensitivity": ("情景与关键变量", "从公开事实到前瞻判断；来源与假设分开，客户交付和竞争反应联动、现金桥、价格要求及盈亏阈值。"),
+    "semiconductor_systems": ("半导体与算力系统竞争", "同任务规格、软件生态、采购采用与财务兑现。"),
+    "model_compute_demand": ("模型效率与算力需求", "同质量任务、训练推理边界、效率与使用量情景。"),
+    "manufacturing_capacity": ("制造、封装与内存供给", "工序瓶颈、有效产能、库存及资本周期。"),
+    "cloud_infrastructure": ("云与算力租赁经济性", "使用、合同、容量与利润现金的连接。"),
+    "software_platforms": ("模型、软件与互联网商业模式", "产品任务与持续采用、用户声音、成果成本、收入质量、竞争价值归属及专业产品机会。"),
+    "power_projects": ("电力、机房与项目兑现", "按有效许可、合同、建设和现金期限研究。"),
+    "financing_ownership": ("融资与机构持仓", "数量、市值、资本承诺和风险传导分开。"),
+    "financial_quality": ("经营、利润与现金质量核查", "按交易和三表定位异常，不靠概念口号。"),
+    "macro_valuation": ("宏观传导与市场隐含要求", "定日研究、发布时滞与修订、总量与群体、传导和市场隐含要求。"),
+    "lead": ("研究任务规划", "保留原问题与实际回答的对应；重要关系的调查、验收、范围调整及未决主线。"),
+    "finance": ("增长、盈利与现金兑现", "利润与现金桥、营运资本指标的替代解释与判别材料、分部口径及来源绑定计算。"),
+    "industry_product": ("行业与产品传导", "需求、客户、竞争与财务影响；企业采用到续费、生成成本到价值归属的完整调查例题。"),
+    "public_observations": ("公开调查、新闻转述与研究线索", "原始证据链、题目分母、抽样范围、转述核对和可检验的商业假设。"),
+    "survey_analysis": ("问卷与调查结果分析", "专门处理调查设计、统计口径、可比变化与有条件的联合推断；不承担商业综合。"),
+    "counter": ("竞争解释与因果辨识", "支持、辨别与排除的区别；对照与抵消机制、跨场景例题及判断更新。"),
+    "writer": ("投研底稿与报告写作", "从当前认识组织答案，按前提变化重构或局部修订；经营比较、中文论证与独立修改说明。"),
+    "verifier": ("研究与报告复核", "原问题与实际回答、新发现的决策影响、来源核算及重要分析遗漏。"),
 }
 
+REPORT_PROCESSING_TOOL_GUIDANCE = (
+    " For report extraction or changed table layout, report_processing explains locating "
+    "relevant sections through get_research_method. "
+    "then read original context including headers, units and footnotes. Reuse verified "
+    "structured facts and exact source IDs; previews are not extraction input. "
+    "Follow returned child node IDs and context_readbacks for bounded source text; "
+    "parent_locator_bound is a broader evidence location, not an exact quotation. "
+    "A missing vector index is an execution failure, not missing disclosure. "
+    "Read tools do not ingest, execute parsing scripts or publish database updates."
+)
+
+FIRST_METHODS = ("research_loop", "counter", "scenario_sensitivity", "writer",
+                 "finance", "cloud_infrastructure", "macro_valuation", "event_policy")
+
+
+def _resource(method_id):
+    return files("sec_agent.research_foundation").joinpath("methods", method_id + ".md").read_text(encoding="utf-8")
+
+
+# One maintained instruction body, shared by conversation, authors and reviewers.
+BASIC_RESEARCH_GUIDANCE = "\n" + _resource("agent_guidance").strip() + "\n"
 METHOD_TOOL_GUIDANCE = (
-    "\nAnswer-free role methods are available through get_research_method. "
-    "Call with no method_id for the compact catalog, then select relevant method IDs "
-    "to read their content when needed. Methods are guidance, not case evidence, "
-    "prewritten conclusions or extra permissions. Use the actual user question; "
-    "prior workpapers and review opinions can be wrong. "
-    "For a source/authority correction, check the affected source and relevant method, "
-    "not just the old qualifier. Not separately disclosed does not mean not achieved; "
-    "management saying a target was met is not an independently reported numeric result. "
-    "Keep speaker, date and metric basis distinct across sources; similar wording alone "
-    "does not prove comparability. Flag a linked error in supposedly correct reference "
-    "text instead of propagating it for consistency."
-    " Before the first substantive financial judgment, load the relevant role method "
-    "unless its full content is already in this run's context. Apply it to the actual "
-    "question; do not merely mention that it was read. Prefer catalog financial "
-    "metrics to hand-entered formulas, and reuse their exact NumericFact IDs. "
-    "Publish a concise evidence-to-conclusion explanation, alternatives and missing "
-    "checks; this is an analysis rationale, not a request to reveal private reasoning."
+    "\n可选研究方法（不是必经步骤或额外权限）：\n"
+    + "\n".join(f"{key}：{METHODS[key][0]}；{METHODS[key][1]}" for key in FIRST_METHODS)
+    + "\n通过当前接口的 get_research_method 或 request_method 按需读取。"
+    "空method_id返回目录；选method_id读全文，section可选返回目录中准确的章节标题。"
+    "方法是教学资源而非本案证据；已加载内容可直接使用，所需章节退出后可按同一入口回读。\n"
+    "research_loop 的‘研究时点与近期事实背景’讲如何选择深入调查；‘从核心发现到交叉验证’讲需求方与竞争方取证及成文前挑战；‘证据怎样推进判断’讲如何换比较并改变结论。scenario_sensitivity 的‘从公开事实到前瞻判断’提供带假设的预测例题；‘选择基准与改判条件’讲为何倾向某种前景、何时继续取证及怎样更新判断。\n"
+    "event_policy 可直接按以下章节读取：消息的增量与政治推进；媒体解释的来源链与求证；"
+    "权限、程序与替代路径；用有区分力的经营对象比较；从晨报追踪到专题报告；发言原件与账号身份；"
+    "市场反应的时间与比较；从政策到业务与可更新判断；工具范围与资料入口。"
+    "例如核查消息与价格变化的关系，可调用 get_research_method(method_id='event_policy', section='市场反应的时间与比较')。\n"
+    "writer 的‘中文论证的衔接与概念’讲如何解释主语、概念与推断的中间关系；修订可读‘来源、交接与修订’。\n"
+    "industry_product 的‘从企业采用到持续收益：完整调查例题’与‘从生成成本到价值归属：完整调查例题’讲如何从客户、任务、订单与成本继续取证，改变商业判断；可按 section 读取，不需整篇预加载。\n"
+    "分支只得到反例或数据缺口、仍未回答原关系时，可读 lead 的‘重要研究关系的完整调查与验收’；"
+    "不知道如何从未知参数形成判断时，可读 scenario_sensitivity 的‘选择基准与改判条件’；"
+    "复核新发现是否真正改变答案，可读 verifier 的‘研究关系是否完成’。按当前困难选章节，已掌握的内容无需重读。\n"
 )
 
 
-def get_research_method(method_id: str = "") -> dict:
+def select_method_section(method: dict, section: str = "") -> dict:
+    """Select an exact H2 from a packaged or host-frozen method; no path access."""
+    if not section:
+        return method
+    content = method.get("content", "")
+    blocks = re.split(r"(?m)(?=^## )", content)
+    chapters = {b.splitlines()[0][3:].strip(): b for b in blocks if b.startswith("## ")}
+    if section not in chapters:
+        raise ValueError("unknown_method_section: choose an exact section title from this method")
+    selected = blocks[0] + chapters[section]
+    return {**method, "content": selected, "selection": section,
+            "resource_digest": sha256(content.encode()).hexdigest(),
+            "content_digest": sha256(selected.encode()).hexdigest()}
+
+
+def get_research_method(method_id: str = "", section: str = "") -> dict:
     """Return the catalog or one packaged method; never a local path."""
     if not method_id:
+        if section:
+            raise ValueError("method_id_required_for_section")
         return {"version": 2, "answer_free": True, "methods": [
-            {"method_id": key, "title": title, "summary": summary}
+            {"method_id": key, "title": title, "summary": summary,
+             "sections": get_research_method(key)["sections"]}
             for key, (title, summary) in METHODS.items()
         ]}
     if method_id not in METHODS:
         raise ValueError("unknown_research_method: select an ID from get_research_method()")
     title, summary = METHODS[method_id]
-    content = files("sec_agent.research_foundation").joinpath("methods", method_id + ".md").read_text(encoding="utf-8")
-    return {"version": 2, "method_id": method_id, "title": title, "summary": summary,
-            "content": content, "answer_free": True, "grants_authority": False}
+    if method_id == "financial_quality":
+        # Preserve the historical method/step IDs, with one source for teaching.
+        content = select_method_section(get_research_method("finance"), "财务质量与日期桥接")["content"]
+        content += "\n兼容旧任务章节引用（非执行顺序）：步骤 F1：断言；步骤 F2：可比性；步骤 F3：归因；步骤 F4：金额桥；步骤 F5：现金；步骤 F6：更新。\n"
+    else:
+        content = _resource(method_id)
+    revision = re.search(r"版本：(\d+)", content)
+    result = {"version": 2, "method_id": method_id, "title": title, "summary": summary,
+              "content": content, "answer_free": True, "grants_authority": False,
+              "content_version": int(revision.group(1)) if revision else None,
+              "resource_digest": sha256(content.encode()).hexdigest(),
+              "sections": re.findall(r"(?m)^## (.+)$", content),
+              "readback": {"tool": "get_research_method", "arguments": {"method_id": method_id}}}
+    return select_method_section(result, section)
+
+
+def section_guidance(sections, *, include_text=False):
+    """Use identical, executable chapter locators with optional preloaded text."""
+    blocks = []
+    for method_id, section in sections:
+        if not section:
+            raise ValueError("research_method_section_required")
+        chapter = get_research_method(method_id, section)
+        blocks.append(f'{chapter["summary"]}  get_research_method(method_id="{method_id}", section="{section}")')
+        if include_text:
+            blocks.append(chapter['content'])
+    return '\n\n本任务可用的方法章节：\n' + '\n'.join(blocks) if blocks else ''
+
+
+def preloaded_research_methods(method_ids: list[str]) -> str:
+    """Host-selected existing teaching; no task classifier or new authority."""
+    if not isinstance(method_ids, list) or any(not isinstance(key, str) for key in method_ids):
+        raise ValueError("preloaded_methods_require_id_list")
+    if len(set(method_ids)) != len(method_ids):
+        raise ValueError("preloaded_methods_duplicate_id")
+    if not method_ids:
+        return ""
+    resources = [get_research_method(key) for key in method_ids]
+    return "\n\n已加载研究方法（通用教学，不是本案事实或指定结论）：\n" + "\n\n".join(
+        f"method_id={r['method_id']}; resource_digest={r['resource_digest']}\n{r['content']}"
+        for r in resources)
+
+
+def research_writing_guidance(stage: str) -> str:
+    """Project the relevant brief from the same packaged method as the tool.
+
+    Examples and handoff details remain available on demand. This changes
+    guidance, never task scope, tool rights or submission checks.
+    """
+    headings = {"workpaper": "专题底稿行文", "report": "综合报告行文"}
+    if stage not in headings:
+        raise ValueError("unknown_research_writing_stage")
+    content = get_research_method("writer")["content"]
+    sections = {}
+    for block in content.split("\n## ")[1:]:
+        title, _, body = block.partition("\n")
+        sections[title.strip()] = body.strip()
+    return "\n\n".join(sections[title] for title in (headings[stage], "共同写作原则"))

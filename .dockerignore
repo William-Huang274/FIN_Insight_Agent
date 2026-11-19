@@ -47,3 +47,7 @@ reports/
 eval_sets/
 .codex_runtime/
 .finsight/
+
+.env.*
+**/target/
+**/node_modules/

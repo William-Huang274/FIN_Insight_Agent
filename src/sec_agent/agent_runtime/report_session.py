@@ -85,7 +85,8 @@ def abandoned_question_update(state, reason):
 
 
 def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=None, quick_writer=None,
-                               state_schema=SessionState, input_schema=SessionInput, start_at_initialize=True, revision_handler=None, revision_requires_case_review=False):
+                               state_schema=SessionState, input_schema=SessionInput, start_at_initialize=True, revision_handler=None, revision_requires_case_review=False,
+                               review_action_check=None):
     """One human request, native agentic work, then another real interrupt.
 
     There is no automatic rewrite-until-PASS edge. Report acceptance is a human
@@ -94,7 +95,8 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
     audits = audits or {}
     graph = StateGraph(state_schema, input_schema=input_schema)
 
-    def initialize(state):
+    def initialize(state, config: RunnableConfig):
+        execution_from_config(config).require_report_workflow()
         if state.get("initialized"):
             raise ValueError("existing_session_requires_native_interrupt_resume_not_restart")
         material = initial(state) if callable(initial) else initial
@@ -103,10 +105,15 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             "report_version": 1, "report_revision_reason": "初始报告", "phase": material.get("phase", "needs_revision"), "conversation": [], "model_events": []}
 
     def human_review(state, config: RunnableConfig):
+        execution_from_config(config).require_report_workflow()
         response = interrupt({"kind": "dell_report_review", "report_version": state["report_version"],
             "phase": state["phase"], "actions": ["ask", "revise", "accept"],
             "notice": "Acceptance is local human report review, not automatic release or financial authority."})
         action = ReviewAction.model_validate(response)
+        if action.execution is not None:
+            action.execution.require_report_workflow()
+        if review_action_check is not None:
+            review_action_check(state, action)
         if action.action == 'manual_complete':
             current = artifacts(state) if callable(artifacts) else artifacts
             update = apply_manual_review(state, action.manual_review, current,
@@ -249,7 +256,7 @@ def load_quick_answer_config(model_config_path):
     settings = json.loads(path.read_text(encoding="utf-8"))
     profile = DeepSeekModelProfile.model_validate(settings["model_profile"])
     basis = TokenBudgetBasis.model_validate_json(json.dumps(settings["token_budget_basis"]))
-    if profile.model != "deepseek-v4-flash" or profile.thinking != "disabled" or basis.reasoning_profile != "agentic_message_history_thinking_disabled":
+    if profile.model not in {"deepseek-flash", "deepseek-v4-flash"} or profile.thinking != "disabled" or basis.reasoning_profile != "agentic_message_history_thinking_disabled":
         raise ValueError("quick_answer_profile_budget_mismatch")
     return profile, basis, settings["limits"]
 
@@ -261,7 +268,11 @@ def session_audit_sinks(audit_root):
     lock = Lock()
     def sink(name):
         def write(event):
-            with lock, (audit_root / name).open("a", encoding="utf-8") as stream:
+            filename = name
+            if (name == 'model-call-events.jsonl' and event.get('actor') == 'research_partner'
+                    and event.get('event') in {'assistant_message', 'tool_activity'}):
+                filename = 'research-activity.jsonl'
+            with lock, (audit_root / filename).open("a", encoding="utf-8") as stream:
                 stream.write(json.dumps(event, ensure_ascii=False) + "\n")
         return write
     return sink("model-call-events.jsonl"), sink("model-context-reasoning.private.jsonl")
@@ -332,6 +343,7 @@ async def report_session_graph(config: RunnableConfig, runtime: ServerRuntime):
     if runtime.execution_runtime is None:
         yield _schema_graph()
         return
+    execution_from_config(config).require_report_workflow()
     from mcp import Client
     from .agent_server_data_composition import open_approved_data_composition
     from .agent_server_entry import _require_langsmith_execution_environment
@@ -365,7 +377,7 @@ async def report_session_graph(config: RunnableConfig, runtime: ServerRuntime):
             raise ValueError("session_data_authority_mismatch")
         async with Client(data.mcp_server, raise_exceptions=False, read_timeout_seconds=120) as client:
             args = {"research_as_of": artifacts.research_as_of, "data_snapshot_id": artifacts.snapshot_id, "execution_attempt_id": invocation}
-            binding = await client.call_tool("get_dell_research_method", {"branch_ids": sorted({p["branch_id"] for p in artifacts.catalog()["papers"]}), **args})
+            binding = await client.call_tool("get_research_source_binding", {"branch_ids": sorted({p["branch_id"] for p in artifacts.catalog()["papers"]}), **args})
             if binding.is_error:
                 raise ValueError("session_method_binding_failed")
             tools = await case_mcp_tools(client, run_scope=binding.structured_content["run_scope"], method_arguments=args)

@@ -1,0 +1,35 @@
+# Add after the native, identity and organization overlays.
+x-execution-settings: &execution-settings
+  FINSIGHT_REPORT_SESSION_SETTINGS: /run/finsight/settings.json
+  FINSIGHT_ORGANIZATION_MODEL_KEYS: /run/finsight/model-keys
+  FIN_MODEL_BUDGET_POSTGRES_URI: ${FIN_MODEL_BUDGET_POSTGRES_URI:?configure a budget worker login}
+  FINSIGHT_ORGANIZATION_START_ENABLED: "1"
+  FINSIGHT_ORGANIZATION_TASK_ACTIONS_ENABLED: "1"
+  FINSIGHT_ON_DEMAND_ENABLED: "1"
+
+x-execution-files: &execution-files
+  - type: bind
+    source: ${FINSIGHT_FUNDED_SETTINGS_FILE:?set the prepared settings file}
+    target: /run/finsight/settings.json
+    read_only: true
+    bind: {create_host_path: false}
+  - type: bind
+    source: ${FINSIGHT_ORGANIZATION_KEY_DIRECTORY:?set the private per-organization key directory}
+    target: /run/finsight/model-keys
+    read_only: true
+    bind: {create_host_path: false}
+  - type: bind
+    source: ${FINSIGHT_DSH_BINARY_FILE:?set the verified Linux harness executable}
+    target: /opt/finsight/dsh
+    read_only: true
+    bind: {create_host_path: false}
+
+services:
+  workbench:
+    environment: *execution-settings
+    volumes: *execution-files
+  langgraph-api:
+    environment:
+      <<: *execution-settings
+      FINSIGHT_HARNESS_STATE_ROOT: /app/state/harness
+    volumes: *execution-files

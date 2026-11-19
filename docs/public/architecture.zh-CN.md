@@ -1,67 +1,33 @@
-# FinSight：研究能力与工程边界
+# FinSight 架构
 
-v0.1.3 · 本地金融研究工作台 · [English](architecture.en.md)
+以季度跟踪为例，准备研究时先固定获准使用的披露版本。此时可以用本地 BM25 查到原文；点击启动研究后，执行服务才开始运行研究图。报告交付后再次打开引用，读取的仍是绑定的版本，并会重新检查读者权限。[动手试一次资料检索](quickstart.zh-CN.md#知识库与检索配置)
 
-当前架构支持资料查询、多角色研究、报告审阅与交付。后续方法库、规则更新和研究时间预算见[路线图](../product/roadmap.zh-CN.md)。
+```mermaid
+flowchart LR
+  UI["工作台"] --> BFF["Python API"]
+  BFF --> Java["项目权限与资料版本"]
+  Java --> DB[(PostgreSQL)]
+  BFF --> RT["LangGraph Agent Server"]
+  RT --> Jobs["普通研究或专题调查"]
+  Jobs --> Report["判断、引用与报告版本"]
+  RT --> State["检查点与任务队列"]
+```
 
-## 一次完整研究
+浏览器访问工作台的同源接口。React/Vite 负责项目、研究会话、资料和报告界面。Python BFF 根据当前身份和项目范围读取资料、提交执行命令，Java Spring 服务在 PostgreSQL 维护组织、账户关联、项目授权和资料版本。前端可见的操作仍由后端逐次校验。
 
-用户问题 → Lead动态任务DAG → 独立多轮专家（依赖就绪后执行，并发1或2，默认2） → Counter/Verifier → 必要责任作者修订 → Lead综合判断 → 独立研究复核 → Writer/来源绑定图表 → 报告终审 → 人工审阅、追问与导出。
+## 研究如何运行
 
-Agent自己决定查什么、用什么工具、如何解释来源。父图管理依赖、阶段与交接，不预写研究答案。最初九研究面可以形成多波次任务；现安全容量最多12任务。审查意见可以被作者用来源反驳，不能默认正确。写作问题不重跑全案；工具/数据问题不让Writer用措辞掩盖。
+原生 Agent Server 运行图和持久化检查点，PostgreSQL 与 Redis 分别支持状态和运行调度。深度研究可从问题拆分出专题，负责人接收子任务的发现、引用和版本，再更新整体判断。成文阶段从当前提纲和已采用的证据取材。展开原文、保存章节和交付整篇报告各有独立记录，读者可以追到对应的原件。模型配置、工具授权和预算在执行前确定。
 
-## 成熟组件与必须自己负责的部分
+DSH 通过 ACP 接入已有研究执行服务。工作台向有权限的读者展示公开的执行消息及工具状态。提供商调用记录、会话授权和上传原件属于部署者的私有数据。
 
-| 层 | 成熟组件 | FIN职责/代码 |
-| --- | --- | --- |
-| 产品 | React、Vite、Markdown、原生stream SDK | `apps/workbench`：交互、状态与来源展示 |
-| Agent执行 | LangChain create_agent、LangGraph/Send | `src/sec_agent/agent_runtime/research_session*.py`、`research_convergence.py`：任务/产物交接与责任路由 |
-| 持久化/观测 | Agent Server、PostgreSQL、Redis、LangSmith | 固定Compose部署；模型上下文按角色隔离，不新建队列或trace平台 |
-| 工具协议 | 官方MCP客户端/服务端 | `research_foundation/mcp_server.py`：来源、SQL、方法与计算的薄schema适配 |
-| 文档 | 经过验证的本地文档树；新增上传用pdfplumber、python-docx、BS4、LangChain splitters、BM25 | `task_attachments.py`：任务归属、原文件副本、页码/章节定位；上传不冒充已建dense/reranker索引 |
-| 数字 | SEC标准结构数据→SQL；simpleeval/Decimal | 公司/期间/单位、来源计算输入与结果；算术通过不代表经济解释正确 |
-| 外源 | 现有Exa MCP搜索/抓取与trafilatura静态提取 | 来源ID、正文窗口/链接及来源性质；新闻不是权威财务事实 |
-| 图像/交付 | DeepSeek视觉SDK、Matplotlib、ReportLab、python-docx、python-pptx | 图片原件与识别文本绑定；图表数字查原来源，不接受虚构值；不让模型执行任意绘图代码 |
+## 资料与数据
 
-版本以`uv.lock`、前端lockfile和Docker基础镜像digest为准；README不另造第二份依赖清单。当前LangChain是成熟Agent循环的一部分，不是恢复早期自研重壳。
+个人研究附件随会话关联。组织资料发布为可检索版本，检索结果绑定来源、版本和段落；BM25、向量检索和重排的可用性取决于部署配置。SEC 等外部来源所需的身份或 API 凭据由用户或部署者提供。
 
-## 上下文与工具数据
 
-每个角色保留自己的原生多轮消息；跨角色传任务、公开底稿、引用和简明依据，不复制完整私有思考。起始给题目、能力/方法目录；按需读方法、文档目录、原文窗口、SQL和计算。模型可读合法原文做判断，本地检查来源观察、ID/参数/schema及算术；不使用自然语言模板判定报告对错。
+## 研究配置
 
-报告引用可来自底稿主张、实际读过的PASSAGE、SQL NUMFACT和来源计算CALC。新读的非结构化数字可以分析，但不会自动写入已验证的财务事实表。图表在同一来源合同上取数；期间可比性和因果仍由模型复核及人工检查。
+组织研究从 `configs/research/task_method_defaults.json` 读取通用方法，再绑定本次任务 ID、研究截止日和专题。回读历史案例时，可向加载器传入原始契约文件；独立方法读取器也支持 `FINSIGHT_RESEARCH_FOUNDATION_PATH`。
 
-运行中意见通过原生thread metadata保存，在后续研究/审查/收敛阶段读取。不是对当前生成中回复的即时强制干预；UI事件说明是否已送达。上传是任务副本，不能修改共享知识库或任意用户文件。
-
-旧工具正文只从本次请求投影清理，原始消息/artifact仍留在原生checkpoint。已保存问答里的完整CALC以同任务只读视图恢复给工具，不把整份引用树塞回模型消息；缺记录/异任务/冲突拒绝。自动摘要默认关闭，效果仍在评估。BFF用原生SDK分页累计全部runs，用run_id与call_id共同识别调用；费用、缓存与耗时未知项显式保留，外部导入修订费用另列。
-
-`--fresh-only`只注册research_session，不挂载旧答案，复用固定PG/Redis及原始数据目录。图像是按需只读工具而非普通Pro输入；视觉缓存缺字段不推定零用量。MD/PDF/Word/PPT共用版本报告与来源投影，PPT图表保留可编辑数据，完整来源放讲者备注。历史v4已做实际渲染；当前v5是后续局部修订，仍待人工审阅。
-
-## 当前限制
-
-v0.1.3已有 OIDC/PKCE 双用户、39 项资源归属检查、8 次并发读取，以及 4 个真实前端审批场景；批准后由原生任务恢复经认证 MCP 进入 Docker 沙箱，拒绝时不执行。普通对话与研究工具按已配置能力开放。这些是本地测试结果，尚无生产多租户、恶意文档全链路或高可用认证。原文解析/检索仍有残余问题，空检索不自动认定信息未披露。
-
-已验证的流程包括报告与人工审阅、失败恢复、定向修订、重启交接和提交去重。19 个真实回合包含恢复操作，尚不足以评估任意公司的金融研究质量或生产 P95。运行模块使用功能名称；已有图、数据库和来源标识保持兼容。
-
-方法可用和充分应用也分开：六组短方法可按需读取，真实观察到部分角色加载具体方法、部分仅看目录。数值与引用校验通过后仍出现过存量/流量、因果和正文公式错误，由模型复核及主Agent审稿纠正。没有将这些个案答案写进通用NLP规则，也不能据一次终审“0重大”宣称百分百准确。
-
-## 前端节点、配置与运行时的连接
-
-研究地图由真实报告章节及引用构成，展示总览、专题和判断/依据。导航节点负责展开；可修订节点携带 citation ID、基线版本、内容摘要与 checkpoint，进入现有 research_revision 路径。服务端核对基线，避免在过期版本上静默修改。
-
-研究配置通过 FastAPI 的 research_studio 接口保存为原生 Assistants 独立快照，选定任务保存对应 ID。每次 run 固定读取其配置与摘要；Skill 绑定进入角色提示及 MCP 方法读取，专家初始上下文在请求摘要生成前绑定。双审查顺序改变原生 StateGraph 连线，并行数改变已有运行 profile；必需复核不能删除。它不是任意代码工作流设计器。
-
-相关入口：
-
-| 层 | 文件 |
-| --- | --- |
-| 图导航与修订 | `apps/workbench/frontend/vite/src/app/ResearchGraph.tsx` |
-| 配置编辑 | `apps/workbench/frontend/vite/src/app/ResearchStudio.tsx` |
-| 保存、应用、运行时读取 | `apps/workbench/backend/api/v1/research_studio.py` |
-| 配置合同与角色方法 | `src/sec_agent/agent_runtime/studio_configuration.py` |
-| 研究运行消费 | `src/sec_agent/agent_runtime/research_session_runtime.py` |
-| 对外启动 | `python -m scripts.deployment.research_workbench` |
-
-前端采用 Lucide 图标、React Markdown/remark 内容渲染、diff 库和 React Flow 图组件。运行页使用真实阶段及公开事件，历史回放是客户端对保存事件的逐条显示，不是新的执行状态机。侧栏项目分组保存在浏览器；报告、checkpoint 与配置版本保存在服务端。
-
-2026-09-08 的真实短问验证了前端编辑的方法进入两次模型请求并影响答案组织，报告未改；专家请求校验和审查顺序由原生图合成测试覆盖。该证明不等于所有角色/所有公司均完成付费验证。
+检索内核提供证据类别、行业词表与候选数量限制。构建案例检索快照时，通过 `--kernel` 指定包含研究主体、关联实体和截止日的配置。工作台的指定来源采集列表初始为空。设置 `FINSIGHT_SOURCE_INTAKE_POLICY` 可从部署方的本地文件加载获准采集的原件路由。

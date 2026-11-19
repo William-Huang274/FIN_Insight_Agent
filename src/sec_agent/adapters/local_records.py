@@ -11,7 +11,7 @@ import base64
 import io
 import json
 import math
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import pickle
 import pickletools
 import sqlite3
@@ -58,7 +58,15 @@ class _PrimitiveUnpickler(pickle.Unpickler):
 
 def _legacy_value(root, mode, filename, value):
     if filename is not None:
-        path = (root / filename).resolve()
+        # DiskCache persists platform-specific relative filenames. A Windows
+        # cache copied to Linux still names subdirectories with backslashes.
+        # Interpret both separators, but never admit drives, roots or traversal.
+        if not isinstance(filename, str) or not filename:
+            raise ValueError("legacy_value_path_or_size_invalid")
+        relative = PureWindowsPath(filename)
+        if relative.drive or relative.root or '..' in relative.parts:
+            raise ValueError("legacy_value_path_or_size_invalid")
+        path = root.joinpath(*relative.parts).resolve()
         if not path.is_relative_to(root) or path.stat().st_size > MAX_VALUE_BYTES:
             raise ValueError("legacy_value_path_or_size_invalid")
         value = path.read_bytes()
@@ -162,6 +170,23 @@ class LocalRecords:
 
     def add(self, key, value):
         return self._write(key, value, None, add=True)
+
+    def compare_and_set(self, key, expected, value):
+        """Atomically claim one explicit retry without losing its old receipt."""
+        encoded = json.dumps(_pack(value), ensure_ascii=False, allow_nan=False)
+        if len(encoded.encode('utf8')) > MAX_VALUE_BYTES:
+            raise ValueError('local_record_too_large')
+        self.db.execute('BEGIN IMMEDIATE')
+        try:
+            if self.get(key) != expected:
+                self.db.rollback()
+                return False
+            self.db.execute('UPDATE records SET value=? WHERE key=?', (encoded, key))
+            self.db.commit()
+            return True
+        except BaseException:
+            self.db.rollback()
+            raise
 
     def set(self, key, value, *, expire=None):
         return self._write(key, value, expire, add=False)

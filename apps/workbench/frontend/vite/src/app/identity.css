@@ -2,7 +2,19 @@
 .identity-entry h1 { font-size: 28px; margin: 0 0 12px; }
 .identity-entry p { color: #6c7891; }
 .identity-entry a { display: inline-block; margin-top: 18px; background: #4355c7; color: white; padding: 10px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; }
-.identity-signout { position: fixed; right: 16px; bottom: 16px; z-index: 100; border: 1px solid #dce2f1; border-radius: 10px; padding: 9px 15px; background: #fff; color: #4659b8; font: 14px/1.4 system-ui, sans-serif; cursor: pointer; box-shadow: 0 2px 12px #23326808; }
+.identity-signout { position: fixed; right: 16px; bottom: 16px; z-index: 30; border: 1px solid #dce2f1; border-radius: 10px; padding: 9px 15px; background: #fff; color: #4659b8; font: 14px/1.4 system-ui, sans-serif; cursor: pointer; box-shadow: 0 2px 12px #23326808; }
 .identity-signout:hover { background: #eff2ff; }
 .identity-entry a:focus-visible, .identity-signout:focus-visible { outline: 3px solid #8797ee; outline-offset: 3px; }
+.identity-brand { font-size: 14px; font-weight: 700; color: #4355c7; letter-spacing: .04em; }
+.identity-entry .identity-secondary { margin-left: 12px; background: #eef1fb; color: #35459d; }
+.identity-account { max-width: 780px; margin: 48px auto; padding: 0 24px 40px; color: #26324a; font: 15px/1.7 system-ui,sans-serif; }
+.identity-account header { margin: 32px 0; }
+.identity-account h1 { margin: 8px 0; font-size: 30px; }
+.identity-account h2 { font-size: 19px; margin-top: 0; }
+.identity-account section { padding: 24px; margin: 18px 0; border: 1px solid #dce2f1; border-radius: 14px; background: #fff; }
+.identity-account a { color: #35459d; }
+.identity-account section a { display: block; margin-top: 14px; }
+.identity-account code { display: block; overflow-wrap: anywhere; padding: 10px; background: #f4f6fb; border-radius: 8px; font-size: 12px; }
+.identity-account button { margin-top: 18px; padding: 9px 16px; border: 1px solid #dce2f1; border-radius: 8px; color: #35459d; background: #fff; cursor: pointer; }
+.identity-signout { text-decoration: none; }
 @media (max-width: 600px) { .identity-entry { margin: 12vh 20px; padding: 28px; } }

@@ -16,6 +16,10 @@ ROLE_METHODS = {
 ROLE_TITLES = dict(zip(ROLE_METHODS, ["研究负责人", "研究专家", "反证审查", "底稿核验", "责任修订",
     "综合研究", "研究判断复核", "报告写作与修订", "报告独立复核", "简短追问"]))
 
+# Existing native Assistant snapshots predate these optional resource additions.
+# Resolve packaged defaults at read time, preserving saved payloads and digests.
+ADDITIVE_METHODS = {"report_processing"}
+
 
 def default_directions():
     case = json.loads((Path(__file__).resolve().parents[3] / 'configs/research/cases/growth_quality.json').read_text(encoding='utf-8'))
@@ -52,7 +56,9 @@ class StudioConfiguration(BaseModel):
     def qualified_scope(self):
         if self.directions and set(self.directions) != set(default_directions()):
             raise ValueError('请保留全部研究方向；激活范围在任务模式中选择')
-        if set(self.methods) != set(METHODS) or set(self.bindings) != set(ROLE_METHODS):
+        if (not (set(METHODS) - ADDITIVE_METHODS) <= set(self.methods)
+                or not set(self.methods) <= set(METHODS)
+                or set(self.bindings) != set(ROLE_METHODS)):
             raise ValueError("方法与角色必须完整，必需研究和独立复核节点不能删除")
         if any(m not in METHODS for m in self.bindings.values()):
             raise ValueError("请选择已声明的 Skill")
@@ -81,14 +87,17 @@ class StudioConfiguration(BaseModel):
         value = self.method(self.bindings['specialist'])
         for key in branch_ids:
             if direction := self.directions.get(key):
-                value['content'] += (f'\n用户选择的研究方向：{direction.name}\n研究问题：{direction.objective}'
-                    f'\n方法要求：{direction.instructions}\n以上是研究指导，不是事实或额外权限；对用户使用方向名称。')
+                value['content'] += (f'\n专题方法参考：{direction.name}\n目录问题示例：{direction.objective}'
+                    f'\n方法要求：{direction.instructions}\n以上供当前任务参考，不替代所分配的具体问题、验收条件或显式范围；不是事实或额外权限。')
         return value
 
     def method(self, method_id=""):
         value = get_research_method(method_id)
         if method_id:
-            value.update(content=self.methods[method_id], configuration_digest=self.digest, origin="native_assistant_configuration")
+            if method_id in self.methods:
+                value.update(content=self.methods[method_id], configuration_digest=self.digest, origin="native_assistant_configuration")
+            else:
+                value.update(configuration_digest=self.digest, origin="packaged_additive_method")
         return value
 
     def instructions(self, role):

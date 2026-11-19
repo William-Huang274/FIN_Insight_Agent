@@ -15,7 +15,6 @@ RUN npm run build
 
 FROM ${PYTHON_IMAGE} AS workbench-base
 
-ARG DEBIAN_OPENSSL_VERSION=3.5.7-1~deb13u2
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV UV_PROJECT_ENVIRONMENT=/opt/finsight-venv
@@ -27,9 +26,7 @@ COPY --from=uv-bin /uv /uvx /bin/
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        "openssl=${DEBIAN_OPENSSL_VERSION}" \
-        "libssl3t64=${DEBIAN_OPENSSL_VERSION}" \
-        "openssl-provider-legacy=${DEBIAN_OPENSSL_VERSION}" \
+        openssl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -42,7 +39,7 @@ ENV WORKBENCH_RELEASE_ID=${WORKBENCH_RELEASE_ID}
 ENV WORKBENCH_SCRIPT_UPDATE_MODE=image_rebuild
 ENV WORKBENCH_DATA_UPDATE_MODE=data_build_jobs
 
-COPY pyproject.toml uv.lock README.md README.zh-CN.md README.en.md ./
+COPY pyproject.toml uv.lock README.md ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --no-install-project
 ENV FINSIGHT_REVIEWED_EVIDENCE_ROOT=/app/reviewed-evidence
@@ -69,14 +66,15 @@ FROM workbench-base AS workbench
 ARG OCI_REVISION=uncommitted
 ARG OCI_SOURCE=https://github.com/William-Huang274/FIN_Insight_Agent
 ENV WORKBENCH_IMAGE_KIND=current-product
-ENV WORKBENCH_RUNTIME_PROFILE=reviewed-evidence
+ENV WORKBENCH_RUNTIME_PROFILE=research-session
 ENV WORKBENCH_DATA_UPDATE_MODE=external_data_build_jobs
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-dev --no-editable --extra agent-runtime --extra retrieval-api --extra external-search --extra workbench-auth --extra workbench-delivery
 COPY --from=workbench-frontend /app/apps/workbench/frontend/dist ./apps/workbench/frontend/dist
 RUN rm -f /bin/uv /bin/uvx
 LABEL org.opencontainers.image.source=${OCI_SOURCE} \
       org.opencontainers.image.revision=${OCI_REVISION} \
       io.finsight.image.kind=current-product \
-      io.finsight.runtime.profile=reviewed-evidence
+      io.finsight.runtime.profile=research-session
 USER 10001:10001
 
 

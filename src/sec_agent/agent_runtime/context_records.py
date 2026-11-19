@@ -9,17 +9,27 @@ from langchain_core.tools import ToolException
 
 
 RESULT_REGIONS = {
+    "read_market_expectations": ("sources", "市场预期与预测修订快照"),
+    "read_regional_disclosures": ("sources", "地区披露目录"),
+    "query_public_data": ("sources", "财经数据接口与原始返回"),
+    "discover_source_tools": ("sources", "当前信息与数据能力目录"),
+    "query_hithink": ("sources", "同花顺官方数据与原始返回"),
+    "search_korean_disclosures": ("sources", "韩国官方申报目录与原件入口"),
+    "read_legislation": ("sources", "官方法案记录与版本入口"),
+    "read_market_prices": ("sources", "带时点的行情来源"),
     "query_financial_data": ("numbers", "财务查询"),
     "calculate_research_metric": ("numbers", "来源绑定计算"),
     "read_public_source": ("sources", "网页原文"),
     "read_company_library": ("sources", "公共公司资料"),
     "read_task_material": ("sources", "任务资料原文"),
+    "read_source_document": ("sources", "组织授权资料原文"),
+    "read_research_source": ("sources", "已观察来源回读"),
     "read_handoff_material": ("sources", "交接资料原文"),
     "read_handoff_evidence": ("sources", "交接原始凭证"),
 }
 NAVIGATION_GUIDANCE = """
 Context has separate regions: conversation (public turns), numbers (saved query/calculation
-receipts), sources (saved source reads), and working papers (SearchWorkingNotes/ReadWorkingNote
+receipts), sources (saved source reads), acquisition (URL-level access/verification/read history), and working papers (SearchWorkingNotes/ReadWorkingNote
 when offered). Use browse_context to discover keys, then read_context_turn or read_saved_result.
 Titles/previews are locators, not evidence. Keys are opaque: copy them, never reconstruct them
 from a title. Query filters checkpoint metadata literally; blank browses and offset paginates.
@@ -45,6 +55,34 @@ def public_text(message):
     # Never surface reasoning blocks, images, tool calls or provider metadata.
     return "\n".join(b.get("text", "") for b in content
                      if isinstance(b, dict) and b.get("type") == "text")
+
+
+def saved_result_field_index(value, pointer=""):
+    """Bounded, exact navigation over a saved JSON value, not a new summary.
+
+    Small scalar values are copied verbatim. Large values remain behind valid
+    RFC6901 pointers; neither their content nor original character offsets change.
+    """
+    if not isinstance(value, (dict, list)):
+        return None
+    entries = value.items() if isinstance(value, dict) else enumerate(value)
+    fields = []
+    for key, child in entries:
+        if len(fields) == 32:
+            break
+        token = str(key).replace("~", "~0").replace("/", "~1")
+        row = {"json_pointer": pointer + "/" + token}
+        if isinstance(child, (dict, list)):
+            row.update(kind="object" if isinstance(child, dict) else "array", items=len(child))
+        elif isinstance(child, str):
+            row.update(kind="string", characters=len(child))
+            if len(child) <= 160:
+                row["value"] = child
+        else:
+            row.update(kind="scalar", value=child)
+        fields.append(row)
+    return {"fields": fields, "total_fields": len(value),
+            "remaining_fields": max(0, len(value) - len(fields))}
 
 
 def checkpoint_index(messages, *, for_search=False):
@@ -77,6 +115,19 @@ def checkpoint_index(messages, *, for_search=False):
 def browse_checkpoint(messages, region, query="", offset=0):
     if offset < 0 or len(query) > 500:
         raise ToolException("offset需非负，检索词最多500字符")
+    if region == 'acquisition':
+        from .source_acquisition_view import acquisition_history
+        rows=acquisition_history(messages)
+        if query.strip(): rows=[r for r in rows if query.casefold().strip() in json.dumps(r,ensure_ascii=False).casefold()]
+        rows.reverse()
+        # Histories are paged by event as well as source; never silently hide old failures.
+        flat=[{'source_url':r['source_url'], **{k:v for k,v in r.items() if k not in {'source_url','events'}},
+            'event_index':i,'total_events':len(r['events']),'event':e}
+            for r in rows for i,e in reversed(list(enumerate(r['events'])))]
+        return {'region':region,'items':flat[offset:offset+12],'total_matches':len(flat),
+            'next_offset':offset+12 if offset+12<len(flat) else None,
+            'retrieval':'checkpoint_metadata_literal_no_remote_calls',
+            'notice':'Exact URL and query observations, not proof a research question is resolved or sources are equivalent. Empty searches without a URL remain visible. A read window is not a complete document. Old failures remain; use new evidence to reconsider old missing-source statements.'}
     rows = [r for r in checkpoint_index(messages, for_search=True) if r["region"] == region]
     rows.reverse()  # Recent first, but pagination can reach all old records.
     if query.strip():

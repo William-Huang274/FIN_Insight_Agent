@@ -14,6 +14,7 @@ dependencies = [
   "beautifulsoup4>=4.12.3",
   "duckdb>=1.0.0",
   "fastapi>=0.115.0",
+  "filelock==3.32.4",
   "lxml>=6.1.1",
   "numpy>=1.26,<3",
   "playwright>=1.59.0",
@@ -37,12 +38,12 @@ control-plane = [
   "dagster==1.13.20",
   "dagster-postgres==0.29.20",
   "dagster-webserver==1.13.20",
-  "filelock==3.32.4",
 ]
 qualification = [
   "psycopg[binary]==3.3.4",
 ]
 agent-runtime = [
+  "cryptography>=46",
   "sqlite-vec==0.1.9",
   "jsonpatch==1.33",
   "markdown-it-py>=4",
@@ -59,6 +60,9 @@ agent-runtime = [
   "simpleeval==1.0.7",
   "pillow==12.3.0",
   "pypdfium2==5.13.0",
+  "httpx-sse>=0.4,<0.5",
+  "agent-client-protocol==0.12.1",
+  "langgraph-checkpoint-sqlite==3.1.1",
 ]
 complex-pdf = [
   "pdfplumber>=0.11.9",
@@ -66,12 +70,23 @@ complex-pdf = [
   "rapidocr-onnxruntime>=1.4.4",
 ]
 external-search = [
+  "openpyxl==3.1.5",
   "ddgs==9.16.0",
   "trafilatura==2.2.0",
   "tencentcloud-sdk-python>=3.1.162",
+  "extruct==0.18.0",
+  "htmldate==1.10.0",
+  "dateparser==1.4.2",
 ]
 sec-source-library = ["sec2md==0.1.23"]
-public-source-library = ["trafilatura==2.2.0", "haystack-ai==2.26.0"]
+public-source-library = [
+    "openpyxl==3.1.5",
+    "trafilatura==2.2.0",
+    "haystack-ai==2.26.0",
+    "extruct==0.18.0",
+    "htmldate==1.10.0",
+    "dateparser==1.4.2",
+]
 retrieval-api = [
   "openai==3.6.0",
 ]
@@ -110,12 +125,15 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "sec_agent.agent_runtime" = ["sql/*.sql"]
-"sec_agent.research_foundation" = ["methods/*.md"]
+"sec_agent.research_foundation" = ["methods/*.md", "methods_judgment/*.md"]
 
 [tool.pytest.ini_options]
-pythonpath = [".", "src"]
+pythonpath = [".", "src", "tests"]
 testpaths = ["tests"]
 norecursedirs = ["archive", ".git", ".codex_runtime", "node_modules", "dist"]
 markers = [
   "fast_contract: hermetic deterministic contract or unit test",
+  "local_data_integration: requires explicitly configured local research resources",
+  "requires_local_data: requires local dataset mounts",
+  "paid_model: requires the test-specific explicit paid-call opt-in",
 ]

@@ -16,7 +16,24 @@ from typing import Any, Callable
 from pydantic import BaseModel, ConfigDict, Field
 from simpleeval import SimpleEval
 
+from .source_quotes import resolve_quote
+
 from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+
+
+# Han prose does not delimit printed Arabic numbers with spaces. Keep other
+# Unicode word characters as identifier boundaries (e.g. FP8 and é8), while
+# allowing the exact number in Chinese sentences. This does not infer units.
+_NUMERIC_IDENTIFIER_CHAR = r"[^\W\u3400-\u4dbf\u4e00-\u9fff\U00020000-\U000323af]"
+_NUMERIC_START = rf"(?<!{_NUMERIC_IDENTIFIER_CHAR})(?<![.,])"
+_NUMERIC_END = rf"(?!{_NUMERIC_IDENTIFIER_CHAR}|[.,]\d)"
+
+
+class ObservationField(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    start_utc: str
+    end_utc: str
+    field: str = Field(description="Exact observed market field: open, high, low, close or volume. A bar close is not necessarily a daily close.")
 
 
 class CalculationOperand(BaseModel):
@@ -26,20 +43,23 @@ class CalculationOperand(BaseModel):
     literal: str | None = Field(default=None, min_length=1, max_length=64,
         description="For prose copy the decimal numeric substring printed in the quote, including commas: quote 'Revenue $2,225 million' uses literal '2,225', not '2225' or '$2,225 million'. Exclude percent symbols, currency symbols, units and parentheses; no exponent notation. Do not put a derived difference/ratio here: bind originals and calculate in expression. For S2/saved CALC omit this. Parentheses/sign interpretation belongs explicitly in expression and rationale.")
     quote: str | None = Field(default=None, min_length=1, max_length=4000,
-        description="Exact contiguous source quote containing the literal; no paraphrase or ellipsis.")
+        description="Contiguous source quote containing the literal; no paraphrase or ellipsis. Unique whitespace/table empty-cell layout differences can be restored with an original-input receipt; numbers, signs and nonempty cells must match. The author must check column and period meaning.")
     assumption_note: str | None = Field(default=None, min_length=1, max_length=1000,
         description="Required for an unsourced scenario/scale/day-count input. It will remain an explicit assumption, never source truth.")
+    observation_field: ObservationField | None = Field(default=None,
+        description="For an observed market passage, select exact start_utc, end_utc and field; omit quote and literal. Runtime reads the original value, never the display-rounded number.")
 
 
 class SourceBoundCalculation(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     expression: str = Field(min_length=1, max_length=1000,
         description="Arithmetic using the operand KEYS, parentheses and + - * /. Example: expression '(a-b)-(c-d)' with operands a,b,c,d bound to original source numbers. Every declared operand key must occur; never substitute raw source numbers into the formula and leave their bindings unused. Small integer scale constants allowed; decimals use operands. No functions, attributes, powers or code.")
-    operands: dict[str, CalculationOperand] = Field(min_length=1, max_length=16)
-    result_unit: str = Field(min_length=1, max_length=80,
-        description="Your declared result unit; this calculator does not prove dimensional or financial comparability.")
+    operands: dict[str, CalculationOperand] = Field(min_length=1, max_length=16,
+        description="Operand keys are case-sensitive ASCII identifiers: a letter followed by up to 31 letters, digits or underscores. Use exactly the same names in expression.")
+    result_unit: str = Field(min_length=1, max_length=256,
+        description="Your declared result unit, preferably a short unit label; put explanation in rationale. Preserved verbatim, not normalized or a proof of dimensional or financial comparability.")
     rationale: str = Field(min_length=1, max_length=2000,
-        description="Explain the financial formula and period/unit choices for independent review, not hidden reasoning.")
+        description="State the question this calculation answers and its period/unit choices. For a ratio explain the economic numerator, denominator and adjustments actually applied. Use this existing field, not an additional plan or form. Arithmetic verification does not validate that interpretation.")
 
 
 def _number(literal: str) -> Decimal:
@@ -58,6 +78,15 @@ def source_items_from_tool(tool_name: str, body: dict) -> dict[str, dict]:
     Callers own their native messages/composition lifetime. This is a projection,
     not another source store or evidence-admission system.
     """
+    if tool_name in {'read_market_prices', 'read_market_expectations'}:
+        tool_name = 'read_source_document'
+    if tool_name == 'query_public_data' and body.get('status') == 'ok':
+        # Only exact, acquired original passages can enter the calculator. The
+        # normalized third-party table is deliberately not promoted here.
+        return {p['passage_id']: dict(p) for p in body.get('items', [])
+                if p.get('result_state') == 'source_bound_passage' and p.get('writer_citable') is True
+                and p.get('numeric_fact_authority') is False
+                and p.get('source_kind') == 'forecast_original' and p.get('passage_id') and p.get('passage')}
     if tool_name == "query_company_financial_facts" and body.get("authority_state") == "s2_numeric_fact_query_result":
         return {f["numeric_fact_id"]: {**f, "result_state": "numeric_fact"}
                 for row in body.get("results", []) if row.get("status") == "resolved"
@@ -75,60 +104,264 @@ def source_items_from_tool(tool_name: str, body: dict) -> dict[str, dict]:
     return {}
 
 
-def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Callable[[str], dict]) -> dict:
+def source_observation_identity(item):
+    """Compare evidence identity independently of equivalent read navigation.
+
+    Full original receipts remain unchanged. For market pages the requested
+    page capacity is not evidence: different limits can return identical bars.
+    Content, capture, window, symbol, interval and actual offsets still match.
+    """
+    from datetime import datetime, timezone
+    value = deepcopy(item)
+    for key in ('operand_source_aliases', 'fact_request_id', 'mcp_receipt_chain',
+                'source_tool_lane_receipt_id'):
+        value.pop(key, None)
+    if value.get('source_kind') == 'market_observations':
+        locator = value.get('source_locator', {})
+        locator.pop('limit', None)
+        readback = value.get('readback', {})
+        args = readback.get('arguments', {})
+        if readback.get('tool') == 'read_market_prices':
+            args.pop('limit', None)
+            for key in ('start', 'end'):
+                try:
+                    instant = datetime.fromisoformat(args[key])
+                    if instant.tzinfo is not None:
+                        args[key] = instant.astimezone(timezone.utc).isoformat()
+                except (KeyError, TypeError, ValueError):
+                    pass  # Invalid or missing navigation does not become equivalent.
+    return value
+
+
+def sources_from_receipts(receipts) -> dict[str, dict]:
+    """Project trusted successful tool receipts without a framework transcript.
+
+    Callers authenticate this stream; this is not an ingress for model/browser
+    objects. Restored sources still go through the existing authorized reader.
+    """
+    names = {"query_financial_data": "query_company_financial_facts",
+             "read_task_material": "read_source_document", "read_handoff_material": "read_source_document",
+             "read_public_source": "read_source_document", "read_company_library": "read_source_document"}
+    result = {}
+    for receipt in receipts:
+        body = receipt.get("artifact")
+        if receipt.get("status") != "success" or receipt.get("failure") or not isinstance(body, dict):
+            continue
+        name = receipt.get("name")
+        if name in {"read_handoff_evidence", "read_delegated_evidence", "read_saved_knowledge"}:
+            result.update(deepcopy(body.get("source_items", {})))
+        else:
+            result.update(source_items_from_tool(names.get(name, name), body))
+    return result
+
+
+def source_items_from_observations(observations) -> dict[str, dict]:
+    """Restore a trusted native notebook's calculator inputs, never model notes.
+
+    Called by host composition, not exposed as an MCP tool. Existing source
+    adapters retain their authority checks; failed results and navigation cannot
+    acquire calculation authority merely by being present in a saved notebook.
+    """
+    sources = {}
+    for observation in observations:
+        if observation.get("status") != "success" or observation.get("failure"):
+            continue
+        for item in observation.get("content", []):
+            if not isinstance(item, dict):
+                continue
+            if item.get("result_state") == "numeric_fact":
+                sources.update(source_items_from_tool("query_company_financial_facts", {
+                    "authority_state": "s2_numeric_fact_query_result", "results": [{"status": "resolved", "facts": [item]}]}))
+            elif item.get("result_state") == "source_bound_passage":
+                sources.update(source_items_from_tool("read_source_document", {"operation": "read", "items": [item]}))
+            elif item.get("result_state") == "reviewed_evidence":
+                sources.update(source_items_from_tool("read_reviewed_evidence", {"authority_state": "reviewed_evidence_read", "evidence": [item]}))
+            elif item.get("result_state") == "non_authoritative_metric":
+                sources.update(source_items_from_tool("calculate_research_metric", item))
+    return deepcopy(sources)
+
+
+class ObservedSourceRegistry:
+    """One composition's sources, shared by readers and trusted task handoffs.
+
+    This is a projection of original receipts, not a new evidence store. Only
+    host code restores observations; no model-facing registration tool exists.
+    """
+
+    def __init__(self, observations=()):
+        self._sources = source_items_from_observations(observations)
+
+    def restore(self, observations):
+        self._sources.update(source_items_from_observations(observations))
+
+    def remember(self, tool_name, body):
+        self._sources.update(source_items_from_tool(tool_name, body))
+
+    def get(self, source_id):
+        item = self._sources.get(source_id)
+        return deepcopy(item) if item is not None else None
+
+    def snapshot(self):
+        """Host-only copy for navigation over the same successful originals."""
+        return deepcopy(self._sources)
+
+
+def operand_binding_feedback(parsed, operands):
+    """Compare identifiers only; the author owns the formula and all bindings."""
+    used = {node.id for node in ast.walk(parsed) if isinstance(node, ast.Name)}
+    missing = sorted(used.difference(operands))
+    unused = sorted(set(operands).difference(used))
+    if missing or unused:
+        return ("formula_names_must_match_operands_no_unused_source_binding: "
+                f"missing_bindings={missing!r}, unused_bindings={unused!r}. "
+                "Check the intended expression. Supply a source binding for each missing sourced term "
+                "or revise the expression; supply only operands the expression uses.")
+    return None
+
+
+class OperandSourceError(ValueError):
+    def __init__(self, code, name, operand, *, observed_text=None, observed_item=None):
+        super().__init__(code)
+        self.code, self.name, self.operand = code, name, operand
+        self.observed_text = observed_text
+        self.observed_item = observed_item
+
+
+def _bind_operand(name, operand, source_lookup):
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{0,31}", name):
+        raise ValueError("operand_name_must_be_ascii_identifier")
+    if operand.source_id is None:
+        if operand.observation_field is not None:
+            raise ValueError("observation_field_requires_observed_source")
+        if not operand.assumption_note or operand.literal is None or operand.quote is not None:
+            raise ValueError("unsourced_operand_requires_literal_and_explicit_assumption")
+        value = _number(operand.literal)
+        binding = {"assumption_note": operand.assumption_note, "authority": "assumption"}
+    else:
+        try:
+            item = source_lookup(operand.source_id)
+        except KeyError as exc:
+            if exc.args != (operand.source_id,):
+                raise
+            raise OperandSourceError("source_id_not_observed", name, operand) from exc
+        if operand.assumption_note is not None:
+            raise ValueError("source_operand_cannot_be_relabelled_assumption")
+        if operand.observation_field is not None:
+            from .structured_observations import market_fields
+            selector = operand.observation_field.model_dump()
+            matches = [v for v in market_fields(item) if v['selector'] == selector]
+            if len(matches) != 1 or operand.quote is not None or operand.literal is not None:
+                raise OperandSourceError('observation_field_requires_unique_selection_without_literal_or_quote', name, operand, observed_item=item)
+            selected = matches[0]
+            value = _number(selected['value_decimal'])
+            binding = {'source_id': operand.source_id, 'authority': 'non_authoritative_source_reported',
+                       'observation_field': selector, 'observation_context': selected['context'],
+                       'literal': selected['value_decimal'], 'extraction_meaning_verified': False}
+        elif item.get("result_state") == "numeric_fact" and item.get("numeric_fact_authority") is True:
+            value = _number(str(item["value_decimal"]))
+            if operand.literal is not None and _number(operand.literal) != value:
+                raise ValueError("operand_value_differs_from_observed_s2_fact")
+            binding = {"source_id": operand.source_id, "authority": "s2_input", **{
+                key: item[key] for key in ("ticker", "metric_id", "period_start", "period_end", "unit", "fiscal_period",
+                                          "formula_trace", "source_observation_ids", "citation_urls", "research_as_of") if key in item}}
+        elif (item.get("result_state") == "non_authoritative_metric" and item.get("arithmetic_verified") is True
+                and item.get("numeric_fact_authority") is False and item.get("financial_semantics_verified") is False):
+            if operand.source_id.startswith("CALC::") and operand.source_id != item.get("calculation_id"):
+                raise ValueError("calculation_source_id_mismatch")
+            value = Decimal(str(item["value_decimal"]))
+            if not value.is_finite() or abs(value) > Decimal("1e100"):
+                raise ValueError("saved_calculation_value_out_of_range")
+            if operand.literal is not None and _number(operand.literal) != value:
+                raise ValueError("operand_value_differs_from_observed_calculation")
+            if operand.quote is not None:
+                raise ValueError("calculated_operand_uses_saved_result_not_a_source_quote")
+            binding = {"source_id": operand.source_id, "authority": "non_authoritative_calculation",
+                "source_calculation": {key: item[key] for key in ("calculation_id", "expression", "result_unit", "authority_note")}}
+        elif item.get("result_state") in {"reviewed_evidence", "source_bound_passage"} and item.get("writer_citable") is True:
+            text = str(item.get("passage") or item.get("bounded_excerpt") or "")
+            quote, quote_recovery = resolve_quote(text, operand.quote or "")
+            if not quote or quote not in text or operand.literal is None:
+                raise OperandSourceError("operand_quote_not_in_observed_source", name, operand, observed_text=text, observed_item=item)
+            literal_pattern = _NUMERIC_START + re.escape(operand.literal)
+            # A comma or period followed by prose is punctuation, whereas
+            # one followed by a digit continues the numeric token.
+            numeric_end = _NUMERIC_END
+            literal_match = re.search(literal_pattern + numeric_end, quote)
+            quantity_match = None
+            quantity_rule = "numeric_quantity_x_suffix_v1"
+            if literal_match is None:
+                # Product specifications commonly write counts as "8x GPU".
+                # Keep exact quote/literal binding; do not accept identifiers,
+                # longer numbers or arbitrary unit suffixes by dropping \w.
+                quantity_match = re.search(literal_pattern + r"[xX]" + numeric_end, quote)
+                if quantity_match is None:
+                    # Exact SI/IEC specification suffixes, case-sensitive.
+                    # This recognizes a token boundary, not a unit conversion
+                    # or proof that the chosen table cell has the right meaning.
+                    quantity_match = re.search(literal_pattern +
+                        r"(?:[kMGTPE]?B(?:/s)?|[KMGTPE]iB(?:/s)?|[kMGT]?W|"
+                        r"[kMGTPE]?FLOPS|[kMGTPE]?FLOPs|[kMGTPE]?OPS)(?![\w/])",
+                        quote)
+                    quantity_rule = "numeric_specification_unit_suffix_v1"
+                if quantity_match is None:
+                    # Financial publishers attach scale abbreviations directly
+                    # to amounts (e.g. $2.4bn). Recognize the numeric boundary;
+                    # do not convert scale or infer a currency/comparison basis.
+                    quantity_match = re.search(literal_pattern +
+                        r"(?:bn|mn|tn|trn)(?!\w)", quote, flags=re.IGNORECASE)
+                    quantity_rule = "numeric_financial_scale_suffix_v1"
+                if quantity_match is None:
+                    # Only thousands-group punctuation may differ. Require
+                    # a unique complete token in the already exact quote;
+                    # never round, change sign/scale or match identifiers.
+                    matches = [m for m in re.finditer(
+                        _NUMERIC_START + r"-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?" + numeric_end,
+                        quote)
+                        if m.group().replace(',', '') == operand.literal.replace(',', '')]
+                    if len(matches) == 1:
+                        quantity_match = matches[0]
+                        quantity_rule = "numeric_thousands_grouping_v1"
+                if quantity_match is None:
+                    raise ValueError("numeric_literal_not_in_exact_source_quote: operand=" + name)
+            value = _number(operand.literal)
+            binding = {"source_id": operand.source_id, "quote": quote,
+                "literal": operand.literal, "authority": "non_authoritative_source_reported",
+                "extraction_meaning_verified": False}
+            if quote_recovery is not None:
+                binding["quote_layout_recovery"] = quote_recovery
+            if quantity_match is not None:
+                binding["runtime_compatibility_parse"] = {
+                    "rule": quantity_rule,
+                    "matched_text": quantity_match.group(),
+                    "quote_span": [quantity_match.start(), quantity_match.end()],
+                    "original_literal_preserved": True,
+                    "semantic_inference": False,
+                }
+        else:
+            raise ValueError("operand_requires_observed_citable_source_or_s2_fact")
+        binding["source_provenance"] = {key: item[key] for key in (
+            "source_url", "citation_urls", "source_locator", "title", "ticker", "company", "issuer_id",
+            "publication_date", "publication_date_status", "period_start", "period_end", "fiscal_period",
+            "source_reporting_period_end", "unit", "numeric_fact_authority", "authority_note",
+            "source_type", "source_tier", "source_role", "source_observation_ids", "content_sha256",
+            "organization_source", "organization_execution") if key in item}
+    return value, {**binding, "value_decimal": str(value)}
+
+
+def validate_operand_sources(request, source_lookup):
     values, bindings = {}, {}
     for name, operand in request.operands.items():
-        if not re.fullmatch(r"[a-z][a-z0-9_]{0,31}", name):
-            raise ValueError("operand_name_must_be_lowercase_identifier")
-        if operand.source_id is None:
-            if not operand.assumption_note or operand.literal is None or operand.quote is not None:
-                raise ValueError("unsourced_operand_requires_literal_and_explicit_assumption")
-            value = _number(operand.literal)
-            binding = {"assumption_note": operand.assumption_note, "authority": "assumption"}
-        else:
-            item = source_lookup(operand.source_id)
-            if operand.assumption_note is not None:
-                raise ValueError("source_operand_cannot_be_relabelled_assumption")
-            if item.get("result_state") == "numeric_fact" and item.get("numeric_fact_authority") is True:
-                value = _number(str(item["value_decimal"]))
-                if operand.literal is not None and _number(operand.literal) != value:
-                    raise ValueError("operand_value_differs_from_observed_s2_fact")
-                binding = {"source_id": operand.source_id, "authority": "s2_input", **{
-                    key: item[key] for key in ("ticker", "metric_id", "period_start", "period_end", "unit", "fiscal_period",
-                                              "formula_trace", "source_observation_ids", "citation_urls", "research_as_of") if key in item}}
-            elif (item.get("result_state") == "non_authoritative_metric" and item.get("arithmetic_verified") is True
-                    and item.get("numeric_fact_authority") is False and item.get("financial_semantics_verified") is False):
-                if operand.source_id.startswith("CALC::") and operand.source_id != item.get("calculation_id"):
-                    raise ValueError("calculation_source_id_mismatch")
-                value = Decimal(str(item["value_decimal"]))
-                if not value.is_finite() or abs(value) > Decimal("1e100"):
-                    raise ValueError("saved_calculation_value_out_of_range")
-                if operand.literal is not None and _number(operand.literal) != value:
-                    raise ValueError("operand_value_differs_from_observed_calculation")
-                if operand.quote is not None:
-                    raise ValueError("calculated_operand_uses_saved_result_not_a_source_quote")
-                binding = {"source_id": operand.source_id, "authority": "non_authoritative_calculation",
-                    "source_calculation": {key: item[key] for key in ("calculation_id", "expression", "result_unit", "authority_note")}}
-            elif item.get("result_state") in {"reviewed_evidence", "source_bound_passage"} and item.get("writer_citable") is True:
-                text = str(item.get("passage") or item.get("bounded_excerpt") or "")
-                if not operand.quote or operand.quote not in text or operand.literal is None:
-                    raise ValueError("operand_quote_not_in_observed_source")
-                if not re.search(r"(?<![\w.,])" + re.escape(operand.literal) + r"(?![\w.,])", operand.quote):
-                    raise ValueError("numeric_literal_not_in_exact_source_quote")
-                value = _number(operand.literal)
-                binding = {"source_id": operand.source_id, "quote": operand.quote,
-                    "literal": operand.literal, "authority": "non_authoritative_source_reported",
-                    "extraction_meaning_verified": False}
-            else:
-                raise ValueError("operand_requires_observed_citable_source_or_s2_fact")
-            binding["source_provenance"] = {key: item[key] for key in (
-                "source_url", "citation_urls", "source_locator", "title", "ticker", "company", "issuer_id",
-                "publication_date", "publication_date_status", "period_start", "period_end", "fiscal_period",
-                "source_reporting_period_end", "unit", "numeric_fact_authority", "authority_note",
-                "source_type", "source_tier", "source_role", "source_observation_ids", "content_sha256") if key in item}
-        values[name] = value
-        bindings[name] = {**binding, "value_decimal": str(value)}
+        try:
+            values[name], bindings[name] = _bind_operand(name, operand, source_lookup)
+        except OperandSourceError:
+            raise
+        except ValueError as exc:
+            raise OperandSourceError(str(exc), name, operand) from exc
+    return values, bindings
 
+
+def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Callable[[str], dict]) -> dict:
+    values, bindings = validate_operand_sources(request, source_lookup)
     evaluator = SimpleEval(names=values, functions={}, operators={
         ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
         ast.Div: operator.truediv, ast.USub: operator.neg, ast.UAdd: operator.pos})
@@ -145,9 +378,9 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
         with localcontext() as context:
             context.prec = 34
             parsed = ast.parse(request.expression, mode="eval").body
-            used = {node.id for node in ast.walk(parsed) if isinstance(node, ast.Name)}
-            if used != set(values):
-                raise ValueError("formula_names_must_match_operands_no_unused_source_binding")
+            feedback = operand_binding_feedback(parsed, values)
+            if feedback:
+                raise ValueError(feedback)
             value = evaluator.eval(request.expression, previously_parsed=parsed)
             if not isinstance(value, Decimal) or not value.is_finite() or abs(value) > Decimal("1e100"):
                 raise ValueError("calculation_result_not_finite_or_out_of_range")
@@ -160,6 +393,12 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
         "authority_note": "Locally calculated from bound inputs and explicit assumptions; NOT an S2 NumericFact or issuer-reported measure. "
             "Disclose non-authoritative inputs and assumptions wherever the result or its inference is used. "
             "Check units, periods, business scope and denominator meaning in financial review."}
+    if any(name != name.lower() for name in values):
+        body["runtime_compatibility_parse"] = {
+            "rule": "case_sensitive_ascii_operand_names_v1",
+            "original_expression_and_names_preserved": True,
+            "semantic_inference": False,
+        }
     return {"calculation_id": "CALC::" + canonical_sha256(body)[:24], **body}
 
 
@@ -174,4 +413,6 @@ def register_source_calculator_tool(server, source_lookup, *, on_result=None):
             return result
         except ValueError as exc:
             from mcp.server.mcpserver.exceptions import ToolError
-            raise ToolError(str(exc) + ". For S2 or a saved CALC use {source_id: observed ID}; for prose use an observed PASSAGE/evidence/archive ID plus exact quote and literal. Re-query SQL or read the original passage if this tool session has not observed the ID. Do not remove source binding or relabel sourced numbers as assumptions.") from None
+            detail = (" The source was found, but the supplied quote could not be bound exactly or through a unique layout-only match. Read that source and copy the contiguous text; check repeated matches, row labels and all nonempty cells. Do not change numbers to force a match."
+                if str(exc) == "operand_quote_not_in_observed_source" else "")
+            raise ToolError(str(exc) + detail + ". For S2 or a saved CALC use {source_id: observed ID}; for prose use an observed PASSAGE/evidence/archive ID plus exact quote and literal. Re-query SQL or read the original passage if this tool session has not observed the ID. Do not remove source binding or relabel sourced numbers as assumptions.") from None

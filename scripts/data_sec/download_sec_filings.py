@@ -101,7 +101,7 @@ def main() -> None:
 
     user_agent = args.user_agent or os.getenv("SEC_USER_AGENT")
     if not user_agent:
-        user_agent = "FinSight-Agent/0.1 contact@example.com"
+        raise SystemExit("Set SEC_USER_AGENT to your application name and real contact email.")
 
     ticker_filter = parse_csv_filter(args.tickers)
     year_filter = {int(value) for value in args.years.split(",")} if args.years else None

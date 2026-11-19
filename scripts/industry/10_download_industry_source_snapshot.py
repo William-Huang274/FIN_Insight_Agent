@@ -3,11 +3,12 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import os
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +28,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--contract", default="configs/sources/industry_apis.yaml")
     parser.add_argument("--snapshot-id", default="")
     parser.add_argument("--as-of-date", default="")
+    parser.add_argument('--fred-time-mode', choices=['strict_as_of', 'retrospective'], default='retrospective',
+        help='FRED: strict historical release vintage via API, or latest revised history explicitly labelled as retrospective.')
     parser.add_argument("--output-root", default="data/processed_private/industry_data")
     parser.add_argument("--timeout-s", type=int, default=25)
     parser.add_argument("--sleep-s", type=float, default=0.1)
@@ -81,6 +84,7 @@ def main() -> int:
             )
             continue
         if route_type == "fred_csv":
+            source = {**source, 'time_mode': args.fred_time_mode}
             for series in source.get("series", []) or []:
                 series_id = str(series.get("series_id") or "")
                 if series_id_filter and series_id not in series_id_filter:
@@ -227,20 +231,57 @@ def download_fred_series(
     series_id = str(series.get("series_id") or "")
     if not series_id:
         raise ValueError("Missing FRED series_id")
+    cutoff = date.fromisoformat(as_of_date)
+    if cutoff > date.fromisoformat(fetched_at[:10]):
+        raise ValueError('research_cutoff_after_retrieval_date')
+    mode = source.get('time_mode', 'retrospective')
+    if mode not in {'strict_as_of', 'retrospective'}:
+        raise ValueError('unsupported_fred_time_mode')
     base_url = str(source.get("base_url") or "https://fred.stlouisfed.org/graph/fredgraph.csv")
-    response = request_get_with_retry(base_url, params={"id": series_id}, timeout=timeout, retries=retries, retry_backoff_s=retry_backoff_s)
-    response.raise_for_status()
+    if mode == 'strict_as_of':
+        key = os.environ.get(str(source.get('api_key_env_var') or 'FRED_API_KEY'))
+        if not key:
+            raise ValueError('fred_historical_vintage_requires_api_key_no_latest_csv_fallback')
+        base_url = 'https://api.stlouisfed.org/fred/series/observations'
+        params = dict(series_id=series_id, api_key=key, file_type='json',
+            realtime_start=as_of_date, realtime_end=as_of_date, observation_end=as_of_date,
+            sort_order='asc', limit=100000)
+        try:
+            response = request_get_with_retry(base_url, params=params, timeout=timeout, retries=retries, retry_backoff_s=retry_backoff_s)
+            response.raise_for_status()
+        except requests.RequestException as exc:
+            raise RuntimeError('FRED vintage request failed: '+_redact_api_key_url(str(exc)).replace(key, '<redacted>')) from None
+        body = response.json()
+        raw_rows = body.get('observations', [])
+        if body.get('realtime_start') != as_of_date or body.get('realtime_end') != as_of_date:
+            raise ValueError('fred_response_vintage_mismatch')
+        if int(body.get('count', len(raw_rows))) > len(raw_rows):
+            raise ValueError('fred_response_incomplete_pagination_required')
+        raw_rows = [{**r, 'observation_date': r.get('date'), series_id: r.get('value')} for r in raw_rows]
+        api_route = f'{base_url}?series_id={series_id}&realtime_start={as_of_date}&realtime_end={as_of_date}'
+        revision = 'historical_vintage_as_of'
+    else:
+        response = request_get_with_retry(base_url, params={"id": series_id}, timeout=timeout, retries=retries, retry_backoff_s=retry_backoff_s)
+        response.raise_for_status()
+        raw_rows = csv.DictReader(response.text.splitlines())
+        api_route = f'{base_url}?id={series_id}'
+        revision = 'current_revised_not_historical_vintage'
+    temporal_basis = {'time_mode': mode, 'observation_cutoff': as_of_date,
+        'retrieved_at': fetched_at, 'known_as_of': as_of_date if mode == 'strict_as_of' else None,
+        'historical_information_set_eligible': mode == 'strict_as_of'}
     rows: list[dict[str, Any]] = []
-    for raw in csv.DictReader(response.text.splitlines()):
+    for raw in raw_rows:
         observation_date = raw.get("observation_date")
         raw_value = raw.get(series_id)
         if not observation_date or raw_value in {None, "", "."}:
+            continue
+        if date.fromisoformat(observation_date) > cutoff:
             continue
         try:
             value: float | None = float(raw_value)
         except ValueError:
             value = None
-        if value is None:
+        if value is None or not math.isfinite(value):
             continue
         rows.append(
             {
@@ -253,14 +294,17 @@ def download_fred_series(
                 "frequency": series.get("frequency") or source.get("default_frequency"),
                 "value": value,
                 "unit": series.get("unit"),
-                "revision_status": "latest_provider_csv",
+                "revision_status": revision,
                 "fetched_at": fetched_at,
                 "route_type": source.get("route_type"),
-                "api_route": f"{base_url}?id={series_id}",
-                "facet_json": json.dumps(series.get("facet") or {}, ensure_ascii=False, sort_keys=True),
+                "api_route": api_route,
+                "facet_json": json.dumps({**(series.get("facet") or {}), 'temporal_basis': {
+                    **temporal_basis, 'provider_realtime_start': raw.get('realtime_start'),
+                    'provider_realtime_end': raw.get('realtime_end')}}, ensure_ascii=False, sort_keys=True),
                 "allowed_claim_types_json": json.dumps(source.get("allowed_claim_types") or [], ensure_ascii=False),
             }
         )
+    rows.sort(key=lambda r:r['observation_date'])
     if not rows:
         raise RuntimeError(f"FRED returned no usable observations for {series_id}")
     return rows
@@ -292,6 +336,9 @@ def build_series_evidence_row(
         "caveats": [
             "Industry data provides macro or sector context only.",
             "It must not overwrite company-filed financial facts.",
+            ('Latest revised observations: as_of_date is only the observation cutoff, not the information available then.'
+             if first.get('revision_status') == 'current_revised_not_historical_vintage'
+             else 'Historical vintage returned for the requested information date; retain original revision and release context.'),
         ],
         "latest_observation_date": latest.get("observation_date"),
         "latest_value": latest.get("value"),
@@ -299,7 +346,8 @@ def build_series_evidence_row(
         "frequency": series.get("frequency") or source.get("default_frequency"),
         "fetched_at": fetched_at,
         "route_type": source.get("route_type"),
-        "facet": series.get("facet") or {},
+        "facet": json.loads(first.get('facet_json') or '{}'),
+        "api_route": first.get('api_route'),
     }
 
 

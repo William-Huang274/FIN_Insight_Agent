@@ -1,0 +1,223 @@
+"""Native admission of one Java-authorized orientation run before host resources."""
+import asyncio
+from contextlib import asynccontextmanager
+import json
+import os
+from pathlib import Path
+from uuid import UUID
+
+from langchain_core.runnables import RunnableLambda
+from pydantic import SecretStr
+
+from sec_agent.research_foundation.organization_execution_access import (
+    OrganizationExecutionAuthority, OrganizationExecutionReader, OrganizationExecutionUnavailable, validate_execution_grant,
+)
+from sec_agent.research_foundation.asset_workspace import AssetWorkspace
+from .organization_native_contract import validate_start, validate_thread, run_request, run_receipt
+from .organization_continuation_contract import validate_continuation, validate_baseline, continuation_request, continuation_receipt
+from .organization_report_action_contract import (
+    validate_action, validate_baseline as validate_action_baseline, action_request, action_receipt, check_resumed_action,
+)
+
+
+class OrganizationStartAuthority:
+    def __init__(self, resources, *, run_id, context):
+        self.resources, self.run_id, self.context = resources, str(UUID(run_id)), dict(context)
+
+    def __call__(self):
+        c = self.context
+        grant = self.resources.request(f'/v1/runtime/organization-executions/{self.resources.execution_id}/admit-start',
+            {'thread_id':self.resources.execution_id, 'run_id':self.run_id, 'operation_id':c['start_operation_id'],
+             'manifest_digest':self.resources.manifest_digest, 'configuration_digest':c['configuration_digest'],
+             'start_request_digest':c['start_request_digest']})
+        try:
+            validate_execution_grant(grant, self.resources.execution_id, self.resources.manifest_digest)
+            validate_start(grant)
+            if grant['authorized_run_id'] != self.run_id or any(grant[key] != value for key, value in c.items()):
+                raise ValueError('scope')
+        except (KeyError, ValueError, TypeError):
+            raise OrganizationExecutionUnavailable('组织原生运行启动授权不匹配。') from None
+        return grant
+
+
+class OrganizationContinuationAuthority(OrganizationStartAuthority):
+    def __call__(self):
+        c = self.context
+        grant = self.resources.request(f'/v1/runtime/organization-executions/{self.resources.execution_id}/admit-continuation',
+            {'thread_id': self.resources.execution_id, 'run_id': self.run_id, 'operation_id': c['continuation_operation_id'],
+             'manifest_digest': self.resources.manifest_digest, 'configuration_digest': c['configuration_digest'],
+             'continuation_request_digest': c['continuation_request_digest']})
+        try:
+            validate_execution_grant(grant, self.resources.execution_id, self.resources.manifest_digest)
+            validate_continuation(grant)
+            if grant['authorized_run_id'] != self.run_id or any(grant[key] != value for key, value in c.items()):
+                raise ValueError('scope')
+        except (KeyError, ValueError, TypeError):
+            raise OrganizationExecutionUnavailable('组织接续运行授权不匹配。') from None
+        return grant
+
+
+class OrganizationReportActionAuthority(OrganizationStartAuthority):
+    def __call__(self):
+        c = self.context
+        grant = self.resources.request(f'/v1/runtime/organization-executions/{self.resources.execution_id}/admit-report-action',
+            {'command_id': c['report_command_id'], 'thread_id': self.resources.execution_id, 'run_id': self.run_id,
+             'operation_id': c['report_action_operation_id'], 'manifest_digest': self.resources.manifest_digest,
+             'configuration_digest': c['configuration_digest'], 'report_action_request_digest': c['report_action_request_digest']})
+        try:
+            validate_execution_grant(grant, self.resources.execution_id, self.resources.manifest_digest)
+            validate_action(grant)
+            if grant['authorized_run_id'] != self.run_id or any(grant[key] != value for key, value in c.items()):
+                raise ValueError('scope')
+        except (KeyError, ValueError, TypeError):
+            raise OrganizationExecutionUnavailable('组织报告操作授权不匹配。') from None
+        return grant
+
+
+async def admit(native, config, thread, authority):
+    """Do not trust thread flags or caller config as permission to dispatch models."""
+    grant = await asyncio.to_thread(authority)
+    validate_thread(thread, grant)
+    run = await native.runs.get(grant['execution_id'], authority.run_id)
+    if run.get('run_id') != authority.run_id:
+        raise ValueError('organization_native_run_identity_mismatch')
+    continuing = 'continuation_request' in grant
+    reporting = 'report_action_request' in grant
+    preparation = None
+    if reporting and grant['report_action_request'].get('action') == 'recover':
+        from sec_agent.adapters.explicit_run_recovery import verified_preparation_recovery
+        settings = json.loads(Path(os.environ['FINSIGHT_REPORT_SESSION_SETTINGS']).read_text(encoding='utf8'))
+        preparation = verified_preparation_recovery(settings['audit_root'], grant['execution_id'],
+            grant['report_action_request']['previous_run_id'], secret=os.environ['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'])
+    extra = {'preparation_recovery': bool(preparation)} if reporting else {}
+    (action_receipt if reporting else continuation_receipt if continuing else run_receipt)(run, thread, grant, **extra)
+    expected = (action_request if reporting else continuation_request if continuing else run_request)(thread, grant, **extra)['config']['configurable']
+    actual = config['configurable']
+    if (any(actual.get(key) != value for key, value in expected.items())
+            or any(key.startswith('finsight_') and key not in expected for key in actual)):
+        raise ValueError('organization_runtime_configuration_mismatch')
+    saved = await native.threads.get_state(grant['execution_id'])
+    if continuing or reporting:
+        (validate_action_baseline if reporting else validate_baseline)(saved, grant, **extra)
+        payload = grant['report_action_request' if reporting else 'continuation_request']
+        previous = await native.runs.get(grant['execution_id'], payload['previous_run_id'])
+        statuses = {'error', 'interrupted', 'timeout'} if payload.get('action') == 'recover' else {'success'}
+        if previous['status'] not in statuses or previous['run_id'] != payload['previous_run_id']:
+            raise ValueError('organization_continuation_predecessor_not_complete')
+    elif saved.get('values'):
+        raise ValueError('organization_initial_run_requires_empty_state')
+    return grant
+
+
+@asynccontextmanager
+async def organization_graph(config, native, thread):
+    """Admit one frozen organization command before opening scoped resources."""
+    from . import research_session_runtime as host
+    from .current_research_contract import current_foundation
+    from .organization_data_composition import OrganizationDataFactory
+    from .research_budget import budget_from_host
+    ids = config['configurable']
+    thread_id, run_id = str(UUID(str(ids['thread_id']))), str(UUID(str(ids['run_id'])))
+    resources = OrganizationExecutionAuthority(base_url=os.environ['FINSIGHT_BUSINESS_API_URL'],
+        network_profile=os.getenv('FINSIGHT_ORGANIZATION_AUTHORITY_NETWORK', 'loopback'),
+        secret=os.environ['FINSIGHT_ORGANIZATION_RUNTIME_SECRET'], execution_id=thread_id,
+        manifest_digest=thread['metadata']['organization_execution']['manifest_digest'])
+    command_types = {'start': OrganizationStartAuthority, 'continuation': OrganizationContinuationAuthority,
+                     'report_action': OrganizationReportActionAuthority}
+    active = [key for key in command_types if ids.get('finsight_organization_' + key) is not None]
+    if len(active) != 1:
+        raise ValueError('organization_run_has_conflicting_commands')
+    kind = active[0]
+    continuing, reporting = kind == 'continuation', kind == 'report_action'
+    authority = command_types[kind](resources, run_id=run_id, context=ids['finsight_organization_' + kind])
+    from sec_agent.research_foundation.preparation_observability import preparation_span
+    with preparation_span('native_admission'):
+        grant = await admit(native, config, thread, authority)
+    from .organization_native_contract import on_demand
+    continuous = on_demand(grant)
+    if continuous and os.getenv('FINSIGHT_ON_DEMAND_ENABLED') != '1':
+        raise ValueError('on_demand_execution_not_enabled')
+    if continuous and continuing:
+        raise ValueError('on_demand_requires_root_task_command')
+    def check():
+        if authority() != grant:
+            raise OrganizationExecutionUnavailable('组织启动授权发生变化。')
+    # Host paths, budget, memory and model configuration are opened only after admission.
+    root = Path(os.environ['FIN_REPO_ROOT'])
+    settings = json.loads(Path(os.environ['FINSIGHT_REPORT_SESSION_SETTINGS']).read_text(encoding='utf-8'))
+    profile, case = host.load_research_runtime_profile(root)
+    studio, execution = host.configuration_from_native(config), host.execution_from_config(config)
+    cutoff = grant[kind + '_request']['research_as_of']
+    foundation = current_foundation(thread_id=thread_id,
+        profile=studio.apply_case(case) if studio else case, research_as_of=cutoff)
+    workspace = AssetWorkspace(Path(os.environ['FINSIGHT_ORGANIZATION_ASSETS_ROOT']))
+    reader = OrganizationExecutionReader(workspace, resources)
+    organization = OrganizationDataFactory(reader, foundation=foundation, research_as_of=cutoff,
+        workbench_url=settings['workbench_url'],
+        retrieval_root=os.getenv('FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT'))
+    try:
+        # Admit the current task now; retrieve/verify a release only if a tool
+        # actually uses it. Model access and saved-source restoration retain
+        # their own current authorization checks.
+        if not continuous:
+            # Frozen legacy workflows retain their original admission contract.
+            await asyncio.to_thread(organization.prepare_retrieval)
+        check()
+        public, private = host.session_audit_sinks(Path(settings['audit_root']) / thread_id / run_id)
+        budget = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,
+            metadata=thread['metadata'], environment=os.environ)
+        environment = dict(os.environ)
+        if execution.runtime_profile:
+            if not continuous:
+                raise ValueError("organization_profile_requires_continuous_execution")
+            from .organization_model_profiles import execution_profile
+            _, template, credentials = await asyncio.to_thread(execution_profile, settings, environment,
+                grant, thread_id, load_keys=True, expected_reference=execution.runtime_profile)
+            for name in ("OPENAI_API_KEY", "DEEPSEEK_API_KEY"):
+                environment.pop(name, None)
+            environment.update(credentials)
+            settings = {**settings, "harness_execution_bindings": {
+                **settings.get("harness_execution_bindings", {}), thread_id: template}}
+        elif thread_id in settings.get("organization_profile_bindings", {}):
+            raise ValueError("organization_reserved_profile_required")
+        harness_selected = continuous and thread_id in settings.get('harness_execution_bindings', {})
+        phase_arguments = dict(root=root, settings=settings, profile=profile, case=case,
+            thread_id=thread_id, run_id=run_id,
+            api_key=None if harness_selected else SecretStr(os.environ['DEEPSEEK_API_KEY']),
+            public_sink=public, private_sink=private, studio=studio, execution=execution,
+            budget_scope=budget, organization_data_factory=organization, run_access_check=check,
+            environment={**environment, 'FINSIGHT_RESEARCH_AS_OF':cutoff})
+        if continuous:
+            # Only deployment-owned bindings select the replacement. Browser
+            # commands retain the same Java admission/configuration contract.
+            # A configured harness error must never fall back to another model
+            # loop and spend again on the same work.
+            if harness_selected:
+                from .organization_harness_session import organization_harness_session as work_session
+            else:
+                from .organization_work_session import organization_work_session as work_session
+            async with work_session(native=native, resources=resources, authority=authority,
+                    check=check, organization=organization, phase_arguments=phase_arguments, config=config,
+                    grant=grant, expected_input=(None if reporting else run_request(thread, grant)['input']), environment=environment) as graph:
+                yield graph.with_config({'recursion_limit': 280})
+            return
+        phases = host.create_research_phase_runnables(**phase_arguments)
+        expected = None if reporting else (continuation_request if continuing else run_request)(thread, grant)['input']
+        async def input_guard(value):
+            await asyncio.to_thread(check)
+            if value != expected:
+                raise ValueError('organization_start_input_mismatch')
+            return value
+        def unavailable(_):
+            raise ValueError('organization_continuation_not_enabled')
+        phases = {key:(phase if key == 'hierarchical' else RunnableLambda(input_guard) | phase if key == 'research' else phase if continuing or reporting else RunnableLambda(unavailable))
+                  for key, phase in phases.items()}
+        def action_check(values, action):
+            check()
+            if not reporting:
+                raise ValueError('organization_report_requires_independent_command')
+            check_resumed_action(values, action, grant)
+        yield host.build_research_session_graph(**phases, promote_orientation=continuing,
+            review_action_check=action_check).compile(name='research_session').with_config({'recursion_limit':280})
+    finally:
+        await asyncio.to_thread(organization.close)

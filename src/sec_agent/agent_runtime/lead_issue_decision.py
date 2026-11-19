@@ -1,0 +1,132 @@
+"""Lead issue dispositions; native convergence remains the only scheduler."""
+import json
+from typing import Literal
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class IssueDisposition(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    finding_id: str = Field(description="Current finding ID. A reviewer-original ID is also accepted only when the current paper's supplied identity mapping resolves it uniquely; ambiguous IDs require the full current ID.")
+    paper_id: str
+    disposition: Literal["repair", "disagree_with_sources", "unresolved", "carry_advisory"]
+    rationale: str = Field(min_length=20, max_length=3000)
+    requested_change: str = Field(default="", max_length=3000,
+        description="Targeted remedy for the actual current defect. Preserve existing correct content; do not label numbers absent from the candidate as content to preserve. Identifier repair alone does not require new claims. New substantive issues belong in new_findings with their own basis.")
+    expected_progress: str = Field(min_length=10, max_length=2000)
+    citation_ids: list[str] = Field(default_factory=list, max_length=16)
+    report_handling: str = Field(default="", max_length=2000,
+        description="For carry_advisory, explain why the existing advisory does not block the answer and exactly how synthesis should avoid or qualify the affected wording. This does not mark the paper corrected or independently approved.")
+
+
+class ReviewerRecoveryAssignment(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    reviewer: Literal['counter', 'verifier']
+    objective: str = Field(min_length=20, max_length=3000)
+    expected_progress: str = Field(min_length=20, max_length=2000)
+    stop_condition: str = Field(min_length=20, max_length=2000)
+    prerequisite: Literal['current_candidate', 'author_revision'] | None = Field(default=None,
+        description='State which artifact must exist before this work can run. Initial-review recovery permits current_candidate only; author_revision requires a later author-edit stage.')
+    candidate_versions: dict[str, str] = Field(default_factory=dict,
+        description='Exact paper_id to current digest mapping for papers inspected by this assignment; copy available_candidate_versions. Do not invent a future version.')
+
+
+class LeadIssueDecision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    summary: str = Field(min_length=20, max_length=4000)
+    action: Literal["repair", "synthesize", "stop", "resume_review"]
+    review_assignments: list[ReviewerRecoveryAssignment] = Field(default_factory=list, max_length=2)
+    dispositions: list[IssueDisposition] = Field(default_factory=list, max_length=64)
+    new_findings: list[IssueDisposition] = Field(default_factory=list, max_length=16,
+        description="Material issues discovered by Lead in current papers, not duplicates of supplied findings. Use a new finding_id, responsible paper, exact problematic quote in rationale, targeted repair and expected progress; or unresolved and stop.")
+
+
+def resolve_disposition_ids(decision, feedback):
+    """Resolve identities from current runtime metadata, never prose or fuzzy suffixes.
+
+    Persisted reviewer findings retain their original IDs. The current feedback
+    adds role/confirmation namespaces; original_finding_id is the authoritative
+    bridge. Do not mutate the proposal, invent aliases or choose between roles.
+    """
+    index = {}
+    for pid, findings in feedback.items():
+        for finding in findings:
+            canonical = finding['finding_id']
+            aliases = {canonical}
+            original = finding.get('original_finding_id')
+            if isinstance(original, str) and original:
+                aliases.add(original)
+                role = finding.get('reviewer')
+                if role in {'counter', 'verifier'}:
+                    aliases.add(role + ':' + original)
+            for alias in aliases:
+                index.setdefault((pid, alias), set()).add(canonical)
+    resolved = decision.model_copy(deep=True)
+    receipts, errors = [], []
+    for i, row in enumerate(resolved.dispositions):
+        candidates = sorted(index.get((row.paper_id, row.finding_id), set()))
+        if len(candidates) > 1:
+            errors.append('ambiguous_finding_id:' + json.dumps({
+                'field_path': f'/dispositions/{i}/finding_id', 'paper_id': row.paper_id,
+                'submitted_id': row.finding_id, 'candidate_ids': candidates,
+                'remedy': 'Select the full current finding ID; runtime has not chosen a reviewer or round.'}))
+        elif len(candidates) == 1 and candidates[0] != row.finding_id:
+            receipts.append({'field_path': f'/dispositions/{i}/finding_id',
+                'paper_id': row.paper_id, 'submitted_id': row.finding_id,
+                'resolved_id': candidates[0], 'basis': 'current_feedback_identity_mapping'})
+            row.finding_id = candidates[0]
+    return resolved, receipts, errors
+
+
+def decision_errors(decision, feedback, paper_ids, *, incomplete_reviewers=None, current_versions=None):
+    expected = {(pid, f["finding_id"]) for pid, rows in feedback.items() for f in rows}
+    actual = [(row.paper_id, row.finding_id) for row in decision.dispositions]
+    errors = []
+    if incomplete_reviewers is not None:
+        roles = [row.reviewer for row in decision.review_assignments]
+        if decision.action not in {'resume_review', 'repair', 'stop'}:
+            errors.append('Incomplete review permits resume_review, repair or stop; never synthesis acceptance.')
+        if decision.action == 'resume_review' and (len(roles) != len(set(roles)) or set(roles) != set(incomplete_reviewers)):
+            errors.append('Assign every incomplete reviewer once, retaining its own saved reads and findings.')
+        if decision.action in {'stop', 'repair'} and roles:
+            errors.append('Stop/repair must not schedule checks against a nonexistent future revision.')
+        if current_versions is not None:
+            for assignment in decision.review_assignments:
+                if assignment.prerequisite != 'current_candidate':
+                    errors.append('review_prerequisite_unavailable:' + assignment.reviewer +
+                        ':Only current_candidate exists. Complete inspection of this unchanged draft, or stop if author_revision is necessary. No author edits are executed by resume_review.')
+                if (not assignment.candidate_versions or any(current_versions.get(pid) != digest
+                        for pid, digest in assignment.candidate_versions.items())):
+                    errors.append('review_candidate_version_missing_or_stale:' + assignment.reviewer + ':' + str(current_versions))
+    elif decision.action == 'resume_review' or decision.review_assignments:
+        errors.append('Review recovery is only available in the incomplete-review triage stage.')
+    if len(actual) != len(set(actual)) or set(actual) != expected:
+        errors.append("Each original paper/finding pair must have exactly one disposition. " + json.dumps({
+            'expected_pairs':sorted(expected), 'missing_pairs':sorted(expected-set(actual)),
+            'unexpected_pairs':sorted(set(actual)-expected),
+            'remedy':'Use a current paper/finding pair from expected_pairs. Only uniquely mapped reviewer-original IDs can be resolved; unknown or ambiguous IDs are not guessed. New issues belong in new_findings, not original dispositions.'}))
+    if any(row.paper_id not in paper_ids for row in decision.dispositions):
+        errors.append("Unknown responsible paper.")
+    discovered = [(row.paper_id, row.finding_id) for row in decision.new_findings]
+    if len(discovered) != len(set(discovered)) or set(discovered) & expected:
+        errors.append("New findings must be unique and distinct from supplied findings.")
+    if any(row.paper_id not in paper_ids or row.disposition == "disagree_with_sources" for row in decision.new_findings):
+        errors.append("A new issue must name an existing paper and require repair or remain unresolved.")
+    rows = [*decision.dispositions, *decision.new_findings]
+    severity = {(pid, f['finding_id']): f.get('severity') for pid, fs in feedback.items() for f in fs}
+    for row in rows:
+        if row.disposition == 'carry_advisory':
+            if severity.get((row.paper_id, row.finding_id)) != 'advisory':
+                errors.append('Only an explicitly advisory supplied finding may be carried; material, unknown and new findings require another disposition.')
+            if len(row.report_handling.strip()) < 20:
+                errors.append('Carried advisory requires an explicit non-blocking rationale and report handling; it is not a repaired or approved finding.')
+    repairs = any(row.disposition == "repair" for row in rows)
+    unresolved = any(row.disposition == "unresolved" for row in rows)
+    if any(row.disposition == "disagree_with_sources" and not row.citation_ids for row in rows):
+        errors.append("A disagreement requires actual source citations; reviewer assertions are not authority.")
+    if any(row.disposition == "repair" and not row.requested_change.strip() for row in rows):
+        errors.append("Each repair needs a targeted change and expected progress.")
+    if unresolved and decision.action not in {"stop", "resume_review"} or repairs and decision.action == "synthesize":
+        errors.append("Unresolved or pending repair work cannot be silently promoted to synthesis.")
+    if decision.action == "repair" and not repairs:
+        errors.append("Repair action needs at least one actual repair.")
+    return errors

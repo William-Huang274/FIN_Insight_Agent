@@ -99,7 +99,7 @@ class MCPRunBinding:
     branch_method_digests: Mapping[str, str]
     execution_attempt_id: str
     source_policy: Literal[
-        "frozen_local_reviewed_plus_public_web_locator_only"
+        "frozen_local_reviewed_plus_public_web_locator_only", "organization_fixed_inputs_only"
     ] = "frozen_local_reviewed_plus_public_web_locator_only"
 
     def __post_init__(self) -> None:
@@ -111,6 +111,7 @@ class MCPRunBinding:
             or not branches
             or len(branches) != len(set(branches))
             or set(self.branch_method_digests) != set(branches)
+            or self.source_policy not in {'frozen_local_reviewed_plus_public_web_locator_only', 'organization_fixed_inputs_only'}
             or any(not _digest(value) for value in digests)
         ):
             raise ValueError("mcp_run_binding_invalid")
@@ -140,6 +141,7 @@ def compose_mcp_graph_run(
     research_as_of: str,
     snapshot_id: str,
     execution_attempt_id: str,
+    source_policy: str = "frozen_local_reviewed_plus_public_web_locator_only",
 ) -> MCPGraphRunComposition:
     """Atomically derive graph branch methods and the matching MCP run binding."""
 
@@ -203,6 +205,7 @@ def compose_mcp_graph_run(
             selected_branch_ids=selected,
             branch_method_digests=branch_digests,
             execution_attempt_id=execution_attempt_id,
+            source_policy=source_policy,
         ),
     )
 
@@ -228,19 +231,23 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
         *,
         run_binding: MCPRunBinding,
         source_family_compiler: SourceFamilyCompiler | None = None,
-        subject_ticker: str = "DELL",
+        subject_ticker: str | None = None,
         default_financial_granularity: str = "quarter_discrete",
         read_timeout_seconds: float = 60.0,
         source_read_enabled: bool = False,
+        organization_sources_only: bool = False,
     ) -> None:
         self._server = server
         self._source_read_enabled = source_read_enabled
+        self._organization_sources_only = organization_sources_only
+        if organization_sources_only and (not source_read_enabled or run_binding.source_policy != 'organization_fixed_inputs_only'):
+            raise ValueError('organization_source_adapter_scope_required')
         self._binding = run_binding
         self._source_family_compiler = source_family_compiler
-        self._ticker = subject_ticker.strip().upper()
+        self._ticker = subject_ticker.strip().upper() if subject_ticker else None
         self._granularity = default_financial_granularity.strip()
         self._timeout = read_timeout_seconds
-        if not self._ticker or not self._granularity:
+        if not self._granularity:
             raise ValueError("mcp_adapter_default_empty")
         self._portal_cm: Any | None = None
         self._portal: BlockingPortal | None = None
@@ -276,6 +283,8 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
                     )
                 )
                 required = _TOOLS | ({READ_SOURCE_DOCUMENT_TOOL} if self._source_read_enabled else set())
+                if self._organization_sources_only:
+                    required = {GET_RESEARCH_METHOD_TOOL, READ_SOURCE_DOCUMENT_TOOL, 'get_research_method', 'calculate_research_metric'}
                 missing = sorted(required.difference(row[0] for row in discovered))
                 if missing:
                     raise MCPToolAdapterError(
@@ -333,6 +342,14 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
             if task.lane != lane:
                 raise MCPToolAdapterError("mcp_lane_callable_mismatch")
             self._validate_binding(task)
+            if self._organization_sources_only:
+                requests = task.task.evidence_requests if lane == 'evidence' else task.task.fact_requests
+                if lane == 'evidence':
+                    valid = all(set(row) == {'source_document'} and row['source_document'].get('source_space') == 'organization' for row in requests)
+                else:
+                    valid = all(set(row) == {'calculation'} for row in requests)
+                if not requests or not valid:
+                    raise MCPToolAdapterError('organization_tool_capability_not_authorized')
             method_call = self._method_call(task)
             calls.append(method_call)
             scope = self._scope(task, method_call)
@@ -496,6 +513,8 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
                     items.append({"result_state": "typed_gap", "navigation": {
                         "next_offset": result.next_offset, "total_matches": result.total_matches,
                         "notice": result.notice, "public_information_gap_proved": False,
+                        **({'execution_receipt': result.execution_receipt.model_dump(mode='json')}
+                           if result.execution_receipt is not None else {}),
                     }, "mcp_receipt_chain": [call.receipt]})
                     states.add("typed_gap")
                 continue
@@ -1201,10 +1220,13 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
                 metric_ids = [request["metric_id"]]
             if not isinstance(metric_ids, Sequence) or isinstance(metric_ids, (str, bytes)):
                 raise MCPToolAdapterError("mcp_fact_metric_ids_invalid")
+            ticker = request.get('ticker') or self._ticker
+            if not ticker:
+                raise MCPToolAdapterError('mcp_fact_explicit_ticker_required')
             arguments = {
                 "branch_id": lane_task.task.branch_id,
                 "run_scope": scope.model_dump(mode="json"),
-                "ticker": request.get("ticker", self._ticker),
+                "ticker": ticker,
                 "metric_ids": list(metric_ids),
                 "research_as_of": request.get(
                     "research_as_of", _as_of(lane_task.task.research_as_of)[:10]
@@ -1252,6 +1274,7 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
                     items.append(
                         self._gap(
                             "financial_fact_unresolved", [call.receipt],
+                            ticker=row.get("ticker"),
                             metric_id=row.get("metric_id"),
                             typed_gap=row.get("typed_gap"),
                         )
@@ -1261,6 +1284,7 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
                     items.append(
                         self._conflict(
                             [call.receipt],
+                            ticker=row.get("ticker"),
                             metric_id=row.get("metric_id"),
                             typed_conflict=row.get("typed_conflict"),
                         )

@@ -13,15 +13,31 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+class WorkingMemoryAccessDenied(RuntimeError):
+    """Authorization failure must stop execution, not become an optional-note error."""
+
+
 class WorkingMemory:
-    def __init__(self, path, *, owner, workspace, actor):
+    def __init__(self, path, *, owner, workspace, actor, access_check=None, allow_remote_search=True):
         if not all(isinstance(x, str) and x for x in (owner, workspace, actor)):
             raise ValueError("working_memory_scope_required")
         self.path = Path(path)
         self.owner, self.workspace, self.actor = owner, workspace, actor
+        self._access_check = access_check
+        self.allow_remote_search = allow_remote_search
+
+    def check_access(self):
+        if self._access_check is not None:
+            self._access_check()
+
+    def check_remote_search(self):
+        self.check_access()
+        if not self.allow_remote_search:
+            raise WorkingMemoryAccessDenied('working_memory_remote_search_not_authorized')
 
     @contextmanager
     def connection(self):
+        self.check_access()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         db = sqlite3.connect(self.path, timeout=10)
         db.row_factory = sqlite3.Row
@@ -35,12 +51,17 @@ class WorkingMemory:
             db.execute("""CREATE TABLE IF NOT EXISTS working_note_versions (
                 id TEXT NOT NULL, version INTEGER NOT NULL, body TEXT NOT NULL,
                 updated_at TEXT NOT NULL, PRIMARY KEY(id, version))""")
+            db.execute('''CREATE TABLE IF NOT EXISTS working_note_user_edits (
+                id TEXT NOT NULL,version INTEGER NOT NULL,updated_at TEXT NOT NULL,PRIMARY KEY(id,version))''')
             db.commit()
             yield db
+            # Includes direct SQL readers (revision catalogs, manifests and search).
+            # A write may already be committed; failure here never implies rollback.
+            self.check_access()
         finally:
             db.close()
 
-    def save(self, title: str, body: str, base_version: int = 0, *, mode="replace"):
+    def save(self, title: str, body: str, base_version: int = 0, *, mode="replace", user_edit=False):
         # Only transport/resource limits; no heading, prose, citation or finance schema.
         if mode not in {"replace", "append"}:
             raise ValueError("working_note_mode_invalid")
@@ -70,6 +91,8 @@ class WorkingMemory:
                     return {"saved": False, "reason": "合并后正文过长；请另建关联底稿。"}
             version = current + 1
             db.execute("INSERT INTO working_note_versions VALUES (?,?,?,?)", (note_id, version, body, now))
+            if user_edit:
+                db.execute('INSERT INTO working_note_user_edits VALUES(?,?,?)', (note_id, version, now))
             db.execute("""INSERT INTO working_notes VALUES (?,?,?,?,?,?,?,?)
                 ON CONFLICT(id) DO UPDATE SET body=excluded.body, version=excluded.version,
                 updated_at=excluded.updated_at""",

@@ -2,16 +2,19 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable, Mapping, Sequence
-from datetime import datetime, timezone
+from contextvars import ContextVar
+from datetime import date, datetime, timezone
 from hashlib import sha256
 import ipaddress
+import json
+from pathlib import Path
 import re
 import socket
 import time
 from typing import Any, AsyncContextManager, Literal, Protocol
 from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer, model_validator
 
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.research_foundation.contracts import ResearchRunScope
@@ -75,6 +78,18 @@ class ExternalSearchRequest(BaseModel):
     purpose: str = Field(min_length=3, max_length=500)
     max_results: int = Field(default=5, ge=1, le=8)
     include_domains: tuple[str, ...] = Field(default_factory=tuple, max_length=12)
+    search_backend: Literal['auto', 'bing', 'bing_china', 'baidu', 'github', 'bilibili'] = 'auto'
+    search_language: str | None = Field(default=None, pattern=r'^(all|[a-z]{2,3}(-[A-Za-z]{2,4})?)$')
+    start_published_date: date | None = None
+    end_published_date: date | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_digest(self, handler):
+        body=handler(self)
+        for key in ('search_backend','search_language','start_published_date','end_published_date'):
+            if key not in self.model_fields_set:
+                body.pop(key,None)
+        return body
 
     @field_validator("query", "branch_id", "purpose")
     @classmethod
@@ -102,6 +117,10 @@ class ExternalSearchRequest(BaseModel):
     def validate_branch_scope(self) -> "ExternalSearchRequest":
         if self.branch_id not in self.run_scope.selected_branch_ids:
             raise ValueError("external_search_branch_outside_run_scope")
+        if self.start_published_date and self.end_published_date and self.start_published_date > self.end_published_date:
+            raise ValueError('search_publication_date_range_invalid')
+        if self.end_published_date and self.end_published_date > self.run_scope.research_as_of.date():
+            raise ValueError('search_end_after_research_cutoff')
         return self
 
     @property
@@ -128,6 +147,7 @@ class ProviderHit(BaseModel):
     url: str
     snippet: str = ""
     published_at: str | None = None
+    runtime_compatibility: str | None = None
 
 
 class RetrievalCandidate(BaseModel):
@@ -170,6 +190,30 @@ class ProviderAttempt(BaseModel):
     returned_hits: int = Field(ge=0)
     accepted_hits: int = Field(ge=0)
     failure_code: str | None = None
+    runtime_compatibility: tuple[str, ...] = ()
+    date_filter_counts: dict[str, int] = Field(default_factory=dict)
+    engine_http: dict[str, int | str] = Field(default_factory=dict)
+    issuer_navigation: dict | None = None
+    legislation_navigation: list[dict] = Field(default_factory=list)
+    candidate_filter_counts: dict[str, int] = Field(default_factory=dict)
+    verification_failures: dict[str, int] = Field(default_factory=dict)
+    unresolved_originals: list[dict] = Field(default_factory=list)
+
+    @model_serializer(mode='wrap')
+    def preserve_archived_shape(self, handler):
+        body=handler(self)
+        if 'runtime_compatibility' not in self.model_fields_set:
+            body.pop('runtime_compatibility',None)
+        if 'date_filter_counts' not in self.model_fields_set:
+            body.pop('date_filter_counts',None)
+        if 'issuer_navigation' not in self.model_fields_set:
+            body.pop('issuer_navigation', None)
+        if 'engine_http' not in self.model_fields_set:
+            body.pop('engine_http', None)
+        for key in ('legislation_navigation', 'candidate_filter_counts', 'verification_failures', 'unresolved_originals'):
+            if key not in self.model_fields_set:
+                body.pop(key, None)
+        return body
 
 
 class DiscoveryReceipt(BaseModel):
@@ -236,6 +280,58 @@ class _MCPClient(Protocol):
     async def call_tool(self, name: str, arguments: Mapping[str, Any]) -> Any: ...
 
 
+class ExaTaskQuota:
+    """A confirmed provider limit sticks to this task, including later runs."""
+
+    def __init__(self, directory):
+        self.marker = Path(directory) / 'exa_mcp_rate_limited'
+
+    @property
+    def limited(self):
+        return self.marker.is_file()
+
+    def record_limit(self):
+        self.marker.parent.mkdir(parents=True, exist_ok=True)
+        self.marker.touch(exist_ok=True)
+
+
+def _quota_message(text):
+    text = text.lower()
+    return any(marker in text for marker in ("exa's free mcp rate limit", "rate limit exceeded",
+                                             "rate limit reached", "quota exceeded"))
+
+
+def _explicit_exa_limit(exc):
+    pending = [exc]
+    while pending:
+        error = pending.pop()
+        if (getattr(getattr(error, 'response', None), 'status_code', None) == 429
+                or _quota_message(str(error))):
+            return True
+        pending.extend(getattr(error, 'exceptions', ()))
+    return False
+
+
+async def _exa_call(open_client, name, arguments, quota):
+    if quota and quota.limited:
+        raise ExternalSourceError('exa_skipped_after_task_limit')
+    try:
+        async with open_client() as client:
+            result = await client.call_tool(name, arguments)
+    except Exception as exc:
+        if not _explicit_exa_limit(exc):
+            raise
+        if quota:
+            quota.record_limit()
+        raise ExternalSourceError('exa_mcp_rate_limited') from exc
+    if (_read_attr(result, "is_error", "isError", default=False)
+            and _quota_message(' '.join(_tool_result_text(result)))):
+        if quota:
+            quota.record_limit()
+        raise ExternalSourceError('exa_mcp_rate_limited')
+    return result
+
+
 class ExaHostedMCPProvider:
     """Thin Exa hosted-MCP discovery adapter; Exa output remains locator-only."""
 
@@ -247,34 +343,49 @@ class ExaHostedMCPProvider:
         endpoint: str = EXA_HOSTED_MCP_ENDPOINT,
         client_factory: Callable[[], AsyncContextManager[_MCPClient]] | None = None,
         timeout_seconds: float = 30.0,
+        on_response=None,
+        quota: ExaTaskQuota | None = None,
     ) -> None:
         self.endpoint = endpoint
         self.timeout_seconds = timeout_seconds
         self._client_factory = client_factory
+        self.on_response = on_response
+        self.quota = quota
 
-    def _client(self) -> AsyncContextManager[_MCPClient]:
+    def _client(self, *, advanced=False) -> AsyncContextManager[_MCPClient]:
         if self._client_factory is not None:
             return self._client_factory()
         try:
             from mcp import Client
         except ImportError as exc:  # pragma: no cover - dependency profile guard
             raise ExternalSourceError("exa_mcp_dependency_missing") from exc
-        return Client(self.endpoint, read_timeout_seconds=self.timeout_seconds)
+        endpoint=self.endpoint
+        if advanced and endpoint == EXA_HOSTED_MCP_ENDPOINT:
+            endpoint += '?tools=web_search_exa,web_fetch_exa,web_search_advanced_exa'
+        return Client(endpoint, read_timeout_seconds=self.timeout_seconds)
 
     async def search(self, request: ExternalSearchRequest) -> Sequence[ProviderHit]:
+        advanced=bool(request.include_domains or request.start_published_date or request.end_published_date)
+        arguments={'query':request.query,'numResults':request.max_results}
+        if request.include_domains:
+            arguments['includeDomains']=list(request.include_domains)
+        for field, wire in [('start_published_date','startPublishedDate'),('end_published_date','endPublishedDate')]:
+            if getattr(request,field):
+                arguments[wire]=getattr(request,field).isoformat()
         try:
-            async with self._client() as client:
-                result = await client.call_tool(
-                    "web_search_exa",
-                    {
-                        "query": request.query,
-                        "numResults": request.max_results,
-                    },
-                )
+            # Include connection setup/teardown, not just MCP call read time.
+            async with asyncio.timeout(self.timeout_seconds):
+                result = await _exa_call(lambda: self._client(advanced=advanced),
+                    'web_search_advanced_exa' if advanced else 'web_search_exa', arguments, self.quota)
+        except TimeoutError as exc:
+            raise ExternalSourceError('exa_mcp_search_timeout') from exc
         except ExternalSourceError:
             raise
         except Exception as exc:
             raise ExternalSourceError("exa_mcp_search_failed") from exc
+
+        if self.on_response is not None:
+            self.on_response('web_search_advanced_exa' if advanced else 'web_search_exa',arguments,result)
 
         if bool(_read_attr(result, "is_error", "isError", default=False)):
             raise ExternalSourceError("exa_mcp_tool_error")
@@ -289,8 +400,30 @@ class ExaHostedMCPProvider:
             return tuple(structured_hits[: request.max_results])
         text = "\n".join(_tool_result_text(result)).strip()
         if not text:
+            if isinstance(structured, Mapping) and structured.get('results') == []:
+                return ()
+            raise ExternalSourceError('exa_search_empty_unclassified_response')
+        try:
+            encoded=json.loads(text)
+        except json.JSONDecodeError:
+            encoded=None
+        if isinstance(encoded, Mapping):
+            hits=_parse_structured_search_hits(encoded)
+            if hits:
+                return tuple(h.model_copy(update={'runtime_compatibility':
+                    'runtime_compatibility:json_text_to_structured_search_results'}) for h in hits[:request.max_results])
+            if encoded.get('results') == []:
+                return ()
+            raise ExternalSourceError('exa_search_json_results_unrecognized')
+        hits=_parse_exa_search_text(text)
+        if hits:
+            return tuple(hits[:request.max_results])
+        if text.strip().lower().rstrip('.') in {'no results found', 'no search results found'}:
             return ()
-        return tuple(_parse_exa_search_text(text)[: request.max_results])
+        raise ExternalSourceError('exa_search_response_unrecognized_not_zero_results')
+
+
+_engine_http: ContextVar[dict | None] = ContextVar("engine_http", default=None)
 
 
 class DDGSDiagnosticProvider:
@@ -305,24 +438,63 @@ class DDGSDiagnosticProvider:
     ) -> None:
         self._search_callable = search_callable
 
-    def _search_sync(self, request: ExternalSearchRequest) -> Sequence[Mapping[str, Any]]:
+    def _search_sync(self, request: ExternalSearchRequest, observed: dict) -> Sequence[Mapping[str, Any]]:
         if self._search_callable is not None:
             return self._search_callable(
                 request.query,
                 max_results=request.max_results,
             )
         try:
-            from ddgs import DDGS
+            from ddgs.ddgs import DDGS
         except ImportError as exc:  # pragma: no cover - dependency profile guard
             raise ExternalSourceError("ddgs_dependency_missing") from exc
-        return list(DDGS().text(request.query, max_results=request.max_results))
+        # Use general web engines for source discovery, rather than encyclopedia
+        # entries that the library's automatic mode also ranks.
+        # DDGS 9.16 aggregates non-200 replies into "No results found".
+        # Observe only this invocation's engine clients; retain its native ranking.
+        class ObservedDDGS(DDGS):
+            def _get_engines(self, category, backend):
+                engines = super()._get_engines(category, backend)
+                for engine in engines:
+                    client = engine.http_client
+                    request_http = client.request
+
+                    def record(*args, call=request_http, name=engine.name, **kwargs):
+                        try:
+                            reply = call(*args, **kwargs)
+                        except Exception:
+                            observed[name] = "transport_error"
+                            raise
+                        observed[name] = reply.status_code
+                        return reply
+
+                    client.request = record
+                return engines
+
+        # Tool locale must reach the fallback too: DDGS otherwise defaults to
+        # us-en even for an explicitly Chinese/Japanese/Korean research request.
+        locale = (request.search_language or 'all').lower()
+        regions = {'zh-cn':'cn-zh', 'zh-tw':'tw-tzh', 'zh-hk':'hk-tzh',
+                   'ja-jp':'jp-jp', 'ko-kr':'kr-kr', 'en-us':'us-en',
+                   'en-gb':'uk-en', 'ru-ru':'ru-ru', 'all':'wt-wt'}
+        region = regions.get(locale, 'wt-wt')
+        from .public_network import proxy_url
+        return list(ObservedDDGS(timeout=12, proxy=proxy_url()).text(request.query, backend="yahoo,brave,duckduckgo",
+                                                   region=region, max_results=request.max_results))
 
     async def search(self, request: ExternalSearchRequest) -> Sequence[ProviderHit]:
+        observed = _engine_http.get()
+        if observed is None:
+            observed = {}
         try:
-            rows = await asyncio.to_thread(self._search_sync, request)
+            rows = await asyncio.to_thread(self._search_sync, request, observed)
         except ExternalSourceError:
             raise
         except Exception as exc:
+            if type(exc).__name__ == 'DDGSException' and str(exc).strip() == 'No results found.':
+                if any(status != 200 for status in observed.values()):
+                    raise ExternalSourceError("ddgs_engines_unavailable_or_partial") from exc
+                raise ExternalSourceError("ddgs_reported_no_results") from exc
             raise ExternalSourceError("ddgs_search_failed") from exc
         hits: list[ProviderHit] = []
         for row in rows[: request.max_results]:
@@ -360,6 +532,10 @@ class ExternalSourceDiscovery:
         self._monotonic = monotonic
 
     async def search(self, request: ExternalSearchRequest) -> DiscoveryReceipt:
+        # Enforce an unambiguous site operator even if the engine ignores it.
+        sites = re.findall(r'(?i)(?:^|\s)site:([a-z0-9.-]+)(?=\s|$)', request.query)
+        if len(sites) == 1 and not request.include_domains and not re.search(r'(?i)\bOR\b|["()|]', request.query):
+            request = request.model_copy(update={'include_domains':(sites[0].strip('.').lower(),)})
         started = self._clock()
         started_tick = self._monotonic()
         query_digest = request.request_digest
@@ -379,16 +555,21 @@ class ExternalSourceDiscovery:
                 break
             if provider_role == "diagnostic" and candidates:
                 break
+            engine_http = {}
+            token = _engine_http.set(engine_http)
             try:
                 hits = tuple(await provider.search(request))
             except ExternalSourceError as exc:
+                if exc.code == 'exa_skipped_after_task_limit':
+                    continue  # No provider request took place.
                 attempts.append(
                     ProviderAttempt(
                         provider_id=provider.provider_id,
-                        status="tool_failure",
+                        status="zero_results" if exc.code == "ddgs_reported_no_results" else "tool_failure",
                         returned_hits=0,
                         accepted_hits=0,
                         failure_code=exc.code,
+                        **({"engine_http": engine_http} if engine_http else {}),
                     )
                 )
                 continue
@@ -403,8 +584,12 @@ class ExternalSourceDiscovery:
                     )
                 )
                 continue
+            finally:
+                _engine_http.reset(token)
 
             accepted_before = len(candidates)
+            rejected_domains = 0
+            rejected_overlap = 0
             for provider_rank, hit in enumerate(hits, start=1):
                 if len(candidates) >= request.max_results:
                     break
@@ -413,9 +598,15 @@ class ExternalSourceDiscovery:
                 except ExternalSourceError:
                     continue
                 host = str(urlsplit(canonical_url).hostname or "").lower()
+                if provider.provider_id in {'ddgs_diagnostic_fallback', 'searxng'}:
+                    from .search_result_quality import has_query_overlap
+                    if not has_query_overlap(request.query, hit.title, hit.snippet, canonical_url):
+                        rejected_overlap += 1
+                        continue
                 if request.include_domains and not _host_in_domains(
                     host, request.include_domains
                 ):
+                    rejected_domains += 1
                     continue
                 if canonical_url in seen_urls:
                     continue
@@ -464,6 +655,13 @@ class ExternalSourceDiscovery:
                     status="ok" if accepted else "zero_results",
                     returned_hits=len(hits),
                     accepted_hits=accepted,
+                    **({'candidate_filter_counts':{
+                        **({'outside_requested_domains':rejected_domains} if rejected_domains else {}),
+                        **({'no_query_term_overlap':rejected_overlap} if rejected_overlap else {})}}
+                       if rejected_domains or rejected_overlap else {}),
+                    **({"engine_http": engine_http} if engine_http else {}),
+                    **({'runtime_compatibility':tuple(sorted({h.runtime_compatibility for h in hits if h.runtime_compatibility}))}
+                       if any(h.runtime_compatibility for h in hits) else {}),
                 )
             )
 
@@ -507,7 +705,10 @@ class ExternalCaptureRequest(BaseModel):
     candidate_id: str = Field(min_length=1, max_length=128)
     branch_id: str = Field(min_length=1, max_length=96)
     run_scope: ResearchRunScope | ConversationSourceScope
-    max_characters: int = Field(default=12_000, ge=500, le=200_000)
+    # None retains the bounded transport's entire extraction for subsequent
+    # paginated navigation. It does not increase HTTP/PDF resource limits or
+    # the window returned to a model. Existing bounded capture callers remain.
+    max_characters: int | None = Field(default=12_000, ge=500, le=200_000)
     render_policy: Literal["auto", "static", "hosted", "browser"] = "auto"
     minimum_useful_characters: int = Field(default=200, ge=1, le=2_000)
     timeout_seconds: float = Field(default=20.0, ge=1.0, le=60.0)
@@ -557,6 +758,8 @@ class FetchedPage(BaseModel):
     final_url: str
     html: str = ""
     extracted_text: str | None = None
+    extraction_method: Literal["sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "hosted_reader_html", "deepseek_hosted_publication", "arxiv_api_metadata", "playwright_browser"] | None = None
+    origin_failure_code: str | None = None
     status_code: int | None = None
     content_type: str | None = None
 
@@ -569,6 +772,12 @@ class CaptureAttempt(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     method: Literal[
+        "arxiv_api_metadata",
+        "hosted_reader_html", "deepseek_hosted_publication",
+        "deepseek_hosted_notice",
+        "x_public_embed",
+        "sec_edgar_html",
+        "pypdf_static",
         "trafilatura_static",
         "exa_hosted_web_fetch",
         "playwright_browser",
@@ -605,6 +814,12 @@ class CaptureReceipt(BaseModel):
     final_url: str | None
     source_domain: str | None
     capture_method: Literal[
+        "arxiv_api_metadata",
+        "hosted_reader_html", "deepseek_hosted_publication",
+        "deepseek_hosted_notice",
+        "x_public_embed",
+        "sec_edgar_html",
+        "pypdf_static",
         "trafilatura_static",
         "exa_hosted_web_fetch",
         "playwright_browser",
@@ -659,9 +874,23 @@ class PublicURLGuard:
             _require_public_address(host)
         elif resolve:
             try:
-                addresses = tuple(self._resolver(host))
+                try:
+                    addresses = tuple(self._resolver(host))
+                except socket.gaierror as first:
+                    # One transient resolver retry, before any HTTP request.
+                    # NXDOMAIN and address-policy failures are not retryable.
+                    if first.errno != socket.EAI_AGAIN:
+                        raise
+                    time.sleep(0.2)
+                    addresses = tuple(self._resolver(host))
             except Exception as exc:
-                raise ExternalSourceError("capture_dns_resolution_failed") from exc
+                raise ExternalSourceError("capture_dns_resolution_failed:" + json.dumps({
+                    'host':host, 'resolver_code':getattr(exc,'errno',None),
+                    'temporary':isinstance(exc,socket.gaierror) and exc.errno == socket.EAI_AGAIN,
+                    'http_request_dispatched':False,
+                    'meaning':'DNS lookup failed before page access; this is not missing disclosure. '
+                              'Retain the candidate URL; retry after network recovery or discover an alternative original.'
+                },ensure_ascii=False)) from exc
             if not addresses:
                 raise ExternalSourceError("capture_dns_resolution_empty")
             for address in addresses:
@@ -670,7 +899,7 @@ class PublicURLGuard:
 
 
 class StaticHTTPPageFetcher:
-    """Bounded HTTP transport; extraction is performed separately by trafilatura."""
+    """Bounded public HTTP transport for HTML and text-bearing PDF releases."""
 
     transport_authority = "qualification_only"
     production_status = "HOLD"
@@ -679,9 +908,9 @@ class StaticHTTPPageFetcher:
         self,
         *,
         guard: PublicURLGuard,
-        user_agent: str = "FIN-Insight-Agent/0.1 research-source-capture",
+        user_agent: str | None = None,
         maximum_redirects: int = 5,
-        maximum_response_bytes: int = 5_000_000,
+        maximum_response_bytes: int = 20_000_000,
         session_factory: Callable[[], Any] | None = None,
     ) -> None:
         self.guard = guard
@@ -690,73 +919,120 @@ class StaticHTTPPageFetcher:
         self.maximum_response_bytes = maximum_response_bytes
         self._session_factory = session_factory
 
-    def _fetch_sync(self, raw_url: str, timeout_seconds: float) -> FetchedPage:
-        import requests
+    @staticmethod
+    def _decode(body, final_url, status_code, content_type, maximum_response_bytes):
+        from .spreadsheet_sources import XLSX_TYPE, spreadsheet_text
+        if (content_type or '').split(';')[0] == XLSX_TYPE or urlsplit(final_url).path.lower().endswith('.xlsx'):
+            return FetchedPage(final_url=final_url, extracted_text=spreadsheet_text(body,
+                maximum_characters=maximum_response_bytes), status_code=status_code, content_type=XLSX_TYPE)
+        if body.startswith(b"%PDF-"):
+            from io import BytesIO
+            from pypdf import PdfReader
 
-        url = self.guard.validate(raw_url)
-        session_factory = self._session_factory or requests.Session
-        with session_factory() as session:
+            reader = PdfReader(BytesIO(body))
+            if reader.is_encrypted or len(reader.pages) > 250:
+                raise ExternalSourceError("capture_pdf_not_readable_within_limits")
+            parts = []
+            characters = 0
+            for page in reader.pages:
+                part = page.extract_text() or ""
+                characters += len(part)
+                if characters > maximum_response_bytes:
+                    raise ExternalSourceError("capture_pdf_text_too_large")
+                parts.append(part)
+            return FetchedPage(final_url=final_url, extracted_text="\n\n".join(parts),
+                               status_code=status_code, content_type="application/pdf")
+        # Requests defaults text/html without a charset to Latin-1.
+        # That fallback is not publisher metadata and corrupts Asian
+        # pages. Let the maintained decoder inspect BOM/meta/bytes;
+        # only an explicit HTTP charset takes precedence.
+        from email.message import Message
+        from bs4 import UnicodeDammit
+        header = Message()
+        header['content-type'] = content_type or ''
+        charset = header.get_content_charset()
+        decoded = UnicodeDammit(bytes(body), is_html=True,
+            known_definite_encodings=[charset] if charset else [])
+        if decoded.unicode_markup is None or decoded.contains_replacement_characters:
+            raise ExternalSourceError('capture_text_encoding_unresolved')
+        html = decoded.unicode_markup
+        from .public_page_access import check_access_challenge
+        check_access_challenge(html)
+        return FetchedPage(
+            final_url=final_url,
+            html=html,
+            status_code=status_code,
+            content_type=content_type,
+        )
+
+    async def _fetch(self, raw_url: str, timeout_seconds: float, *, transport_options=None) -> FetchedPage:
+        import httpx
+        url = await asyncio.to_thread(self.guard.validate, raw_url)
+        from .public_network import http_options
+        factory = self._session_factory or (lambda: httpx.AsyncClient(**(
+            transport_options if transport_options is not None else http_options())))
+        async with factory() as session:
             for redirect_index in range(self.maximum_redirects + 1):
-                with session.get(
-                    url,
-                    allow_redirects=False,
+                async with session.stream('GET', url, follow_redirects=False,
                     timeout=timeout_seconds,
-                    headers={"User-Agent": self.user_agent},
-                    stream=True,
-                ) as response:
-                    if response.is_redirect or response.is_permanent_redirect:
+                    headers={'User-Agent': self.user_agent or 'FinSight/0.1 (public-source-reader)',
+                        'Accept':'text/html,application/xhtml+xml,application/pdf,text/plain,application/xml;q=0.9,*/*;q=0.8'}) as response:
+                    status = int(response.status_code)
+                    if status in (301, 302, 303, 307, 308):
                         if redirect_index >= self.maximum_redirects:
-                            raise ExternalSourceError("capture_redirect_limit_exceeded")
-                        location = str(response.headers.get("Location") or "").strip()
+                            raise ExternalSourceError('capture_redirect_limit_exceeded')
+                        location = str(response.headers.get('Location') or '').strip()
                         if not location:
-                            raise ExternalSourceError("capture_redirect_location_missing")
-                        url = self.guard.validate(urljoin(url, location))
+                            raise ExternalSourceError('capture_redirect_location_missing')
+                        url = await asyncio.to_thread(self.guard.validate, urljoin(url, location))
                         continue
-                    status_code = int(response.status_code)
-                    if status_code < 200 or status_code >= 300:
-                        raise ExternalSourceError(
-                            f"capture_http_status_{status_code}"
-                        )
-                    declared_length = str(
-                        response.headers.get("Content-Length") or ""
-                    ).strip()
-                    if (
-                        declared_length.isdigit()
-                        and int(declared_length) > self.maximum_response_bytes
-                    ):
-                        raise ExternalSourceError("capture_response_too_large")
+                    if status < 200 or status >= 300:
+                        raise ExternalSourceError(f'capture_http_status_{status}')
+                    declared = str(response.headers.get('Content-Length') or '').strip()
+                    if declared.isdigit() and int(declared) > self.maximum_response_bytes:
+                        raise ExternalSourceError('capture_response_too_large')
                     body = bytearray()
-                    for chunk in response.iter_content(chunk_size=64 * 1024):
-                        if not chunk:
-                            continue
+                    async for chunk in response.aiter_bytes():
                         body.extend(chunk)
                         if len(body) > self.maximum_response_bytes:
-                            raise ExternalSourceError("capture_response_too_large")
-                    final_url = self.guard.validate(str(response.url))
-                    encoding = str(response.encoding or "utf-8")
-                    return FetchedPage(
-                        final_url=final_url,
-                        html=bytes(body).decode(encoding, errors="replace"),
-                        status_code=status_code,
-                        content_type=response.headers.get("Content-Type"),
-                    )
-        raise ExternalSourceError("capture_static_unreachable")
+                            raise ExternalSourceError('capture_response_too_large')
+                    final_url = await asyncio.to_thread(self.guard.validate, str(response.url))
+                    return await asyncio.to_thread(self._decode, body, final_url, status,
+                        response.headers.get('Content-Type'), self.maximum_response_bytes)
+        raise ExternalSourceError('capture_static_unreachable')
 
     async def fetch(self, url: str, *, timeout_seconds: float) -> FetchedPage:
-        import requests
-
+        import httpx
         try:
-            return await asyncio.to_thread(self._fetch_sync, url, timeout_seconds)
+            # Socket inactivity limits do not bound slow headers or trickling
+            # bodies. This deadline covers the whole redirect/read lifecycle;
+            # cancellation closes the async stream instead of leaking a blocked
+            # requests thread. The caller may investigate other candidates.
+            async with asyncio.timeout(timeout_seconds):
+                try:
+                    return await self._fetch(url, timeout_seconds)
+                except ExternalSourceError as exc:
+                    from .public_network import forbidden_retry_options
+                    options = forbidden_retry_options() if (exc.code == 'capture_http_status_403'
+                        and self._session_factory is None) else None
+                    if options is None:
+                        raise
+                    try:
+                        page = await self._fetch(url, timeout_seconds, transport_options=options)
+                    except ExternalSourceError as retry:
+                        raise ExternalSourceError('capture_http_status_403;local_proxy:' + retry.code) from retry
+                    return page.model_copy(update={'origin_failure_code':
+                        'capture_http_status_403;local_proxy_retry_succeeded'})
         except ExternalSourceError:
             raise
-        except requests.Timeout as exc:
-            raise ExternalSourceError("capture_static_timeout") from exc
-        except requests.ConnectionError as exc:
-            raise ExternalSourceError("capture_static_connection_failed") from exc
-        except requests.RequestException as exc:
-            raise ExternalSourceError("capture_static_request_failed") from exc
+        except (TimeoutError, httpx.TimeoutException) as exc:
+            raise ExternalSourceError('capture_static_timeout') from exc
+        except httpx.ConnectError as exc:
+            raise ExternalSourceError('capture_static_connection_failed') from exc
+        except httpx.HTTPError as exc:
+            raise ExternalSourceError('capture_static_request_failed') from exc
         except Exception as exc:
-            raise ExternalSourceError("capture_static_fetch_failed") from exc
+            raise ExternalSourceError('capture_static_fetch_failed') from exc
 
 
 class ExaHostedMCPPageFetcher:
@@ -780,10 +1056,12 @@ class ExaHostedMCPPageFetcher:
         client_factory: Callable[[], AsyncContextManager[_MCPClient]] | None = None,
         max_characters: int = 50_000,
         maximum_response_bytes: int = 2_000_000,
+        quota: ExaTaskQuota | None = None,
     ) -> None:
         if max_characters < 1 or maximum_response_bytes < 1:
             raise ValueError("exa_hosted_fetch_limit_invalid")
         self.guard = guard
+        self.quota = quota
         self.endpoint = endpoint
         self._client_factory = client_factory
         self.max_characters = max_characters
@@ -805,14 +1083,11 @@ class ExaHostedMCPPageFetcher:
     async def fetch(self, url: str, *, timeout_seconds: float) -> FetchedPage:
         requested_url = await asyncio.to_thread(self.guard.validate, url)
         try:
-            async with self._client(timeout_seconds=timeout_seconds) as client:
-                result = await client.call_tool(
-                    "web_fetch_exa",
-                    {
-                        "urls": [requested_url],
-                        "maxCharacters": self.max_characters,
-                    },
-                )
+            async with asyncio.timeout(timeout_seconds):
+                result = await _exa_call(lambda: self._client(timeout_seconds=timeout_seconds),
+                    "web_fetch_exa", {"urls":[requested_url], "maxCharacters":self.max_characters}, self.quota)
+        except TimeoutError as exc:
+            raise ExternalSourceError('exa_mcp_web_fetch_timeout') from exc
         except ExternalSourceError:
             raise
         except Exception as exc:
@@ -882,6 +1157,13 @@ class PlaywrightPageFetcher:
 
     async def fetch(self, url: str, *, timeout_seconds: float) -> FetchedPage:
         try:
+            async with asyncio.timeout(timeout_seconds):
+                return await self._fetch_page(url, timeout_seconds=timeout_seconds)
+        except TimeoutError as exc:
+            raise ExternalSourceError('capture_browser_timeout') from exc
+
+    async def _fetch_page(self, url: str, *, timeout_seconds: float) -> FetchedPage:
+        try:
             from playwright.async_api import async_playwright
         except ImportError as exc:  # pragma: no cover - dependency profile guard
             raise ExternalSourceError("playwright_dependency_missing") from exc
@@ -889,7 +1171,8 @@ class PlaywrightPageFetcher:
         canonical = await asyncio.to_thread(self.guard.validate, url)
         try:
             async with async_playwright() as playwright:
-                browser = await playwright.chromium.launch(headless=True)
+                from .public_network import browser_options
+                browser = await playwright.chromium.launch(headless=True, **browser_options())
                 try:
                     context = await browser.new_context(service_workers="block")
 
@@ -909,12 +1192,32 @@ class PlaywrightPageFetcher:
                         raise ExternalSourceError(
                             f"capture_http_status_{status_code}"
                         )
-                    await page.wait_for_timeout(750)
+                    # DOMContentLoaded precedes hydration. Wait for load within a
+                    # bounded interval, then two stable visible-text observations.
+                    # networkidle is unsuitable for pages with telemetry streams.
+                    try:
+                        await page.wait_for_load_state('load', timeout=min(8000, round(timeout_seconds * 500)))
+                    except Exception:
+                        pass  # The total deadline and content checks still apply.
+                    previous = None
+                    for _ in range(10):
+                        await page.wait_for_timeout(500)
+                        current = await page.locator('body').inner_text(timeout=2000)
+                        if current == previous and len(current.strip()) >= 500:
+                            from .public_origin import needs_render
+                            from .publisher_state_metadata import hydration_incomplete
+                            rendered = await page.content()
+                            if not needs_render(rendered) and not hydration_incomplete(rendered, page.url):
+                                break
+                        previous = current
                     final_url = await asyncio.to_thread(self.guard.validate, page.url)
                     html = self._require_bounded_html(await page.content())
+                    from .public_page_access import check_access_challenge
+                    check_access_challenge(html)
                     return FetchedPage(
                         final_url=final_url,
                         html=html,
+                        extraction_method='playwright_browser',
                         status_code=status_code,
                         content_type=await response.header_value("content-type"),
                     )
@@ -923,6 +1226,8 @@ class PlaywrightPageFetcher:
         except ExternalSourceError:
             raise
         except Exception as exc:
+            if 'Executable doesn' in str(exc) or 'playwright install' in str(exc):
+                raise ExternalSourceError('capture_browser_not_installed') from exc
             raise ExternalSourceError("capture_browser_fetch_failed") from exc
 
 
@@ -932,16 +1237,39 @@ def trafilatura_extract_text(html: str) -> str:
     except ImportError as exc:  # pragma: no cover - dependency profile guard
         raise ExternalSourceError("trafilatura_dependency_missing") from exc
     try:
-        return str(
+        text = str(
             trafilatura.extract(
                 html,
-                output_format="txt",
+                output_format="markdown",
+                include_links=True,
                 include_comments=False,
                 include_tables=True,
+                favor_recall=True,
                 no_fallback=False,
             )
             or ""
         ).strip()
+        # Scholarly publishers often expose the full text only in Highwire
+        # metadata. Readability extraction can keep the filename but discard
+        # its href. Preserve the declared route, not a guessed PDF filename.
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html, "html.parser")
+        pdf_urls = []
+        for tag in soup.select('head meta[name="citation_pdf_url"][content]'):
+            url = str(tag.get("content", "")).strip()
+            parsed = urlsplit(url)
+            if (parsed.scheme in {"http", "https"} and parsed.hostname
+                    and not parsed.username and not parsed.password
+                    and not any(char.isspace() or char in '<>"' for char in url)
+                    and url not in text and url not in pdf_urls):
+                pdf_urls.append(url)
+        if text and pdf_urls:
+            # Keep navigation before the extracted body: a malformed citation
+            # code block in the publisher's export can swallow appended links.
+            text = ("Publisher-declared full-text links (not yet read; dates not inherited):\n"
+                    + "\n".join(f"<{url}>" for url in pdf_urls) + "\n\n" + text)
+        return text
     except Exception as exc:
         raise ExternalSourceError("trafilatura_extract_failed") from exc
 
@@ -1046,16 +1374,35 @@ class ExternalSourceCapture:
         last_page: FetchedPage | None = None
         last_text = ""
         selected_method: Literal[
+            "arxiv_api_metadata",
+            "hosted_reader_html", "deepseek_hosted_publication",
+            "deepseek_hosted_notice",
+            "x_public_embed",
+            "sec_edgar_html",
+            "pypdf_static",
             "trafilatura_static",
             "exa_hosted_web_fetch",
             "playwright_browser",
         ] | None = None
+        from .public_posts import post_locator
+        exact_public_post = post_locator(requested_url) is not None
+        from .scholarly_sources import arxiv_locator
+        scholarly_locator = arxiv_locator(requested_url)
+        exact_scholarly_record = scholarly_locator is not None and scholarly_locator[0] == 'api'
+        if exact_public_post or exact_scholarly_record:
+            # Hosted page text cannot replace an unavailable/version-rejected
+            # post while retaining the original post's identity and timestamp.
+            methods = [(method, fetcher) for method, fetcher in methods if method == 'trafilatura_static']
         for method, fetcher in methods:
             try:
                 page = await fetcher.fetch(
                     requested_url,
                     timeout_seconds=request.timeout_seconds,
                 )
+                if exact_public_post and page.extraction_method != 'x_public_embed':
+                    raise ExternalSourceError('x_original_not_verified')
+                if exact_scholarly_record and page.extraction_method != 'arxiv_api_metadata':
+                    raise ExternalSourceError('arxiv_original_record_not_verified')
                 if page.status_code is not None and not (
                     200 <= page.status_code < 300
                 ):
@@ -1064,6 +1411,13 @@ class ExternalSourceCapture:
                     )
                 final_url = await asyncio.to_thread(self.guard.validate, page.final_url)
                 page = page.model_copy(update={"final_url": final_url})
+                if page.origin_failure_code:
+                    attempts.append(CaptureAttempt(method=method, status='tool_failure',
+                        extracted_characters=0, failure_code=page.origin_failure_code))
+                if method == "trafilatura_static" and page.extraction_method in {"sec_edgar_html", "x_public_embed", "deepseek_hosted_notice", "hosted_reader_html", "deepseek_hosted_publication", "arxiv_api_metadata", "playwright_browser"}:
+                    method = page.extraction_method
+                if method == "trafilatura_static" and page.content_type == "application/pdf" and page.extracted_text is not None:
+                    method = "pypdf_static"
                 text = (
                     page.extracted_text.strip()
                     if page.extracted_text is not None

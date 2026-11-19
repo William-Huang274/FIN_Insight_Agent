@@ -8,23 +8,83 @@ from __future__ import annotations
 
 from copy import deepcopy
 from datetime import datetime, timezone
-from difflib import unified_diff
 import json
 import operator
 from typing import Annotated, Any
 from typing_extensions import TypedDict
 
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage, RemoveMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.config import get_stream_writer
 from langgraph.graph import END, START, StateGraph
+from langgraph.graph.message import REMOVE_ALL_MESSAGES
 from langgraph.types import Command, Send
 
 from .report_synthesis_agent import ReportReview, report_model_view, review_responsibility_errors, paper_revision_input
 from .research_execution_plan import ResearchExecutionPlan
+from .research_graph_contracts import canonical_sha256
+from .authoring_context import bind_authoring, bind_lead_authoring_state, validate_authoring
+from .review_recovery import public_confirmation
+
+
+def research_decision_context(artifacts, current, state, *, question, research_review_context):
+    """Rebuild version/issue navigation from native artifacts, not a model summary.
+
+    Version changes are mechanical facts; their financial consequences still
+    require the Lead's judgment. No finding is marked resolved by this view.
+    """
+    papers = []
+    versions = {}
+    for row in current.catalog()["papers"]:
+        pid = row["paper_id"]
+        before, after = artifacts.read_paper(pid), current.read_paper(pid)
+        old = {c["claim_id"]: c for c in before["claims"]}
+        new = {c["claim_id"]: c for c in after["claims"]}
+        baseline, version = canonical_sha256(before), canonical_sha256(after)
+        versions[pid] = version
+        papers.append({"paper_id": pid, "baseline_digest": baseline, "current_digest": version,
+            "baseline_status": "current_version" if baseline == version else "superseded_version_not_a_financial_verdict",
+            "changed_claim_ids": sorted(k for k in old.keys() | new.keys() if old.get(k) != new.get(k)),
+            "changed_prose_fields": [key for key in ("thesis", "mechanism", "narrative_markdown",
+                "counterevidence", "what_would_change", "open_gaps") if before.get(key) != after.get(key)],
+            "open_gaps": deepcopy(after.get("open_gaps", [])),
+            "pending_findings": deepcopy(state.get("pending_feedback", {}).get(pid, [])),
+            "author_responses": deepcopy(state.get("revisions", {}).get(pid, {}).get("finding_responses", [])),
+            "response_status_notice": "Author responses are assertions, not independent closure. Recheck affected claims AND prose.",
+            "read_tool": "read_current_workpaper", "arguments": {"paper_id": pid},
+            "source_catalog_arguments": {"paper_id": pid, "section": "sources"}})
+    prior = next((row for row in reversed(state.get("artifact_history", []))
+                  if row.get("actor") == "synthesis"), None)
+    basis = (prior or {}).get("decision_context", {}).get("paper_version_digests")
+    synthesis_status = ("absent" if not state.get("synthesis") else
+                        "current_paper_versions_not_automatic_approval" if basis == versions else
+                        "requires_reassessment_against_current_papers")
+    return {"question": question, "research_as_of": current.research_as_of,
+        "paper_version_digests": versions, "papers": papers, "previous_synthesis_status": synthesis_status,
+        "review_unresolved_data_requests": {role: deepcopy(row.get("unresolved_data_requests", []))
+            for role, row in research_review_context.items() if role in {"counter", "verifier"}},
+        "incomplete_review_records": deepcopy(research_review_context.get("incomplete_review_records", {})),
+        "latest_stage_review": {"stage": state.get("active_review"),
+            "review": deepcopy(state.get(state.get("active_review", ""), {}))},
+        "current_stage": {"correction_round": state.get("correction_round", 0),
+            "pending_finding_ids": {pid: [f["finding_id"] for f in rows]
+                for pid, rows in state.get("pending_feedback", {}).items()}},
+        "usage": "Current native version/issue navigation, NOT new evidence or a compressed research conclusion. "
+            "Read current workpapers and relevant original sources with the offered readers before dependent judgment. "
+            "Reconcile support, counterevidence, period and scope; explain which old interpretations remain valid, "
+            "are withdrawn or unresolved. Never use superseded wording as a current premise merely because it "
+            "appears in earlier messages. A corrected citation does not prove the associated prose was repaired. "
+            "Preserve unresolved issues and original source identities; do not restart unaffected research."}
 
 
 class ResearchConvergenceState(TypedDict, total=False):
+    operation_result: dict[str, Any]
+    workpaper_review: dict[str, Any]
+    authoring_context: dict[str, Any]
+    workpaper_confirmation: dict[str, Any]
+    confirmation_history: Annotated[list[dict[str, Any]], operator.add]
+    unchanged_corrections: Annotated[list[str], operator.add]
+    lead_decision: dict[str, Any]
     revisions: Annotated[dict[str, Any], operator.or_]
     synthesis: dict[str, Any]
     synthesis_review: dict[str, Any]
@@ -71,44 +131,87 @@ def route_material_findings(review, artifacts, *, stage, round_index):
 
 def build_research_convergence_graph(*, artifacts, question, feedback, research_review_context,
                                      make_agent, max_parallel_authors=2, existing_state=None, human_feedback=None,
-                                     execution_plan=None):
+                                     execution_plan=None, hierarchical=False, max_correction_rounds=1,
+                                     run_author=None, review_revisions=None, authoring_stages=False,
+                                     initial_lead_decision=None, initial_revisions=None, operation=None,
+                                     operation_state=None):
     """A current-task graph: authors -> Lead -> research review -> report review.
 
     make_agent reuses native create_agent and current read-only MCP tools. It is
     called only for an actually needed actor, with that actor's own message state.
     Old standalone convergence and old review sessions retain their legacy graph.
     """
+    # Accept the native parent record as well as the already-public production
+    # handoff. Completed reviewers now keep journals for their own continuation;
+    # those journals must never become another author's synthesis material.
+    if any(isinstance(research_review_context.get(role), dict)
+           and 'status' in research_review_context[role] and 'review' in research_review_context[role]
+           for role in ('counter', 'verifier')):
+        research_review_context = public_confirmation({'review': research_review_context})['review']
     if not 1 <= max_parallel_authors <= 12:
         raise ValueError("invalid_author_parallelism")
+    if not 1 <= max_correction_rounds <= 3:
+        raise ValueError("invalid_correction_round_limit")
     if not set(feedback).issubset(p["paper_id"] for p in artifacts.catalog()["papers"]):
         raise ValueError("unknown_initial_responsible_paper")
+    if initial_lead_decision:
+        from .lead_issue_decision import LeadIssueDecision, decision_errors
+        parsed = LeadIssueDecision.model_validate({k: v for k, v in initial_lead_decision.items()
+            if k in LeadIssueDecision.model_fields})
+        errors = decision_errors(parsed, feedback, {p['paper_id'] for p in artifacts.catalog()['papers']})
+        if parsed.action != 'repair' or errors or not review_revisions or existing_state:
+            raise ValueError('initial_review_repair_requires_valid_decision_and_independent_confirmation')
     graph = StateGraph(ResearchConvergenceState)
+    if operation is not None:
+        from .research_operation import bind_operation, operation_input
+        operation = bind_operation(operation, artifacts, operation_state or {})
+        if existing_state or initial_lead_decision or execution_plan or authoring_stages:
+            raise ValueError('on_demand_operation_cannot_inherit_legacy_routing')
     plan = ResearchExecutionPlan.model_validate(execution_plan) if execution_plan else None
     depth = plan.depth if plan else "extended"  # old persisted sessions keep their contract
     if depth == "focused" and len(artifacts.catalog()["papers"]) != 1:
         raise ValueError("focused_plan_requires_one_self_contained_workpaper")
+
+    writing_entry = 'prepare_writing' if authoring_stages else 'writer'
+
+    def writing_basis(state, current):
+        return {'question': question, 'research_as_of': current.research_as_of,
+            'papers': {p['paper_id']: canonical_sha256(current.read_paper(p['paper_id'])) for p in current.catalog()['papers']},
+            'synthesis': deepcopy(state.get('synthesis', {})),
+            'synthesis_review': deepcopy(state.get('synthesis_review', {})),
+            'report_review': deepcopy(state.get('report_review', {})),
+            'lead_decision': deepcopy(state.get('lead_decision', {})),
+            'pending_feedback': deepcopy(state.get('pending_feedback', {})),
+            'independent_research_review': deepcopy(research_review_context),
+            'confirmation': public_confirmation(state.get('workpaper_confirmation', {}))}
 
     def event(actor, event, **details):
         get_stream_writer()({"kind": "stage", "actor": actor, "event": event,
             "recorded_at": datetime.now(timezone.utc).isoformat(), **details})
 
     def initialize(_):
-        previous = {key: deepcopy(existing_state[key]) for key in
-            ("revisions", "synthesis", "synthesis_review", "report", "report_review") if existing_state and key in existing_state}
-        return {**previous, "pending_feedback": deepcopy(feedback), "correction_round": 0,
+        previous = {'revisions': deepcopy(initial_revisions or {}), **{key: deepcopy(existing_state[key]) for key in
+            ("revisions", "synthesis", "synthesis_review", "report", "report_review") if existing_state and key in existing_state}}
+        return {**previous, **({'lead_decision': deepcopy(initial_lead_decision)} if initial_lead_decision else {}), "pending_feedback": deepcopy(feedback), "correction_round": 0,
                 "stop_reason": None, "active_review": "report_review"}
 
     def initial_route(state):
+        if initial_lead_decision:
+            return 'apply_lead_repairs'
+        if hierarchical and not existing_state:
+            return "lead_decision"
         if not existing_state:
             return "prepare_authors" if feedback or depth != "focused" else "prepare_focused_report"
         review = state["report_review"]
-        return "route_review" if review.get("unresolved_data_requests") or any(f["severity"] == "material" for f in review["findings"]) else "writer"
+        return "route_review" if review.get("unresolved_data_requests") or any(f["severity"] == "material" for f in review["findings"]) else writing_entry
 
     def ready_authors(state):
         return [pid for pid in sorted(state["pending_feedback"])
             if state.get("author_completed", {}).get(pid) != state["correction_round"]][:max_parallel_authors]
 
     def prepare_authors(state):
+        if state.get("unchanged_corrections"):
+            return {"stop_reason": "author_claimed_correction_without_research_change"}
         unresolved = any(r["disposition"] == "unresolved" for row in state.get("revisions", {}).values()
                          for r in row["finding_responses"])
         return {"stop_reason": "unresolved_data_or_author_response"} if unresolved and not ready_authors(state) else {}
@@ -118,7 +221,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             return "finish"
         ids = ready_authors(state)
         return [Send("responsible_author", {**state, "paper_id": pid}) for pid in ids] if ids else (
-            "lead_synthesis" if depth == "extended" else "prepare_focused_report" if depth == "focused" else "writer")
+            "confirm_workpapers" if review_revisions else "lead_synthesis" if hierarchical or depth == "extended" else "prepare_focused_report" if depth == "focused" else writing_entry)
 
     def prepare_focused_report(state):
         from .report_synthesis_agent import report_citations
@@ -137,6 +240,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         round_index = state["correction_round"]
         event(actor, "started", correction_round=round_index, paper_id=paper_id)
         own_feedback = deepcopy(state["pending_feedback"].get(paper_id, [])) if paper_id else None
+        if role == "lead_decision":
+            own_feedback = deepcopy(state["pending_feedback"])
         if paper_id:
             expected = {f["finding_id"] for f in own_feedback}
             # An explicitly requested later repair must answer older unresolved
@@ -148,9 +253,16 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                         "requested_change": "Recheck this unresolved item against permitted sources; correct or disagree with evidence, otherwise retain unresolved."})
         agent = make_agent(role, current, feedback=own_feedback, paper_id=paper_id,
                            correction_round=round_index, revising_report=bool(state.get("report")))
+        if role in {"report_verifier", "research_verifier"}:
+            # These two serial, separately named parent nodes review successive
+            # versions. Per-invocation child checkpoints cannot supply their own
+            # earlier receipts on the next parent visit. Use LangGraph's native
+            # per-thread subgraph persistence; parallel authors stay isolated.
+            agent = agent.copy(update={"checkpointer": True})
         value = {"revisions": deepcopy(state.get("revisions", {})),
                  "synthesis": deepcopy(state.get("synthesis", {}))}
         body = {"question": question, "research_as_of": artifacts.research_as_of}
+        decision_context = None
         if human_feedback:
             body.update(human_feedback=human_feedback, human_feedback_is_not_evidence=True)
         if paper_id:
@@ -158,23 +270,35 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             value = {}
             body.update(paper_revision_input(current, paper_id, own_feedback))
         else:
+            decision_context = research_decision_context(artifacts, current, state,
+                question=question, research_review_context=research_review_context)
+            body["research_decision_context"] = decision_context
+            if state.get("workpaper_confirmation"):
+                body["independent_current_workpaper_confirmation"] = public_confirmation(state["workpaper_confirmation"])
             body.update(catalog=current.catalog(),
                 author_responses={pid: row["finding_responses"] for pid, row in state.get("revisions", {}).items()})
-            if role == "synthesis":
+            if hierarchical:
+                body["lead_issue_decision"] = deepcopy(state.get("lead_decision"))
+            if role == "lead_decision":
+                body["findings_to_handle"] = deepcopy(state["pending_feedback"])
+                body["independent_research_review"] = deepcopy(research_review_context)
+            elif role == "synthesis":
                 body["independent_research_review"] = deepcopy(research_review_context)
                 if state.get("synthesis"):
                     body["previous_synthesis"] = report_model_view(state["synthesis"])
-                if round_index:
-                    body["revision_request"] = deepcopy(state[state["active_review"]])
+                # Author corrections can precede the first synthesis. A round
+                # number alone does not imply an existing synthesis/report review.
+                stage_review = state.get(state.get("active_review", ""))
+                if stage_review:
+                    body["revision_request"] = deepcopy(stage_review)
+            elif role == 'prepare':
+                body['writing_basis'] = writing_basis(state, current)
+                body['instruction'] = 'Prepare the effective research state for your own final writing; retain reviewed conditions and unresolved issues.'
             elif role == "writer":
-                body["research_synthesis"] = report_model_view(state["synthesis"]) if state.get("synthesis") else None
-                body["research_review"] = deepcopy(state.get("synthesis_review", research_review_context))
-                if plan:
-                    body["execution_plan"] = plan.model_dump(mode="json")
-                    body["instruction"] = "Answer only the user's scope. Read relevant workpapers on demand and integrate them directly. Do not repeat unchanged source queries; re-query only for a concrete missing/contradictory field. Retain evidence, limitations and necessary checks. Charts are optional when they do not help this question."
+                if authoring_stages:
+                    validate_authoring(state['authoring_context'], owner='research_lead', basis=writing_basis(state, current))
                 if state.get("report"):
                     value["report"] = deepcopy(state["report"])
-                    body.update(report=report_model_view(state["report"]), revision_request=deepcopy(state["report_review"]))
                     value["request_action"] = "revise"
             else:
                 target = "synthesis" if role == "research_verifier" else "report"
@@ -183,28 +307,90 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                             report=report_model_view(state[target]))
                 if role == "report_verifier":
                     body["research_synthesis"] = report_model_view(state["synthesis"]) if state.get("synthesis") else None
-                    body["completed_research_reviews"] = deepcopy(research_review_context)
-                    body["instruction"] = "Independently verify the report's material claims and transformations against actual sources. Prior reviews are navigation and completed-work records, not evidence or automatic approval. Reuse immutable source/calculation bindings; do not re-query an unchanged value merely to recreate its ID. Explain your inspection scope and any need to reopen prior work. No unrelated research expansion."
-                    reports = [r["output"] for r in state.get("artifact_history", []) if r["actor"] == "writer"]
-                    baseline = reports[-2] if len(reports) > 1 else (existing_state or {}).get("report")
-                    if baseline and reports:
-                        body["report_changes_from_previous_review"] = "\n".join(unified_diff(
-                            json.dumps(report_model_view(baseline), ensure_ascii=False, indent=2).splitlines(),
-                            json.dumps(report_model_view(reports[-1]), ensure_ascii=False, indent=2).splitlines(),
-                            fromfile="previously_reviewed_report", tofile="current_report", lineterm=""))
-                        body["instruction"] += " This is a correction review: verify closure of prior findings, changed text/charts and newly introduced consequences. Reopen unchanged research only for a stated material reason; do not automatically repeat a full-case review."
+                body["completed_research_reviews"] = deepcopy(research_review_context)
+                body["instruction"] = "Independently verify the report's material claims and transformations against actual sources. Prior reviews are navigation and completed-work records, not evidence or automatic approval. Reuse immutable source/calculation bindings; do not re-query an unchanged value merely to recreate its ID. Explain your inspection scope and any need to reopen prior work. No unrelated research expansion."
+                author_role = "synthesis" if target == "synthesis" else "writer"
+                reports = [r["output"] for r in state.get("artifact_history", []) if r["actor"] == author_role]
+                baseline = reports[-2] if len(reports) > 1 else (existing_state or {}).get(target)
+                if baseline and reports:
+                    from .report_review_context import report_change_text
+                    body["report_changes_from_previous_review"] = report_change_text(
+                        report_model_view(baseline), report_model_view(reports[-1]))
+                    body["instruction"] += " This is a correction review: verify closure of prior findings, changed text/charts and newly introduced consequences. Reopen unchanged research only for a stated material reason; do not automatically repeat a full-case review."
                 if round_index or existing_state:
                     body["previous_review"] = deepcopy(state.get("synthesis_review" if role == "research_verifier" else "report_review", {}))
+        if role == 'writer':
+            from .report_authoring import report_authoring_input
+            conditions = list(state.get('synthesis_review', {}).get('research_limitations', []))
+            for reviewed in (research_review_context or {}).values():
+                if isinstance(reviewed, dict):
+                    conditions.extend(reviewed.get('research_limitations', []))
+            body = report_authoring_input(question, current, human_feedback=human_feedback,
+                report=state.get('report'), review=state.get('report_review'),
+                synthesis=state.get('synthesis'), synthesis_review=state.get('synthesis_review'),
+                material_conditions=conditions)
+            # Only the current synthesis/review cross this handoff, not historical
+            # review journals or another author's private conversation.
+            body['authoring_basis_digest'] = canonical_sha256(writing_basis(state, current))
+        if operation is not None:
+            # Retain real current materials and model judgments, not the old
+            # whole-case obligations or previous correction round's route.
+            body.pop('research_decision_context', None)
+            body.pop('completed_research_reviews', None)
+            body.pop('instruction', None)
+            body['current_operation'] = deepcopy(operation)
+            body['continuation'] = 'Return this operation result to the same parent. No downstream stage is implied.'
         value["messages"] = [HumanMessage(content=json.dumps(body, ensure_ascii=False))]
         # An explicitly retried parent can reach a child whose native loop ended
         # without its required submission. Reopen only that completed child via
         # the documented Command API; retain its own messages and accepted peers.
         saved = await agent.aget_state(config)
-        if saved.values.get("messages") and not saved.next and not saved.values.get("output"):
-            value = Command(goto="model", update={"messages": [HumanMessage(content=
+        new_review_basis = False
+        same_authoring_basis = role != 'writer' and (not authoring_stages or role != 'prepare')
+        if role == 'writer':
+            from .report_authoring import report_authoring_message_update
+            value['messages'], same_authoring_basis = report_authoring_message_update(
+                body, saved.values.get('messages', []))
+        elif role in {'report_verifier', 'research_verifier'}:
+            from .report_review_context import review_message_update
+            value['messages'] = review_message_update(body, saved.values.get('messages', []))
+            if value['messages'][0].id is None:
+                # New review basis, new verdict. Keep the immutable journal but
+                # never let StopOnOutput reuse a previous version's submission.
+                value['output'] = None
+                new_review_basis = bool(saved.values.get('messages'))
+                same_authoring_basis = False
+        elif authoring_stages and role == 'prepare':
+            # Re-enter with this version's public state, not old research/writing turns.
+            # Previous checkpoint snapshots and provider audits remain available.
+            value['messages'] = [RemoveMessage(id=REMOVE_ALL_MESSAGES), *value['messages']]
+            basis_key = 'writing_basis'
+            for message in reversed(saved.values.get('messages', [])):
+                if isinstance(message, HumanMessage) and isinstance(message.content, str):
+                    try:
+                        previous_input = json.loads(message.content)
+                    except (ValueError, TypeError):
+                        continue
+                    if isinstance(previous_input, dict) and basis_key in previous_input:
+                        same_authoring_basis = previous_input[basis_key] == body[basis_key]
+                        break
+        if same_authoring_basis and saved.values.get("messages") and not saved.next and not saved.values.get("output"):
+            refreshed_assignment = value["messages"] if role in {"writer", "report_verifier", "research_verifier"} else []
+            value = Command(goto="model", update={"messages": [*refreshed_assignment, HumanMessage(content=
                 "The previous attempt ended without an accepted structured submission. It did NOT complete this role. "
                 "Continue from your retained source reads, correct the rejected submission and call your submission tool. "
                 "The host has restarted only this failed role; do not repeat unrelated research.")]})
+        if new_review_basis and saved.next:
+            raise ValueError("review_version_changed_with_pending_child_work")
+        if new_review_basis:
+            # A resumed parent can otherwise make a completed persistent child
+            # return its prior result without applying this new assignment.
+            # Re-enter the declared entry node (including before-agent middleware),
+            # rather than bypassing counters/guards by jumping to the model.
+            entries = [target for source, target in agent.builder.edges if source == START]
+            if len(entries) != 1:
+                raise ValueError("review_agent_requires_one_declared_entry")
+            value = Command(goto=entries[0], update=value)
         result = await agent.ainvoke(value, config)
         if not result.get("output"):
             raise ValueError(f"research_actor_ended_without_submission:{actor}")
@@ -213,7 +399,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             "model_calls": sum(isinstance(m, AIMessage) for m in result.get("messages", [])),
             "tool_calls": sum(isinstance(m, ToolMessage) for m in result.get("messages", []))}
         event(actor, "outcome", status="submitted", correction_round=round_index, paper_id=paper_id)
-        updates = {"actor_metrics": [metrics], "artifact_history": [{"actor": actor, "correction_round": round_index, "output": output}]}
+        updates = {"actor_metrics": [metrics], "artifact_history": [{"actor": actor, "correction_round": round_index, "output": output,
+            **({"decision_context": deepcopy(decision_context)} if decision_context is not None else {})}]}
         if paper_id:
             previous = state.get("revisions", {}).get(paper_id, {})
             output = deepcopy(output)
@@ -221,21 +408,119 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             responses = {f["finding_id"]: f for f in previous.get("finding_responses", [])}
             responses.update({f["finding_id"]: f for f in output["finding_responses"]})
             output["finding_responses"] = list(responses.values())
+            from .workpaper_changes import workpaper_changes
+            output["runtime_changes"] = workpaper_changes(current.read_paper(paper_id),
+                artifacts.with_revisions({**state.get("revisions", {}), paper_id: output}).read_paper(paper_id))
             updates.update(revisions={paper_id: output}, author_completed={paper_id: round_index})
+            # Exact no-change is an execution fact, not a semantic quality verdict.
+            # Do not spend on downstream synthesis when an author claims a repair
+            # yet has changed no research content at all.
+            revised = artifacts.with_revisions({**state.get("revisions", {}), paper_id: output})
+            if any(r["disposition"] == "corrected" for r in result["output"]["finding_responses"]):
+                before, after = current.read_paper(paper_id), revised.read_paper(paper_id)
+                fields = ("thesis", "mechanism", "claims", "narrative_markdown", "counterevidence", "what_would_change", "open_gaps")
+                if all(before.get(k) == after.get(k) for k in fields):
+                    updates["unchanged_corrections"] = [paper_id]
+        elif role == 'prepare':
+            updates['authoring_context'] = bind_authoring(output, owner='research_lead', stage='report', basis=writing_basis(state, current))
+            if not output['ready']:
+                updates['stop_reason'] = 'lead_preparation_retains_material_research'
         else:
-            target = {"synthesis": "synthesis", "research_verifier": "synthesis_review", "writer": "report", "report_verifier": "report_review"}[role]
+            target = {"lead_decision": "lead_decision", "synthesis": "synthesis", "research_verifier": "synthesis_review", "writer": "report", "report_verifier": "report_review"}[role]
             updates[target] = output
             if role.endswith("verifier"):
                 updates["active_review"] = target
         return updates
 
     async def author(state, config: RunnableConfig):
+        if run_author:
+            from .workpaper_changes import workpaper_changes
+            pid = state["paper_id"]
+            current = artifacts.with_revisions(state.get("revisions", {}))
+            event("author_" + pid, "started", paper_id=pid, correction_round=state["correction_round"])
+            output = await run_author(pid, state, config)
+            # Native author projections return only sources newly observed in
+            # this revision. State replaces the whole paper row, so retain the
+            # previous revisions' bindings before publishing the current view.
+            previous = state.get("revisions", {}).get(pid, {})
+            sources = deepcopy(previous.get("sources", {}))
+            for ref, source in output.get("sources", {}).items():
+                if ref in sources and sources[ref] != source:
+                    raise ValueError("revision_source_conflict:" + ref)
+                sources[ref] = deepcopy(source)
+            responses = {row["finding_id"]: row for row in previous.get("finding_responses", [])}
+            responses.update({row["finding_id"]: row for row in output["finding_responses"]})
+            output = {**output, "sources": sources, "finding_responses": list(responses.values())}
+            after = artifacts.with_revisions({**state.get("revisions", {}), pid: output})
+            changes = workpaper_changes(current.read_paper(pid), after.read_paper(pid))
+            output = {**output, "runtime_changes": changes}
+            event("author_" + pid, "outcome", status="revision_submitted" if operation is not None else "submitted_pending_independent_confirmation",
+                paper_id=pid, runtime_changes=changes)
+            updates = {"revisions": {pid: output}, "author_completed": {pid: state["correction_round"]},
+                "artifact_history": [{"actor": "author_" + pid, "correction_round": state["correction_round"],
+                    "output": {k: v for k, v in output.items() if k != "author_state"}}]}
+            if (any(r["disposition"] == "corrected" for r in output["finding_responses"])
+                    and not changes["changed_claim_ids"] and not any(r["path"] != "/task_note" for r in changes["locations"])):
+                updates["unchanged_corrections"] = [pid]
+            return updates
         return await invoke("repair", state, config, paper_id=state["paper_id"])
+
+    async def confirm_workpapers(state, config: RunnableConfig):
+        from .case_review_agent import CaseReview, case_review_scope_digest, validate_finding_confirmation
+        from .research_session import responsible_author_feedback
+        from .workpaper_changes import confirmation_context
+        context = confirmation_context(artifacts, state.get("revisions", {}), state["pending_feedback"],
+            artifact_history=state.get('artifact_history', ()), confirmation_history=state.get('confirmation_history', ()))
+        current = artifacts.with_revisions(state.get("revisions", {}))
+        result = await review_revisions(current, context, config)
+        record = {"context": context, "review": result, "correction_round": state["correction_round"]}
+        update = {"workpaper_confirmation": record, "confirmation_history": [record],
+            "artifact_history": [{"actor": "independent_workpaper_confirmation", "correction_round": state["correction_round"], "output": record}]}
+        if result.get("scope_digest") != case_review_scope_digest(current, question):
+            return {**update, "stop_reason": "independent_confirmation_stale_version"}
+        if result.get("phase") != "case_review_ready_for_convergence":
+            return {**update, "stop_reason": "independent_confirmation_incomplete"}
+        for role in ("counter", "verifier"):
+            validate_finding_confirmation(CaseReview.model_validate(result[role]["review"]), context, current)
+        pending = responsible_author_feedback(result, current, include_advisory=hierarchical,
+                                             confirmation=context)
+        for rows in pending.values():
+            for finding in rows:
+                finding["finding_id"] = f"confirmation:{state['correction_round']}:" + finding["finding_id"]
+        event("independent_workpaper_confirmation", "outcome", status="findings_returned_to_lead" if pending else "confirmed_pending_lead_judgment",
+            objective="新版底稿独立复核完成；" + ("仍有需处理的问题，已集中交回研究负责人。" if pending else "已记录逐项确认，等待研究负责人作最终判断。"))
+        return {**update, "pending_feedback": pending}
 
     def actor_node(role):
         async def execute(state, config: RunnableConfig):
             return await invoke(role, state, config)
         return execute
+
+    def after_decision(state):
+        decision = state["lead_decision"]
+        if decision["action"] == "stop":
+            return "decision_stop"
+        if (decision["action"] == "repair" and state.get("workpaper_confirmation")
+                and state["correction_round"] >= max_correction_rounds):
+            return "correction_limit_stop"
+        return "apply_lead_repairs" if decision["action"] == "repair" else "lead_synthesis"
+
+    def apply_lead_repairs(state):
+        dispositions = {(d["paper_id"], d["finding_id"]): d for d in state["lead_decision"]["dispositions"]}
+        feedback = {}
+        for pid, rows in state["pending_feedback"].items():
+            for finding in rows:
+                decision = dispositions[(pid, finding["finding_id"])]
+                if decision["disposition"] == "repair":
+                    from .revision_guidance import lead_repair_feedback
+                    feedback.setdefault(pid, []).append(lead_repair_feedback(finding, decision))
+        for finding in state["lead_decision"].get("new_findings", []):
+            if finding["disposition"] == "repair":
+                feedback.setdefault(finding["paper_id"], []).append({
+                    **finding, "reviewer": "lead_decision", "severity": "material",
+                    "diagnosis": finding["rationale"], "lead_rationale": finding["rationale"]})
+        repeated = any(state.get("author_completed", {}).get(pid) == state["correction_round"] for pid in feedback)
+        return {"pending_feedback": feedback, "correction_round": state["correction_round"] + int(repeated)}
 
     def route_review(state):
         stage = state["active_review"]
@@ -248,16 +533,25 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             return {"route": "finish", "stop_reason": "unresolved_data_or_author_response",
                     "pending_feedback": routed["feedback"]}
         if not needs_change:
-            return {"route": "writer" if stage == "synthesis_review" else "finish", "stop_reason": None}
-        if state["correction_round"] >= 1:
+            return {"route": writing_entry if stage == "synthesis_review" else "finish", "stop_reason": None}
+        # Author corrections must not consume the first synthesis/report's
+        # opportunity to correct its own wording. Count accepted drafts for
+        # the responsible writing stage; keep the global round for lineage
+        # and the existing research-repair limit.
+        owner = "synthesis" if stage == "synthesis_review" else "writer"
+        baseline_key = "synthesis" if owner == "synthesis" else "report"
+        drafts = sum(row["actor"] == owner for row in state.get("artifact_history", []))
+        drafts += int(bool((existing_state or {}).get(baseline_key)))
+        corrections = state["correction_round"] if routed["feedback"] else max(0, drafts - 1)
+        if corrections >= max_correction_rounds:
             return {"route": "finish", "stop_reason": "material_findings_remain_after_targeted_correction",
                     "pending_feedback": routed["feedback"]}
         # Expression in a Lead brief belongs to the Lead; expression in a report
         # belongs to Writer. Research corrections always revisit the Lead.
-        route = "prepare_authors" if routed["feedback"] else "lead_synthesis" if stage == "synthesis_review" else "writer"
-        event("responsibility_router", "handoff", status=route, correction_round=1,
+        route = ("lead_decision" if hierarchical and routed["feedback"] else "prepare_authors") if routed["feedback"] else "lead_synthesis" if stage == "synthesis_review" else writing_entry
+        event("responsibility_router", "handoff", status=route, correction_round=state["correction_round"] + 1,
               responsible_paper_ids=sorted(routed["feedback"]))
-        return {"route": route, "pending_feedback": routed["feedback"], "correction_round": 1}
+        return {"route": route, "pending_feedback": routed["feedback"], "correction_round": state["correction_round"] + 1}
 
     def finish(state):
         if state.get("stop_reason"):
@@ -266,8 +560,82 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             phase = "case_report_ready_for_human_review"
         return {"phase": phase}
 
+    if operation is not None:
+        roles = {'synthesize': 'synthesis', 'compose': 'writer', 'review_report': 'report_verifier',
+                 'review_synthesis': 'research_verifier', 'revise_workpaper': 'repair',
+                 'review_workpaper': operation['reviewer']}
+        role = roles[operation['action']]
+
+        def seed_operation(_):
+            return operation_input(operation, operation_state or {})
+
+        async def execute_operation(state, config: RunnableConfig):
+            if operation['action'] == 'review_workpaper':
+                current = artifacts.with_revisions(state.get('revisions', {}))
+                agent = make_agent(role, current, paper_id=operation['paper_id'])
+                result = await agent.ainvoke({'messages': [HumanMessage(content=json.dumps({
+                    'question': question, 'current_operation': operation,
+                    'catalog': current.catalog()}, ensure_ascii=False))]}, config)
+                if not result.get('review'):
+                    raise ValueError('workpaper_reviewer_ended_without_submission')
+                return {'workpaper_review': result['review']}
+            if role == 'repair':
+                if run_author is None:
+                    raise ValueError('on_demand_revision_requires_original_author_executor')
+                return await author({**state, 'paper_id': operation['paper_id']}, config)
+            return await invoke(role, state, config)
+
+        def return_operation(state):
+            target = {'synthesize': 'synthesis', 'compose': 'report', 'review_report': 'report_review',
+                      'review_synthesis': 'synthesis_review', 'revise_workpaper': 'revisions',
+                      'review_workpaper': 'workpaper_review'}[operation['action']]
+            output = state[target][operation['paper_id']] if target == 'revisions' else state[target]
+            if target == 'revisions':
+                # The parent's public receipt is not an author's private
+                # conversation. Full author state stays in native revisions.
+                output = {k: v for k, v in output.items() if k != 'author_state'}
+            return {'phase': 'research_operation_returned', 'operation_result': {
+                'action': operation['action'], 'operation_digest': operation['operation_digest'],
+                'basis': deepcopy(operation['basis']), 'review_scope': operation['review_scope'],
+                'input_versions': deepcopy(operation['input_versions']),
+                'locations': deepcopy(operation['locations']), 'paper_id': operation['paper_id'],
+                'output': deepcopy(output), 'output_digest': canonical_sha256(output),
+                'status': 'needs_attention' if state.get('stop_reason') or state.get('unchanged_corrections') else 'submitted',
+                'stop_reason': state.get('stop_reason'), 'next_action': None}}
+
+        graph.add_node('operation_input', seed_operation)
+        graph.add_node('operation', execute_operation)
+        graph.add_node('return_operation', return_operation)
+        graph.add_edge(START, 'operation_input')
+        graph.add_edge('operation_input', 'operation')
+        graph.add_edge('operation', 'return_operation')
+        graph.add_edge('return_operation', END)
+        return graph
+
+    # These automatic successor edges belong only to frozen historical flows.
     graph.add_node("initialize", initialize)
+    graph.add_node("lead_decision", actor_node("lead_decision"))
+    graph.add_node("apply_lead_repairs", apply_lead_repairs)
+    graph.add_node("decision_stop", lambda _: {"stop_reason": "lead_retained_unresolved_research"})
+    graph.add_node("correction_limit_stop", lambda _: {"stop_reason": "material_findings_remain_after_targeted_correction"})
+    graph.add_edge("correction_limit_stop", "finish")
+    graph.add_node("confirm_workpapers", confirm_workpapers)
+    graph.add_conditional_edges("confirm_workpapers", lambda s: "finish" if s.get("stop_reason") else "lead_decision", ["finish", "lead_decision"])
+    graph.add_conditional_edges("lead_decision", after_decision, ["decision_stop", "correction_limit_stop", "apply_lead_repairs", "lead_synthesis"])
+    graph.add_edge("decision_stop", "finish")
+    graph.add_edge("apply_lead_repairs", "prepare_authors")
     graph.add_node("prepare_authors", prepare_authors)
+    async def prepare_writing(state, config: RunnableConfig):
+        # An accepted Lead synthesis already is its public research state.
+        # Rewriting that state into another mandatory brief loses detail and
+        # spends another turn without changing the research responsibility.
+        if state.get('synthesis', {}).get('narrative_markdown'):
+            current = artifacts.with_revisions(state.get('revisions', {}))
+            return {'authoring_context': bind_lead_authoring_state(writing_basis(state, current))}
+        return await invoke('prepare', state, config)
+
+    graph.add_node('prepare_writing', prepare_writing)
+    graph.add_conditional_edges('prepare_writing', lambda s: 'finish' if s.get('stop_reason') else 'writer', ['finish', 'writer'])
     graph.add_node("prepare_focused_report", prepare_focused_report)
     graph.add_node("responsible_author", author)
     for name, role in (("lead_synthesis", "synthesis"), ("research_verifier", "research_verifier"),
@@ -276,8 +644,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     graph.add_node("route_review", route_review)
     graph.add_node("finish", finish)
     graph.add_edge(START, "initialize")
-    graph.add_conditional_edges("initialize", initial_route, ["prepare_authors", "prepare_focused_report", "route_review", "writer"])
-    graph.add_conditional_edges("prepare_authors", author_routes, ["responsible_author", "lead_synthesis", "writer", "prepare_focused_report", "finish"])
+    graph.add_conditional_edges("initialize", initial_route, ["lead_decision", "apply_lead_repairs", "prepare_authors", "prepare_focused_report", "route_review", "writer", 'prepare_writing'])
+    graph.add_conditional_edges("prepare_authors", author_routes, ["responsible_author", "confirm_workpapers", "lead_synthesis", "writer", "prepare_writing", "prepare_focused_report", "finish"])
     graph.add_edge("prepare_focused_report", "report_verifier")
     graph.add_edge("responsible_author", "prepare_authors")
     graph.add_edge("lead_synthesis", "research_verifier")
@@ -285,6 +653,6 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     graph.add_edge("writer", "report_verifier")
     graph.add_edge("report_verifier", "route_review")
     graph.add_conditional_edges("route_review", lambda state: state["route"],
-        ["writer", "prepare_authors", "lead_synthesis", "finish"])
+        ["lead_decision", "writer", "prepare_writing", "prepare_authors", "lead_synthesis", "finish"])
     graph.add_edge("finish", END)
     return graph

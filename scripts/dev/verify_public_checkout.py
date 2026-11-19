@@ -1,30 +1,30 @@
-"""Run a bounded public-checkout check with pytest and the existing exporter.
+"""Check a local source checkout without external services or paid calls."""
 
-No Docker, private datasets or model credentials required. Dependencies must
-already be installed with the documented uv extras. Failures stop the check.
-"""
 import argparse
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
+
+from fastapi.testclient import TestClient
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output-directory", type=Path, required=True,
-                        help="A new directory for explicitly synthetic exports.")
+    parser.add_argument("--output-directory", type=Path, help="Export a synthetic sample into a new directory.")
     args = parser.parse_args()
-    output = args.output_directory.resolve()
-    if output.exists():
-        parser.error("Output directory already exists; choose a new directory to preserve earlier results.")
-    root = Path(__file__).resolve().parents[2]
-    subprocess.run([sys.executable, "-m", "pytest", "-q",
-                    "tests/test_task_attachments.py", "tests/test_report_delivery.py",
-                    "tests/test_studio_configuration.py", "tests/test_targeted_revision.py"],
-                   cwd=root, check=True)
-    subprocess.run([sys.executable, "-m", "scripts.dev.export_synthetic_report",
-                    "--output-directory", str(output)], cwd=root, check=True)
-    print("Public checkout check passed. Synthetic exports only; no model calls.")
+    from apps.workbench.backend.app import create_unconfigured_app
+
+    with TestClient(create_unconfigured_app()) as client:
+        health = client.get("/api/health")
+        health.raise_for_status()
+        if health.json().get("status") != "ok":
+            raise RuntimeError("Workbench health check failed")
+        if client.get("/api/readiness").status_code != 503:
+            raise RuntimeError("An unconfigured checkout must report its missing services")
+    if args.output_directory:
+        subprocess.run([sys.executable, "-m", "scripts.dev.export_synthetic_report",
+                        "--output-directory", str(args.output_directory)], check=True)
+    print("Workbench HTTP smoke check passed.")
 
 
 if __name__ == "__main__":

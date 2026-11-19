@@ -491,12 +491,9 @@ def build_operations_router(
             "evals": [
                 {
                     "eval_id": ACTIVE_BASELINE_EVAL_ID,
-                    "label": "Active baseline import graph",
-                    "description": (
-                        "Proves that current backend, frontend and runtime "
-                        "resources have no old product consumer."
-                    ),
-                    "runner": "scripts/engineering/verify_active_baseline.py",
+                    "label": "Workbench HTTP smoke check",
+                    "description": "Check service health and readiness on a clean checkout.",
+                    "runner": "scripts.dev.verify_public_checkout",
                 }
             ]
         }

@@ -1,145 +1,72 @@
-<div align="center">
-
 # FinSight Agent
 
-### From a research question to a judgment you can inspect and challenge.
+FinSight is a self-hosted workspace for financial research. Add two quarterly filings to a project and ask why a bank earned more interest income as rates fell. Follow the investigation, open the disclosure behind a figure, and compare answers when the next filing arrives.
 
-Multi-agent research · Traceable evidence · Human revision · Editable research methods
+[中文](README.md) · [Quickstart](docs/public/quickstart.en.md) · [Architecture](docs/public/architecture.en.md) · [Example research skill](examples/skills/source-comparison/SKILL.md)
 
-[中文](README.md) · [Quickstart](docs/public/quickstart.en.md) · [Product tour](docs/public/demo-and-engineering.en.md) · [Architecture](docs/public/architecture.en.md) · [Changelog](CHANGELOG.md)
+![A bank report comparing interest margins, earning assets and income](docs/public/images/report-preview.png)
 
-**v0.1.3 · Local financial research workspace · Preview**
+*Screenshots show the current workbench. The bank, filings, figures and research configuration are illustrative.*
 
-</div>
+## What you can do in the workbench
 
-FinSight brings financial SQL, source retrieval, source-bound calculations and multi-agent review into one workspace. Ask a question, follow the research, trace a report judgment to its evidence, and request a revision to a specific finding. It serves analysts who need to inspect conclusions and developers who want observable state, calls and reproducible checks.
-
-**Measured evaluation (2026-09-11):** [Engineering and product report](docs/public/technical-evaluation.en.md), [metrics JSON](docs/public/evaluation-metrics.json) cover hybrid retrieval, real multi-turn recovery, human-reviewed delivery and identity checks.
-
-![Research Studio: roles, methods and execution order](docs/public/images/research-studio.png)
-
-*Actual application captured on September 8, 2026. Configuration versions persist in the native runtime and can be applied to a task. The current UI is Chinese; both documentation editions describe the same capabilities.*
-
-## A research workflow you can participate in
-
-| Step | What you can do |
+| Task | How it works |
 | --- | --- |
-| Start with a question | Choose a company, filing or judgment to investigate, set the research date, and attach documents or images. Organize research by project; project groups and pins currently live in this browser. |
-| Choose execution | Select a model and single-agent, selected-expert, free-delegation or full-research mode for new research, followups and revisions. Each run pins its selection; single-agent results are explicitly unreviewed. |
-| Follow the work | Read public progress, model and tool records, reported tokens and estimated cost in the main activity column. Add guidance or request cancellation; switch between saved runs afterward. |
-| Inspect the evidence | Navigate report overview → topic → judgment and evidence. Expand source context, formulas, operands, periods and provenance. |
-| Request a revision | Submit feedback on a selected judgment. The target and report baseline enter the native revision flow; compare the result while retaining the original version. |
-| Define research methods | Edit role Skills, expert concurrency and dual-review order. Save an independent configuration version and apply it to an existing or new task. |
-| Deliver the report | Export the same report as Markdown, PDF, Word or PowerPoint. Export makes no model calls; PowerPoint charts remain editable. |
+| Follow a company over time | Keep documents, research sessions, working notes and reports in a project. Ask follow-up questions in a conversation or start a research session with a question, cutoff date and attachments. |
+| Check disclosures and financial figures | Filter documents by company, period and filing type. Inspect financial accounts, units and sources, and trace derived figures to formulas and operands. Coverage depends on the data you import and sources you connect. |
+| Search team documents | Publish a document version to a shared space and select it for a project investigation. Local BM25 can find passages before any model run. Configure embeddings and reranking for hybrid retrieval. [Organization retrieval](deploy/organization/README.md) |
+| Choose investigators and budgets | Ordinary research uses one investigator and an independent reviewer. Deep research can delegate topics and reconcile findings. Personal sessions accept a DeepSeek key for V4 Flash or Pro. Organizations can fund a specific task with GPT-6.2 Sol high as lead and DeepSeek Flash as investigator. [Model setup](apps/workbench/README.md) |
+| Reuse a research method | Edit research directions, role skills, expert concurrency and review order in the configuration screen. Save a version and apply it to a task. [Source-comparison skill](examples/skills/source-comparison/SKILL.md) |
+| Follow and steer a run | Read public progress, tool activity and recorded usage. Where the run supports interaction, send a question to investigate, request a stop or inspect why an earlier run stopped. |
+| Review and deliver | Open cited passages, chart data and calculation notes. Request a revision to a working note, compare report versions and export to a web page, Markdown, PDF, Word or PowerPoint. |
+| Collaborate across accounts | In a multi-user deployment, register accounts, assign organization, project and resource-space roles, share specific document versions and revoke access. Access checks apply to searches, reads and downloads. |
 
-### Start with company documents and original disclosures
+Operators supply contact details or credentials for external sources such as SEC EDGAR, OpenDART, HiThink and Alpha Vantage. Bring your own documents, data subscriptions and team indexes. [Data and deployment configuration](docs/public/quickstart.en.md)
 
-![Company library: company, year and document-type filters](docs/public/images/company-library.png)
+## Build a knowledge base for the next investigation
 
-The company library connects disclosure files, retrieval nodes and a document reader. Filter by company, year, document type and research cutoff, read the original material, then use it in research. The September 12, 2026 library snapshot contains **70 documents, 66 unique URLs, 9,253 nodes and 12,994 retrieval chunks**. Standardizable public material enters the library; external search and capture supplement its coverage.
+Open **资料库 → 知识库** to browse disclosures imported into your deployment, filter by company, period and filing type, and read sections alongside their original sources. The adjacent database view exposes financial accounts and metrics. Operators populate their own library. [Open the local knowledge base](http://127.0.0.1:8765/workspace/assets?view=library)
 
-*Actual deployed application, September 11, 2026. The screenshot's 60 documents are from the earlier snapshot; 70 is the count at the freeze.*
+**Example: keep a quarterly disclosure for the next margin review.**
 
-### Keep periods, units and provenance with financial numbers
+1. Upload a text-bearing document to the project and search for a phrase to confirm it is readable. Publish the chosen version to an organization space and link it to the organization project.
+2. Select the source on a research input sheet and choose **准备研究执行**. The version is now bound and searchable before you start a paid investigation.
+3. In **检索本次研究资料**, keep local BM25 selected, search for **净息差** (net interest margin), and select **读取原文**. The passage below gives the figures for both quarters. Future investigations can select a revised disclosure while earlier executions retain their original version.
 
-![Financial data: company metrics, reporting periods and sources](docs/public/images/financial-data.png)
+![Local BM25 search and the expanded passage from the example filing](docs/public/images/knowledge-search.png)
 
-Query financial observations by company and metric, retaining reporting periods, filing versions, units and original sources. The evaluated dataset includes **5 companies and 2,274 financial observations**, plus **37 source-bound derived metrics**. Calculation readback shows expressions and operands so analysts can inspect denominators, units and periods. Arithmetic validation still requires a separate review of financial meaning.
+Keyword search works over the bound text. For semantic retrieval, prepare document vectors, publish an index and select that release on a new research sheet. [Knowledge base and hybrid retrieval setup](docs/public/quickstart.en.md#knowledge-base-and-retrieval-setup)
 
-*Actual deployed application, September 11, 2026, showing filtered MSFT data. The visible row count is not the total library size.*
+## Where to configure the workbench
 
-### Follow a report back to its evidence
+| Setting | Entry point |
+| --- | --- |
+| Personal model and depth | In **新建个人研究**, save your DeepSeek key under **个人模型密钥**, choose the model and research mode, and save a draft to inspect inputs before dispatch. [Personal model setup](apps/workbench/README.md#personal-research) |
+| Team research methods | In **研究配置 → 投研 Skills**, select a method and edit its instructions. For example, ask investigators to align currencies, periods and units before comparing two filings. Choose **保存为新版本**, select the task, then click **应用保存版本**. The next run uses that version. The **Agent 图与编排** tab controls role bindings, concurrency and review order. [Open research configuration](http://127.0.0.1:8765/workspace/session?view=studio) |
+| Organization models and budgets | Administrators provision provider credentials, fund the execution and check its authorization. Researchers then select the model combination on the organization draft. [Provisioning commands](apps/workbench/README.md#provision-the-optional-organization-model-combination) |
+| Accounts and financial data | Multi-user sign-in uses HTTPS and the deployment CA. Configure SEC, OpenDART and HiThink access in the private deployment environment. [Setup and credentials](docs/public/quickstart.en.md#connect-model-execution) |
 
-![Report overview with expandable topics](docs/public/images/research-map.png)
+![Editing an example financial analysis skill in the configuration screen](docs/public/images/method-setup.png)
 
-The research map represents report content and citation relationships. Artifact IDs, report versions and checkpoints bind revision targets to execution; navigation nodes do not need a one-to-one match with runtime nodes. The evidence library shares the same topic, judgment and source grouping, with links back to the map. Natural-language labels explain items while canonical identifiers retain exact bindings. Source inspection opens wider context. A visual connection does not establish financial causality.
+## Follow a finding back to the filing
 
-### See actual execution and stay involved
+Two filings give the investigator a starting point for explaining the change in interest income at one bank. To ask which bank benefits more, a deeper investigation can compare deposit costs, loan mix and valuation across lenders.
 
-![Actual saved stages, public activity and usage](docs/public/images/research-runtime.png)
+In the example, net interest margin fell from 2.1% to 2.0%, while average earning assets rose from 10 billion to 11 billion yuan. At those margins, estimated annualized net interest income rose from 210 million to 220 million yuan. Open the citation to check the inputs. If assets hold steady, a margin of about 1.91% would bring income back to its previous level. That gives the analyst a figure to watch next quarter.
 
-This screenshot shows saved activity from a NVIDIA/Micron fiscal-period comparison. The lead chose one research direction, followed by independent review. Viewing history makes no new model calls. Public progress and tool events append during execution; guidance is read at later phase handoffs. Private reasoning transcripts are not displayed.
+![An expanded citation showing the reporting date and the passage behind the figures](docs/public/images/source-preview.png)
 
-Interaction and mode test questions cover short followups, selected experts, new-company single-agent research, targeted revisions and free delegation. Usage is recorded by task and call; failures and unknown costs are not reported as zero. Multi-layer review adds model calls; analysts still need to verify financial judgments against the original sources.
+When the next filing arrives, add it to the same project and ask how the new margin compares with that threshold. Switch report versions to see which judgment changed.
 
-### Review, revise and deliver the same report
+## Open the workbench locally
 
-![HPE report: human-confirmed version, revision records and export controls](docs/public/images/hpe-reviewed-report.png)
+With Docker Compose and Python 3.10 or later installed, run these commands from the repository root.
 
-Read expert workpapers, inspect the evidence, edit the report and retain version differences. This actual HPE report v2 records two human edits and offers Markdown, PDF, Word and PowerPoint exports. Report versions are separate from product versions. Human confirmation does not relabel earlier failed model executions as successful.
-
-*Actual deployed application, September 11, 2026, displaying public research prose and delivery controls.*
-
-<details>
-<summary>View the research start page</summary>
-
-![Start a research question](docs/public/images/research-start.png)
-
-</details>
-
-## Verify a checkout without model keys or private data
-
-Install Python 3.11, uv, Node.js 22 and npm. From the repository root:
-
-```bash
-uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery
-uv run --no-sync python -m scripts.dev.verify_public_checkout --output-directory .local/public-check-01
-
-cd apps/workbench/frontend
-npm ci
-npm run build
-npx playwright install chromium
-npm run test:public
+```sh
+python scripts/deployment/initialize.py
+docker compose up -d --build
 ```
 
-The Python check covers attachments, delivery, configuration and targeted revisions, then generates clearly synthetic reports. Choose an output directory that does not exist. Browser tests start only Vite and use synthetic API responses, covering three screen widths, navigation, sources, diffs, configuration editing and replay. **They verify interactions, not model research quality.** On Linux, install missing browser system dependencies with `npx playwright install --with-deps chromium`.
+Open [Projects](http://127.0.0.1:8765/workspace/projects). The base installation provides project, document and account services. Live research requires the native execution service, your own provider credentials and a budget. See the guide for multi-user sign-in, model selection and retrieval setup. [Quickstart](docs/public/quickstart.en.md) · [Smoke test](scripts/dev/verify_public_checkout.py)
 
-Full research additionally requires Docker, model/tool credentials, source data and service settings. Source data and credentials must be configured before running full research. See the [quickstart](docs/public/quickstart.en.md) for deployment, expected results and troubleshooting.
-
-## Architecture and engineering focus
-
-```mermaid
-flowchart LR
-    UI[React workspace] --> BFF[FastAPI]
-    BFF --> Runtime[LangGraph Agent Server]
-    Runtime --> Lead[Lead / expert task DAG]
-    Lead --> Review[Cross-review / accountable revision]
-    Review --> Report[Synthesis / report / human review]
-    Report --> UI
-    Lead --> MCP[MCP: financial SQL / sources / search / calculation]
-    Runtime --> State[PostgreSQL / Redis]
-    Runtime --> Trace[LangSmith / call audit]
-```
-
-- **Native runtime infrastructure:** LangChain tool loops, LangGraph execution/checkpoints and native Assistants configuration snapshots. FIN owns research roles, evidence contracts and thin adapters.
-- **Inspectable numbers:** expressions, operands, periods, units and provenance stay with calculations. Arithmetic checks and financial interpretation remain distinct.
-- **Long-session context:** clear old tool bodies from outgoing requests while retaining original state and evidence; retrieve by ID, reuse calculations and avoid rewriting unrelated content.
-- **Observable execution:** distinguish the selected operation from historical totals, preserving failures, unknown costs and human edits.
-
-See [architecture](docs/public/architecture.en.md) for code entry points, configuration consumption and component boundaries.
-
-## Evaluation scope
-
-The following v0.1.3 results use specified datasets and a local deployment. Retrieval, interactions and financial judgments are evaluated separately:
-
-| Verified area | Result and scope |
-| --- | --- |
-| Hybrid retrieval | Historical 1,105-chunk snapshot, 28 openly labeled questions, 24 positive cases: Hit@5 of 23/24 (95.8%) versus BM25's 12/24 (50%). This is neither an evaluation of the latest 12,994-chunk library nor answer accuracy. |
-| Continued use and recovery | 19 real user turns, including failure recovery and restart handoff; not 19 first-attempt successes. |
-| Identity and resource access | OIDC/PKCE with two users, 39 resource-ownership checks and 8 concurrent reads. Locally verified; no production multi-tenant security certification. |
-| Tool approval | 4 actual frontend approval scenarios covering approval, rejection and pre-execution constraints through native task resumption, MCP and Docker sandbox execution. |
-| Report delivery | Human revisions, version differences, source/calculation readback and four export formats. The AI/memory case produced a 7-page analyst-reviewed report; its native Writer did not finish, so it is not an autonomous end-to-end pass. |
-
-Models can still misinterpret financial semantics or miss counterevidence. Automatic summaries are disabled by default. Dynamic financial methods, rule updates, bounded expert delegation and deadline-aware research convergence are planned in the [v0.1.4 roadmap](docs/product/roadmap.zh-CN.md) (Chinese). See the [evaluation report](docs/public/technical-evaluation.en.md) and [evidence and sharing](docs/public/sharing-scope.md) for samples, failures and cost scope.
-
-## Explore the repository
-
-| Entry | Contents |
-| --- | --- |
-| [Product tour](docs/public/demo-and-engineering.en.md) | Three-minute walkthrough and engineering narrative |
-| [Quickstart](docs/public/quickstart.en.md) | Zero-model checks, local deployment, troubleshooting and feedback |
-| [Workbench](apps/workbench/README.md) | Frontend/backend entry points and development commands |
-| [Tests](tests/README.md) | Public checks, private-data replay and live model evaluation |
-| [Changelog](CHANGELOG.md) | Product milestones, frontend delivery and report revisions |
-
-The code, tests and documentation are available for project review. See the [quickstart](docs/public/quickstart.en.md) for installation and upgrades. No repository-wide open-source license has been selected; third-party components retain their own licenses.
+[Documentation by task](docs/README.md)

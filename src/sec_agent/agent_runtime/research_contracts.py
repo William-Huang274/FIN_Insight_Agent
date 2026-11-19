@@ -12,7 +12,7 @@ from typing import Annotated, Any, Iterable, Literal, Mapping, Protocol, TypeVar
 from urllib.parse import unquote
 import unicodedata
 
-from pydantic import BaseModel, Field, TypeAdapter, field_validator, model_validator
+from pydantic import BaseModel, Field, TypeAdapter, field_validator, model_serializer, model_validator
 
 from sec_agent.canonical_runtime.contracts_v1_2 import (
     StrictFrozenModel,
@@ -381,14 +381,18 @@ class ResearchTaskSpec(_StrictFrozenModel):
     """A semantic research task; physical routes never belong in this object."""
 
     task_id: str = Field(pattern=_REF_PATTERN)
-    owner_role: str = Field(pattern=_REF_PATTERN)
-    objective: str = Field(min_length=12, max_length=4_000)
+    topic_title: str | None = Field(default=None, min_length=1, max_length=96,
+        description='Short navigation title naming the research subject; no instructions or predicted conclusion. Supply when assigning a new task. Optional for historical tasks.')
+    owner_role: str = Field(pattern=_REF_PATTERN, description='Stable ASCII role identifier, for example financial_analyst or power_analyst; use objective for the human-readable role and assignment.')
+    objective: str = Field(min_length=12, max_length=4_000,
+        description="Question to answer and why it matters to the overall research. Define the business/professional explanation sought, without prescribing a conclusion. Preliminary facts retain source, period, entity, unit and actual/guidance status. Initial hypotheses may be supported, revised or rejected using evidence.")
     dependency_ids: tuple[str, ...] = Field(default=(), max_length=64)
-    coverage_obligation_ids: tuple[str, ...] = Field(min_length=1, max_length=32,
-        description="Semantic coverage IDs from the disclosed scope, never physical route IDs. "
-                    "For Dell Lead research use exactly one branch_id from required_branch_ids "
-                    "(e.g. Q2_DEMAND_QUALITY), not route:...:required-reviewed.")
-    success_criteria: tuple[str, ...] = Field(min_length=1, max_length=32)
+    coverage_obligation_ids: tuple[str, ...] = Field(default=(), max_length=32,
+        description="Optional topic tags from branch_catalog; use zero, one or several as relevant. "
+                    "The objective defines the research task, including questions outside that catalog. "
+                    "Only explicit scope_policy coverage requirements make tags mandatory. Never use physical route IDs.")
+    success_criteria: tuple[str, ...] = Field(min_length=1, max_length=32,
+        description="Observable completion conditions: an answer to the assigned question, decisive evidence and relevant competing explanations, and the effect of any remaining uncertainty on that answer. Source checks support this deliverable, not replace it. Do not require an initial hypothesis to remain unverified or be proved true. Narrow data/audit tasks retain their explicit scope; submission or budget exhaustion is not semantic acceptance.")
     requested_capability_refs: tuple[str, ...] = Field(min_length=1, max_length=32)
     required_authority_refs: tuple[str, ...] = Field(default=(), max_length=32)
     expected_output_kinds: tuple[
@@ -404,6 +408,13 @@ class ResearchTaskSpec(_StrictFrozenModel):
     materiality: Materiality
     status: TaskStatus = "planned"
 
+    @model_serializer(mode='wrap')
+    def preserve_historical_task_identity(self, handler):
+        body = handler(self)
+        if self.topic_title is None:
+            body.pop('topic_title', None)
+        return body
+
     @model_validator(mode="after")
     def validate_semantic_task(self) -> "ResearchTaskSpec":
         for name in (
@@ -418,6 +429,16 @@ class ResearchTaskSpec(_StrictFrozenModel):
         if self.task_id in self.dependency_ids:
             raise ValueError("research_task_self_dependency")
         return self
+
+
+def task_binding_branch(task: Mapping[str, Any], default_branch: str) -> str:
+    """Transport identity, not the research scope. Preserve historical single-tag IDs.
+
+    Untagged/cross-topic tasks reuse the host's existing authorized data binding;
+    task_id and objective distinguish them. No new source rights are granted.
+    """
+    tags = task.get("coverage_obligation_ids", ())
+    return tags[0] if len(tags) == 1 else default_branch
 
 
 def _reachable_task_ids(tasks: tuple[ResearchTaskSpec, ...]) -> set[str]:
@@ -637,6 +658,7 @@ class ModifyTaskAction(_PlanDeltaAction):
     target_task_id: str = Field(pattern=_REF_PATTERN)
     changed_fields: tuple[
         Literal[
+            "topic_title",
             "owner_role",
             "objective",
             "dependency_ids",
@@ -649,7 +671,7 @@ class ModifyTaskAction(_PlanDeltaAction):
             "status",
         ],
         ...,
-    ] = Field(min_length=1, max_length=11)
+    ] = Field(min_length=1, max_length=12)
     successor_task: ResearchTaskSpec
 
     @model_validator(mode="after")

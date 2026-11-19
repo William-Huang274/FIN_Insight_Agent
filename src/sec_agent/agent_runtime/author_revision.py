@@ -1,0 +1,287 @@
+"""Resume the original expert; expose only its submitted artifact to other roles."""
+from copy import deepcopy
+import json
+
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage, messages_from_dict
+
+from .case_artifacts import CaseArtifacts
+from .workpaper_review_graph import validate_workpaper_state
+
+
+def author_continuation_options(options, state, *, authorized_model_requests=None):
+    """Bind one trusted author checkpoint BEFORE opening data and graph ports.
+
+    Continuing an interrupted revision is not opening a new revision from its
+    accepted baseline. The normal graph initializer keeps the current candidate,
+    saved draft, observations and lifetime counters. Do not override its checkpoint
+    after composition: the calculator would already have restored older sources.
+    Automatic recovery preserves existing limits. A host may explicitly supply
+    an authorized remaining allowance to align the lifetime ceiling, bounded by
+    the live shared remainder. This is not a model argument or an automatic
+    budget extension; the transport still owns atomic total-budget enforcement.
+    """
+    baseline = options.get('recovery_state') or {}
+    for key in ('run_id', 'agent_id', 'task'):
+        if baseline.get(key) != state.get(key):
+            raise ValueError('author_continuation_scope_mismatch:' + key)
+    if (options.get('research_task') or {}).get('task_id') != state['task']['task_id']:
+        raise ValueError('author_continuation_assignment_mismatch')
+    if (state.get('pending_action') is not None or state.get('final_submission') is not None
+            or state.get('phase') not in {'ready_for_model_decision', 'tool_observation_ready',
+                'typed_feedback_ready', 'submission_rejected_with_typed_feedback'}):
+        raise ValueError('author_continuation_requires_settled_tool_boundary')
+    from .specialist_graph import SpecialistNotebook
+    notebook = SpecialistNotebook.model_validate_json(json.dumps(state['notebook']))
+    if (notebook.agent_id != state['agent_id'] or notebook.run_id != state['run_id']
+            or notebook.task_id != state['task']['task_id']
+            or notebook.run_invocation_id != state['run_invocation_id']):
+        raise ValueError('author_continuation_notebook_binding_mismatch')
+    restored = deepcopy(state)
+    if authorized_model_requests is not None:
+        if type(authorized_model_requests) is not int or authorized_model_requests < 0:
+            raise ValueError('author_continuation_authorized_budget_invalid')
+        shared = options.get('remaining_model_requests')
+        if shared is not None:
+            available = shared()
+            if type(available) is not int or available < 0:
+                raise ValueError('author_continuation_shared_budget_invalid')
+            if authorized_model_requests > available:
+                raise ValueError('author_continuation_authorized_budget_exceeds_shared_remaining')
+        restored['max_model_turns'] = notebook.model_turn_count + authorized_model_requests
+    return {**options, 'recovery_state': restored,
+            'run_invocation_id': state['run_invocation_id'], 'revision_feedback': None}
+
+
+def restore_author_history(adapter, state, audit_paths, *, material_handoff=False):
+    """Read the existing private audit, bound to the last accepted model receipt.
+
+    Paths are host supplied within this task's audit directory. No browser or
+    model path is accepted, no histories cross authors, and missing history
+    stops before transport rather than silently constructing a new expert.
+    """
+    record = state["notebook"]["model_turn_records"][-1]
+    receipt = record.get("runtime_receipt") or {}
+    if not receipt.get("request_digest") or receipt.get("actor") != state["agent_id"]:
+        raise ValueError("original_author_model_receipt_unavailable")
+    for path in audit_paths:
+        if not path.is_file():
+            continue
+        with path.open(encoding="utf-8") as stream:
+            for line in stream:
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue  # An incomplete last write cannot match a receipt.
+                if (event.get("actor") != state["agent_id"] or event.get("request_digest") != receipt.get("request_digest")
+                        or not event.get("messages") or not event.get("raw_response")):
+                    continue
+                raw = event["raw_response"]
+                calls = [*raw.get("tool_calls", []), *raw.get("invalid_tool_calls", [])]
+                expected = record["action"].get("tool_calls", [])
+                if expected and [c["id"] for c in calls] != [c["id"] for c in expected]:
+                    raise ValueError("author_history_last_action_binding_mismatch")
+                for actual, recorded in zip(calls, expected):
+                    args = deepcopy(recorded.get("args"))
+                    if isinstance(args, dict):
+                        args.pop("context_digest", None)  # host-injected receipt binding
+                    original_args = deepcopy(actual.get("args"))
+                    if isinstance(original_args, dict):
+                        original_args.pop("context_digest", None)
+                    if actual.get("name") != recorded.get("name") or args != original_args:
+                        raise ValueError("author_history_last_action_content_mismatch")
+                from .revision_submission_state import restore_accepted_receipt
+                messages = messages_from_dict(
+                    [{"type": m["type"], "data": m} for m in [*event["messages"], raw]])
+                adapter._agentic_history[state["agent_id"]] = restore_accepted_receipt(messages, state, audit_paths)
+                if material_handoff:
+                    if not hasattr(adapter, '_revision_material_handoffs'):
+                        adapter._revision_material_handoffs = set()
+                    adapter._revision_material_handoffs.add(state['agent_id'])
+                return
+    raise ValueError("original_author_private_history_unavailable")
+
+
+def revision_material_handoff(messages, current_context):
+    """Host-selected reentry after tool completion, without rolling back research.
+
+    Keep the canonical journal for exact readback. Retire completed model
+    episodes in the request view. Currently visible originals form the revision
+    working set until explicit selection/release or stage completion, not just
+    until the next tool call. This never accepts edits or refunds consumed turns.
+    """
+    from .research_context_view import decode, material_ids, working_view
+    if not current_context.get('submission_to_repair'):
+        raise ValueError('revision_material_handoff_requires_candidate')
+    calls = {c['id'] for m in messages if isinstance(m, AIMessage)
+             for c in [*m.tool_calls, *m.invalid_tool_calls]}
+    replies = {m.tool_call_id for m in messages if isinstance(m, ToolMessage)}
+    if calls != replies:
+        raise ValueError('revision_material_handoff_requires_complete_tool_pairs')
+    last_ai = max((i for i, m in enumerate(messages) if isinstance(m, AIMessage)), default=-1)
+    latest = [m for m in messages[last_ai + 1:] if isinstance(m, ToolMessage)]
+    if not latest or any(m.status != 'success' for m in latest):
+        raise ValueError('revision_material_handoff_requires_successful_read_boundary')
+    # Do not hide pending submissions, edit errors or rejected state updates.
+    if any(m.name not in {'RequestSourceAction', 'RequestEvidenceAction', 'RequestFinanceAction',
+                         'RequestCalculationAction', 'ReadResearchHistoryAction'} for m in latest):
+        raise ValueError('revision_material_handoff_requires_read_boundary')
+    view = working_view(messages)
+    if view is None:
+        raise ValueError('revision_material_handoff_view_unavailable')
+    retain = set()
+    for m in view:
+        body = decode(m.content)
+        if m.additional_kwargs.get('fin_research_working_view'):
+            retain.update(material_ids(body.get('current_materials', [])))
+        elif isinstance(m, ToolMessage):
+            retain.update(material_ids(body.get('result', body) if isinstance(body, dict) else body))
+    return [*messages, HumanMessage(content=json.dumps(current_context, ensure_ascii=False),
+        additional_kwargs={'fin_research_stage_boundary': 'revision_material_handoff',
+                           'fin_revision_material_ids': sorted(retain)})]
+
+
+def native_revision_view(state, artifacts, paper_id, feedback):
+    """Translate validated source identities, keeping existing aliases stable."""
+    saved = validate_workpaper_state(state)
+    fresh = CaseArtifacts([saved])
+    paper = fresh.read_paper("P01")
+    aliases, sources = {}, {}
+    source_keys = ("passage_id", "evidence_id", "numeric_fact_id", "calculation_id", "fact_id")
+    existing = {next(item[k] for k in source_keys if item.get(k)): ref
+                for ref in artifacts.read_paper(paper_id, "sources")
+                if (item := artifacts.source_item(ref)) and any(item.get(k) for k in source_keys)}
+    for ref in fresh.read_paper("P01", "sources"):
+        item = fresh.source_item(ref)
+        canonical = next(item[k] for k in source_keys if item.get(k))
+        alias = existing.get(canonical, canonical)
+        aliases[ref] = alias
+        if canonical not in existing:
+            item.pop("operand_source_aliases", None)
+            sources[alias] = item
+    for claim in paper["claims"]:
+        claim["source_ids"] = [aliases[r] for r in claim["source_ids"]]
+        claim["citation_quotes"] = {aliases[r]: q for r, q in claim["citation_quotes"].items()}
+    responses = (paper.get("task_note") or {}).get("finding_responses") or []
+    ids = [r["finding_id"] for r in responses]
+    if len(ids) != len(set(ids)) or set(ids) != {r["finding_id"] for r in feedback}:
+        raise ValueError("native_author_revision_finding_response_scope_mismatch")
+    return {"status": "revision_submitted", "paper_id": paper_id, "workpaper": paper,
+        "sources": sources, "finding_responses": deepcopy(responses), "author_state": saved,
+        "author_identity": {"agent_id": state["agent_id"], "task_id": state["task"]["task_id"],
+            "lifetime_model_turns": state["notebook"]["model_turn_count"],
+            "lifetime_tool_actions": state["notebook"]["tool_action_count"]}}
+
+
+def author_feedback(findings, artifacts, *, original_findings=()):
+    """Review aliases are navigation; restore their actual source identity."""
+    from .revision_guidance import restore_review_request
+    result = [restore_review_request(finding, original_findings) for finding in findings]
+    from .period_relations import remedy_period_checks
+    # Lead's proposed wording is fallible. Keep it verbatim, with a separate
+    # version-current advisory; never invent a new finding or disposition.
+    checks = remedy_period_checks(result, artifacts.read_paper)
+    for finding in result:
+        finding.pop('runtime_period_checks', None)
+        relevant = [c for c in checks if c['paper_id'] == finding.get('paper_id')
+                    and c['finding_id'] == finding.get('finding_id')]
+        if relevant:
+            finding['runtime_period_checks'] = relevant
+    inventories = {}
+    for finding in result:
+        # Exact current-text lookup only. This also serves old saved findings
+        # whose type was 'other'; no classification from diagnosis keywords.
+        pid = finding.get('paper_id')
+        if pid and finding.get('problematic_quote'):
+            from .evidence_resolution import citation_inventory
+            if pid not in inventories:
+                inventories[pid] = citation_inventory(artifacts, pid)
+            locations = []
+            for row in inventories[pid]:
+                if row['original_reference'] != finding['problematic_quote']:
+                    continue
+                locations.append({k: deepcopy(row[k]) for k in (
+                    'paper_digest', 'field_path', 'start', 'end', 'original_reference', 'status', 'candidates')})
+            if locations:
+                finding['reference_navigation'] = {
+                    'locations': locations,
+                    'notice': 'Current case-scoped source identities, not new evidence or semantic confirmation. '
+                        'Use canonical_ids, never construct a PASSAGE ID from a document ID. '
+                        'Ambiguous candidates require checking; an identifier fix retains the current text status.'}
+        for check in finding.get("source_checks", []):
+            ref = check["source_id"]
+            try:
+                item = artifacts.source_item(ref)
+            except ValueError as exc:
+                if not str(exc).startswith('unknown_source_id_read_paper_sources_first:'):
+                    raise
+                # A reviewer can discover a new source after the author's
+                # submission. Feedback is navigation, never source authority.
+                # Retain the exact identity and require an original read rather
+                # than aborting the author's entire repair before it starts.
+                check.update(review_source_alias=ref,
+                    source_binding_status='requires_original_source_read',
+                    source_binding_notice='Review observation only; this source is not in the current author artifact catalog. Read the original via source/SQL tools before citing it. Do not invent an alias or treat feedback as evidence.')
+                continue
+            canonical = next(item[k] for k in ("passage_id", "evidence_id", "numeric_fact_id", "calculation_id", "fact_id") if item.get(k))
+            check.update(source_id=canonical, review_source_alias=ref)
+    return result
+
+
+def current_author_state(artifacts, paper_id, revisions):
+    state = (revisions.get(paper_id) or {}).get("author_state") or artifacts._author_states.get(paper_id)
+    if not state:
+        raise ValueError("original_author_state_unavailable")
+    # Editorial changes must not be silently replaced by an older native draft.
+    view = CaseArtifacts([state]).read_paper("P01")
+    current = artifacts.with_revisions(revisions).read_paper(paper_id)
+    for field in ("thesis", "mechanism", "narrative_markdown", "counterevidence", "what_would_change", "open_gaps"):
+        if view.get(field) != current.get(field):
+            raise ValueError("original_author_candidate_requires_editorial_reconciliation:" + field)
+    return deepcopy(state)
+
+
+def revision_source_handoff(findings, artifacts, dependencies):
+    """Resolve review sources to existing source-only expert handoffs.
+
+    Review text is navigation, not an observation. Only an explicit reader call
+    transfers the saved original to the author. Never reconstruct web locators
+    from citation strings or expose the other author's private conversation.
+    """
+    from .specialist_handoff import DependencyReader, SOURCE_ID_FIELDS
+    result, papers, owners = deepcopy(findings), {}, {}
+    for finding in result:
+        for check in finding.get('source_checks', []):
+            ref = check['source_id']
+            try:
+                item = artifacts.source_item(ref)
+            except ValueError as exc:
+                if str(exc).startswith('unknown_source_id_read_paper_sources_first:'):
+                    continue
+                raise
+            for pid, state in artifacts._author_states.items():
+                refs = artifacts.read_paper(pid, 'sources')
+                if not any(artifacts.source_item(r) == item for r in refs):
+                    continue
+                task_id = state['task']['task_id']
+                owners[ref] = task_id
+                if task_id not in dependencies:
+                    papers[task_id] = state
+                break
+    reader = DependencyReader({**dependencies, **papers}, source_only_tasks=tuple(papers)) if owners else None
+    for finding in result:
+        for check in finding.get('source_checks', []):
+            ref = check['source_id']
+            if ref not in owners:
+                continue
+            task_id = owners[ref]
+            target = artifacts.source_item(ref)
+            refs = reader.artifacts.read_paper(reader.ids[task_id], 'sources')
+            matches = [r for r in refs if any(target.get(k) and target.get(k) == reader.artifacts.source_item(r).get(k)
+                for k in SOURCE_ID_FIELDS)]
+            if len(matches) != 1:
+                raise ValueError('revision_source_handoff_identity_ambiguous:' + ref)
+            check['readback'] = {'tool': 'ReadDependencyWorkAction', 'arguments': {
+                'task_id': task_id, 'section': 'handoff', 'source_ids': matches}}
+            check['source_binding_notice'] = ('Read the saved original with this exact handoff before citing. '
+                'The review quote is not evidence; document and passage IDs are provenance, not web node arguments.')
+    return result, papers

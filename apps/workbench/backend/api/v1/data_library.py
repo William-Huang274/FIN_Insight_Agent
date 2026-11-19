@@ -2,18 +2,139 @@
 from contextlib import closing
 from pathlib import Path
 import sqlite3
+import json
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from ...authentication import current_owner
 from sec_agent.research_foundation.public_library import library_nodes, document_catalog
 
-METRIC_LABELS = {'revenue':'营业收入','operating_cash_flow':'经营现金流 CFO','capital_expenditures':'资本开支 Capex',
-    'net_income':'净利润','operating_income':'营业利润','gross_profit':'毛利润','cash_and_equivalents':'现金及现金等价物',
-    'accounts_payable':'应付账款','accounts_receivable':'应收账款','inventory':'存货','diluted_eps':'稀释每股收益 EPS','shares_outstanding':'流通股数'}
+from sec_agent.research_foundation.financial_library import FinancialQuery, financial_page
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 
 
-def build_data_library_router(attachments_root, fact_mart=None):
+class MetricWorkspaceQuery(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    entity_ids: list[str] = Field(min_length=1,max_length=12)
+    section: Literal['overview','catalog','history','valuation','compare','card'] = 'overview'
+    metric: str = Field(default='',max_length=200)
+    record_id: str = Field(default='',max_length=200)
+    as_of: str = '9999-12-31'
+    fiscal_year: int | None = None
+    period_kind: str = ''
+    date_start: str = ''
+    date_end: str = ''
+    frequency: Literal['native','week_end','month_end'] = 'native'
+    alignment: Literal['date','fiscal'] = 'date'
+    offset: int = Field(default=0,ge=0)
+    limit: int = Field(default=100,ge=1,le=2000)
+
+
+def build_data_library_router(attachments_root, fact_mart=None, research_library=None):
     router = APIRouter(prefix='/data-library')
+
+    @router.post('/metrics/query')
+    def metric_workspace(request:Request,query:MetricWorkspaceQuery):
+        current_owner(request)
+        from sec_agent.research_foundation.metric_workspace import query_metrics
+        try:
+            path = foundation()
+            if query.section == 'card' and len(query.entity_ids) == 1:
+                from sec_agent.research_foundation.project_source_captures import metric_capture_snapshot
+                from sec_agent.research_foundation.financial_library import content_digest
+                snapshot, result = metric_capture_snapshot(path, entity_id=query.entity_ids[0],
+                    record_id=query.record_id, as_of=query.as_of)
+                result['capture_selection'] = {'kind':'metric','entity_id':query.entity_ids[0],
+                    'record_id':query.record_id,'as_of':query.as_of,'snapshot':content_digest(snapshot)}
+                return result
+            return query_metrics(path,**query.model_dump())
+        except ValueError as exc:raise HTTPException(422,str(exc)) from None
+
+    def foundation():
+        path=research_library or Path(attachments_root)/'public-library'/'research-library.sqlite'
+        if not Path(path).is_file(): raise HTTPException(503,'公司数据基座尚未接入')
+        from sec_agent.research_foundation.industry_data import installed
+        from sec_agent.research_foundation.research_library import open_library
+        open_library(path)  # Refuse a corrupt or unpublished release on every route.
+        if not installed(path): raise HTTPException(503,'当前资料版本尚无公司资料卡')
+        return path
+
+    @router.get('/companies')
+    def company_catalog(request:Request,query:str=Query('',max_length=200),sector:str=Query('',max_length=100),offset:int=Query(0,ge=0),limit:int=Query(100,ge=1,le=200)):
+        current_owner(request)
+        from sec_agent.research_foundation.industry_data import companies
+        return companies(foundation(),query=query,sector=sector,offset=offset,limit=limit)
+
+    @router.get('/companies/{entity_id}')
+    def company_card(request:Request,entity_id:str):
+        current_owner(request)
+        from sec_agent.research_foundation.industry_data import company_detail
+        try:return company_detail(foundation(),entity_id)
+        except KeyError:raise HTTPException(404,'未找到这家公司') from None
+
+    @router.get('/companies/{entity_id}/data')
+    def company_data(request:Request,entity_id:str,kind:str=Query('financial',pattern='^(financial|prices|positions|holders|filings|derived|disclosures|relationships)$'),query:str=Query('',max_length=200),offset:int=Query(0,ge=0),limit:int=Query(30,ge=1,le=100),group:str=Query('',pattern='^(|operating|offering|compensation|macro|other)$'),account:str=Query('',max_length=100),fiscal_year:int|None=Query(None,ge=1900,le=2200),fiscal_period:str=Query('',pattern='^(|FY|Q1|Q2|Q3|Q4|H1|M9|instant|other|unknown)$'),derived_view:str=Query('latest',pattern='^(latest|history)$'),date_start:str=Query('',max_length=10),date_end:str=Query('',max_length=10),as_of:str=Query('9999-12-31',pattern=r'^\d{4}-\d{2}-\d{2}$')):
+        current_owner(request)
+        from sec_agent.research_foundation.industry_data import data_page
+        try:return data_page(foundation(),entity_id,kind=kind,query=query,offset=offset,limit=limit,group=group,account=account,fiscal_year=fiscal_year,fiscal_period=fiscal_period,derived_view=derived_view,date_start=date_start,date_end=date_end,as_of=as_of)
+        except ValueError as exc:raise HTTPException(422,str(exc)) from None
+
+    @router.get('/companies/{entity_id}/network')
+    def company_network(request:Request,entity_id:str,depth:int=Query(1,ge=1,le=2)):
+        current_owner(request)
+        from sec_agent.research_foundation.research_library import open_library
+        library=open_library(foundation())
+        # UI category filtering happens after readback. Give it a larger bounded
+        # window than model context so holder rows cannot hide business links.
+        result=library.graph_search(entity_id,'9999-12-31',depth=depth,max_edges=1000)
+        ids={entity_id}|{e[k] for e in result['edges'] for k in ('subject','object')}
+        result['nodes']=[e for e in library.entities() if e['id'] in ids]
+        return result
+
+    @router.get('/research-sources/{document_id}')
+    def research_source(request:Request,document_id:str,offset:int=Query(0,ge=0),limit:int=Query(5,ge=1,le=20),passage_id:str|None=Query(None,max_length=200)):
+        current_owner(request)
+        from sec_agent.research_foundation.research_library import open_library
+        library=open_library(foundation())
+        if library.has_retrieval_chunks:
+            result=library.read(document_id,'9999-12-31',start=offset,limit=limit)
+            if passage_id:
+                child=library._query('SELECT c.parent_id,c.ordinal,p.rowid AS parent_order FROM retrieval_chunks c JOIN passages p ON p.id=c.parent_id WHERE c.id=? AND c.source_id=?',(passage_id,document_id))
+                if child:
+                    offset=library._query('SELECT count(*) AS n FROM retrieval_chunks c JOIN passages p ON p.id=c.parent_id WHERE c.source_id=? AND (p.rowid<? OR (c.parent_id=? AND c.ordinal<?))',
+                        (document_id,child[0]['parent_order'],child[0]['parent_id'],child[0]['ordinal']))[0]['n']
+                    result=library.read(document_id,'9999-12-31',start=offset,limit=limit)
+                else:
+                    parent=library._query('SELECT * FROM passages WHERE id=? AND source_id=?',(passage_id,document_id))
+                    if not parent:raise HTTPException(404,'这条依据不属于所选原文')
+                    result.update(items=parent if result['status']=='readable' else [],next_start=None,total=len(parent),offset=0,selected_parent=True)
+            if 'total' not in result:
+                result.update(total=library._query('SELECT count(*) AS n FROM retrieval_chunks WHERE source_id=?',(document_id,))[0]['n'],offset=offset)
+            if result.get('source') and isinstance(result['source'].get('metadata'),str):result['source']['metadata']=json.loads(result['source']['metadata'])
+            return result
+        if passage_id:
+            anchor=library._query('SELECT rowid FROM passages WHERE id=? AND source_id=?',(passage_id,document_id))
+            if not anchor:raise HTTPException(404,'这条依据不属于所选原文')
+            offset=library._query('SELECT count(*) AS n FROM passages WHERE source_id=? AND rowid<?',(document_id,anchor[0]['rowid']))[0]['n']
+        result=library.read(document_id,'9999-12-31',start=offset,limit=limit)
+        result['offset']=offset
+        if result.get('source') and isinstance(result['source'].get('metadata'),str):
+            result['source']['metadata']=json.loads(result['source']['metadata'])
+        result['total']=library._query('SELECT count(*) AS n FROM passages WHERE source_id=?',(document_id,))[0]['n']
+        return result
+
+    @router.get('/research-sources/{document_id}/presentation')
+    def research_source_presentation(request:Request,document_id:str,offset:int=Query(0,ge=0),limit:int=Query(20,ge=1,le=100)):
+        current_owner(request)
+        from sec_agent.research_foundation.industry_data import connect
+        from sec_agent.research_foundation.material_presentation import material_view
+        from sec_agent.research_foundation.research_library import open_library
+        path=foundation()
+        result=open_library(path).read(document_id,'9999-12-31',limit=1)
+        if result['status']!='readable':raise HTTPException(404,'当前来源没有可读材料')
+        with closing(connect(path)) as db:
+            try:return material_view(db,result['source'],offset=offset,limit=limit) or {'kind':'text'}
+            except ValueError as exc:raise HTTPException(422,str(exc)) from None
 
     @router.get('/market-prices')
     def market_prices(request: Request, ticker: str = Query('',max_length=30),
@@ -53,31 +174,19 @@ def build_data_library_router(attachments_root, fact_mart=None):
         selected = [r for r in rows if r['parent_document_id'] == document_id and r['node_kind'] == 'section']
         if not selected: raise HTTPException(404, '目录中没有这份公共资料')
         # Full sections, rendered as text/Markdown by the client, never raw HTML.
-        return {'sections':[{'title':' / '.join(r.get('section_path') or []), 'text':r.get('content','')} for r in selected[offset:offset+limit]],
-                'total':len(selected),'snapshot':digest}
+        return {'sections':[{'title':' / '.join(r.get('section_path') or []), 'text':r.get('content',''), 'selection_id':r['node_id']} for r in selected[offset:offset+limit]],
+                'total':len(selected),'snapshot':digest, 'document':next(d for d in document_catalog(rows) if d['document_id']==document_id)}
 
     @router.get('/financials')
-    def financials(request: Request, ticker: str = '', query: str = Query('',max_length=200),
-                   fiscal_year: int | None = None, period: str = '', metric: str = '',
+    def financials(request: Request, ticker: str = Query('',max_length=30), query: str = Query('',max_length=200),
+                   fiscal_year: int | None = None, period: str = Query('',max_length=30), metric: str = Query('',max_length=100),
                    as_of: str = Query('9999-12-31',pattern=r'^\d{4}-\d{2}-\d{2}$'),
                    offset: int = Query(0,ge=0), limit: int = Query(30,ge=1,le=100)):
         current_owner(request)
-        if not fact_mart or not Path(fact_mart).is_file(): raise HTTPException(503,'财务数据库尚未接入')
-        where, args = ['filed_at <= ?'], [as_of]
-        for column, value in [('ticker',ticker.upper()),('fiscal_year',fiscal_year),('fiscal_period',period),('metric_id',metric)]:
-            if value not in ('',None): where.append(column+' = ?'); args.append(value)
-        if query:
-            matched = [key for key,label in METRIC_LABELS.items() if query.casefold() in label.casefold()]
-            where.append('(instr(lower(metric_id),lower(?))>0 OR instr(lower(legal_name),lower(?))>0 OR instr(lower(ticker),lower(?))>0 OR instr(lower(concept),lower(?))>0'+ (' OR metric_id IN ('+','.join('?' for _ in matched)+')' if matched else '') + ')')
-            args.extend([query]*4)
-            args.extend(matched)
-        condition = ' AND '.join(where)
-        with closing(sqlite3.connect(Path(fact_mart).resolve().as_uri()+'?mode=ro',uri=True)) as db:
-            db.row_factory = sqlite3.Row
-            total = db.execute('SELECT count(*) FROM company_fact_observations WHERE '+condition,args).fetchone()[0]
-            items = [dict(r) for r in db.execute('SELECT ticker,legal_name,metric_id,value_decimal,unit,period_start,period_end,fiscal_year,fiscal_period,form,filed_at,citation_url,superseded_by_observation_id FROM company_fact_observations WHERE '+condition+' ORDER BY ticker,fiscal_year DESC,period_end DESC,metric_id,filed_at DESC LIMIT ? OFFSET ?',[*args,limit,offset])]
-            facets = {key:[r[0] for r in db.execute('SELECT DISTINCT '+column+' FROM company_fact_observations ORDER BY '+column)]
-                      for key,column in [('tickers','ticker'),('years','fiscal_year'),('metrics','metric_id'),('periods','fiscal_period')]}
-        return {'items':items,'total':total,**facets,'metric_labels':METRIC_LABELS,'notice':'保留各披露版本；同一期间可能有多行。数值为来源单位，正式计算由 Agent 标准指标工具按时点选择。'}
+        try:
+            return financial_page(fact_mart, FinancialQuery(ticker=ticker, query=query, fiscal_year=fiscal_year,
+                period=period, metric=metric, as_of=as_of, offset=offset, limit=limit))
+        except FileNotFoundError:
+            raise HTTPException(503, '财务数据库尚未接入') from None
 
     return router

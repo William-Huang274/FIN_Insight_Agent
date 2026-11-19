@@ -79,6 +79,10 @@ class OIDCBackend(AuthenticationBackend):
         return "oidc:" + sha256(identity.encode()).hexdigest()
 
     async def authenticate(self, conn):
+        if owner := conn.scope.get('_finsight_delegated_owner'):
+            # Set only by InternalResearchIdentity after signature, audience,
+            # expiry and exact request binding verification, never a header.
+            return AuthCredentials(['authenticated']), SimpleUser(owner)
         header = conn.headers.get("authorization")
         if header is None:
             session = conn.scope.get('session', {})
@@ -99,6 +103,8 @@ class OIDCBackend(AuthenticationBackend):
 
 
 def current_owner(request):
+    if owner := request.scope.get('_finsight_delegated_owner'):
+        return owner
     if not getattr(request.app.state, "oidc_conversation_pilot", False):
         return "local-pilot"
     user = request.scope.get("user")
@@ -119,7 +125,7 @@ class ConversationPilotBoundary:
             if user is None or not user.is_authenticated:
                 response = JSONResponse({"detail": "请先登录"}, status_code=401,
                                         headers={"WWW-Authenticate": "Bearer"})
-            elif path != "/api/v1/conversations" and not path.startswith("/api/v1/conversations/"):
+            elif path not in {"/api/v1/conversations", "/api/v1/personal-research-key"} and not path.startswith("/api/v1/conversations/"):
                 response = JSONResponse({"detail": "当前身份隔离试点仅开放通用对话；此接口尚未完成隔离验收"}, status_code=503)
             else:
                 response = None

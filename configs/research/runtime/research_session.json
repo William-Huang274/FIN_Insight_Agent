@@ -1,11 +1,15 @@
 {
   "version": 1,
+  "authoring": {"version": 1, "enabled": true, "context_version": "authoring_context.v1"},
   "model_config": "configs/research/model_routing.json",
   "max_tasks": 12,
   "max_parallel_tasks": 2,
   "context_editing": {
+    "policy": "task_boundary",
     "trigger_tokens": 16000,
-    "keep": 2
+    "keep": 2,
+    "checkpoint_trigger_tokens": 48000,
+    "checkpoint_reserve_tokens": 8192
   },
   "context_summarization": {
     "enabled": false,
@@ -13,7 +17,7 @@
     "keep_tokens": 24000,
     "max_summaries": 2,
     "profile": {
-      "model": "deepseek-v4-flash",
+      "model": "deepseek-flash",
       "reasoning_effort": "low",
       "thinking": "disabled"
     },
@@ -47,7 +51,7 @@
   "nodes": {
     "lead": {
       "profile": {
-        "model": "deepseek-v4-flash",
+        "model": "deepseek-flash",
         "thinking": "disabled",
         "reasoning_effort": "low"
       },
@@ -336,7 +340,7 @@
     },
     "quick_writer": {
       "profile": {
-        "model": "deepseek-v4-flash",
+        "model": "deepseek-flash",
         "thinking": "disabled",
         "reasoning_effort": "low"
       },

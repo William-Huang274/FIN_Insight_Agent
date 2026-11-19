@@ -1,0 +1,43 @@
+name: Public checkout
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+
+jobs:
+  workbench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci && npm run build
+        working-directory: apps/workbench/frontend
+      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57
+      - run: uv sync --locked --python 3.11 --extra agent-runtime --extra workbench-delivery
+      - run: uv run --no-sync python -m scripts.dev.verify_public_checkout
+  business-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: sh mvnw -B -DskipTests package
+        working-directory: apps/business-service
+  local-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: python3 scripts/deployment/initialize.py
+      - run: docker compose up --build --wait --wait-timeout 180
+      - run: |
+          curl -fsS http://127.0.0.1:8765/api/health | python3 -c 'import json,sys; assert json.load(sys.stdin)["status"] == "ok"'
+          curl -fsS http://127.0.0.1:8765/workspace/projects | grep -q 'id="root"'
+      - if: always()
+        run: docker compose down --volumes

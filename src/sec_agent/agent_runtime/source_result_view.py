@@ -1,0 +1,274 @@
+"""Model-facing source cards; full parser/transport records stay in observations.
+
+Normalize only structured source results. Never parse prose, truncate evidence,
+limit candidates, or infer that two different periods/revisions are equivalent.
+"""
+import ast
+import json
+from copy import deepcopy
+from collections.abc import Mapping
+
+
+_SOURCE_STATES = {"retrieval_candidate", "source_bound_passage"}
+_TRANSPORT_KEYS = {"mcp_receipt_chain", "mcp_receipt", "cell_binding_used", "source_tool_lane_receipt_id"}
+# Implementation names are not source coverage. Keep revision explanations,
+# acquisition URLs, parsing limitations, dates, hashes and unknown metadata.
+_PARSER_IMPLEMENTATION_KEYS = {"parser", "material_card_version"}
+
+
+def _navigation_envelope(row):
+    return (isinstance(row.get('operation'), str)
+            and row.get('operation') in {'catalog', 'outline', 'search', 'read'}
+            and isinstance(row.get('items'), list)
+            and row.get('read_only') is True and 'source_snapshot_sha256' in row)
+
+
+def _shared_navigation_metadata(row):
+    """Factor exact repeated metadata, without dropping candidates or diagnostics.
+
+    Native navigation is already a result envelope (not wrapped in ``result``).
+    Full canonical receipts stay unchanged; inheritance is explicit in the view.
+    Unknown/conflicting metadata remains on its original item.
+    """
+    if not _navigation_envelope(row) or len(row['items']) < 2:
+        return row
+    items = row['items']
+    for key in ('retrieval', 'organization_source'):
+        shared_key = 'shared_' + key
+        if shared_key in row or not all(isinstance(i, dict) and key in i for i in items):
+            continue
+        shared = items[0][key]
+        if not shared or not all(i[key] == shared for i in items):
+            continue
+        row[shared_key] = shared
+        for item in items:
+            del item[key]
+            item[key + '_ref'] = '#/' + shared_key
+        if key == 'retrieval' and isinstance(row.get('notice'), str):
+            # Replace only the exact serialized receipt produced by navigation;
+            # retain all surrounding source/coverage warnings verbatim.
+            row['notice'] = row['notice'].replace('Retrieval: ' + str(shared),
+                'Retrieval: see shared_retrieval (same receipt for every item).')
+    # Node-specific locators stay on each row. Only equal document-level
+    # fields are inherited, so a partial capture or a different revision can
+    # never silently become a complete/equivalent original.
+    if 'shared_original_sources' not in row:
+        groups = {}
+        for item in items:
+            if isinstance(item, dict) and item.get('document_id') and isinstance(item.get('original_source'), dict):
+                groups.setdefault(item['document_id'], []).append(item)
+        shared_sources = []
+        for document, members in groups.items():
+            if len(members) < 2 or any('original_source_ref' in item for item in members):
+                continue
+            common = {k: v for k, v in members[0]['original_source'].items()
+                      if all(k in item['original_source'] and item['original_source'][k] == v for item in members)}
+            if len(json.dumps(common, ensure_ascii=False)) < 200:
+                continue
+            ref = '#/shared_original_sources/' + str(len(shared_sources)) + '/fields'
+            shared_sources.append({'document_id': document, 'fields': common})
+            for item in members:
+                item['original_source'] = {k: v for k, v in item['original_source'].items() if k not in common}
+                item['original_source_ref'] = ref
+        if shared_sources:
+            row['shared_original_sources'] = shared_sources
+            row['original_source_inheritance'] = 'Merge referenced fields with each item.original_source; locators and differing fields remain on each item.'
+    return row
+
+
+def _company_source_menu(row):
+    """A known company sources section is a file menu, not a company profile.
+
+    Keep all records and financial/source identity. Detailed profile remains
+    available through company navigation, documents through outline/read.
+    """
+    if row.get('company_section') != 'sources' or not isinstance(row.get('sources'), list):
+        return row
+    menu = {k: v for k, v in row.items() if k not in {
+        'card', 'profile', 'listing', 'data_counts', 'positions_count',
+        'financial_groups', 'data_channels', 'relationship_processing', 'section_navigation'}}
+    sources = []
+    for original in row['sources']:
+        if not isinstance(original, dict) or not original.get('id'):
+            sources.append(original)
+            continue
+        item = {k: v for k, v in original.items() if k not in {
+            'captured_at', 'material_group_label', 'display_title', 'url',
+            'link_role', 'material_group', 'categories', 'publisher_names'}}
+        if original.get('publisher_names'):
+            item['publisher_names'] = original['publisher_names']
+        if original.get('display_title') not in (None, original.get('title')):
+            item['display_title'] = original['display_title']
+        meta = _metadata(item.get('metadata', {}))
+        if isinstance(meta, dict):
+            meta = {k: v for k, v in meta.items() if k not in {
+                'captured_at', 'data_tables', 'runtime_compatibility_parse', 'window',
+                'entity_id', 'research_dimension'} and not
+                (k in item and item[k] == v) and not
+                (k == 'origin_url' and v == original.get('url')) and not
+                (k == 'publication_date' and v == item.get('published_at'))}
+        if meta:
+            item['metadata'] = meta
+        else:
+            item.pop('metadata', None)
+        item['document_id'] = original['id']
+        item['readback'] = {'source_space': 'library', 'operation': 'outline', 'document_id': original['id']}
+        sources.append(item)
+    # One identical coverage description for this menu, not 20 repeated copies.
+    coverage = [s.get('metadata', {}).get('document_coverage') for s in sources
+        if isinstance(s, dict) and isinstance(s.get('metadata', {}), dict)]
+    if len(coverage) == len(sources) and len(sources) > 1 and coverage[0] and all(c == coverage[0] for c in coverage):
+        menu['shared_document_coverage'] = coverage[0]
+        for source in sources:
+            source['metadata'].pop('document_coverage')
+            if not source['metadata']:
+                source.pop('metadata')
+    menu['sources'] = sources
+    menu['menu_notice'] = 'File navigation, not evidence. Shared document coverage applies to all rows when present. URLs, profile and processing details remain in original records; use document_id with outline/search/read. Counts and all returned files are preserved.'
+    if row.get('entity_id'):
+        menu['company_readback'] = {'operation': 'company', 'source_space': 'library', 'entity_id': row['entity_id']}
+    return menu
+
+
+def _metadata(value):
+    if isinstance(value, str):
+        try:
+            decoded = json.loads(value)
+        except (ValueError, TypeError):
+            return value
+        if not isinstance(decoded, dict):
+            return value
+        value = decoded
+    if not isinstance(value, Mapping):
+        return value
+    row = {k: v for k, v in value.items() if k not in _PARSER_IMPLEMENTATION_KEYS | _TRANSPORT_KEYS}
+    if "routing_metadata_v1" in row:
+        routing = _metadata(row["routing_metadata_v1"])
+        if isinstance(routing, dict):
+            # Only exact copies disappear. Conflicts remain visible at their
+            # original path; do not silently choose one period/identity.
+            routing = {k: v for k, v in routing.items() if k not in row or row[k] != v}
+        if routing != {}:
+            row["routing_metadata_v1"] = routing
+        else:
+            row.pop("routing_metadata_v1")
+    return row
+
+
+def _shared_calculation_metadata(row):
+    if row.get('result_state') != 'non_authoritative_metric' or not isinstance(row.get('operands'), dict):
+        return row
+    if 'shared_source_provenance' in row:
+        return row
+    groups = {}
+    for operand in row['operands'].values():
+        if isinstance(operand, dict) and isinstance(operand.get('source_provenance'), dict):
+            key = json.dumps(operand['source_provenance'], sort_keys=True, ensure_ascii=False)
+            groups.setdefault(key, []).append(operand)
+    shared = []
+    for members in groups.values():
+        if len(members) < 2 or any('source_provenance_ref' in item for item in members):
+            continue
+        ref = '#/shared_source_provenance/' + str(len(shared))
+        shared.append(members[0]['source_provenance'])
+        for item in members:
+            del item['source_provenance']
+            item['source_provenance_ref'] = ref
+    if shared:
+        row['shared_source_provenance'] = shared
+    return row
+
+
+def _calculation_basis(row):
+    """Expose ratio syntax, not an inferred financial interpretation.
+
+    Outside the immutable CALC payload/hash: old receipts get the same view on
+    read, with no migration or model-supplied form. a/b-c/d has two divisions.
+    """
+    if (row.get('result_state') != 'non_authoritative_metric'
+            or row.get('arithmetic_verified') is not True or 'formula_basis' in row):
+        return row
+    expression, operands = row.get('expression'), row.get('operands')
+    if not isinstance(expression, str) or len(expression) > 1000 or not isinstance(operands, dict):
+        return row
+    try:
+        parsed = ast.parse(expression, mode='eval').body
+    except (SyntaxError, ValueError, RecursionError):
+        return row
+    allowed = (ast.BinOp, ast.UnaryOp, ast.Name, ast.Load, ast.Constant,
+               ast.Add, ast.Sub, ast.Mult, ast.Div, ast.UAdd, ast.USub)
+    if any(not isinstance(node, allowed) for node in ast.walk(parsed)):
+        return row
+    used = {node.id for node in ast.walk(parsed) if isinstance(node, ast.Name)}
+    if used != set(operands):
+        return row
+
+    def component(node):
+        return {'expression': ast.unparse(node),
+                'operand_keys': sorted({n.id for n in ast.walk(node) if isinstance(n, ast.Name)})}
+
+    ratios = [{'division_expression': ast.unparse(node),
+               'numerator': component(node.left), 'denominator': component(node.right)}
+              for node in ast.walk(parsed) if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div)]
+    if ratios:
+        row['formula_basis'] = {
+            'version': 1, 'ratios': ratios, 'purpose_ref': '#/rationale',
+            'operand_details_ref': '#/operands', 'semantics_inferred': False,
+            'notice': 'Components are syntax from this exact formula, not financial labels. '
+                      'Operand keys retain source, period/unit metadata and explicit assumptions in operands. '
+                      'For a range, contribution split or complement, compare the actual denominator and adjustments '
+                      'of each calculation; arithmetic verification does not establish a common economic quantity.'}
+    return row
+
+
+def source_result_view(value):
+    """Idempotent request-only projection shared by fresh and restored reads."""
+    if isinstance(value, Mapping):
+        # Tool schemas contain properties named operation/result_state/metadata.
+        # They are contracts, not source observations: preserve them verbatim.
+        schema_keys = {'input_schema', 'output_schema', 'inputSchema', 'outputSchema'}
+        row = {k: deepcopy(v) if k in schema_keys else source_result_view(v)
+               for k, v in value.items() if k not in _TRANSPORT_KEYS}
+        if isinstance(row.get('result_state'), str) and row.get("result_state") in _SOURCE_STATES and "metadata" in row:
+            metadata = _metadata(row["metadata"])
+            if isinstance(metadata, dict):
+                # The public card already carries these values. URL/date
+                # aliases are removed only when their values also match.
+                aliases = {"origin_url": "url", "publication_date": "published_at"}
+                metadata = {k: v for k, v in metadata.items()
+                            if k not in row or row[k] != v}
+                metadata = {k: v for k, v in metadata.items()
+                            if aliases.get(k) not in row or row[aliases[k]] != v}
+            if metadata != {}:
+                row["metadata"] = metadata
+            else:
+                row.pop("metadata")
+        if row.get('result_state') == 'retrieval_candidate':
+            row = _company_source_menu(row)
+        return _shared_calculation_metadata(_calculation_basis(_shared_navigation_metadata(row)))
+    if isinstance(value, (list, tuple)):
+        return [source_result_view(v) for v in value]
+    return value
+
+
+def source_message_views(messages):
+    """Reproject legacy saved messages as well as freshly assembled results."""
+    from langchain_core.messages import HumanMessage, ToolMessage
+    result = []
+    changed = False
+    for message in messages:
+        view = message
+        if isinstance(message, (HumanMessage, ToolMessage)) and isinstance(message.content, str):
+            try:
+                body = json.loads(message.content)
+            except (ValueError, TypeError):
+                body = None
+            # User prose and unknown JSON contracts are not a tool result.
+            if isinstance(body, dict) and ("progress" in body or message.additional_kwargs.get('fin_research_working_view')
+                                         or (isinstance(message, ToolMessage) and ("result" in body or _navigation_envelope(body)))):
+                projected = source_result_view(body)
+                if projected != body:
+                    view = message.model_copy(update={"content": json.dumps(projected, ensure_ascii=False, separators=(",", ":"))})
+                    changed = True
+        result.append(view)
+    return result if changed else messages

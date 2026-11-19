@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 from pathlib import Path
 from typing import Any, Callable, Mapping
 from uuid import uuid4
@@ -47,12 +48,8 @@ class SourceIntakeService:
         runtime_paths: RuntimePathRegistry,
     ) -> "SourceIntakeService":
         root = Path(repository_root).resolve()
-        policy = SourceIntakePolicy.from_path(
-            root
-            / "configs"
-            / "retrieval"
-            / "source_intake.json"
-        )
+        policy = SourceIntakePolicy.from_path(os.getenv('FINSIGHT_SOURCE_INTAKE_POLICY')
+            or root / 'configs/retrieval/source_intake.json')
         return cls(
             policy=policy,
             private_root=runtime_paths.workbench_private_root / "source_intake",

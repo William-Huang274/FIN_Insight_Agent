@@ -160,6 +160,7 @@ class ApprovedDataComposition:
     network_calls_authorized: bool = False
     paid_calls_authorized: bool = False
     method_reader: Any = None
+    restore_source_observations: Any = None
 
 
 @contextmanager
@@ -171,6 +172,8 @@ def open_approved_data_composition(
     live_web_read_enabled: bool = False,
     case_artifacts: Any = None,
     role_method_reader: Any = None,
+    vision_api_key=None,
+    restored_observations=(),
 ) -> Iterator[ApprovedDataComposition]:
     """Open the exact Owner-approved data readers behind one MCP lifecycle."""
 
@@ -209,6 +212,10 @@ def open_approved_data_composition(
             raise ApprovedDataCompositionError(
                 "approved_research_as_of_catalog_mismatch"
             )
+        from sec_agent.research_foundation.project_asset_access import task_access_check
+        source_access_check = task_access_check(env)
+        if source_access_check:
+            source_access_check()
         planner_capabilities = derive_planner_tool_capabilities(
             sqlite_path=paths["s2_mart"],
             expected_mart_sha256=decision.bound_inputs.s2_mart_sha256,
@@ -257,17 +264,38 @@ def open_approved_data_composition(
         if env.get('FINSIGHT_RESEARCH_FACT_MART_PATH'):
             runtime_mart = _required_file_environment('FINSIGHT_RESEARCH_FACT_MART_PATH', env)
             runtime_mart_digest = _file_sha256(runtime_mart)
+        if env.get('FINSIGHT_TASK_ATTACHMENTS_ROOT') and env.get('FINSIGHT_TASK_THREAD_ID'):
+            from sec_agent.research_foundation.project_financial_facts import task_financial_snapshot
+            from sec_agent.research_foundation.task_asset_updates import task_asset_view
+            selected = task_financial_snapshot(env['FINSIGHT_TASK_ATTACHMENTS_ROOT'], task_asset_view(env).financial_scope)
+            if selected is not None:
+                runtime_mart, financial_binding = selected
+                runtime_mart_digest = financial_binding['mart_sha256']
+        from sec_agent.research_foundation.project_asset_access import task_access_check
+        source_access_check = task_access_check(env)
+        if source_access_check:
+            source_access_check()
         planner_capabilities = derive_planner_tool_capabilities(
             sqlite_path=runtime_mart,
             expected_mart_sha256=runtime_mart_digest,
             snapshot_id=APPROVED_DATA_SNAPSHOT_ID,
         )
         branch_ids = tuple(row.branch_id for row in foundation.question_branches)
+        from .current_research_contract import bind_current_foundation
+        runtime_foundation = bind_current_foundation(foundation, env, root)
+        runtime_snapshot = APPROVED_DATA_SNAPSHOT_ID
+        if runtime_foundation is not foundation:
+            library_digest = ''
+            if env.get('FINSIGHT_RESEARCH_LIBRARY_PATH'):
+                from sec_agent.research_foundation.research_library import open_library
+                library_digest = open_library(env['FINSIGHT_RESEARCH_LIBRARY_PATH']).manifest['sha256']
+            runtime_snapshot = 'research-data:' + sha256(
+                (inventory.inventory_snapshot_digest + runtime_mart_digest + library_digest).encode()).hexdigest()
         graph_run = compose_mcp_graph_run(
-            foundation,
+            runtime_foundation,
             branch_ids=branch_ids,
             research_as_of=task_research_as_of(env),
-            snapshot_id=APPROVED_DATA_SNAPSHOT_ID,
+            snapshot_id=runtime_snapshot,
             execution_attempt_id=run_invocation_id.strip(),
         )
         reviewed_case = load_owner_approved_reviewed_case(
@@ -350,12 +378,14 @@ def open_approved_data_composition(
             from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
             from sec_agent.research_foundation.vision_reader import task_vision_reader
             from .report_session import session_audit_sinks
-            attachment_store = TaskAttachmentStore(env["FINSIGHT_TASK_ATTACHMENTS_ROOT"])
+            from sec_agent.research_foundation.task_asset_updates import task_asset_view
+            attachment_store = task_asset_view(env)
             original_source_reader = source_reader
             vision = None
             if env.get("FINSIGHT_TASK_VISION_ENABLED") == "1":
                 public_audit, _ = session_audit_sinks(Path(env["FINSIGHT_TASK_AUDIT_ROOT"]) / env["FINSIGHT_TASK_THREAD_ID"] / env["FINSIGHT_TASK_RUN_ID"])
-                vision = task_vision_reader(api_key=env["DEEPSEEK_API_KEY"], public_sink=public_audit)
+                vision = task_vision_reader(api_key=vision_api_key.get_secret_value() if vision_api_key is not None else env["DEEPSEEK_API_KEY"],
+                    public_sink=public_audit)
             async def source_reader(*, request, branch_id, run_scope):
                 if request.source_space == "uploads":
                     return await attachment_store.read(thread_id=env["FINSIGHT_TASK_THREAD_ID"], request=request, vision_reader=vision)
@@ -363,9 +393,29 @@ def open_approved_data_composition(
                 import inspect
                 return await value if inspect.isawaitable(value) else value
 
+        if source_read_enabled and env.get('FINSIGHT_RESEARCH_LIBRARY_PATH'):
+            from sec_agent.research_foundation.research_library import ResearchLibrary
+            library = ResearchLibrary(env['FINSIGHT_RESEARCH_LIBRARY_PATH'],retrieval_environment=env)
+            pre_library_reader = source_reader
+            async def source_reader(*, request, branch_id, run_scope):
+                if request.source_space == 'library':
+                    if branch_id not in run_scope.selected_branch_ids:
+                        raise ValueError('library_branch_outside_run_scope')
+                    from zoneinfo import ZoneInfo
+                    # Library publication/period fields are calendar dates.
+                    # Preserve the host's declared research calendar instead of
+                    # moving an Asia/Shanghai research day back when UTC-normalized.
+                    calendar=ZoneInfo(env.get('FINSIGHT_RESEARCH_DATE_TIMEZONE','UTC'))
+                    return library.navigate(request, run_scope.research_as_of.astimezone(calendar).date().isoformat())
+                value = pre_library_reader(request=request, branch_id=branch_id, run_scope=run_scope)
+                import inspect
+                return await value if inspect.isawaitable(value) else value
+
+        from sec_agent.research_foundation.source_bound_calculator import ObservedSourceRegistry
+        source_registry = ObservedSourceRegistry(restored_observations)
         server = build_research_data_mcp_server(
             ResearchDataMCPDependencies(
-                method_reader=FoundationMethodReader(foundation),
+                method_reader=FoundationMethodReader(runtime_foundation),
                 local_knowledge_reader=local_reader,
                 reviewed_evidence_search_reader=reviewed_reader.search,
                 reviewed_evidence_reader=reviewed_reader,
@@ -374,7 +424,8 @@ def open_approved_data_composition(
                 external_capture=capture,  # type: ignore[arg-type]
                 source_document_reader=source_reader,
                 case_artifacts=case_artifacts,
-            ), role_method_reader=role_method_reader,
+                source_registry=source_registry,
+            ), role_method_reader=role_method_reader, source_access_check=source_access_check,
         )
     except ApprovedDataCompositionError:
         raise
@@ -388,6 +439,7 @@ def open_approved_data_composition(
         run_binding=graph_run.mcp_run_binding,
         source_family_compiler=compiler,
         source_read_enabled=source_read_enabled,
+        subject_ticker=None if runtime_foundation is not foundation else foundation.case_identity.subject_ticker,
     )
     try:
         with adapter as opened_adapter:
@@ -418,6 +470,7 @@ def open_approved_data_composition(
                 local_candidate_count=inventory.local_candidate_count,
                 mcp_server=server,
                 method_reader=opened_adapter.read_research_method,
+                restore_source_observations=source_registry.restore,
                 network_calls_authorized=live_web_read_enabled,
                 reviewed_topic_refs_by_branch={
                     branch_id: tuple(

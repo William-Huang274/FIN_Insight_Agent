@@ -19,6 +19,7 @@ ToolExecutionStatus = Literal["success", "not_applicable", "tool_failure"]
 EvidenceSourceRoute = Literal["reviewed_first", "local_only", "external_required"]
 _RETRIEVAL_SCOPE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,119}$")
 ToolResultState = Literal[
+    "document_catalog_entry",
     "source_bound_passage",
     "retrieval_candidate",
     "captured_source_candidate",
@@ -266,13 +267,19 @@ class BoundBranchTask(_StrictFrozenModel):
     revision: int = Field(ge=0, le=100)
     priority: Literal["high", "medium", "low"]
     objective: str = Field(min_length=1, max_length=4_000)
-    evidence_requests: tuple[dict[str, Any], ...] = Field(min_length=1, max_length=8)
+    evidence_requests: tuple[dict[str, Any], ...] = Field(max_length=8)
     fact_requests: tuple[dict[str, Any], ...] = Field(default=(), max_length=24)
     research_as_of: str = Field(min_length=1, max_length=80)
     snapshot_id: str = Field(min_length=1, max_length=240)
     foundation_digest: Digest = Field(pattern=r"^[0-9a-f]{64}$")
     method_digest: Digest = Field(pattern=r"^[0-9a-f]{64}$")
     plan_digest: Digest = Field(pattern=r"^[0-9a-f]{64}$")
+
+    @model_validator(mode="after")
+    def validate_legacy_routes(self) -> "BoundBranchTask":
+        if not self.evidence_requests and not self.case_id.startswith('research:'):
+            raise ValueError('historical_task_requires_evidence_routes')
+        return self
 
 
 class ToolLaneTask(_StrictFrozenModel):
@@ -316,6 +323,7 @@ class ToolLaneResult(_StrictFrozenModel):
                 raise ValueError("tool_lane_not_applicable_invalid")
 
         evidence_states = {
+            "document_catalog_entry",
             "source_bound_passage",
             "retrieval_candidate",
             "captured_source_candidate",

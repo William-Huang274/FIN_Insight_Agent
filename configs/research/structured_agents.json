@@ -11,7 +11,7 @@
   "token_budget_basis": {
     "planner": {
       "node_role": "planner",
-      "node_purpose": "Turn the frozen DELL question tree and answer-free branch methods into a bounded set of evidence and financial-fact requests without answering the case.",
+      "node_purpose": "Turn the frozen question tree and answer-free branch methods into a bounded set of evidence and financial-fact requests without answering the case.",
       "input_scale": "One research question, one as-of date, and at most 16 compact branch method records; no evidence corpus or prior model conversation.",
       "required_outputs": [
         "selected branch tasks",
@@ -78,7 +78,7 @@
     },
     "lead": {
       "node_role": "lead",
-      "node_purpose": "Synthesize all effective DELL branch workpapers and the explicit countercase into a source-linked executive conclusion without hiding uncertainty.",
+      "node_purpose": "Synthesize all effective branch workpapers and the explicit countercase into a source-linked executive conclusion without hiding uncertainty.",
       "input_scale": "At most 16 effective branch workpapers plus one counter decision from a single case; no raw corpus and no cross-request provider history.",
       "required_outputs": [
         "calibrated verdict and confidence",

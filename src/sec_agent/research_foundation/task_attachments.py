@@ -13,15 +13,30 @@ import sqlite3
 from uuid import UUID, uuid4
 import zipfile
 from contextlib import contextmanager
+from datetime import datetime, timezone
 
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 
+from .project_asset_access import access_state, origin_access, require_active, bind_project_store
 from .source_document_navigation import SourceDocumentRequest, navigate_source_nodes
 
 MAX_BYTES = 20 * 1024 * 1024
 MAX_TEXT = 2_000_000
 ALLOWED_SUFFIXES = {".pdf", ".docx", ".md", ".txt", ".csv", ".html", ".htm", ".png", ".jpg", ".jpeg", ".webp"}
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+
+
+def task_material_catalog(materials):
+    """Compact navigation only; full source/provenance stays in the read tools."""
+    fields = ("document_id", "name", "kind", "sections", "needs_vision")
+    result = []
+    for item in materials:
+        row = {key: item[key] for key in fields if key in item}
+        captured = item.get('project_origin', {}).get('asset_capture')
+        if captured:
+            row['source_selection'] = {k:captured[k] for k in ('kind','snapshot_digest','selection_mode','selected_count') if k in captured}
+        result.append(row)
+    return result
 
 
 def _digest(value):
@@ -102,13 +117,33 @@ def parse_document(filename, body):
 
 
 class TaskAttachmentStore:
-    def __init__(self, root):
+    def __init__(self, root, *, max_files=12, max_bytes=80 * 1024 * 1024):
+        self.max_files, self.max_bytes = max_files, max_bytes
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
         self.path = self.root / "attachments.sqlite"
         with self.connect() as db:
             db.execute("CREATE TABLE IF NOT EXISTS attachments (thread TEXT, id TEXT PRIMARY KEY, name TEXT, kind TEXT, body BLOB, pages TEXT, digest TEXT, created TEXT DEFAULT CURRENT_TIMESTAMP)")
             db.execute("CREATE TABLE IF NOT EXISTS vision (thread TEXT, object_id TEXT, page INTEGER, prompt_hash TEXT, result TEXT, PRIMARY KEY(thread, object_id, page, prompt_hash))")
+            db.execute("CREATE TABLE IF NOT EXISTS attachment_origins (object_id TEXT PRIMARY KEY, origin TEXT NOT NULL)")
+            from .source_verification_cache import install
+            install(db)
+            db.execute('CREATE INDEX IF NOT EXISTS attachments_thread ON attachments(thread)')
+            # Directory/version reads must not visit the large body/pages row.
+            # SQLite can traverse overflow pages even when SELECT omits BLOBs
+            # if later columns (digest/created) live after those payloads.
+            db.execute('CREATE INDEX IF NOT EXISTS attachments_metadata ON attachments(thread,id,name,kind,digest,created)')
+            # Additive, transactional migration; directory reads never load pages/body.
+            db.execute('CREATE TABLE IF NOT EXISTS attachment_summaries '
+                       '(object_id TEXT PRIMARY KEY, bytes INTEGER, sections INTEGER, needs_vision INTEGER, excerpt TEXT)')
+            db.execute('''CREATE TRIGGER IF NOT EXISTS attachment_summary_insert AFTER INSERT ON attachments BEGIN
+                INSERT INTO attachment_summaries VALUES(NEW.id,length(NEW.body),json_array_length(NEW.pages),
+                  EXISTS(SELECT 1 FROM json_each(NEW.pages) WHERE json_extract(value,'$.needs_vision')=1),
+                  substr(json_extract(NEW.pages,'$[0].text'),1,600)); END''')
+            db.execute('''INSERT INTO attachment_summaries SELECT id,length(body),json_array_length(pages),
+                EXISTS(SELECT 1 FROM json_each(pages) WHERE json_extract(value,'$.needs_vision')=1),
+                substr(json_extract(pages,'$[0].text'),1,600) FROM attachments
+                WHERE id NOT IN (SELECT object_id FROM attachment_summaries)''')
 
     @contextmanager
     def connect(self):
@@ -120,36 +155,137 @@ class TaskAttachmentStore:
         finally:
             db.close()
 
-    def add(self, thread_id, filename, body):
+    def add(self, thread_id, filename, body, *, research_origin=None, revision=None, source_capture=None, deduplicate=False):
         thread_id = str(UUID(str(thread_id)))
         if not filename or len(filename) > 180 or any(c in filename for c in '/\\:\x00\r\n') or Path(filename).suffix.lower() not in ALLOWED_SUFFIXES:
             raise ValueError("unsupported_or_unsafe_filename")
         if not 0 < len(body) <= MAX_BYTES:
             raise ValueError("upload_size_limit_20MiB")
-        pages, kind = parse_document(filename, body)
+        pages = None
         object_id = "UPLOAD::" + uuid4().hex
+        if deduplicate:
+            if research_origin or revision or source_capture:
+                raise ValueError('plain_immutable_snapshot_required')
+            object_id = 'UPLOAD::' + _digest(json.dumps([thread_id, filename, _digest(body)], sort_keys=True).encode())[:32]
+        if source_capture:
+            from .project_source_captures import capture_manifest, render_capture, complete_source_pages
+            manifest = capture_manifest(source_capture['snapshot'])
+            if research_origin or render_capture(source_capture['snapshot'], source_capture['note']).encode() != body:
+                raise ValueError('source_capture_body_mismatch')
+            if source_capture['snapshot'].get('kind') == 'library_source':
+                pages, kind = complete_source_pages(source_capture['snapshot'],source_capture['note']), 'document'
+            # A repeated save of exactly the same selection/note is idempotent.
+            object_id = 'UPLOAD::' + _digest(json.dumps([thread_id, filename, _digest(body), revision], sort_keys=True).encode())[:32]
+        if pages is None:
+            pages, kind = parse_document(filename, body)
+        if research_origin:
+            # A fixed report version is an immutable export, not a new revision
+            # authority. Native checkpoints continue to own report history.
+            identity = [thread_id, research_origin['thread_id'], research_origin['report_version'], research_origin['report_digest'],
+                        research_origin['phase'], research_origin['human_edit_count']]
+            if research_origin.get('source_dependencies'):
+                identity.append(research_origin['source_dependencies'])
+            object_id = 'UPLOAD::' + _digest(json.dumps(identity).encode())[:32]
         with self.connect() as db:
             # Count and insert in one native transaction; no application lock service.
             db.execute("BEGIN IMMEDIATE")
-            count, size = db.execute("SELECT COUNT(*), COALESCE(SUM(LENGTH(body)),0) FROM attachments WHERE thread=?", (thread_id,)).fetchone()
-            if count >= 12 or size + len(body) > 80 * 1024 * 1024:
-                raise ValueError("task_upload_limit_12_files_80MiB")
+            if (source_capture or deduplicate) and db.execute('SELECT 1 FROM attachments WHERE thread=? AND id=?', (thread_id, object_id)).fetchone():
+                require_active(access_state(db, thread_id, 'document', object_id))
+                return self.list(thread_id, ids=[object_id])[0]
+            if revision:
+                from .project_asset_versions import register_revision
+                register_revision(db, thread_id, object_id, revision)
+            if research_origin and db.execute('SELECT 1 FROM attachments WHERE thread=? AND id=?', (thread_id, object_id)).fetchone():
+                return self.list(thread_id, ids=[object_id])[0]
+            count, size = db.execute('SELECT COUNT(*),COALESCE(SUM(s.bytes),0) FROM attachments a '
+                                    'JOIN attachment_summaries s ON s.object_id=a.id WHERE a.thread=?', (thread_id,)).fetchone()
+            if count >= self.max_files or size + len(body) > self.max_bytes:
+                raise ValueError("task_upload_limit_12_files_80MiB" if self.max_files == 12 else
+                                 '项目资料配额已满，已有版本保留；请联系维护者调整项目配额。')
             db.execute("INSERT INTO attachments(thread,id,name,kind,body,pages,digest) VALUES(?,?,?,?,?,?,?)",
                 (thread_id, object_id, filename, kind, body, json.dumps(pages, ensure_ascii=False), _digest(body)))
-        return self.list(thread_id)[-1]
+            from .project_text_index import index_document
+            index_document(db, object_id, filename, pages)
+            if research_origin:
+                db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps({
+                    'source_role': 'project_research_artifact', 'research_origin': research_origin}, ensure_ascii=False)))
+            if source_capture:
+                db.execute('CREATE TABLE IF NOT EXISTS attachment_captures(object_id TEXT PRIMARY KEY,snapshot TEXT NOT NULL,note TEXT NOT NULL)')
+                db.execute('INSERT INTO attachment_captures VALUES(?,?,?)', (object_id, json.dumps(source_capture['snapshot'],ensure_ascii=False),source_capture['note']))
+                db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps({
+                    'source_role':'project_source_snapshot_with_user_note', 'asset_capture':manifest},ensure_ascii=False)))
+        return self.list(thread_id, ids=[object_id])[0]
 
-    def list(self, thread_id):
+    def list(self, thread_id, *, ids=None):
         with self.connect() as db:
-            rows = db.execute("SELECT id,name,kind,pages,LENGTH(body) AS bytes FROM attachments WHERE thread=? ORDER BY rowid", (str(UUID(str(thread_id))),)).fetchall()
-        return [{"document_id": row["id"], "name": row["name"], "kind": row["kind"], "bytes": row["bytes"],
-                 "sections": len(json.loads(row["pages"])), "needs_vision": any(p["needs_vision"] for p in json.loads(row["pages"]))} for row in rows]
+            if ids is not None and not ids:
+                return []
+            # The covering metadata index serves both scope and selected IDs.
+            # Insertion order remains stable without loading attachment rows.
+            condition = (' AND a.id IN ('+','.join('?' for _ in ids)+')') if ids is not None else ''
+            rows = db.execute('SELECT a.id,a.name,a.kind,a.digest,a.created,s.bytes,s.sections,s.needs_vision,s.excerpt '
+                              'FROM attachments a INDEXED BY attachments_metadata JOIN attachment_summaries s ON s.object_id=a.id '
+                              'WHERE a.thread=?'+condition+' ORDER BY a.rowid',
+                              (str(UUID(str(thread_id))), *(ids or []))).fetchall()
+            origins = {r['object_id']: json.loads(r['origin']) for r in db.execute(
+                'SELECT o.* FROM attachment_origins o JOIN attachments a INDEXED BY attachments_metadata ON a.id=o.object_id WHERE a.thread=?'+condition,
+                (str(thread_id), *(ids or [])))}
+            access = {r['asset']:r['revoked'] for r in db.execute(
+                "SELECT asset,revoked FROM project_asset_access WHERE scope=? AND kind='document'"+
+                (' AND asset IN ('+','.join('?' for _ in ids)+')' if ids is not None else '')+
+                ' ORDER BY rowid',(str(thread_id), *(ids or [])))} if db.execute(
+                    "SELECT 1 FROM sqlite_master WHERE name='project_asset_access'").fetchone() else {}
+            states = {r['id']:'revoked' if access.get(r['id']) else 'active' for r in rows}
+        states = {key:state if state != 'active' else origin_access(self, thread_id, origins.get(key)) for key,state in states.items()}
+        return [{"access_status": states[row['id']], "document_id": row["id"], "name": row["name"], "kind": row["kind"], "bytes": row["bytes"],
+                 "digest": row['digest'], "created_at": row['created'].replace(' ', 'T') + 'Z',
+                 **({'project_origin': origins[row['id']]} if row['id'] in origins else {}),
+                 "sections": row['sections'], "needs_vision": bool(row['needs_vision']), "excerpt": (row['excerpt'] or '') if states[row['id']]=='active' else ''} for row in rows]
+
+    def copy_project_materials(self, thread_id, project_id, rows):
+        """Copy an authorized selection atomically, retaining exact parsed bytes.
+
+        Caller resolves project ownership. This is only for a newly created task,
+        before publishing its ID or dispatching any research run.
+        """
+        thread_id = str(UUID(str(thread_id)))
+        if not rows or len(rows) > 12 or len({r['id'] for r in rows}) != len(rows):
+            raise ValueError('project_material_selection_invalid')
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            count, size = db.execute('SELECT COUNT(*), COALESCE(SUM(LENGTH(body)),0) FROM attachments WHERE thread=?', (thread_id,)).fetchone()
+            if count + len(rows) > 12 or size + sum(len(r['body']) for r in rows) > 80 * 1024 * 1024:
+                raise ValueError('task_upload_limit_12_files_80MiB')
+            for row in rows:
+                bind_project_store(db, thread_id, row['_source_store'])
+                if _digest(row['body']) != row['digest']:
+                    raise ValueError('project_material_integrity_failure')
+                object_id = 'UPLOAD::' + uuid4().hex
+                origin = {'project_id': str(project_id), 'source_scope': row['thread'], 'document_id': row['id'], 'raw_body_sha256': row['digest'],
+                          'source_role': 'user_upload_unverified', 'copied_at': datetime.now(timezone.utc).isoformat()}
+                if row.get('project_origin', {}).get('research_origin'):
+                    origin.update(source_role='project_research_artifact', research_origin=row['project_origin']['research_origin'])
+                if row.get('project_origin', {}).get('asset_capture'):
+                    origin.update(source_role='project_source_snapshot_with_user_note', asset_capture=row['project_origin']['asset_capture'])
+                db.execute('INSERT INTO attachments(thread,id,name,kind,body,pages,digest) VALUES(?,?,?,?,?,?,?)',
+                           (thread_id, object_id, row['name'], row['kind'], row['body'], row['pages'], row['digest']))
+                from .project_text_index import index_document
+                index_document(db, object_id, row['name'], row['pages'])
+                db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps(origin)))
+        return self.list(thread_id)
 
     def get(self, thread_id, object_id):
         with self.connect() as db:
             row = db.execute("SELECT * FROM attachments WHERE thread=? AND id=?", (str(UUID(str(thread_id))), object_id)).fetchone()
         if row is None:
             raise ValueError("attachment_not_in_current_task")
-        return dict(row)
+        with self.connect() as db:
+            origin = db.execute('SELECT origin FROM attachment_origins WHERE object_id=?', (object_id,)).fetchone()
+        with self.connect() as db:
+            require_active(access_state(db, str(thread_id), 'document', object_id))
+        provenance = json.loads(origin['origin']) if origin else None
+        require_active(origin_access(self, thread_id, provenance))
+        return {**dict(row), '_source_store': str(self.path), **({'project_origin': provenance} if provenance else {})}
 
     def image(self, thread_id, object_id, page=1):
         row = self.get(thread_id, object_id)
@@ -181,9 +317,11 @@ class TaskAttachmentStore:
 
     async def read(self, *, thread_id, request, vision_reader=None):
         thread_id = str(UUID(str(thread_id)))
-        rows = [self.get(thread_id, row["document_id"]) for row in self.list(thread_id)]
-        if request.document_id:
-            rows = [self.get(thread_id, request.document_id)]
+        if not request.document_id:
+            for item in self.list(thread_id):
+                require_active(item['access_status'])
+        rows = ([self.get(thread_id, request.document_id)] if request.document_id else
+                [self.get(thread_id, row["document_id"]) for row in self.list(thread_id) if row["access_status"] == "active"])
         if request.operation == "read" and any(row["kind"] == "image" for row in rows):
             raise ValueError("image_requires_inspect_image_with_document_id")
         if request.operation == "read" and request.page_start and any(
@@ -213,15 +351,58 @@ class TaskAttachmentStore:
         for row in rows:
             url = f"http://localhost:8766/api/v1/research-sessions/{thread_id}/attachments/{row['id']}"
             for index, section in enumerate(json.loads(row["pages"])):
-                if request.operation == "read" and section["needs_vision"]:
-                    continue  # navigation hints are not citable source content
                 content = section["text"] or "此页需视觉识别。请用 source_space=uploads, operation=inspect_image, document_id 与 page_start 读取原图。"
                 for part, chunk in enumerate(splitter.split_text(content)):
                     node_id = f"CHUNK::{row['id'][8:]}:{index}:{part}" + (":vision:" + digest[:12] if inspect_image else "")
                     base = {"node_id": node_id, "parent_document_id": row["id"], "parent_section_id": f"{row['id']}:{index}",
                         "title": row["name"], "section_path": [section["heading"]], "document_kind": "pdf" if row["kind"] in {"pdf", "image"} else "document",
-                        "page_start": section["page"], "page_end": section["page"], "source_role": "user_upload_vision_interpretation" if inspect_image else "user_upload_unverified",
+                        "page_start": section["page"], "page_end": section["page"], "source_role": "user_upload_vision_interpretation" if inspect_image else row.get('project_origin', {}).get('source_role', 'user_upload_unverified'),
                         "company": "user_supplied_verify_in_context", "stable_url": url, "content": chunk,
-                        "content_sha256": _digest(chunk.encode()), "raw_body_sha256": row["digest"]}
+                        "content_sha256": _digest(chunk.encode()), "raw_body_sha256": row["digest"],
+                        "needs_vision": section["needs_vision"]}
                     nodes.extend([{**base, "node_kind": "section"}, {**base, "node_kind": "text", "node_id": node_id + ":leaf"}])
-        return navigate_source_nodes(nodes, request, snapshot=_digest("".join(row["digest"] for row in rows).encode()), allowed_space="uploads")
+        # Section/leaf are two locators for the same upload bytes, not two
+        # outline entries. Keep both IDs valid for old citations and searches.
+        blocks = [node for node in nodes if node['node_kind'] == 'section']
+        navigation = {}
+        for row in rows:
+            document_blocks = [node for node in blocks if node['parent_document_id'] == row['id']]
+            for index, node in enumerate(document_blocks):
+                following = document_blocks[index + 1] if index + 1 < len(document_blocks) else None
+                next_request = None
+                if following:
+                    next_request = {'source_space': 'uploads', 'document_id': row['id']}
+                    if inspect_image:
+                        next_request.update(operation='inspect_image', page_start=following['page_start'],
+                                            query=request.query, offset=index + 1, limit=1)
+                    elif following['needs_vision']:
+                        next_request.update(operation='inspect_image', page_start=following['page_start'])
+                    else:
+                        next_request.update(operation='read', node_id=following['node_id'])
+                hint = {'scope': 'inspected_image_page' if inspect_image else 'parsed_document',
+                        'block_index': index + 1, 'block_count': len(document_blocks),
+                        'next_block_request': next_request}
+                navigation[node['node_id']] = navigation[node['node_id'] + ':leaf'] = hint
+        selected_nodes = blocks if request.operation == 'outline' else nodes
+        if request.operation == 'read':
+            selected_nodes = [node for node in selected_nodes if not node['needs_vision']]
+        result = navigate_source_nodes(selected_nodes, request,
+            snapshot=_digest("".join(row["digest"] for row in rows).encode()), allowed_space="uploads")
+        by_id = {node['node_id']: node for node in nodes}
+        items = []
+        origins = {r['document_id']: r['project_origin'] for r in self.list(thread_id) if r.get('project_origin')}
+        for item in result.items:
+            item = {**item, **({'project_origin': origins[item['document_id']]} if item['document_id'] in origins else {})}
+            if request.operation != 'catalog':
+                item['document_navigation'] = navigation[item['node_id']]
+            if request.operation == 'outline':
+                content = by_id[item['node_id']]['content']
+                item.update(preview=content[:500], preview_truncated=len(content) > 500)
+            items.append(item)
+        return result.model_copy(update={
+            'items': tuple(items),
+            'notice': result.notice + ' This response covers only the selected blocks/window, not a completeness review of the uploaded document. '
+                'Unread or unmatched material is not non-disclosure. Before claiming a missing breakdown, inspect the relevant remaining sections/tables; '
+                'disclosed components may permit calculation even if the ratio is not printed. '
+                'document_navigation identifies the position in this document and the next block to inspect, not a record of blocks already read. '
+                'next_offset paginates the current selection only; null does not mean the whole document was inspected. Outline/search previews are not citable.'})

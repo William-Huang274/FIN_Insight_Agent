@@ -1,0 +1,71 @@
+# Merge with the repository root compose.yaml. Application services share loopback.
+services:
+  langgraph-postgres:
+    extends:
+      file: deploy/agent_server/persistence.yaml
+      service: langgraph-postgres
+  langgraph-redis:
+    extends:
+      file: deploy/agent_server/persistence.yaml
+      service: langgraph-redis
+  langgraph-api:
+    build:
+      context: .
+      dockerfile: deploy/agent_server/Dockerfile
+    network_mode: service:workbench
+    depends_on:
+      workbench:
+        condition: service_healthy
+      langgraph-postgres:
+        condition: service_healthy
+      langgraph-redis:
+        condition: service_healthy
+    environment:
+      POSTGRES_URI: postgres://langgraph_runtime:${FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD}@langgraph-postgres:5432/postgres?sslmode=disable
+      FIN_RUNTIME_POSTGRES_URI: postgres://fin_runtime_app:${FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD}@langgraph-postgres:5432/postgres?sslmode=disable
+      REDIS_URI: redis://langgraph-redis:6379
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:?set your own LangSmith key to run Agent Server}
+      LANGSMITH_PROJECT: fin-insight-dell-reference-vertical
+      LANGSMITH_TRACING: "true"
+      LANGSMITH_HIDE_INPUTS: "true"
+      LANGSMITH_HIDE_OUTPUTS: "true"
+      LANGSERVE_GRAPHS: '{"research_session":{"path":"sec_agent.agent_runtime.research_session_runtime:research_session_graph"},"conversation_session":{"path":"sec_agent.agent_runtime.conversation_runtime:conversation_session_graph"},"delegated_task":{"path":"sec_agent.agent_runtime.delegated_task_graph:delegated_task_session_graph"}}'
+      FIN_REPO_ROOT: /deps/FIN_Insight_Agent
+      FINSIGHT_PERSONAL_KEY_STORE: /app/state/personal-keys
+      FINSIGHT_PERSONAL_KEY_FILE: /run/secrets/personal-research.key
+      FINSIGHT_PERSONAL_RESEARCH_ENABLED: "1"
+      FINSIGHT_RESEARCH_SESSION_ENABLED: "1"
+      FINSIGHT_REPORT_SESSION_SETTINGS: /app/state/settings.json
+      FINSIGHT_WORKING_MEMORY_PATH: /app/state/working-memory/notes.sqlite
+      FINSIGHT_BUSINESS_API_URL: http://127.0.0.1:8095
+      FINSIGHT_ORGANIZATION_RUNTIME_SECRET: ${FINSIGHT_ORGANIZATION_RUNTIME_SECRET}
+      FINSIGHT_ORGANIZATION_ASSETS_ROOT: /app/state/project-library/organization-assets
+      FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT: /app/state/organization-indexes
+      FINSIGHT_ORGANIZATION_TASK_ACTIONS_ENABLED: ${FINSIGHT_ORGANIZATION_TASK_ACTIONS_ENABLED:-0}
+      FINSIGHT_ORGANIZATION_START_ENABLED: ${FINSIGHT_ORGANIZATION_START_ENABLED:-0}
+      FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED: ${FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED:-0}
+      FINSIGHT_ON_DEMAND_ENABLED: ${FINSIGHT_ON_DEMAND_ENABLED:-0}
+      FINSIGHT_TASK_ATTACHMENTS_ROOT: /app/state/attachments
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      QWEN_API_KEY: ${QWEN_API_KEY:-}
+      SEC_USER_AGENT: ${SEC_USER_AGENT:-}
+      FINSIGHT_SEC_CONTACT_EMAIL: ${FINSIGHT_SEC_CONTACT_EMAIL:-}
+      CONGRESS_API_KEY: ${CONGRESS_API_KEY:-}
+    volumes:
+      - finsight-workbench-state:/app/state
+      - ./.secrets/personal-research.key:/run/secrets/personal-research.key:ro
+      - ./deploy/agent_server/settings.json:/app/state/settings.json:ro
+    healthcheck:
+      test: ["CMD", "python", "/api/healthcheck.py"]
+      interval: 20s
+      timeout: 5s
+      retries: 12
+  workbench:
+    environment:
+      FINSIGHT_WORKING_MEMORY_PATH: /app/state/working-memory/notes.sqlite
+      FINSIGHT_RESEARCH_SESSION_ENABLED: "1"
+      FINSIGHT_REPORT_SESSION_SETTINGS: /app/state/settings.json
+    volumes:
+      - ./deploy/agent_server/settings.json:/app/state/settings.json:ro
+volumes:
+  langgraph-data:

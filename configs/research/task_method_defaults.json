@@ -1,0 +1,58 @@
+{
+  "recorded_at": "2026-09-02T04:45:00+08:00",
+  "source_classes": {
+    "A": "free stable API data normalized into SQL with raw-response lineage",
+    "B": "versioned local document or knowledge-base object with content hash and locator",
+    "C": "time-sensitive external page or result that remains a candidate until captured and reviewed",
+    "D": "commercial, private or genuinely undisclosed boundary that is recorded but not fabricated"
+  },
+  "context_delivery": {
+    "protocol": "MCP",
+    "protocol_sdk": "mcp_python_2_1_1_MCPServer",
+    "selection_rule": "The runtime loads the case summary and authority boundaries once, then calls typed tools for only the active question branch. It never binds the entire corpus or all source families into every model prompt.",
+    "tool_result_states": [
+      "retrieval_candidate",
+      "captured_source_candidate",
+      "reviewed_evidence",
+      "numeric_fact",
+      "deterministic_derived_metric",
+      "research_scenario",
+      "typed_gap",
+      "tool_failure"
+    ],
+    "candidate_is_not_evidence": true,
+    "search_snippet_is_not_source_text": true,
+    "numeric_fact_requires_typed_SQL_route": true,
+    "raw_private_paths_forbidden_in_model_context": true,
+    "model_context_compaction_rule": "Keep claim, source identity, bounded excerpt, locator, time, authority state and unresolved counterevidence; omit duplicate raw text and transport internals."
+  },
+  "answer_policy": {
+    "contains_case_answer": false,
+    "contains_target_company_forecast": false,
+    "contains_hidden_gold": false,
+    "method_and_formula_injection_allowed": true,
+    "runtime_must_record_method_digest_and_selected_branch_ids": true
+  },
+  "scope_ceiling": {
+    "maximum_external_search_rounds_per_high_materiality_branch": 2,
+    "maximum_results_per_search": 6,
+    "maximum_captured_pages_per_branch": 4,
+    "maximum_live_pages_per_run": 24,
+    "maximum_sources_visible_per_agent_step": 10,
+    "maximum_specialist_model_rounds": 2,
+    "maximum_targeted_counter_reroutes": 1,
+    "allow_unresolved_bounded_gaps": true,
+    "perfect_recall_or_accuracy_required": false
+  },
+  "acceptance_and_stop": {
+    "branch_terminal_states": [
+      "supported",
+      "countered",
+      "bounded_gap",
+      "not_material"
+    ],
+    "supported_target": "At least one direct authoritative source plus one independent cross-entity, customer, supplier or regulatory corroborator when material and publicly available.",
+    "tolerance_policy": "The demo may retain disclosed uncertainty, bounded gaps and a small number of non-material misses. It must not hide material contradictions or turn a failed tool route into a public-information gap.",
+    "no_perfect_metric_gate": true
+  }
+}

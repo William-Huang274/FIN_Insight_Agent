@@ -22,10 +22,10 @@ class RetrievalResponse:
 
 class QwenRetrieval:
     def __init__(self, api_key: str, *, embedding_model="text-embedding-v4",
-                 rerank_model="qwen3-rerank", http_client=None):
+                 rerank_model="qwen3-rerank", http_client=None, timeout=45):
         self.embedding_model = embedding_model
         self.rerank_model = rerank_model
-        options = dict(api_key=api_key, max_retries=0, timeout=45)
+        options = dict(api_key=api_key, max_retries=0, timeout=timeout)
         if http_client is not None:
             options["http_client"] = http_client
         self.embeddings = OpenAI(base_url="https://dashscope.aliyuncs.com/compatible-mode/v1", **options)
@@ -36,10 +36,13 @@ class QwenRetrieval:
         self.reranker.close()
 
     def embed(self, texts: list[str], *, dimensions=1024) -> RetrievalResponse:
-        if not 1 <= len(texts) <= 10 or any(not t.strip() for t in texts):
-            raise ValueError("embedding_requires_1_to_10_nonempty_texts")
+        batch_limit = 20 if self.embedding_model in {"qwen3.7-text-embedding", "qwen3.7-text-embedding-flash"} else 10
+        if not 1 <= len(texts) <= batch_limit or any(not t.strip() for t in texts):
+            raise ValueError(f"embedding_requires_1_to_{batch_limit}_nonempty_texts")
         result = self.embeddings.embeddings.create(
             model=self.embedding_model, input=texts, dimensions=dimensions, encoding_format="float")
+        if result.model != self.embedding_model:
+            raise ValueError("embedding_response_model_mismatch")
         rows = sorted(result.data, key=lambda row: row.index)
         if [r.index for r in rows] != list(range(len(texts))):
             raise ValueError("embedding_response_index_mismatch")
@@ -50,14 +53,18 @@ class QwenRetrieval:
         return RetrievalResponse(vectors, result.usage.model_dump(),
                                  getattr(result, "_request_id", None), result.model)
 
-    def rerank(self, query: str, documents: list[str], *, top_n=None) -> RetrievalResponse:
+    def rerank(self, query: str, documents: list[str], *, top_n=None, instruct=None) -> RetrievalResponse:
         if not query.strip() or not 1 <= len(documents) <= 500 or any(not d.strip() for d in documents):
             raise ValueError("rerank_requires_query_and_1_to_500_documents")
         count = len(documents) if top_n is None else top_n
         if not 1 <= count <= len(documents):
             raise ValueError("rerank_invalid_top_n")
-        result = self.reranker.post("/reranks", body={"model": self.rerank_model,
-            "query": query, "documents": documents, "top_n": count}, cast_to=object)
+        body={"model": self.rerank_model, "query": query, "documents": documents, "top_n": count}
+        if instruct is not None:
+            if not isinstance(instruct,str) or not instruct.strip() or len(instruct.encode())>4096:
+                raise ValueError("rerank_instruction_outside_budget")
+            body['instruct']=instruct
+        result = self.reranker.post("/reranks", body=body, cast_to=object)
         rows = result.get("results", [])
         indices = [r.get("index") for r in rows]
         if len(rows) != count or len(set(indices)) != count or any(

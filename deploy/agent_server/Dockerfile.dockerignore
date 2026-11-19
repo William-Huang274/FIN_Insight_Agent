@@ -17,12 +17,5 @@
 **/*.pyd
 !configs/
 !configs/research/
-!configs/research/model_routing.json
-!configs/research/quick_answer.json
-!configs/research/reference_foundation.json
-!configs/research/structured_agents.json
-!configs/research/cases/
-!configs/research/cases/growth_quality.json
-!configs/research/runtime/
-!configs/research/runtime/research_session.json
-!configs/research/runtime/conversation.json
+!configs/research/**/
+!configs/research/**/*.json

@@ -20,6 +20,11 @@ RUN cd /deps/FIN_Insight_Agent \
     && rm -f /tmp/finsight-agent-runtime-requirements.txt
 # -- End of local dependencies install --
 
+# The public-source reader uses bounded headless rendering for JS shells.
+# Install the browser matching the locked Python binding and its shared libs.
+RUN python -m playwright install --with-deps --only-shell chromium \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV LANGGRAPH_HTTP='{"disable_a2a": true, "disable_mcp": true, "disable_ui": true, "disable_webhooks": true}'
 ENV LANGSERVE_GRAPHS='{"dell_reference_vertical": {"path": "sec_agent.agent_runtime.agent_server_entry:research_graph", "description": "Research and report-review workflow"}}'
 
@@ -33,13 +38,7 @@ COPY src /deps/FIN_Insight_Agent/src
 COPY README.md /deps/FIN_Insight_Agent/
 RUN cd /deps/FIN_Insight_Agent \
     && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -e .
-COPY configs/research/cases/growth_quality.json /deps/FIN_Insight_Agent/configs/research/cases/
-COPY configs/research/model_routing.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/quick_answer.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/reference_foundation.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/runtime/conversation.json /deps/FIN_Insight_Agent/configs/research/runtime/
-COPY configs/research/runtime/research_session.json /deps/FIN_Insight_Agent/configs/research/runtime/
-COPY configs/research/structured_agents.json /deps/FIN_Insight_Agent/configs/research/
+COPY configs/research /deps/FIN_Insight_Agent/configs/research
 # -- End of minimum local package sources --
 
 # -- Remove build package managers from the final image --

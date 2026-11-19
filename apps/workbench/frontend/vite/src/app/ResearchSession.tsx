@@ -1,13 +1,15 @@
+import {ReportBody} from './ReportBody';
+import {AssetContextBanner} from './AssetContextBanner';
+import {ProjectAssetsPanel} from './ProjectAssetsPanel';
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { remarkBoundCitations } from "./remarkBoundCitations";
-import { remarkReportHeadings } from "./remarkReportHeadings";
+import { BoundCitationMarkdown as Markdown } from "./BoundCitationMarkdown";
 import { sourceCalculation } from "./sourceCalculation";
+import { sourceUrl as validLink } from "./sourceUrl";
 import { ReportVersions } from "./ReportVersions";
 import { ResearchGraph } from "./ResearchGraph";
 import { useSearchParams } from "react-router";
-import { WorkspaceNavigation, pageTitles } from "./WorkspaceNavigation";
+import { WorkspaceNavigation, pageTitles, taskViews } from "./WorkspaceNavigation";
+import {ProjectNavigation,projectUrl} from './ProjectNavigation';
 import { DataLibrary } from "./DataLibrary";
 import { GlobalWorkspacePage, SessionLibrary } from "./WorkspacePages";
 import { readMemory, writeMemory } from "./workspaceMemory";
@@ -16,11 +18,14 @@ import { WorkingNotes } from "./WorkingNotes";
 import { UserContextMenu } from "./UserContextMenu";
 import { ManualReview } from './ManualReview';
 import { ResearchStart } from "./ResearchStart";
+import { PersonalResearchKey } from "./PersonalResearchKey";
 import { ExecutionPicker, executionReady } from "./ExecutionPicker";
 import { defaultExecution, type ExecutionOptions } from "../api/reportSessions";
 import { branchName, claimLabel, sourceTitle } from "./researchLabels";
 import { ResearchStudio, ResearchConfigurationPicker } from "./ResearchStudio";
 import { useWorkspaceProjects } from "./workspaceProjects";
+import { ProjectLibrary } from "./ProjectLibrary";
+import { SaveProjectReport } from './SaveProjectReport';
 import type { ReportSnapshot } from "../api/reportSessions";
 import {
   ArrowUp,
@@ -97,78 +102,8 @@ const phaseName: Record<string, string> = {
   research_writing: "整合判断与撰写报告",
   research_needs_attention: "研究尚未完成 · 需要处理",
   research_incomplete_acknowledged: "已查看未完成研究",
+  research_orientation_submitted: "预研究完成",
 };
-function validLink(url?: string) {
-  if (!url) return undefined;
-  try {
-    const u = new URL(url);
-    return ["http:", "https:"].includes(u.protocol) ? u.href : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function chartSourceLinks(value: unknown): string[] {
-  if (Array.isArray(value)) return [...new Set(value.flatMap(chartSourceLinks))];
-  if (value && typeof value === "object") return [...new Set(Object.entries(value).flatMap(([key, item]) =>
-    ["source_url", "url"].includes(key) && typeof item === "string" ? (validLink(item) ? [item] : []) :
-    key === "citation_urls" && Array.isArray(item) ? item.filter((url): url is string => typeof url === "string" && !!validLink(url)) : chartSourceLinks(item)))];
-  return [];
-}
-
-function Markdown({
-  text,
-  citations = {},
-  onCitation,
-  reportHeadings = false,
-}: {
-  text: string;
-  citations?: Record<string, Citation>;
-  onCitation: (key: string, citation: Citation) => void;
-  reportHeadings?: boolean;
-}) {
-  const keys = Object.keys(citations);
-  return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm, [remarkBoundCitations, { ids: keys }], [remarkReportHeadings, { enabled: reportHeadings }]]}
-      skipHtml
-      components={{
-        a: ({ href, children }) => {
-          if (href?.startsWith("#claim:")) {
-            let key: string;
-            try { key = decodeURIComponent(href.slice(7)); }
-            catch { return <span>{children}</span>; }
-            if (!citations[key]) return <span>{children}</span>;
-            return (
-              <button
-                className="rs-cite"
-                title={claimLabel(key, citations)}
-                onClick={() => onCitation(key, citations[key])}
-              >
-                依据 {keys.indexOf(key) + 1}
-              </button>
-            );
-          }
-          const url = validLink(href);
-          return url ? (
-            <a href={url} target="_blank" rel="noopener noreferrer">
-              {children}
-            </a>
-          ) : (
-            <span>{children}</span>
-          );
-        },
-        img: ({ alt }) => (
-          <span className="rs-image-note">
-            [图示：{alt || "未自动加载外部图片"}]
-          </span>
-        ),
-      }}
-    >
-      {text}
-    </ReactMarkdown>
-  );
-}
 
 export function ResearchSession() {
   const [params, setParams] = useSearchParams();
@@ -180,8 +115,10 @@ export function ResearchSession() {
   const [taskQuery, setTaskQuery] = useState("");
   const [taskFilter, setTaskFilter] = useState("");
   const dataPage = ["library", "financial-data"].includes(page);
-  const globalPage = dataPage || ["home", "all", "completed", "inbox", "preferences", "studio"].includes(page);
+  const globalPage = dataPage || ["home", "all", "completed", "inbox", "preferences", "studio", "project"].includes(page);
   const projects = useWorkspaceProjects();
+  const [assetsOpen,setAssetsOpen]=useState(false),[assetProject,setAssetProject]=useState('');
+  const closeAssets=useCallback(()=>setAssetsOpen(false),[]);
   const navigate = (view: string, thread = id) => {
     setParams(next => { next.set("view", view); if (thread !== id) { next.delete("level"); next.delete("topic"); next.delete("claim"); } if (thread) next.set("thread", thread); else next.delete("thread"); return next; });
   };
@@ -189,9 +126,10 @@ export function ResearchSession() {
   const [configuration, setConfiguration] = useState<ResearchConfiguration | null>(null);
   const [configurationError, setConfigurationError] = useState("");
   const creating = page === "new";
-  const [researchQuestion, setResearchQuestion] = useState("");
+  const [researchQuestion, setResearchQuestion] = useState(()=>(params.get('question')||'').slice(0,16000));
   const [studioAssistant, setStudioAssistant] = useState("");
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [projectMaterials,setProjectMaterials]=useState<{project_id:string;project_name:string;documents:{document_id:string;name:string}[];sec_version?:string}|null>(null);
   const [uploadStatus, setUploadStatus] = useState("");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [snapshot, setSnapshot] = useState<Session | null>(null);
@@ -231,7 +169,7 @@ export function ResearchSession() {
   const [inspector, setInspector] = useState<"review" | "activity" | "source">(
     "review",
   );
-  useEffect(() => { if (page === "review") { setInspector(page); setInspectorOpen(true); } else setInspectorOpen(false); }, [page, session?.thread_id]);
+  useEffect(() => { if (page === "review") { setInspector(page); setInspectorOpen(true); setAssetsOpen(false); } else setInspectorOpen(false); }, [page, session?.thread_id]);
   const [selected, setSelected] = useState<{
     key: string;
     citation: Citation;
@@ -317,6 +255,7 @@ export function ResearchSession() {
         if (!disposed) {
           setSession(value);
           if (firstSnapshot) {
+            setActionExecution({ ...defaultExecution, ...value.execution });
             setInspector(page === "activity" || page === "review" ? page : value.status === "busy" ? "activity" : "review");
             firstSnapshot = false;
           }
@@ -368,6 +307,7 @@ export function ResearchSession() {
               old.some(
                 (x) =>
                   x.kind === e.kind &&
+                  x.run_id === e.run_id &&
                   x.call_id === e.call_id &&
                   x.task_id === e.task_id &&
                   x.actor === e.actor &&
@@ -408,7 +348,9 @@ export function ResearchSession() {
   }, [session?.model_events, events]);
   const researchTasks = useMemo(() => {
     const map = new Map((session?.research_tasks || []).map((task) => [task.task_id, task]));
-    for (const e of allEvents) if (e.kind === "task" && e.task_id) {
+    const latestRunId = session?.runs?.[0]?.run_id;
+    // Retain historical events for the timeline, but never project them onto current tasks.
+    for (const e of allEvents) if (latestRunId && e.run_id === latestRunId && e.kind === "task" && e.task_id) {
       map.set(e.task_id, { task_id: e.task_id, owner_role: e.actor, objective: e.objective || "",
         dependency_ids: e.dependency_ids || [], status: e.status || e.event });
     }
@@ -416,7 +358,7 @@ export function ResearchSession() {
     for (const task of session?.research_tasks || [])
       if (!["planned", "ready"].includes(task.status)) map.set(task.task_id, task);
     return [...map.values()];
-  }, [session?.research_tasks, allEvents]);
+  }, [session?.research_tasks, session?.runs?.[0]?.run_id, allEvents]);
   const models = useMemo(() => {
     const map = new Map<string, Event>();
     for (const e of allEvents)
@@ -437,15 +379,21 @@ export function ResearchSession() {
   const visibleEvents = usageRun ? allEvents.filter(e => e.run_id === usageRun.run_id) : allEvents;
   const visibleModels = visibleEvents.filter(e => e.kind === "model" && e.event === "outcome");
   const newSession = async (mode: "review" | "research" = "review", draft = false) => {
+    if (uploadFiles.length + (projectMaterials?.documents.length || 0) > 12) { setError('项目资料与补充文件合计最多12份，请调整选择。'); return; }
     setSending(true);
     setError("");
     try {
       const made = await sessionsApi.create(mode === "research" ? {
-        mode, title: researchQuestion.trim().slice(0, 100) || "新研究任务", question: researchQuestion, defer_start: draft || uploadFiles.length > 0,
+        mode, title: researchQuestion.trim().slice(0, 100) || "新研究任务", question: researchQuestion, defer_start: draft || uploadFiles.length > 0 || !!projectMaterials,
+        ...(projectMaterials ? {project_materials:{project_id:projectMaterials.project_id,document_ids:projectMaterials.documents.map(d=>d.document_id),sec_version:projectMaterials.sec_version}} : {}),
         ...(studioAssistant ? {studio_assistant_id:studioAssistant} : {}),
         execution,
       } : { mode });
       choose(made.thread_id);
+      if (mode === 'research' && projectMaterials) {
+        setProjectMaterials(null);
+        await projects.reload();
+      }
       if (mode === "research" && uploadFiles.length) {
         for (const file of uploadFiles) {
           setUploadStatus(`正在解析 ${file.name}，尚未启动研究模型`);
@@ -453,8 +401,8 @@ export function ResearchSession() {
         }
         setUploadFiles([]);
         setUploadStatus("");
-        if (!draft) await sessionsApi.start(made.thread_id);
       }
+      if (mode === 'research' && !draft && (uploadFiles.length > 0 || projectMaterials)) await sessionsApi.start(made.thread_id);
       if (mode === "research") setInspector("activity");
       await refresh();
     } catch (e) {
@@ -496,7 +444,7 @@ export function ResearchSession() {
     setSource(null);
     setSourceHistory([]); setSourceError(""); setSourceLoading(false);
     setInspector("source");
-    setInspectorOpen(true);
+    setInspectorOpen(true); setAssetsOpen(false);
   };
   const readSource = async (sourceId: string, offset = 0, keepHistory = false) => {
     const request = ++sourceRequest.current;
@@ -510,27 +458,32 @@ export function ResearchSession() {
     finally { if (request === sourceRequest.current) setSourceLoading(false); }
   };
   const findings = session?.report_review?.findings || [];
+  const projectContext=projects.index.projects.find(p=>p.id===(projects.index.assignments[id]||params.get('project')));
   return (
-    <div data-theme={theme} data-motion={motion ? "reduced" : "full"} data-page={page} className={`rs-shell fs-workspace ${collapsed ? "fs-collapsed" : ""} ${inspectorOpen ? "rs-has-inspector" : ""}`}>
-      <WorkspaceNavigation sessions={sessions} id={id} page={page} collapsed={collapsed} onCollapse={() => setCollapsed(value => !value)} navigate={navigate} projects={projects.index} onProjects={projects.update} />
+    <div data-theme={theme} data-motion={motion ? "reduced" : "full"} data-page={page} className={`rs-shell fs-workspace ${collapsed&&!projectContext ? "fs-collapsed" : ""} ${inspectorOpen ? "rs-has-inspector" : ""} ${assetsOpen?'fa-has-assets':''}`}>
+      {projectContext?<ProjectNavigation project={projectContext} projects={projects.index.projects} view={page==='project'?'files':'research'}/>:<WorkspaceNavigation sessions={sessions} id={id} page={page} collapsed={collapsed} onCollapse={() => setCollapsed(value => !value)} navigate={navigate} projects={projects.index} onProjects={projects.update} editingDisabled={!projects.ready || projects.saving} onOpenProject={project=>window.location.assign(projectUrl(project))} />}
       <main className="rs-main">
         <header className="rs-top">
           <div className="rs-breadcrumb">
-            <button onClick={() => navigate("home")}>工作台</button> / <b>{page === "library" ? "公司资料库" : page === "financial-data" ? "财务数据" : pageTitles[page] || "研究工作区"}</b>
+            {projectContext?<a href={projectUrl(projectContext.id)}>{projectContext.name}</a>:<button onClick={() => navigate("home")}>工作台</button>} / <b>{page === "library" ? "公司资料库" : page === "financial-data" ? "财务数据" : pageTitles[page] || "研究工作区"}</b>
           </div>
+          <button className="fa-project-open" onClick={()=>{setAssetProject(projects.index.assignments[id]||params.get('project')||projects.index.projects[0]?.id||'');setAssetsOpen(!assetsOpen);setInspectorOpen(false);}}><FileText size={15}/>项目资料</button>
           <span className="rs-local">
             <span /> LOCAL PILOT
           </span>
           <div className="rs-detail-actions" hidden={!session || globalPage || creating}>
-            <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); }}>审查意见</button>
+            <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); setAssetsOpen(false); }}>审查意见</button>
             <button onClick={() => navigate("activity")}>运行与费用</button>
           </div>
         </header>
-        {projects.error && <p role="alert">{projects.error}</p>}
+        {projectContext&&id&&!globalPage&&!creating&&<nav className="pw-subviews" aria-label="当前研究视图">{taskViews.map(v=><a key={v.id} aria-current={page===v.id?'page':undefined} href={`/workspace/session?${new URLSearchParams({thread:id,project:projectContext.id,view:v.id})}`}>{v.title}</a>)}</nav>}
+        {projects.error && <p role="alert">{projects.error} <button onClick={()=>void projects.reload()}>重新载入项目</button></p>}
+        {projects.legacy && projects.ready && <p>发现此浏览器的旧项目整理，原记录仍保留。<button disabled={projects.saving} onClick={()=>void projects.update(projects.legacy!)}>导入到当前工作台</button></p>}
+        {page === 'project' && (projects.index.projects.some(p=>p.id===params.get('project')) ? <ProjectLibrary key={params.get('project')} project={projects.index.projects.find(p=>p.id===params.get('project'))!} sessions={sessions.filter(s=>projects.index.assignments[s.thread_id]===params.get('project'))} navigate={navigate} onResearch={(documents,sec_version)=>{const project=projects.index.projects.find(p=>p.id===params.get('project'))!;setProjectMaterials({project_id:project.id,project_name:project.name,documents,sec_version});navigate('new','');}}/> : <section className="fs-page"><h1>{projects.ready?'项目不存在或不属于当前工作区':'正在读取项目…'}</h1></section>)}
         {page === "home" && <ResearchStart question={researchQuestion} onQuestion={setResearchQuestion} navigate={navigate} sessions={sessions} execution={execution} onExecution={setExecution} />}
         {page === "studio" && <ResearchStudio />}
         {dataPage && <DataLibrary page={page} navigate={navigate} onSupplement={question=>{setResearchQuestion(question);navigate("new","");}} />}
-        {globalPage && !dataPage && page !== "home" && page !== "studio" && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
+        {globalPage && !dataPage && page !== "home" && page !== "studio" && page !== "project" && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
         <div className="fs-session-view" hidden={globalPage}>
         {id && !session && !creating ? <section className="rs-empty" role="status"><LoaderCircle className="rs-spin" /><h1>正在读取已保存研究…</h1><p>读取报告不会发起新的模型调用。</p></section> : !session || creating ? (
           <section className="rs-empty">
@@ -561,7 +514,10 @@ export function ResearchSession() {
               {configuration?.title && <p>当前部署的已接通研究配置：{configuration.title}</p>}
               <ResearchConfigurationPicker value={studioAssistant} onChange={setStudioAssistant}/>
               <ExecutionPicker value={execution} onChange={setExecution} disabled={sending} assistantId={studioAssistant}/>
+              {configuration && <PersonalResearchKey configuration={configuration} onChange={configured =>
+                setConfiguration(previous => previous && ({ ...previous, personal_key_configured: configured }))}/>}
               <label htmlFor="new-research-question">这次你想研究什么？</label>
+              {projectMaterials&&<div role="status"><p>来自项目“{projectMaterials.project_name}”的 {projectMaterials.documents.length} 份资料：{projectMaterials.documents.map(d=>d.name).join('、')}</p>{projectMaterials.sec_version&&<p>SEC数据版本：{projectMaterials.sec_version}；收入、营业利润及已有派生计算。</p>}<p>将保存为本次研究的独立资料副本，仍需核验。</p><button disabled={sending} onClick={()=>setProjectMaterials(null)}>移除项目资料选择</button></div>}
               <textarea id="new-research-question" value={researchQuestion} maxLength={16000}
                 onChange={(e) => setResearchQuestion(e.target.value)} rows={7}
                 placeholder="写明研究对象、期间，以及希望核实的具体问题…" />
@@ -572,7 +528,7 @@ export function ResearchSession() {
             </div>
             <button
               className="rs-primary"
-              disabled={sending || !executionReady(execution) || !configuration?.fresh_research_enabled || researchQuestion.trim().length < 10}
+              disabled={sending || !!(configuration?.personal_key_required && !configuration.personal_key_configured) || !executionReady(execution) || !configuration?.fresh_research_enabled || researchQuestion.trim().length < 10}
               onClick={() => newSession("research")}
             >
               {sending ? (
@@ -629,7 +585,7 @@ export function ResearchSession() {
             </section>
             <div id="task-details-panel" className="rs-task-details" hidden={!taskDetails} onKeyDown={e => { if (e.key === "Escape") { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); } }}>
             <div className="fs-task-panel-bar"><strong>任务说明与资料</strong><button onClick={() => { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); }}><X size={15} />收起资料面板</button></div>
-            {session.question && <div className="rs-task-question">{session.question}</div>}
+            <AssetContextBanner context={session.asset_context}/>{!!session.asset_input_revision&&<p className="rs-report-notice">本次任务已采用资料输入 r{session.asset_input_revision}。旧结果和引用保留；资料采用记录不代表研究影响已复核。可在“项目资料”查看版本与采用记录。</p>}{session.question && <div className="rs-task-question">{session.question}</div>}
             {uploadStatus && <div className="rs-report-notice">{uploadStatus}</div>}
             {!busy && (session.is_draft || session.can_upload) &&
               <label className="rs-upload-label">补充本任务资料
@@ -640,11 +596,13 @@ export function ResearchSession() {
                   }} />
               </label>}
             {!!session.attachments?.length && <details className="rs-task-board"><summary>本任务资料 · {session.attachments.length} 份</summary>
-              {session.attachments.map((file) => <p key={file.document_id}><a href={`/api/v1/research-sessions/${id}/attachments/${encodeURIComponent(file.document_id)}`}>{file.name}</a>
-                {" · "}{file.sections} 个页面/章节{file.needs_vision ? " · 可按需视觉识别" : " · 已解析，可检索"}</p>)}
+              {session.attachments.map((file) => <p key={file.document_id}><a href={`/api/v1/research-sessions/${id}/attachments/${encodeURIComponent(file.document_id)}`}>{file.name}</a>{file.access_status&&file.access_status!=='active'&&' · 使用已受限，请检查原项目'}
+                {" · "}{file.sections} 个页面/章节{file.needs_vision ? " · 可按需视觉识别" : " · 已解析，可检索"}{file.project_origin&&' · 项目资料快照，待核验'}</p>)}
             </details>}
-            {session.is_draft && <div className="rs-report-notice"><span>资料准备任务已保存，尚未调用研究模型。</span>
-              <button disabled={busy} onClick={async () => { setSending(true); try { await sessionsApi.start(id); setSession(await sessionsApi.state(id)); }
+            {session.project_financial_data&&<div className="rs-report-notice" aria-label="本任务财务数据"><span>已保存项目SEC独立数据副本：{session.project_financial_data.project_origin.ticker}。映射观测 {session.project_financial_data.counts.observations} 条；原始标签、修订和期间仍需按研究问题核对。</span></div>}
+            {session.project_access_error&&<p role="alert">{session.project_access_error}</p>}
+            {session.is_draft && <div className="rs-report-notice"><span>{session.project_materials_ready===false?'项目资料准备未确认完成，原草稿已保留，暂不能启动研究。':'资料准备任务已保存，尚未调用研究模型。'}</span>
+              <button disabled={busy||session.project_materials_ready===false||!!session.project_access_error} onClick={async () => { setSending(true); try { await sessionsApi.start(id); setSession(await sessionsApi.state(id)); }
                 catch (e) { setError((e as Error).message); } finally { setSending(false); } }}>开始已准备的研究</button></div>}
             {session.research_stop_reason && <div className="rs-report-notice">
               <ShieldCheck size={17} /><span>本次仍有未解决问题，已保留成果，不会自动整案重跑。
@@ -675,7 +633,7 @@ export function ResearchSession() {
             </div>
             {session.report && session.research_stop_reason && !taskDetails && <div className="rs-report-notice">
               <ShieldCheck size={16} /><span>本次研究仍有未解决问题，已保存报告供审阅，不会自动重跑。</span>
-              <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); }}>查看未决审查</button>
+              <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); setAssetsOpen(false); }}>查看未决审查</button>
             </div>}
             {(page === "activity" || (page === "graph" && !session.report && !session.is_draft)) && <RunWorkspace key={id} session={session} events={allEvents} connected={connected} refresh={async () => { setSession(await sessionsApi.state(id)); await refresh(); }} onReport={() => setTab("report")} />}
             {(tab === "sources" || tab === "revisions") && displayedReport && <SessionLibrary key={`${id}:${historicalReport?.checkpoint_id || session.report_version}:${tab}`} session={session} checkpoint={historicalReport?.checkpoint_id} report={displayedReport} view={tab} />}
@@ -704,27 +662,15 @@ export function ResearchSession() {
                   <article className="rs-prose" ref={reportArticle}>
                     <h2 className="rs-report-title">{displayedReport?.title}</h2>
                     {displayedReport && <div className="rs-export-actions"><span>导出这版报告</span>
-                      {([['md', 'Markdown'], ['pdf', 'PDF'], ['docx', 'Word'], ['pptx', 'PowerPoint']] as const).map(([format, label]) =>
+                      {([['html', '网页阅读版'], ['pdf', 'PDF'], ['docx', 'Word'], ['pptx', 'PowerPoint'], ['md', 'Markdown']] as const).map(([format, label]) =>
                         <a key={format} href={`/api/v1/research-sessions/${id}/report/export/${format}${reportQuery}`} download>{label}</a>)}
-                      {!!displayedReport.charts?.length && <a href="#report-charts">查看 {displayedReport.charts.length} 幅图表</a>}
+                      {!!displayedReport.charts?.length && <a href="#report-chart-0">查看 {displayedReport.charts.length} 幅图表</a>}
                     </div>}
-                    <Markdown
-                      reportHeadings
-                      text={
-                        displayedReport?.narrative_markdown || (session.is_draft ? "研究尚未启动。这里将在研究完成后显示报告。" : session.status === "error" ? "本次尚未取得报告。请查看运行状态；失败记录与已有研究材料均保留。" : "报告尚未生成；请在研究现场查看真实任务进度。")
-                      }
-                      citations={displayedReport?.citations}
-                      onCitation={(key, citation) => cite(key, citation, historicalReport?.checkpoint_id)}
-                    />
-                    {!!displayedReport?.charts?.length && <h3 id="report-charts">图表与出处</h3>}
-                    {displayedReport?.charts?.map((chart, index) => <figure className="rs-research-chart" key={`${historicalReport?.report_version || session.report_version}-${index}`}>
-                      <img src={`/api/v1/research-sessions/${id}/report/charts/${index}.png${reportQuery || `?v=${session.report_version}`}`} alt={chart.title} />
-                      <figcaption>{chart.interpretation}</figcaption>
-                      <details><summary>图表数值与来源（{(chart.scale_divisor || 1) === 1 ? chart.unit : `${chart.scale_divisor!.toLocaleString()} ${chart.unit}`}）</summary><table><thead><tr><th>项目</th><th>系列</th><th>数值</th><th>来源</th></tr></thead>
-                        <tbody>{chart.points.map((point, p) => <tr key={p}><td>{point.label}</td><td>{point.series}</td><td>{point.value.toLocaleString()}</td>
-                          <td>{chartSourceLinks(point.provenance).map((url, n) => <a key={url} href={url} target="_blank" rel="noopener noreferrer">原始来源 {n + 1} </a>)}
-                            <details><summary>定位与计算明细</summary><small>{point.source_id}</small><pre>{JSON.stringify(point.provenance, null, 2)}</pre></details></td></tr>)}</tbody></table></details>
-                    </figure>)}
+                    {displayedReport&&<SaveProjectReport key={`${id}:${historicalReport?.checkpoint_id||session.report_digest}`} thread={id}
+                      version={historicalReport?.report_version||session.report_version||1} digest={historicalReport?.report_digest||session.report_digest}
+                      checkpoint={historicalReport?.checkpoint_id} projects={projects.index.projects}
+                      onOpen={project=>setParams({view:'project',project})}/>}
+                    {displayedReport?<ReportBody report={displayedReport} onCitation={(key,c)=>cite(key,c,historicalReport?.checkpoint_id)} chartUrl={index=>`/api/v1/research-sessions/${id}/report/charts/${index}.png${reportQuery||`?v=${session.report_version}`}`}/>:<p>报告尚未生成，请查看研究进展。</p>}
                   </article>
                 </section>
                 <div className="rs-conversation" aria-label="研究对话">
@@ -894,7 +840,8 @@ export function ResearchSession() {
           </div>
         )}
       </main>
-      <aside className={`rs-inspector ${inspectorOpen ? "rs-inspector-open" : ""}`} aria-label="审查与运行详情" hidden={!inspectorOpen || globalPage || creating || page === "activity"}>
+      {assetsOpen&&<ProjectAssetsPanel key={assetProject} projects={projects.index.projects} initialProject={assetProject} thread={id} onClose={closeAssets}/>}
+      <aside className={`rs-inspector ${inspectorOpen ? "rs-inspector-open" : ""}`} aria-label="审查与运行详情" hidden={assetsOpen || !inspectorOpen || globalPage || creating || page === "activity"}>
         <header>
           <span>
             <Radio size={16} /> {inspector === "source" ? "来源与计算" : inspector === "review" ? "审查意见" : "运行与费用"}

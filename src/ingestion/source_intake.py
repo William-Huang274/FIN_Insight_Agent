@@ -88,7 +88,7 @@ class SourceIntakePolicy:
         if payload.get("status") != "active_bounded_source_intake_policy":
             raise SourceIntakeError("source_intake_policy_status_invalid")
         raw_routes = payload.get("routes")
-        if not isinstance(raw_routes, list) or not raw_routes:
+        if not isinstance(raw_routes, list):
             raise SourceIntakeError("source_intake_policy_routes_invalid")
         routes: dict[str, SourceIntakeRoute] = {}
         for raw in raw_routes:

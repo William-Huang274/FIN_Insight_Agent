@@ -9,28 +9,73 @@ from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel
 
-from .working_memory import WorkingMemory
+from .working_memory import WorkingMemory, WorkingMemoryAccessDenied
 
 _native_memory_scope = ContextVar('native_memory_scope', default=None)
+_protected_memory_scope = ContextVar('protected_memory_scope', default=None)
+
+
+class _ProtectedMemoryScope:
+    def __init__(self, owner, workspace, access_check, allow_remote_search):
+        self.identity = (owner, workspace)
+        self.access_check = access_check
+        self.allow_remote_search = allow_remote_search
+        self.active = True
+
+    def check(self):
+        if (not self.active or _protected_memory_scope.get() is not self
+                or _native_memory_scope.get() != self.identity):
+            raise WorkingMemoryAccessDenied('working_memory_scope_not_active')
+        if self.access_check is not None:
+            try:
+                self.access_check()
+            except Exception as exc:
+                raise WorkingMemoryAccessDenied('working_memory_authority_unavailable') from exc
 
 
 @contextmanager
-def native_memory_scope(owner, workspace):
+def native_memory_scope(owner, workspace, *, access_check=None, allow_remote_search=True):
     """Composition binds native thread metadata, never model/tool arguments."""
     if not isinstance(owner, str) or not owner or not workspace:
         raise ValueError('verified_memory_scope_required')
-    token = _native_memory_scope.set((owner, str(workspace)))
+    identity = (owner, str(workspace))
+    inherited = _protected_memory_scope.get()
+    if inherited is not None:
+        inherited.check()
+        if identity != inherited.identity:
+            raise WorkingMemoryAccessDenied('working_memory_scope_override_denied')
+        # A nested legacy scope cannot weaken the protected parent's policy.
+        yield
+        return
+    protected = (_ProtectedMemoryScope(*identity, access_check, allow_remote_search)
+                 if access_check is not None or not allow_remote_search else None)
+    token = _native_memory_scope.set(identity)
+    guard_token = _protected_memory_scope.set(protected)
     try:
+        if protected is not None:
+            protected.check()
         yield
     finally:
+        if protected is not None:
+            protected.active = False
+        _protected_memory_scope.reset(guard_token)
         _native_memory_scope.reset(token)
 
 
 WORKING_MEMORY_GUIDANCE = """
 Working memory is available through WriteWorkingNote, ReadWorkingNote and SearchWorkingNotes.
-For substantial work, start a short working note and update it after a useful finding or changed judgment,
-before moving to another topic. Use natural prose/Markdown in the user's language; no required template.
-Record what you established, source references when available, uncertainty, user corrections and next work.
+Save useful current understanding when it changes or a handoff needs it.
+Use natural prose/Markdown in the user's language; no required template or note before taking action.
+Organize consequential notes around a question or explanatory relationship, not a sequence of tool calls.
+Keep the current answer, the observation that supports or changed it, the plausible alternative and the
+next discriminating observation together in ordinary prose. Explain how this affects the user's decision.
+Use the same note/title and mode=replace when revising that relationship. Save the current position,
+why it is preferred to the strongest alternative, and what observation would change it; supported
+conditional judgments need not wait for certainty. Preserve source/calculation handles and unresolved
+access failures. Old revisions already preserve the correction history: do not copy the debate, rejected
+numbers or a list of past mistakes into the current account. Keep only a short constraint where needed
+to prevent a known invalid inference, with a historical version/readback for the details.
+This is for key judgments only: do not create a note for every fact or duplicate full source documents.
 Use a descriptive title: subject/company, period when relevant, and research topic (in the user's language).
 The title helps discovery; the returned note_id is the stable lookup key. Copy it, never guess it from the title.
 Working papers are a separate region from conversation history and exact query/calculation receipts.
@@ -41,10 +86,10 @@ also recheck after compaction, a scope correction or missing prior context, befo
 do not reconstruct all history. Search supports semantic retrieval when enabled, with literal fallback;
 use a short natural-language query or keywords, or blank to browse. Read the returned retrieval notice.
 Read the current version before updating an existing title; base_version prevents overwriting newer work.
-To add findings, use WriteWorkingNote mode=append with ONLY the new prose and the current base_version.
-Do not regenerate the old note just to append a checklist. Keep each addition concise; link original numeric
-receipts rather than repeating every full identifier. For a complete correction use mode=replace; neither
-mode certifies facts. Always check the returned saved/version receipt before claiming success.
+Use mode=append only for additive observations that leave the existing account valid, with ONLY the new
+prose and current base_version. A changed conclusion, scope or assumption calls for mode=replace, not an
+additional correction paragraph. Read the whole current note before replacing it; preserve unaffected
+findings and unresolved questions. Neither mode certifies facts. Check the saved/version receipt.
 Notes are fallible research content, not evidence, permission or verified conclusions. Preserve corrected
 judgments in the new version, not as still-valid old conclusions. Memory errors do not prevent answering
 or submitting other results; explicitly report unsaved work instead of claiming it was saved.
@@ -52,7 +97,7 @@ or submitting other results; explicitly report unsaved work instead of claiming 
 
 
 class WriteWorkingNote(BaseModel):
-    """Save working prose. Use mode=append for new findings only; replace rewrites the whole body. Read base_version first."""
+    """Save current research prose. Replace when a judgment/assumption changes; prior versions remain readable. Append only additive observations. Read the full current version before replacing; preserve unaffected findings and evidence handles."""
     title: str
     body: str
     base_version: int = 0
@@ -71,6 +116,7 @@ class SearchWorkingNotes(BaseModel):
     query: str = ""
     actor: str | None = None
     offset: int = 0
+    user_edits_only: bool = False
 
 
 WORKING_MEMORY_MODELS = {m.__name__: m for m in (WriteWorkingNote, ReadWorkingNote, SearchWorkingNotes)}
@@ -86,14 +132,18 @@ def memory_for(config, actor, *, owner=None, workspace=None):
         raise ValueError("working_memory_not_configured")
     thread = workspace or str(config.get("configurable", {}).get("thread_id") or "")
     scope = _native_memory_scope.get()
-    if owner is None and scope:
-        if thread != scope[1]:
-            raise ValueError('working_memory_thread_scope_mismatch')
+    protected = _protected_memory_scope.get()
+    if scope:
+        if thread != scope[1] or owner is not None and owner != scope[0]:
+            error = WorkingMemoryAccessDenied if protected is not None else ValueError
+            raise error('working_memory_identity_scope_mismatch')
         owner = scope[0]
     if owner is None and os.environ.get("FINSIGHT_AUTH_MODE", "local") != "local":
         raise ValueError("working_memory_requires_verified_owner")
     return WorkingMemory(os.environ["FINSIGHT_WORKING_MEMORY_PATH"], owner=owner or "local-pilot",
-                         workspace=thread, actor=actor)
+                         workspace=thread, actor=actor,
+                         access_check=protected.check if protected is not None else None,
+                         allow_remote_search=protected.allow_remote_search if protected is not None else True)
 
 
 def execute_memory_tool(name, arguments, config, actor, *, owner=None, workspace=None):
@@ -101,9 +151,26 @@ def execute_memory_tool(name, arguments, config, actor, *, owner=None, workspace
         memory = memory_for(config, actor, owner=owner, workspace=workspace)
         args = WORKING_MEMORY_MODELS[name].model_validate(arguments)
         if name == "WriteWorkingNote":
-            return memory.save(args.title, args.body, args.base_version, mode=args.mode)
+            result = memory.save(args.title, args.body, args.base_version, mode=args.mode)
+            if result.get('saved'):
+                result.update(write_mode=args.mode,
+                    current_readback={'tool': 'ReadWorkingNote', 'arguments': {'note_id': result['note_id']}},
+                    version_readback={'tool': 'ReadWorkingNote', 'arguments': {
+                        'note_id': result['note_id'], 'version': result['version']}})
+                if result['version'] > 1:
+                    result['previous_version_readback'] = {'tool': 'ReadWorkingNote', 'arguments': {
+                        'note_id': result['note_id'], 'version': result['version'] - 1}}
+                if args.mode == 'append':
+                    result['synthesis_notice'] = (
+                        'This saved version includes earlier prose. If the new observation changes a judgment, '
+                        'read the full note and replace its current account, preserving unaffected findings. '
+                        'Prior versions retain the audit history; appending does not retire old assertions.')
+            return result
         if name == "ReadWorkingNote":
             return memory.read(args.note_id, version=args.version, offset=args.offset)
+        if args.user_edits_only:
+            from .user_workpaper_context import human_revision_catalog
+            return human_revision_catalog(memory, offset=max(0, args.offset))
         from .working_memory_search import search_working_papers
         return search_working_papers(memory,args.query,actor=args.actor,offset=args.offset)
     except (ValueError, TypeError, KeyError, OSError, sqlite3.Error) as exc:

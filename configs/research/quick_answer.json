@@ -1,6 +1,6 @@
 {
   "model_profile": {
-    "model": "deepseek-v4-flash",
+    "model": "deepseek-flash",
     "reasoning_effort": "low",
     "thinking": "disabled"
   },

@@ -475,34 +475,57 @@ def create_report_session_app(frontend_dist_root=None):
     if settings.get("bundle_path") or settings.get("report_path"):
         artifacts, _ = load_session_materials(settings)
     research_profile = None
-    if os.environ.get("FINSIGHT_RESEARCH_SESSION_ENABLED") == "1":
+    if (os.environ.get("FINSIGHT_RESEARCH_SESSION_ENABLED") == "1"
+            or os.environ.get('FINSIGHT_ORGANIZATION_PREPARATION_ENABLED') == '1'):
         from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
-        from sec_agent.agent_runtime.agent_server_data_composition import APPROVED_RESEARCH_AS_OF
         runtime_profile, case = load_research_runtime_profile(os.environ.get("FIN_REPO_ROOT", CODE_ROOT))
         research_profile = {"title": case["title"], "default_question": case["question"], "branch_topics": case["branch_topics"],
-            "research_as_of": APPROVED_RESEARCH_AS_OF, "cost_expectation_cny": runtime_profile["cost_expectation_cny"],
-            "notice": "新问题从空底稿研究；复用原始文档/SQL/索引，不载入旧专家答案。日期为已绑定案例时点，不宣称实时全量。"}
+            "research_as_of_policy": "task_creation_time", "cost_expectation_cny": runtime_profile["cost_expectation_cny"],
+            "notice": "新问题从空底稿研究；复用原始文档/SQL/索引，不载入旧专家答案。创建任务时绑定研究截止日，资料时效按各来源核查。"}
     from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
     attachment_store = TaskAttachmentStore((Path(settings_path).parent if settings_path else state_root) / "attachments")
     service = ReportSessionService(os.environ["FINSIGHT_REPORT_SESSION_API_URL"], artifacts, audit_root=settings.get("audit_root", str(state_root / "calls")),
-        research_profile=research_profile, attachment_store=attachment_store)
+        research_profile=research_profile if os.environ.get('FINSIGHT_RESEARCH_SESSION_ENABLED') == '1' else None,
+        attachment_store=attachment_store,
+        attachment_archive_roots=settings.get('attachment_archive_roots', ()))
+    # Organization preparation freezes inputs/configuration without granting
+    # personal research or native execution. Admission retains its own flags.
+    service.organization_research_profile = research_profile
     @asynccontextmanager
     async def lifespan(app):
         yield
         await service.http.aclose()
     app = FastAPI(title="FinSight Research Session", version="0.1.3", lifespan=lifespan)
+    service.intake_enabled = bool(os.environ.get('FINSIGHT_BUSINESS_API_URL'))
+    service.intake_library_path = settings.get('research_library') or os.environ.get('FINSIGHT_RESEARCH_LIBRARY_PATH')
+    service.intake_receipts_root = (Path(settings_path).parent if settings_path else state_root) / 'submission-receipts'
     from .submission_receipts import SubmissionReceipts
     app.add_middleware(SubmissionReceipts, directory=(Path(settings_path).parent if settings_path else state_root) / 'submission-receipts')
     from .authentication import install_conversation_auth
     install_conversation_auth(app)
     from .oidc_login import install_identity_status
     install_identity_status(app)
+    from .business_transport import InternalResearchIdentity, build_business_gateway
+    if service.intake_enabled:
+        app.add_middleware(InternalResearchIdentity, service=service)
+    app.include_router(build_business_gateway(), prefix='/api/v1')
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
     app.include_router(build_report_sessions_router(service), prefix="/api/v1")
+    from .api.v1.research_feedback import build_research_feedback_router
+    app.include_router(build_research_feedback_router(service), prefix='/api/v1')
     from .api.v1.conversations import build_conversations_router
     app.include_router(build_conversations_router(service), prefix="/api/v1")
     from .api.v1.data_library import build_data_library_router
-    app.include_router(build_data_library_router(attachment_store.root, settings.get('conversation_fact_mart')), prefix='/api/v1')
+    app.include_router(build_data_library_router(attachment_store.root, settings.get('conversation_fact_mart'),
+        settings.get('research_library') or os.environ.get('FINSIGHT_RESEARCH_LIBRARY_PATH')), prefix='/api/v1')
+    from .api.v1.projects import build_projects_router
+    app.include_router(build_projects_router(attachment_store.root.parent / 'project-library', service), prefix='/api/v1')
+    from .api.v1.asset_workspace import build_asset_workspace_router
+    app.include_router(build_asset_workspace_router(attachment_store.root.parent / 'project-library',
+        attachments_root=attachment_store.root, fact_mart=settings.get('conversation_fact_mart'),
+        research_library=settings.get('research_library') or os.environ.get('FINSIGHT_RESEARCH_LIBRARY_PATH')), prefix='/api/v1')
+    from .api.v1.project_workpapers import build_project_workpapers_router
+    app.include_router(build_project_workpapers_router(attachment_store.root.parent / 'project-library', service), prefix='/api/v1')
     @app.exception_handler(__import__("httpx").HTTPError)
     async def upstream_error(request, exc):
         status = getattr(getattr(exc, "response", None), "status_code", 502)
@@ -520,6 +543,9 @@ def create_report_session_app(frontend_dist_root=None):
     @app.get("/workspace", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/workspace/session", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/workspace/assistant", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/workspace/account", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/workspace/assets", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/workspace/projects", response_class=HTMLResponse, include_in_schema=False)
     def session_page():
         return _frontend_index(dist)
     return app

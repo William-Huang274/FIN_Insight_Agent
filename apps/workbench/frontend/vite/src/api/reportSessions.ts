@@ -1,6 +1,21 @@
 import { Client } from "@langchain/langgraph-sdk";
 import { submissionFetch } from './submissionFetch';
 
+export type TaskOutcome = {
+  runtime_changes?: { changed_claim_ids: string[]; locations: {path: string}[]; semantic_status: string }[];
+  task_id: string; run_id: string | null; attempt_id: string | null;
+  execution_status: "submitted" | "needs_attention" | "error" | "cancelled" | "incomplete";
+  phase: string; stop_reason: string | null; artifact_digest: string | null;
+  artifact_status: "submitted" | "candidate" | "none";
+  review_status: "not_assessed_in_this_record";
+  success_criteria: string[]; author_note_status: "reported_not_verified" | "missing" | "invalid";
+  author_note: { summary: string; changes: string;
+    coverage: { criterion: string; status: "completed" | "partial" | "not_completed" | "not_applicable"; explanation: string; claim_ids: string[]; fields: string[] }[];
+    issues: { issue_id: string; description: string; next_action: string; suggested_owner: string; claim_ids: string[]; fields: string[] }[];
+  } | null;
+  navigation_issues: string[]; open_gaps: string[]; validation_locations: (string | number)[][];
+};
+
 export type Event = {
   kind: "stage" | "model" | "tool" | "task";
   actor: string;
@@ -24,6 +39,7 @@ export type Event = {
   correction_round?: number;
   paper_id?: string;
   responsible_paper_ids?: string[];
+  task_outcome?: TaskOutcome;
 };
 export type Source = {
   source_id: string;
@@ -56,8 +72,8 @@ export type Source = {
       quote?: string; literal?: string; source_provenance?: { ticker?: string; fiscal_period?: string; unit?: string } }>;
   };
 };
-export type ExecutionOptions = { mode: "standard" | "auto" | "selected" | "single"; model: "default" | "deepseek-v4-flash" | "deepseek-v4-pro"; branch_ids: string[] };
-export const defaultExecution: ExecutionOptions = { mode: "auto", model: "default", branch_ids: [] };
+export type ExecutionOptions = { mode: "standard" | "auto" | "selected" | "single" | "normal"; model: "default" | "deepseek-v4-flash" | "deepseek-v4-pro"; branch_ids: string[]; continuation_scope?: "original_question" | "original_plan"; require_all_branches?: boolean };
+export const defaultExecution: ExecutionOptions = { mode: "normal", model: "deepseek-v4-flash", branch_ids: [] };
 export type Citation = {
   claim: {
     statement: string;
@@ -76,6 +92,9 @@ export type Finding = {
   paper_ids?: string[];
 };
 export type Session = {
+  business_task_id?: string | null;
+  asset_input_revision?: number;
+  asset_context?: import('./assetWorkspace').AssetContext;
   studio_assistant_id?: string;
   can_manual_complete?: boolean;
   archive_notice?: string;
@@ -83,13 +102,16 @@ export type Session = {
   human_edits?: {number:number;owner:string;recorded_at:string;reason:string;base_version:number;report_before:string;report_after:string;charts?:{chart_index:number;title:string;before:string;after:string}[];papers:{paper_id:string;actor:string;title:string;before:string;after:string}[]}[];
   execution?: ExecutionOptions;
   can_upload?: boolean;
+  project_access_error?: string|null;
+  project_materials_ready?: boolean;
+  project_financial_data?: {project_origin:{ticker:string;project_id:string;sec_version:string};counts:{observations:number};mart_sha256:string};
   report_digest?: string;
   cumulative_usage?: { native_runs: number; known_cny: number; recorded_requests: number; reported_requests: number;
     unknown_or_pending_requests: number; unpriced_requests: number; input_tokens: number; output_tokens: number;
     total_tokens: number; cache_hit_tokens: number; cache_miss_tokens: number; unknown_cache_requests: number; unknown_elapsed_requests: number;
     elapsed_ms: number; missing_audit_runs: number; partial_audit: boolean; notice: string };
   is_draft?: boolean;
-  attachments?: { document_id: string; name: string; kind: string; bytes: number; sections: number; needs_vision: boolean }[];
+  attachments?: { access_status?: string; document_id: string; name: string; kind: string; bytes: number; sections: number; needs_vision: boolean; project_origin?:{project_id:string;document_id:string;raw_body_sha256:string} }[];
   thread_id: string;
   title: string;
   status: string;
@@ -112,6 +134,7 @@ export type Session = {
   }[] }[];
   responsibility_history?: { actor: string; correction_round: number }[];
   research_tasks?: { task_id: string; owner_role?: string; objective: string; dependency_ids: string[]; status: string }[];
+  task_outcome_history?: {run_id: string | null; task_outcome: TaskOutcome}[];
   report_version?: number;
   can_respond?: boolean;
   can_accept?: boolean;
@@ -146,6 +169,9 @@ export type Session = {
 export type ResearchConfiguration = {
   branch_topics?: { branch_id: string; objective: string }[];
   fresh_research_enabled: boolean;
+  personal_keys_enabled?: boolean;
+  personal_key_configured?: boolean;
+  personal_key_required?: boolean;
   legacy_review_enabled?: boolean;
   title?: string;
   default_question?: string;
@@ -158,7 +184,7 @@ const base = "/api/v1/research-sessions";
 export type ReportVersion = { version: number; checkpoint_id: string; created_at?: string; title: string; reason: string };
 export type RevisionTarget = { request_id: string; citation_id: string; base_version: number; base_digest: string; base_checkpoint: string };
 export type ReportSnapshot = { report: NonNullable<Session["report"]>; report_version: number; checkpoint_id: string; reason?: string; report_digest?: string };
-export type ReportDiff = { before_version: number; after_version: number; reason: string; diff: string; charts_changed: boolean; citations_changed: boolean };
+export type ReportDiff = { before_version: number; after_version: number; reason: string; diff: string; charts_changed: boolean; citations_changed: boolean; before_citation_ids?:string[]; after_citation_ids?:string[] };
 async function request<T>(url: string, body?: unknown): Promise<T> {
   const response = await submissionFetch(url, {
     headers: { "Content-Type": "application/json", "X-Workbench-Request": "1" },
@@ -177,7 +203,7 @@ async function request<T>(url: string, body?: unknown): Promise<T> {
 export const sessionsApi = {
   config: () => request<ResearchConfiguration>("/api/v1/research-session-config"),
   list: () => request<Session[]>(base),
-  create: (body: { mode?: "review" | "research"; title?: string; question?: string; defer_start?: boolean; studio_assistant_id?:string; execution?: ExecutionOptions } = {}) =>
+  create: (body: { mode?: "review" | "research"; title?: string; question?: string; defer_start?: boolean; studio_assistant_id?:string; execution?: ExecutionOptions; project_materials?:{project_id:string;document_ids:string[];sec_version?:string} } = {}) =>
     request<{ thread_id: string; run_id: string | null }>(base, body),
   start: (id: string) => request<{ run_id: string }>(`${base}/${id}/start`, {}),
   guidance: (id: string, message: string) => request(`${base}/${id}/guidance`, { message }),

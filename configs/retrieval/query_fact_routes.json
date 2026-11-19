@@ -3,7 +3,7 @@
   "status": "provider_neutral_successor_policy_no_model_or_evidence_authority",
   "bound_kernel": {
     "ref": "configs/retrieval/financial_research_kernel.json",
-    "sha256": "faf85fb3b3074b979acf0b12e5e20dba934d94380383c5241164e2f4c899f1d2"
+    "sha256": "a942871838501acdfb35a0fecd92dc1ba9d176fb16d8101f5ab07864d30c89ee"
   },
   "candidate_routes": [
     "typed_exact_fact_lookup",

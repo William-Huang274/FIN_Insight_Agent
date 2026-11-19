@@ -1,36 +1,84 @@
 services:
+  business-db:
+    image: postgres:16.15-alpine
+    environment:
+      POSTGRES_DB: finsight
+      POSTGRES_USER: postgres
+      FINSIGHT_BUSINESS_DB_PASSWORD: ${FINSIGHT_BUSINESS_DB_PASSWORD:?run python scripts/deployment/initialize.py}
+      POSTGRES_PASSWORD: ${FINSIGHT_BUSINESS_DB_ADMIN_PASSWORD:?run python scripts/deployment/initialize.py}
+    volumes:
+      - business-data:/var/lib/postgresql/data
+      - ./deploy/business/010-create-application-role.sh:/docker-entrypoint-initdb.d/010-create-application-role.sh:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "finsight", "-d", "finsight"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
   workbench:
     build:
       context: .
-      dockerfile: Dockerfile
       target: workbench
       args:
-        WORKBENCH_RELEASE_ID: ${FINSIGHT_IMAGE_REVISION:?set FINSIGHT_IMAGE_REVISION to the exact clean Git commit}
-        OCI_REVISION: ${FINSIGHT_IMAGE_REVISION:?set FINSIGHT_IMAGE_REVISION to the exact clean Git commit}
-    image: finsight-workbench:compose
+        OCI_REVISION: ${FINSIGHT_IMAGE_REVISION:-local}
     ports:
-      - "127.0.0.1:8765:8765"
+      - "127.0.0.1:${FINSIGHT_WORKBENCH_PORT:-8765}:8765"
     environment:
-      PYTHONUNBUFFERED: "1"
-      WORKBENCH_IMAGE_KIND: current-product
-      WORKBENCH_RUNTIME_PROFILE: reviewed-evidence
-      WORKBENCH_SCRIPT_UPDATE_MODE: image_rebuild
-      WORKBENCH_DATA_UPDATE_MODE: external_data_build_jobs
-      FINSIGHT_DATA_ROOT: "/app/data"
-      FINSIGHT_REVIEWED_EVIDENCE_ROOT: "/app/reviewed-evidence"
-      FINSIGHT_WORKBENCH_PRIVATE_ROOT: "/app/data/workbench_private"
-      FINSIGHT_WORKBENCH_STORE_PATH: "/app/state/workbench.sqlite"
+      FINSIGHT_PERSONAL_KEY_STORE: /app/state/personal-keys
+      FINSIGHT_PERSONAL_KEY_FILE: /run/secrets/personal-research.key
+      FINSIGHT_PERSONAL_RESEARCH_ENABLED: "1"
+      FINSIGHT_LOCAL_STATE_ROOT: /app/state
+      FINSIGHT_REPORT_SESSION_API_URL: http://127.0.0.1:8000
+      FINSIGHT_BUSINESS_API_URL: http://127.0.0.1:8095
+      FINSIGHT_BUSINESS_SHARED_SECRET: ${FINSIGHT_BUSINESS_SHARED_SECRET:?run python scripts/deployment/initialize.py}
+      FINSIGHT_AUTH_MODE: ${FINSIGHT_AUTH_MODE:-local}
+      FINSIGHT_OIDC_ISSUER: ${FINSIGHT_OIDC_ISSUER:-}
+      FINSIGHT_OIDC_AUDIENCE: ${FINSIGHT_OIDC_AUDIENCE:-}
+      FINSIGHT_OIDC_JWKS_URL: ${FINSIGHT_OIDC_JWKS_URL:-}
+      FINSIGHT_OIDC_REGISTRATION_ENDPOINT: ${FINSIGHT_OIDC_REGISTRATION_ENDPOINT:-}
+      FINSIGHT_OIDC_ACCOUNT_URL: ${FINSIGHT_OIDC_ACCOUNT_URL:-}
+      FINSIGHT_OIDC_CLIENT_ID: ${FINSIGHT_OIDC_CLIENT_ID:-}
+      FINSIGHT_OIDC_CLIENT_SECRET: ${FINSIGHT_OIDC_CLIENT_SECRET:-}
+      FINSIGHT_PUBLIC_ORIGIN: ${FINSIGHT_PUBLIC_ORIGIN:-}
+      FINSIGHT_SESSION_SECRET: ${FINSIGHT_SESSION_SECRET:-}
+      FINSIGHT_RESOURCE_SPACES_ENABLED: ${FINSIGHT_RESOURCE_SPACES_ENABLED:-0}
+      FINSIGHT_ORGANIZATION_RETRIEVAL_ROOT: /app/state/organization-indexes
+      FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED: ${FINSIGHT_ORGANIZATION_NAVIGATION_ENABLED:-0}
+      FINSIGHT_ORGANIZATION_PREPARATION_ENABLED: ${FINSIGHT_ORGANIZATION_PREPARATION_ENABLED:-0}
+      FINSIGHT_ORGANIZATION_START_ENABLED: ${FINSIGHT_ORGANIZATION_START_ENABLED:-0}
+      FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED: ${FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED:-0}
+      FINSIGHT_ON_DEMAND_ENABLED: ${FINSIGHT_ON_DEMAND_ENABLED:-0}
+      SEC_USER_AGENT: ${SEC_USER_AGENT:-}
+      FINSIGHT_SEC_CONTACT_EMAIL: ${FINSIGHT_SEC_CONTACT_EMAIL:-}
     volumes:
-      - ${WORKBENCH_CONFIGS_MOUNT:-./configs}:/app/configs:ro
-      - ${WORKBENCH_DATA_MOUNT:-./data}:/app/data:ro
-      - ${WORKBENCH_REVIEWED_EVIDENCE_MOUNT:-./data/workbench_private}:/app/reviewed-evidence:ro
       - finsight-workbench-state:/app/state
+      - ./.secrets/personal-research.key:/run/secrets/personal-research.key:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/api/health', timeout=5).read()"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  business-service:
+    build:
+      context: apps/business-service
+      dockerfile: Dockerfile
+    # The signed Java-Python bridge requires loopback in both directions.
+    network_mode: service:workbench
+    depends_on:
+      workbench:
+        condition: service_healthy
+      business-db:
+        condition: service_healthy
+    environment:
+      FINSIGHT_BUSINESS_JDBC_URL: jdbc:postgresql://business-db:5432/finsight
+      FINSIGHT_BUSINESS_DB_USER: finsight
+      FINSIGHT_BUSINESS_DB_PASSWORD: ${FINSIGHT_BUSINESS_DB_PASSWORD}
+      FINSIGHT_BUSINESS_SHARED_SECRET: ${FINSIGHT_BUSINESS_SHARED_SECRET}
+      FINSIGHT_ON_DEMAND_ENABLED: ${FINSIGHT_ON_DEMAND_ENABLED:-0}
+      FINSIGHT_ORGANIZATION_START_ENABLED: ${FINSIGHT_ORGANIZATION_START_ENABLED:-0}
+      FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED: ${FINSIGHT_ORGANIZATION_REPORT_ACTIONS_ENABLED:-0}
+      FINSIGHT_ORGANIZATION_RUNTIME_SECRET: ${FINSIGHT_ORGANIZATION_RUNTIME_SECRET}
 
   control-plane:
     profiles: ["control-plane"]
@@ -39,8 +87,8 @@ services:
       dockerfile: Dockerfile
       target: control-plane
       args:
-        WORKBENCH_RELEASE_ID: ${FINSIGHT_IMAGE_REVISION:?set FINSIGHT_IMAGE_REVISION to the exact clean Git commit}
-        OCI_REVISION: ${FINSIGHT_IMAGE_REVISION:?set FINSIGHT_IMAGE_REVISION to the exact clean Git commit}
+        WORKBENCH_RELEASE_ID: ${FINSIGHT_IMAGE_REVISION:-local}
+        OCI_REVISION: ${FINSIGHT_IMAGE_REVISION:-local}
     image: finsight-control-plane:compose
     ports:
       - "127.0.0.1:3000:3000"
@@ -66,6 +114,7 @@ services:
       start_period: 20s
 
 volumes:
+  business-data:
   finsight-workbench-state:
   finsight-control-plane-state:
 

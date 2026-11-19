@@ -1,9 +1,9 @@
 {
-  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
-  "profile_version": 1,
-  "subject_ticker": "DELL",
-  "title": "Dell：增长质量、盈利兑现与执行压力",
-  "question": "截至本案例约定的研究时点，评估 Dell AI 基础设施业务所推动的增长质量，以及这种增长向利润和现金流兑现的程度。结合客户需求、竞争格局、产品架构与供应条件，分析未来几个季度完成公司经营目标所面临的执行压力。给出明确但有条件的核心判断、关键依据、最强反证，以及哪些后续变化会使你调整判断。必要时自主补查已开放的内外源资料。区分已披露事实、计算结果、研究推断和情景假设。",
+  "case_id": "CURRENT_USER_RESEARCH",
+  "profile_version": 2,
+  "subject_ticker": null,
+  "title": "研究问题、增长质量与兑现条件",
+  "question": "按用户提交的问题和研究截止日确定主体、研究范围、重点议题与证据需求。区分已披露事实、来源绑定计算、研究推断和情景假设，说明重要反证与未解决的限制。",
   "research_methods": [
     "lead",
     "finance",

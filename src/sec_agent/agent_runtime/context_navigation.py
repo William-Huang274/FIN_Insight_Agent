@@ -12,12 +12,14 @@ from .context_records import (NAVIGATION_GUIDANCE, RESULT_REGIONS, public_text,
 
 def context_navigation_tools():
     @tool
-    def browse_context(region: Literal['conversation','numbers','sources'], runtime: ToolRuntime,
+    def browse_context(region: Literal['conversation','numbers','sources','acquisition'], runtime: ToolRuntime,
                        query: str='', offset: int=0):
         """Browse one checkpoint memory region, with optional literal metadata keyword.
 
         numbers lists saved SQL/calculation calls; sources lists saved original reads;
         conversation lists public user/assistant turns. Copy key into its read_tool.
+        acquisition tracks exact URL access failures, candidates and read windows across
+        saved receipts; it does not decide whether a research question is answered.
         Blank query browses newest first. Does not rerun SQL, web or embeddings.
         """
         return browse_checkpoint(runtime.state.get('messages',[]),region,query,offset)

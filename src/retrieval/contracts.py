@@ -354,7 +354,7 @@ def load_financial_research_kernel(
         )
 
     raw_cases = payload.get("cases")
-    _require(isinstance(raw_cases, list) and bool(raw_cases), "retrieval_cases_invalid")
+    _require(isinstance(raw_cases, list), "retrieval_cases_invalid")
     cases: dict[str, CaseResearchProfile] = {}
     for raw in raw_cases:
         _require(isinstance(raw, Mapping), "retrieval_case_invalid")

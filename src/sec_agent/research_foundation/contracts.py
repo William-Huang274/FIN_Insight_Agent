@@ -11,6 +11,7 @@ from collections.abc import Mapping, Sequence
 from datetime import datetime
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 from typing import Any, Literal
 
@@ -64,8 +65,6 @@ class ScopeCeiling(_StrictFrozenModel):
 
     @model_validator(mode="after")
     def validate_scope_invariants(self) -> "ScopeCeiling":
-        if not self.one_subject_company_only:
-            raise ValueError("reference_vertical_must_remain_single_subject")
         if not self.allow_unresolved_bounded_gaps:
             raise ValueError("bounded_gaps_must_remain_allowed")
         if self.perfect_recall_or_accuracy_required:
@@ -200,6 +199,12 @@ class FreshnessContract(_StrictFrozenModel):
         return self
 
 
+class TaskFreshnessContract(_StrictFrozenModel):
+    schema_version: Literal['research_freshness.v2'] = 'research_freshness.v2'
+    research_as_of: datetime
+    rules: tuple[str, ...] = Field(min_length=1)
+
+
 class AcceptanceAndStop(_StrictFrozenModel):
     branch_terminal_states: tuple[
         Literal["supported", "countered", "bounded_gap", "not_material"], ...
@@ -230,8 +235,8 @@ class AnswerPolicy(_StrictFrozenModel):
 
 
 class ResearchGraphFoundation(_StrictFrozenModel):
-    schema_version: Literal["fin_ia_dell_reference_vertical_foundation_v1_0"]
-    status: Literal["active_single_case_foundation"]
+    schema_version: Literal["fin_ia_dell_reference_vertical_foundation_v1_0", "fin_ia_research_foundation_v2_0"]
+    status: Literal["active_single_case_foundation", "active_research_foundation"]
     recorded_at: datetime
     purpose: str = Field(min_length=1)
     case_identity: CaseIdentity
@@ -239,14 +244,23 @@ class ResearchGraphFoundation(_StrictFrozenModel):
     source_classes: SourceClasses
     source_families: tuple[SourceFamily, ...] = Field(min_length=1)
     question_branches: tuple[QuestionBranch, ...] = Field(min_length=1)
-    formulas: tuple[Formula, ...] = Field(min_length=1)
+    formulas: tuple[Formula, ...]
     context_delivery: ContextDelivery
-    freshness_contract: FreshnessContract
+    freshness_contract: FreshnessContract | TaskFreshnessContract
     acceptance_and_stop: AcceptanceAndStop
     answer_policy: AnswerPolicy
 
     @model_validator(mode="after")
     def validate_cross_references(self) -> "ResearchGraphFoundation":
+        legacy = self.schema_version == "fin_ia_dell_reference_vertical_foundation_v1_0"
+        if legacy:
+            if not self.scope_ceiling.one_subject_company_only:
+                raise ValueError("reference_vertical_must_remain_single_subject")
+            if not self.formulas:
+                raise ValueError("reference_vertical_requires_formulas")
+        expected_status = "active_single_case_foundation" if legacy else "active_research_foundation"
+        if self.status != expected_status:
+            raise ValueError("foundation_schema_status_mismatch")
         source_family_ids = [row.source_family_id for row in self.source_families]
         branch_ids = [row.branch_id for row in self.question_branches]
         formula_ids = [row.formula_id for row in self.formulas]
@@ -281,9 +295,9 @@ class ResearchGraphFoundation(_StrictFrozenModel):
 class ResearchMethodProjection(_StrictFrozenModel):
     """Whitelist-only runtime projection; it has no answer/result fields."""
 
-    schema_version: Literal["fin_ia_dell_research_method_projection_v1_0"]
+    schema_version: Literal["fin_ia_dell_research_method_projection_v1_0", "fin_ia_research_method_projection_v2_0"]
     foundation_schema_version: Literal[
-        "fin_ia_dell_reference_vertical_foundation_v1_0"
+        "fin_ia_dell_reference_vertical_foundation_v1_0", "fin_ia_research_foundation_v2_0"
     ]
     case_identity: CaseIdentity
     scope_ceiling: ScopeCeiling
@@ -293,7 +307,7 @@ class ResearchMethodProjection(_StrictFrozenModel):
     source_families: tuple[SourceFamily, ...] = Field(min_length=1)
     formulas: tuple[Formula, ...]
     context_delivery: ContextDelivery
-    freshness_contract: FreshnessContract
+    freshness_contract: FreshnessContract | TaskFreshnessContract
     acceptance_and_stop: AcceptanceAndStop
 
     @model_validator(mode="after")
@@ -321,7 +335,7 @@ class ResearchMethodProjection(_StrictFrozenModel):
 
 
 class ResearchMethodPackage(_StrictFrozenModel):
-    schema_version: Literal["fin_ia_dell_research_method_package_v1_0"]
+    schema_version: Literal["fin_ia_dell_research_method_package_v1_0", "fin_ia_research_method_package_v2_0"]
     method_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     method: ResearchMethodProjection
 
@@ -347,7 +361,7 @@ class ResearchRunScope(_StrictFrozenModel):
         str_strip_whitespace=True,
     )
 
-    schema_version: Literal["fin_ia_dell_research_run_scope_v1_0"]
+    schema_version: Literal["fin_ia_dell_research_run_scope_v1_0", "fin_ia_research_run_scope_v2_0"]
     case_id: str = Field(min_length=1, max_length=160)
     research_as_of: datetime
     data_snapshot_id: str = Field(min_length=1, max_length=256)
@@ -355,7 +369,7 @@ class ResearchRunScope(_StrictFrozenModel):
     selected_branch_ids: tuple[str, ...] = Field(min_length=1)
     execution_attempt_id: str = Field(min_length=1, max_length=160)
     source_policy: Literal[
-        "frozen_local_reviewed_plus_public_web_locator_only"
+        "frozen_local_reviewed_plus_public_web_locator_only", "organization_fixed_inputs_only"
     ]
     run_scope_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
 
@@ -391,7 +405,7 @@ class ResearchRunScope(_StrictFrozenModel):
 class ResearchMethodBinding(_StrictFrozenModel):
     """Answer-free method package plus its exact run-bound scope."""
 
-    schema_version: Literal["fin_ia_dell_research_method_binding_v1_0"]
+    schema_version: Literal["fin_ia_dell_research_method_binding_v1_0", "fin_ia_research_method_binding_v2_0"]
     method_package: ResearchMethodPackage
     run_scope: ResearchRunScope
 
@@ -428,13 +442,15 @@ def canonical_sha256(value: Any) -> str:
 
 
 def load_research_graph_foundation(
-    path: str | Path = DEFAULT_REFERENCE_VERTICAL_FOUNDATION_PATH,
+    path: str | Path | None = None,
 ) -> ResearchGraphFoundation:
     """Load and strictly validate the answer-free foundation contract."""
 
-    return ResearchGraphFoundation.model_validate_json(
-        Path(path).read_bytes()
-    )
+    if path is None:
+        path = os.environ.get('FINSIGHT_RESEARCH_FOUNDATION_PATH') or DEFAULT_REFERENCE_VERTICAL_FOUNDATION_PATH
+        if not Path(path).is_file():
+            raise FileNotFoundError('Supply an explicit case foundation path or set FINSIGHT_RESEARCH_FOUNDATION_PATH.')
+    return ResearchGraphFoundation.model_validate_json(Path(path).read_bytes())
 
 
 def project_research_method(
@@ -474,7 +490,7 @@ def project_research_method(
         for formula_id in branch.formula_ids
     }
     projection = ResearchMethodProjection(
-        schema_version="fin_ia_dell_research_method_projection_v1_0",
+        schema_version=("fin_ia_research_method_projection_v2_0" if foundation.status == "active_research_foundation" else "fin_ia_dell_research_method_projection_v1_0"),
         foundation_schema_version=foundation.schema_version,
         case_identity=foundation.case_identity,
         scope_ceiling=foundation.scope_ceiling,
@@ -496,7 +512,7 @@ def project_research_method(
         acceptance_and_stop=foundation.acceptance_and_stop,
     )
     return ResearchMethodPackage(
-        schema_version="fin_ia_dell_research_method_package_v1_0",
+        schema_version=("fin_ia_research_method_package_v2_0" if foundation.status == "active_research_foundation" else "fin_ia_dell_research_method_package_v1_0"),
         method_sha256=canonical_sha256(projection),
         method=projection,
     )
@@ -510,14 +526,14 @@ def bind_research_method(
     data_snapshot_id: str,
     execution_attempt_id: str,
     source_policy: Literal[
-        "frozen_local_reviewed_plus_public_web_locator_only"
+        "frozen_local_reviewed_plus_public_web_locator_only", "organization_fixed_inputs_only"
     ] = "frozen_local_reviewed_plus_public_web_locator_only",
 ) -> ResearchMethodBinding:
     """Project the answer-free method and seal the only valid tool-call scope."""
 
     package = project_research_method(foundation, branch_ids)
     scope_body = {
-        "schema_version": "fin_ia_dell_research_run_scope_v1_0",
+        "schema_version": ("fin_ia_research_run_scope_v2_0" if foundation.status == "active_research_foundation" else "fin_ia_dell_research_run_scope_v1_0"),
         "case_id": package.method.case_identity.case_id,
         "research_as_of": research_as_of.isoformat().replace("+00:00", "Z"),
         "data_snapshot_id": data_snapshot_id,
@@ -531,7 +547,7 @@ def bind_research_method(
         run_scope_digest=canonical_sha256(scope_body),
     )
     return ResearchMethodBinding(
-        schema_version="fin_ia_dell_research_method_binding_v1_0",
+        schema_version=("fin_ia_research_method_binding_v2_0" if foundation.status == "active_research_foundation" else "fin_ia_dell_research_method_binding_v1_0"),
         method_package=package,
         run_scope=scope,
     )

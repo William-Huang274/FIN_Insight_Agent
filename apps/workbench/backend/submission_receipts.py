@@ -7,6 +7,8 @@ must share a qualified transactional receipt store before enabling ingress there
 from hashlib import sha256
 import json
 from uuid import UUID
+from pathlib import Path
+from filelock import FileLock, Timeout
 
 from sec_agent.adapters.local_records import LocalRecords as Cache
 from starlette.requests import Request
@@ -28,7 +30,63 @@ class SubmissionReceipts:
         with Cache(self.directory) as cache:
             cache[key] = {'fingerprint': fingerprint, 'status': 'received', 'http_status': status, 'body': body}
 
+    def phase(self, key, fingerprint, phase):
+        with Cache(self.directory) as cache:
+            value = cache[key]
+            if value['fingerprint'] != fingerprint or value['status'] != 'dispatching':
+                raise RuntimeError('submission_phase_identity_changed')
+            cache[key] = {**value, 'dispatch_phase': phase}
+
+    @staticmethod
+    def abandoned_preflight(directory, owner, identifier, *, fence_unclaimed=False):
+        """A live handler owns the OS lock; legacy/dispatch-started stays unknown."""
+        key = sha256(json.dumps([owner, str(UUID(identifier))]).encode()).hexdigest()
+        lock = FileLock(str(Path(directory) / (key + '.lock')), timeout=0)
+        try:
+            with lock:
+                with Cache(directory) as cache:
+                    if fence_unclaimed:
+                        # Reserve an unseen operation before declaring it absent.
+                        # A delayed POST competes through the same atomic add.
+                        cache.add(key, {'status':'closed_before_claim', 'fingerprint':None})
+                    value = cache.get(key) or {}
+                    if value.get('status') == 'closed_before_claim':
+                        return True
+                    if value.get('status') != 'dispatching':
+                        return False
+                    if value.get('dispatch_phase') == 'validating':
+                        return True
+                    # Explicit offline maintenance evidence is separate from the
+                    # original claim. Never infer a phase for legacy receipts.
+                    proof = value.get('quiescent_absence') or {}
+                    name = proof.get('evidence_file', '')
+                    if not name or Path(name).name != name:
+                        return False
+                    raw = (Path(directory) / 'maintenance' / name).read_bytes()
+                    evidence = json.loads(raw)
+                    return (sha256(raw).hexdigest() == proof.get('sha256')
+                            and evidence.get('receipt_key') == key
+                            and evidence.get('original_receipt') == {k:v for k,v in value.items() if k != 'quiescent_absence'}
+                            and evidence.get('native_stopped') is True
+                            and evidence.get('ingress_stopped') is True
+                            and evidence.get('matching_native_runs') == []
+                            and evidence.get('active_native_runs') == [])
+        except Timeout:
+            return False
+        except (OSError, ValueError, TypeError, AttributeError):
+            return False
+
+    @staticmethod
+    def lookup(directory, owner, identifier):
+        key = sha256(json.dumps([owner, str(UUID(identifier))]).encode()).hexdigest()
+        with Cache(directory) as cache:
+            return cache.get(key)
+
     async def __call__(self, scope, receive, send):
+        # Java owns these business request receipts. Replaying a BFF response
+        # here would hide Java's newly reconciled state behind an old snapshot.
+        if scope['type'] == 'http' and scope['path'].startswith(('/api/v1/business/', '/api/v1/organization-projects/')):
+            return await self.app(scope, receive, send)
         if scope['type'] != 'http' or scope['method'] not in {'POST', 'PUT', 'PATCH'} or not scope['path'].startswith('/api/v1/'):
             return await self.app(scope, receive, send)
         request = Request(scope, receive)
@@ -56,13 +114,17 @@ class SubmissionReceipts:
         fingerprint = sha256(scope['method'].encode()+scope['path'].encode()+scope['query_string']+body).hexdigest()
         prior = await run_in_threadpool(self.claim, key, fingerprint)
         if prior:
-            if prior['fingerprint'] != fingerprint:
+            if prior['status'] == 'closed_before_claim':
+                response = JSONResponse({'detail':'原操作已在核对时关闭，未派发。',
+                    'submission_status':'not_dispatched'}, status_code=409)
+            elif prior['fingerprint'] != fingerprint:
                 response = JSONResponse({'detail': '同一提交凭证不能用于不同内容'}, status_code=422)
             elif prior['status'] == 'received':
                 response = Response(prior['body'], status_code=prior['http_status'], media_type='application/json',
                     headers={'Idempotent-Replayed': 'true'})
             else:
-                response = JSONResponse({'detail': '此请求已提交或结果尚待核对；请刷新运行记录，不会再次执行。'}, status_code=409)
+                response = JSONResponse({'detail': '此请求已提交或结果尚待核对；请刷新运行记录，不会再次执行。',
+                    'submission_status': 'unknown'}, status_code=409)
             return await response(scope, receive, send)
         sent_body = False
         async def replay_body():
@@ -89,4 +151,22 @@ class SubmissionReceipts:
                     if start:
                         await send(start)
                     await send({'type': 'http.response.body', 'body': content})
-        await self.app(scope, replay_body, capture)
+        # Only these handlers explicitly mark the boundary immediately before
+        # SDK create. No time-based expiry or inferred retry for older receipts.
+        phased = scope['path'] in {
+            '/api/v1/internal-research/organization/root-actions',
+            '/api/v1/internal-research/organization/report-actions',
+        }
+        lock = FileLock(str(Path(self.directory) / (key + '.lock')), timeout=5, thread_local=False) if phased else None
+        if lock:
+            await run_in_threadpool(lock.acquire)
+        try:
+            if lock:
+                await run_in_threadpool(self.phase, key, fingerprint, 'validating')
+                async def mark_dispatch():
+                    await run_in_threadpool(self.phase, key, fingerprint, 'dispatch_started')
+                scope['finsight_mark_dispatch'] = mark_dispatch
+            await self.app(scope, replay_body, capture)
+        finally:
+            if lock:
+                lock.release()

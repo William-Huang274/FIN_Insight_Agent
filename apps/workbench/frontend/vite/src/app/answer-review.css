@@ -1,0 +1,18 @@
+#org-task-actions label:has(textarea), #org-task-actions label:has(select) {
+  display: grid;
+  gap: .35rem;
+  margin: .75rem 0;
+}
+#org-task-actions textarea, section:has(> button + div textarea[readonly]) textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+.answer-review h5 { font-size: 1em; margin: 1rem 0 .4rem; }
+.answer-review summary { cursor: pointer; }
+.answer-edit { margin: .9rem 0 1.2rem; overflow-wrap: anywhere; }
+.answer-edit-before, .answer-edit-after { padding: .6rem .9rem; margin: .35rem 0; border-inline-start: 3px solid; }
+.answer-edit-before { background: #faf5f3; border-color: #bd8978; }
+.answer-edit-after { background: #f0f8f5; border-color: #38816a; }
+.answer-edit small { font-weight: 650; }
+.answer-edit p { margin: .35rem 0; }

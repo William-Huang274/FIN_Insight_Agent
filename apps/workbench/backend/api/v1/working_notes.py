@@ -41,9 +41,9 @@ async def edit_working_note(thread_id, owner, body):
     if note['version'] != body.version: raise HTTPException(409,'底稿已更新，请重新读取后编辑')
     if note['actor']=='user_context' and len(body.body)>6000: raise HTTPException(422,'研究要求最多6000字符')
     memory = memory_for({},note['actor'],owner=owner,workspace=str(thread_id))
-    result = await run_in_threadpool(memory.save,note['title'],body.body,body.version)
+    result = await run_in_threadpool(memory.save,note['title'],body.body,body.version,user_edit=True)
     if not result.get('saved'): raise HTTPException(409,result.get('reason','保存失败'))
-    return {**result,'notice':'已保存新版本。旧版保留；这是工作底稿修订，不代表事实已核验或正式报告已更新。'}
+    return {**result,'notice':'已保存新版本。后续模型调用会收到修改定位并需回读，已发出的调用保留原输入；不代表事实已核验或正式报告已更新。'}
 
 
 async def revise_working_note(service, thread_id, owner, body):
@@ -107,10 +107,10 @@ def install_edit_routes(router, prefix, authorize, sdk):
     from fastapi import Request
     from ...authentication import current_owner
 
-    async def writable(thread_id, request):
+    async def writable(thread_id, request, *, during_run=False):
         if request.headers.get('x-workbench-request')!='1': raise HTTPException(403,'缺少工作台请求标识')
         thread=await authorize(thread_id,request)
-        if thread.get('status')=='busy': raise HTTPException(409,'请先等待或停止当前运行，再保存修改')
+        if thread.get('status')=='busy' and not during_run: raise HTTPException(409,'请先等待或停止当前运行，再保存修改')
         return thread
 
     @router.get(prefix+'/{thread_id}/user-context')
@@ -126,12 +126,11 @@ def install_edit_routes(router, prefix, authorize, sdk):
 
     @router.put(prefix+'/{thread_id}/working-notes')
     async def put_note(thread_id: UUID, request: Request, body: WorkingNoteEdit):
-        thread=await writable(thread_id,request)
+        thread=await writable(thread_id,request,during_run=True)
         target=thread.get('metadata',{}).get('working_note_target')
         if target:
             # Revision windows edit the same already-authorized parent workspace.
             parent=await sdk.threads.get(target['workspace'])
             if parent.get('metadata',{}).get('owner_id','local-pilot')!=current_owner(request): raise HTTPException(404,'底稿不存在')
-            if parent.get('status')=='busy': raise HTTPException(409,'原研究运行中，请先等待或停止')
             thread_id=target['workspace']
         return await edit_working_note(thread_id,current_owner(request),body)

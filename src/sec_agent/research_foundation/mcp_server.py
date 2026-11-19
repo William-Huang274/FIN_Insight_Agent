@@ -14,7 +14,6 @@ from sec_agent.research.finance_tool_contract import (
 )
 
 from .contracts import (
-    DEFAULT_REFERENCE_VERTICAL_FOUNDATION_PATH,
     ResearchGraphFoundation,
     ResearchMethodBinding,
     ResearchRunScope,
@@ -41,7 +40,7 @@ from .source_document_navigation import SourceDocumentRequest, SourceDocumentRes
 
 
 # Published tool ID retained so saved calls and method bindings remain valid.
-GET_RESEARCH_METHOD_TOOL = "get_dell_research_method"
+GET_RESEARCH_METHOD_TOOL = "get_research_source_binding"
 SEARCH_LOCAL_KNOWLEDGE_TOOL = "search_local_knowledge"
 SEARCH_REVIEWED_EVIDENCE_TOOL = "search_reviewed_evidence"
 READ_REVIEWED_EVIDENCE_BY_ID_TOOL = "read_reviewed_evidence"
@@ -121,9 +120,7 @@ class FoundationMethodReader:
     @classmethod
     def from_default_contract(cls) -> "FoundationMethodReader":
         return cls(
-            foundation=load_research_graph_foundation(
-                DEFAULT_REFERENCE_VERTICAL_FOUNDATION_PATH
-            )
+            foundation=load_research_graph_foundation()
         )
 
     def __call__(
@@ -164,13 +161,16 @@ class ResearchDataMCPDependencies:
     # Only a trusted review/report composition supplies a frozen case bundle.
     # Existing single-branch servers do not acquire cross-paper tools by default.
     case_artifacts: Any | None = None
+    # Host-restored native task observations; never accepted from model input.
+    restored_observations: Sequence[Mapping[str, Any]] = ()
+    source_registry: Any | None = None
 
 
 def build_research_data_mcp_server(
     dependencies: ResearchDataMCPDependencies,
-    *, role_method_reader=None,
+    *, role_method_reader=None, source_access_check=None,
 ) -> Any:
-    """Build the thin MCP v2 surface used by the DELL reference vertical.
+    """Build the thin MCP v2 surface for the active research composition.
 
     Evidence admission, NumericFact authority and local knowledge ranking remain in
     the injected FIN services. External discovery and capture return candidates,
@@ -182,7 +182,19 @@ def build_research_data_mcp_server(
     except ImportError as exc:  # pragma: no cover - optional dependency guard
         raise RuntimeError("mcp_v2_dependency_missing") from exc
 
+    async def check_project_access(context, call_next):
+        if context.method == 'tools/call' and source_access_check:
+            import asyncio
+            from .project_asset_access import ProjectAssetUnavailable
+            try:
+                await asyncio.to_thread(source_access_check)
+            except ProjectAssetUnavailable as exc:
+                from mcp_types import CallToolResult, TextContent
+                return CallToolResult(isError=True, content=[TextContent(text=str(exc))])
+        return await call_next(context)
+
     server = MCPServer(
+        middleware=[check_project_access] if source_access_check else [],
         name="fin-insight-research-data",
         title="FIN Insight Research Data",
         version="0.1.0",
@@ -201,27 +213,29 @@ def build_research_data_mcp_server(
     # Source projection of this composition's successful data/calculator responses.
     # No new store/admission: the typed SQL result remains the authority and is
     # already persisted in the agent's native ToolMessages. A new composition
-    # must re-query or receive its case archive; never accept a model-supplied
-    # number as an observed fact.
-    from .source_bound_calculator import source_items_from_tool, register_source_calculator_tool
-    observed_sources: dict[str, dict[str, Any]] = {}
+    # restores the SAME trusted author notebook as the graph (or its case
+    # archive); previously observed originals need no re-query. Never accept
+    # a model-supplied number as an observed fact.
+    from .source_bound_calculator import ObservedSourceRegistry, register_source_calculator_tool
+    source_registry = dependencies.source_registry or ObservedSourceRegistry()
+    source_registry.restore(dependencies.restored_observations)
 
     def remember_sources(tool_name, result):
         body = result if isinstance(result, dict) else result.model_dump(mode="json")
-        observed_sources.update(source_items_from_tool(tool_name, body))
+        source_registry.remember(tool_name, body)
         return result
 
     @server.tool(name="get_research_method",
-        description="Read answer-free research methods. Omit method_id for the compact catalog; select an ID for its full content. Methods are not evidence or extra permissions.",
+        description="Read research teaching resources. Empty method_id lists the catalog and section titles; select a method_id and optional exact section title. Methods are not evidence or extra permissions.",
         structured_output=True)
-    def read_role_method(method_id: str = "") -> dict[str, Any]:
-        from .research_methods import get_research_method
-        return (role_method_reader or get_research_method)(method_id)
+    def read_role_method(method_id: str = "", section: str = "") -> dict[str, Any]:
+        from .research_methods import get_research_method, select_method_section
+        return select_method_section((role_method_reader or get_research_method)(method_id), section)
 
     @server.tool(
         name=GET_RESEARCH_METHOD_TOOL,
         description=(
-            "Read the answer-free DELL question method, formula contracts and "
+            "Read the answer-free task method, formula contracts and "
             "source boundaries for selected branches."
         ),
         structured_output=True,
@@ -422,14 +436,36 @@ def build_research_data_mcp_server(
 
     if dependencies.source_document_reader is not None:
 
+        from .research_methods import REPORT_PROCESSING_TOOL_GUIDANCE
+
         @server.tool(name=READ_SOURCE_DOCUMENT_TOOL, structured_output=True,
-                     description="Read sources from runtime-enabled spaces: local case catalog/outline/search/read; web search/read; uploads task-only catalog/outline/search/read and inspect_image for uploaded image or PDF page. Inspect_image delegates to a vision model and returns fallible source-linked interpretation, not authoritative facts. Unavailable spaces are rejected. Use returned server document IDs, never paths or shell. Web offsets are characters. Search previews cannot be cited; source passages are not Reviewed Evidence or NumericFacts.")
+                     description="Read sources from runtime-enabled spaces: library catalog/company/data/related/observations/search/read; local case catalog/outline/search/read; web search/read; uploads task-only catalog/outline/search/read and inspect_image for uploaded image or PDF page. Inspect_image delegates to a vision model and returns fallible source-linked interpretation, not authoritative facts. Unavailable spaces are rejected. Use returned server document IDs, never paths or shell. Web offsets are characters. Search previews cannot be cited; source passages are not Reviewed Evidence or NumericFacts." + REPORT_PROCESSING_TOOL_GUIDANCE)
         async def read_source_document(
             request: SourceDocumentToolRequest, branch_id: str, run_scope: ResearchRunScope,
         ) -> SourceDocumentResult:
             await _validate_scope(dependencies.method_reader, run_scope=run_scope, branch_id=branch_id)
-            result = await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
-                                         request=request, branch_id=branch_id, run_scope=run_scope)
+            try:
+                from .saved_web_navigation import read_saved_web_window
+                result = None
+                if request.source_space == 'web' and request.operation == 'read':
+                    saved = list(source_registry.snapshot().values())
+                    if dependencies.case_artifacts is not None:
+                        saved.extend(dependencies.case_artifacts.source_snapshot().values())
+                    result = read_saved_web_window(request, saved, research_as_of=run_scope.research_as_of)
+                if result is None:
+                    result = await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
+                                             request=request, branch_id=branch_id, run_scope=run_scope)
+            except ValueError as exc:
+                # Only anticipated locator mistakes become public tool errors.
+                # Storage/integrity faults retain the SDK's private crash detail.
+                if str(exc) != "source_node_not_in_selected_document":
+                    raise
+                from mcp.server.mcpserver.exceptions import ToolError
+                raise ToolError(
+                    "source_node_not_in_selected_document: use outline/search for the selected document "
+                    "and copy a returned node_id, or use returned next_offset/follow-up arguments. "
+                    "Do not increment or invent node IDs. This locator failure is not evidence of non-disclosure."
+                ) from exc
             return remember_sources(READ_SOURCE_DOCUMENT_TOOL, result)
 
     if dependencies.legacy_reviewed_evidence_cell_reader is not None:
@@ -549,8 +585,9 @@ def build_research_data_mcp_server(
         return await dependencies.external_capture.capture(request)
 
     def calculation_source(source_id):
-        if source_id in observed_sources:
-            return dict(observed_sources[source_id])
+        item = source_registry.get(source_id)
+        if item is not None:
+            return item
         if dependencies.case_artifacts is not None:
             return dependencies.case_artifacts.source_item(source_id)
         raise ValueError("source_id_not_observed_in_this_tool_session")

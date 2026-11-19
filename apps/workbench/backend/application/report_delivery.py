@@ -10,7 +10,6 @@ from copy import deepcopy
 from pathlib import Path
 import re
 from urllib.parse import urlsplit
-from xml.sax.saxutils import escape
 
 
 def chart_display_unit(chart):
@@ -85,9 +84,10 @@ def readable_report(report):
     return text, references
 
 
-def markdown_blocks(text):
+def markdown_blocks(text, charts=()):
     from markdown_it import MarkdownIt
-    tokens = MarkdownIt("commonmark").enable("table").parse(text)
+    from .report_flow import chart_tokens
+    tokens, placed = chart_tokens(MarkdownIt("commonmark").enable("table"), text, charts)
     blocks, index = [], 0
     def plain(token):
         if not token.children:
@@ -96,7 +96,9 @@ def markdown_blocks(text):
             for t in token.children if t.type in {"text", "code_inline", "softbreak", "hardbreak"})
     while index < len(tokens):
         token = tokens[index]
-        if token.type == "table_open":
+        if token.type == 'report_chart':
+            blocks.append(('chart', token.meta['index']))
+        elif token.type == "table_open":
             rows = []
             while index < len(tokens) and tokens[index].type != "table_close":
                 if tokens[index].type == "tr_open":
@@ -114,7 +116,7 @@ def markdown_blocks(text):
         elif token.type in {"fence", "code_block"}:
             blocks.append(("p", token.content))
         index += 1
-    return blocks
+    return blocks + [('chart', i) for i in range(len(charts)) if i not in placed]
 
 
 def chart_png(chart):
@@ -154,7 +156,7 @@ def chart_png(chart):
     return output.getvalue()
 
 
-def export_report(report, format, *, review_status="待人工审阅", public_base_url=None):
+def export_report(report, format, *, review_status="待人工审阅", public_base_url=None, download_links=None):
     report = deepcopy(report)  # display projection, never rewrite checkpoint provenance
     citation_numbers = {key: str(i) for i, key in enumerate(report.get("citations", {}), 1)}
     for chart in report.get("charts", []):
@@ -175,81 +177,32 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
                     return public_base_url.rstrip("/") + parsed.path
             return value
         report = relocate_upload_links(report)
+    if format in {"html", "pdf"}:
+        from .report_reader import html_report, pdf_report
+        if format == "html":
+            return html_report(report, review_status, download_links), "text/html; charset=utf-8"
+        return pdf_report(report, review_status), "application/pdf"
     text, references = readable_report(report)
     charts = report.get("charts", [])
-    blocks = markdown_blocks(text)
+    blocks = markdown_blocks(text, charts)
     title = report["title"]
     if format == "md":
-        body = f"# {title}\n\n{review_status}\n\n{text}"
-        for chart in charts:
-            body += f"\n\n## {chart['title']}\n\n{chart['interpretation']}\n\n单位：{chart_display_unit(chart)}\n\n| 项目 | 系列 | 数值 |\n|---|---|---:|\n"
-            body += "\n".join(f"| {p['label']} | {p['series']} | {p['value']:g} |" for p in chart["points"])
+        from markdown_it import MarkdownIt
+        from .report_flow import chart_tokens
+        tokens, placed = chart_tokens(MarkdownIt('commonmark'), text, charts)
+        def chart_markdown(chart):
+            def cell(value):
+                return str(value).replace('|', '\\|').replace('\n', '<br>')
+            return f"\n\n### {chart['title']}\n\n{chart['interpretation']}\n\n单位：{chart_display_unit(chart)}\n\n| 项目 | 系列 | 数值 |\n|---|---|---:|\n" + "\n".join(f"| {cell(p['label'])} | {cell(p['series'])} | {p['value']:g} |" for p in chart['points']) + '\n\n'
+        lines = text.splitlines(keepends=True)
+        insertions = {}
+        for token in tokens:
+            if token.type == 'report_chart':
+                insertions.setdefault(token.meta['line'], []).append(chart_markdown(charts[token.meta['index']]))
+        body = f"# {title}\n\n{review_status}\n\n" + ''.join(''.join(insertions.get(i, [])) + (lines[i] if i < len(lines) else '') for i in range(len(lines)+1))
+        body += ''.join(chart_markdown(chart) for i, chart in enumerate(charts) if i not in placed)
         body += "\n\n## 来源\n\n" + "\n\n".join(references)
         return body.encode("utf-8"), "text/markdown; charset=utf-8"
-    if format == "pdf":
-        from reportlab.lib import colors
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib.styles import ParagraphStyle
-        from reportlab.pdfbase import pdfmetrics
-        from reportlab.pdfbase.ttfonts import TTFont
-        from reportlab.pdfbase.cidfonts import UnicodeCIDFont
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
-        font_path = Path("C:/Windows/Fonts/msyh.ttc")
-        font = "FinCJK"
-        if font not in pdfmetrics.getRegisteredFontNames():
-            if font_path.is_file():
-                pdfmetrics.registerFont(TTFont(font, str(font_path), subfontIndex=0))
-            else:
-                font = "STSong-Light"
-                pdfmetrics.registerFont(UnicodeCIDFont(font))
-        # CJK fonts may omit mathematical symbols. Select a real glyph from
-        # matplotlib's packaged DejaVu font instead of emitting empty squares.
-        from matplotlib import get_data_path
-        fallback = "FinSymbols"
-        if fallback not in pdfmetrics.getRegisteredFontNames():
-            pdfmetrics.registerFont(TTFont(fallback, str(Path(get_data_path()) / "fonts/ttf/DejaVuSans.ttf")))
-        primary_glyphs = getattr(pdfmetrics.getFont(font).face, "charToGlyph", None)
-        fallback_glyphs = pdfmetrics.getFont(fallback).face.charToGlyph
-        def styled_text(value):
-            parts = []
-            for char in str(value):
-                escaped = escape(char)
-                if primary_glyphs is not None and ord(char) not in primary_glyphs and ord(char) in fallback_glyphs:
-                    escaped = f'<font name="{fallback}">{escaped}</font>'
-                parts.append("<br/>" if char == "\n" else escaped)
-            return "".join(parts)
-        normal = ParagraphStyle("Body", fontName=font, fontSize=10, leading=17, spaceAfter=9, wordWrap="CJK")
-        small = ParagraphStyle("Source", parent=normal, fontSize=8, leading=12, splitLongWords=True)
-        heading = ParagraphStyle("Heading", parent=normal, fontSize=15, leading=22, spaceBefore=17, keepWithNext=True)
-        title_style = ParagraphStyle("Title", parent=normal, fontSize=22, leading=31, spaceAfter=14)
-        story = [Paragraph(styled_text(title), title_style), Paragraph(styled_text(review_status), small), Spacer(1, 12)]
-        def para(value, style=normal):
-            return Paragraph(styled_text(value), style)
-        for kind, value in blocks:
-            if kind == "table":
-                width = max(len(row) for row in value)
-                rows = [[para(cell, small) for cell in row] + [""]*(width-len(row)) for row in value]
-                table = Table(rows, colWidths=[470/width]*width, repeatRows=1, hAlign="LEFT")
-                table.setStyle(TableStyle([("BACKGROUND", (0,0), (-1,0), colors.HexColor("#e9eff4")),
-                    ("GRID", (0,0), (-1,-1), .35, colors.HexColor("#d9d9d9")), ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
-                    ("TOPPADDING", (0,0), (-1,-1), 7), ("BOTTOMPADDING", (0,0), (-1,-1), 7)]))
-                story.extend([table, Spacer(1, 12)])
-            else:
-                story.append(para(value, heading if kind.startswith("h") else normal))
-        if charts:
-            story.append(para("图表与出处", heading))
-        for chart in charts:
-            story.extend([Image(io.BytesIO(chart_png(chart)), width=470, height=225.6), para(chart["interpretation"], small)])
-        story.append(para("来源", heading))
-        story.extend(para(ref, small) for ref in references)
-        output = io.BytesIO()
-        def footer(canvas, doc):
-            canvas.setFont(font, 8)
-            canvas.setFillColor(colors.HexColor("#657386"))
-            canvas.drawRightString(A4[0]-55, 28, str(doc.page))
-        SimpleDocTemplate(output, pagesize=A4, rightMargin=55, leftMargin=55, topMargin=48, bottomMargin=46,
-            title=title, author="FinSight").build(story, onFirstPage=footer, onLaterPages=footer)
-        return output.getvalue(), "application/pdf"
     if format == "docx":
         from docx import Document
         from docx.shared import Inches, Pt, RGBColor
@@ -276,7 +229,11 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
         document.add_paragraph(title, "Title")
         document.add_paragraph(review_status)
         for kind, value in blocks:
-            if kind == "table":
+            if kind == 'chart':
+                chart = charts[value]
+                document.add_picture(io.BytesIO(chart_png(chart)), width=Inches(6.1))
+                document.add_paragraph(chart['interpretation'])
+            elif kind == "table":
                 width = max(len(row) for row in value)
                 table = document.add_table(rows=0, cols=width)
                 table.style = "Table Grid"
@@ -307,11 +264,6 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
                 document.add_paragraph()
             else:
                 document.add_paragraph(value, "Heading " + str(min(3, int(kind[1]))) if kind.startswith("h") else None)
-        if charts:
-            document.add_heading("图表与出处", 1)
-        for chart in charts:
-            document.add_picture(io.BytesIO(chart_png(chart)), width=Inches(6.1))
-            document.add_paragraph(chart["interpretation"])
         document.add_heading("来源", 1)
         for ref in references:
             paragraph = document.add_paragraph(ref)
@@ -360,7 +312,7 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
             page.notes_slide.notes_text_frame.text = notes
             return page
         slide(title, review_status, "\n\n".join(references))
-        for chart in charts:
+        def add_chart_slide(chart):
             page = slide(chart["title"], notes=chart["interpretation"] + "\n\n" + "\n\n".join(references))
             data = CategoryChartData()
             labels = list(dict.fromkeys(p["label"] for p in chart["points"]))
@@ -405,7 +357,10 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
                 slide(current_title + (f"（续 {part_index}）" if part_index else ""), part.strip(), "\n\n".join(references))
             chunks.clear()
         for kind, value in blocks:
-            if kind.startswith("h"):
+            if kind == 'chart':
+                flush()
+                add_chart_slide(charts[value])
+            elif kind.startswith("h"):
                 flush()
                 current_title = value
             elif kind == "table":

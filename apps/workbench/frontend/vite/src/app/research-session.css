@@ -374,20 +374,6 @@ body:has(.rs-shell) {
   padding: 1px 14px;
   color: var(--muted);
 }
-.rs-cite {
-  border: 0;
-  border-radius: 3px;
-  color: var(--accent);
-  background: var(--canvas);
-  font-size: 9px !important;
-  line-height: 1.4;
-  padding: 1px 4px;
-  margin: 0 2px;
-  vertical-align: super;
-}
-.rs-cite:hover {
-  background: var(--line);
-}
 .rs-compose {
   border-top: 1px solid var(--line);
   margin: 0;

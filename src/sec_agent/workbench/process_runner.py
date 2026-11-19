@@ -60,7 +60,8 @@ def build_active_baseline_verification_command(
         args=[
             sys.executable,
             "-u",
-            "scripts/engineering/verify_active_baseline.py",
+            "-m",
+            "scripts.dev.verify_public_checkout",
         ],
         cwd=Path(repo_root).resolve(),
         label="active_baseline_verification",

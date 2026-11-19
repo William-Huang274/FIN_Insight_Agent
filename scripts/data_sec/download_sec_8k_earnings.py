@@ -98,7 +98,9 @@ def main() -> None:
     args = parse_args()
     config = load_config(REPO_ROOT / args.config)
 
-    user_agent = args.user_agent or os.getenv("SEC_USER_AGENT") or "FinSight-Agent/0.1 contact@example.com"
+    user_agent = args.user_agent or os.getenv("SEC_USER_AGENT")
+    if not user_agent:
+        raise SystemExit("Set SEC_USER_AGENT to your application name and real contact email.")
     ticker_filter = parse_csv_filter(args.tickers)
     year_filter = parse_year_filter(args.years)
     years = [int(year) for year in config.get("years", [])]

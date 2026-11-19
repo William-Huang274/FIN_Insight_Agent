@@ -38,16 +38,20 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
         **({"model": ids["conversation_model"]} if ids.get("conversation_model") else {})})
     basis = TokenBudgetBasis.model_validate_json(json.dumps(specification["budget"]))
     public, private = session_audit_sinks(Path(settings["audit_root"]) / thread_id / run_id)
-    from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
-    store = TaskAttachmentStore(Path(os.environ["FINSIGHT_TASK_ATTACHMENTS_ROOT"])) if os.environ.get("FINSIGHT_TASK_ATTACHMENTS_ROOT") else None
+    from sec_agent.research_foundation.task_asset_updates import TaskAssetUpdates, TaskAssetView, asset_update_prompt
+    store = None
+    if os.environ.get('FINSIGHT_TASK_ATTACHMENTS_ROOT'):
+        asset_root = Path(os.environ['FINSIGHT_TASK_ATTACHMENTS_ROOT'])
+        TaskAssetUpdates(asset_root).pin(thread_id, run_id, ids.get('finsight_asset_revision', 0))
+        store = TaskAssetView(asset_root, thread_id, run_id)
     grants = conversation_tools(thread_id=thread_id, attachment_store=store,
         fact_mart=Path(settings["conversation_fact_mart"]) if settings.get("conversation_fact_mart") else None)
     if store is not None:
         from hashlib import sha256
-        from .conversation_web import public_web_tool
-        grants.append(public_web_tool(thread_id=thread_id,run_id=run_id,
+        from .source_toolkit import source_tools
+        grants.extend(source_tools(thread_id=thread_id,run_id=run_id,
             method_digest=sha256((root / "configs/research/runtime/conversation.json").read_bytes()).hexdigest(),
-            cache_root=Path(os.environ["FINSIGHT_TASK_ATTACHMENTS_ROOT"]) / "public-source-cache"))
+            cache_root=Path(os.environ["FINSIGHT_TASK_ATTACHMENTS_ROOT"])))
     if settings.get("conversation_sandbox_url"):
         from .sandbox_mcp import remote_sandbox_tool
         grants.append(remote_sandbox_tool(endpoint=settings["conversation_sandbox_url"],
@@ -58,11 +62,20 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
     from .conversation_handoff import handoff_tools
     sdk = get_client(api_key=None)
     audit = CaseModelAudit(actor="conversation", profile=profile, basis=basis, public_sink=public, private_sink=private, stream_public=True)
+    if store:
+        from sec_agent.research_foundation.project_asset_access import require_task_assets
+        audit.source_access_check = lambda: require_task_assets(store, thread_id)
     model = case_chat_model(profile, basis, SimpleNamespace(base_url="https://api.deepseek.com"), SecretStr(os.environ["DEEPSEEK_API_KEY"]), streaming=True,
                             context_editing=specification.get("context_editing"))
     try:
         thread = await sdk.threads.get(thread_id)
         metadata = thread.get("metadata", {})
+        import asyncio
+        from .research_budget import budget_from_host
+        budget_scope = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,
+            metadata=metadata, environment=os.environ)
+        if budget_scope:
+            audit.dispatch_guard = budget_scope.guard('conversation', profile)
         target = metadata.get('working_note_target')
         task_context = ''
         memory_actor, memory_workspace = 'conversation',thread_id
@@ -76,10 +89,31 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
                 'save using its original title and current base_version. Explain which previous conclusion or next step '
                 'changed and whether related papers may need review. Do not claim other agents were rerun or the final '
                 'report was updated. If the instruction contradicts source evidence, show the conflict and ask rather '
-                'than silently preserving your old conclusion or changing facts. Target: '+json.dumps(target,ensure_ascii=False))
+                'than silently preserving your old conclusion or changing facts. '
+                'The pinned target version is the original baseline, not the current draft version. '
+                'Current version and readback references are refreshed separately. Target baseline: '+json.dumps(target,ensure_ascii=False))
         from .working_memory_tools import working_memory_tools
         from .user_context import user_context_prompt
+        from sec_agent.research_foundation.asset_workspace import asset_context_prompt
+        # The run configuration is server-owned and frozen before queueing.
+        # A newer profile must not rewrite an approval continuation's input.
+        from copy import deepcopy
+        asset_metadata = deepcopy(metadata)
+        if store and store.binding:
+            asset_metadata['asset_context'] = deepcopy(store.binding['body']['context'])
+        if 'finsight_asset_memory' in ids and asset_metadata.get('asset_context'):
+            asset_metadata['asset_context']['memory'] = ids['finsight_asset_memory']
+            # This is a run projection, not a mutation of the saved context digest.
+            asset_metadata['asset_context']['original_context_digest'] = asset_metadata['asset_context'].pop('digest', None)
+        task_context += asset_context_prompt(asset_metadata)
+        if store:
+            task_context += asset_update_prompt(store, include_context=False)
+        if ids.get('finsight_asset_memory'):
+            task_context += '\n本轮个人偏好以本轮快照为准，旧对话中的偏好可能已经修改或清空。它不是金融事实；不得擅自写入长期记忆。'
         task_context += user_context_prompt(metadata.get('owner_id','local-pilot'),thread_id)
+        from .user_workpaper_context import working_paper_context
+        audit.working_note_context = lambda: working_paper_context({}, memory_actor,
+            owner=metadata.get('owner_id', 'local-pilot'), workspace=memory_workspace, target=target)
         from .conversation_agent import GrantedTool
         grants.extend(GrantedTool(t, "working_note_write" if t.name == "WriteWorkingNote" else "read",
             "当前对话的工作底稿；不改用户原文件、不写入已核验事实库") for t in working_memory_tools(
@@ -92,21 +126,15 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
             grants.extend(handoff_tools(reference=metadata["handoff"], sdk=sdk,
                                        owner_id=metadata.get("owner_id", "local-pilot"),attachment_store=store))
         if metadata.get('harness') == 'hermes':
+            if budget_scope:
+                raise ValueError('research_budget_hermes_path_not_qualified')
             from .hermes_bridge import build_hermes_graph
             yield build_hermes_graph(owner=metadata.get('owner_id','local-pilot'),workspace=memory_workspace,
                 actor=memory_actor,model=profile.model,target=target,task_context=task_context,public_sink=public)
         else:
-            from .model_context import RequestSummaryMiddleware
-            summary_spec = specification['summary']
-            summary_profile = DeepSeekModelProfile.model_validate(summary_spec['profile'])
-            summary_basis = TokenBudgetBasis.model_validate_json(json.dumps(summary_spec['budget']))
-            summary_audit = CaseModelAudit(actor='conversation_summary',profile=summary_profile,basis=summary_basis,
-                public_sink=public,private_sink=private)
-            summary_model = case_chat_model(summary_profile,summary_basis,SimpleNamespace(base_url='https://api.deepseek.com'),
-                SecretStr(os.environ['DEEPSEEK_API_KEY']))
-            summary = RequestSummaryMiddleware(model=summary_model,audited_model=summary_audit.model_runnable(summary_model),
-                trigger_tokens=summary_spec['trigger_tokens'],keep_tokens=summary_spec['keep_tokens'],max_summaries=2,
-                per_user_turn=summary_spec.get('per_user_turn', False))
+            from .conversation_summary import summary_middleware
+            summary = summary_middleware(specification, public=public, private=private,
+                access_check=audit.source_access_check, budget_scope=budget_scope)
             yield build_conversation_agent(model=model, grants=grants,
                 permission_mode=ids.get("permission_mode", "request_standard"), checkpointer=None,
                 middleware=[summary,audit], server_managed_persistence=True, task_context=task_context, **specification["limits"])

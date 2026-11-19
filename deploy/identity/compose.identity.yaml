@@ -1,0 +1,72 @@
+services:
+  workbench:
+    # The private Java callback keeps HTTP loopback. Browsers use HTTPS.
+    ports: !override
+      - "127.0.0.1:${FINSIGHT_HTTPS_PORT:-18866}:8443"
+      - "127.0.0.1:${FINSIGHT_IDENTITY_PORT:-18443}:${FINSIGHT_IDENTITY_PORT:-18443}"
+    environment:
+      FINSIGHT_AUTH_MODE: oidc_product
+      FINSIGHT_OIDC_ISSUER: ${FINSIGHT_OIDC_ISSUER:?include identity.env}
+      FINSIGHT_OIDC_AUDIENCE: ${FINSIGHT_OIDC_AUDIENCE:?include identity.env}
+      FINSIGHT_PUBLIC_ORIGIN: ${FINSIGHT_PUBLIC_ORIGIN:?include identity.env}
+      SSL_CERT_FILE: /tmp/finsight-ca.pem
+    command: ["/bin/sh", "-ec", "cat /etc/ssl/certs/ca-certificates.crt /run/finsight-ca.pem > /tmp/finsight-ca.pem && exec python -m uvicorn apps.workbench.backend.app:app --host 127.0.0.1 --port 8765 --no-access-log"]
+    volumes:
+      - ${FINSIGHT_IDENTITY_DIRECTORY:?include identity.env}/tls/ca.pem:/run/finsight-ca.pem:ro
+  identity-db:
+    image: postgres:16.15-alpine
+    environment:
+      POSTGRES_DB: identity
+      POSTGRES_USER: identity
+      POSTGRES_PASSWORD: ${OIDC_DB_PASSWORD:?include identity.env}
+    volumes:
+      - identity-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "identity", "-d", "identity"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  identity:
+    image: quay.io/keycloak/keycloak@sha256:ff4257d0d64efbe99ed1ddfaf07765cc3c36dc7518bf8324d41961327f441c54
+    network_mode: service:workbench
+    command: ["start", "--import-realm"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://identity-db:5432/identity
+      KC_DB_USERNAME: identity
+      KC_DB_PASSWORD: ${OIDC_DB_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: finsight-admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${OIDC_ADMIN_PASSWORD:?include identity.env}
+      KC_HOSTNAME: https://localhost:${FINSIGHT_IDENTITY_PORT:-18443}
+      KC_HTTPS_PORT: ${FINSIGHT_IDENTITY_PORT:-18443}
+      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/server.pem
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/server-key.pem
+      KC_HTTP_ENABLED: "false"
+      JAVA_OPTS_KC_HEAP: "-Xms128m -Xmx512m"
+    depends_on:
+      identity-db:
+        condition: service_healthy
+      workbench:
+        condition: service_healthy
+    volumes:
+      - ${FINSIGHT_IDENTITY_DIRECTORY}/tls/server.pem:/opt/keycloak/conf/server.pem:ro
+      - ${FINSIGHT_IDENTITY_DIRECTORY}/tls/server-key.pem:/opt/keycloak/conf/server-key.pem:ro
+      - ${FINSIGHT_IDENTITY_DIRECTORY}/import/finsight-realm.json:/opt/keycloak/data/import/finsight-realm.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/$$KC_HTTPS_PORT'"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 40s
+  identity-https:
+    image: nginx:stable-alpine@sha256:3bc3836dc0be3b811f238210360bf8e7ca8a2d0effdae46160bf1f3578710051
+    network_mode: service:workbench
+    depends_on:
+      identity:
+        condition: service_healthy
+    volumes:
+      - ./deploy/identity/localhost.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${FINSIGHT_IDENTITY_DIRECTORY}/tls/server.pem:/etc/finsight/tls/server.pem:ro
+      - ${FINSIGHT_IDENTITY_DIRECTORY}/tls/server-key.pem:/etc/finsight/tls/server-key.pem:ro
+volumes:
+  identity-data:

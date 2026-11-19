@@ -55,3 +55,19 @@ supply-artifacts/
 *.html
 *.htm
 !/apps/workbench/frontend/vite/index.html
+
+# The release checkout contains application sources and public entry points.
+/tests/
+/apps/business-service/src/test/
+/apps/workbench/frontend/e2e/
+/scripts/engineering/
+/deploy/qualification/
+/data/
+/docs/*
+!/docs/README.md
+!/docs/public/
+/docs/public/*
+!/docs/public/architecture.en.md
+!/docs/public/architecture.zh-CN.md
+!/docs/public/quickstart.en.md
+!/docs/public/quickstart.zh-CN.md

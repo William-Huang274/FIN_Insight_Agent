@@ -283,7 +283,9 @@ class OrganizationSourceNavigation:
             # Score all eligible postings, but materialize only the requested page of verified original text.
             page = candidates.materialize(literal[request.offset:request.offset + request.limit], manifest)
             receipt = {'mode': 'organization-bm25.v1', 'provider_calls': 0, 'lexical_source': 'published_release'}
-            result = navigate_source_nodes(page, request.model_copy(update={'offset': 0}),
+            # select() already checked both locators, including when a valid selection yields no overlap.
+            page_request = request.model_copy(update={'offset': 0, 'document_id': None, 'node_id': None})
+            result = navigate_source_nodes(page, page_request,
                 snapshot=self.reader.authority.manifest_digest[7:], allowed_space='organization', hybrid_enabled=False,
                 ranker=lambda *_: (page, receipt),
                 lexical_scorer=lambda rows, tokens: ([0.] * len(rows), list(range(len(rows))), has_terms))

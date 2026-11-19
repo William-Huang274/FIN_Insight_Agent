@@ -169,7 +169,8 @@ def build_conversations_router(service):
             if parent.get('metadata',{}).get('owner_id','local-pilot')!=current_owner(request):
                 raise HTTPException(404,'底稿不存在')
             thread_id=target['workspace']
-        return await revise_working_note(service,thread_id,current_owner(request),body)
+        return await revise_working_note(service,thread_id,current_owner(request),body,
+            personal_provider_key=bool(thread.get('metadata',{}).get('personal_provider_key')))
     @router.get("")
     async def list_conversations(request: Request):
         owner = current_owner(request)

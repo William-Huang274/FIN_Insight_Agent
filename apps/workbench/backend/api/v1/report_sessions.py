@@ -1219,7 +1219,8 @@ def build_report_sessions_router(service):
         if thread.get('status') == 'busy':
             raise HTTPException(409,'当前运行尚未完成，请等待或停止后再修订底稿')
         from ...authentication import current_owner
-        return await revise_working_note(service,thread_id,current_owner(request),body)
+        return await revise_working_note(service,thread_id,current_owner(request),body,
+            personal_provider_key=bool(thread.get('metadata',{}).get('personal_provider_key')))
     @router.get("/research-sessions/{thread_id}/working-notes")
     async def notes(thread_id: UUID, request: Request, query: str = "", note_id: str | None = None,
                     version: int | None = None, offset: int = 0, download: bool = False):

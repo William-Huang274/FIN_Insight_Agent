@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown';
+import {useId, type ReactNode} from 'react';
 import remarkGfm from 'remark-gfm';
 import {remarkBoundCitations} from './remarkBoundCitations';
 import {remarkReportHeadings} from './remarkReportHeadings';
@@ -24,14 +25,22 @@ export function sourceLabel(s: Omit<Source,'next_offset'>) {
 }
 
 /** Same numbered citations for conversation and report; identity never changes. */
-export function BoundCitationMarkdown({text, citations = {}, onCitation, reportHeadings = false, headingOffset = 0}: {
+export function BoundCitationMarkdown({text, citations = {}, onCitation, reportHeadings = false, headingOffset = 0, chartsBefore, renderChart}: {
   text: string; citations?: Record<string, Citation>;
   onCitation: (key: string, citation: Citation) => void; reportHeadings?: boolean; headingOffset?: number;
+  chartsBefore?: Map<number, number[]>; renderChart?: (index: number) => ReactNode;
 }) {
   const keys = Object.keys(citations);
+  const prefix = 'fn-' + useId().replace(/[^a-zA-Z0-9_-]/g, '') + '-';
   return <ReactMarkdown skipHtml
-    remarkPlugins={[remarkGfm, [remarkBoundCitations, {ids: keys}], [remarkReportHeadings, {enabled: reportHeadings, offset: headingOffset}]]}
-    components={{a: ({href, children}) => {
+    remarkRehypeOptions={{clobberPrefix:prefix, footnoteLabel:'脚注'}}
+    remarkPlugins={[remarkGfm, [remarkBoundCitations, {ids: keys}], [remarkReportHeadings, {enabled: reportHeadings, offset: headingOffset, chartsBefore}]]}
+    components={{div: ({node, children}) => {
+      const index = node?.properties['data-report-chart'] ?? node?.properties.dataReportChart;
+      return typeof index === 'number' && renderChart ? renderChart(index) : <div>{children}</div>;
+    }, a: ({node, href, children, ...attrs}) => {
+      if (href?.startsWith('#' + prefix))
+        return <a {...attrs} href={href}>{children}</a>;
       if (href?.startsWith('#claim:')) {
         let key: string;
         try { key = decodeURIComponent(href.slice(7)); } catch { return <span>{children}</span>; }

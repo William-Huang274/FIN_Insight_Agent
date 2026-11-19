@@ -32,8 +32,8 @@ docker compose --env-file .env --env-file .secrets/identity/identity.env -f comp
 ## Research and conversation
 
 1. Keep the generated `.env` and `.secrets/personal-research.key` private. Set your own `LANGSMITH_API_KEY` for the licensed native Agent Server. Its runtime requires tracing. Trace inputs and outputs are hidden. The fixed trace project identifier is created in the account associated with your key.
-2. For personal research, save your DeepSeek credential in the workbench. Python encrypts the credential under the current identity. The BFF and the native worker share `/app/state/personal-keys` and read the same read-only master key. Configure `DEEPSEEK_API_KEY` in your local environment for the deployment-owned conversation model when needed.
-3. Run these commands with the same Compose project and location as the original deployment.
+2. For personal research, save your DeepSeek credential in the workbench. Python encrypts the credential under the current identity. The BFF and the native worker share `/app/state/personal-keys` and read the same read-only master key. Signed-in conversations use the owner's personal key, including follow-ups and note revisions. The host-key fallback is opt-in for private single-user deployments. [Personal credential setup](../../apps/workbench/README.md#personal-research)
+3. For the single-user stack, run these commands with the same Compose project and location as the original deployment.
 
 ```sh
 docker compose -f compose.yaml -f deploy/agent_server/compose.native.yaml config --quiet
@@ -45,7 +45,9 @@ The overlay adds a private native API, a dedicated pgvector PostgreSQL instance 
 
 ## Organization search
 
-Use the [organization retrieval setup](../organization/README.md) to export the authorized source projection, publish document vectors and BM25 postings, register a fixed release, and enable optional query embeddings or reranking.
+To try a free keyword search, bind a published document on a research input sheet and search its text. [Search bound originals with BM25](../organization/README.md#search-your-own-documents-with-bm25)
+
+For a reusable hybrid index, use the [organization retrieval setup](../organization/README.md) to export the authorized source projection, publish document vectors and BM25 postings, register a fixed release, and enable optional query embeddings or reranking.
 
 ## Data and storage
 
@@ -57,7 +59,7 @@ Use the [organization retrieval setup](../organization/README.md) to export the 
 
 * **Financial SQL.** A project SEC refresh writes a versioned source snapshot. A separate prebuilt financial fact mart can be supplied as `conversation_fact_mart` in session settings. Mount the same immutable SQLite file at that absolute container path, read-only, on both workbench and native services. The shipped `settings.json` starts with a writable audit directory. No external data package is required to start the stack.
 * **Business SQL.** Run `docker compose exec business-db psql -U postgres -d finsight` for local administration. Query migration history with `SELECT version, success FROM flyway_schema_history ORDER BY installed_rank`. Research identity SQL is under `src/sec_agent/agent_runtime/sql/`. Native setup applies the identity/lifecycle scripts to its own database. Budget and dispatch SQL 003–005 apply to a separately provisioned budget database when enabling explicit budget bindings.
-* **Backup.** Securely back up both PostgreSQL databases, the workbench state volume, the deployment’s private environment and the matching Fernet key. The workbench volume includes attachments, project metadata, encrypted user credentials, execution receipts and call records. Preserve snapshots and read-only external data alongside their identifiers. Stop writers before a coordinated backup. A new Fernet key cannot decrypt old credentials.
+* **Backup.** Securely back up the business and native PostgreSQL databases, the identity database and private identity directory when sign-in is enabled, any separate funded-execution budget database, the workbench state volume, the deployment’s private environment and the matching Fernet key. The workbench volume includes attachments, project metadata, encrypted user credentials, execution receipts and call records. Preserve snapshots and read-only external data alongside their identifiers. Stop writers before a coordinated backup. A new Fernet key cannot decrypt old credentials.
 * **Shutdown.** Use `docker compose -f compose.yaml -f deploy/agent_server/compose.native.yaml stop` for the full stack, or `docker compose stop` for the default stack. Keep the Compose project name stable on restart so it reuses the named volumes.
 
 ## Host Java and Python

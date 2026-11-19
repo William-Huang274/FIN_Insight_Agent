@@ -1,5 +1,18 @@
 # FinSight architecture
 
+For example, preparing a quarterly review binds the authorized filing versions to an execution. A local BM25 search can open a passage before the first model call. Starting the research then creates a native run. A reader opening a citation later must still have access to the bound source. [Try the retrieval path](quickstart.en.md#knowledge-base-and-retrieval-setup)
+
+```mermaid
+flowchart LR
+  UI["Workbench"] --> BFF["Python API"]
+  BFF --> Java["Project access and source versions"]
+  Java --> DB[(PostgreSQL)]
+  BFF --> RT["LangGraph Agent Server"]
+  RT --> Jobs["Investigation or delegated topics"]
+  Jobs --> Report["Findings, citations and report versions"]
+  RT --> State["Checkpoints and queue"]
+```
+
 React and Vite provide the project, conversation, research, library and report views. A same-origin Python API coordinates browser sessions with the Java business service. Spring and PostgreSQL maintain project roles, source versions and authorized operations. The server checks the current identity when it serves a protected resource.
 
 LangGraph Agent Server executes research and stores checkpoints, using PostgreSQL and Redis. In deep research, a lead assigns topics and incorporates versioned findings with their evidence. The author can retrieve the source passage behind an adopted finding while drafting. Reports retain citation identity across chapter edits.

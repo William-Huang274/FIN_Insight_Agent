@@ -6,3 +6,5 @@ In a project research record, **运行动态** shows the current run's public
 assistant messages and tool status. Each message preview shows up to 4,000
 characters. Saved replies retain their full text. Reopening a run loads the
 latest 80 saved activity entries under the reader's current permissions.
+
+To enable a funded ACP-backed execution, follow the [organization model setup](../../apps/workbench/README.md#provision-the-optional-organization-model-combination). Open the project research record after starting the execution to follow its activity.

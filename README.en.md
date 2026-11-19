@@ -68,3 +68,5 @@ docker compose up -d --build
 ```
 
 Open [Projects](http://127.0.0.1:8765/workspace/projects). The base installation provides project, document and account services. Live research requires the native execution service, your own provider credentials and a budget. See the guide for multi-user sign-in, model selection and retrieval setup. [Quickstart](docs/public/quickstart.en.md) · [Smoke test](scripts/dev/verify_public_checkout.py)
+
+[Documentation by task](docs/README.md)

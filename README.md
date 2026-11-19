@@ -68,3 +68,5 @@ docker compose up -d --build
 ```
 
 打开[项目工作台](http://127.0.0.1:8765/workspace/projects)。基础部署提供项目、资料和账户服务。要运行模型，按指南启用原生执行服务并配置自己的服务商密钥和预算。多人注册登录、组织模型组合及知识库索引也有独立的部署步骤。[启动与使用](docs/public/quickstart.zh-CN.md) · [本地快捷测试](scripts/dev/verify_public_checkout.py)
+
+[按使用目的查文档](docs/README.md)

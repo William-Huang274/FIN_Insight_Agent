@@ -12,6 +12,8 @@ Keep single-user local identity on loopback. Use authenticated product identity 
 
 ## Organization model combination
 
+For an administrator setting up a first run, provision the profile, fund its execution, and run the readiness check before selecting the combination on the project draft. [Provisioning commands](#provision-the-optional-organization-model-combination)
+
 A funded continuous execution can use GPT-6.2 Sol with high reasoning as lead and DeepSeek Flash as investigator. The lead calls investigators as needed. Preparing an execution makes no provider call. Mandatory independent report review is available through the standard workflow.
 
 In the deployment's private report-session settings, define `organization_model_profiles["sol-high-flash"]` with `binary`, `binary_sha256`, `context_window`, `output_tokens`, `summary_tokens`, `token_budget_basis` and `research_delegate`. The delegate has its own window, output and summary limits, token budget basis, positive `reservation_micros` and `reservation_basis`. Each token budget basis follows the existing `TokenBudgetBasis` schema. Supply the verified harness binary separately.

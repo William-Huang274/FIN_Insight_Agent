@@ -1,5 +1,18 @@
 # FinSight 架构
 
+以季度跟踪为例，准备研究时先固定获准使用的披露版本。此时可以用本地 BM25 查到原文；点击启动研究后，执行服务才开始运行研究图。报告交付后再次打开引用，读取的仍是绑定的版本，并会重新检查读者权限。[动手试一次资料检索](quickstart.zh-CN.md#知识库与检索配置)
+
+```mermaid
+flowchart LR
+  UI["工作台"] --> BFF["Python API"]
+  BFF --> Java["项目权限与资料版本"]
+  Java --> DB[(PostgreSQL)]
+  BFF --> RT["LangGraph Agent Server"]
+  RT --> Jobs["普通研究或专题调查"]
+  Jobs --> Report["判断、引用与报告版本"]
+  RT --> State["检查点与任务队列"]
+```
+
 浏览器访问工作台的同源接口。React/Vite 负责项目、研究会话、资料和报告界面。Python BFF 根据当前身份和项目范围读取资料、提交执行命令，Java Spring 服务在 PostgreSQL 维护组织、账户关联、项目授权和资料版本。前端可见的操作仍由后端逐次校验。
 
 ## 研究如何运行

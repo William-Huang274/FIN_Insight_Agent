@@ -44,6 +44,8 @@ Set only the desired switches in the private `.env`, then apply them with `fin u
 
 ## Publish a release
 
+Follow this procedure when you need a reusable vector index. To search the original text of a prepared execution first, use the [BM25 walkthrough](#search-your-own-documents-with-bm25).
+
 1. In the organization project, create a research input sheet with a cutoff and the published sources. Select **准备执行** to bind this sheet. This prepares an execution without starting a model run. Record the project, draft and execution UUIDs and the draft's `manifest_digest`. The workbench research-draft API exposes the stored digest.
 2. Export the authorized inputs through the native worker. The operator CLI rechecks the Java grant and original content. In the following commands replace `EXECUTION_UUID`, `sha256:DIGEST`, `ORG_UUID` and `RELEASE_UUID` with actual values. Choose a new release UUID and a fresh input file for each publication.
 

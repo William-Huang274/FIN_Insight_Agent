@@ -8,15 +8,30 @@ FinSight is a self-hosted workspace for financial research. Add two quarterly fi
 
 *Current workbench UI. The bank, disclosures and figures in both screenshots are illustrative.*
 
+## What you can do in the workbench
+
+| Task | How it works |
+| --- | --- |
+| Follow a company over time | Keep documents, research sessions, working notes and reports in a project. Ask follow-up questions in a conversation or start a research session with a question, cutoff date and attachments. |
+| Check disclosures and financial figures | Filter documents by company, period and filing type. Inspect financial accounts, units and sources, and trace derived figures to formulas and operands. Coverage depends on the data you import and sources you connect. |
+| Search team documents | Publish a document version to a shared space and select it for a project investigation. Local BM25 can find passages before any model run. Configure embeddings and reranking for hybrid retrieval. [Organization retrieval](deploy/organization/README.md) |
+| Choose investigators and budgets | Ordinary research uses one investigator and an independent reviewer. Deep research can delegate topics and reconcile findings. Personal sessions accept a DeepSeek key for V4 Flash or Pro. Organizations can fund a specific task with GPT-6.2 Sol high as lead and DeepSeek Flash as investigator. [Model setup](apps/workbench/README.md) |
+| Reuse a research method | Edit research directions, role skills, expert concurrency and review order in the configuration screen. Save a version and apply it to a task. [Source-comparison skill](examples/skills/source-comparison/SKILL.md) |
+| Follow and steer a run | Read public progress, tool activity and recorded usage. Where the run supports interaction, send a question to investigate, request a stop or inspect why an earlier run stopped. |
+| Review and deliver | Open cited passages, chart data and calculation notes. Request a revision to a working note, compare report versions and export to a web page, Markdown, PDF, Word or PowerPoint. |
+| Collaborate across accounts | In a multi-user deployment, register accounts, assign organization, project and resource-space roles, share specific document versions and revoke access. Access checks apply to searches, reads and downloads. |
+
+Operators supply contact details or credentials for external sources such as SEC EDGAR, OpenDART, HiThink and Alpha Vantage. Bring your own documents, data subscriptions and team indexes. [Data and deployment configuration](docs/public/quickstart.en.md)
+
 ## Follow a finding back to the filing
 
-For a comparison of two filings, attach them to a session and choose ordinary research. One investigator gathers evidence and drafts the report, followed by an independent review. For a comparison across banks, deep research can delegate deposit costs, loan mix and valuation to separate investigators. The lead brings their findings together. The workbench shows the models enabled in your deployment and the public progress of the investigation.
+Two filings give the investigator a starting point for explaining the change in interest income at one bank. To ask which bank benefits more, a deeper investigation can compare deposit costs, loan mix and valuation across lenders.
 
 In the example, net interest margin fell from 2.1% to 2.0%, while average earning assets rose from 10 billion to 11 billion yuan. At those margins, estimated annualized net interest income rose from 210 million to 220 million yuan. Open the citation to check the inputs. If assets hold steady, a margin of about 1.91% would bring income back to its previous level. That gives the analyst a figure to watch next quarter.
 
 ![An expanded citation showing the reporting date and the passage behind the figures](docs/public/images/source-preview.png)
 
-Session attachments belong to the current investigation. Upload documents to the project library for future searches by authorized members. Compare report revisions or export the result as a web page, Markdown, PDF, Word or PowerPoint.
+When the next filing arrives, add it to the same project and ask how the new margin compares with that threshold. Switch report versions to see which judgment changed.
 
 ## Open the workbench locally
 

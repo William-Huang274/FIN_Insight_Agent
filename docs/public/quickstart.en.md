@@ -28,6 +28,12 @@ In a [research session](http://127.0.0.1:8765/workspace/session), select the mod
 
 Attachments in a research session supply that session. For reusable material, upload to the project library, complete parsing and publish the searchable version. Embedding, reranking and external data APIs require your own services or credentials. See the [deployment guide](../../deploy/agent_server/README.md).
 
+## Knowledge base and retrieval setup
+
+Start with keyword retrieval. Enable the identity and native services and apply the [organization retrieval Compose configuration](../../deploy/organization/README.md). Sign in, publish a project document version to an authorized organization space, link it to the project and select it on a research input sheet. Prepare the execution, open **检索本次研究资料**, search for a phrase in the file and select **读取原文**. BM25 reads the bound text without external retrieval requests. For a missing search box, check the retrieval overlay and execution preparation. For zero hits, check the selected version and whether its text is searchable. Project text lookup does not cover text inside images or scanned pages.
+
+For hybrid retrieval, export the authorized inputs, prepare document vectors, publish and register the index, then select it on a new sheet. For new query embeddings, set `FINSIGHT_ORGANIZATION_QUERY_EMBEDDING=qwen` and `QWEN_API_KEY` in the private deployment environment. Complete chunk releases also support `FINSIGHT_ORGANIZATION_RERANK=qwen`. Apply these settings with the guide's `fin up -d` command. Embeddings send input text to the provider; reranking sends the query and authorized candidates. These operations may incur fees. Uploading a file does not itself purchase embeddings. [Index publication commands](../../deploy/organization/README.md#publish-a-release)
+
 ## Quick checks
 
 ```sh

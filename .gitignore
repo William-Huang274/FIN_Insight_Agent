@@ -75,3 +75,5 @@ supply-artifacts/
 /docs/public/images/*
 !/docs/public/images/report-preview.png
 !/docs/public/images/source-preview.png
+!/docs/public/images/knowledge-search.png
+!/docs/public/images/method-setup.png

@@ -32,6 +32,12 @@ docker compose -f compose.yaml -f deploy/agent_server/compose.native.yaml up -d 
 
 外部数据授权填写在私有 `.env`。SEC EDGAR 使用 `SEC_USER_AGENT` 或 `FINSIGHT_SEC_CONTACT_EMAIL` 标识请求者。Alpha Vantage、韩国 OpenDART、同花顺分别读取 `ALPHAVANTAGE_API_KEY`、`OPENDART_API_KEY`、`HITHINK_FINANCE_API_KEY`。这些是部署侧数据工具凭据，与个人研究页面保存的模型密钥分别管理。留空时相应的付费或受限接口不可用。
 
+## 知识库与检索配置
+
+**先用原文试一次关键词检索。** 在启用多人身份和原生执行的部署中，加载[组织检索的 Compose 配置](../../deploy/organization/README.md)。登录后将项目文件版本发布到组织空间，关联项目并选入研究准备单。准备执行后，打开「检索本次研究资料」，搜一个原文中出现的词，点「读取原文」。BM25 可直接读取绑定资料，外部检索调用为零。若看不到入口，先检查组织检索是否启用、执行是否已准备；若没有命中，核对选定的版本和正文。项目文件查找目前不覆盖图片或扫描页中的文字。
+
+**按需开启语义检索。** 导出执行获准使用的文本，准备文档向量，发布、校验并登记索引，再在新的准备单中选用该检索版本。在私有 `.env` 中设置 `FINSIGHT_ORGANIZATION_QUERY_EMBEDDING=qwen` 及 `QWEN_API_KEY` 可为新查询生成向量。对具备完整分块索引的版本，可另设 `FINSIGHT_ORGANIZATION_RERANK=qwen`。按组织部署指南执行 `fin up -d` 应用设置。嵌入服务会收到待嵌入的文本，重排服务会收到查询与授权候选段落，这些操作可能产生费用。上传文件本身不会触发付费向量化。[生成、登记与选用索引的命令](../../deploy/organization/README.md#publish-a-release)
+
 ## 快捷验证
 
 ```sh

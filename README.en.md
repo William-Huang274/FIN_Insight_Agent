@@ -6,7 +6,7 @@ FinSight is a self-hosted workspace for financial research. Add two quarterly fi
 
 ![A bank report comparing interest margins, earning assets and income](docs/public/images/report-preview.png)
 
-*Current workbench UI. The bank, disclosures and figures in both screenshots are illustrative.*
+*Screenshots show the current workbench. The bank, filings, figures and research configuration are illustrative.*
 
 ## What you can do in the workbench
 
@@ -22,6 +22,31 @@ FinSight is a self-hosted workspace for financial research. Add two quarterly fi
 | Collaborate across accounts | In a multi-user deployment, register accounts, assign organization, project and resource-space roles, share specific document versions and revoke access. Access checks apply to searches, reads and downloads. |
 
 Operators supply contact details or credentials for external sources such as SEC EDGAR, OpenDART, HiThink and Alpha Vantage. Bring your own documents, data subscriptions and team indexes. [Data and deployment configuration](docs/public/quickstart.en.md)
+
+## Build a knowledge base for the next investigation
+
+Open **资料库 → 知识库** to browse disclosures imported into your deployment, filter by company, period and filing type, and read sections alongside their original sources. The adjacent database view exposes financial accounts and metrics. Operators populate their own library. [Open the local knowledge base](http://127.0.0.1:8765/workspace/assets?view=library)
+
+**Example: keep a quarterly disclosure for the next margin review.**
+
+1. Upload a text-bearing document to the project and search for a phrase to confirm it is readable. Publish the chosen version to an organization space and link it to the organization project.
+2. Select the source on a research input sheet and choose **准备研究执行**. The version is now bound and searchable before you start a paid investigation.
+3. In **检索本次研究资料**, keep local BM25 selected, search for **净息差** (net interest margin), and select **读取原文**. The passage below gives the figures for both quarters. Future investigations can select a revised disclosure while earlier executions retain their original version.
+
+![Local BM25 search and the expanded passage from the example filing](docs/public/images/knowledge-search.png)
+
+Keyword search works over the bound text. For semantic retrieval, prepare document vectors, publish an index and select that release on a new research sheet. [Knowledge base and hybrid retrieval setup](docs/public/quickstart.en.md#knowledge-base-and-retrieval-setup)
+
+## Where to configure the workbench
+
+| Setting | Entry point |
+| --- | --- |
+| Personal model and depth | In **新建个人研究**, save your DeepSeek key under **个人模型密钥**, choose the model and research mode, and save a draft to inspect inputs before dispatch. [Personal model setup](apps/workbench/README.md#personal-research) |
+| Team research methods | In **研究配置 → 投研 Skills**, select a method and edit its instructions. For example, ask investigators to align currencies, periods and units before comparing two filings. Choose **保存为新版本**, select the task, then click **应用保存版本**. The next run uses that version. The **Agent 图与编排** tab controls role bindings, concurrency and review order. [Open research configuration](http://127.0.0.1:8765/workspace/session?view=studio) |
+| Organization models and budgets | Administrators provision provider credentials, fund the execution and check its authorization. Researchers then select the model combination on the organization draft. [Provisioning commands](apps/workbench/README.md#provision-the-optional-organization-model-combination) |
+| Accounts and financial data | Multi-user sign-in uses HTTPS and the deployment CA. Configure SEC, OpenDART and HiThink access in the private deployment environment. [Setup and credentials](docs/public/quickstart.en.md#connect-model-execution) |
+
+![Editing an example financial analysis skill in the configuration screen](docs/public/images/method-setup.png)
 
 ## Follow a finding back to the filing
 

@@ -1,5 +1,8 @@
 name: Public checkout
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches: [main]
 permissions:
   contents: read
 
@@ -26,3 +29,15 @@ jobs:
           java-version: '21'
       - run: sh mvnw -B -DskipTests package
         working-directory: apps/business-service
+  local-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: python3 scripts/deployment/initialize.py
+      - run: docker compose up --build --wait --wait-timeout 180
+      - run: |
+          curl -fsS http://127.0.0.1:8765/api/health | python3 -c 'import json,sys; assert json.load(sys.stdin)["status"] == "ok"'
+          curl -fsS http://127.0.0.1:8765/workspace/projects | grep -q 'id="root"'
+      - if: always()
+        run: docker compose down --volumes
